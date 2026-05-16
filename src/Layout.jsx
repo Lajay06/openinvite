@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { X, Loader2, Bell } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AnimatedSidebar, MobileSidebarContent } from "./components/layout/AnimatedSidebar";
 import TipsModal from "./components/dashboard/TipsModal";
 import CollaborateModal from "./components/layout/CollaborateModal";
@@ -45,11 +46,9 @@ function getStoredUser() {
 }
 
 // ── Full-width top navigation bar ────────────────────────────────────────────
-function TopBar({ weddingName, onAccountSettings, unreadCount }) {
+function TopBar({ weddingName, unreadCount }) {
   const navigate = useNavigate();
-  const [avatarOpen, setAvatarOpen] = useState(false);
   const [weather, setWeather] = useState(null);
-  const avatarRef = useRef(null);
 
   // Couple info from localStorage
   const coupleName = localStorage.getItem('oi_couple_name') || weddingName || '';
@@ -83,21 +82,13 @@ function TopBar({ weddingName, onAccountSettings, unreadCount }) {
     }, () => {});
   }, []);
 
-  // Click outside
-  useEffect(() => {
-    const handler = (e) => {
-      if (avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
   const handleLogout = () => {
     localStorage.removeItem('oi_auth');
     localStorage.removeItem('oi_user');
     localStorage.removeItem('base44_access_token');
     localStorage.removeItem('token');
     localStorage.removeItem('oi_couple_name');
+    localStorage.removeItem('oi_wedding_date');
     window.location.href = '/login';
   };
 
@@ -154,59 +145,47 @@ function TopBar({ weddingName, onAccountSettings, unreadCount }) {
         </button>
 
         {/* Avatar + dropdown */}
-        <div ref={avatarRef} style={{ position: 'relative' }}>
-          <button
-            onClick={() => setAvatarOpen(prev => !prev)}
-            style={{
-              width: 30, height: 30, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #E03553, #803D81)',
-              border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: 10, fontWeight: 700, fontFamily: PJS,
-              transition: 'transform 0.15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-          >
-            {initials}
-          </button>
-
-          {avatarOpen && (
-            <div style={{
-              position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-              background: '#fff', border: '1px solid rgba(10,10,10,0.1)',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 400, minWidth: 220,
-            }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>
-                  {storedUser.full_name || coupleName || 'Your account'}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              style={{
+                width: 36, height: 36, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #ec4899, #9333ea)',
+                border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: PJS,
+                transition: 'transform 0.15s', flexShrink: 0,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+            >
+              {initials}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" style={{ minWidth: 220, borderRadius: 0, fontFamily: PJS }}>
+            <DropdownMenuLabel style={{ fontFamily: PJS, padding: '10px 14px' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>
+                {storedUser.full_name || coupleName || 'Your account'}
+              </p>
+              {storedUser.email && (
+                <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '2px 0 0', fontWeight: 400 }}>
+                  {storedUser.email}
                 </p>
-                {storedUser.email && (
-                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '2px 0 0' }}>
-                    {storedUser.email}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => { setAvatarOpen(false); onAccountSettings(); }}
-                style={{ width: '100%', textAlign: 'left', padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#0A0A0A', fontFamily: PJS, display: 'block' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.04)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
-              >
-                Account settings
-              </button>
-              <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', margin: '2px 0' }} />
-              <button
-                onClick={handleLogout}
-                style={{ width: '100%', textAlign: 'left', padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#E03553', fontFamily: PJS, display: 'block' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(224,53,83,0.04)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
-              >
-                Log out
-              </button>
-            </div>
-          )}
-        </div>
+              )}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/AccountSettings')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+              Account settings
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/Collaborate')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+              Collaborate
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer', color: '#E03553' }}>
+              Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
@@ -284,7 +263,6 @@ export default function Layout({ children, currentPageName }) {
       {/* ── Full-width top nav bar (desktop only) ─────────── */}
       <TopBar
         weddingName={weddingName}
-        onAccountSettings={() => setShowAccountSettings(true)}
         unreadCount={unreadMessagesCount}
       />
 
