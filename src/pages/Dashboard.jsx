@@ -171,33 +171,36 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div style={{ padding: '32px 32px 48px' }}>
-
-        {/* Quick navigation links */}
+      {/* Quick navigation links */}
+      <div style={{ padding: '24px 32px 0' }}>
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
           border: '1px solid rgba(10,10,10,0.08)',
-          marginBottom: 32,
+          marginBottom: 24,
         }}>
           {QUICK_LINKS.map((l, i) => (
             <QuickLink key={l.label} label={l.label} url={l.url} isLast={i === QUICK_LINKS.length - 1} />
           ))}
         </div>
+        <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', marginBottom: 0 }} />
+      </div>
 
-        <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', marginBottom: 32 }} />
+      {/* Two-column layout: main content left | grey right panel */}
+      <div style={{ display: 'flex', alignItems: 'stretch', minHeight: 'calc(100vh - 300px)' }}>
 
-        {/* Content grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 32 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-            <RSVPChart guests={guests} />
-            <BudgetSummary budget={budget} stats={stats} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-            <UpcomingTasks schedule={schedule} />
-            <RecentActivity guests={guests} budget={budget} />
-          </div>
+        {/* Left: charts */}
+        <div style={{ flex: '2 1 0', padding: '32px 32px 48px', display: 'flex', flexDirection: 'column', gap: 32, minWidth: 0 }}>
+          <RSVPChart guests={guests} />
+          <BudgetSummary budget={budget} stats={stats} />
         </div>
+
+        {/* Right: grey panel */}
+        <div style={{ flex: '1 1 0', background: '#F7F7F7', borderLeft: '1px solid rgba(10,10,10,0.08)', padding: '32px 24px 48px', display: 'flex', flexDirection: 'column', gap: 32, minWidth: 0 }}>
+          <UpcomingTasks schedule={schedule} />
+          <RecentActivity guests={guests} budget={budget} />
+        </div>
+
       </div>
 
       <AIWeddingAssistant />

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { X, Loader2, Menu } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { X, Loader2, Bell } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { AnimatedSidebar, MobileSidebarContent } from "./components/layout/AnimatedSidebar";
@@ -11,9 +11,12 @@ import Header from "./components/layout/Header";
 import { base44 } from '@/api/base44Client';
 import { Invitation } from '@/entities/Invitation';
 import { GuestMessage } from '@/entities/GuestMessage';
+import { createPageUrl } from '@/utils';
 import toast, { Toaster } from 'react-hot-toast';
 
 const SIDEBAR_WIDTH = 200;
+const TOP_BAR_H = 48;
+const SUB_HEADER_H = 48;
 
 const noLayoutPages = [
   "Home", "Features", "Pricing", "CouplesStudio", "PlanSelection",
@@ -34,6 +37,177 @@ const CURRENCIES = [
   { code: 'CHF', symbol: 'CHF', name: 'Swiss Franc' }, { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
   { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
 ];
+
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+function getStoredUser() {
+  try { return JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch { return {}; }
+}
+
+// ── Full-width top navigation bar ────────────────────────────────────────────
+function TopBar({ weddingName, onAccountSettings, unreadCount }) {
+  const navigate = useNavigate();
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const [weather, setWeather] = useState(null);
+  const avatarRef = useRef(null);
+
+  // Couple info from localStorage
+  const coupleName = localStorage.getItem('oi_couple_name') || weddingName || '';
+  const dateStr = localStorage.getItem('oi_wedding_date') || '';
+  const daysToGo = dateStr ? Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  const formattedDate = dateStr
+    ? new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '';
+
+  // User info
+  const storedUser = getStoredUser();
+  const initials = coupleName
+    ? coupleName.split(/\s*[&+,]\s*/).map(n => n.trim()[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
+    : (storedUser.email || 'U').slice(0, 2).toUpperCase();
+
+  // Weather (cached)
+  useEffect(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem('oi_weather') || 'null');
+      if (cached && Date.now() - cached.ts < 30 * 60 * 1000) { setWeather(cached.data); return; }
+    } catch {}
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current_weather=true`);
+        const d = await res.json();
+        const w = { temp: Math.round(d.current_weather.temperature), code: d.current_weather.weathercode };
+        setWeather(w);
+        localStorage.setItem('oi_weather', JSON.stringify({ data: w, ts: Date.now() }));
+      } catch {}
+    }, () => {});
+  }, []);
+
+  // Click outside
+  useEffect(() => {
+    const handler = (e) => {
+      if (avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('oi_auth');
+    localStorage.removeItem('oi_user');
+    window.location.href = '/login';
+  };
+
+  const dot = <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(10,10,10,0.2)', flexShrink: 0, display: 'inline-block' }} />;
+
+  return (
+    <div
+      className="hidden lg:flex"
+      style={{
+        position: 'fixed', top: 0, left: 0, right: 0, height: TOP_BAR_H,
+        zIndex: 50, background: '#0A0A0A',
+        alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 24px',
+      }}
+    >
+      {/* Left: couple info chips */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {coupleName && (
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS }}>
+            {coupleName}
+          </span>
+        )}
+        {formattedDate && (
+          <>{dot}<span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontFamily: PJS }}>{formattedDate}</span></>
+        )}
+        {daysToGo !== null && (
+          <>{dot}<span style={{ fontSize: 12, fontWeight: 600, color: '#E03553', fontFamily: PJS }}>
+            {daysToGo > 0 ? `${daysToGo} days to go` : daysToGo === 0 ? 'Today!' : 'Past'}
+          </span></>
+        )}
+        {weather && (
+          <>{dot}<span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontFamily: PJS }}>☀ {weather.temp}°C</span></>
+        )}
+      </div>
+
+      {/* Right: bell + avatar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* Bell */}
+        <button
+          onClick={() => navigate(createPageUrl('Messages'))}
+          style={{
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            color: 'rgba(255,255,255,0.55)', padding: 6, borderRadius: 999,
+            display: 'flex', alignItems: 'center', position: 'relative',
+            transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+        >
+          <Bell size={16} strokeWidth={1.8} />
+          {unreadCount > 0 && (
+            <span style={{ position: 'absolute', top: 5, right: 5, width: 5, height: 5, borderRadius: '50%', background: '#E03553' }} />
+          )}
+        </button>
+
+        {/* Avatar + dropdown */}
+        <div ref={avatarRef} style={{ position: 'relative' }}>
+          <button
+            onClick={() => setAvatarOpen(prev => !prev)}
+            style={{
+              width: 30, height: 30, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #E03553, #803D81)',
+              border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontSize: 10, fontWeight: 700, fontFamily: PJS,
+              transition: 'transform 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+          >
+            {initials}
+          </button>
+
+          {avatarOpen && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+              background: '#fff', border: '1px solid rgba(10,10,10,0.1)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 400, minWidth: 220,
+            }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>
+                  {storedUser.full_name || coupleName || 'Your account'}
+                </p>
+                {storedUser.email && (
+                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '2px 0 0' }}>
+                    {storedUser.email}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => { setAvatarOpen(false); onAccountSettings(); }}
+                style={{ width: '100%', textAlign: 'left', padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#0A0A0A', fontFamily: PJS, display: 'block' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.04)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+              >
+                Account settings
+              </button>
+              <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', margin: '2px 0' }} />
+              <button
+                onClick={handleLogout}
+                style={{ width: '100%', textAlign: 'left', padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#E03553', fontFamily: PJS, display: 'block' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(224,53,83,0.04)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+              >
+                Log out
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -104,7 +278,14 @@ export default function Layout({ children, currentPageName }) {
         }}
       />
 
-      {/* ── Desktop: fixed sidebar ───────────────────────── */}
+      {/* ── Full-width top nav bar (desktop only) ─────────── */}
+      <TopBar
+        weddingName={weddingName}
+        onAccountSettings={() => setShowAccountSettings(true)}
+        unreadCount={unreadMessagesCount}
+      />
+
+      {/* ── Desktop: fixed sidebar (below top bar) ──────────── */}
       <div className="hidden lg:block">
         <AnimatedSidebar
           weddingName={weddingName}
@@ -114,12 +295,12 @@ export default function Layout({ children, currentPageName }) {
         />
       </div>
 
-      {/* ── Desktop: fixed header bar (right of sidebar) ── */}
+      {/* ── Desktop: sub-header (page name + search) ──────── */}
       <div
         className="hidden lg:block"
         style={{
           position: 'fixed',
-          top: 0,
+          top: TOP_BAR_H,
           left: SIDEBAR_WIDTH,
           right: 0,
           zIndex: 30,
@@ -161,11 +342,13 @@ export default function Layout({ children, currentPageName }) {
             display: 'flex', alignItems: 'center',
           }}
         >
-          <Menu size={20} strokeWidth={1.8} />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
         </button>
       </div>
 
-      {/* ── Mobile: nav sheet (controlled, no trigger needed) */}
+      {/* ── Mobile: nav sheet ──────────────────────────────── */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" className="w-72 p-0" style={{ borderRight: '1px solid #E4E4E4' }}>
           <MobileSidebarContent
@@ -306,15 +489,15 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* ── Main content ─────────────────────────────────── */}
-      {/* Desktop: offset right of sidebar, below fixed header */}
+      {/* Desktop: right of sidebar, below top bar + sub-header */}
       <div
         className="hidden lg:block page-content"
-        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: 64 }}
+        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: TOP_BAR_H + SUB_HEADER_H }}
       >
         {children}
       </div>
 
-      {/* Mobile: full width, below fixed top bar */}
+      {/* Mobile: full width, below mobile top bar */}
       <div
         className="lg:hidden page-content"
         style={{ paddingTop: 64 }}
