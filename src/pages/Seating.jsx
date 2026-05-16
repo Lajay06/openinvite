@@ -268,7 +268,7 @@ export default function SeatingPage() {
 
   /* ── AI seating apply ── */
   const handleApplyAISeating = async (plan) => {
-    const tid = toast.loading('Applying Ava's seating plan…');
+    const tid = toast.loading("Applying Ava's seating plan\u2026");
     try {
       const validGuestIds = new Set(guests.map(g => g.id));
       await Promise.all(tables.map(t => Table.update(t.id, { assigned_guests: [] })));
