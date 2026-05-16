@@ -4,7 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import VisualEditAgent from '@/lib/VisualEditAgent'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -58,7 +58,18 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   : <>{children}</>;
 
 const AuthenticatedApp = () => {
+  const location = useLocation();
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+
+  // /login — public; redirect to /Dashboard if already authenticated
+  if (location.pathname === '/login') {
+    const alreadyAuthed = localStorage.getItem('oi_auth') === '1';
+    return alreadyAuthed ? <Navigate to="/Dashboard" replace /> : <LoginScreen />;
+  }
+  // Lowercase /dashboard → canonical /Dashboard
+  if (location.pathname === '/dashboard') {
+    return <Navigate to="/Dashboard" replace />;
+  }
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {

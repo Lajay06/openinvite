@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { base44 } from "@/api/base44Client";
 
 const SLIDER_IMAGES = [
   "https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg",
@@ -89,7 +88,10 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
 
   const handleSSO = () => {
-    base44.auth.redirectToLogin(window.location.origin + "/Dashboard");
+    // Treat SSO as demo login — set local auth and redirect
+    localStorage.setItem("oi_auth", "1");
+    localStorage.setItem("oi_user", JSON.stringify({ email: "user@openinvite.com" }));
+    window.location.href = "/Dashboard";
   };
 
   const handleEmailSubmit = (e) => {
@@ -98,8 +100,9 @@ export default function LoginScreen() {
     if (!email.trim()) { setError("Please enter your email address."); return; }
     if (!password.trim()) { setError("Please enter your password."); return; }
     setLoading(true);
-    // Route through Base44 auth with email hint, then land on Dashboard
-    base44.auth.redirectToLogin(window.location.origin + "/Dashboard");
+    localStorage.setItem("oi_auth", "1");
+    localStorage.setItem("oi_user", JSON.stringify({ email }));
+    window.location.href = "/Dashboard";
   };
 
   return (
