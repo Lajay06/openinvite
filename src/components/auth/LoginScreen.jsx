@@ -199,25 +199,11 @@ export default function LoginScreen() {
                   </p>
                 </motion.div>
 
-                {/* Google SSO */}
-                <motion.button
-                  variants={item}
-                  onClick={handleGoogleLogin}
-                  disabled={loading}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 16px", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, background: "#FFFFFF", cursor: loading ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600, color: "#0A0A0A", marginBottom: 20, boxSizing: "border-box", transition: "background 0.15s ease", opacity: loading ? 0.5 : 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                  whileHover={{ background: loading ? "#FFFFFF" : "#FAFAFA" }}
-                  whileTap={{ scale: loading ? 1 : 0.99 }}
-                >
-                  <GoogleIcon />
-                  Continue with Google
-                </motion.button>
-
-                {/* Divider */}
-                <motion.div variants={item} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-                  <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
-                  <span style={{ fontSize: 11, color: "rgba(10,10,10,0.3)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>or</span>
-                  <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
-                </motion.div>
+                {/* Google SSO — temporarily hidden */}
+                {/* <motion.button variants={item} onClick={handleGoogleLogin} disabled={loading} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 16px", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, background: "#FFFFFF", cursor: loading ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600, color: "#0A0A0A", marginBottom: 20, boxSizing: "border-box", transition: "background 0.15s ease", opacity: loading ? 0.5 : 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }} whileHover={{ background: loading ? "#FFFFFF" : "#FAFAFA" }} whileTap={{ scale: loading ? 1 : 0.99 }}><GoogleIcon />Continue with Google</motion.button> */}
+                <motion.p variants={item} style={{ fontSize: 12, color: "rgba(10,10,10,0.35)", fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 24, textAlign: "center" }}>
+                  Google sign-in coming soon
+                </motion.p>
 
                 {/* Email/password form */}
                 <form onSubmit={handleEmailSubmit}>
@@ -291,25 +277,11 @@ export default function LoginScreen() {
                   </p>
                 </motion.div>
 
-                {/* Google SSO for signup */}
-                <motion.button
-                  variants={item}
-                  onClick={handleGoogleLogin}
-                  disabled={loading}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 16px", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, background: "#FFFFFF", cursor: loading ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600, color: "#0A0A0A", marginBottom: 20, boxSizing: "border-box", transition: "background 0.15s ease", opacity: loading ? 0.5 : 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                  whileHover={{ background: loading ? "#FFFFFF" : "#FAFAFA" }}
-                  whileTap={{ scale: loading ? 1 : 0.99 }}
-                >
-                  <GoogleIcon />
-                  Sign up with Google
-                </motion.button>
-
-                {/* Divider */}
-                <motion.div variants={item} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-                  <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
-                  <span style={{ fontSize: 11, color: "rgba(10,10,10,0.3)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>or</span>
-                  <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
-                </motion.div>
+                {/* Google SSO for signup — temporarily hidden */}
+                {/* <motion.button variants={item} onClick={handleGoogleLogin} disabled={loading} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 16px", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, background: "#FFFFFF", cursor: loading ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600, color: "#0A0A0A", marginBottom: 20, boxSizing: "border-box", transition: "background 0.15s ease", opacity: loading ? 0.5 : 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }} whileHover={{ background: loading ? "#FFFFFF" : "#FAFAFA" }} whileTap={{ scale: loading ? 1 : 0.99 }}><GoogleIcon />Sign up with Google</motion.button> */}
+                <motion.p variants={item} style={{ fontSize: 12, color: "rgba(10,10,10,0.35)", fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 24, textAlign: "center" }}>
+                  Google sign-in coming soon
+                </motion.p>
 
                 {/* Signup form */}
                 <form onSubmit={handleSignup}>
