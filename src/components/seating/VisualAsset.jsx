@@ -34,7 +34,6 @@ export default function VisualAsset({ asset }) {
     }}>
       {Icon && <Icon size={13} style={{ color: s.color, flexShrink: 0 }} />}
       <span style={{
-        fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em',
         color: s.color, fontFamily: "'Plus Jakarta Sans', sans-serif",
         textAlign: 'center', lineHeight: 1.2, padding: '0 6px',
       }}>

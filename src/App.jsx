@@ -77,7 +77,6 @@ const AuthenticatedApp = () => {
       <div className="fixed inset-0 flex items-center justify-center bg-[#0A0A0A]">
         <div className="text-center">
           <div className="w-6 h-6 border-2 border-[#333] border-t-white rounded-full animate-spin mx-auto mb-4" />
-          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Loading</p>
         </div>
       </div>
     );

@@ -81,7 +81,6 @@ export default function TipsModal({ onClose }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #E03553, #803D81)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#FFF', flexShrink: 0 }}>✦</div>
               <div>
-                <p style={{ margin: 0, fontSize: 11, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>WELCOME TO OPENINVITE</p>
                 <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Here's how to get started</h2>
               </div>
               <button onClick={handleClose} style={{ marginLeft: 'auto', background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888', lineHeight: 1 }}>×</button>
@@ -98,7 +97,6 @@ export default function TipsModal({ onClose }) {
           {/* Content */}
           <div style={{ flex: 1, padding: 32, minHeight: 280, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'auto' }}>
             <div key={key} style={{ animation: 'tipSlideIn 0.3s ease' }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: '#E03553', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 12, marginTop: 0, fontFamily: 'Plus Jakarta Sans' }}>
                 TIP {currentTip + 1} OF 5
               </p>
               <h3 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', lineHeight: 1.3, marginBottom: 16, marginTop: 0, fontFamily: 'Plus Jakarta Sans' }}>

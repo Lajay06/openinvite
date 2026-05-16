@@ -92,7 +92,6 @@ export default function GuestAccommodation() {
       {details.accommodation?.partnerRecommendationsEnabled && (
         <div style={{ padding: '48px 24px 0' }}>
           <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Plus Jakarta Sans' }}>
               Partner Hotels
             </p>
             <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: 0 }}>
@@ -118,7 +117,6 @@ export default function GuestAccommodation() {
 
       {/* Footer */}
       <div style={{ padding: '60px 24px', background: '#F8F7F5', textAlign: 'center', borderTop: '1px solid #EEEEEE' }}>
-        <p style={{ fontSize: 11, color: '#888', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16, fontFamily: 'Plus Jakarta Sans' }}>
           {details.couple1Name} & {details.couple2Name}
         </p>
         <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', padding: '12px 24px', border: '1px solid #DDD', color: '#555', textDecoration: 'none', fontSize: 12, fontWeight: 700, fontFamily: 'Plus Jakarta Sans', letterSpacing: '0.1em' }}>
@@ -132,7 +130,6 @@ export default function GuestAccommodation() {
 function AccommodationHero({ details, city }) {
   return (
     <div style={{ padding: '60px 24px 40px', background: '#F8F7F5' }}>
-      <p style={{ fontSize: 10, fontWeight: 600, color: '#888', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 12, fontFamily: 'Plus Jakarta Sans' }}>
         Where to Stay
       </p>
       <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#0A0A0A', margin: '0 0 16px', lineHeight: 1.1 }}>
@@ -151,14 +148,12 @@ function AccommodationHero({ details, city }) {
       {details?.accommodation?.checkInDate && (
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '12px 20px', border: '1px solid #EEEEEE', background: '#FFFFFF' }}>
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 10, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 2px', fontFamily: 'Plus Jakarta Sans' }}>Check-in</p>
             <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>
               {new Date(details.accommodation.checkInDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
             </p>
           </div>
           <div style={{ width: 1, height: 32, background: '#EEEEEE' }} />
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 10, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 2px', fontFamily: 'Plus Jakarta Sans' }}>Check-out</p>
             <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>
               {new Date(details.accommodation.checkOutDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
             </p>
@@ -208,7 +203,6 @@ function CouplePicksSection({ properties, details }) {
       {pinned.length > 0 && (
         <>
           <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 10, fontWeight: 600, color: '#888', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Plus Jakarta Sans' }}>
               {details?.couple1Name} & {details?.couple2Name} Recommend
             </p>
             <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: 0 }}>
@@ -228,7 +222,6 @@ function CouplePicksSection({ properties, details }) {
 
       {rest.length > 0 && (
         <div style={{ marginTop: 32 }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 16, fontFamily: 'Plus Jakarta Sans' }}>More Options</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {rest.map(p => <ManualPropertyGuestCard key={p.id} property={p} />)}
           </div>
@@ -244,7 +237,6 @@ function FeaturedPropertyCard({ property }) {
       {property.photoUrl && <img src={property.photoUrl} alt="" style={{ width: '100%', height: 240, objectFit: 'cover' }} />}
       <div style={{ padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <span style={{ padding: '4px 10px', background: '#E03553', color: '#FFF', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'Plus Jakarta Sans' }}>Main Guest Hotel</span>
         </div>
         <h3 style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', fontFamily: 'Plus Jakarta Sans' }}>{property.name}</h3>
         <p style={{ fontSize: 13, color: '#888', margin: '0 0 12px', fontFamily: 'Plus Jakarta Sans' }}>{property.address}</p>
@@ -256,7 +248,6 @@ function FeaturedPropertyCard({ property }) {
         {property.bookingCode && (
           <div style={{ background: '#FAFAFA', border: '1px dashed #DDD', padding: '10px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <p style={{ fontSize: 10, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 2px', fontFamily: 'Plus Jakarta Sans' }}>Group Code</p>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: 'monospace' }}>{property.bookingCode}</p>
             </div>
           </div>

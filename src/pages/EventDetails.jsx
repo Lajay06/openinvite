@@ -9,7 +9,6 @@ function SectionLabel({ children }) {
   return (
     <div style={{ marginTop: 32, marginBottom: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{children}</span>
         <div style={{ flex: 1, height: 1, background: 'rgba(10,10,10,0.08)' }} />
       </div>
     </div>
@@ -20,7 +19,6 @@ function UInput({ label, value, onChange, placeholder = '', type = 'text' }) {
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom: 20 }}>
-      {label && <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{label}</p>}
       <input
         type={type}
         value={value || ''}
@@ -231,7 +229,6 @@ export default function EventDetailsPage() {
         <SectionLabel>Your Wedding Style</SectionLabel>
         {STYLE_GROUPS.map(group => (
           <div key={group.label} style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{group.label}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {group.options.map(opt => {
                 const sel = styles.includes(opt);

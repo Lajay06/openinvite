@@ -247,7 +247,6 @@ function StatCell({ stat, index, inView }) {
     <div style={{ flex: "1 1 200px", borderRight: index < 3 ? "1px solid rgba(255,255,255,0.06)" : "none", padding: "48px 40px", textAlign: "center", opacity: inView ? 1 : 0, transition: `opacity 0.6s ${index * 0.1}s ease` }}>
       <div style={{ width: 8, height: 8, borderRadius: "50%", background: stat.color, margin: "0 auto 16px" }} />
       <p style={{ fontSize: 56, fontWeight: 700, color: "#fff", margin: "0 0 8px", letterSpacing: "-0.03em", lineHeight: 1 }}>{display}</p>
-      <p style={{ fontSize: 11, fontWeight: 600, color: "#CCCCCC", textTransform: "uppercase", letterSpacing: "0.15em", margin: 0 }}>{stat.label}</p>
     </div>);
 
 }
@@ -276,7 +275,6 @@ function FeatureSplit({ bg, label, labelColor, headline, body, bullets, photo, r
   return (
     <div ref={ref} style={{ display: "flex", flexDirection: reversed ? "row-reverse" : "row", minHeight: 560, background: bgColor }}>
       <div style={{ flex: 1, padding: "80px clamp(32px,5vw,80px)", display: "flex", flexDirection: "column", justifyContent: "center", opacity: inView ? 1 : 0, transform: inView ? "none" : `translateX(${reversed ? 40 : -40}px)`, transition: "opacity 0.7s ease, transform 0.7s ease" }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: labelColor, textTransform: "uppercase", letterSpacing: "0.2em", marginBottom: 16 }}>{label}</p>
         <h2 style={{ fontSize: "clamp(28px,3.5vw,48px)", fontWeight: 700, color: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "#fff" : "#0A0A0A", margin: "0 0 20px", letterSpacing: "-0.02em", lineHeight: 1.1 }}>{headline}</h2>
         <p style={{ fontSize: 16, color: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "#CCCCCC" : "#444444", lineHeight: 1.7, marginBottom: 28, maxWidth: 440 }}>{body}</p>
         <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -332,7 +330,6 @@ export default function AvaPage() {
           {/* Badge */}
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid rgba(224,53,83,0.3)", borderRadius: 100, padding: "6px 16px", marginBottom: 40, background: "rgba(224,53,83,0.06)" }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#E03553", display: "inline-block", animation: "avaPulse 2s ease-in-out infinite" }} />
-            <span style={{ fontSize: 11, color: "#DDF762", letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 600 }}>AI-POWERED WEDDING PLANNING</span>
           </div>
 
           {/* Headline */}
@@ -354,7 +351,6 @@ export default function AvaPage() {
 
           <button
             onClick={() => window.location.href = "/Onboarding"}
-            style={{ marginTop: 40, padding: "16px 48px", background: "linear-gradient(135deg,#E03553,#803D81)", color: "#FFFFFF", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase" }}>
             
             Try Ava Free →
           </button>
@@ -384,7 +380,6 @@ export default function AvaPage() {
       {/* ── CAROUSEL ─────────────────────────────────────────── */}
       <section ref={carouselRef} style={{ background: "#0A0A0A", padding: "80px 0 0" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 clamp(24px,5vw,80px)" }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: "#DDF762", textTransform: "uppercase", letterSpacing: "0.25em", marginBottom: 16 }}>AVA IN ACTION</p>
           <h2 style={{ fontSize: "clamp(32px,4vw,56px)", fontWeight: 700, color: "#fff", margin: "0 0 48px", letterSpacing: "-0.02em", opacity: carouselInView ? 1 : 0, transform: carouselInView ? "none" : "translateY(20px)", transition: "opacity 0.6s ease, transform 0.6s ease" }}>See what Ava can do.</h2>
         </div>
         <AvaCarousel />
@@ -393,14 +388,12 @@ export default function AvaPage() {
       {/* ── HOW IT WORKS ─────────────────────────────────────── */}
       <section style={{ background: "#F5F5F5", padding: "120px clamp(24px,5vw,80px)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: "#E03553", textTransform: "uppercase", letterSpacing: "0.2em", marginBottom: 16 }}>HOW IT WORKS</p>
           <h2 style={{ fontSize: "clamp(32px,4vw,56px)", fontWeight: 700, color: "#0A0A0A", margin: "0 0 64px", letterSpacing: "-0.02em" }}>Ava learns. Ava plans. Ava delivers.</h2>
           <div ref={howRef} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 24 }}>
             {HOW_CARDS.map((c, i) =>
             <div key={i} style={{ background: "#fff", border: "1px solid #E8E8E8", padding: 40, position: "relative", overflow: "hidden", opacity: howInView ? 1 : 0, transform: howInView ? "none" : "translateY(30px)", transition: `opacity 0.6s ${i * 0.1}s ease, transform 0.6s ${i * 0.1}s ease` }}>
                 <p style={{ position: "absolute", top: 20, right: 24, fontSize: 64, fontWeight: 700, color: "#EEEEEE", margin: 0, lineHeight: 1, pointerEvents: "none" }}>{c.num}</p>
                 <p style={{ fontSize: 24, marginBottom: 12 }}>{c.icon}</p>
-                <p style={{ fontSize: 11, fontWeight: 600, color: "#E03553", textTransform: "uppercase", letterSpacing: "0.15em", margin: "0 0 8px" }}>{c.step}</p>
                 <h3 style={{ fontSize: 20, fontWeight: 700, color: "#0A0A0A", margin: "0 0 12px" }}>{c.heading}</h3>
                 <p style={{ fontSize: 15, color: "#444444", lineHeight: 1.7, margin: 0 }}>{c.body}</p>
               </div>
@@ -458,13 +451,11 @@ export default function AvaPage() {
       {/* ── COMPARISON TABLE ─────────────────────────────────── */}
       <section style={{ background: "#fff", padding: "120px clamp(24px,5vw,80px)" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <p style={{ fontSize: 10, fontWeight: 600, color: "#555555", textTransform: "uppercase", letterSpacing: "0.2em", marginBottom: 16 }}>The Difference</p>
           <h2 style={{ fontSize: "clamp(28px,3vw,48px)", fontWeight: 700, color: "#0A0A0A", margin: "0 0 48px", letterSpacing: "-0.02em" }}>Planning with Ava vs. planning without.</h2>
           <div ref={tableRef} style={{ border: "1px solid #EEEEEE", overflow: "hidden" }}>
             {/* Header */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#0A0A0A" }}>
               {["", "Without Ava", "With Ava"].map((h, i) =>
-              <div key={i} style={{ padding: "18px 24px", fontSize: 13, fontWeight: 600, color: "#fff", textTransform: "uppercase", letterSpacing: "0.08em", borderRight: i < 2 ? "1px solid #1A1A1A" : "none" }}>{h}</div>
               )}
             </div>
             {TABLE_ROWS.map((row, i) =>
@@ -488,10 +479,8 @@ export default function AvaPage() {
           <h2 style={{ fontSize: "clamp(40px,6vw,80px)", fontWeight: 700, color: "#fff", margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1, opacity: ctaInView ? 1 : 0, animation: ctaInView ? "punchIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards" : "none" }}>Ready to meet Ava?</h2>
           <p style={{ fontSize: 18, color: "#CCCCCC", margin: "0 0 40px", opacity: ctaInView ? 1 : 0, transition: "opacity 0.6s 0.2s ease" }}>Start planning smarter. Your wedding deserves it.</p>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", opacity: ctaInView ? 1 : 0, transform: ctaInView ? "none" : "translateY(20px)", transition: "opacity 0.6s 0.3s ease, transform 0.6s 0.3s ease" }}>
-            <Link to="/Onboarding" style={{ background: "linear-gradient(135deg,#E03553 0%,#803D81 100%)", color: "#fff", padding: "16px 40px", fontSize: 12, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}>
               Start free with Ava →
             </Link>
-            <Link to="/Features" style={{ color: "#fff", padding: "16px 40px", fontSize: 12, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none", border: "1px solid rgba(255,255,255,0.3)" }}
             onMouseEnter={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.7)"}
             onMouseLeave={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"}>
               

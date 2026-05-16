@@ -11,7 +11,7 @@ import { InvokeLLM } from '@/integrations/Core';
 import toast from 'react-hot-toast';
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'block', marginBottom: 6,
 };
@@ -247,7 +247,6 @@ export default function AIVendorAssistant({ isOpen, onClose, vendors, onVendorUp
                 <div style={{ border: '1px solid rgba(10,10,10,0.08)', borderLeft: '3px solid #DDF762' }}>
                   <div style={{ padding: '12px 20px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(221,247,98,0.08)' }}>
                     <CheckCircle size={14} style={{ color: '#6b7700' }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#6b7700', fontFamily: "'Plus Jakarta Sans', sans-serif", textTransform: 'uppercase', letterSpacing: '0.08em' }}>Extracted information</span>
                   </div>
                   <div style={{ padding: 20 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
@@ -335,7 +334,6 @@ export default function AIVendorAssistant({ isOpen, onClose, vendors, onVendorUp
                       <p style={{ fontSize: 36, fontWeight: 700, color: '#DDF762', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, lineHeight: 1 }}>
                         {performanceResults.analysis.performanceScore}<span style={{ fontSize: 16, color: 'rgba(221,247,98,0.5)' }}>/10</span>
                       </p>
-                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Performance</p>
                     </div>
                   </div>
 

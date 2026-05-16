@@ -26,7 +26,6 @@ const pillBase = {
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: '0.08em',
-  textTransform: 'uppercase',
   padding: '3px 9px',
   borderRadius: 999,
   whiteSpace: 'nowrap',

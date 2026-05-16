@@ -32,7 +32,6 @@ export default function OnboardingStep7Ava({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#DDF762', marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
       >
         Your AI Assistant
       </motion.p>
@@ -61,7 +60,7 @@ export default function OnboardingStep7Ava({ onNext, data }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
         onClick={() => onNext({})}
-        className="px-8 py-3 rounded-full text-white text-sm font-medium uppercase tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+        className="px-8 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
       >
         Got it, let's go →
       </motion.button>

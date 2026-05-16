@@ -43,8 +43,6 @@ function AssetCard({ asset, isHovered, onHover, onLeave, coupleName, weddingDate
         {asset.id === 'save-the-date' && (
           <>
             <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,0.2)', marginBottom: 20 }} />
-            <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 12 }}>SAVE THE DATE</p>
-            <p style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 22, color: '#FFFFFF', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>{coupleName}</p>
             <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.2em' }}>{weddingDate.replace(/ /g, ' · ').toUpperCase()}</p>
             <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,0.2)', marginTop: 20 }} />
           </>
@@ -52,7 +50,6 @@ function AssetCard({ asset, isHovered, onHover, onLeave, coupleName, weddingDate
         {asset.id === 'digital-invitation' && (
           <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a0a0e, #2d1033)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3em', textTransform: 'uppercase', margin: 0 }}>Invitation</p>
               <p style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 28, color: '#FFFFFF', margin: '12px 0 0' }}>{coupleName}</p>
             </div>
           </div>
@@ -60,7 +57,6 @@ function AssetCard({ asset, isHovered, onHover, onLeave, coupleName, weddingDate
         {asset.id === 'rsvp-page' && (
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 14, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.15em', margin: '0 0 8px' }}>{coupleName}</p>
-            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3em', textTransform: 'uppercase', margin: '0 0 12px' }}>Will you join us?</p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 16 }}>
               <button style={{ padding: '6px 16px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.6)', fontSize: 11, cursor: 'pointer' }}>Yes</button>
               <button style={{ padding: '6px 16px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.6)', fontSize: 11, cursor: 'pointer' }}>No</button>
@@ -69,14 +65,12 @@ function AssetCard({ asset, isHovered, onHover, onLeave, coupleName, weddingDate
         )}
         {asset.id === 'menu-card' && (
           <div style={{ background: '#F8F7F5', color: '#0A0A0A', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-            <p style={{ fontSize: 8, color: '#888888', letterSpacing: '0.3em', textTransform: 'uppercase', margin: 0 }}>MENU</p>
             <p style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 18, color: '#0A0A0A', margin: '12px 0 0' }}>{coupleName}</p>
           </div>
         )}
         {asset.id === 'seating-chart' && (
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 12, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.15em', margin: '0 0 8px' }}>{coupleName}</p>
-            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3em', textTransform: 'uppercase', margin: '0 0 16px' }}>Seating</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               {['T1', 'T2', 'T3', 'T4', 'T5', 'T6'].map(t => (
                 <div key={t} style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 6px' }}>{t}</div>
@@ -98,7 +92,6 @@ function AssetCard({ asset, isHovered, onHover, onLeave, coupleName, weddingDate
         )}
         {asset.id === 'welcome-signage' && (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3em', textTransform: 'uppercase', margin: '0 0 20px' }}>Welcome</p>
             <p style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 32, color: '#FFFFFF', margin: '0 0 8px' }}>{coupleName}</p>
             {venue !== 'Your Venue' && (
               <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em' }}>{venue}</p>
@@ -233,7 +226,6 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
             background: 'transparent',
             color: isAlreadySelected && !isOnboarding ? '#DDF762' : '#FFFFFF',
             padding: '8px 24px', fontSize: 11, fontWeight: 600, letterSpacing: '0.15em',
-            textTransform: 'uppercase', cursor: selectState === 'loading' ? 'default' : 'pointer',
             transition: 'all 0.3s ease',
           }}
         >
@@ -257,7 +249,6 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
 
         <div style={{ position: 'relative', zIndex: 1, transition: 'opacity 0.4s ease', opacity: loaded ? 1 : 0.6 }}>
           <div style={{ marginBottom: 32 }}>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.3em', textTransform: 'uppercase', textAlign: 'center', marginBottom: 8 }}>Curated for</p>
             {loaded ? (
               <p style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(20px, 3vw, 32px)', color: 'rgba(255,255,255,0.7)', letterSpacing: '0.15em', textAlign: 'center', fontStyle: 'italic', margin: 0 }}>{coupleName}</p>
             ) : (
@@ -265,13 +256,11 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
             )}
           </div>
 
-          <p style={{ fontSize: 10, color: '#888888', letterSpacing: '0.3em', textTransform: 'uppercase', margin: 0 }}>NO. 01 / THE AMAN UNIVERSE</p>
           <div style={{ width: 60, height: 1, background: 'rgba(255,255,255,0.2)', margin: '20px auto' }} />
 
           <h1 style={{
             fontFamily: 'Cormorant Garamond, serif', fontWeight: 300,
             fontSize: 'clamp(80px, 15vw, 180px)', color: '#FFFFFF',
-            letterSpacing: '0.2em', textTransform: 'uppercase', margin: 0, lineHeight: 1,
           }}>AMAN</h1>
 
           <p style={{
@@ -283,14 +272,12 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
           {loaded && details?.weddingDate && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 24, justifyContent: 'center', marginTop: 24 }}>
               <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 4 }}>Wedding Date</p>
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.1em', fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, margin: 0 }}>{weddingDate}</p>
               </div>
               {venue !== 'Your Venue' && (
                 <>
                   <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.1)' }} />
                   <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 4 }}>Venue</p>
                     <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.1em', fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, margin: 0 }}>{venue}</p>
                   </div>
                 </>
@@ -309,7 +296,6 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
             style={{
               border: '1px solid #FFFFFF', background: 'transparent', color: '#FFFFFF',
               padding: '12px 28px', fontSize: 12, fontWeight: 600, letterSpacing: '0.15em',
-              textTransform: 'uppercase', cursor: selectState !== 'idle' ? 'default' : 'pointer',
             }}
           >
             Select This Universe →
@@ -325,7 +311,6 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
       }}>
         <div>
           <p style={{ fontSize: 120, fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, color: 'rgba(255,255,255,0.06)', margin: 0 }}>01</p>
-          <p style={{ fontSize: 10, color: '#888888', letterSpacing: '0.25em', textTransform: 'uppercase', margin: '0 0 16px' }}>THE PHILOSOPHY</p>
           <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontStyle: 'italic', fontSize: 48, color: '#FFFFFF', lineHeight: 1.2, margin: 0 }}>
             Restraint as a statement.
           </h2>
@@ -347,7 +332,6 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
 
       {/* SECTION 3: Asset Showcase */}
       <div style={{ background: '#0F0F0F', padding: '80px' }}>
-        <p style={{ fontSize: 10, color: '#888888', letterSpacing: '0.25em', textTransform: 'uppercase', textAlign: 'center', marginBottom: 16 }}>YOUR COMPLETE SUITE</p>
         <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 56, color: '#FFFFFF', textAlign: 'center', marginBottom: 64 }}>
           10 pieces. One vision.
         </h2>
@@ -373,7 +357,6 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
         <div style={{ backgroundImage: 'url(https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.4)' }} />
           <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-            <p style={{ fontSize: 10, color: '#FFFFFF', letterSpacing: '0.3em', textTransform: 'uppercase', margin: 0 }}>THE AMAN AESTHETIC</p>
             <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,0.5)', margin: '12px auto' }} />
             <p style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontStyle: 'italic', fontSize: 28, color: '#FFFFFF', margin: 0 }}>
               For those who believe the most powerful statement is silence.
@@ -386,7 +369,6 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
       {/* SECTION 5: Colour & Typography */}
       <div style={{ background: '#0A0A0A', padding: '120px 80px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, maxWidth: 1200, margin: '0 auto' }}>
         <div>
-          <p style={{ fontSize: 10, color: '#888888', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 24 }}>PALETTE</p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
             {[{ color: '#0A0A0A', label: 'Obsidian' }, { color: '#F8F7F5', label: 'Linen' }, { color: '#C4956A', label: 'Sand' }, { color: '#FFFFFF', label: 'Pure', border: true }].map(swatch => (
               <div key={swatch.label}>
@@ -398,7 +380,6 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>The AMAN palette speaks in whispers. Deep blacks, warm linens, touches of gold.</p>
         </div>
         <div>
-          <p style={{ fontSize: 10, color: '#888888', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 24 }}>TYPOGRAPHY</p>
           <div style={{ marginBottom: 24 }}>
             <p style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 48, color: '#FFFFFF', margin: 0 }}>Cormorant Garamond</p>
             <p style={{ fontSize: 11, color: '#888888', letterSpacing: '0.15em', marginTop: 8 }}>Light 300 · Uppercase · Tracked</p>
@@ -412,7 +393,6 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
 
       {/* SECTION 6: Final CTA */}
       <div style={{ padding: '160px 80px', textAlign: 'center' }}>
-        <p style={{ fontSize: 11, color: '#888888', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 16 }}>
           {loaded ? coupleName : 'AMAN UNIVERSE'}
         </p>
         <h2 style={{
@@ -437,7 +417,6 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
             background: 'linear-gradient(135deg, #E03553, #803D81)',
             color: '#FFFFFF', border: 'none',
             padding: '16px 48px', fontSize: 12, fontWeight: 600,
-            letterSpacing: '0.15em', textTransform: 'uppercase',
             cursor: (selectState !== 'idle' && !isOnboarding) ? 'default' : 'pointer',
             transition: 'all 0.3s ease', minWidth: 300,
           }}

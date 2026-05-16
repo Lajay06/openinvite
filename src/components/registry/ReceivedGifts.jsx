@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 const ReceivedGift = base44.entities.ReceivedGift;
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
@@ -312,7 +312,6 @@ export default function ReceivedGifts() {
                       {gift.giver_email && <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{gift.giver_email}</p>}
                     </td>
                     <td style={{ padding: '12px 16px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: dc.color, background: dc.bg, padding: '3px 10px', borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif", textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         <DcIcon size={11} />{dc.label}
                       </span>
                     </td>

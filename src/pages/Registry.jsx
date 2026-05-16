@@ -18,7 +18,7 @@ import ReceivedGifts from '../components/registry/ReceivedGifts';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };

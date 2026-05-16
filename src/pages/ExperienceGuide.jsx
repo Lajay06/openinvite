@@ -129,7 +129,6 @@ export default function ExperienceGuidePage() {
         <div key={cat.key} id={`category-${cat.key}`} style={{ padding: '60px 0', borderTop: idx > 0 ? '1px solid #F0F0F0' : 'none' }}>
           <div style={{ padding: '0 24px', marginBottom: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
             <div>
-              <p style={{ fontSize: 10, color: '#888', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Plus Jakarta Sans' }}>
                 {String(idx + 1).padStart(2, '0')}
               </p>
               <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(28px, 6vw, 40px)', color: '#0A0A0A', margin: 0 }}>
@@ -149,7 +148,6 @@ export default function ExperienceGuidePage() {
 
       {/* Footer */}
       <div style={{ padding: '60px 24px', background: '#0A0A0A', textAlign: 'center' }}>
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>
           {details.couple1Name} & {details.couple2Name}
         </p>
         <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', padding: '12px 24px', border: '1px solid rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 12, fontWeight: 700, fontFamily: 'Plus Jakarta Sans', letterSpacing: '0.1em' }}>
@@ -175,10 +173,8 @@ function ExperienceGuideHero({ guide, details, city }) {
       
       {/* Content */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 24px 60px' }}>
-        <p style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 12, fontFamily: 'Plus Jakarta Sans' }}>
           {details?.couple1Name} & {details?.couple2Name} · Guest Guide
         </p>
-        <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(48px, 13vw, 96px)', color: '#FFFFFF', letterSpacing: '0.05em', lineHeight: 1, margin: '0 0 16px', textTransform: 'uppercase' }}>
           {city}
         </h1>
         {guide?.editorialIntro && (
@@ -201,7 +197,6 @@ function ExperienceGuideHero({ guide, details, city }) {
       
       {/* Scroll indicator */}
       <div style={{ position: 'absolute', bottom: 24, right: 24, display: 'none', '@media (min-width: 768px)': { display: 'block' } }}>
-        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em', textTransform: 'uppercase', writingMode: 'vertical-rl', transform: 'rotate(180deg)', fontFamily: 'Plus Jakarta Sans' }}>Scroll to explore</p>
       </div>
     </div>
   );
@@ -211,7 +206,6 @@ function CouplePicks({ picks, details }) {
   return (
     <div style={{ padding: '60px 0 40px' }}>
       <div style={{ padding: '0 24px', marginBottom: 24 }}>
-        <p style={{ fontSize: 10, color: '#888', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Plus Jakarta Sans' }}>
           {details?.couple1Name} & {details?.couple2Name}
         </p>
         <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 32, color: '#0A0A0A', margin: 0 }}>

@@ -4,7 +4,6 @@ import { ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react';
 function Input({ label, value, onChange, type = 'text', placeholder = '' }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      {label && <label style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#888', display: 'block', marginBottom: 6, fontWeight: 600 }}>{label}</label>}
       <input
         type={type}
         value={value || ''}
@@ -25,7 +24,6 @@ function Input({ label, value, onChange, type = 'text', placeholder = '' }) {
 function Textarea({ label, value, onChange, rows = 3, placeholder = '' }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      {label && <label style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#888', display: 'block', marginBottom: 6, fontWeight: 600 }}>{label}</label>}
       <textarea
         value={value || ''}
         onChange={e => onChange(e.target.value)}
@@ -76,7 +74,6 @@ function Accordion({ title, children, defaultOpen = false }) {
           padding: '14px 0', background: 'transparent', border: 'none', cursor: 'pointer'
         }}
       >
-        <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{title}</p>
         {open ? <ChevronDown size={14} color="#888" /> : <ChevronRight size={14} color="#888" />}
       </button>
       {open && <div style={{ paddingBottom: 16 }}>{children}</div>}
@@ -136,14 +133,12 @@ export default function StudioContentTab({ wedding, onChange }) {
       </Accordion>
 
       <Accordion title="Ceremony & Reception">
-        <p style={{ fontSize: 11, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Ceremony</p>
         <Input label="Venue Name" value={W.mainCeremony?.venueName} onChange={v => updateNested('mainCeremony', 'venueName', v)} />
         <Input label="Address" value={W.mainCeremony?.address} onChange={v => updateNested('mainCeremony', 'address', v)} />
         <Input label="Start Time" value={W.mainCeremony?.startTime} onChange={v => updateNested('mainCeremony', 'startTime', v)} type="time" />
         <Input label="Dress Code" value={W.mainCeremony?.dressCode} onChange={v => updateNested('mainCeremony', 'dressCode', v)} />
         <Textarea label="Notes" value={W.mainCeremony?.notes} onChange={v => updateNested('mainCeremony', 'notes', v)} rows={2} />
 
-        <p style={{ fontSize: 11, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12, marginTop: 8 }}>Reception</p>
         <Input label="Venue Name" value={W.reception?.venueName} onChange={v => updateNested('reception', 'venueName', v)} />
         <Input label="Address" value={W.reception?.address} onChange={v => updateNested('reception', 'address', v)} />
         <Input label="Start Time" value={W.reception?.startTime} onChange={v => updateNested('reception', 'startTime', v)} type="time" />
@@ -153,7 +148,6 @@ export default function StudioContentTab({ wedding, onChange }) {
       <Accordion title="RSVP Settings">
         <Input label="RSVP Deadline" value={W.rsvpContent?.rsvpDeadline} onChange={v => updateNested('rsvpContent', 'rsvpDeadline', v)} type="date" />
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#888', display: 'block', marginBottom: 8, fontWeight: 600 }}>Meal Options</label>
           <TagList
             items={W.rsvpContent?.mealOptions || []}
             onAdd={item => updateNested('rsvpContent', 'mealOptions', [...(W.rsvpContent?.mealOptions || []), item])}
@@ -204,7 +198,6 @@ export default function StudioContentTab({ wedding, onChange }) {
         ))}
         <button
           onClick={() => onChange('qna', [...(W.qna || []), { question: '', answer: '' }])}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#888', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}
         >
           <Plus size={12} /> Add FAQ
         </button>

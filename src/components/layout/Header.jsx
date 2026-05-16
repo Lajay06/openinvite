@@ -124,7 +124,6 @@ export default function Header({ weddingName }) {
                     <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0 }}>{r.title}</p>
                     {r.sub && <p style={{ fontSize: 11, color: '#444444', margin: 0 }}>{r.sub}</p>}
                   </div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{r.type}</span>
                 </div>
               </React.Fragment>
             ))}

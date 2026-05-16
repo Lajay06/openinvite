@@ -39,7 +39,6 @@ export default function StudioSettingsTab({ wedding, onChange, existingId }) {
 
       {/* URL */}
       <div>
-        <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#AAAAAA', marginBottom: 12 }}>Your Website URL</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FAFAFA', border: '1px solid #EEEEEE', padding: '8px 12px', marginBottom: 8 }}>
           <span style={{ fontSize: 12, color: '#888', flexShrink: 0 }}>{window.location.origin}/w/</span>
           <input
@@ -54,7 +53,6 @@ export default function StudioSettingsTab({ wedding, onChange, existingId }) {
 
       {/* Status */}
       <div>
-        <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#AAAAAA', marginBottom: 12 }}>Website Status</p>
         <div
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -90,7 +88,6 @@ export default function StudioSettingsTab({ wedding, onChange, existingId }) {
 
       {/* Password */}
       <div>
-        <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#AAAAAA', marginBottom: 12 }}>Password Protection</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <p style={{ fontSize: 13, color: '#0A0A0A', margin: 0 }}>Require password to view</p>
           <button
@@ -124,14 +121,12 @@ export default function StudioSettingsTab({ wedding, onChange, existingId }) {
 
       {/* Share */}
       <div>
-        <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#AAAAAA', marginBottom: 12 }}>Share Your Website</p>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button
             onClick={copyLink}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '9px 16px', border: '1px solid #0A0A0A', background: 'transparent',
-              cursor: 'pointer', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase'
             }}
           >
             {copied ? <Check size={12} /> : <Copy size={12} />}
@@ -142,7 +137,6 @@ export default function StudioSettingsTab({ wedding, onChange, existingId }) {
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '9px 16px', border: '1px solid #25D366', background: '#25D366',
-              cursor: 'pointer', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff'
             }}
           >
             <Share2 size={12} /> WhatsApp
@@ -155,13 +149,11 @@ export default function StudioSettingsTab({ wedding, onChange, existingId }) {
 
       {/* Danger zone */}
       <div style={{ borderTop: '1px solid #EEEEEE', paddingTop: 24 }}>
-        <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#E03553', marginBottom: 12 }}>Danger Zone</p>
         <button
           onClick={handleReset}
           style={{
             padding: '9px 20px', border: '1px solid #E03553', background: 'transparent',
             color: '#E03553', cursor: 'pointer', fontSize: 11, fontWeight: 700,
-            letterSpacing: '0.1em', textTransform: 'uppercase'
           }}
         >
           Reset Website Content

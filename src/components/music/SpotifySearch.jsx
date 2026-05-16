@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Loader2, Plus, Play, Pause, X } from 'lucide-react';
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };

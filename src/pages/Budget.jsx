@@ -37,7 +37,6 @@ function FilterPill({ label, active, onClick }) {
   return (
     <button onClick={onClick}
       style={{
-        fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
         fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '5px 12px', borderRadius: 999,
         border: active ? '1px solid #0A0A0A' : '1px solid rgba(10,10,10,0.18)',
         background: active ? '#0A0A0A' : hovered ? 'rgba(10,10,10,0.04)' : 'transparent',
@@ -50,7 +49,6 @@ function FilterPill({ label, active, onClick }) {
 }
 
 const statLabelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
   color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, marginBottom: 10,
 };
 const statValueStyle = {
@@ -113,7 +111,6 @@ function BudgetPlanner() {
   return (
     <div style={{ marginBottom: 32, border: '1px solid rgba(10,10,10,0.08)', padding: '24px 32px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Budget planner</span>
         <button onClick={save} className="btn-primary" style={{ padding: '7px 20px', fontSize: 13 }}>
           {saved ? 'Saved ✓' : 'Save plan'}
         </button>
@@ -121,7 +118,6 @@ function BudgetPlanner() {
 
       {/* Total budget input */}
       <div style={{ marginBottom: 24, maxWidth: 320 }}>
-        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6 }}>
           Total wedding budget ($)
         </label>
         <input
@@ -139,7 +135,6 @@ function BudgetPlanner() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px 32px' }}>
         {BUDGET_CATEGORIES.map(cat => (
           <div key={cat.key}>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6 }}>
               {cat.label}
             </label>
             <input

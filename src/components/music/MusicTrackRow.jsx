@@ -47,7 +47,6 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.song_title}</span>
           {item.guest_suggestion && (
-            <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '1px 6px', background: 'rgba(224,53,83,0.15)', color: '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Guest pick</span>
           )}
         </div>
         <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

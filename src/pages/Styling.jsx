@@ -197,7 +197,6 @@ export default function StylingPage() {
             <Accordion type="multiple" defaultValue={["dress-code"]} className="w-full space-y-4">
               <DetailsSection title="Dress Code" icon={Palette} sectionKey="dress-code" onSave={() => handleSectionSave('attire')} isSaving={isSaving}>
                 <div>
-                  <Label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', marginBottom: 6, display: 'block', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Dress Code</Label>
                   <Select
                     value={isCustomDressCode ? 'Other' : details.attire?.dressCode}
                     onValueChange={handleDressCodeSelect}
@@ -214,7 +213,6 @@ export default function StylingPage() {
 
                 {isCustomDressCode && (
                   <div>
-                    <Label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', marginBottom: 6, display: 'block', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Custom Dress Code</Label>
                     <Input
                       value={details.attire?.dressCode}
                       onChange={(e) => handleUpdate('attire', 'dressCode', e.target.value)}
@@ -240,7 +238,6 @@ export default function StylingPage() {
             <Accordion type="multiple" defaultValue={["florist"]} className="w-full space-y-4">
               <DetailsSection title="Florist" icon={User} sectionKey="florist" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
                 <div>
-                  <Label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', marginBottom: 6, display: 'block', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Florist</Label>
                   {floristVendors.length > 0 ? (
                     <div className="flex gap-2">
                       <Select
@@ -353,7 +350,6 @@ export default function StylingPage() {
             <Accordion type="multiple" defaultValue={["decorator"]} className="w-full space-y-4">
               <DetailsSection title="Decorator / Designer" icon={User} sectionKey="decorator" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>
                 <div>
-                  <Label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', marginBottom: 6, display: 'block', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Decorator / Designer</Label>
                   {decorationVendors.length > 0 ? (
                     <div className="flex gap-2">
                       <Select

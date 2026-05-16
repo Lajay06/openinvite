@@ -27,7 +27,6 @@ const fmt = n => `$${Math.round(n).toLocaleString()}`;
 const bodyFont = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
   color: 'rgba(10,10,10,0.4)', ...bodyFont, margin: 0,
 };
 
@@ -336,7 +335,6 @@ Be concise, specific, and use dollar figures.`,
               <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', ...bodyFont }}>Risk flags</p>
               <p style={{ fontSize: 11, color: '#444444', margin: 0, ...bodyFont }}>vs. industry benchmarks & your budget</p>
             </div>
-            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: flags.length > 0 ? '#E03553' : '#444444', ...bodyFont }}>
               {flags.length} flagged
             </span>
           </div>
@@ -359,7 +357,6 @@ Be concise, specific, and use dollar figures.`,
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#0A0A0A', ...bodyFont }}>{flag.label}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: flag.severity === 'high' ? '#E03553' : '#6b7700', ...bodyFont, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       <AlertTriangle size={10} />
                       {flag.severity === 'high' ? 'Over budget' : 'Above benchmark'}
                     </span>

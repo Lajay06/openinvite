@@ -22,10 +22,8 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
     }}>
       {/* Confirmation */}
       <div style={{ textAlign: 'center', marginBottom: 56 }}>
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 16 }}>
           {universe.name} Universe selected
         </p>
-        <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(36px, 5vw, 64px)', color: '#FFFFFF', letterSpacing: '0.1em', margin: '0 0 12px', textTransform: 'uppercase' }}>
           {universe.name}
         </h2>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>
@@ -50,7 +48,6 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, margin: '0 0 20px' }}>
             Let Ava guide you one step at a time. Personal, focused, no overwhelm.
           </p>
-          <p style={{ fontSize: 11, color: '#E03553', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Recommended →</p>
         </div>
 
         {/* Website Builder */}
@@ -69,7 +66,6 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, margin: '0 0 20px' }}>
             Full creative control. Edit every section, page, and asset yourself.
           </p>
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Advanced →</p>
         </div>
       </div>
 

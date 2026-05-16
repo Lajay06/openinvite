@@ -83,7 +83,6 @@ export default function OnboardingPathAVendors({ onNext, data }) {
         >
           {selected.map((type, i) => (
             <div key={type} className="bg-[#111111] border border-[#333] rounded-none p-4">
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', marginBottom: 12, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{type}</p>
               <input
                 type="text"
                 placeholder="Vendor name"
@@ -117,7 +116,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
       >
         <button
           onClick={handleSubmit}
-          className="px-8 py-3 rounded-full text-white text-sm font-medium uppercase tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+          className="px-8 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
         >
           Continue →
         </button>

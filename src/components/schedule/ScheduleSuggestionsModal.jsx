@@ -18,11 +18,10 @@ const CATEGORY_CONFIG = {
 const pillBase = {
   display: 'inline-block', fontFamily: "'Plus Jakarta Sans', sans-serif",
   fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-  textTransform: 'uppercase', padding: '3px 9px', borderRadius: 999, whiteSpace: 'nowrap',
 };
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0,
 };

@@ -85,7 +85,6 @@ const sectionLabelStyle = {
   fontSize: 11,
   fontWeight: 700,
   color: "rgba(10,10,10,0.4)",
-  textTransform: "uppercase",
   letterSpacing: "0.08em",
   padding: "0 16px",
   marginTop: 24,

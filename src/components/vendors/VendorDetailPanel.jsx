@@ -11,7 +11,6 @@ const VendorLog = base44.entities.VendorLog;
 const VendorTask = base44.entities.VendorTask;
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
   color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif",
   display: 'block', marginBottom: 6,
 };
@@ -112,13 +111,11 @@ export default function VendorDetailPanel({ vendor, onClose }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{vendor.name}</span>
               <span style={{
-                fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
                 fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '2px 8px', borderRadius: 999,
                 border: '1px solid rgba(10,10,10,0.2)', color: '#444444',
               }}>{vendor.category}</span>
               {vendor.status === 'booked' && (
                 <span style={{
-                  fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
                   fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '2px 8px', borderRadius: 999,
                   background: '#DDF762', color: '#0A1930', border: 'none',
                 }}>Booked</span>
@@ -164,7 +161,6 @@ export default function VendorDetailPanel({ vendor, onClose }) {
               onClick={() => setTab(key)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px',
-                fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
                 fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none',
                 borderBottom: tab === key ? '2px solid #E03553' : '2px solid transparent',
                 color: tab === key ? '#0A0A0A' : '#444444', cursor: 'pointer',
@@ -254,7 +250,6 @@ export default function VendorDetailPanel({ vendor, onClose }) {
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
                 <label style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
-                  fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
                   fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '7px 16px', borderRadius: 999,
                   background: 'rgba(10,10,10,0.08)', color: '#0A0A0A', cursor: 'pointer',
                   opacity: uploadingDoc ? 0.5 : 1, pointerEvents: uploadingDoc ? 'none' : 'auto',
@@ -307,7 +302,6 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
                               {log.document_type && (
                                 <span style={{
-                                  fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
                                   fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '1px 7px', borderRadius: 999,
                                   border: '1px solid rgba(10,10,10,0.15)', color: '#444444',
                                 }}>{log.document_type}</span>
@@ -401,7 +395,6 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                             }}>{task.title}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 3 }}>
                               {task.priority && (
-                                <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: PRIORITY_COLORS[task.priority] }}>
                                   {task.priority}
                                 </span>
                               )}

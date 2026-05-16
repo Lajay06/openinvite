@@ -109,7 +109,6 @@ export default function ExperienceGuideTab({ details }) {
             <div>
               {/* Destination */}
               <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>DESTINATION</p>
                 <p style={{ fontSize: 13, color: '#0A0A0A', padding: '8px 0', borderBottom: '1px solid #EEE' }}>
                   {destination}
                 </p>
@@ -117,7 +116,6 @@ export default function ExperienceGuideTab({ details }) {
 
               {/* Hero Media */}
               <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>HERO PHOTO</p>
                 <input
                   type="text"
                   value={details?.experienceGuide?.heroPhotoUrl || ''}
@@ -130,7 +128,6 @@ export default function ExperienceGuideTab({ details }) {
               {/* Editorial Intro */}
               <div style={{ marginBottom: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', margin: 0 }}>EDITORIAL INTRO</p>
                   <button onClick={handleGenerateIntro} style={{ fontSize: 11, color: '#E03553', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>✦ Generate</button>
                 </div>
                 <textarea
@@ -144,7 +141,6 @@ export default function ExperienceGuideTab({ details }) {
 
               {/* Vibe Tags */}
               <div>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 12 }}>VIBE TAGS</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {VIBE_OPTIONS.map(vibe => {
                     const isActive = (details?.experienceGuide?.vibes || []).includes(vibe);
@@ -170,7 +166,6 @@ export default function ExperienceGuideTab({ details }) {
 
           {activeLeftTab === 'categories' && (
             <div>
-              <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 16 }}>CATEGORIES</p>
               {CATEGORIES.map(cat => {
                 const isEnabled = details?.experienceGuide?.categories?.[cat.key]?.enabled !== false;
                 return (
@@ -199,7 +194,6 @@ export default function ExperienceGuideTab({ details }) {
           {activeLeftTab === 'picks' && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', margin: 0 }}>COUPLE'S PICKS</p>
                 <button
                   onClick={() => setShowAddGemModal(true)}
                   style={{ fontSize: 11, color: '#E03553', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
@@ -235,14 +229,12 @@ export default function ExperienceGuideTab({ details }) {
           {activeLeftTab === 'publish' && (
             <div>
               <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 12 }}>PUBLISH STATUS</p>
                 <button
                   onClick={() => handleSaveField('published', !details?.experienceGuide?.published)}
                   style={{
                     width: '100%', padding: '14px 16px', borderRadius: 4, border: 'none',
                     background: details?.experienceGuide?.published ? '#E03553' : '#E0E0E0',
                     color: '#FFFFFF', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                    fontFamily: 'Plus Jakarta Sans', textTransform: 'uppercase', letterSpacing: '0.1em',
                   }}
                 >
                   {details?.experienceGuide?.published ? 'Published' : 'Hidden'}
@@ -257,7 +249,6 @@ export default function ExperienceGuideTab({ details }) {
                 style={{
                   width: '100%', padding: '14px 16px', border: '1px solid #E03553',
                   background: 'transparent', color: '#E03553', fontSize: 13, fontWeight: 700,
-                  cursor: 'pointer', fontFamily: 'Plus Jakarta Sans', textTransform: 'uppercase',
                   letterSpacing: '0.1em',
                 }}
               >
@@ -273,7 +264,6 @@ export default function ExperienceGuideTab({ details }) {
         <div style={{ maxWidth: 480, margin: '40px auto', background: '#FFFFFF', borderRadius: 8, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
           {/* Preview header */}
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Mobile Preview</p>
             <p style={{ fontSize: 11, color: '#888' }}>{details?.experienceGuide?.published ? 'Live' : 'Hidden'}</p>
           </div>
           
@@ -281,7 +271,6 @@ export default function ExperienceGuideTab({ details }) {
           <div style={{ height: 400, background: details?.experienceGuide?.heroPhotoUrl ? `url(${details.experienceGuide.heroPhotoUrl}) center/cover` : 'linear-gradient(135deg, #0A1930, #1A0A20)', position: 'relative' }}>
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
             <div style={{ position: 'absolute', bottom: 24, left: 24, right: 24 }}>
-              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 8 }}>Guest Guide</p>
               <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 32, color: '#FFFFFF', margin: 0 }}>{destination.split(',')[0] || 'Destination'}</h1>
             </div>
           </div>
@@ -326,17 +315,14 @@ function AddCustomGemModal({ onClose, onSave }) {
         
         <div style={{ padding: 24 }}>
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>Name</label>
             <input value={gem.name} onChange={(e) => setGem({ ...gem, name: e.target.value })} style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, fontFamily: 'Plus Jakarta Sans' }} />
           </div>
           
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>Address</label>
             <input value={gem.address} onChange={(e) => setGem({ ...gem, address: e.target.value })} style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, fontFamily: 'Plus Jakarta Sans' }} />
           </div>
           
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>Category</label>
             <select value={gem.category} onChange={(e) => setGem({ ...gem, category: e.target.value })} style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, fontFamily: 'Plus Jakarta Sans' }}>
               <option value="">Select category</option>
               {CATEGORIES.map(c => <option key={c.key} value={c.label}>{c.label}</option>)}
@@ -344,17 +330,14 @@ function AddCustomGemModal({ onClose, onSave }) {
           </div>
           
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>Photo URL</label>
             <input value={gem.photo} onChange={(e) => setGem({ ...gem, photo: e.target.value })} placeholder="https://..." style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, fontFamily: 'Plus Jakarta Sans' }} />
           </div>
           
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>Personal Note</label>
             <textarea value={gem.note} onChange={(e) => setGem({ ...gem, note: e.target.value })} rows={3} style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, fontFamily: 'Plus Jakarta Sans', resize: 'none' }} />
           </div>
           
           <div style={{ marginBottom: 24 }}>
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>Added By</label>
             <div style={{ display: 'flex', gap: 12 }}>
               {['Bride', 'Groom', 'Both'].map(who => (
                 <button
@@ -378,7 +361,6 @@ function AddCustomGemModal({ onClose, onSave }) {
             style={{
               width: '100%', padding: '14px', background: '#E03553', color: '#FFFFFF', border: 'none',
               fontSize: 13, fontWeight: 700, cursor: gem.name && gem.category ? 'pointer' : 'not-allowed',
-              fontFamily: 'Plus Jakarta Sans', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: gem.name && gem.category ? 1 : 0.5,
             }}
           >
             Save Custom Gem

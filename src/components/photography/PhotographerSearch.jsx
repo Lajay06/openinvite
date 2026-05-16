@@ -4,7 +4,7 @@ import { Search, MapPin, Star, Plus, Camera, Video, Award, Loader2 } from "lucid
 import { InvokeLLM } from '@/integrations/Core';
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
@@ -212,7 +212,6 @@ function ResultCard({ result, onAdd, topRated }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{result.name}</span>
               {topRated && (
-                <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: 'rgba(107,119,0,0.12)', color: '#6b7700', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Top rated</span>
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

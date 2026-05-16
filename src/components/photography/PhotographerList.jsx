@@ -51,10 +51,8 @@ export default function PhotographerList({ photographers, onEdit, onDelete }) {
                   <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{photographer.name}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif", ...statusStyle }}>
                     {STATUS_LABELS[photographer.status] || photographer.status}
                   </span>
-                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     {photographer.type === 'both' ? 'Photo & video' : photographer.type}
                   </span>
                   {photographer.rating && (
@@ -90,7 +88,6 @@ export default function PhotographerList({ photographers, onEdit, onDelete }) {
             {photographer.style && photographer.style.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
                 {photographer.style.map((s, idx) => (
-                  <span key={idx} style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     {s}
                   </span>
                 ))}
@@ -145,7 +142,6 @@ export default function PhotographerList({ photographers, onEdit, onDelete }) {
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#6b7700', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     <DollarSign size={11} />${photographer.quoted_price.toLocaleString()}
                     {photographer.deposit_paid && (
-                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: 'rgba(107,119,0,0.15)', color: '#6b7700', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                         Deposit paid
                       </span>
                     )}

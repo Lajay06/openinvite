@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 const RSVP_COLORS = { Attending: '#22c55e', Declined: '#E03553', Maybe: '#803D81', Pending: 'rgba(10,10,10,0.2)' };
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
@@ -44,7 +44,6 @@ export default function RSVPChart({ guests }) {
         <div style={{ height: 160, marginBottom: 24 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rsvpData} barSize={28}>
-              <XAxis dataKey="name" tick={{ fontSize: 11, fontFamily: "'Plus Jakarta Sans', sans-serif", fill: 'rgba(10,10,10,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: '#F5F5F5' }} />
               <Bar dataKey="value" fill="#0A0A0A" radius={0} />

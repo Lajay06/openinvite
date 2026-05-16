@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Edit3, Trash2, Heart, ExternalLink, Eye, X, Save, Image as ImageIcon } from 'lucide-react';
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
@@ -53,7 +53,6 @@ function MoodboardCard({ item, size, onDelete, onUpdate }) {
         {/* Hover overlay */}
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', opacity: hovered ? 1 : 0, transition: 'opacity 0.25s', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 12 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: cat.bg, color: cat.color, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {item.category}
             </span>
             <div style={{ display: 'flex', gap: 4 }}>
@@ -128,7 +127,6 @@ function MoodboardCard({ item, size, onDelete, onUpdate }) {
                 <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", flex: 1, margin: 0 }}>{item.title}</p>
                 <button onClick={() => setShowFull(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4, flexShrink: 0 }}><X size={16} /></button>
               </div>
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 10px', borderRadius: 999, background: cat.bg, color: cat.color, fontFamily: "'Plus Jakarta Sans', sans-serif", alignSelf: 'flex-start' }}>
                 {item.category}
               </span>
               {item.notes && <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.6 }}>{item.notes}</p>}

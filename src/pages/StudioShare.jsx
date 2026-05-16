@@ -165,7 +165,6 @@ export default function StudioShare() {
 
           {/* YOUR LINK */}
           <div style={{ border: '1px solid #EEEEEE', padding: 20, marginBottom: 16 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>YOUR WEDDING WEBSITE</p>
             <div style={{ display: 'flex', marginBottom: 12 }}>
               <div style={{ flex: 1, padding: '10px 12px', background: '#F8F8F8', fontSize: 12, color: '#444', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderBottom: '1px solid #DDD' }}>
                 openinvite.com/w/{details?.slug || 'your-wedding'}
@@ -190,7 +189,6 @@ export default function StudioShare() {
 
           {/* URL SETTINGS */}
           <div style={{ border: '1px solid #EEEEEE', padding: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' }}>WEBSITE SETTINGS</p>
             <p style={{ fontSize: 11, fontWeight: 600, color: '#888', margin: '0 0 6px' }}>Your URL</p>
             <div style={{ display: 'flex', border: '1px solid #DDD', marginBottom: 12 }}>
               <span style={{ padding: '8px 10px', background: '#F8F8F8', fontSize: 11, color: '#888', flexShrink: 0, fontFamily: 'monospace' }}>openinvite.com/w/</span>
@@ -219,7 +217,6 @@ export default function StudioShare() {
             <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px' }}>Email Your Guests</p>
             <p style={{ fontSize: 13, color: '#888', margin: '0 0 20px' }}>Send your wedding website directly to your guest list.</p>
 
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px' }}>SEND TO</p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
               {[
                 { label: 'All Guests', count: guests.length, action: () => setSelectedGuests(guests.map(g => g.id)) },
@@ -258,7 +255,6 @@ export default function StudioShare() {
               </div>
             </div>
 
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px' }}>EMAIL TYPE</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
               {[
                 { id: 'save-the-date', label: 'Save the Date', desc: 'First announcement' },
@@ -273,11 +269,9 @@ export default function StudioShare() {
               ))}
             </div>
 
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 6px' }}>SUBJECT</p>
             <input value={emailSubject} onChange={e => setEmailSubject(e.target.value)}
               style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 14, outline: 'none', marginBottom: 16, boxSizing: 'border-box', fontFamily: sans }} />
 
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 6px' }}>PERSONAL MESSAGE</p>
             <textarea value={emailMessage} onChange={e => setEmailMessage(e.target.value)} rows={5}
               style={{ width: '100%', border: '1px solid #EEEEEE', padding: '12px', fontSize: 14, outline: 'none', resize: 'vertical', fontFamily: sans, lineHeight: 1.6, marginBottom: 4, boxSizing: 'border-box' }} />
             <p style={{ fontSize: 11, color: '#AAAAAA', margin: '0 0 16px', fontFamily: sans }}>Tip: Use {'{guestName}'} to personalise each email automatically.</p>
@@ -289,7 +283,6 @@ export default function StudioShare() {
 
             {sentHistory.length > 0 && (
               <div style={{ marginTop: 16, borderTop: '1px solid #EEEEEE', paddingTop: 16 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px', fontFamily: sans }}>PREVIOUSLY SENT</p>
                 {sentHistory.map((send, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F5F5F5' }}>
                     <div>
@@ -307,7 +300,6 @@ export default function StudioShare() {
         <div style={{ width: 280, flexShrink: 0 }}>
           {/* QR CODE */}
           <div style={{ border: '1px solid #EEEEEE', padding: 20, marginBottom: 16, textAlign: 'center' }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px', fontFamily: sans }}>QR CODE</p>
             <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(siteUrl)}&color=0A0A0A&bgcolor=FFFFFF`} alt="QR Code" style={{ width: 160, height: 160, marginBottom: 12, display: 'block', margin: '0 auto 12px' }} />
             <p style={{ fontSize: 12, color: '#888', margin: '0 0 16px', fontFamily: 'monospace', wordBreak: 'break-all' }}>openinvite.com/w/{details?.slug || 'your-wedding'}</p>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -319,7 +311,6 @@ export default function StudioShare() {
 
           {/* PRIVACY */}
           <div style={{ border: '1px solid #EEEEEE', padding: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px', fontFamily: sans }}>PRIVACY</p>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div>
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: sans }}>Password Protection</p>

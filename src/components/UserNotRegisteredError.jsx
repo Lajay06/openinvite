@@ -26,7 +26,6 @@ export default function UserNotRegisteredError() {
         <hr className="border-[#222222] mb-8" />
 
         <div className="space-y-3">
-          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', marginBottom: 16 }}>What you can do</p>
           <ul className="space-y-2 text-[rgba(255,255,255,0.5)] text-sm">
             <li className="flex items-start gap-2">
               <span className="mt-1.5 w-1 h-1 flex-shrink-0 bg-[#E03553]" />

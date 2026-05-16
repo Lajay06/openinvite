@@ -147,7 +147,6 @@ export default function EmailTemplates({ guests }) {
     toast.success(`Sent to ${sent} guest${sent !== 1 ? 's' : ''}!`);
   };
 
-  const sectionLabel = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 10px', ...bodyFont };
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 24 }}>
@@ -226,7 +225,6 @@ export default function EmailTemplates({ guests }) {
         <div style={{ background: '#F5F5F5', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <p style={{ fontSize: 12, fontWeight: 600, color: '#444444', margin: 0, ...bodyFont }}>Send to guests matching:</p>
           <div>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', ...bodyFont }}>RSVP status</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {STATUS_FILTERS.map(({ val, label, activeStyle }) => {
                 const isActive = filterStatus.includes(val);
@@ -249,7 +247,6 @@ export default function EmailTemplates({ guests }) {
             </div>
           </div>
           <div>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', ...bodyFont }}>Category</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {Object.entries(CATEGORY_LABELS).map(([val, label]) => {
                 const isActive = filterCategories.includes(val);
@@ -305,7 +302,6 @@ export default function EmailTemplates({ guests }) {
             )}
           </div>
           <div>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', ...bodyFont }}>Subject</p>
             {editing ? (
               <input
                 style={{ width: '100%', fontSize: 13, fontWeight: 500, border: '0', borderBottom: '1px solid rgba(10,10,10,0.18)', padding: '6px 0', outline: 'none', background: 'transparent', ...bodyFont, boxSizing: 'border-box' }}
@@ -317,7 +313,6 @@ export default function EmailTemplates({ guests }) {
             )}
           </div>
           <div>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', ...bodyFont }}>Body</p>
             {editing ? (
               <textarea
                 style={{ width: '100%', fontSize: 12, border: '1px solid rgba(10,10,10,0.15)', padding: '8px 12px', height: 200, resize: 'none', fontFamily: 'monospace', lineHeight: 1.6, outline: 'none', borderRadius: 0, boxSizing: 'border-box' }}
@@ -363,11 +358,9 @@ export default function EmailTemplates({ guests }) {
             </div>
             <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ background: '#F5F5F5', padding: '10px 14px' }}>
-                <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', ...bodyFont }}>Subject</p>
                 <p style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', margin: 0, ...bodyFont }}>{applyVars(activeSubject, previewGuest)}</p>
               </div>
               <div style={{ background: '#F5F5F5', padding: '10px 14px', maxHeight: 280, overflowY: 'auto' }}>
-                <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', ...bodyFont }}>Body</p>
                 <pre style={{ fontSize: 12, color: '#444444', whiteSpace: 'pre-wrap', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.6, margin: 0 }}>{applyVars(activeBody, previewGuest)}</pre>
               </div>
             </div>

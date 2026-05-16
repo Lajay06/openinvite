@@ -112,7 +112,6 @@ export const LABELS = {
   fontSize: 11,
   fontWeight: 600,
   color: '#555555',
-  textTransform: 'uppercase',
   letterSpacing: '0.2em',
   marginBottom: 8,
   fontFamily: "'Plus Jakarta Sans', sans-serif",

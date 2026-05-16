@@ -81,7 +81,6 @@ function AssetEditorOverlay({ asset, details, onClose }) {
             </p>
           </div>
 
-          <p style={{ fontSize: 11, color: '#888', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>CUSTOM TEXT</p>
           <div style={{ marginBottom: 16 }}>
             <label style={{ fontSize: 12, color: '#555', fontWeight: 600, display: 'block', marginBottom: 6 }}>Subtitle / Tagline</label>
             <input
@@ -100,7 +99,6 @@ function AssetEditorOverlay({ asset, details, onClose }) {
             />
           </div>
 
-          <p style={{ fontSize: 11, color: '#888', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12 }}>LAYOUT</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 24 }}>
             {['Centered', 'Split', 'Minimal', 'Bold'].map(layout => (
               <button
@@ -142,7 +140,6 @@ export default function StudioAssetsTab({ details }) {
   return (
     <div style={{ padding: 24 }}>
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 6px' }}>GUEST SUITE ASSETS</p>
         <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your 10 Design Pieces</h2>
         <p style={{ fontSize: 14, color: '#888', margin: 0 }}>Every piece is personalised with your wedding details and designed in your chosen universe aesthetic.</p>
       </div>

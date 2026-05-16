@@ -3,7 +3,6 @@ import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, TRANSITION_OPTIONS, SCROLL_ANIMATI
 
 function SectionLabel({ children }) {
   return (
-    <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#888888', margin: '0 0 12px' }}>
       {children}
     </p>
   );

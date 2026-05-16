@@ -81,7 +81,6 @@ export default function PoliciesTab({ details }) {
     <div style={{ padding: 24, maxWidth: 760, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 8px' }}>POLICIES</p>
         <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Wedding Policies</h2>
         <p style={{ fontSize: 14, color: '#888', margin: 0 }}>Set clear expectations for your guests. These can be displayed on your wedding website and included in your Experience Guide.</p>
       </div>

@@ -10,7 +10,7 @@ import WhatsAppQRCode from "../components/messages/WhatsAppQRCode";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
@@ -210,11 +210,9 @@ export default function MessagesPage() {
                     <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {message.guest_name}
                     </span>
-                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: message.read ? 'rgba(10,10,10,0.06)' : 'rgba(224,53,83,0.1)', color: message.read ? '#444444' : '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {message.read ? 'Read' : 'New'}
                     </span>
                     {message.replied && (
-                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: 'rgba(107,119,0,0.1)', color: '#6b7700', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 3 }}>
                         <CheckCheck size={10} />Replied
                       </span>
                     )}

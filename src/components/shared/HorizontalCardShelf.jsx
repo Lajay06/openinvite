@@ -128,7 +128,6 @@ function ShelfCard({ card }) {
         display: "flex", flexDirection: "column", justifyContent: "center",
         padding: 32, maxWidth: 260,
       }}>
-        <p style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: card.accent, marginBottom: 8, fontWeight: 500 }}>
           {card.label}
         </p>
         <h3 style={{ color: "#FFF", fontWeight: 700, fontSize: 20, letterSpacing: "-0.01em", lineHeight: 1.2, marginBottom: 8 }}>

@@ -37,7 +37,7 @@ const fmt12 = (t) => {
 const HOUR_HEIGHT = 80;
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0,
 };
@@ -164,7 +164,6 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
         {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
           <span key={key} style={{
             display: 'inline-flex', alignItems: 'center', gap: 5,
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
             padding: '3px 9px', borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif",
             background: cfg.bg, color: cfg.text,
           }}>

@@ -36,7 +36,6 @@ function ComingSoonOverlay({ universe, onBack }) {
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 48, textAlign: 'center' }}>
         <img src={universe.photo} alt={universe.name} style={{ width: '100%', maxWidth: 400, height: 260, objectFit: 'cover', opacity: 0.2, marginBottom: 48 }} />
-        <p style={{ fontSize: 10, color: '#888888', letterSpacing: '0.3em', textTransform: 'uppercase', margin: '0 0 16px' }}>NO. {universe.number} / UNIVERSE</p>
         <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 300, fontSize: 'clamp(60px, 10vw, 100px)', color: '#FFFFFF', letterSpacing: '0.2em', margin: '0 0 16px', lineHeight: 1 }}>{universe.name}</h1>
         <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', fontSize: 20, color: 'rgba(255,255,255,0.4)', margin: '0 0 32px' }}>{universe.tagline}</p>
         <p style={{ fontSize: 14, color: '#888888', margin: '0 0 8px' }}>Coming Soon</p>
@@ -71,7 +70,6 @@ export default function OnboardingStepUniverse({ onNext, data }) {
         >
           <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #E03553, #803D81)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#FFF', flexShrink: 0, marginTop: 2 }}>✦</div>
           <div>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 6px' }}>Ava</p>
             <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, margin: 0, maxWidth: 560 }}>
               "Now let's choose the aesthetic for your entire wedding — your invitations, website, and every piece of design will follow this style."
             </p>
@@ -120,21 +118,18 @@ export default function OnboardingStepUniverse({ onNext, data }) {
                 {/* Coming soon badge */}
                 {!u.available && (
                   <div style={{ position: 'absolute', top: 12, right: 12, padding: '3px 8px', border: '1px solid rgba(255,255,255,0.2)' }}>
-                    <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700 }}>SOON</span>
                   </div>
                 )}
 
                 {/* Selected badge */}
                 {isSelected && (
                   <div style={{ position: 'absolute', top: 12, right: 12, padding: '3px 0' }}>
-                    <span style={{ fontSize: 9, color: '#FFFFFF', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600 }}>SELECTED</span>
                   </div>
                 )}
 
                 {/* Bottom info */}
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 16px 18px' }}>
                   <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 300, fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em', margin: '0 0 4px' }}>{u.number}</p>
-                  <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 300, fontSize: 32, color: '#FFFFFF', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 4px', lineHeight: 1 }}>{u.name}</p>
                   <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: 0, letterSpacing: '0.05em' }}>{u.tagline}</p>
                 </div>
               </div>
@@ -149,7 +144,6 @@ export default function OnboardingStepUniverse({ onNext, data }) {
           transition={{ delay: 0.3 }}
           style={{ marginTop: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}
         >
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em', textTransform: 'uppercase', margin: 0 }}>
             WEBSITE APPEARANCE
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -188,7 +182,6 @@ export default function OnboardingStepUniverse({ onNext, data }) {
               background: selectedUniverse ? 'linear-gradient(135deg, #E03553, #803D81)' : 'transparent',
               border: selectedUniverse ? 'none' : '1px solid rgba(255,255,255,0.25)',
               color: selectedUniverse ? '#FFFFFF' : 'rgba(255,255,255,0.35)',
-              fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase',
               cursor: selectedUniverse ? 'pointer' : 'default',
               fontFamily: 'Plus Jakarta Sans, sans-serif',
               transition: 'all 0.3s ease',

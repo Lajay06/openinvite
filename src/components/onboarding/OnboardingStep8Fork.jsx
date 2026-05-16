@@ -57,7 +57,7 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
               <span>✓</span> Upload inspiration photos
             </div>
           </div>
-          <div className="px-6 py-3 rounded-full text-white text-sm font-medium uppercase tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all inline-block">
+          <div className="px-6 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all inline-block">
             Let's do it →
           </div>
         </motion.button>
@@ -76,7 +76,7 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
           <p className="text-[#666666] text-xs mb-6">
             You can always add more later.
           </p>
-          <div className="px-6 py-3 rounded-full text-[#0A0A0A] text-sm font-medium uppercase tracking-widest bg-white hover:bg-gray-200 transition-all inline-block">
+          <div className="px-6 py-3 rounded-full text-[#0A0A0A] text-sm font-medium tracking-widest bg-white hover:bg-gray-200 transition-all inline-block">
             Let's go →
           </div>
         </motion.button>

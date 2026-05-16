@@ -60,7 +60,6 @@ export default function OnboardingStep5WeddingType({ onNext, data }) {
       >
         {allPills.map((group, gi) => (
           <div key={group.group} className="text-left">
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{group.group}</p>
             <div className="flex flex-wrap gap-2">
               {group.pills.map((pill, pi) => (
                 <motion.button
@@ -88,7 +87,7 @@ export default function OnboardingStep5WeddingType({ onNext, data }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={handleSubmit}
-          className="px-8 py-3 rounded-full text-white text-sm font-medium uppercase tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+          className="px-8 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
         >
           Continue →
         </motion.button>

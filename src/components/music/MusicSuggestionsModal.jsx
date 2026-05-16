@@ -4,7 +4,7 @@ import { InvokeLLM } from '@/integrations/Core';
 import { ThemeDetails } from '@/entities/ThemeDetails';
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
@@ -39,7 +39,6 @@ function SuggestionCard({ suggestion, onAdd }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{suggestion.song_title}</span>
-          <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '1px 8px', borderRadius: 999, background: `${color}18`, color, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {(suggestion.category || 'general').replace('_', ' ')}
           </span>
         </div>

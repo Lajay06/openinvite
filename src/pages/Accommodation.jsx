@@ -7,7 +7,7 @@ import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
@@ -341,7 +341,6 @@ export default function AccommodationPage() {
                     {property.address && <p style={{ margin: '0 0 6px', fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{property.address}</p>}
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {property.tags?.slice(0, 3).map(tag => (
-                        <span key={tag} style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{tag}</span>
                       ))}
                     </div>
                   </div>

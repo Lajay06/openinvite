@@ -19,7 +19,6 @@ const CATEGORY_CONFIG = {
 const pillBase = {
   display: 'inline-block', fontFamily: "'Plus Jakarta Sans', sans-serif",
   fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-  textTransform: 'uppercase', padding: '3px 9px', borderRadius: 999, whiteSpace: 'nowrap',
 };
 
 const fmtTime = (t) => {
@@ -59,14 +58,12 @@ export default function ScheduleTimeline({ items, onEdit, onDelete }) {
           {/* Date header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
             <span style={{
-              fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
               color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: 'nowrap',
             }}>
               {date === '__nodate__' ? 'No date set' : fmtDate(date)}
             </span>
             <div style={{ flex: 1, height: 1, background: 'rgba(10,10,10,0.08)' }} />
             <span style={{
-              fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
               color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}>
               {dateItems.length} {dateItems.length === 1 ? 'event' : 'events'}

@@ -67,7 +67,6 @@ function QuickLink({ label, url, isLast }) {
       <span style={{
         fontSize: 11,
         fontWeight: 700,
-        textTransform: 'uppercase',
         letterSpacing: '0.08em',
         color: hovered ? '#FFFFFF' : 'rgba(10,10,10,0.5)',
         fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -83,7 +82,6 @@ function QuickLink({ label, url, isLast }) {
 const statLabelStyle = {
   fontSize: 11,
   fontWeight: 700,
-  textTransform: 'uppercase',
   letterSpacing: '0.08em',
   color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",

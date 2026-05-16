@@ -73,7 +73,6 @@ export const shadow = {
 export const labelStyle = {
   fontSize: 11,
   fontWeight: 700,
-  textTransform: 'uppercase',
   letterSpacing: '0.08em',
   color: color.textMuted,
   fontFamily: font.family,

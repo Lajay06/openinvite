@@ -80,7 +80,6 @@ export default function VisualTable({ table, guests, onSeatClick, selected }) {
         zIndex: 2,
       }}>
         <span style={{
-          fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em',
           color: selected ? '#E03553' : '#0A0A0A',
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           textAlign: 'center', lineHeight: 1.3, padding: '0 8px', maxWidth: '100%',

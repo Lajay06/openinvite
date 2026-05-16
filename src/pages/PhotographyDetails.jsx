@@ -7,7 +7,6 @@ function SLabel({ children }) {
   return (
     <div style={{ marginTop: 32, marginBottom: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.15em', whiteSpace: 'nowrap' }}>{children}</span>
         <div style={{ flex: 1, height: 1, background: '#EEEEEE' }} />
       </div>
     </div>
@@ -18,7 +17,6 @@ function UInput({ label, value, onChange, placeholder = '' }) {
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom: 20 }}>
-      {label && <p style={{ fontSize: 11, fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{label}</p>}
       <input value={value || ''} onChange={onChange} placeholder={placeholder}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         style={{ width: '100%', border: 'none', borderBottom: `1px solid ${focused ? '#E03553' : '#DDDDDD'}`, background: 'transparent', padding: '8px 0', fontSize: 14, color: '#0A0A0A', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
@@ -31,7 +29,6 @@ function UTextarea({ label, value, onChange, placeholder = '', rows = 3 }) {
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom: 20 }}>
-      {label && <p style={{ fontSize: 11, fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{label}</p>}
       <textarea value={value || ''} onChange={onChange} placeholder={placeholder} rows={rows}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         style={{ width: '100%', border: 'none', borderBottom: '1px solid ' + (focused ? '#E03553' : '#DDDDDD'), background: 'transparent', padding: '8px 0', fontSize: 14, color: '#0A0A0A', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 0.2s', resize: 'vertical' }}
@@ -104,7 +101,6 @@ export default function PhotographyDetailsPage() {
           <UInput label="Email" value={data.photographerEmail} onChange={e => update({ photographerEmail: e.target.value })} />
           <UInput label="Website" value={data.photographerWebsite} onChange={e => update({ photographerWebsite: e.target.value })} placeholder="https://…" />
         </div>
-        <p style={{ fontSize: 11, fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>Style Preference</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
           {PHOTO_STYLES.map(s => {
             const sel = styles.includes(s);

@@ -18,7 +18,6 @@ const SHAPES = [
 ];
 
 const sectionLabel = {
-  display: 'block', fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
   letterSpacing: '0.1em', color: 'rgba(10,10,10,0.35)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
   padding: '10px 16px 4px',
@@ -53,7 +52,6 @@ export default function VenueAssetLibrary({ onAddTable, onAddAsset, onImportLayo
       {/* Header */}
       <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
         <LayoutGrid size={13} style={{ color: 'rgba(10,10,10,0.35)' }} />
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Layout items
         </span>
       </div>
@@ -92,7 +90,6 @@ export default function VenueAssetLibrary({ onAddTable, onAddAsset, onImportLayo
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             width: '100%', padding: '7px 0', borderRadius: 999,
             border: '1px solid rgba(10,10,10,0.15)',
-            fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
             fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#444444',
             cursor: uploadingImage ? 'not-allowed' : 'pointer',
             opacity: uploadingImage ? 0.5 : 1,

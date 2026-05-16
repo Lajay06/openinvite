@@ -52,7 +52,6 @@ function FilterPill({ label, active, onClick }) {
   return (
     <button onClick={onClick}
       style={{
-        fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
         fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '5px 12px', borderRadius: 999,
         border: active ? '1px solid #0A0A0A' : '1px solid rgba(10,10,10,0.18)',
         background: active ? '#0A0A0A' : hovered ? 'rgba(10,10,10,0.04)' : 'transparent',
@@ -64,7 +63,6 @@ function FilterPill({ label, active, onClick }) {
 }
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
   color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0,
 };
 
@@ -390,7 +388,6 @@ function VendorResultCard({ result, onAdd, onToggleCompare, inCompare, canCompar
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{result.name}</p>
               {result.recommended && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 999, background: '#DDF762', color: '#0A1930', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   <Award size={9} />Recommended
                 </span>
               )}

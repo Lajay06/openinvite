@@ -750,7 +750,6 @@ function ArticlePanel({ article, onClose }) {
       zIndex: 1000, padding: '32px 36px', overflowY: 'auto', boxSizing: 'border-box',
     }}>
       <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#888', marginBottom: 24, fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'block', padding: 0 }}>← Back to Help Centre</button>
-      <p style={{ fontSize: 11, color: '#888', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 12, fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 600, margin: '0 0 10px' }}>{article.category}</p>
       <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 4, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>{article.title}</h2>
       <p style={{ fontSize: 12, color: '#AAAAAA', marginBottom: 32, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 4 }}>{article.time}</p>
       <div style={{ fontSize: 15, color: '#333', lineHeight: 1.8, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>

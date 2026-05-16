@@ -115,7 +115,6 @@ export default function GuestTransport() {
       {/* Additional notes */}
       {transport.freeTextNotes && (
         <div style={{ padding: '32px 24px', background: '#FAFAFA', borderTop: '1px solid #EEEEEE' }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: '#888', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 12 }}>Additional Notes</p>
           <div style={{ fontSize: 14, color: '#444', lineHeight: 1.8 }}>
             {transport.freeTextNotes.split('\n').map((line, i) => (
               <p key={i} style={{ margin: '0 0 8px' }}>{line}</p>
@@ -126,7 +125,6 @@ export default function GuestTransport() {
 
       {/* Footer */}
       <div style={{ padding: '60px 24px', background: '#0A0A0A', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 16 }}>
           {details.couple1Name} & {details.couple2Name}
         </p>
         <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', padding: '12px 24px', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em' }}>
@@ -141,7 +139,6 @@ function TransportHero({ details }) {
   const ceremonyAddr = details?.mainCeremony?.address;
   return (
     <div style={{ padding: '60px 24px 40px', background: '#0A0A0A' }}>
-      <p style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: 12 }}>Getting Here</p>
       <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#FFFFFF', margin: '0 0 16px', lineHeight: 1.1 }}>
         How to Get There
       </h1>
@@ -158,7 +155,6 @@ function TransportHero({ details }) {
           <div key={loc.label} style={{ padding: '14px 18px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 12 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E03553" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 2px', fontWeight: 600 }}>{loc.label}{loc.time ? ` · ${loc.time}` : ''}</p>
               <p style={{ fontSize: 14, color: '#FFFFFF', margin: 0, fontWeight: 600 }}>{loc.name}</p>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', margin: 0 }}>{loc.address}</p>
             </div>
@@ -176,7 +172,6 @@ function ShuttleSection({ shuttles }) {
   if (!shuttles?.length) return null;
   return (
     <div style={{ padding: '40px 24px', background: '#0A0A0A', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-      <p style={{ fontSize: 10, fontWeight: 600, color: '#DDF762', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 8 }}>Arranged by the couple</p>
       <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#FFFFFF', margin: '0 0 24px' }}>
         Group Transport
       </h2>
@@ -194,7 +189,6 @@ function ShuttleSection({ shuttles }) {
               { label: 'Returns', value: shuttle.returnTime },
             ].filter(f => f.value).map(field => (
               <div key={field.label}>
-                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 2px', fontWeight: 600 }}>{field.label}</p>
                 <p style={{ fontSize: 14, color: '#FFFFFF', margin: 0 }}>{field.value}</p>
               </div>
             ))}
@@ -216,7 +210,6 @@ function ParkingSection({ parking }) {
   if (!parking) return null;
   return (
     <div style={{ padding: '40px 24px', borderBottom: '1px solid #EEEEEE' }}>
-      <p style={{ fontSize: 10, fontWeight: 600, color: '#888', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 8 }}>Parking</p>
       <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: '0 0 24px' }}>Where to Park</h2>
 
       {/* Venue parking */}
@@ -246,7 +239,6 @@ function ParkingSection({ parking }) {
 
       {parking.streetParking && (
         <div style={{ padding: '12px 16px', background: '#FAFAFA', border: '1px solid #EEEEEE', marginTop: 12 }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Street Parking</p>
           <p style={{ fontSize: 13, color: '#555', margin: 0, lineHeight: 1.5 }}>{parking.streetParking}</p>
         </div>
       )}
@@ -259,7 +251,6 @@ function PublicTransportSection({ publicTransport }) {
   const icons = { train: '🚆', bus: '🚌', tram: '🚃', metro: '🚇' };
   return (
     <div style={{ padding: '40px 24px', borderBottom: '1px solid #EEEEEE' }}>
-      <p style={{ fontSize: 10, fontWeight: 600, color: '#888', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 8 }}>Public Transport</p>
       <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: '0 0 24px' }}>By Train, Bus & Tram</h2>
 
       {publicTransport.routes.map((route, i) => (
@@ -292,12 +283,10 @@ function RideshareSection({ transport, venue }) {
 
   return (
     <div style={{ padding: '40px 24px', borderBottom: '1px solid #EEEEEE' }}>
-      <p style={{ fontSize: 10, fontWeight: 600, color: '#888', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 8 }}>Rideshare & Taxi</p>
       <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: '0 0 24px' }}>Get an Uber</h2>
 
       {rs?.pickupLocation && (
         <div style={{ padding: '12px 16px', background: '#FAFAFA', border: '1px solid #EEEEEE', marginBottom: 16 }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Best pickup spot</p>
           <p style={{ fontSize: 14, color: '#0A0A0A', margin: 0 }}>{rs.pickupLocation}</p>
         </div>
       )}

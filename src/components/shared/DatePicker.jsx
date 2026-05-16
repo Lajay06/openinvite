@@ -46,8 +46,6 @@ export default function DatePicker({ value, onChange, label, placeholder = 'Sele
   };
 
   const labelStyle = dark
-    ? { fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }
-    : { fontSize: 11, fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 };
 
   return (
     <div ref={ref} style={{ position: 'relative', marginBottom: 16 }}>

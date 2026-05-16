@@ -42,7 +42,6 @@ function Pill({ label, active, onClick }) {
     <button onClick={onClick}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
-        fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
         fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '4px 10px', borderRadius: 999,
         border: active ? '1px solid #0A0A0A' : '1px solid rgba(10,10,10,0.15)',
         background: active ? '#0A0A0A' : hov ? 'rgba(10,10,10,0.04)' : 'transparent',
@@ -52,7 +51,6 @@ function Pill({ label, active, onClick }) {
   );
 }
 
-const statLabel = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, marginBottom: 10 };
 const statValue = { fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 };
 
 const CANVAS_W = 1400;
@@ -366,7 +364,6 @@ export default function SeatingPage() {
             </button>
             <button
               onClick={() => setZoom(1)}
-              style={{ height: 28, padding: '0 10px', borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", textTransform: 'uppercase', letterSpacing: '0.07em' }}
             >
               <RotateCcw size={10} />Reset
             </button>
@@ -506,7 +503,6 @@ export default function SeatingPage() {
 
             {/* Panel header */}
             <div style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 8px' }}>Guests</p>
               <div style={{ display: 'flex', gap: 5 }}>
                 {['all', 'unassigned', 'assigned'].map(f => (
                   <Pill key={f} label={f} active={guestFilter === f} onClick={() => setGuestFilter(f)} />
@@ -517,7 +513,6 @@ export default function SeatingPage() {
             {/* Selected table banner */}
             {selectedTable && (
               <div style={{ padding: '8px 16px', background: 'rgba(224,53,83,0.05)', borderBottom: '1px solid rgba(224,53,83,0.12)', flexShrink: 0 }}>
-                <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
                   Assigning to: {selectedTable.name}
                 </p>
                 <p style={{ fontSize: 10, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>

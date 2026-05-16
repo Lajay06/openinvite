@@ -76,7 +76,6 @@ const labelStyle = {
   fontSize: 11,
   fontWeight: 700,
   color: "rgba(10,10,10,0.4)",
-  textTransform: "uppercase",
   letterSpacing: "0.08em",
   marginBottom: 6,
 };
@@ -155,7 +154,6 @@ export default function LoginScreen() {
             {/* Divider */}
             <motion.div variants={item} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
               <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.35)", whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.08em" }}>or</span>
               <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
             </motion.div>
 
