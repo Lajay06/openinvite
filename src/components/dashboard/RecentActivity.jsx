@@ -29,8 +29,8 @@ export default function RecentActivity({ guests, budget }) {
   };
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#fff' }}>
-      <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+    <div style={{ background: '#fff' }}>
+      <div style={{ padding: '4px 0 16px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <p style={labelStyle}>Recent activity</p>
       </div>
       <div>

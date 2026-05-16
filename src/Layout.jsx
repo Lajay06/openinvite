@@ -274,10 +274,10 @@ export default function Layout({ children, currentPageName }) {
           onClick={() => setChatOpen(prev => !prev)}
           style={{
             width: 56, height: 56, borderRadius: '50%',
-            background: chatOpen ? '#0A0A0A' : '#E03553',
+            background: chatOpen ? '#0A0A0A' : 'linear-gradient(135deg, #ec4899, #9333ea)',
             border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 8px 32px rgba(224,53,83,0.35)',
+            boxShadow: '0 8px 32px rgba(147,51,234,0.35)',
             transition: 'transform 0.2s ease, background 0.2s ease',
             color: '#FFFFFF',
           }}
