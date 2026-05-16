@@ -292,8 +292,15 @@ All new pages confirmed routed:
 - `/LiveStreaming` → LiveStreaming ✓
 
 **Build status**
-- `npm run build` fails due to `@base44/vite-plugin` not available locally (this is Base44 infrastructure, not a code issue)
+- Local build requires `BASE44_LEGACY_SDK_IMPORTS=true` env var — resolves `@/entities/*` imports via the Base44 vite plugin
 - `npx eslint src/` — zero errors in all files touched during design sweep; 80 pre-existing warnings in untouched files (home components, invitation previews, etc.)
+
+**Vercel deployment**
+- Production URL: https://openinvite-pearl.vercel.app
+- Project: `lajay06-5660s-projects/openinvite`
+- Auto-deploys on push to `main`
+- Build env: `BASE44_LEGACY_SDK_IMPORTS=true` (set in `vercel.json`)
+- GitHub auto-deploy not yet connected (needs Login Connection in Vercel dashboard)
 
 ---
 
