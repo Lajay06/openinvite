@@ -1,6 +1,15 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 
 const AuthContext = createContext();
+
+function clearAllAuth() {
+  localStorage.removeItem('oi_auth');
+  localStorage.removeItem('oi_user');
+  localStorage.removeItem('base44_access_token');
+  localStorage.removeItem('token');
+  localStorage.removeItem('oi_couple_name');
+}
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -14,30 +23,46 @@ export const AuthProvider = ({ children }) => {
     checkAppState();
   }, []);
 
-  const checkAppState = () => {
-    // localStorage-first auth — instant, no Base44 API calls
-    const localAuth = localStorage.getItem('oi_auth');
-    if (localAuth === '1') {
+  const checkAppState = async () => {
+    const token = localStorage.getItem('base44_access_token');
+
+    if (token) {
+      // Token present — validate it against Base44
       try {
-        const storedUser = JSON.parse(localStorage.getItem('oi_user') || '{}');
-        setUser(storedUser);
+        const me = await base44.auth.me();
+        localStorage.setItem('oi_auth', '1');
+        localStorage.setItem('oi_user', JSON.stringify(me));
+        setUser(me);
         setIsAuthenticated(true);
         setAuthError(null);
       } catch {
-        localStorage.removeItem('oi_auth');
-        localStorage.removeItem('oi_user');
+        // Token expired or invalid — clear everything and send to login
+        clearAllAuth();
+        setUser(null);
+        setIsAuthenticated(false);
         setAuthError({ type: 'auth_required', message: 'Session expired. Please sign in.' });
+        // Only redirect if not already on the login page
+        if (!window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login';
+        }
       }
     } else {
+      // No Base44 token — clear any stale local auth flags and remain unauthenticated
+      const staleLocalAuth = localStorage.getItem('oi_auth');
+      if (staleLocalAuth) {
+        clearAllAuth();
+      }
+      setUser(null);
+      setIsAuthenticated(false);
       setAuthError({ type: 'auth_required', message: 'Please sign in.' });
     }
+
     setIsLoadingPublicSettings(false);
     setIsLoadingAuth(false);
   };
 
   const logout = (shouldRedirect = true) => {
-    localStorage.removeItem('oi_auth');
-    localStorage.removeItem('oi_user');
+    clearAllAuth();
     setUser(null);
     setIsAuthenticated(false);
     setAuthError({ type: 'auth_required', message: 'Please sign in.' });

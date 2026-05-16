@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Guest } from "@/entities/Guest";
+import { base44 } from "@/api/base44Client";
+const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search } from "lucide-react";

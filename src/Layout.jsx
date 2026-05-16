@@ -95,6 +95,9 @@ function TopBar({ weddingName, onAccountSettings, unreadCount }) {
   const handleLogout = () => {
     localStorage.removeItem('oi_auth');
     localStorage.removeItem('oi_user');
+    localStorage.removeItem('base44_access_token');
+    localStorage.removeItem('token');
+    localStorage.removeItem('oi_couple_name');
     window.location.href = '/login';
   };
 

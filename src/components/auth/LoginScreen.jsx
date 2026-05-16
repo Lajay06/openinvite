@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { base44 } from "@/api/base44Client";
 
 const SLIDER_IMAGES = [
   "https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg",
@@ -86,22 +87,29 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSSO = () => {
-    // Treat SSO as demo login — set local auth and redirect
-    localStorage.setItem("oi_auth", "1");
-    localStorage.setItem("oi_user", JSON.stringify({ email: "user@openinvite.com" }));
-    window.location.href = "/Dashboard";
+  const handleGoogleLogin = () => {
+    base44.auth.loginWithProvider('google', window.location.origin + '/Dashboard');
   };
 
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e?.preventDefault();
     setError("");
     if (!email.trim()) { setError("Please enter your email address."); return; }
     if (!password.trim()) { setError("Please enter your password."); return; }
     setLoading(true);
-    localStorage.setItem("oi_auth", "1");
-    localStorage.setItem("oi_user", JSON.stringify({ email }));
-    window.location.href = "/Dashboard";
+    try {
+      const { access_token, user } = await base44.auth.loginViaEmailPassword(email, password);
+      // base44.auth.loginViaEmailPassword internally calls setToken(), which saves
+      // access_token to localStorage as 'base44_access_token'. We also set our
+      // app-level auth keys so AuthContext sees the session immediately.
+      localStorage.setItem('oi_auth', '1');
+      localStorage.setItem('oi_user', JSON.stringify(user || { email }));
+      // Full page reload so base44Client.js re-initialises with the token from localStorage
+      window.location.href = '/Dashboard';
+    } catch (err) {
+      setError(err?.message || 'Invalid email or password. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -137,10 +145,11 @@ export default function LoginScreen() {
             {/* Google SSO */}
             <motion.button
               variants={item}
-              onClick={handleSSO}
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 16px", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, background: "#FFFFFF", cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#0A0A0A", marginBottom: 20, boxSizing: "border-box", transition: "background 0.15s ease" }}
-              whileHover={{ background: "#FAFAFA" }}
-              whileTap={{ scale: 0.99 }}
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 16px", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, background: "#FFFFFF", cursor: loading ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600, color: "#0A0A0A", marginBottom: 20, boxSizing: "border-box", transition: "background 0.15s ease", opacity: loading ? 0.5 : 1 }}
+              whileHover={{ background: loading ? "#FFFFFF" : "#FAFAFA" }}
+              whileTap={{ scale: loading ? 1 : 0.99 }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -167,6 +176,7 @@ export default function LoginScreen() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   style={inputStyle}
+                  disabled={loading}
                   onFocus={e => (e.target.style.borderBottomColor = "#E03553")}
                   onBlur={e => (e.target.style.borderBottomColor = "rgba(10,10,10,0.18)")}
                 />
@@ -175,7 +185,7 @@ export default function LoginScreen() {
               <motion.div variants={item} style={{ marginBottom: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                   <label style={labelStyle}>Password</label>
-                  <button type="button" onClick={handleSSO} style={{ fontSize: 12, fontWeight: 500, color: "#E03553", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                  <button type="button" onClick={handleGoogleLogin} style={{ fontSize: 12, fontWeight: 500, color: "#E03553", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                     Forgot?
                   </button>
                 </div>
@@ -185,6 +195,7 @@ export default function LoginScreen() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   style={inputStyle}
+                  disabled={loading}
                   onFocus={e => (e.target.style.borderBottomColor = "#E03553")}
                   onBlur={e => (e.target.style.borderBottomColor = "rgba(10,10,10,0.18)")}
                 />
@@ -194,7 +205,7 @@ export default function LoginScreen() {
                 <motion.p
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  style={{ fontSize: 12, color: "#E03553", marginBottom: 12 }}
+                  style={{ fontSize: 12, color: "#E03553", marginBottom: 12, marginTop: 8 }}
                 >
                   {error}
                 </motion.p>
@@ -213,7 +224,7 @@ export default function LoginScreen() {
 
             <motion.p variants={item} style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.4)", lineHeight: 1.6 }}>
               Don't have an account?{" "}
-              <button onClick={handleSSO} style={{ color: "#E03553", background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 0 }}>
+              <button onClick={handleGoogleLogin} style={{ color: "#E03553", background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 0 }}>
                 Start for free
               </button>
             </motion.p>
