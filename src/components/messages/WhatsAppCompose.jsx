@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import { Invitation } from "@/entities/Invitation";
+import { base44 } from "@/api/base44Client";
+const Invitation = base44.entities.Invitation;
 
 const WHATSAPP_GREEN = "#25D366";
 

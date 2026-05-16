@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ThemeDetails } from "@/entities/ThemeDetails";
 import { 
   Heart, Users, Leaf, DollarSign, Lightbulb, Sparkles, CheckCircle,
   Feather, Gem, Brush, Landmark, Sprout, BookOpen, Globe, Palette, Loader2,
@@ -14,6 +13,8 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
+import { base44 } from "@/api/base44Client";
+const ThemeDetails = base44.entities.ThemeDetails;
 
 const weddingTypeGuides = {
   "Outdoor Garden": {

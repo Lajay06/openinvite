@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { WeddingDetails } from "@/entities/WeddingDetails";
 import { Button } from "@/components/ui/button";
 import { Accordion } from "@/components/ui/accordion";
 import { Shield, Baby, Users, Loader2, Camera, Wifi, Gift, Sparkles, Phone, Clock } from "lucide-react";
@@ -11,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import { InvokeLLM } from "@/integrations/Core";
+import { base44 } from "@/api/base44Client";
+const WeddingDetails = base44.entities.WeddingDetails;
 
 export default function PoliciesPage() {
   const [details, setDetails] = useState({

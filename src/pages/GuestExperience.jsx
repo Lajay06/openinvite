@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { WeddingDetails } from "@/entities/WeddingDetails";
-import { Invitation } from "@/entities/Invitation";
 import { MapPin, Hotel, Car, Camera, Utensils, Loader2, Brain, ClipboardList, Info, ArrowRight, Calendar, Users } from "lucide-react";
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -12,6 +10,9 @@ import RestaurantRecommendations from "../components/guest-experience/Restaurant
 import ItineraryPlanner from "../components/guest-experience/ItineraryPlanner";
 import LocalTips from "../components/guest-experience/LocalTips";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import { base44 } from "@/api/base44Client";
+const WeddingDetails = base44.entities.WeddingDetails;
+const Invitation = base44.entities.Invitation;
 
 const TABS = [
   { id: 'hotels', label: 'Hotels', icon: Hotel },

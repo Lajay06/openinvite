@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { WeddingDetails } from "@/entities/WeddingDetails";
-import { ThemeDetails } from "@/entities/ThemeDetails";
-import { Vendor } from "@/entities/Vendor";
 import { Button } from "@/components/ui/button";
 import { Accordion } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +14,10 @@ import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
 import AIStylingAssistant from "../components/styling/AIStylingAssistant";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import { base44 } from "@/api/base44Client";
+const WeddingDetails = base44.entities.WeddingDetails;
+const ThemeDetails = base44.entities.ThemeDetails;
+const Vendor = base44.entities.Vendor;
 
 const DRESS_CODES = ['Black Tie', 'Formal', 'Cocktail', 'Semi-Formal', 'Casual', 'Beach', 'Garden Party', 'Themed'];
 

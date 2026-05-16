@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Photographer } from "@/entities/Photographer";
-import { WeddingDetails } from "@/entities/WeddingDetails";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, Plus, Video, Image, Clock, Loader2 } from "lucide-react";
 import { createPageUrl } from "@/utils";
@@ -12,6 +10,9 @@ import PhotographerList from "../components/photography/PhotographerList";
 import PhotographerForm from "../components/photography/PhotographerForm";
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
+import { base44 } from "@/api/base44Client";
+const Photographer = base44.entities.Photographer;
+const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Schedule } from "@/entities/Schedule";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Sparkles } from "lucide-react";
@@ -12,6 +11,8 @@ import ScheduleAvaModal from "../components/schedule/ScheduleSuggestionsModal";
 import WeddingDayTimelineBuilder from "../components/schedule/WeddingDayTimelineBuilder";
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
+import { base44 } from "@/api/base44Client";
+const Schedule = base44.entities.Schedule;
 
 function CountUp({ to, duration = 1200, format }) {
   const [value, setValue] = useState(0);

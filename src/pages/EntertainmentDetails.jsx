@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { WeddingDetails } from "@/entities/WeddingDetails";
 import { InvokeLLM } from "@/integrations/Core";
 import { Lightbulb, Loader2, X, Search, FileText, Check, Music4, Mic2, Sparkles } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import { base44 } from "@/api/base44Client";
+const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Vendor } from "@/entities/Vendor";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Sparkles } from "lucide-react";
@@ -12,6 +11,8 @@ import VendorSearch from "../components/vendors/VendorSearch";
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import AIVendorAssistant from "../components/vendors/AIVendorAssistant";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
+import { base44 } from "@/api/base44Client";
+const Vendor = base44.entities.Vendor;
 
 function CountUp({ to, duration = 1200 }) {
   const [value, setValue] = useState(0);

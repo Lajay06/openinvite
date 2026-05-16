@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Invitation } from "@/entities/Invitation";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
+import { base44 } from "@/api/base44Client";
+const Invitation = base44.entities.Invitation;
 
 // This is now a simple, one-step builder to gather initial details.
 export default function InvitationBuilder({ onInvitationSaved, onBack }) {

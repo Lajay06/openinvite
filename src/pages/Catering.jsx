@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Vendor } from "@/entities/Vendor";
-import { WeddingDetails } from "@/entities/WeddingDetails";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,6 +14,9 @@ import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import VendorSearch from "../components/vendors/VendorSearch";
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
+import { base44 } from "@/api/base44Client";
+const Vendor = base44.entities.Vendor;
+const WeddingDetails = base44.entities.WeddingDetails;
 
 export default function CateringPage() {
   const [caterers, setCaterers] = useState([]);

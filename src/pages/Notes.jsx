@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Task } from "@/entities/Task";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Trash2, Edit3, Clock, X, Lightbulb, ListTodo, Loader2, CheckCircle2, Circle } from "lucide-react";
@@ -7,6 +6,8 @@ import { format } from "date-fns";
 import toast from 'react-hot-toast';
 import SuggestionsModal from "../components/notes/SuggestionsModal";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import { base44 } from "@/api/base44Client";
+const Task = base44.entities.Task;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,

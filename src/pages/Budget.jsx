@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Budget } from "@/entities/Budget";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Sparkles, X } from "lucide-react";
@@ -11,6 +10,8 @@ import BudgetChart from "../components/budget/BudgetChart";
 import BudgetForecasting from "../components/budget/BudgetForecasting";
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
+import { base44 } from "@/api/base44Client";
+const Budget = base44.entities.Budget;
 
 function CountUp({ to, duration = 1200, format }) {
   const [value, setValue] = useState(0);

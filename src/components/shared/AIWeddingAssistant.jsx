@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Sparkles, Send, X, User, Lightbulb, Calendar, DollarSign, Palette, Users, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { InvokeLLM } from "@/integrations/Core";
-import { Invitation } from "@/entities/Invitation";
-import { Guest } from "@/entities/Guest";
-import { WeddingDetails } from "@/entities/WeddingDetails";
+import { base44 } from "@/api/base44Client";
+const Invitation = base44.entities.Invitation;
+const Guest = base44.entities.Guest;
+const WeddingDetails = base44.entities.WeddingDetails;
 
 export default function AIWeddingAssistant() {
   const [isOpen, setIsOpen] = useState(false);

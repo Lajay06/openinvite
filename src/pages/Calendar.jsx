@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X, Download, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { Vendor } from "@/entities/Vendor";
-import { Schedule } from "@/entities/Schedule";
-import { WeddingDetails } from "@/entities/WeddingDetails";
-import { Invitation } from "@/entities/Invitation";
-import { Photographer } from "@/entities/Photographer";
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import { base44 } from "@/api/base44Client";
+const Vendor = base44.entities.Vendor;
+const Schedule = base44.entities.Schedule;
+const WeddingDetails = base44.entities.WeddingDetails;
+const Invitation = base44.entities.Invitation;
+const Photographer = base44.entities.Photographer;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,

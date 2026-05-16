@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { Guest } from "@/entities/Guest";
-import { Budget } from "@/entities/Budget";
-import { Schedule } from "@/entities/Schedule";
 import { X } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
@@ -14,6 +11,9 @@ import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import TipsModal from "../components/dashboard/TipsModal";
+const Guest = base44.entities.Guest;
+const Budget = base44.entities.Budget;
+const Schedule = base44.entities.Schedule;
 
 const QUICK_LINKS = [
   { label: "Guest list", url: "Guests" },

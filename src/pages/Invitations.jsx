@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Invitation } from "@/entities/Invitation";
-import { WeddingDetails } from "@/entities/WeddingDetails";
 import { Loader2 } from "lucide-react";
 import toast, { Toaster } from 'react-hot-toast';
 
 import InvitationStudio from "../components/invitations/InvitationStudio";
 import InvitationBuilder from "../components/invitations/InvitationBuilder";
+import { base44 } from "@/api/base44Client";
+const Invitation = base44.entities.Invitation;
+const WeddingDetails = base44.entities.WeddingDetails;
 
 export default function InvitationsPage() {
   const [invitation, setInvitation] = useState(null);
