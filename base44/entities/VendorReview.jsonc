@@ -1,0 +1,47 @@
+{
+  "name": "VendorReview",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the vendor being reviewed"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Rating out of 5 stars"
+    },
+    "review_text": {
+      "type": "string",
+      "description": "Written review content"
+    },
+    "reviewer_name": {
+      "type": "string",
+      "description": "Name of the reviewer"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the wedding/event"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Photo URLs from the event"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the review is verified"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "rating",
+    "review_text",
+    "reviewer_name"
+  ]
+}

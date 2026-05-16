@@ -1,0 +1,74 @@
+{
+  "name": "ReceivedGift",
+  "type": "object",
+  "properties": {
+    "item_name": {
+      "type": "string",
+      "description": "Name or description of the gift"
+    },
+    "giver_guest_id": {
+      "type": "string",
+      "description": "ID of the guest from the guest list"
+    },
+    "giver_name": {
+      "type": "string",
+      "description": "Name of the person who gave the gift (manual if not linked)"
+    },
+    "giver_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Giver's email"
+    },
+    "delivery_status": {
+      "type": "string",
+      "enum": [
+        "expected",
+        "received",
+        "not_received"
+      ],
+      "default": "expected",
+      "description": "Whether the gift has been physically received"
+    },
+    "received_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the gift was received"
+    },
+    "thank_you_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether a thank-you card/note has been sent"
+    },
+    "thank_you_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the thank-you was sent"
+    },
+    "thank_you_note": {
+      "type": "string",
+      "description": "The personalized thank-you message sent"
+    },
+    "estimated_value": {
+      "type": "number",
+      "description": "Approximate value of the gift"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "physical",
+        "cash",
+        "experience",
+        "digital",
+        "other"
+      ],
+      "default": "physical"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Any additional notes about this gift"
+    }
+  },
+  "required": [
+    "item_name"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "UserPayment",
+  "type": "object",
+  "properties": {
+    "stripe_payment_intent_id": {
+      "type": "string",
+      "description": "Stripe payment intent ID"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount paid"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd",
+      "description": "Payment currency"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "succeeded",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Payment status"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Product purchased"
+    }
+  },
+  "required": [
+    "amount",
+    "status"
+  ]
+}

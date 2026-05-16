@@ -1,0 +1,148 @@
+{
+  "name": "Invitation",
+  "type": "object",
+  "properties": {
+    "couple_names": {
+      "type": "string",
+      "description": "Names of the couple"
+    },
+    "wedding_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Wedding date"
+    },
+    "rsvp_deadline": {
+      "type": "string",
+      "format": "date",
+      "description": "RSVP deadline"
+    },
+    "custom_message": {
+      "type": "string",
+      "description": "A short, personal message from the couple, often used for SEO or summaries."
+    },
+    "personalized_messages": {
+      "type": "object",
+      "description": "Personalized welcome messages for guests by ID, category, RSVP status, or default",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "design": {
+      "type": "object",
+      "description": "The full design object for the multi-section invitation/website.",
+      "properties": {
+        "globalStyles": {
+          "type": "object",
+          "properties": {
+            "fontFamily": {
+              "type": "string"
+            },
+            "transitionType": {
+              "type": "string"
+            },
+            "scrollDirection": {
+              "type": "string"
+            },
+            "parallax": {
+              "type": "boolean"
+            },
+            "navStyles": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "glassmorphism": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "background": {
+                "type": "object"
+              },
+              "components": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "selectedSection": {
+          "type": "number"
+        },
+        "selectedElement": {
+          "type": "string"
+        }
+      }
+    },
+    "enabled_sections": {
+      "type": "object",
+      "description": "Which sections from WeddingDetails to show to guests",
+      "properties": {
+        "ceremony": {
+          "type": "boolean",
+          "default": true
+        },
+        "reception": {
+          "type": "boolean",
+          "default": true
+        },
+        "attire": {
+          "type": "boolean",
+          "default": true
+        },
+        "transportation": {
+          "type": "boolean",
+          "default": false
+        },
+        "accommodation": {
+          "type": "boolean",
+          "default": false
+        },
+        "gifts": {
+          "type": "boolean",
+          "default": false
+        },
+        "childrenPolicy": {
+          "type": "boolean",
+          "default": false
+        },
+        "plusOnePolicy": {
+          "type": "boolean",
+          "default": false
+        },
+        "contact": {
+          "type": "boolean",
+          "default": true
+        },
+        "preWeddingEvents": {
+          "type": "boolean",
+          "default": false
+        },
+        "postWeddingEvents": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  },
+  "required": [
+    "couple_names",
+    "wedding_date"
+  ]
+}

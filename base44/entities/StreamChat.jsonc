@@ -1,0 +1,28 @@
+{
+  "name": "StreamChat",
+  "type": "object",
+  "properties": {
+    "stream_id": {
+      "type": "string",
+      "description": "ID of the associated live stream"
+    },
+    "guest_name": {
+      "type": "string",
+      "description": "Name of the guest sending the message"
+    },
+    "message": {
+      "type": "string",
+      "description": "Chat message content"
+    },
+    "is_visible": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the message is visible (for moderation)"
+    }
+  },
+  "required": [
+    "stream_id",
+    "guest_name",
+    "message"
+  ]
+}

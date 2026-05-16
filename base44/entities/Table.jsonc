@@ -1,0 +1,56 @@
+{
+  "name": "Table",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name or number of the table (e.g., 'Table 1', 'Head Table')"
+    },
+    "capacity": {
+      "type": "number",
+      "description": "The maximum number of guests that can be seated at this table"
+    },
+    "shape": {
+      "type": "string",
+      "enum": [
+        "round",
+        "rectangle"
+      ],
+      "default": "round",
+      "description": "The shape of the table"
+    },
+    "x": {
+      "type": "number",
+      "description": "The x-coordinate position on the canvas"
+    },
+    "y": {
+      "type": "number",
+      "description": "The y-coordinate position on the canvas"
+    },
+    "rotation": {
+      "type": "number",
+      "default": 0,
+      "description": "The rotation of the table in degrees"
+    },
+    "assigned_guests": {
+      "type": "array",
+      "description": "List of guests assigned to specific seats at this table",
+      "items": {
+        "type": "object",
+        "properties": {
+          "seat_index": {
+            "type": "number"
+          },
+          "guest_id": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "capacity",
+    "shape"
+  ]
+}

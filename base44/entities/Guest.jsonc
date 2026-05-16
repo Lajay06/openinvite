@@ -1,0 +1,171 @@
+{
+  "name": "Guest",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Guest's full name"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Guest's email address"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Guest's phone number"
+    },
+    "profile_picture_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Profile picture URL from social media or manual upload"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "family",
+        "friends",
+        "colleagues",
+        "partners_family",
+        "partners_friends"
+      ],
+      "default": "family",
+      "description": "Relationship category"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Custom tags for organizing and smart seating (e.g., 'college friends', 'work team', 'family')"
+    },
+    "table_assignment": {
+      "type": "string",
+      "description": "Assigned table for reception"
+    },
+    "dietary_restrictions": {
+      "type": "string",
+      "description": "Any dietary requirements"
+    },
+    "rsvp_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "attending",
+        "declined",
+        "maybe"
+      ],
+      "default": "pending",
+      "description": "RSVP response status"
+    },
+    "rsvp_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When they responded"
+    },
+    "meal_choice": {
+      "type": "string",
+      "enum": [
+        "beef",
+        "chicken",
+        "fish",
+        "vegetarian",
+        "vegan",
+        "kids_meal"
+      ],
+      "description": "Main guest's meal selection"
+    },
+    "plus_one": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether guest can bring a plus one"
+    },
+    "plus_one_name": {
+      "type": "string",
+      "description": "Name of plus one if applicable"
+    },
+    "plus_one_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Plus one's email address"
+    },
+    "plus_one_rsvp": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "attending",
+        "declined"
+      ],
+      "description": "Plus one RSVP status"
+    },
+    "plus_one_meal_choice": {
+      "type": "string",
+      "enum": [
+        "beef",
+        "chicken",
+        "fish",
+        "vegetarian",
+        "vegan",
+        "kids_meal"
+      ],
+      "description": "Plus one's meal selection"
+    },
+    "plus_one_dietary_restrictions": {
+      "type": "string",
+      "description": "Plus one's dietary requirements"
+    },
+    "special_requests": {
+      "type": "string",
+      "description": "Special requests or needs (accessibility, seating preferences, etc.)"
+    },
+    "invitation_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether invitation has been sent"
+    },
+    "rsvp_link_id": {
+      "type": "string",
+      "description": "Unique ID for RSVP link"
+    },
+    "seating_preferences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of guest IDs they'd prefer to sit with"
+    },
+    "seating_avoid": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of guest IDs they'd prefer not to sit with"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about guest"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "nightlife",
+          "outdoor",
+          "culture",
+          "family_friendly",
+          "fine_dining",
+          "casual_dining",
+          "shopping",
+          "history",
+          "nature",
+          "adventure"
+        ]
+      },
+      "description": "Guest interests and preferences for personalized recommendations"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

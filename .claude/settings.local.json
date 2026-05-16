@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx vite *)",
+      "Bash(sed -i '' 's/rounded-xl p-6/rounded-none p-6/g; s/rounded-xl px-6/rounded-none px-6/g' /Users/urijay/Downloads/openinvite/src/components/onboarding/OnboardingPathABudget.jsx)",
+      "Bash(sed -i '' 's/rounded-xl p-4/rounded-none p-4/g; s/rounded-2xl p-12/rounded-none p-12/g' /Users/urijay/Downloads/openinvite/src/components/onboarding/OnboardingPathAGuestList.jsx)",
+      "Bash(sed -i '' 's/rounded-lg border-2/rounded-none border-2/g; s/rounded-lg p-4/rounded-none p-4/g' /Users/urijay/Downloads/openinvite/src/components/onboarding/OnboardingPathAVendors.jsx)",
+      "Bash(sed -i '' 's/rounded-lg p-4/rounded-none p-4/g' /Users/urijay/Downloads/openinvite/src/components/onboarding/OnboardingCompletion.jsx)",
+      "Bash(sed -i '' 's/rounded-2xl border-2/rounded-none border-2/g' /Users/urijay/Downloads/openinvite/src/components/onboarding/OnboardingStep4GuestCount.jsx)",
+      "Bash(sed -i '' 's/rounded-2xl bg-\\\\[#111111\\\\]/rounded-none bg-[#111111]/g' /Users/urijay/Downloads/openinvite/src/components/onboarding/OnboardingStep8Fork.jsx)",
+      "Bash(npx tsc *)",
+      "Bash(node *)",
+      "Bash(npx eslint *)",
+      "Bash(grep -E \"^/.*\\\\.jsx$\")",
+      "Bash(git add *)"
+    ]
+  }
+}

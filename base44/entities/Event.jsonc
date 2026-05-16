@@ -1,0 +1,27 @@
+{
+  "name": "Event",
+  "type": "object",
+  "properties": {
+    "couple_names": {
+      "type": "string",
+      "description": "The names of the couple for this event."
+    },
+    "wedding_date": {
+      "type": "string",
+      "format": "date",
+      "description": "The date of the wedding for this event."
+    },
+    "location": {
+      "type": "string",
+      "description": "The primary location or city for the event."
+    },
+    "image_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "A cover image for the event card."
+    }
+  },
+  "required": [
+    "couple_names"
+  ]
+}

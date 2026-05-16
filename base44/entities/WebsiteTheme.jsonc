@@ -1,0 +1,63 @@
+{
+  "name": "WebsiteTheme",
+  "type": "object",
+  "properties": {
+    "primary_color": {
+      "type": "string",
+      "default": "#ec4899",
+      "description": "Primary color (hex code)"
+    },
+    "secondary_color": {
+      "type": "string",
+      "default": "#8b5cf6",
+      "description": "Secondary color (hex code)"
+    },
+    "background_color": {
+      "type": "string",
+      "default": "#ffffff",
+      "description": "Background color"
+    },
+    "text_color": {
+      "type": "string",
+      "default": "#111827",
+      "description": "Primary text color"
+    },
+    "accent_color": {
+      "type": "string",
+      "default": "#f3f4f6",
+      "description": "Accent/section background color"
+    },
+    "font_family": {
+      "type": "string",
+      "enum": [
+        "Inter",
+        "Playfair Display",
+        "Montserrat",
+        "Lora",
+        "Raleway",
+        "Crimson Text"
+      ],
+      "default": "Inter",
+      "description": "Primary font family"
+    },
+    "heading_font": {
+      "type": "string",
+      "enum": [
+        "Inter",
+        "Playfair Display",
+        "Montserrat",
+        "Lora",
+        "Raleway",
+        "Crimson Text"
+      ],
+      "default": "Playfair Display",
+      "description": "Heading font family"
+    },
+    "hero_image_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Hero section background image"
+    }
+  },
+  "required": []
+}

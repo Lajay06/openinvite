@@ -1,0 +1,75 @@
+{
+  "name": "ThemeDetails",
+  "type": "object",
+  "properties": {
+    "vibes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The overall vibes of the wedding (e.g., romantic, modern, rustic)."
+    },
+    "is_religious": {
+      "type": "boolean",
+      "default": false,
+      "description": "Does the wedding have religious elements?"
+    },
+    "religious_details": {
+      "type": "string",
+      "enum": [
+        "Christian",
+        "Jewish",
+        "Muslim",
+        "Hindu",
+        "Buddhist",
+        "Sikh",
+        "Interfaith",
+        "Other"
+      ],
+      "description": "Specific religious tradition or ceremony type."
+    },
+    "is_cultural": {
+      "type": "boolean",
+      "default": false,
+      "description": "Does the wedding have specific cultural elements?"
+    },
+    "cultural_details": {
+      "type": "string",
+      "enum": [
+        "Indian",
+        "Chinese",
+        "Mexican",
+        "Italian",
+        "African",
+        "Irish",
+        "Greek",
+        "Korean",
+        "Japanese",
+        "Latin American",
+        "Middle Eastern",
+        "Other"
+      ],
+      "description": "Specific cultural traditions to incorporate."
+    },
+    "season": {
+      "type": "string",
+      "enum": [
+        "Spring",
+        "Summer",
+        "Autumn",
+        "Winter"
+      ],
+      "description": "The season of the wedding."
+    },
+    "setting": {
+      "type": "string",
+      "enum": [
+        "Indoor",
+        "Outdoor",
+        "Both"
+      ],
+      "description": "The setting of the wedding."
+    }
+  },
+  "required": []
+}

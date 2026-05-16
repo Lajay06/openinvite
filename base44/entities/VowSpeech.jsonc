@@ -1,0 +1,37 @@
+{
+  "name": "VowSpeech",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the vow or speech (e.g., 'My Vows to Sarah', 'Best Man Speech')"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "vow",
+        "speech"
+      ],
+      "default": "vow",
+      "description": "The type of content."
+    },
+    "author": {
+      "type": "string",
+      "description": "The name of the person who will deliver the vow or speech."
+    },
+    "content": {
+      "type": "string",
+      "description": "The full text content of the vow or speech."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Private notes or prompts for the speech."
+    }
+  },
+  "required": [
+    "title",
+    "type",
+    "author",
+    "content"
+  ]
+}

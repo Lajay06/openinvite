@@ -1,0 +1,60 @@
+{
+  "name": "Budget",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "venue",
+        "catering",
+        "photography",
+        "flowers",
+        "music",
+        "attire",
+        "transportation",
+        "decorations",
+        "rings",
+        "stationery",
+        "beauty",
+        "honeymoon",
+        "miscellaneous"
+      ],
+      "description": "Budget category"
+    },
+    "item_name": {
+      "type": "string",
+      "description": "Specific item or service"
+    },
+    "budgeted_amount": {
+      "type": "number",
+      "description": "Originally budgeted amount"
+    },
+    "actual_amount": {
+      "type": "number",
+      "description": "Actual amount spent"
+    },
+    "vendor": {
+      "type": "string",
+      "description": "Vendor or supplier name"
+    },
+    "paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether payment has been made"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date payment was made"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    }
+  },
+  "required": [
+    "category",
+    "item_name",
+    "budgeted_amount"
+  ]
+}

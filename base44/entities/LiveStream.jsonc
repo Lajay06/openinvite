@@ -1,0 +1,53 @@
+{
+  "name": "LiveStream",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Stream title (e.g., 'Ceremony', 'Reception')"
+    },
+    "stream_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "YouTube, Vimeo, or other streaming URL"
+    },
+    "stream_type": {
+      "type": "string",
+      "enum": [
+        "youtube",
+        "vimeo",
+        "zoom",
+        "custom"
+      ],
+      "default": "youtube",
+      "description": "Type of streaming platform"
+    },
+    "embed_code": {
+      "type": "string",
+      "description": "Custom embed code for the stream"
+    },
+    "scheduled_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the stream is scheduled to start"
+    },
+    "is_live": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the stream is currently live"
+    },
+    "chat_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether chat is enabled for this stream"
+    },
+    "password": {
+      "type": "string",
+      "description": "Optional password to access the stream"
+    }
+  },
+  "required": [
+    "title",
+    "stream_url"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "name": "VendorLog",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the related vendor"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "email",
+        "call",
+        "meeting",
+        "note",
+        "document"
+      ],
+      "default": "note",
+      "description": "Type of log entry"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Short subject or title"
+    },
+    "body": {
+      "type": "string",
+      "description": "Full content of the communication or note"
+    },
+    "document_url": {
+      "type": "string",
+      "description": "URL of uploaded document (contract, invoice, etc.)"
+    },
+    "document_name": {
+      "type": "string",
+      "description": "File name of the uploaded document"
+    },
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "contract",
+        "invoice",
+        "quote",
+        "receipt",
+        "other"
+      ],
+      "description": "Type of document if applicable"
+    },
+    "logged_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this was logged"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "type",
+    "subject"
+  ]
+}

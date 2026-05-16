@@ -1,0 +1,39 @@
+{
+  "name": "CustomGift",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "The name of the cash fund or gift (e.g., Honeymoon Airfare)"
+    },
+    "description": {
+      "type": "string",
+      "description": "A description of what the fund is for."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "honeymoon",
+        "home_fund",
+        "charity",
+        "experience",
+        "custom"
+      ],
+      "default": "custom",
+      "description": "The category of the custom gift or fund."
+    },
+    "requested_amount": {
+      "type": "number",
+      "description": "The goal amount for this fund."
+    },
+    "image_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "A representative image for the gift or fund."
+    }
+  },
+  "required": [
+    "title",
+    "requested_amount"
+  ]
+}

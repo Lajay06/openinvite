@@ -1,0 +1,126 @@
+{
+  "name": "Vendor",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Vendor business name"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "venue",
+        "catering",
+        "photography",
+        "videography",
+        "flowers",
+        "music",
+        "bakery",
+        "transportation",
+        "beauty",
+        "attire",
+        "planning",
+        "decorations",
+        "entertainment",
+        "other"
+      ],
+      "description": "Type of vendor service"
+    },
+    "contact_person": {
+      "type": "string",
+      "description": "Primary contact person name"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email address"
+    },
+    "website": {
+      "type": "string",
+      "format": "uri",
+      "description": "Website URL"
+    },
+    "address": {
+      "type": "string",
+      "description": "Business address"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "GPS latitude"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "GPS longitude"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Rating out of 5"
+    },
+    "price_range": {
+      "type": "string",
+      "enum": [
+        "$",
+        "$$",
+        "$$$",
+        "$$$$"
+      ],
+      "description": "Price range indicator"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "researching",
+        "contacted",
+        "quoted",
+        "booked",
+        "rejected"
+      ],
+      "default": "researching",
+      "description": "Current status with vendor"
+    },
+    "quoted_price": {
+      "type": "number",
+      "description": "Quoted price from vendor"
+    },
+    "contract_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date contract was signed"
+    },
+    "payment_schedule": {
+      "type": "string",
+      "description": "Payment terms and schedule"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about vendor"
+    },
+    "google_place_id": {
+      "type": "string",
+      "description": "Google Places API place ID"
+    },
+    "google_rating": {
+      "type": "number",
+      "description": "Google rating"
+    },
+    "google_reviews_count": {
+      "type": "number",
+      "description": "Number of Google reviews"
+    },
+    "image_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Main image URL"
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ]
+}

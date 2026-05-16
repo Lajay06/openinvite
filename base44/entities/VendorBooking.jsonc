@@ -1,0 +1,67 @@
+{
+  "name": "VendorBooking",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the vendor"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "Name of the vendor"
+    },
+    "service_type": {
+      "type": "string",
+      "description": "Type of service booked"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Wedding/event date"
+    },
+    "total_amount": {
+      "type": "number",
+      "description": "Total booking amount"
+    },
+    "deposit_amount": {
+      "type": "number",
+      "description": "Deposit amount paid"
+    },
+    "deposit_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether deposit has been paid"
+    },
+    "balance_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether full balance has been paid"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Booking status"
+    },
+    "payment_intent_id": {
+      "type": "string",
+      "description": "Stripe payment intent ID"
+    },
+    "booking_details": {
+      "type": "string",
+      "description": "Additional booking details and notes"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "vendor_name",
+    "service_type",
+    "event_date",
+    "total_amount"
+  ]
+}

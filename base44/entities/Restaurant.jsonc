@@ -1,0 +1,70 @@
+{
+  "name": "Restaurant",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Restaurant name"
+    },
+    "cuisine": {
+      "type": "string",
+      "description": "Type of cuisine"
+    },
+    "address": {
+      "type": "string",
+      "description": "Restaurant address"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone"
+    },
+    "website": {
+      "type": "string",
+      "description": "Restaurant website"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Rating out of 5"
+    },
+    "priceRange": {
+      "type": "string",
+      "enum": [
+        "$",
+        "$$",
+        "$$$",
+        "$$$$"
+      ],
+      "description": "Price range indicator"
+    },
+    "distance": {
+      "type": "string",
+      "description": "Distance from venue"
+    },
+    "description": {
+      "type": "string",
+      "description": "Restaurant description"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Signature dishes or specialties"
+    },
+    "whyGood": {
+      "type": "string",
+      "description": "Why this restaurant is recommended"
+    },
+    "imageUrl": {
+      "type": "string",
+      "description": "Restaurant image URL"
+    },
+    "reviewCount": {
+      "type": "number",
+      "description": "Number of reviews"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

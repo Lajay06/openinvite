@@ -1,0 +1,71 @@
+{
+  "name": "Hotel",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Hotel name"
+    },
+    "address": {
+      "type": "string",
+      "description": "Hotel address"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone"
+    },
+    "website": {
+      "type": "string",
+      "description": "Booking website URL"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Star rating out of 5"
+    },
+    "priceRange": {
+      "type": "string",
+      "enum": [
+        "$",
+        "$$",
+        "$$$",
+        "$$$$"
+      ],
+      "description": "Price range indicator"
+    },
+    "distance": {
+      "type": "string",
+      "description": "Distance from venue"
+    },
+    "description": {
+      "type": "string",
+      "description": "Hotel description"
+    },
+    "amenities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of amenities"
+    },
+    "whyGood": {
+      "type": "string",
+      "description": "Why this hotel is recommended"
+    },
+    "imageUrl": {
+      "type": "string",
+      "description": "Hotel image URL"
+    },
+    "reviewCount": {
+      "type": "number",
+      "description": "Number of reviews"
+    },
+    "isRecommended": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this is a couple's recommendation"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

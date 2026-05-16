@@ -1,0 +1,67 @@
+{
+  "name": "CustomEventPage",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Event page title"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly slug for the page"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "rehearsal_dinner",
+        "bridal_shower",
+        "bachelor_party",
+        "bachelorette_party",
+        "welcome_party",
+        "farewell_brunch",
+        "custom"
+      ],
+      "default": "custom",
+      "description": "Type of event"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event date and time"
+    },
+    "venue_name": {
+      "type": "string",
+      "description": "Venue name"
+    },
+    "venue_address": {
+      "type": "string",
+      "description": "Venue address"
+    },
+    "description": {
+      "type": "string",
+      "description": "Event description"
+    },
+    "dress_code": {
+      "type": "string",
+      "description": "Dress code for the event"
+    },
+    "rsvp_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether RSVP is required"
+    },
+    "visible_to_guests": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether visible on guest website"
+    },
+    "order": {
+      "type": "number",
+      "description": "Display order in navigation"
+    }
+  },
+  "required": [
+    "title",
+    "slug"
+  ]
+}

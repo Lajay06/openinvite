@@ -1,0 +1,103 @@
+{
+  "name": "RegistryProduct",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Product name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Product description"
+    },
+    "price": {
+      "type": "number",
+      "description": "Product price"
+    },
+    "image_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Product image URL"
+    },
+    "product_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Direct link to product"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "kitchen",
+        "home_decor",
+        "bedding",
+        "bathroom",
+        "outdoor",
+        "electronics",
+        "other"
+      ],
+      "default": "other",
+      "description": "Product category"
+    },
+    "registry_platform": {
+      "type": "string",
+      "description": "Registry platform name (Zola, MyRegistry, etc.)"
+    },
+    "external_id": {
+      "type": "string",
+      "description": "External product ID from registry platform"
+    },
+    "quantity_requested": {
+      "type": "number",
+      "default": 1,
+      "description": "How many of this item are requested"
+    },
+    "quantity_purchased": {
+      "type": "number",
+      "default": 0,
+      "description": "How many have been purchased"
+    },
+    "purchased_by": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "guest_name": {
+            "type": "string"
+          },
+          "guest_email": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "purchase_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "List of guests who purchased this item"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "medium",
+      "description": "Priority level"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the product"
+    }
+  },
+  "required": [
+    "name",
+    "price"
+  ]
+}

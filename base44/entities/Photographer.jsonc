@@ -1,0 +1,231 @@
+{
+  "name": "Photographer",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Photographer/Videographer name or business name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "photographer",
+        "videographer",
+        "both"
+      ],
+      "default": "photographer",
+      "description": "Service type"
+    },
+    "contact_person": {
+      "type": "string",
+      "description": "Primary contact person name"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email address"
+    },
+    "website": {
+      "type": "string",
+      "format": "uri",
+      "description": "Website URL"
+    },
+    "instagram": {
+      "type": "string",
+      "description": "Instagram handle"
+    },
+    "address": {
+      "type": "string",
+      "description": "Business address"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "GPS latitude"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "GPS longitude"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Rating out of 5"
+    },
+    "reviews_count": {
+      "type": "number",
+      "description": "Number of reviews"
+    },
+    "price_range": {
+      "type": "string",
+      "enum": [
+        "$",
+        "$$",
+        "$$$",
+        "$$$$"
+      ],
+      "description": "Price range indicator"
+    },
+    "starting_price": {
+      "type": "number",
+      "description": "Starting package price"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "researching",
+        "contacted",
+        "meeting_scheduled",
+        "quoted",
+        "booked",
+        "rejected"
+      ],
+      "default": "researching",
+      "description": "Current status"
+    },
+    "quoted_price": {
+      "type": "number",
+      "description": "Quoted price"
+    },
+    "package_selected": {
+      "type": "string",
+      "description": "Selected package name"
+    },
+    "hours_booked": {
+      "type": "number",
+      "description": "Number of hours booked"
+    },
+    "booking_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of service"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "Start time (e.g., 14:00)"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "End time (e.g., 22:00)"
+    },
+    "meeting_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date/time of meeting or consultation"
+    },
+    "contract_signed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether contract has been signed"
+    },
+    "deposit_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether deposit has been paid"
+    },
+    "deposit_amount": {
+      "type": "number",
+      "description": "Deposit amount"
+    },
+    "style": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "candid",
+          "traditional",
+          "artistic",
+          "documentary",
+          "cinematic",
+          "vintage",
+          "modern",
+          "natural"
+        ]
+      },
+      "description": "Photography/videography style"
+    },
+    "portfolio_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Portfolio website URL"
+    },
+    "sample_work": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "description": "Sample image URLs"
+    },
+    "services_offered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of services (e.g., engagement shoot, albums, prints)"
+    },
+    "equipment": {
+      "type": "string",
+      "description": "Camera equipment and gear used"
+    },
+    "backup_equipment": {
+      "type": "boolean",
+      "default": false,
+      "description": "Has backup equipment"
+    },
+    "second_shooter": {
+      "type": "boolean",
+      "default": false,
+      "description": "Includes second shooter"
+    },
+    "delivery_timeline": {
+      "type": "string",
+      "description": "Photo/video delivery timeline (e.g., 4-6 weeks)"
+    },
+    "image_count": {
+      "type": "number",
+      "description": "Number of edited images included"
+    },
+    "video_length": {
+      "type": "string",
+      "description": "Video length (e.g., 3-5 minutes highlight reel)"
+    },
+    "editing_style": {
+      "type": "string",
+      "description": "Editing style description"
+    },
+    "travel_fee": {
+      "type": "number",
+      "description": "Travel fee if applicable"
+    },
+    "cancellation_policy": {
+      "type": "string",
+      "description": "Cancellation policy details"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "special_requests": {
+      "type": "string",
+      "description": "Special requests or must-have shots"
+    },
+    "google_place_id": {
+      "type": "string",
+      "description": "Google Places API place ID"
+    },
+    "image_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Main business image URL"
+    }
+  },
+  "required": [
+    "name",
+    "type"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "name": "GuestMessage",
+  "type": "object",
+  "properties": {
+    "guest_name": {
+      "type": "string",
+      "description": "Name of the guest sending the message"
+    },
+    "guest_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of the guest"
+    },
+    "guest_id": {
+      "type": "string",
+      "description": "ID of the guest for linking to Guest entity"
+    },
+    "guest_phone": {
+      "type": "string",
+      "description": "Phone number of the guest for WhatsApp"
+    },
+    "message": {
+      "type": "string",
+      "description": "The message content"
+    },
+    "reply": {
+      "type": "string",
+      "description": "Reply from the couple"
+    },
+    "replied": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the message has been replied to"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the message has been read"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "in_app",
+        "whatsapp",
+        "email"
+      ],
+      "default": "in_app",
+      "description": "Channel through which the message was sent/received"
+    },
+    "whatsapp_contacted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the guest has been contacted via WhatsApp"
+    },
+    "whatsapp_contact_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the guest was last contacted via WhatsApp"
+    }
+  },
+  "required": [
+    "guest_name",
+    "guest_email",
+    "message"
+  ]
+}

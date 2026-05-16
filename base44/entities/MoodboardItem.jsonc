@@ -1,0 +1,72 @@
+{
+  "name": "MoodboardItem",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title or description of the inspiration item"
+    },
+    "image_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the inspiration image"
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Original source URL (Pinterest, website, etc.)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "venue",
+        "decor",
+        "flowers",
+        "dress",
+        "cake",
+        "colors",
+        "invitations",
+        "photography",
+        "hairstyle",
+        "makeup",
+        "centerpieces",
+        "lighting",
+        "other"
+      ],
+      "default": "other",
+      "description": "Category of inspiration"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for organizing and searching"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Personal notes about this inspiration"
+    },
+    "board_name": {
+      "type": "string",
+      "default": "Main Board",
+      "description": "Name of the mood board this item belongs to"
+    },
+    "position_x": {
+      "type": "number",
+      "description": "X position for layout"
+    },
+    "position_y": {
+      "type": "number",
+      "description": "Y position for layout"
+    },
+    "pinterest_id": {
+      "type": "string",
+      "description": "Pinterest pin ID if imported from Pinterest"
+    }
+  },
+  "required": [
+    "title",
+    "image_url"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "name": "Schedule",
+  "type": "object",
+  "properties": {
+    "event_name": {
+      "type": "string",
+      "description": "Name of the event or activity"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the event"
+    },
+    "start_time": {
+      "type": "string",
+      "format": "time",
+      "description": "Start time"
+    },
+    "end_time": {
+      "type": "string",
+      "format": "time",
+      "description": "End time"
+    },
+    "location": {
+      "type": "string",
+      "description": "Where the event takes place"
+    },
+    "description": {
+      "type": "string",
+      "description": "Event description"
+    },
+    "responsible_person": {
+      "type": "string",
+      "description": "Who is responsible for this event"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "ceremony",
+        "reception",
+        "photography",
+        "preparation",
+        "transportation",
+        "rehearsal",
+        "pre_wedding",
+        "post_wedding",
+        "other"
+      ],
+      "default": "other",
+      "description": "Event category"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    }
+  },
+  "required": [
+    "event_name",
+    "event_date",
+    "start_time"
+  ]
+}

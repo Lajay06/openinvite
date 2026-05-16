@@ -1,0 +1,69 @@
+{
+  "name": "Music",
+  "type": "object",
+  "properties": {
+    "song_title": {
+      "type": "string",
+      "description": "Title of the song"
+    },
+    "artist": {
+      "type": "string",
+      "description": "Artist name"
+    },
+    "spotify_track_id": {
+      "type": "string",
+      "description": "Spotify track ID"
+    },
+    "album": {
+      "type": "string",
+      "description": "Album name"
+    },
+    "duration": {
+      "type": "string",
+      "description": "Song duration in format MM:SS"
+    },
+    "preview_url": {
+      "type": "string",
+      "description": "Spotify preview URL"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Album cover image URL"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "ceremony",
+        "cocktail_hour",
+        "dinner",
+        "dancing",
+        "special_moments",
+        "general"
+      ],
+      "default": "general",
+      "description": "Music category for the wedding"
+    },
+    "added_by": {
+      "type": "string",
+      "description": "Email of person who added the song"
+    },
+    "guest_suggestion": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this was suggested by a guest"
+    },
+    "approved": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the song is approved for the playlist"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the song"
+    }
+  },
+  "required": [
+    "song_title",
+    "artist"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "name": "SongRequest",
+  "type": "object",
+  "properties": {
+    "weddingId": {
+      "type": "string"
+    },
+    "spotifyTrackId": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "artist": {
+      "type": "string"
+    },
+    "album": {
+      "type": "string"
+    },
+    "albumArt": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "number"
+    },
+    "explicit": {
+      "type": "boolean",
+      "default": false
+    },
+    "spotifyUrl": {
+      "type": "string"
+    },
+    "submittedBy": {
+      "type": "string"
+    },
+    "guestEmail": {
+      "type": "string"
+    },
+    "guestNote": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "declined",
+        "added"
+      ],
+      "default": "pending"
+    },
+    "playlist": {
+      "type": "string",
+      "default": "general"
+    },
+    "aiTags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mustPlay": {
+      "type": "boolean",
+      "default": false
+    },
+    "doNotPlay": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "artist",
+    "submittedBy"
+  ]
+}

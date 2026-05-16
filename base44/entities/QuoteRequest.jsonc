@@ -1,0 +1,56 @@
+{
+  "name": "QuoteRequest",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "ID of the vendor"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "Name of the vendor"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Wedding/event date"
+    },
+    "guest_count": {
+      "type": "number",
+      "description": "Number of guests"
+    },
+    "budget_range": {
+      "type": "string",
+      "description": "Budget range for this service"
+    },
+    "message": {
+      "type": "string",
+      "description": "Message to the vendor"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "responded",
+        "accepted",
+        "declined"
+      ],
+      "default": "pending",
+      "description": "Quote request status"
+    },
+    "vendor_response": {
+      "type": "string",
+      "description": "Vendor's response"
+    },
+    "quoted_price": {
+      "type": "number",
+      "description": "Price quoted by vendor"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "vendor_name",
+    "event_date",
+    "message"
+  ]
+}

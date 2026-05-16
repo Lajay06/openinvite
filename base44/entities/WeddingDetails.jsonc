@@ -1,0 +1,642 @@
+{
+  "name": "WeddingDetails",
+  "type": "object",
+  "properties": {
+    "couple1Name": {
+      "type": "string"
+    },
+    "couple2Name": {
+      "type": "string"
+    },
+    "coupleNames": {
+      "type": "string"
+    },
+    "weddingDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "guestCount": {
+      "type": "string"
+    },
+    "guestType": {
+      "type": "string",
+      "enum": [
+        "intimate",
+        "celebration",
+        "grand"
+      ]
+    },
+    "weddingStyle": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "importantFeatures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mainCeremony": {
+      "type": "object",
+      "properties": {
+        "venueName": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "dressCode": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "reception": {
+      "type": "object",
+      "properties": {
+        "venueName": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "celebrant": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "properties": {
+        "issuingOffice": {
+          "type": "string"
+        },
+        "applicationDate": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string"
+        },
+        "expiryDate": {
+          "type": "string"
+        },
+        "licenseNumber": {
+          "type": "string"
+        },
+        "witnessesRequired": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "rehearsal": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string"
+        },
+        "venue": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "attendees": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "welcomeDinner": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "venue": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "dayAfterBrunch": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "venue": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "honeymoonDestination": {
+      "type": "string"
+    },
+    "honeymoonDeparture": {
+      "type": "string"
+    },
+    "honeymoonNotes": {
+      "type": "string"
+    },
+    "ceremonyMusic": {
+      "type": "string"
+    },
+    "ceremonyReadings": {
+      "type": "string"
+    },
+    "floristNotes": {
+      "type": "string"
+    },
+    "cateringNotes": {
+      "type": "string"
+    },
+    "photographyNotes": {
+      "type": "string"
+    },
+    "videographyNotes": {
+      "type": "string"
+    },
+    "hairMakeupNotes": {
+      "type": "string"
+    },
+    "transportNotes": {
+      "type": "string"
+    },
+    "accommodationNotes": {
+      "type": "string"
+    },
+    "contactPerson": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        }
+      }
+    },
+    "preWeddingEvents": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "postWeddingEvents": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "qna": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "slug": {
+      "type": "string"
+    },
+    "websiteEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "websitePassword": {
+      "type": "string"
+    },
+    "websiteTheme": {
+      "type": "string",
+      "enum": [
+        "still"
+      ],
+      "default": "still"
+    },
+    "heroVideoUrl": {
+      "type": "string"
+    },
+    "heroVideoFile": {
+      "type": "string"
+    },
+    "coverPhoto": {
+      "type": "string"
+    },
+    "websiteAccentColor": {
+      "type": "string",
+      "default": "#E03553"
+    },
+    "welcomeMessage": {
+      "type": "string",
+      "default": "We are overjoyed to celebrate with you."
+    },
+    "coupleStory": {
+      "type": "string"
+    },
+    "activeTheme": {
+      "type": "string",
+      "default": "still"
+    },
+    "activeTypography": {
+      "type": "string",
+      "default": "classic"
+    },
+    "websiteMode": {
+      "type": "string",
+      "enum": [
+        "dark",
+        "light"
+      ],
+      "default": "dark"
+    },
+    "pageTransition": {
+      "type": "string",
+      "enum": [
+        "fade",
+        "slide",
+        "reveal",
+        "dissolve"
+      ],
+      "default": "fade"
+    },
+    "scrollAnimation": {
+      "type": "string",
+      "enum": [
+        "none",
+        "subtle",
+        "dramatic"
+      ],
+      "default": "subtle"
+    },
+    "heroEffect": {
+      "type": "string",
+      "enum": [
+        "parallax",
+        "zoomout",
+        "static"
+      ],
+      "default": "static"
+    },
+    "enabledPages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "home",
+        "our-story",
+        "celebration",
+        "rsvp"
+      ]
+    },
+    "activeUniverse": {
+      "type": "string",
+      "default": "aman"
+    },
+    "menuItems": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "welcomeSignageText": {
+      "type": "string"
+    },
+    "thankYouMessage": {
+      "type": "string"
+    },
+    "homeContent": {
+      "type": "object"
+    },
+    "ourStoryContent": {
+      "type": "object"
+    },
+    "celebrationContent": {
+      "type": "object"
+    },
+    "rsvpContent": {
+      "type": "object"
+    },
+    "travelContent": {
+      "type": "object"
+    },
+    "registryContent": {
+      "type": "object"
+    },
+    "musicContent": {
+      "type": "object"
+    },
+    "photosContent": {
+      "type": "object"
+    },
+    "pageSections": {
+      "type": "object",
+      "description": "Map of page slug \u2192 array of section objects",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "order": {
+              "type": "number"
+            },
+            "content": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "customPages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "experienceGuide": {
+      "type": "object",
+      "properties": {
+        "published": {
+          "type": "boolean",
+          "default": false
+        },
+        "destination": {
+          "type": "string"
+        },
+        "heroPhotoUrl": {
+          "type": "string"
+        },
+        "heroVideoUrl": {
+          "type": "string"
+        },
+        "editorialIntro": {
+          "type": "string"
+        },
+        "vibes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coupleNotes": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "couplePicks": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "customGems": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "pinnedViator": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "categories": {
+          "type": "object"
+        }
+      }
+    },
+    "accommodation": {
+      "type": "object",
+      "properties": {
+        "partnerRecommendationsEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "coupleNote": {
+          "type": "string"
+        },
+        "checkInDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "checkOutDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "suggestedAreas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "manualProperties": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "hiddenProperties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pinnedProperties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "music": {
+      "type": "object",
+      "properties": {
+        "spotifyConnected": {
+          "type": "boolean",
+          "default": false
+        },
+        "spotifyUserId": {
+          "type": "string"
+        },
+        "guestRequestsEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "requestsRequireApproval": {
+          "type": "boolean",
+          "default": true
+        },
+        "requestsClosedDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "limitOnePerGuest": {
+          "type": "boolean",
+          "default": false
+        },
+        "onlyForConfirmedGuests": {
+          "type": "boolean",
+          "default": false
+        },
+        "requestMessage": {
+          "type": "string",
+          "default": "Help us build the soundtrack to our night. Request a song you'd love to hear."
+        },
+        "playlists": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "spotifyPlaylistId": {
+                "type": "string"
+              },
+              "trackCount": {
+                "type": "number",
+                "default": 0
+              },
+              "coverImage": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean",
+                "default": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "transport": {
+      "type": "object",
+      "properties": {
+        "coupleNote": {
+          "type": "string"
+        },
+        "recommendedMode": {
+          "type": "string",
+          "enum": [
+            "rideshare",
+            "drive",
+            "public",
+            "walk",
+            "shuttle",
+            "hire"
+          ]
+        },
+        "enabledModes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "parking": {
+          "type": "object"
+        },
+        "publicTransport": {
+          "type": "object"
+        },
+        "walking": {
+          "type": "object"
+        },
+        "rideshare": {
+          "type": "object"
+        },
+        "carHire": {
+          "type": "object"
+        },
+        "shuttles": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "freeTextNotes": {
+          "type": "string"
+        },
+        "aiAnalysis": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "required": []
+}

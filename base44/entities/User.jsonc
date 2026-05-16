@@ -1,0 +1,22 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "language": {
+      "type": "string",
+      "default": "en",
+      "description": "User's preferred language code (e.g., en, es, fr)"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD",
+      "description": "User's preferred currency code (e.g., USD, EUR, GBP)"
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has completed the onboarding process"
+    }
+  },
+  "required": []
+}

@@ -1,0 +1,78 @@
+import React from "react";
+import { Link } from "react-router-dom";
+
+export default function PublicFooter() {
+  return (
+    <footer className="bg-white border-t border-[#E0E0DC]">
+      <div className="max-w-[1200px] mx-auto px-6 lg:px-12 py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+          {/* Logo col */}
+          <div>
+            <Link to="/">
+              <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" alt="openinvite" style={{ height: "20px", width: "auto", display: "block" }} />
+            </Link>
+            <p className="text-[#888888] text-xs leading-relaxed">
+              Wedding planning, beautifully designed.
+            </p>
+          </div>
+
+          {/* Links */}
+          <div>
+            <p className="label-caps text-[#0A0A0A] font-medium tracking-widest-15 mb-4">Links</p>
+            <ul className="space-y-3">
+              <li><Link to="/" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Home</Link></li>
+              <li><Link to="/About" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">About</Link></li>
+              <li><Link to="/universes" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Universes</Link></li>
+            </ul>
+          </div>
+
+          {/* Policy */}
+          <div>
+            <p className="label-caps text-[#0A0A0A] font-medium tracking-widest-15 mb-4">Policy</p>
+            <ul className="space-y-3">
+              <li><a href="#" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Terms & Conditions</a></li>
+              <li><a href="#" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Refund Policy</a></li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <p className="label-caps text-[#0A0A0A] font-medium tracking-widest-15 mb-4">Contact</p>
+            <Link to="/Contact" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors block mb-2">
+              Get in touch
+            </Link>
+            <a href="mailto:info@openinvite.com" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">
+              info@openinvite.com
+            </a>
+
+            {/* Social icons */}
+            <div className="flex gap-4 mt-6">
+              <a href="#" className="text-[#0A0A0A] hover:text-[#E03553] transition-colors" aria-label="Instagram">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                  <circle cx="12" cy="12" r="4"/>
+                  <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+                </svg>
+              </a>
+              <a href="#" className="text-[#0A0A0A] hover:text-[#E03553] transition-colors" aria-label="Facebook">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                </svg>
+              </a>
+              <a href="#" className="text-[#0A0A0A] hover:text-[#E03553] transition-colors" aria-label="TikTok">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-[#E0E0DC] pt-8">
+          <p className="text-[#888888] text-xs">© 2025 by openinvite.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}

@@ -1,0 +1,47 @@
+{
+  "name": "VenueAsset",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the asset (e.g., 'Main Bar', 'DJ Booth')"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "dance-floor",
+        "bar",
+        "stage",
+        "dj-booth",
+        "entrance",
+        "bridal-table",
+        "toilets"
+      ],
+      "description": "The type of venue asset"
+    },
+    "x": {
+      "type": "number"
+    },
+    "y": {
+      "type": "number"
+    },
+    "width": {
+      "type": "number"
+    },
+    "height": {
+      "type": "number"
+    },
+    "rotation": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "x",
+    "y",
+    "width",
+    "height"
+  ]
+}

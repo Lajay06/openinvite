@@ -1,0 +1,55 @@
+{
+  "name": "Photo",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Photo title or caption"
+    },
+    "image_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the uploaded photo"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "engagement",
+        "pre_wedding",
+        "ceremony",
+        "reception",
+        "portraits",
+        "party",
+        "other"
+      ],
+      "default": "other",
+      "description": "Photo category"
+    },
+    "description": {
+      "type": "string",
+      "description": "Photo description or story"
+    },
+    "photographer_credit": {
+      "type": "string",
+      "description": "Photographer name or credit"
+    },
+    "date_taken": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the photo was taken"
+    },
+    "order": {
+      "type": "number",
+      "description": "Display order within category"
+    },
+    "visible_to_guests": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this photo is visible on the guest website"
+    }
+  },
+  "required": [
+    "image_url",
+    "category"
+  ]
+}

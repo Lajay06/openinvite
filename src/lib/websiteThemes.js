@@ -1,0 +1,389 @@
+export const WEBSITE_THEMES = [
+  {
+    id: 'still',
+    name: 'Still',
+    mood: 'Quiet Luxury',
+    darkBg: '#0A0A0A',
+    lightBg: '#F8F7F5',
+    darkText: '#FFFFFF',
+    lightText: '#0A0A0A',
+    accent: '#FFFFFF',
+    accentSecondary: '#888888',
+    navBg: '#0A0A0A'
+  },
+  {
+    id: 'dusk',
+    name: 'Dusk',
+    mood: 'Golden Hour',
+    darkBg: '#1C1410',
+    lightBg: '#F5F0EA',
+    darkText: '#F5F0EA',
+    lightText: '#1C1410',
+    accent: '#C4956A',
+    accentSecondary: '#8B6340',
+    navBg: '#1C1410'
+  },
+  {
+    id: 'sage',
+    name: 'Sage',
+    mood: 'Garden Party',
+    darkBg: '#1A2018',
+    lightBg: '#F4F6F0',
+    darkText: '#F4F6F0',
+    lightText: '#1A2018',
+    accent: '#7A9E7E',
+    accentSecondary: '#4A6B4E',
+    navBg: '#1A2018'
+  },
+  {
+    id: 'slate',
+    name: 'Slate',
+    mood: 'Modern Love',
+    darkBg: '#141820',
+    lightBg: '#F0F2F5',
+    darkText: '#F0F2F5',
+    lightText: '#141820',
+    accent: '#6B7FA3',
+    accentSecondary: '#3D5278',
+    navBg: '#141820'
+  },
+  {
+    id: 'blush',
+    name: 'Blush',
+    mood: 'Romance',
+    darkBg: '#1E1418',
+    lightBg: '#FBF5F5',
+    darkText: '#FBF5F5',
+    lightText: '#1E1418',
+    accent: '#C4768A',
+    accentSecondary: '#8B4560',
+    navBg: '#1E1418'
+  },
+  {
+    id: 'noir',
+    name: 'Noir',
+    mood: 'Editorial',
+    darkBg: '#0A0A0A',
+    lightBg: '#FFFFFF',
+    darkText: '#FFFFFF',
+    lightText: '#0A0A0A',
+    accent: '#E03553',
+    accentSecondary: '#803D81',
+    navBg: '#0A0A0A'
+  },
+  {
+    id: 'ivory',
+    name: 'Ivory',
+    mood: 'Classic Elegance',
+    darkBg: '#1A1814',
+    lightBg: '#FAF8F3',
+    darkText: '#FAF8F3',
+    lightText: '#1A1814',
+    accent: '#D4C5A9',
+    accentSecondary: '#9B8B6E',
+    navBg: '#1A1814'
+  },
+  {
+    id: 'midnight',
+    name: 'Midnight',
+    mood: 'Dark Romance',
+    darkBg: '#080B14',
+    lightBg: '#F0F2F8',
+    darkText: '#F0F2F8',
+    lightText: '#080B14',
+    accent: '#8B9FD4',
+    accentSecondary: '#4A5F9E',
+    navBg: '#080B14'
+  },
+  {
+    id: 'terra',
+    name: 'Terra',
+    mood: 'Earth & Stone',
+    darkBg: '#1A1208',
+    lightBg: '#F5EFE6',
+    darkText: '#F5EFE6',
+    lightText: '#1A1208',
+    accent: '#B8856A',
+    accentSecondary: '#7A4F35',
+    navBg: '#1A1208'
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    mood: 'Into the Woods',
+    darkBg: '#0E1A10',
+    lightBg: '#EFF4EC',
+    darkText: '#EFF4EC',
+    lightText: '#0E1A10',
+    accent: '#5C8B5E',
+    accentSecondary: '#2D5530',
+    navBg: '#0E1A10'
+  },
+  {
+    id: 'coral',
+    name: 'Coral',
+    mood: 'Sunset',
+    darkBg: '#1A0E0A',
+    lightBg: '#FFF3EE',
+    darkText: '#FFF3EE',
+    lightText: '#1A0E0A',
+    accent: '#E8826A',
+    accentSecondary: '#B85540',
+    navBg: '#1A0E0A'
+  },
+  {
+    id: 'lavender',
+    name: 'Lavender',
+    mood: 'Dreamy',
+    darkBg: '#12101A',
+    lightBg: '#F5F2FA',
+    darkText: '#F5F2FA',
+    lightText: '#12101A',
+    accent: '#9B8EC4',
+    accentSecondary: '#6B5A9E',
+    navBg: '#12101A'
+  },
+  {
+    id: 'bronze',
+    name: 'Bronze',
+    mood: 'Antique',
+    darkBg: '#140E08',
+    lightBg: '#F5EFE0',
+    darkText: '#F5EFE0',
+    lightText: '#140E08',
+    accent: '#B8955A',
+    accentSecondary: '#7A5E30',
+    navBg: '#140E08'
+  },
+  {
+    id: 'arctic',
+    name: 'Arctic',
+    mood: 'Ice & Snow',
+    darkBg: '#0A1018',
+    lightBg: '#F0F5FA',
+    darkText: '#F0F5FA',
+    lightText: '#0A1018',
+    accent: '#A8C4D8',
+    accentSecondary: '#5A8BAA',
+    navBg: '#0A1018'
+  },
+  {
+    id: 'desert',
+    name: 'Desert',
+    mood: 'Sand Dunes',
+    darkBg: '#1A1408',
+    lightBg: '#F8F2E8',
+    darkText: '#F8F2E8',
+    lightText: '#1A1408',
+    accent: '#D4AA70',
+    accentSecondary: '#9B7040',
+    navBg: '#1A1408'
+  },
+  {
+    id: 'plum',
+    name: 'Plum',
+    mood: 'Deep Purple',
+    darkBg: '#140A18',
+    lightBg: '#F5F0F8',
+    darkText: '#F5F0F8',
+    lightText: '#140A18',
+    accent: '#9B6AB8',
+    accentSecondary: '#6B3A8B',
+    navBg: '#140A18'
+  },
+  {
+    id: 'jade',
+    name: 'Jade',
+    mood: 'Eastern Garden',
+    darkBg: '#081410',
+    lightBg: '#EEF6F2',
+    darkText: '#EEF6F2',
+    lightText: '#081410',
+    accent: '#5A9E8A',
+    accentSecondary: '#2D6B58',
+    navBg: '#081410'
+  },
+  {
+    id: 'charcoal',
+    name: 'Charcoal',
+    mood: 'Industrial',
+    darkBg: '#111111',
+    lightBg: '#F5F5F5',
+    darkText: '#F5F5F5',
+    lightText: '#111111',
+    accent: '#888888',
+    accentSecondary: '#444444',
+    navBg: '#111111'
+  },
+  {
+    id: 'champagne',
+    name: 'Champagne',
+    mood: 'Celebration',
+    darkBg: '#181410',
+    lightBg: '#FDF9F0',
+    darkText: '#FDF9F0',
+    lightText: '#181410',
+    accent: '#D4B896',
+    accentSecondary: '#A8845A',
+    navBg: '#181410'
+  },
+  {
+    id: 'obsidian',
+    name: 'Obsidian',
+    mood: 'Volcanic',
+    darkBg: '#050505',
+    lightBg: '#F8F8F8',
+    darkText: '#F8F8F8',
+    lightText: '#050505',
+    accent: '#E03553',
+    accentSecondary: '#6B2CAE',
+    navBg: '#050505'
+  }
+];
+
+export const TYPOGRAPHY_PAIRINGS = [
+  {
+    id: 'classic',
+    name: 'Classic',
+    mood: 'Timeless elegance',
+    headingFont: 'Cormorant Garamond',
+    headingWeight: '300',
+    bodyFont: 'Plus Jakarta Sans',
+    bodyWeight: '400',
+    headingImport: '@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&display=swap");',
+    bodyImport: null
+  },
+  {
+    id: 'modern',
+    name: 'Modern',
+    mood: 'Contemporary romance',
+    headingFont: 'Playfair Display',
+    headingWeight: '400',
+    bodyFont: 'Plus Jakarta Sans',
+    bodyWeight: '400',
+    headingImport: '@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400&display=swap");',
+    bodyImport: null
+  },
+  {
+    id: 'minimal',
+    name: 'Minimal',
+    mood: 'Clean and confident',
+    headingFont: 'Plus Jakarta Sans',
+    headingWeight: '700',
+    bodyFont: 'Plus Jakarta Sans',
+    bodyWeight: '400',
+    headingImport: null,
+    bodyImport: null
+  },
+  {
+    id: 'editorial',
+    name: 'Editorial',
+    mood: 'Magazine luxury',
+    headingFont: 'DM Serif Display',
+    headingWeight: '400',
+    bodyFont: 'DM Sans',
+    bodyWeight: '400',
+    headingImport: '@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&display=swap");',
+    bodyImport: '@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400&display=swap");'
+  },
+  {
+    id: 'romantic',
+    name: 'Romantic',
+    mood: 'Soft and romantic',
+    headingFont: 'Libre Baskerville',
+    headingWeight: '400',
+    headingStyle: 'italic',
+    bodyFont: 'Lato',
+    bodyWeight: '300',
+    headingImport: '@import url("https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@1,400&display=swap");',
+    bodyImport: '@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap");'
+  },
+  {
+    id: 'geometric',
+    name: 'Geometric',
+    mood: 'Architectural precision',
+    headingFont: 'Josefin Sans',
+    headingWeight: '300',
+    bodyFont: 'Josefin Sans',
+    bodyWeight: '400',
+    headingImport: '@import url("https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400&display=swap");',
+    bodyImport: null
+  },
+  {
+    id: 'literary',
+    name: 'Literary',
+    mood: 'Poetic and literary',
+    headingFont: 'EB Garamond',
+    headingWeight: '300',
+    headingStyle: 'italic',
+    bodyFont: 'EB Garamond',
+    bodyWeight: '400',
+    headingImport: '@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@1,300;0,400&display=swap");',
+    bodyImport: null
+  },
+  {
+    id: 'bold',
+    name: 'Bold',
+    mood: 'Strong statement',
+    headingFont: 'Montserrat',
+    headingWeight: '800',
+    bodyFont: 'Montserrat',
+    bodyWeight: '400',
+    headingImport: '@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap");',
+    bodyImport: null
+  },
+  {
+    id: 'handcrafted',
+    name: 'Handcrafted',
+    mood: 'Artisan warmth',
+    headingFont: 'Lora',
+    headingWeight: '400',
+    headingStyle: 'italic',
+    bodyFont: 'Source Sans Pro',
+    bodyWeight: '400',
+    headingImport: '@import url("https://fonts.googleapis.com/css2?family=Lora:ital,wght@1,400&display=swap");',
+    bodyImport: '@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400&display=swap");'
+  },
+  {
+    id: 'luxe',
+    name: 'Luxe',
+    mood: 'Opulent ceremony',
+    headingFont: 'Cinzel',
+    headingWeight: '400',
+    bodyFont: 'Raleway',
+    bodyWeight: '300',
+    headingImport: '@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400&display=swap");',
+    bodyImport: '@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap");'
+  }
+];
+
+export const TRANSITION_OPTIONS = [
+  { id: 'fade', name: 'Fade', mood: 'Gentle', description: 'Pages fade in/out, opacity only' },
+  { id: 'slide', name: 'Slide', mood: 'Flowing', description: 'Pages slide horizontally' },
+  { id: 'reveal', name: 'Reveal', mood: 'Cinematic', description: 'Dark overlay sweeps revealing new page' },
+  { id: 'dissolve', name: 'Dissolve', mood: 'Dreamy', description: 'Cross-fade with slight scale' }
+];
+
+export const SCROLL_ANIMATION_OPTIONS = [
+  { id: 'none', name: 'None', mood: 'Instant', description: 'Content appears immediately' },
+  { id: 'subtle', name: 'Subtle', mood: 'Refined', description: 'Gentle fade-up, default experience' },
+  { id: 'dramatic', name: 'Dramatic', mood: 'Immersive', description: 'Slower reveal, slight blur clear' }
+];
+
+export const HERO_EFFECT_OPTIONS = [
+  { id: 'parallax', name: 'Parallax', description: 'Photo moves at 0.5x scroll speed' },
+  { id: 'zoomout', name: 'Zoom Out', description: 'Photo slowly zooms out as user scrolls' },
+  { id: 'static', name: 'Static', description: 'No movement, clean and still' }
+];
+
+export const WEDDING_PAGES = [
+  { slug: 'home', label: 'Home', icon: 'LayoutDashboard' },
+  { slug: 'our-story', label: 'Our Story', icon: 'BookOpen' },
+  { slug: 'celebration', label: 'Celebration', icon: 'Star' },
+  { slug: 'rsvp', label: 'RSVP', icon: 'Mail' },
+  { slug: 'travel', label: 'Travel', icon: 'MapPin' },
+  { slug: 'registry', label: 'Registry', icon: 'Gift' },
+  { slug: 'music', label: 'Music', icon: 'Music' },
+  { slug: 'photos', label: 'Photos', icon: 'Camera' },
+  { slug: 'faq', label: 'FAQ', icon: 'HelpCircle' }
+];

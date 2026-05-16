@@ -1,0 +1,270 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Guest } from "@/entities/Guest";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search } from "lucide-react";
+import toast from 'react-hot-toast';
+
+import GuestForm from "../components/guests/GuestForm";
+import GuestList from "../components/guests/GuestList";
+import RSVPManagement from "../components/guests/RSVPManagement";
+import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
+import EmailTemplates from "../components/guests/EmailTemplates";
+
+function CountUp({ to, duration = 1200, suffix = '' }) {
+  const [value, setValue] = useState(0);
+  const startRef = useRef(null);
+  useEffect(() => {
+    if (to === 0) { setValue(0); return; }
+    startRef.current = null;
+    let raf;
+    const tick = (ts) => {
+      if (!startRef.current) startRef.current = ts;
+      const progress = Math.min((ts - startRef.current) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(eased * to));
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [to, duration]);
+  return <>{value}{suffix}</>;
+}
+
+function FilterPill({ label, active, onClick }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        fontSize: 11,
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: '0.08em',
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        padding: '6px 14px',
+        borderRadius: 999,
+        border: active ? '1px solid #0A0A0A' : '1px solid rgba(10,10,10,0.18)',
+        background: active ? '#0A0A0A' : hovered ? 'rgba(10,10,10,0.04)' : 'transparent',
+        color: active ? '#FFFFFF' : '#444444',
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        whiteSpace: 'nowrap',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {label}
+    </button>
+  );
+}
+
+const statLabelStyle = {
+  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, marginBottom: 10,
+};
+const statValueStyle = {
+  fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700,
+  color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif",
+  lineHeight: 1, margin: 0,
+};
+
+export default function Guests() {
+  const [guests, setGuests] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingGuest, setEditingGuest] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("list");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { loadGuests(); }, []);
+
+  const loadGuests = async () => {
+    try {
+      const data = await Guest.list('-created_date');
+      setGuests(data);
+    } catch {
+      toast.error("Failed to load guests");
+    }
+    setLoading(false);
+  };
+
+  const handleSubmit = async (guestData) => {
+    const tid = toast.loading(editingGuest ? 'Updating guest…' : 'Adding guest…');
+    try {
+      if (editingGuest) {
+        await Guest.update(editingGuest.id, guestData);
+        toast.success('Guest updated', { id: tid });
+      } else {
+        await Guest.create(guestData);
+        toast.success('Guest added', { id: tid });
+      }
+      setShowForm(false);
+      setEditingGuest(null);
+      loadGuests();
+    } catch {
+      toast.error('Failed to save guest', { id: tid });
+    }
+  };
+
+  const handleEdit = (guest) => { setEditingGuest(guest); setShowForm(true); };
+
+  const handleDelete = async (guestId) => {
+    if (!window.confirm("Delete this guest?")) return;
+    const tid = toast.loading('Deleting…');
+    try {
+      await Guest.delete(guestId);
+      toast.success('Guest deleted', { id: tid });
+      loadGuests();
+    } catch {
+      toast.error('Failed to delete guest', { id: tid });
+    }
+  };
+
+  const stats = React.useMemo(() => {
+    const total = guests.length;
+    const attending = guests.filter(g => g.rsvp_status === 'attending').length;
+    const declined = guests.filter(g => g.rsvp_status === 'declined').length;
+    const pending = guests.filter(g => g.rsvp_status === 'pending' || !g.rsvp_status).length;
+    return { total, attending, declined, pending };
+  }, [guests]);
+
+  const filteredGuests = guests.filter(guest => {
+    const matchesSearch = guest.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          guest.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    if (activeFilter === "all") return matchesSearch;
+    return matchesSearch && guest.rsvp_status === activeFilter;
+  });
+
+  const exportGuestList = () => {
+    const csvContent = [
+      ['Name', 'Email', 'Phone', 'Category', 'RSVP Status', 'Meal Choice', 'Table Assignment', 'Plus One', 'Plus One Name', 'Dietary Restrictions'].join(','),
+      ...guests.map(g => [
+        g.name, g.email || '', g.phone || '', g.category || '',
+        g.rsvp_status || '', g.meal_choice || '', g.table_assignment || '',
+        g.plus_one ? 'Yes' : 'No', g.plus_one_name || '', g.dietary_restrictions || ''
+      ].map(f => `"${f}"`).join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = 'guest-list.csv'; link.click();
+    URL.revokeObjectURL(url);
+    toast.success('Guest list exported');
+  };
+
+  const FILTERS = [
+    { val: 'all',      label: `All (${stats.total})` },
+    { val: 'pending',  label: `Pending (${stats.pending})` },
+    { val: 'attending',label: `Attending (${stats.attending})` },
+    { val: 'declined', label: `Declined (${stats.declined})` },
+  ];
+
+  const STAT_CARDS = [
+    { label: 'Total guests',   value: stats.total },
+    { label: 'Attending',      value: stats.attending },
+    { label: 'Declined',       value: stats.declined },
+    { label: 'Awaiting reply', value: stats.pending },
+  ];
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+
+      {/* Sub-header */}
+      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          Guest list
+        </span>
+      </div>
+
+      {/* Descriptor strip */}
+      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          Manage your guests, RSVPs and meal selections
+        </span>
+      </div>
+
+      {/* Stat strip */}
+      <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        {STAT_CARDS.map((s, i) => (
+          <div key={s.label} style={{ flex: 1, padding: '24px 32px', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+            <p style={statLabelStyle}>{s.label}</p>
+            {loading
+              ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
+              : <p style={statValueStyle}><CountUp to={s.value} /></p>
+            }
+          </div>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: '32px 32px 48px' }}>
+
+        {/* Page toolbar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
+          <button
+            onClick={exportGuestList}
+            disabled={guests.length === 0}
+            className="btn-editorial-secondary"
+            style={{ opacity: guests.length === 0 ? 0.4 : 1 }}
+          >
+            Export CSV
+          </button>
+          <button onClick={() => { setEditingGuest(null); setShowForm(true); setActiveTab('list'); }} className="btn-primary">
+            + Add guest
+          </button>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full justify-start">
+            <TabsTrigger value="list">Guest list</TabsTrigger>
+            <TabsTrigger value="rsvp">RSVP management</TabsTrigger>
+            <TabsTrigger value="emails">Email templates</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="list" className="mt-8 space-y-6">
+            {/* Search + filter row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ position: 'relative', flex: '1 1 240px', maxWidth: 360 }}>
+                <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                <Input
+                  placeholder="Search by name or email…"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  style={{ paddingLeft: 20 }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {FILTERS.map(f => (
+                  <FilterPill key={f.val} label={f.label} active={activeFilter === f.val} onClick={() => setActiveFilter(f.val)} />
+                ))}
+              </div>
+            </div>
+
+            {showForm && (
+              <GuestForm
+                guest={editingGuest}
+                onSubmit={handleSubmit}
+                onCancel={() => { setShowForm(false); setEditingGuest(null); }}
+              />
+            )}
+
+            <GuestList guests={filteredGuests} onEdit={handleEdit} onDelete={handleDelete} loading={loading} />
+          </TabsContent>
+
+          <TabsContent value="rsvp" className="mt-8">
+            <RSVPManagement guests={guests} />
+          </TabsContent>
+
+          <TabsContent value="emails" className="mt-8">
+            <EmailTemplates guests={guests} />
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <AIWeddingAssistant />
+    </div>
+  );
+}

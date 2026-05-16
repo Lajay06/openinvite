@@ -1,0 +1,80 @@
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Task title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Task description"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "venue",
+        "catering",
+        "attire",
+        "photography",
+        "flowers",
+        "music",
+        "transportation",
+        "legal",
+        "guests",
+        "decorations",
+        "general"
+      ],
+      "default": "general",
+      "description": "Task category"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium",
+      "description": "Priority level"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the task is completed"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Due date for the task"
+    },
+    "reminder_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When to send a reminder"
+    },
+    "is_suggested": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this was an AI suggestion"
+    },
+    "wedding_timeline": {
+      "type": "string",
+      "enum": [
+        "12_months",
+        "9_months",
+        "6_months",
+        "3_months",
+        "1_month",
+        "2_weeks",
+        "1_week",
+        "day_of"
+      ],
+      "description": "When this task should typically be done"
+    }
+  },
+  "required": [
+    "title"
+  ]
+}

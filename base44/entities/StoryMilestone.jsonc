@@ -1,0 +1,32 @@
+{
+  "name": "StoryMilestone",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the milestone (e.g., 'First Date', 'The Proposal')"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the milestone"
+    },
+    "story": {
+      "type": "string",
+      "description": "The narrative or anecdote about this milestone"
+    },
+    "image_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Photo associated with this milestone"
+    },
+    "order": {
+      "type": "number",
+      "description": "Display order (lower numbers appear first)"
+    }
+  },
+  "required": [
+    "title",
+    "date"
+  ]
+}

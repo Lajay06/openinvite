@@ -1,0 +1,28 @@
+{
+  "name": "RegistryItem",
+  "type": "object",
+  "properties": {
+    "store_name": {
+      "type": "string",
+      "description": "Name of the store or registry service (e.g., Crate & Barrel, Zola)"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Direct URL to the gift registry"
+    },
+    "description": {
+      "type": "string",
+      "description": "A short description or note for the guests"
+    },
+    "image_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the store's logo or a representative image"
+    }
+  },
+  "required": [
+    "store_name",
+    "url"
+  ]
+}
