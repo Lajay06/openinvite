@@ -1,59 +1,50 @@
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
 import { Users, UserCheck, UserX, Clock } from "lucide-react";
 
-const StatCard = ({ title, value, icon: Icon, color, percentage }) => (
-  <Card className="overflow-hidden transition-all duration-200 hover:shadow-md border-0 shadow-sm">
-    <CardContent className="p-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-          {percentage !== undefined && (
-            <p className="text-sm text-gray-500">{percentage}% of total</p>
-          )}
-        </div>
-        <div className={`p-3 rounded-full ${color} bg-opacity-10`}>
-          <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
+const STAT_CONFIG = [
+  { key: 'total',     label: 'Total guests',  icon: Users,     accent: '#803D81' },
+  { key: 'attending', label: 'Attending',      icon: UserCheck, accent: '#6b7700' },
+  { key: 'declined',  label: 'Declined',       icon: UserX,     accent: '#E03553' },
+  { key: 'pending',   label: 'Awaiting reply', icon: Clock,     accent: '#444444' },
+];
+
+const labelStyle = {
+  fontSize: 11, fontWeight: 700,
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0,
+};
 
 export default function GuestStats({ stats }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StatCard
-        title="Total Guests"
-        value={stats.total}
-        icon={Users}
-        color="bg-blue-500"
-      />
-      
-      <StatCard
-        title="Attending"
-        value={stats.attending}
-        icon={UserCheck}
-        color="bg-green-500"
-        percentage={stats.total > 0 ? Math.round((stats.attending / stats.total) * 100) : 0}
-      />
-      
-      <StatCard
-        title="Declined"
-        value={stats.declined}
-        icon={UserX}
-        color="bg-red-500"
-        percentage={stats.total > 0 ? Math.round((stats.declined / stats.total) * 100) : 0}
-      />
-      
-      <StatCard
-        title="Pending"
-        value={stats.pending}
-        icon={Clock}
-        color="bg-yellow-500"
-        percentage={stats.total > 0 ? Math.round((stats.pending / stats.total) * 100) : 0}
-      />
+    <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      {STAT_CONFIG.map((s, i) => {
+        const Icon = s.icon;
+        const pct = s.key !== 'total' && stats.total > 0
+          ? Math.round((stats[s.key] / stats.total) * 100)
+          : null;
+        return (
+          <div
+            key={s.key}
+            style={{
+              flex: 1, padding: '24px 32px', minHeight: 80,
+              borderRight: i < STAT_CONFIG.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <p style={labelStyle}>{s.label}</p>
+              <Icon size={14} style={{ color: s.accent, flexShrink: 0 }} />
+            </div>
+            <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 }}>
+              {stats[s.key]}
+            </p>
+            {pct !== null && (
+              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '6px 0 0' }}>
+                {pct}% of total
+              </p>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -4,11 +4,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 
 const COMMON_TAGS = ["Family", "Work", "College friends", "High school", "Neighbors", "Close friends", "Extended family", "Bride's side", "Groom's side"];
 
-export default function GuestForm({ guest, onSubmit, onCancel }) {
+export default function GuestForm({ guest, onSubmit, onCancel, saving = false }) {
   const [formData, setFormData] = useState(guest || {
     name: "", email: "", phone: "", category: "family",
     tags: [], table_assignment: "", dietary_restrictions: "",
@@ -187,11 +187,12 @@ export default function GuestForm({ guest, onSubmit, onCancel }) {
 
         {/* Footer buttons */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
-          <button type="button" onClick={onCancel} className="btn-editorial-secondary">
+          <button type="button" onClick={onCancel} className="btn-editorial-secondary" disabled={saving}>
             Cancel
           </button>
-          <button type="submit" className="btn-primary">
-            {guest ? 'Update guest' : 'Add guest'}
+          <button type="submit" className="btn-primary" disabled={saving} style={{ opacity: saving ? 0.75 : 1 }}>
+            {saving && <Loader2 size={13} className="animate-spin" />}
+            {saving ? 'Saving…' : (guest ? 'Update guest' : 'Add guest')}
           </button>
         </div>
       </form>

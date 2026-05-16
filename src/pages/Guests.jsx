@@ -78,6 +78,7 @@ export default function Guests() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("list");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => { loadGuests(); }, []);
 
@@ -92,6 +93,7 @@ export default function Guests() {
   };
 
   const handleSubmit = async (guestData) => {
+    setSaving(true);
     const tid = toast.loading(editingGuest ? 'Updating guest…' : 'Adding guest…');
     try {
       if (editingGuest) {
@@ -104,8 +106,10 @@ export default function Guests() {
       setShowForm(false);
       setEditingGuest(null);
       loadGuests();
-    } catch {
-      toast.error('Failed to save guest', { id: tid });
+    } catch (e) {
+      toast.error(e?.message || 'Failed to save guest', { id: tid });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -118,8 +122,8 @@ export default function Guests() {
       await Guest.delete(guestId);
       toast.success('Guest deleted', { id: tid });
       loadGuests();
-    } catch {
-      toast.error('Failed to delete guest', { id: tid });
+    } catch (e) {
+      toast.error(e?.message || 'Failed to delete guest', { id: tid });
     }
   };
 
@@ -236,6 +240,7 @@ export default function Guests() {
                 guest={editingGuest}
                 onSubmit={handleSubmit}
                 onCancel={() => { setShowForm(false); setEditingGuest(null); }}
+                saving={saving}
               />
             )}
 
