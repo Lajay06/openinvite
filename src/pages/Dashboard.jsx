@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 
+import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import RSVPChart from "../components/dashboard/RSVPChart";
 import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
@@ -149,43 +150,7 @@ export default function Dashboard() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      {/* Sub-header */}
-      <div style={{
-        height: 48,
-        background: '#FFFFFF',
-        borderBottom: '1px solid rgba(10,10,10,0.08)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        <span style={{
-          fontSize: 18,
-          fontWeight: 700,
-          color: '#0A0A0A',
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-        }}>
-          Overall
-        </span>
-      </div>
-
-      {/* Descriptor strip */}
-      <div style={{
-        background: '#F5F5F5',
-        padding: '12px 0',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-        <span style={{
-          fontSize: 14,
-          fontWeight: 600,
-          color: 'rgba(10,10,10,0.5)',
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-        }}>
-          Your wedding planning at a glance
-        </span>
-      </div>
+      <DashboardPageHeader title="Overall" subtitle="Your wedding planning at a glance" />
 
       {/* Stat cards — full-width horizontal, equal columns */}
       <div style={{
@@ -207,30 +172,6 @@ export default function Dashboard() {
       </div>
 
       <div style={{ padding: '32px 32px 48px' }}>
-
-        {/* Welcome banner */}
-        {showWelcomeBanner && (
-          <div style={{
-            marginBottom: 32,
-            background: '#0A0A0A',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '20px 32px',
-          }}>
-            <div>
-              <p style={{ fontSize: 16, fontWeight: 700, color: '#FFFFFF', margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Welcome to your planner.
-              </p>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', margin: '4px 0 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Your dashboard is ready. Begin below.
-              </p>
-            </div>
-            <button onClick={dismissWelcome} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', padding: 4 }}>
-              <X size={16} />
-            </button>
-          </div>
-        )}
 
         {/* Quick navigation links */}
         <div style={{
@@ -278,7 +219,10 @@ function StatCard({ label, value, suffix, url, isLast, loading }) {
       style={{
         flex: 1,
         padding: '24px 32px',
+        minHeight: 80,
         borderRight: !isLast ? '1px solid rgba(10,10,10,0.08)' : 'none',
+        borderRadius: 0,
+        boxShadow: 'none',
         textDecoration: 'none',
         display: 'block',
         background: hovered ? 'rgba(10,10,10,0.02)' : 'transparent',

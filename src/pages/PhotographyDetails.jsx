@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Check } from "lucide-react";
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 function SLabel({ children }) {
   return (
@@ -86,27 +87,7 @@ export default function PhotographyDetailsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      <div style={{
-        width: '100%',
-        height: 48,
-        background: '#FFFFFF',
-        borderBottom: '1px solid #EEEEEE',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: 32,
-        paddingRight: 32,
-        boxSizing: 'border-box',
-        flexShrink: 0,
-      }}>
-        <span style={{
-          fontSize: 16,
-          fontWeight: 600,
-          color: '#0A0A0A',
-          fontFamily: 'Plus Jakarta Sans, sans-serif',
-        }}>
-          Photography
-        </span>
-      </div>
+      <DashboardPageHeader title="Photography & videography" subtitle="Plan your photography, videography, and visual storytelling" />
       <div style={{ padding: '32px', width: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 8 }}>
           <div style={{ fontSize: 12, color: saveStatus === 'saved' ? '#22C55E' : '#888', fontWeight: saveStatus === 'saved' ? 600 : 400 }}>

@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Loader2, Check } from "lucide-react";
 import DatePicker from "@/components/shared/DatePicker";
 import LocationPicker from "@/components/shared/LocationPicker";
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 function SectionLabel({ children }) {
   return (
@@ -140,14 +141,7 @@ export default function EventDetailsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#fff', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Event details</span>
-      </div>
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your wedding info synced across your website, invitations & planner</span>
-      </div>
+      <DashboardPageHeader title="Event details" subtitle="Manage your ceremony, reception, and venue details" />
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 32px 80px' }}>
 

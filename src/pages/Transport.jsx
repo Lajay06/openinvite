@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MapPin, Bus, Car, Truck, FileText, Lightbulb, Loader2, X, Plus, Check, Search } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -226,14 +227,7 @@ export default function TransportPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Transport</span>
-      </div>
-      {/* Descriptor */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Help your guests get to and from your wedding</span>
-      </div>
+      <DashboardPageHeader title="Transport" subtitle="Help your guests get to and from your wedding" />
 
       <div style={{ padding: '32px 32px 48px' }}>
         {/* Toolbar */}

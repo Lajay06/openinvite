@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
 import AIStylingAssistant from "../components/styling/AIStylingAssistant";
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const DRESS_CODES = ['Black Tie', 'Formal', 'Cocktail', 'Semi-Formal', 'Casual', 'Beach', 'Garden Party', 'Themed'];
 
@@ -149,14 +150,7 @@ export default function StylingPage() {
   return (
     <div className="min-h-screen bg-white">
       <Toaster />
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#fff', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Styling</span>
-      </div>
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Attire, flowers & decorations for your big day</span>
-      </div>
+      <DashboardPageHeader title="Styling" subtitle="Attire, flowers and decorations for your big day" />
 
       <div style={{ padding: '32px 32px 48px' }}>
         {/* Actions */}
@@ -243,7 +237,7 @@ export default function StylingPage() {
 
           {/* Flowers Tab */}
           <TabsContent value="flowers" className="mt-8">
-            <Accordion type="multiple" defaultValue={["florist", "bouquets", "ceremony-flowers", "reception-flowers"]} className="w-full space-y-4">
+            <Accordion type="multiple" defaultValue={["florist"]} className="w-full space-y-4">
               <DetailsSection title="Florist" icon={User} sectionKey="florist" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
                 <div>
                   <Label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', marginBottom: 6, display: 'block', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Florist</Label>
@@ -356,7 +350,7 @@ export default function StylingPage() {
 
           {/* Decorations Tab */}
           <TabsContent value="decorations" className="mt-8">
-            <Accordion type="multiple" defaultValue={["decorator", "theme-colors", "ceremony-decor", "reception-decor"]} className="w-full space-y-4">
+            <Accordion type="multiple" defaultValue={["decorator"]} className="w-full space-y-4">
               <DetailsSection title="Decorator / Designer" icon={User} sectionKey="decorator" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>
                 <div>
                   <Label style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', marginBottom: 6, display: 'block', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Decorator / Designer</Label>

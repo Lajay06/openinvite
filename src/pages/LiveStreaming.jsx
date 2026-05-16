@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { InvokeLLM } from "@/integrations/Core";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Video, Plus, Trash2, Loader2, Radio, Copy, X, Lightbulb, Edit2 } from "lucide-react";
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -244,14 +245,7 @@ export default function LiveStreamingPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Live stream</span>
-      </div>
-      {/* Descriptor */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Share your wedding live with guests who can't be there</span>
-      </div>
+      <DashboardPageHeader title="Live stream" subtitle="Share your wedding live with guests who can't be there" />
 
       <div style={{ padding: '32px 32px 48px' }}>
         {/* Toolbar */}

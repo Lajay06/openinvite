@@ -7,6 +7,7 @@ import AddItemModal from '../components/moodboard/AddItemModal';
 import PinterestConnect from '../components/moodboard/PinterestConnect';
 import BoardSelector from '../components/moodboard/BoardSelector';
 import toast from 'react-hot-toast';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -133,19 +134,12 @@ export default function MoodboardPage() {
       onDragOver={e => e.preventDefault()}
       onDrop={e => { e.preventDefault(); e.dataTransfer.files.length && handleFileUpload(e.dataTransfer.files); }}>
 
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Moodboard</span>
-      </div>
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Collect and organise inspiration images for your wedding vision</span>
-      </div>
+      <DashboardPageHeader title="Moodboard" subtitle="Collect and organise inspiration images for your wedding vision" />
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {stats.map((s, i) => (
-          <div key={i} style={{ flex: 1, padding: '24px 32px', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '8px 0 0' }}>
               <CountUp to={s.value} />

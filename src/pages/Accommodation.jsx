@@ -4,6 +4,7 @@ import { InvokeLLM } from "@/integrations/Core";
 import { Hotel, MapPin, FileText, Lightbulb, Loader2, X, Plus, Check, Search, Edit, Trash2 } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -285,14 +286,7 @@ export default function AccommodationPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Accommodation</span>
-      </div>
-      {/* Descriptor */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Recommend places to stay for your out-of-town guests</span>
-      </div>
+      <DashboardPageHeader title="Accommodation" subtitle="Recommend places to stay for your out-of-town guests" />
 
       <div style={{ padding: '32px 32px 48px' }}>
         {/* Toolbar */}

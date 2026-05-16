@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import WhatsAppConnect from "../components/messages/WhatsAppConnect";
 import WhatsAppCompose from "../components/messages/WhatsAppCompose";
 import WhatsAppQRCode from "../components/messages/WhatsAppQRCode";
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -144,14 +145,7 @@ export default function MessagesPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Messages</span>
-      </div>
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Read and reply to messages from your guests</span>
-      </div>
+      <DashboardPageHeader title="Messages" subtitle="Read and reply to messages from your guests" />
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -161,7 +155,7 @@ export default function MessagesPage() {
           { label: 'Replied', value: stats.replied },
           { label: 'Unreplied', value: stats.unreplied },
         ].map((s, i, arr) => (
-          <div key={i} style={{ flex: 1, padding: '24px 32px', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '8px 0 0' }}>
               <CountUp to={s.value} />

@@ -9,6 +9,7 @@ import SharePlaylist from '../components/music/SharePlaylist';
 import MusicList from '../components/music/MusicList';
 import MusicForm from '../components/music/MusicForm';
 import { Textarea } from '@/components/ui/textarea';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -135,14 +136,7 @@ export default function MusicPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Music</span>
-      </div>
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Plan playlists, add songs and manage guest song requests</span>
-      </div>
+      <DashboardPageHeader title="Music" subtitle="Plan playlists, add songs and manage guest song requests" />
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -152,7 +146,7 @@ export default function MusicPage() {
           { label: 'Song requests', value: songRequests?.length || 0 },
           { label: 'Pending approval', value: pendingCount, last: true },
         ].map((s, i) => (
-          <div key={i} style={{ flex: 1, padding: '24px 32px', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.08)' }}>
+          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.08)' }}>
             <p style={labelStyle}>{s.label}</p>
             <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '8px 0 0' }}>
               <CountUp to={s.value} />
@@ -164,7 +158,7 @@ export default function MusicPage() {
       {/* Toolbar */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
         <button onClick={() => { setShowSuggestions(true); setShowSearch(false); setShowAddForm(false); }}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#0A1930', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
+          style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
           <Sparkles size={12} style={{ color: '#DDF762' }} />Ask Ava — suggest songs
         </button>
         <div style={{ flex: 1 }} />

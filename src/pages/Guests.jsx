@@ -9,6 +9,7 @@ import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
 import RSVPManagement from "../components/guests/RSVPManagement";
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
+import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import EmailTemplates from "../components/guests/EmailTemplates";
 
 function CountUp({ to, duration = 1200, suffix = '' }) {
@@ -172,24 +173,12 @@ export default function Guests() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Guest list
-        </span>
-      </div>
-
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Manage your guests, RSVPs and meal selections
-        </span>
-      </div>
+      <DashboardPageHeader title="Guest list" subtitle="Manage your guests, RSVPs and meal selections" />
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {STAT_CARDS.map((s, i) => (
-          <div key={s.label} style={{ flex: 1, padding: '24px 32px', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={s.label} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none', borderRadius: 0, boxShadow: 'none' }}>
             <p style={statLabelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />

@@ -11,6 +11,7 @@ import ScheduleTimeline from "../components/schedule/ScheduleTimeline";
 import ScheduleAvaModal from "../components/schedule/ScheduleSuggestionsModal";
 import WeddingDayTimelineBuilder from "../components/schedule/WeddingDayTimelineBuilder";
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
+import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 
 function CountUp({ to, duration = 1200, format }) {
   const [value, setValue] = useState(0);
@@ -180,24 +181,12 @@ export default function SchedulePage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Schedule
-        </span>
-      </div>
-
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Build, visualise and optimise your wedding day timeline
-        </span>
-      </div>
+      <DashboardPageHeader title="Schedule" subtitle="Build, visualise and optimise your wedding day timeline" />
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {STAT_CARDS.map((s, i) => (
-          <div key={s.label} style={{ flex: 1, padding: '24px 32px', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={s.label} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
             <p style={statLabelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 60, height: 32, background: 'rgba(10,10,10,0.06)' }} />
@@ -211,20 +200,12 @@ export default function SchedulePage() {
       <div style={{ padding: '32px 32px 48px' }}>
 
         {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
-          <button
-            onClick={exportSchedule}
-            disabled={scheduleItems.length === 0}
-            className="btn-editorial-secondary"
-            style={{ opacity: scheduleItems.length === 0 ? 0.4 : 1 }}
-          >
-            Export CSV
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
           <button
             onClick={() => setShowAvaModal(true)}
             style={{
               display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px',
-              borderRadius: 999, background: '#0A0A0A', color: '#FFFFFF', border: 'none', cursor: 'pointer',
+              borderRadius: 999, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', cursor: 'pointer',
               fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif",
               transition: 'transform 0.2s',
             }}
@@ -234,12 +215,17 @@ export default function SchedulePage() {
             <Sparkles size={14} />
             Ask Ava — optimise my schedule
           </button>
-          <button
-            onClick={handleAddEvent}
-            className="btn-primary"
-          >
-            + Add event
-          </button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              onClick={exportSchedule}
+              disabled={scheduleItems.length === 0}
+              className="btn-editorial-secondary"
+              style={{ opacity: scheduleItems.length === 0 ? 0.4 : 1 }}
+            >
+              Export CSV
+            </button>
+            <button onClick={handleAddEvent} className="btn-primary">+ Add event</button>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>

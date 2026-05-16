@@ -264,7 +264,7 @@ export default function CateringPage() {
 
           {/* Planning Tab */}
           <TabsContent value="planning" className="mt-8">
-            <Accordion type="multiple" defaultValue={["caterer", "menu"]} className="w-full space-y-4">
+            <Accordion type="multiple" defaultValue={["caterer"]} className="w-full space-y-4">
               {/* Caterer Section */}
               <DetailsSection title="Caterer / Venue" icon={ChefHat} sectionKey="caterer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
                 <div>

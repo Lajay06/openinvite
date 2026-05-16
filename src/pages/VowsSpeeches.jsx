@@ -4,6 +4,7 @@ import { Plus, Edit, Trash2, Mic, Heart, Printer, Sparkles, Loader2, User } from
 import toast from 'react-hot-toast';
 import VowSpeechEditor from '../components/vows/VowSpeechEditor';
 import AIVowsSpeechesAssistant from '../components/vows/AIVowsSpeechesAssistant';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -106,19 +107,12 @@ export default function VowsSpeechesPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Vows &amp; speeches</span>
-      </div>
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Write, store and polish your vows and wedding-day speeches</span>
-      </div>
+      <DashboardPageHeader title="Vows & speeches" subtitle="Write, store and polish your vows and wedding-day speeches" />
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {stats.map((s, i) => (
-          <div key={i} style={{ flex: 1, padding: '24px 32px', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '8px 0 0' }}>
               <CountUp to={s.value} />
@@ -130,7 +124,7 @@ export default function VowsSpeechesPage() {
       {/* Toolbar */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
         <button onClick={() => { setAiType(activeTab === 'vows' ? 'vow' : 'speech'); setShowAI(true); }}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#0A1930', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
+          style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
           <Sparkles size={12} style={{ color: '#DDF762' }} />Ask Ava — write with AI
         </button>
         <div style={{ flex: 1 }} />

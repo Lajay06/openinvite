@@ -10,6 +10,7 @@ import BudgetList from "../components/budget/BudgetList";
 import BudgetChart from "../components/budget/BudgetChart";
 import BudgetForecasting from "../components/budget/BudgetForecasting";
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
+import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 
 function CountUp({ to, duration = 1200, format }) {
   const [value, setValue] = useState(0);
@@ -63,6 +64,111 @@ const CATEGORIES = [
   "attire", "transportation", "decorations", "rings", "stationery",
   "beauty", "honeymoon", "miscellaneous",
 ];
+
+const BUDGET_CATEGORIES = [
+  { key: 'venue', label: 'Venue' },
+  { key: 'catering', label: 'Catering' },
+  { key: 'photography', label: 'Photography' },
+  { key: 'flowers', label: 'Flowers' },
+  { key: 'music', label: 'Music' },
+  { key: 'attire', label: 'Attire' },
+  { key: 'transportation', label: 'Transport' },
+  { key: 'honeymoon', label: 'Honeymoon' },
+];
+
+function loadBudgetPlan() {
+  try {
+    const s = localStorage.getItem('oi_budget_plan');
+    if (s) return JSON.parse(s);
+  } catch {}
+  return { total: '', categories: {} };
+}
+
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+function BudgetPlanner() {
+  const [plan, setPlan] = useState(() => loadBudgetPlan());
+  const [saved, setSaved] = useState(false);
+
+  const save = () => {
+    localStorage.setItem('oi_budget_plan', JSON.stringify(plan));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1800);
+  };
+
+  const setTotal = (v) => setPlan(p => ({ ...p, total: v }));
+  const setCat = (key, v) => setPlan(p => ({ ...p, categories: { ...p.categories, [key]: v } }));
+
+  const total = parseFloat(plan.total) || 0;
+  const allocated = BUDGET_CATEGORIES.reduce((s, c) => s + (parseFloat(plan.categories[c.key]) || 0), 0);
+  const remaining = total - allocated;
+
+  const inputStyle = {
+    background: 'transparent', border: 'none',
+    borderBottom: '1px solid rgba(10,10,10,0.18)', borderRadius: 0,
+    padding: '6px 0', fontSize: 14, fontWeight: 500, color: '#0A0A0A',
+    outline: 'none', width: '100%', fontFamily: PJS,
+  };
+
+  return (
+    <div style={{ marginBottom: 32, border: '1px solid rgba(10,10,10,0.08)', padding: '24px 32px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Budget planner</span>
+        <button onClick={save} className="btn-primary" style={{ padding: '7px 20px', fontSize: 13 }}>
+          {saved ? 'Saved ✓' : 'Save plan'}
+        </button>
+      </div>
+
+      {/* Total budget input */}
+      <div style={{ marginBottom: 24, maxWidth: 320 }}>
+        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6 }}>
+          Total wedding budget ($)
+        </label>
+        <input
+          type="number"
+          placeholder="e.g. 50000"
+          value={plan.total}
+          onChange={e => setTotal(e.target.value)}
+          style={{ ...inputStyle, fontSize: 22, fontWeight: 700 }}
+          onFocus={e => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; }}
+          onBlur={e => { e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'; e.target.style.borderBottomWidth = '1px'; }}
+        />
+      </div>
+
+      {/* Category allocations */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px 32px' }}>
+        {BUDGET_CATEGORIES.map(cat => (
+          <div key={cat.key}>
+            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6 }}>
+              {cat.label}
+            </label>
+            <input
+              type="number"
+              placeholder="$0"
+              value={plan.categories[cat.key] || ''}
+              onChange={e => setCat(cat.key, e.target.value)}
+              style={inputStyle}
+              onFocus={e => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; }}
+              onBlur={e => { e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'; e.target.style.borderBottomWidth = '1px'; }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Allocation summary */}
+      {total > 0 && (
+        <div style={{ marginTop: 20, display: 'flex', gap: 24, borderTop: '1px solid rgba(10,10,10,0.08)', paddingTop: 16 }}>
+          <span style={{ fontSize: 13, color: '#444444', fontFamily: PJS }}>
+            Allocated: <strong style={{ color: '#0A0A0A' }}>${allocated.toLocaleString()}</strong>
+          </span>
+          <span style={{ fontSize: 13, color: remaining < 0 ? '#E03553' : '#444444', fontFamily: PJS }}>
+            Remaining: <strong>${remaining.toLocaleString()}</strong>
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function BudgetPage() {
   const [budgetItems, setBudgetItems] = useState([]);
@@ -161,24 +267,12 @@ export default function BudgetPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Budget
-        </span>
-      </div>
-
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Plan, track and forecast your wedding spending
-        </span>
-      </div>
+      <DashboardPageHeader title="Budget" subtitle="Plan, track and forecast your wedding spending" />
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {STAT_CARDS.map((s, i) => (
-          <div key={s.label} style={{ flex: 1, padding: '24px 32px', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={s.label} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none', borderRadius: 0, boxShadow: 'none' }}>
             <p style={statLabelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 80, height: 32, background: 'rgba(10,10,10,0.06)' }} />
@@ -192,20 +286,12 @@ export default function BudgetPage() {
       <div style={{ padding: '32px 32px 48px' }}>
 
         {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
-          <button
-            onClick={exportBudget}
-            disabled={budgetItems.length === 0}
-            className="btn-editorial-secondary"
-            style={{ opacity: budgetItems.length === 0 ? 0.4 : 1 }}
-          >
-            Export CSV
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
           <button
             onClick={() => setActiveTab('forecasting')}
             style={{
               display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px',
-              borderRadius: 999, background: '#0A0A0A', color: '#FFFFFF', border: 'none', cursor: 'pointer',
+              borderRadius: 999, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', cursor: 'pointer',
               fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif",
               transition: 'transform 0.2s',
             }}
@@ -215,12 +301,22 @@ export default function BudgetPage() {
             <Sparkles size={14} />
             Ask Ava — budget analysis
           </button>
-          <button
-            onClick={() => { setEditingItem(null); setShowForm(true); }}
-            className="btn-primary"
-          >
-            + Add expense
-          </button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              onClick={exportBudget}
+              disabled={budgetItems.length === 0}
+              className="btn-editorial-secondary"
+              style={{ opacity: budgetItems.length === 0 ? 0.4 : 1 }}
+            >
+              Export CSV
+            </button>
+            <button
+              onClick={() => { setEditingItem(null); setShowForm(true); }}
+              className="btn-primary"
+            >
+              + Add expense
+            </button>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -231,6 +327,7 @@ export default function BudgetPage() {
           </TabsList>
 
           <TabsContent value="overview" className="mt-8">
+            <BudgetPlanner />
             <BudgetChart budgetItems={budgetItems} />
           </TabsContent>
 

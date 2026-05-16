@@ -11,6 +11,7 @@ import ThingsToDo from "../components/guest-experience/ThingsToDo";
 import RestaurantRecommendations from "../components/guest-experience/RestaurantRecommendations";
 import ItineraryPlanner from "../components/guest-experience/ItineraryPlanner";
 import LocalTips from "../components/guest-experience/LocalTips";
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const TABS = [
   { id: 'hotels', label: 'Hotels', icon: Hotel },
@@ -125,24 +126,7 @@ export default function GuestExperiencePage() {
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <Toaster />
 
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#fff', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Guest experience</span>
-      </div>
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {weddingCity ? `Hotels, transport & tips for guests near ${weddingCity}` : 'Everything your guests need for the wedding'}
-        </span>
-        {weddingLocation && (
-          <>
-            <div style={{ width: 1, height: 16, background: 'rgba(10,10,10,0.15)' }} />
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'rgba(10,10,10,0.4)' }}>
-              <MapPin size={13} /> {weddingLocation}
-            </span>
-          </>
-        )}
-      </div>
+      <DashboardPageHeader title="Guest experience" subtitle="Curate an unforgettable experience for your guests" />
 
       {/* Content */}
       <div style={{ display: 'flex' }}>
