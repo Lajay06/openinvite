@@ -2,18 +2,18 @@ import React, { useRef, useState } from "react";
 import { Users, Wallet, Calendar, Music, Mail, Armchair, Gift, Camera, Sparkles, Building, BarChart3, Link2 } from "lucide-react";
 
 const FEATURES = [
-  { icon: Users, label: "GUEST MANAGEMENT" },
-  { icon: Wallet, label: "BUDGET TRACKING" },
-  { icon: Calendar, label: "TIMELINE PLANNER" },
-  { icon: Music, label: "SPOTIFY PLAYLISTS" },
-  { icon: Mail, label: "DIGITAL INVITATIONS" },
-  { icon: Armchair, label: "SEATING CHARTS" },
-  { icon: Gift, label: "GIFT REGISTRY" },
-  { icon: Camera, label: "PHOTO MANAGEMENT" },
-  { icon: Sparkles, label: "AI ASSISTANT AVA" },
-  { icon: Building, label: "VENDOR MANAGEMENT" },
-  { icon: BarChart3, label: "EXPENSE ANALYTICS" },
-  { icon: Link2, label: "RSVP TRACKING" },
+  { icon: Users, label: "Guest management" },
+  { icon: Wallet, label: "Budget tracking" },
+  { icon: Calendar, label: "Timeline planner" },
+  { icon: Music, label: "Spotify playlists" },
+  { icon: Mail, label: "Digital invitations" },
+  { icon: Armchair, label: "Seating charts" },
+  { icon: Gift, label: "Gift registry" },
+  { icon: Camera, label: "Photo management" },
+  { icon: Sparkles, label: "AI assistant Ava" },
+  { icon: Building, label: "Vendor management" },
+  { icon: BarChart3, label: "Expense analytics" },
+  { icon: Link2, label: "RSVP tracking" },
 ];
 
 export default function FeaturesMarquee() {
@@ -94,12 +94,12 @@ function FeatureItem({ feature }) {
       />
       <span
         style={{
-          fontSize: 14,
-          fontWeight: 500,
+          fontSize: 13,
+          fontWeight: 600,
           color: "#0A0A0A",
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
+          letterSpacing: "0.01em",
           whiteSpace: "nowrap",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
         }}
       >
         {feature.label}

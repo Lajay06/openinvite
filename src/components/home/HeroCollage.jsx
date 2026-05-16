@@ -93,7 +93,7 @@ export default function HeroCollage({ onCTA }) {
           Because planning your wedding should feel exciting.
         </p>
 
-        <button onClick={onCTA} style={{ background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', padding: '14px 40px', fontSize: 13, fontWeight: 600, letterSpacing: '0.02em', border: 'none', borderRadius: 0, cursor: 'pointer', fontFamily: 'inherit' }}>
+        <button onClick={onCTA} className="btn-primary" style={{ padding: '14px 40px', fontSize: 13 }}>
           Start planning
         </button>
       </div>

@@ -37,7 +37,7 @@ function BrandItem({ brand, i }) {
       onMouseLeave={() => setHovered(false)}
     >
       <span style={{ fontSize: '18px', color: '#AAAAAA', fontFamily: 'sans-serif' }}>{brand.icon}</span>
-      <span style={{ fontSize: '15px', fontWeight: 600, color: '#666666', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{brand.name}</span>
+      <span style={{ fontSize: '15px', fontWeight: 600, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{brand.name}</span>
       <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#E0E0DC', display: 'inline-block', marginLeft: '16px' }} />
     </div>
   );
@@ -49,13 +49,13 @@ export default function IntegrationsSection() {
 
       {/* Centred heading */}
       <div style={{ textAlign: 'center', marginBottom: '64px', padding: '0 80px' }}>
-        <p style={{ color: '#888888', fontSize: '11px', fontWeight: 500, letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '12px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: '11px', fontWeight: 500, letterSpacing: '0.25em', textTransform: 'uppercase', marginBottom: '12px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           INTEGRATIONS
         </p>
         <h2 style={{ color: '#0A0A0A', fontSize: 'clamp(24px, 3vw, 40px)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '12px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Works with the tools you already love.
         </h2>
-        <p style={{ color: '#888888', fontSize: '16px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: '16px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Openinvite connects seamlessly with the platforms you use every day.
         </p>
       </div>

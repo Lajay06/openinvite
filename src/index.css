@@ -178,14 +178,14 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
-  /* Label caps style */
+  /* Label caps style — DEPRECATED, use ds-label instead */
   .label-caps {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.2em;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #555555;
+    color: rgba(10,10,10,0.4);
   }
 
   /* Stat number — Plus Jakarta Sans bold, large */
@@ -392,6 +392,215 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     background: linear-gradient(135deg, #E03553 0%, #803D81 100%);
     border-radius: 0;
     transition: width 0.4s ease;
+  }
+
+  /* ── Design-system layout primitives ───────────────────── */
+
+  /* Page shell — wraps every dashboard page */
+  .ds-page {
+    min-height: 100vh;
+    background: #FFFFFF;
+  }
+
+  /* Sub-header — 48px title bar directly below main header */
+  .ds-subheader {
+    height: 48px;
+    background: #FFFFFF;
+    border-bottom: 1px solid rgba(10,10,10,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Title inside sub-header */
+  .ds-subheader-title {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0A0A0A;
+    letter-spacing: -0.01em;
+  }
+
+  /* Descriptor strip — #F5F5F5 bar below sub-header */
+  .ds-descriptor {
+    background: #F5F5F5;
+    padding: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Descriptor text */
+  .ds-descriptor-text {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(10,10,10,0.5);
+  }
+
+  /* Page content padding */
+  .ds-content {
+    padding: 32px 32px 48px;
+  }
+
+  /* Label — 11px/700/uppercase — the standard across all cards, tables, headers */
+  .ds-label {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(10,10,10,0.4);
+  }
+
+  /* Label on dark bg */
+  .ds-label-dark {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.4);
+  }
+
+  /* Stat strip — 4-column horizontal grid with dividers */
+  .ds-stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid rgba(10,10,10,0.08);
+  }
+
+  /* Individual stat cell */
+  .ds-stat-cell {
+    background: #FFFFFF;
+    padding: 24px 32px;
+    border-right: 1px solid rgba(10,10,10,0.08);
+  }
+  .ds-stat-cell:last-child {
+    border-right: none;
+  }
+
+  /* Stat value */
+  .ds-stat-value {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: clamp(24px, 3vw, 36px);
+    font-weight: 700;
+    color: #0A0A0A;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  /* Stat sub-label */
+  .ds-stat-sub {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    color: rgba(10,10,10,0.4);
+  }
+
+  /* Divider — horizontal spec divider */
+  .ds-divider {
+    height: 1px;
+    background: rgba(10,10,10,0.08);
+    border: none;
+    margin: 0;
+  }
+
+  /* Vertical separator — for header clusters */
+  .ds-sep {
+    width: 1px;
+    height: 20px;
+    background: rgba(10,10,10,0.1);
+    flex-shrink: 0;
+  }
+
+  /* Pill filter button — active state */
+  .ds-pill-active {
+    background: #0A0A0A;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Pill filter button — inactive state */
+  .ds-pill-inactive {
+    background: transparent;
+    color: #444444;
+    border: 1px solid rgba(10,10,10,0.12);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .ds-pill-inactive:hover {
+    background: rgba(10,10,10,0.04);
+  }
+
+  /* Tab bar — inline underline tabs */
+  .ds-tab {
+    padding: 10px 0;
+    border-bottom: 2px solid transparent;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444444;
+    cursor: pointer;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .ds-tab-active {
+    padding: 10px 0;
+    border-bottom: 2px solid #E03553;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #E03553;
+    cursor: pointer;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+
+  /* ── Marketing / public page primitives ────────────────── */
+
+  /* Section label — small uppercase above headline */
+  .ds-section-label {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+  }
+
+  /* Body text — light bg */
+  .ds-body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #444444;
+    line-height: 1.7;
+  }
+
+  /* Body text — dark bg */
+  .ds-body-dark {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.7;
   }
 }
 

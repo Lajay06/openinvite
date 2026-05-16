@@ -94,7 +94,7 @@ const AuthenticatedApp = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => base44.auth.redirectToLogin(window.location.origin + '/Dashboard')}
-                className="btn-editorial-primary"
+                className="btn-primary"
               >
                 Sign in again
               </button>

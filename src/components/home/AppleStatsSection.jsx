@@ -89,7 +89,7 @@ export default function AppleStatsSection() {
                 fontWeight: 500,
                 letterSpacing: "0.18em",
                 textTransform: "uppercase",
-                color: "#888888",
+                color: "rgba(255,255,255,0.4)",
                 margin: 0,
                 opacity: visible ? 1 : 0,
                 transition: prefersReduced()

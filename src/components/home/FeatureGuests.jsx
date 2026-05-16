@@ -113,12 +113,12 @@ export default function FeatureGuests({ children }) {
             Advanced <span style={{ background: "linear-gradient(135deg, #E03553, #803D81)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Guest</span> Management
             </h2>
 
-          <p ref={bodyRef} className="feature-body-text" style={{ color: "#555555", lineHeight: 1.7, marginBottom: 32, fontSize: 16, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+          <p ref={bodyRef} className="feature-body-text" style={{ color: "#444444", lineHeight: 1.7, marginBottom: 32, fontSize: 16, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
             From RSVP tracking to seating charts, we handle the guest list chaos so you can stay cool, calm, and perfectly in control.
           </p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {BULLETS.map((b, i) =>
-            <li key={i} style={{ padding: "11px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid #E8E8E8" : "none", color: "#555555", fontSize: 14, lineHeight: 1.5 }}>
+            <li key={i} style={{ padding: "11px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid #E8E8E8" : "none", color: "#444444", fontSize: 14, lineHeight: 1.5 }}>
                 {b}
               </li>
             )}

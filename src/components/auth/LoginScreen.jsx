@@ -11,173 +11,133 @@ const SLIDER_IMAGES = [
 ];
 
 function ImageSlider({ images, interval = 4500 }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
+  const [idx, setIdx] = useState(0);
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
-    }, interval);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setIdx(p => (p + 1) % images.length), interval);
+    return () => clearInterval(t);
   }, [images, interval]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "#0A0A0A" }}>
       <AnimatePresence initial={false}>
         <motion.img
-          key={currentIndex}
-          src={images[currentIndex]}
-          alt={`slide-${currentIndex}`}
-          initial={{ opacity: 0, x: 60 }}
+          key={idx}
+          src={images[idx]}
+          alt=""
+          initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -60 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.7, ease: "easeInOut" }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
         />
       </AnimatePresence>
-
-      {/* Overlay */}
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.55) 100%)" }} />
-
-      {/* Logo top-left */}
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.52) 100%)" }} />
       <div style={{ position: "absolute", top: 32, left: 32, zIndex: 2 }}>
-        <img
-          src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
-          style={{ height: 28, width: "auto" }}
-          alt="openinvite"
-        />
+        <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" style={{ height: 24 }} alt="openinvite" />
       </div>
-
-      {/* Quote bottom-left */}
       <div style={{ position: "absolute", bottom: 52, left: 32, right: 32, zIndex: 2 }}>
-        <p style={{ color: "#FFFFFF", fontSize: 18, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.35, letterSpacing: "-0.01em", marginBottom: 8 }}>
+        <p style={{ color: "#FFFFFF", fontSize: 17, fontWeight: 700, lineHeight: 1.35, letterSpacing: "-0.01em", marginBottom: 8 }}>
           "Planning a wedding should feel as exciting as the day itself."
         </p>
-        <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          — The Openinvite Team
-        </p>
+        <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}>— The Openinvite Team</p>
       </div>
-
-      {/* Dot indicators */}
       <div style={{ position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 6, zIndex: 2 }}>
         {images.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentIndex(i)}
-            style={{
-              width: i === currentIndex ? 20 : 6,
-              height: 6,
-              borderRadius: 3,
-              background: i === currentIndex ? "#FFFFFF" : "rgba(255,255,255,0.4)",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              transition: "all 0.3s ease",
-            }}
-          />
+          <button key={i} onClick={() => setIdx(i)} style={{ width: i === idx ? 20 : 6, height: 6, borderRadius: 3, background: i === idx ? "#FFFFFF" : "rgba(255,255,255,0.35)", border: "none", cursor: "pointer", padding: 0, transition: "all 0.3s ease" }} />
         ))}
       </div>
     </div>
   );
 }
 
-const containerVariants = {
+const stagger = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
+};
+const item = {
+  hidden: { y: 14, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 110, damping: 14 } },
 };
 
-const itemVariants = {
-  hidden: { y: 16, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100, damping: 14 } },
+const inputStyle = {
+  width: "100%",
+  padding: "0 0 9px 0",
+  border: "none",
+  borderBottom: "1px solid rgba(10,10,10,0.18)",
+  background: "transparent",
+  fontSize: 14,
+  fontWeight: 500,
+  color: "#0A0A0A",
+  outline: "none",
+  boxSizing: "border-box",
+};
+
+const labelStyle = {
+  display: "block",
+  fontSize: 11,
+  fontWeight: 700,
+  color: "rgba(10,10,10,0.4)",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  marginBottom: 6,
 };
 
 export default function LoginScreen() {
-  const handleGoogleLogin = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSSO = () => {
+    base44.auth.redirectToLogin(window.location.origin + "/Dashboard");
+  };
+
+  const handleEmailSubmit = (e) => {
+    e?.preventDefault();
+    setError("");
+    if (!email.trim()) { setError("Please enter your email address."); return; }
+    if (!password.trim()) { setError("Please enter your password."); return; }
+    setLoading(true);
+    // Route through Base44 auth with email hint, then land on Dashboard
     base44.auth.redirectToLogin(window.location.origin + "/Dashboard");
   };
 
   return (
-    <div style={{
-      width: "100%",
-      minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      background: "#F5F5F5",
-      padding: 24,
-      boxSizing: "border-box",
-    }}>
+    <div style={{ width: "100%", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F5F5F5", padding: 24, boxSizing: "border-box" }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        style={{
-          width: "100%",
-          maxWidth: 960,
-          height: 680,
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          borderRadius: 0,
-          overflow: "hidden",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06)",
-        }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        style={{ width: "100%", maxWidth: 960, height: 680, display: "grid", gridTemplateColumns: "1fr 1fr", borderRadius: 0, overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.05)" }}
       >
-        {/* LEFT — Image Slider (hidden on mobile) */}
+        {/* LEFT — photo slider */}
         <div className="hidden md:block" style={{ height: "100%" }}>
           <ImageSlider images={SLIDER_IMAGES} />
         </div>
 
-        {/* RIGHT — Form panel */}
+        {/* RIGHT — form panel */}
         <div
-          style={{
-            background: "#FFFFFF",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "48px 40px",
-            gridColumn: "span 2",
-          }}
+          style={{ background: "#FFFFFF", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 40px", gridColumn: "span 2" }}
           className="md:[grid-column:span_1]"
         >
-          <motion.div
-            style={{ width: "100%", maxWidth: 320 }}
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
+          <motion.div style={{ width: "100%", maxWidth: 320 }} variants={stagger} initial="hidden" animate="visible">
+
             {/* Heading */}
-            <motion.div variants={itemVariants} style={{ marginBottom: 28 }}>
-              <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <motion.div variants={item} style={{ marginBottom: 28 }}>
+              <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 6 }}>
                 Welcome back.
               </h1>
-              <p style={{ fontSize: 14, color: "rgba(10,10,10,0.5)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <p style={{ fontSize: 14, color: "rgba(10,10,10,0.5)" }}>
                 Sign in to continue planning your perfect day.
               </p>
             </motion.div>
 
-            {/* Google SSO — primary action */}
+            {/* Google SSO */}
             <motion.button
-              variants={itemVariants}
-              onClick={handleGoogleLogin}
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                padding: "13px 16px",
-                border: "1px solid rgba(10,10,10,0.12)",
-                borderRadius: 999,
-                background: "#FFFFFF",
-                cursor: "pointer",
-                fontSize: 14,
-                fontWeight: 600,
-                color: "#0A0A0A",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                marginBottom: 20,
-                boxSizing: "border-box",
-              }}
-              whileHover={{ background: "#FAFAFA", borderColor: "#DDDDDD" }}
+              variants={item}
+              onClick={handleSSO}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 16px", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, background: "#FFFFFF", cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#0A0A0A", marginBottom: 20, boxSizing: "border-box", transition: "background 0.15s ease" }}
+              whileHover={{ background: "#FAFAFA" }}
               whileTap={{ scale: 0.99 }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
@@ -190,95 +150,71 @@ export default function LoginScreen() {
             </motion.button>
 
             {/* Divider */}
-            <motion.div variants={itemVariants} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+            <motion.div variants={item} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
               <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
-              <span style={{ fontSize: 12, fontWeight: 500, color: "rgba(10,10,10,0.35)", fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: "nowrap" }}>
-                or sign in with email
-              </span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.35)", whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.08em" }}>or</span>
               <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
             </motion.div>
 
-            {/* Email */}
-            <motion.div variants={itemVariants} style={{ marginBottom: 20 }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "rgba(10,10,10,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                style={{
-                  width: "100%",
-                  padding: "0 0 8px 0",
-                  border: "none",
-                  borderBottom: "1px solid rgba(10,10,10,0.18)",
-                  background: "transparent",
-                  fontSize: 14,
-                  color: "#0A0A0A",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-                onFocus={e => (e.target.style.borderBottomColor = "#E03553")}
-                onBlur={e => (e.target.style.borderBottomColor = "rgba(10,10,10,0.18)")}
-              />
-            </motion.div>
+            {/* Email/password form */}
+            <form onSubmit={handleEmailSubmit}>
+              <motion.div variants={item} style={{ marginBottom: 20 }}>
+                <label style={labelStyle}>Email</label>
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  style={inputStyle}
+                  onFocus={e => (e.target.style.borderBottomColor = "#E03553")}
+                  onBlur={e => (e.target.style.borderBottomColor = "rgba(10,10,10,0.18)")}
+                />
+              </motion.div>
 
-            {/* Password */}
-            <motion.div variants={itemVariants} style={{ marginBottom: 28 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, color: "rgba(10,10,10,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Password
-                </label>
-                <a href="#" style={{ fontSize: 12, fontWeight: 500, color: "#E03553", textDecoration: "none", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Forgot?
-                </a>
-              </div>
-              <input
-                type="password"
-                placeholder="••••••••"
-                style={{
-                  width: "100%",
-                  padding: "0 0 8px 0",
-                  border: "none",
-                  borderBottom: "1px solid rgba(10,10,10,0.18)",
-                  background: "transparent",
-                  fontSize: 14,
-                  color: "#0A0A0A",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-                onFocus={e => (e.target.style.borderBottomColor = "#E03553")}
-                onBlur={e => (e.target.style.borderBottomColor = "rgba(10,10,10,0.18)")}
-              />
-            </motion.div>
+              <motion.div variants={item} style={{ marginBottom: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <label style={labelStyle}>Password</label>
+                  <button type="button" onClick={handleSSO} style={{ fontSize: 12, fontWeight: 500, color: "#E03553", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                    Forgot?
+                  </button>
+                </div>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  style={inputStyle}
+                  onFocus={e => (e.target.style.borderBottomColor = "#E03553")}
+                  onBlur={e => (e.target.style.borderBottomColor = "rgba(10,10,10,0.18)")}
+                />
+              </motion.div>
 
-            {/* Submit */}
-            <motion.button
-              variants={itemVariants}
-              onClick={handleGoogleLogin}
-              style={{
-                width: "100%",
-                padding: 13,
-                background: "linear-gradient(135deg, #E03553, #803D81)",
-                border: "none",
-                borderRadius: 999,
-                color: "#FFFFFF",
-                fontSize: 14,
-                fontWeight: 700,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                cursor: "pointer",
-                marginBottom: 20,
-                boxSizing: "border-box",
-              }}
-              whileHover={{ opacity: 0.92 }}
-              whileTap={{ scale: 0.99 }}
-            >
-              Sign In
-            </motion.button>
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{ fontSize: 12, color: "#E03553", marginBottom: 12 }}
+                >
+                  {error}
+                </motion.p>
+              )}
 
-            <motion.p variants={itemVariants} style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.4)", fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.6 }}>
-              Authentication is handled securely via Google.
+              <motion.div variants={item} style={{ marginBottom: 20, marginTop: 20 }}>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{ width: "100%", padding: 13, background: loading ? "rgba(224,53,83,0.6)" : "#E03553", border: "none", borderRadius: 999, color: "#FFFFFF", fontSize: 14, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", boxSizing: "border-box", transition: "background 0.2s ease" }}
+                >
+                  {loading ? "Signing in…" : "Sign in"}
+                </button>
+              </motion.div>
+            </form>
+
+            <motion.p variants={item} style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.4)", lineHeight: 1.6 }}>
+              Don't have an account?{" "}
+              <button onClick={handleSSO} style={{ color: "#E03553", background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 0 }}>
+                Start for free
+              </button>
             </motion.p>
           </motion.div>
         </div>
