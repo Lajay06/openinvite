@@ -161,6 +161,7 @@ export default function LocationPicker({
   return (
     <div ref={containerRef} style={{ position: 'relative', marginBottom: 16 }}>
       {label && (
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: dark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 6px' }}>
           {label}
         </p>
       )}

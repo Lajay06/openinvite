@@ -212,6 +212,9 @@ function ResultCard({ result, onAdd, topRated }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{result.name}</span>
               {topRated && (
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(224,53,83,0.1)', color: '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Top rated
+                </span>
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

@@ -393,6 +393,7 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
 
       {/* SECTION 6: Final CTA */}
       <div style={{ padding: '160px 80px', textAlign: 'center' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: 16 }}>
           {loaded ? coupleName : 'AMAN UNIVERSE'}
         </p>
         <h2 style={{

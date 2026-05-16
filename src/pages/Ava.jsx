@@ -351,7 +351,8 @@ export default function AvaPage() {
 
           <button
             onClick={() => window.location.href = "/Onboarding"}
-            
+            className="btn-primary"
+          >
             Try Ava Free →
           </button>
         </div>
@@ -456,6 +457,7 @@ export default function AvaPage() {
             {/* Header */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#0A0A0A" }}>
               {["", "Without Ava", "With Ava"].map((h, i) =>
+                <div key={i} style={{ padding: "18px 24px", fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: i === 0 ? "transparent" : "#FFFFFF", borderRight: i < 2 ? "1px solid rgba(255,255,255,0.1)" : "none", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{h}</div>
               )}
             </div>
             {TABLE_ROWS.map((row, i) =>
@@ -479,11 +481,20 @@ export default function AvaPage() {
           <h2 style={{ fontSize: "clamp(40px,6vw,80px)", fontWeight: 700, color: "#fff", margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1, opacity: ctaInView ? 1 : 0, animation: ctaInView ? "punchIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards" : "none" }}>Ready to meet Ava?</h2>
           <p style={{ fontSize: 18, color: "#CCCCCC", margin: "0 0 40px", opacity: ctaInView ? 1 : 0, transition: "opacity 0.6s 0.2s ease" }}>Start planning smarter. Your wedding deserves it.</p>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", opacity: ctaInView ? 1 : 0, transform: ctaInView ? "none" : "translateY(20px)", transition: "opacity 0.6s 0.3s ease, transform 0.6s 0.3s ease" }}>
+            <Link
+              to="/Onboarding"
+              className="btn-primary"
+              style={{ textDecoration: 'none' }}
+            >
               Start free with Ava →
             </Link>
-            onMouseEnter={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.7)"}
-            onMouseLeave={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"}>
-              
+            <Link
+              to="/Features"
+              className="btn-secondary"
+              style={{ textDecoration: 'none' }}
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.7)"}
+              onMouseLeave={(e) => e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)"}
+            >
               See all features
             </Link>
           </div>

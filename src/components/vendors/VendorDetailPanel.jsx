@@ -395,6 +395,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                             }}>{task.title}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 3 }}>
                               {task.priority && (
+                                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: task.priority === 'high' ? 'rgba(224,53,83,0.1)' : 'rgba(10,10,10,0.06)', color: task.priority === 'high' ? '#E03553' : '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                   {task.priority}
                                 </span>
                               )}

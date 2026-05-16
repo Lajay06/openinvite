@@ -335,8 +335,9 @@ Be concise, specific, and use dollar figures.`,
               <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', ...bodyFont }}>Risk flags</p>
               <p style={{ fontSize: 11, color: '#444444', margin: 0, ...bodyFont }}>vs. industry benchmarks & your budget</p>
             </div>
-              {flags.length} flagged
-            </span>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: flags.length > 0 ? 'rgba(224,53,83,0.1)' : 'rgba(107,119,0,0.1)', color: flags.length > 0 ? '#E03553' : '#6b7700', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                {flags.length} flagged
+              </span>
           </div>
 
           {flags.length === 0 ? (
@@ -357,9 +358,10 @@ Be concise, specific, and use dollar figures.`,
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#0A0A0A', ...bodyFont }}>{flag.label}</span>
-                      <AlertTriangle size={10} />
-                      {flag.severity === 'high' ? 'Over budget' : 'Above benchmark'}
-                    </span>
+                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: flag.severity === 'high' ? 'rgba(224,53,83,0.1)' : 'rgba(221,247,98,0.15)', color: flag.severity === 'high' ? '#E03553' : '#6b7700', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <AlertTriangle size={10} />
+                        {flag.severity === 'high' ? 'Over budget' : 'Above benchmark'}
+                      </span>
                   </div>
                   <p style={{ fontSize: 11, color: '#444444', margin: '0 0 6px', ...bodyFont, lineHeight: 1.5 }}>{flag.tip}</p>
                   <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>

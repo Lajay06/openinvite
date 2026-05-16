@@ -31,6 +31,7 @@ export default function CustomGiftList({ items, onEdit, onDelete, loading }) {
         return (
           <div key={item.id} style={{ background: '#FFFFFF', padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: catColor.bg, color: catColor.color, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 {catLabel}
               </span>
               <div style={{ display: 'flex', gap: 4 }}>

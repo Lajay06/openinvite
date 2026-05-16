@@ -22,8 +22,10 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
     }}>
       {/* Confirmation */}
       <div style={{ textAlign: 'center', marginBottom: 56 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 12 }}>
           {universe.name} Universe selected
         </p>
+        <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(36px, 8vw, 72px)', color: '#FFFFFF', margin: '0 0 16px', lineHeight: 1 }}>
           {universe.name}
         </h2>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>

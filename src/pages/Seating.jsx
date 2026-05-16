@@ -513,6 +513,7 @@ export default function SeatingPage() {
             {/* Selected table banner */}
             {selectedTable && (
               <div style={{ padding: '8px 16px', background: 'rgba(224,53,83,0.05)', borderBottom: '1px solid rgba(224,53,83,0.12)', flexShrink: 0 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 2px' }}>
                   Assigning to: {selectedTable.name}
                 </p>
                 <p style={{ fontSize: 10, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>

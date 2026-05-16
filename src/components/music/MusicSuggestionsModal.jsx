@@ -39,8 +39,9 @@ function SuggestionCard({ suggestion, onAdd }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{suggestion.song_title}</span>
-            {(suggestion.category || 'general').replace('_', ' ')}
-          </span>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              {(suggestion.category || 'general').replace('_', ' ')}
+            </span>
         </div>
         <p style={{ fontSize: 12, fontWeight: 600, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 4px' }}>by {suggestion.artist}</p>
         {suggestion.notes && (

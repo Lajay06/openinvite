@@ -139,6 +139,7 @@ export default function ConsolidatedRegistryView({ storeItems, products, customG
             {customGifts.map(fund => (
               <div key={fund.id} style={{ background: '#FFFFFF', padding: 20 }}>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>{fund.title}</p>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   {fund.category?.replace('_', ' ')}
                 </span>
                 {fund.description && <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '8px 0' }}>{fund.description}</p>}

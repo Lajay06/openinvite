@@ -144,6 +144,7 @@ export default function OnboardingStepUniverse({ onNext, data }) {
           transition={{ delay: 0.3 }}
           style={{ marginTop: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}
         >
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', fontFamily: 'Plus Jakarta Sans, sans-serif', margin: 0 }}>
             WEBSITE APPEARANCE
           </p>
           <div style={{ display: 'flex', gap: 8 }}>

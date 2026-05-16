@@ -118,6 +118,7 @@ function BudgetPlanner() {
 
       {/* Total budget input */}
       <div style={{ marginBottom: 24, maxWidth: 320 }}>
+        <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Total wedding budget ($)
         </label>
         <input
@@ -135,6 +136,7 @@ function BudgetPlanner() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px 32px' }}>
         {BUDGET_CATEGORIES.map(cat => (
           <div key={cat.key}>
+            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {cat.label}
             </label>
             <input

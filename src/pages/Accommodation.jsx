@@ -341,6 +341,7 @@ export default function AccommodationPage() {
                     {property.address && <p style={{ margin: '0 0 6px', fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{property.address}</p>}
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {property.tags?.slice(0, 3).map(tag => (
+                        <span key={tag} style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', background: 'rgba(10,10,10,0.06)', borderRadius: 999, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{tag}</span>
                       ))}
                     </div>
                   </div>

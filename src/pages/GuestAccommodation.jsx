@@ -92,6 +92,7 @@ export default function GuestAccommodation() {
       {details.accommodation?.partnerRecommendationsEnabled && (
         <div style={{ padding: '48px 24px 0' }}>
           <div style={{ marginBottom: 20 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Partner Hotels
             </p>
             <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: 0 }}>
@@ -117,6 +118,7 @@ export default function GuestAccommodation() {
 
       {/* Footer */}
       <div style={{ padding: '60px 24px', background: '#F8F7F5', textAlign: 'center', borderTop: '1px solid #EEEEEE' }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           {details.couple1Name} & {details.couple2Name}
         </p>
         <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', padding: '12px 24px', border: '1px solid #DDD', color: '#555', textDecoration: 'none', fontSize: 12, fontWeight: 700, fontFamily: 'Plus Jakarta Sans', letterSpacing: '0.1em' }}>
@@ -130,6 +132,7 @@ export default function GuestAccommodation() {
 function AccommodationHero({ details, city }) {
   return (
     <div style={{ padding: '60px 24px 40px', background: '#F8F7F5' }}>
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         Where to Stay
       </p>
       <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#0A0A0A', margin: '0 0 16px', lineHeight: 1.1 }}>
@@ -203,6 +206,7 @@ function CouplePicksSection({ properties, details }) {
       {pinned.length > 0 && (
         <>
           <div style={{ marginBottom: 20 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {details?.couple1Name} & {details?.couple2Name} Recommend
             </p>
             <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: 0 }}>

@@ -125,6 +125,7 @@ export default function GuestTransport() {
 
       {/* Footer */}
       <div style={{ padding: '60px 24px', background: '#0A0A0A', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF', margin: '0 0 16px', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           {details.couple1Name} & {details.couple2Name}
         </p>
         <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', padding: '12px 24px', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em' }}>
