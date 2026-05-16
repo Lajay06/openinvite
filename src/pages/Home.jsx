@@ -114,7 +114,7 @@ function IntegrationsGrid() {
     <section style={{ borderTop: "1px solid #F0F0F0", borderBottom: "1px solid #F0F0F0", background: "#FFFFFF", padding: "120px clamp(24px, 6vw, 80px)" }}>
       <div style={{ maxWidth: "100%", margin: "0 auto" }}>
         <div style={{ marginBottom: 64 }}>
-          <p style={{ fontSize: 10, fontWeight: 600, color: "#555555", textTransform: "uppercase", letterSpacing: "0.2em", marginBottom: 16 }}>Integrations</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(10,10,10,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Integrations</p>
           <h2 style={{ fontSize: 32, fontWeight: 700, color: "#0A0A0A", margin: "0 0 8px 0" }} className="text-center">
             Works with the tools you already love.
           </h2>
@@ -149,9 +149,9 @@ function IntegrationsGrid() {
               onMouseLeave={(e) => e.currentTarget.style.filter = "grayscale(100%) opacity(0.5)"} />
             
               <p
-               style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "#555555", margin: 0, textAlign: "center", transition: "color 0.2s ease" }}
+               style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#444444", margin: 0, textAlign: "center", transition: "color 0.2s ease", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                onMouseEnter={(e) => e.currentTarget.style.color = "#0A0A0A"}
-               onMouseLeave={(e) => e.currentTarget.style.color = "#555555"}>
+               onMouseLeave={(e) => e.currentTarget.style.color = "#444444"}>
               
                 {logo.name}
               </p>
@@ -197,7 +197,7 @@ function PricingInner({ headlineIn, subIn, ctaIn, onCTA }) {
   return (
     <div className="max-w-[1200px] mx-auto px-6 lg:px-12 w-full" style={{ background: "#0A0A0A" }}>
       <AnimDivider />
-      <p className="label-caps text-[#555555] mb-4 mt-8">One-time Payment</p>
+      <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.4)", marginBottom: 16, marginTop: 32, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>One-time Payment</p>
       <div style={{ opacity: headlineIn ? 1 : 0, transition: reduced ? "none" : `opacity 0.6s ${EASE}`, display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "0 12px" }}>
         <span style={{ fontSize: "clamp(40px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05, color: "#FFFFFF", overflow: "visible", whiteSpace: "nowrap" }}>
           Go All In –{" "}
