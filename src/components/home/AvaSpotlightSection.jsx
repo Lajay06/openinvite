@@ -83,20 +83,17 @@ export default function AvaSpotlightSection() {
                color: "#0A0A0A",
                hyphens: "none",
                marginBottom: 20,
-               lineHeight: 1.15,
-               textAlign: 'center',
+               lineHeight: 1.2,
                fontFamily: "'Plus Jakarta Sans',sans-serif",
-             }} className="text-center">
+             }}>
 
              Meet Ava. Your personal wedding intelligence.
            </h2>
            <p
              style={{
                fontSize: 16,
-               color: "#555555",
+               color: "#444444",
                lineHeight: 1.7,
-               marginBottom: 40,
-               textAlign: 'center',
                maxWidth: 640,
                margin: '0 auto 40px'
              }}>
@@ -115,7 +112,7 @@ export default function AvaSpotlightSection() {
                 <p style={{ fontSize: 15, fontWeight: 700, color: "#0A0A0A", margin: "0 0 4px 0", fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
                   {cap.title}
                 </p>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#666666", margin: 0, lineHeight: 1.6, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#444444", margin: 0, lineHeight: 1.6, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
                   {cap.body}
                 </p>
               </div>
