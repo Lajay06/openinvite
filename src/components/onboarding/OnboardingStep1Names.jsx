@@ -15,7 +15,7 @@ export default function OnboardingStep1Names({ onNext }) {
     <div className="w-full max-w-2xl">
       <div className="space-y-8 text-center">
         <div className="flex items-baseline gap-3 justify-center flex-wrap">
-          <span className="font-sans-ui text-white" style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 400 }}>
+          <span style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 400, color: '#fff', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Hi, my name is
           </span>
           <div className="relative">
@@ -46,7 +46,7 @@ export default function OnboardingStep1Names({ onNext }) {
         </div>
 
         <div className="flex items-baseline gap-3 justify-center flex-wrap">
-          <span className="font-sans-ui text-white" style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 400 }}>
+          <span style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 400, color: '#fff', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             and my partner's name is
           </span>
           <div className="relative">

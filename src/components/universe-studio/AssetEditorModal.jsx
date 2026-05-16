@@ -155,7 +155,7 @@ export default function AssetEditorModal({ assetType, weddingDetails, onSave, on
           <button
             onClick={handleSave}
             disabled={saving}
-            className="btn-editorial-primary flex-1 py-3"
+            className="btn-primary flex-1 py-3"
           >
             {saving ? 'Saving…' : 'Save Changes'}
           </button>

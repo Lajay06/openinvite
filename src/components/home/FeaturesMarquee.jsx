@@ -34,8 +34,8 @@ export default function FeaturesMarquee() {
         }
       `}</style>
 
-      <p className="label-caps" style={{ color: "#888888", textAlign: "center", paddingBottom: 32 }}>
-        EVERYTHING YOU NEED
+      <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(10,10,10,0.4)", textAlign: "center", paddingBottom: 32 }}>
+        Everything you need
       </p>
 
       <div style={{ overflow: "hidden" }}>
@@ -75,7 +75,7 @@ function FeatureItem({ feature }) {
         alignItems: "center",
         gap: 12,
         padding: "0 48px",
-        borderRight: "1px solid #E0E0DC",
+        borderRight: "1px solid rgba(10,10,10,0.08)",
         cursor: "default",
         background: hovered ? "rgba(224, 53, 83, 0.05)" : "transparent",
         transition: "background 0.3s ease",

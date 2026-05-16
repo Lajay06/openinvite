@@ -87,14 +87,14 @@ export default function SpotifySearch({ onAdd, onClose }) {
           </div>
           <span style={labelStyle}>Search &amp; add songs</span>
         </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555555', display: 'flex', padding: 4 }}><X size={14} /></button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', padding: 4 }}><X size={14} /></button>
       </div>
 
       <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* Search bar */}
         <div style={{ display: 'flex', gap: 8 }}>
           <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#555555' }} />
+            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
             <input
               style={{ width: '100%', background: '#111111', border: '1px solid #333333', color: '#FFFFFF', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '8px 8px 8px 32px', outline: 'none', boxSizing: 'border-box' }}
               placeholder="Search by song title or artist…"
@@ -139,15 +139,15 @@ export default function SpotifySearch({ onAdd, onClose }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.song_title}</p>
-                  <p style={{ fontSize: 11, color: '#555555', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artist}{track.album ? ` · ${track.album}` : ''}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artist}{track.album ? ` · ${track.album}` : ''}</p>
                 </div>
-                <span style={{ fontSize: 11, color: '#555555', flexShrink: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{track.duration}</span>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', flexShrink: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{track.duration}</span>
                 <button onClick={() => handlePlay(track, i)} disabled={!track.preview_url}
-                  style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: track.preview_url ? 'pointer' : 'not-allowed', color: playingId === i ? '#E03553' : '#555555', opacity: track.preview_url ? 1 : 0.3 }}>
+                  style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: track.preview_url ? 'pointer' : 'not-allowed', color: playingId === i ? '#E03553' : 'rgba(255,255,255,0.4)', opacity: track.preview_url ? 1 : 0.3 }}>
                   {playingId === i ? <Pause size={13} /> : <Play size={13} />}
                 </button>
                 <button onClick={() => handleAdd(track)}
-                  style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: '#555555' }}>
+                  style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}>
                   <Plus size={13} />
                 </button>
               </div>
@@ -156,7 +156,7 @@ export default function SpotifySearch({ onAdd, onClose }) {
         )}
 
         {!loading && results.length === 0 && query && (
-          <p style={{ fontSize: 13, color: '#555555', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '24px 0' }}>No results. Try a different search.</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '24px 0' }}>No results. Try a different search.</p>
         )}
       </div>
     </div>

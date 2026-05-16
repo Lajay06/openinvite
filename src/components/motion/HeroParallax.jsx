@@ -87,7 +87,7 @@ export default function HeroParallax({ onCTA }) {
         {/* Label */}
         <p
           style={{
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 11,
             letterSpacing: "0.25em",
             textTransform: "uppercase",
@@ -157,7 +157,7 @@ export default function HeroParallax({ onCTA }) {
         >
           <button
             onClick={onCTA}
-            className="btn-editorial-primary"
+            className="btn-primary"
             style={{ padding: "16px 48px", fontSize: 12 }}
           >
             Try it out
@@ -192,7 +192,7 @@ function ScrollCue() {
         transition: "opacity 0.8s ease",
       }}
     >
-      <span style={{ fontFamily: "Inter", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Scroll</span>
+      <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>Scroll</span>
       <div style={{ width: 1, height: 40, background: "#222", overflow: "hidden" }}>
         <div style={{
           width: "100%",

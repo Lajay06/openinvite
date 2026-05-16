@@ -204,7 +204,7 @@ function QuickStartSection() {
       <div className="w-full lg:w-1/2 order-2 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: `opacity 0.9s ${EASE} 0.2s, transform 0.9s ${EASE} 0.2s` }}>
         <div style={{ maxWidth: 480 }}>
           <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#E03553,#803D81)", marginBottom: 24 }} />
-          <p className="label-caps" style={{ color: "#C2E5F3", marginBottom: 16 }}>Getting Started</p>
+          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#C2E5F3", marginBottom: 16 }}>Getting Started</p>
           <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Quick Start Wizard</h2>
           <p style={{ color: "#AAAAAA", lineHeight: 1.7, fontSize: 16 }}>Get set up in seconds — enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
         </div>
@@ -236,12 +236,12 @@ function DashboardSection() {
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 480 }}>
           <div style={{ width: 40, height: 2, background: "#803D81", marginBottom: 24 }} />
-          <p className="label-caps" style={{ color: "#803D81", marginBottom: 16 }}>Collaboration</p>
+          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#803D81", marginBottom: 16 }}>Collaboration</p>
           <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#0A0A0A", marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Customisable Dashboard</h2>
-          <p style={{ color: "#555555", lineHeight: 1.7, fontSize: 16, marginBottom: 32 }}>Invite your partner, planner, or mum. Set who sees what, and assign tasks like a pro.</p>
+          <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16, marginBottom: 32 }}>Invite your partner, planner, or mum. Set who sees what, and assign tasks like a pro.</p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {BULLETS.map((b, i) =>
-            <li key={i} style={{ padding: "11px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid #E8E8E8" : "none", color: "#555555", fontSize: 14, lineHeight: 1.5 }}>
+            <li key={i} style={{ padding: "11px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid #E8E8E8" : "none", color: "#444444", fontSize: 14, lineHeight: 1.5 }}>
                 {b}
               </li>
             )}
@@ -269,7 +269,7 @@ function AvaSection({ essentials }) {
       <div style={{ position: "absolute", inset: 0, background: "#0A0A0A", zIndex: 10, transform: curtainUp ? "translateY(-100%)" : "translateY(0)", transition: `transform 0.9s ${EASE}`, pointerEvents: "none" }} />
       <div style={{ position: "relative", zIndex: 3 }}>
         <div style={{ textAlign: "center", marginBottom: 48, padding: "0 clamp(24px, 4vw, 64px)", opacity: curtainUp ? 1 : 0, transition: `opacity 0.8s ${EASE} 0.15s` }}>
-          <p className="label-caps" style={{ color: "#DDF762", marginBottom: 16 }}>Meet Ava</p>
+          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#DDF762", marginBottom: 16 }}>Meet Ava</p>
           <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginBottom: 12, overflow: "visible", hyphens: "none" }}>The Essentials</h2>
           <p style={{ color: "#DDF762", fontSize: 20 }}>AI meets 'I do'.</p>
         </div>
@@ -303,7 +303,7 @@ function AccordionSection({ features, borders, dots, openFeature, setOpenFeature
     <section ref={ref} style={{ background: "#F5F5F3", padding: "120px 0" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(32px, 6vw, 80px)" }}>
         <AnimDivider />
-        <p className="label-caps" style={{ color: "#888888", margin: "24px 0 48px" }}>All Features</p>
+        <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(10,10,10,0.4)", margin: "24px 0 48px" }}>All Features</p>
         <div>
           {features.map((f, i) =>
           <div
@@ -321,13 +321,13 @@ function AccordionSection({ features, borders, dots, openFeature, setOpenFeature
               style={{ borderLeft: openFeature === i ? `3px solid ${borders[i]}` : "3px solid transparent", paddingLeft: 16, transition: "border-color 0.2s ease" }}>
               
                 <span style={{ color: "#0A0A0A", fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em" }}>{f.title}</span>
-                <span style={{ fontSize: 20, fontWeight: 300, marginLeft: 16, color: openFeature === i ? borders[i] : "#888888" }}>{openFeature === i ? "−" : "+"}</span>
+                <span style={{ fontSize: 20, fontWeight: 300, marginLeft: 16, color: openFeature === i ? borders[i] : "rgba(10,10,10,0.4)" }}>{openFeature === i ? "−" : "+"}</span>
               </button>
               {openFeature === i &&
             <div style={{ paddingBottom: 32, paddingLeft: 20 }}>
                   <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
                     {f.bullets.map((b, bi) =>
-                <li key={bi} style={{ padding: "10px 0", borderBottom: bi < f.bullets.length - 1 ? "1px solid #E8E8E8" : "none", color: "#555555", fontSize: 14, lineHeight: 1.5 }}>
+                <li key={bi} style={{ padding: "10px 0", borderBottom: bi < f.bullets.length - 1 ? "1px solid #E8E8E8" : "none", color: "#444444", fontSize: 14, lineHeight: 1.5 }}>
                         {b}
                       </li>
                 )}

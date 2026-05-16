@@ -52,13 +52,13 @@ export default function StickySectionLabel({ sections }) {
         fontWeight: 500,
         letterSpacing: "0.2em",
         textTransform: "uppercase",
-        color: "#888888",
+        color: "rgba(255,255,255,0.4)",
         opacity: visible ? 1 : 0,
         transform: visible ? "translateX(0)" : "translateX(-8px)",
         transition: "opacity 0.3s ease, transform 0.3s ease",
         zIndex: 500,
         pointerEvents: "none",
-        fontFamily: "Inter, sans-serif",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}
     >
       {current}

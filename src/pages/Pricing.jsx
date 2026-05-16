@@ -156,7 +156,7 @@ export default function Pricing() {
   const [ctaRef, ctaVisible] = useScrollReveal(0.15);
 
   return (
-    <div style={{ background: "#0A0A0A", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ background: "#0A0A0A", minHeight: "100vh", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <PublicNav />
       <ScrollProgress />
 

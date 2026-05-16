@@ -216,7 +216,8 @@ export default function Onboarding() {
 
       {/* Step counter */}
       <motion.div
-        className="fixed top-8 right-8 z-40 label-caps text-[#666666]"
+        className="fixed top-8 right-8 z-40"
+        style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: 'rgba(255,255,255,0.4)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >

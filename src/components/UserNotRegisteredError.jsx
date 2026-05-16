@@ -46,7 +46,7 @@ export default function UserNotRegisteredError() {
         <div className="mt-10 flex gap-3">
           <button
             onClick={() => base44.auth.logout("/")}
-            className="btn-editorial-primary"
+            className="btn-primary"
           >
             Sign out &amp; try again
           </button>

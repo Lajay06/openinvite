@@ -11,14 +11,14 @@ export default function PublicFooter() {
             <Link to="/">
               <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" alt="openinvite" style={{ height: "20px", width: "auto", display: "block" }} />
             </Link>
-            <p className="text-[#888888] text-xs leading-relaxed">
+            <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: 12, lineHeight: 1.7 }}>
               Wedding planning, beautifully designed.
             </p>
           </div>
 
           {/* Links */}
           <div>
-            <p className="label-caps text-[#0A0A0A] font-medium tracking-widest-15 mb-4">Links</p>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Links</p>
             <ul className="space-y-3">
               <li><Link to="/" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Home</Link></li>
               <li><Link to="/About" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">About</Link></li>
@@ -28,7 +28,7 @@ export default function PublicFooter() {
 
           {/* Policy */}
           <div>
-            <p className="label-caps text-[#0A0A0A] font-medium tracking-widest-15 mb-4">Policy</p>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Policy</p>
             <ul className="space-y-3">
               <li><a href="#" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Terms & Conditions</a></li>
               <li><a href="#" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Privacy Policy</a></li>
@@ -38,7 +38,7 @@ export default function PublicFooter() {
 
           {/* Contact */}
           <div>
-            <p className="label-caps text-[#0A0A0A] font-medium tracking-widest-15 mb-4">Contact</p>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Contact</p>
             <Link to="/Contact" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors block mb-2">
               Get in touch
             </Link>
@@ -70,7 +70,7 @@ export default function PublicFooter() {
         </div>
 
         <div className="border-t border-[#E0E0DC] pt-8">
-          <p className="text-[#888888] text-xs">© 2025 by openinvite.</p>
+          <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: 12 }}>© 2025 by openinvite.</p>
         </div>
       </div>
     </footer>

@@ -1,20 +1,26 @@
 import React from 'react';
 
+const labelStyle = {
+  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  fontFamily: "'Plus Jakarta Sans', sans-serif",
+};
+
 export default function StatsOverview({ stats }) {
   const items = [
-    { label: 'Total Guests', value: stats.totalGuests, sub: `${stats.attending} attending` },
-    { label: 'RSVP Rate', value: `${Math.round(stats.responseRate)}%`, sub: `${stats.responded} of ${stats.totalGuests}` },
-    { label: 'Budget Used', value: `${Math.round(stats.budgetPercentage)}%`, sub: `$${stats.totalSpent.toLocaleString()} spent` },
+    { label: 'Total guests', value: stats.totalGuests, sub: `${stats.attending} attending` },
+    { label: 'RSVP rate', value: `${Math.round(stats.responseRate)}%`, sub: `${stats.responded} of ${stats.totalGuests}` },
+    { label: 'Budget used', value: `${Math.round(stats.budgetPercentage)}%`, sub: `$${stats.totalSpent.toLocaleString()} spent` },
     { label: 'Remaining', value: `$${Math.abs(stats.remainingBudget).toLocaleString()}`, sub: stats.remainingBudget >= 0 ? 'in budget' : 'over budget' },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 border border-[#E0E0DC]">
-      {items.map(({ label, value, sub }) => (
-        <div key={label} className="bg-white px-6 py-6 border-r border-[#E0E0DC] last:border-r-0">
-          <p className="label-caps text-[#888888] mb-2">{label}</p>
-          <p className="font-sans-ui font-bold text-[#0A0A0A] text-4xl mb-1">{value}</p>
-          {sub && <p className="text-[12px] text-[#888888] font-sans-ui">{sub}</p>}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', border: '1px solid rgba(10,10,10,0.08)' }}>
+      {items.map(({ label, value, sub }, i) => (
+        <div key={label} style={{ background: '#fff', padding: '24px', borderRight: i < 3 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <p style={{ ...labelStyle, marginBottom: 8 }}>{label}</p>
+          <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.03em', marginBottom: 4 }}>{value}</p>
+          {sub && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{sub}</p>}
         </div>
       ))}
     </div>

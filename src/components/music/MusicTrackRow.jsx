@@ -50,7 +50,7 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
             <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '1px 6px', background: 'rgba(224,53,83,0.15)', color: '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Guest pick</span>
           )}
         </div>
-        <p style={{ fontSize: 11, color: '#555555', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {item.artist}{item.album ? ` · ${item.album}` : ''}
         </p>
       </div>
@@ -64,20 +64,20 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
       <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0, width: 112, justifyContent: 'flex-end', opacity: 0, transition: 'opacity 0.15s' }}
         className="group-hover-actions">
         <button onClick={handlePlay} disabled={!item.preview_url}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: item.preview_url ? 'pointer' : 'not-allowed', color: playing ? '#E03553' : '#555555', opacity: item.preview_url ? 1 : 0.2 }}>
+          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: item.preview_url ? 'pointer' : 'not-allowed', color: playing ? '#E03553' : 'rgba(255,255,255,0.4)', opacity: item.preview_url ? 1 : 0.2 }}>
           {playing ? <Pause size={13} /> : <Play size={13} />}
         </button>
         <button onClick={() => onToggleApproval(item)}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: item.approved ? '#6b7700' : '#555555' }}
+          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: item.approved ? '#6b7700' : 'rgba(255,255,255,0.4)' }}
           title={item.approved ? 'Approved' : 'Mark as approved'}>
           {item.approved ? <Check size={13} /> : <Clock size={13} />}
         </button>
         <button onClick={() => onEdit(item)}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: '#555555' }}>
+          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}>
           <Edit2 size={12} />
         </button>
         <button onClick={() => onDelete(item.id)}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: '#555555' }}>
+          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}>
           <Trash2 size={12} />
         </button>
       </div>

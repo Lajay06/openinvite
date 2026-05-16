@@ -783,13 +783,16 @@ export default function Help() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <div style={{
-        width: '100%', height: 48, background: '#FFFFFF', borderBottom: '1px solid #EEEEEE',
+        width: '100%', height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         paddingLeft: 32, paddingRight: 32, boxSizing: 'border-box', position: 'relative',
       }}>
-        <span style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Plus Jakarta Sans, sans-serif', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-          Help Centre
+        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+          Help centre
         </span>
+      </div>
+      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Guides, tutorials, and FAQs</span>
       </div>
 
       <div style={{ padding: '40px 40px 80px', maxWidth: 1100, margin: '0 auto', boxSizing: 'border-box' }}>
@@ -845,10 +848,10 @@ export default function Help() {
           <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', marginBottom: 8, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>Still need help?</p>
           <p style={{ fontSize: 14, color: '#888', marginBottom: 24 }}>Our team is here Monday to Friday, 9am–5pm AEST</p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            <button style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFF', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+            <button className="btn-primary" style={{ padding: '12px 24px', fontSize: 13 }}>
               Contact Support
             </button>
-            <button style={{ padding: '12px 24px', border: '1px solid #0A0A0A', background: 'transparent', color: '#0A0A0A', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+            <button className="btn-editorial-secondary" style={{ padding: '12px 24px', fontSize: 13 }}>
               ✦ Ask Ava
             </button>
           </div>
