@@ -70,6 +70,7 @@ const inputStyle = {
   color: "#0A0A0A",
   outline: "none",
   boxSizing: "border-box",
+  fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
 const labelStyle = {
@@ -78,19 +79,52 @@ const labelStyle = {
   fontWeight: 700,
   color: "rgba(10,10,10,0.4)",
   letterSpacing: "0.08em",
+  textTransform: "uppercase",
   marginBottom: 6,
+  fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
+const GoogleIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+  </svg>
+);
+
 export default function LoginScreen() {
+  const [mode, setMode] = useState('login'); // 'login' | 'signup'
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleGoogleLogin = () => {
-    base44.auth.loginWithProvider('google', window.location.origin + '/Dashboard');
+  const switchMode = (next) => {
+    setMode(next);
+    setError("");
   };
 
+  // FIX 1: Google OAuth — loginWithProvider is the correct SDK method.
+  // loginWithGoogle() does not exist in the Base44 SDK.
+  // The root cause of "just refreshes" was appBaseUrl not being set in
+  // base44Client.js, causing the redirect to go to a relative path on
+  // the current domain. That is now fixed.
+  const handleGoogleLogin = async () => {
+    setError("");
+    try {
+      base44.auth.loginWithProvider('google', window.location.origin + '/Dashboard');
+      // SDK performs a full-page redirect — nothing to await here.
+      // On return, app-params.js extracts access_token from the URL and
+      // base44Client.js calls setToken(), persisting it to localStorage.
+    } catch (err) {
+      setError(err?.message || 'Google sign in failed. Please try again.');
+    }
+  };
+
+  // FIX 3: Email/password sign in — loginViaEmailPassword is correct.
+  // The SDK calls setToken() internally which persists base44_access_token.
   const handleEmailSubmit = async (e) => {
     e?.preventDefault();
     setError("");
@@ -99,18 +133,39 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const { access_token, user } = await base44.auth.loginViaEmailPassword(email, password);
-      // base44.auth.loginViaEmailPassword internally calls setToken(), which saves
-      // access_token to localStorage as 'base44_access_token'. We also set our
-      // app-level auth keys so AuthContext sees the session immediately.
       localStorage.setItem('oi_auth', '1');
       localStorage.setItem('oi_user', JSON.stringify(user || { email }));
-      // Full page reload so base44Client.js re-initialises with the token from localStorage
       window.location.href = '/Dashboard';
     } catch (err) {
       setError(err?.message || 'Invalid email or password. Please try again.');
       setLoading(false);
     }
   };
+
+  // FIX 2: Signup using base44.auth.register()
+  const handleSignup = async (e) => {
+    e?.preventDefault();
+    setError("");
+    if (!fullName.trim()) { setError("Please enter your full name."); return; }
+    if (!email.trim()) { setError("Please enter your email address."); return; }
+    if (!password.trim()) { setError("Please enter a password."); return; }
+    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
+    setLoading(true);
+    try {
+      const response = await base44.auth.register({ email, password, full_name: fullName });
+      const { access_token, user } = response || {};
+      if (access_token) base44.auth.setToken(access_token);
+      localStorage.setItem('oi_auth', '1');
+      localStorage.setItem('oi_user', JSON.stringify(user || { email, full_name: fullName }));
+      window.location.href = '/Onboarding';
+    } catch (err) {
+      setError(err?.message || 'Could not create account. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  const focusRed = (e) => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; };
+  const blurNormal = (e) => { e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'; e.target.style.borderBottomWidth = '1px'; };
 
   return (
     <div style={{ width: "100%", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F5F5F5", padding: 24, boxSizing: "border-box" }}>
@@ -132,102 +187,204 @@ export default function LoginScreen() {
         >
           <motion.div style={{ width: "100%", maxWidth: 320 }} variants={stagger} initial="hidden" animate="visible">
 
-            {/* Heading */}
-            <motion.div variants={item} style={{ marginBottom: 28 }}>
-              <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 6 }}>
-                Welcome back.
-              </h1>
-              <p style={{ fontSize: 14, color: "rgba(10,10,10,0.5)" }}>
-                Sign in to continue planning your perfect day.
-              </p>
-            </motion.div>
+            {mode === 'login' ? (
+              <>
+                {/* Login heading */}
+                <motion.div variants={item} style={{ marginBottom: 28 }}>
+                  <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Welcome back.
+                  </h1>
+                  <p style={{ fontSize: 14, color: "rgba(10,10,10,0.5)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Sign in to continue planning your perfect day.
+                  </p>
+                </motion.div>
 
-            {/* Google SSO */}
-            <motion.button
-              variants={item}
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 16px", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, background: "#FFFFFF", cursor: loading ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600, color: "#0A0A0A", marginBottom: 20, boxSizing: "border-box", transition: "background 0.15s ease", opacity: loading ? 0.5 : 1 }}
-              whileHover={{ background: loading ? "#FFFFFF" : "#FAFAFA" }}
-              whileTap={{ scale: loading ? 1 : 0.99 }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              Continue with Google
-            </motion.button>
-
-            {/* Divider */}
-            <motion.div variants={item} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-              <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
-              <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
-            </motion.div>
-
-            {/* Email/password form */}
-            <form onSubmit={handleEmailSubmit}>
-              <motion.div variants={item} style={{ marginBottom: 20 }}>
-                <label style={labelStyle}>Email</label>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  style={inputStyle}
+                {/* Google SSO */}
+                <motion.button
+                  variants={item}
+                  onClick={handleGoogleLogin}
                   disabled={loading}
-                  onFocus={e => (e.target.style.borderBottomColor = "#E03553")}
-                  onBlur={e => (e.target.style.borderBottomColor = "rgba(10,10,10,0.18)")}
-                />
-              </motion.div>
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 16px", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, background: "#FFFFFF", cursor: loading ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600, color: "#0A0A0A", marginBottom: 20, boxSizing: "border-box", transition: "background 0.15s ease", opacity: loading ? 0.5 : 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  whileHover={{ background: loading ? "#FFFFFF" : "#FAFAFA" }}
+                  whileTap={{ scale: loading ? 1 : 0.99 }}
+                >
+                  <GoogleIcon />
+                  Continue with Google
+                </motion.button>
 
-              <motion.div variants={item} style={{ marginBottom: 8 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <label style={labelStyle}>Password</label>
-                  <button type="button" onClick={handleGoogleLogin} style={{ fontSize: 12, fontWeight: 500, color: "#E03553", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                    Forgot?
+                {/* Divider */}
+                <motion.div variants={item} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                  <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
+                  <span style={{ fontSize: 11, color: "rgba(10,10,10,0.3)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>or</span>
+                  <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
+                </motion.div>
+
+                {/* Email/password form */}
+                <form onSubmit={handleEmailSubmit}>
+                  <motion.div variants={item} style={{ marginBottom: 20 }}>
+                    <label style={labelStyle}>Email</label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      style={inputStyle}
+                      disabled={loading}
+                      onFocus={focusRed}
+                      onBlur={blurNormal}
+                    />
+                  </motion.div>
+
+                  <motion.div variants={item} style={{ marginBottom: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <label style={labelStyle}>Password</label>
+                    </div>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      style={inputStyle}
+                      disabled={loading}
+                      onFocus={focusRed}
+                      onBlur={blurNormal}
+                    />
+                  </motion.div>
+
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{ fontSize: 12, color: "#E03553", marginBottom: 12, marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {error}
+                    </motion.p>
+                  )}
+
+                  <motion.div variants={item} style={{ marginBottom: 20, marginTop: 20 }}>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      style={{ width: "100%", padding: 13, background: loading ? "rgba(224,53,83,0.6)" : "#E03553", border: "none", borderRadius: 999, color: "#FFFFFF", fontSize: 14, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", boxSizing: "border-box", transition: "background 0.2s ease", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {loading ? "Signing in…" : "Sign in"}
+                    </button>
+                  </motion.div>
+                </form>
+
+                <motion.p variants={item} style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.4)", lineHeight: 1.6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Don't have an account?{" "}
+                  <button onClick={() => switchMode('signup')} style={{ color: "#E03553", background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Start for free
                   </button>
-                </div>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  style={inputStyle}
-                  disabled={loading}
-                  onFocus={e => (e.target.style.borderBottomColor = "#E03553")}
-                  onBlur={e => (e.target.style.borderBottomColor = "rgba(10,10,10,0.18)")}
-                />
-              </motion.div>
-
-              {error && (
-                <motion.p
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  style={{ fontSize: 12, color: "#E03553", marginBottom: 12, marginTop: 8 }}
-                >
-                  {error}
                 </motion.p>
-              )}
+              </>
+            ) : (
+              <>
+                {/* Signup heading */}
+                <motion.div variants={item} style={{ marginBottom: 28 }}>
+                  <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Create your account.
+                  </h1>
+                  <p style={{ fontSize: 14, color: "rgba(10,10,10,0.5)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Start planning your perfect day today.
+                  </p>
+                </motion.div>
 
-              <motion.div variants={item} style={{ marginBottom: 20, marginTop: 20 }}>
-                <button
-                  type="submit"
+                {/* Google SSO for signup */}
+                <motion.button
+                  variants={item}
+                  onClick={handleGoogleLogin}
                   disabled={loading}
-                  style={{ width: "100%", padding: 13, background: loading ? "rgba(224,53,83,0.6)" : "#E03553", border: "none", borderRadius: 999, color: "#FFFFFF", fontSize: 14, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", boxSizing: "border-box", transition: "background 0.2s ease" }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px 16px", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, background: "#FFFFFF", cursor: loading ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600, color: "#0A0A0A", marginBottom: 20, boxSizing: "border-box", transition: "background 0.15s ease", opacity: loading ? 0.5 : 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  whileHover={{ background: loading ? "#FFFFFF" : "#FAFAFA" }}
+                  whileTap={{ scale: loading ? 1 : 0.99 }}
                 >
-                  {loading ? "Signing in…" : "Sign in"}
-                </button>
-              </motion.div>
-            </form>
+                  <GoogleIcon />
+                  Sign up with Google
+                </motion.button>
 
-            <motion.p variants={item} style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.4)", lineHeight: 1.6 }}>
-              Don't have an account?{" "}
-              <button onClick={handleGoogleLogin} style={{ color: "#E03553", background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 0 }}>
-                Start for free
-              </button>
-            </motion.p>
+                {/* Divider */}
+                <motion.div variants={item} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                  <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
+                  <span style={{ fontSize: 11, color: "rgba(10,10,10,0.3)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>or</span>
+                  <div style={{ flex: 1, height: 1, background: "rgba(10,10,10,0.08)" }} />
+                </motion.div>
+
+                {/* Signup form */}
+                <form onSubmit={handleSignup}>
+                  <motion.div variants={item} style={{ marginBottom: 20 }}>
+                    <label style={labelStyle}>Full name</label>
+                    <input
+                      type="text"
+                      placeholder="Your name"
+                      value={fullName}
+                      onChange={e => setFullName(e.target.value)}
+                      style={inputStyle}
+                      disabled={loading}
+                      onFocus={focusRed}
+                      onBlur={blurNormal}
+                    />
+                  </motion.div>
+
+                  <motion.div variants={item} style={{ marginBottom: 20 }}>
+                    <label style={labelStyle}>Email</label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      style={inputStyle}
+                      disabled={loading}
+                      onFocus={focusRed}
+                      onBlur={blurNormal}
+                    />
+                  </motion.div>
+
+                  <motion.div variants={item} style={{ marginBottom: 8 }}>
+                    <label style={labelStyle}>Password</label>
+                    <input
+                      type="password"
+                      placeholder="At least 6 characters"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      style={inputStyle}
+                      disabled={loading}
+                      onFocus={focusRed}
+                      onBlur={blurNormal}
+                    />
+                  </motion.div>
+
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{ fontSize: 12, color: "#E03553", marginBottom: 12, marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {error}
+                    </motion.p>
+                  )}
+
+                  <motion.div variants={item} style={{ marginBottom: 20, marginTop: 20 }}>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      style={{ width: "100%", padding: 13, background: loading ? "rgba(224,53,83,0.6)" : "#E03553", border: "none", borderRadius: 999, color: "#FFFFFF", fontSize: 14, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", boxSizing: "border-box", transition: "background 0.2s ease", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {loading ? "Creating account…" : "Create account"}
+                    </button>
+                  </motion.div>
+                </form>
+
+                <motion.p variants={item} style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.4)", lineHeight: 1.6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Already have an account?{" "}
+                  <button onClick={() => switchMode('login')} style={{ color: "#E03553", background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Sign in
+                  </button>
+                </motion.p>
+              </>
+            )}
+
           </motion.div>
         </div>
       </motion.div>
