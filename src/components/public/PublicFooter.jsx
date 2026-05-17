@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import CookieBanner from "./CookieBanner";
 
 export default function PublicFooter() {
   return (
+    <>
     <footer className="bg-white border-t border-[#E0E0DC]">
       <div className="max-w-[1200px] mx-auto px-6 lg:px-12 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
@@ -26,13 +28,16 @@ export default function PublicFooter() {
             </ul>
           </div>
 
-          {/* Policy */}
+          {/* Legal */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Policy</p>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Legal</p>
             <ul className="space-y-3">
-              <li><a href="#" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Terms & Conditions</a></li>
-              <li><a href="#" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Refund Policy</a></li>
+              <li><Link to="/privacy-policy" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Privacy policy</Link></li>
+              <li><Link to="/terms-of-service" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Terms of service</Link></li>
+              <li><Link to="/cookie-policy" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Cookie policy</Link></li>
+              <li><Link to="/refund-policy" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Refund policy</Link></li>
+              <li><Link to="/data-deletion" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Data deletion</Link></li>
+              <li><Link to="/Contact" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Contact</Link></li>
             </ul>
           </div>
 
@@ -70,9 +75,11 @@ export default function PublicFooter() {
         </div>
 
         <div className="border-t border-[#E0E0DC] pt-8">
-          <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: 12 }}>© 2025 by openinvite.</p>
+          <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: 12 }}>© 2026 OpenInvite. All rights reserved.</p>
         </div>
       </div>
     </footer>
+    <CookieBanner />
+    </>
   );
 }

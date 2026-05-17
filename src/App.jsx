@@ -13,6 +13,11 @@ import About from './pages/About';
 import Ava from './pages/Ava';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import CookiePolicy from './pages/CookiePolicy';
+import DataDeletion from './pages/DataDeletion';
+import RefundPolicy from './pages/RefundPolicy';
 import ScrollMorph from './pages/ScrollMorph';
 import GuestWebsite from './pages/GuestWebsite';
 import WeddingWebsiteEditor from './pages/WeddingWebsiteEditor';
@@ -143,6 +148,11 @@ const AuthenticatedApp = () => {
       <Route path="/ava" element={<Ava />} />
       <Route path="/Pricing" element={<Pricing />} />
       <Route path="/Contact" element={<Contact />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="/cookie-policy" element={<CookiePolicy />} />
+      <Route path="/data-deletion" element={<DataDeletion />} />
+      <Route path="/refund-policy" element={<RefundPolicy />} />
       <Route path="/scroll-morph" element={<ScrollMorph />} />
       <Route path="/universes" element={<Universes />} />
       <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
