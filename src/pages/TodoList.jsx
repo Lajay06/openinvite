@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, CheckSquare, Square, List, Columns } from 'lucide-react';
+import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 
 const Note = base44.entities.Note;
 
@@ -109,26 +110,7 @@ export default function TodoList() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      {/* Sub-header */}
-      <div style={{
-        height: 48, background: '#FFFFFF',
-        borderBottom: '1px solid rgba(10,10,10,0.08)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
-          To do list
-        </span>
-      </div>
-
-      {/* Descriptor strip */}
-      <div style={{
-        background: '#F5F5F5', padding: '12px 0',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: PJS }}>
-          Track tasks, ideas, and to-dos for your wedding
-        </span>
-      </div>
+      <DashboardPageHeader title="To do list" subtitle="Track tasks, ideas, and to-dos for your wedding" />
 
       <div style={{ padding: '32px 32px 48px' }}>
 

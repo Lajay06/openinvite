@@ -17,7 +17,7 @@ import {
   X,
   Camera
 } from "lucide-react";
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 
 export default function PhotoGalleryPage() {
@@ -186,7 +186,7 @@ export default function PhotoGalleryPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Toaster />
+
       <div className="p-6 lg:p-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 import InvitationStudio from "../components/invitations/InvitationStudio";
 import InvitationBuilder from "../components/invitations/InvitationBuilder";
@@ -79,7 +79,7 @@ export default function InvitationsPage() {
   if (view === 'studio' && invitation) {
     return (
       <>
-        <Toaster />
+
         <InvitationStudio 
           invitation={invitation}
           weddingDetails={weddingDetails}

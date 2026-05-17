@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Heart, Check, X, Loader2, Calendar, MapPin, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 export default function GuestRSVPPage() {
   const [step, setStep] = useState('lookup'); // lookup, rsvp, success
@@ -137,7 +137,7 @@ export default function GuestRSVPPage() {
   if (step === 'lookup') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
-        <Toaster />
+
         <div className="max-w-2xl mx-auto px-4 py-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -220,7 +220,7 @@ export default function GuestRSVPPage() {
   if (step === 'rsvp') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
-        <Toaster />
+
         <div className="max-w-3xl mx-auto px-4 py-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -418,7 +418,7 @@ export default function GuestRSVPPage() {
   // Success Step
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
-      <Toaster />
+
       <div className="max-w-2xl mx-auto px-4 py-16">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}

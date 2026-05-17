@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Check } from "lucide-react";
+import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import DatePicker from "@/components/shared/DatePicker";
 import EventsSection from "@/components/event-details/EventsSection";
 import FoodBeverageSection from "@/components/event-details/FoodBeverageSection";
@@ -127,7 +128,7 @@ export default function EventDetailsPage() {
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite', color: '#888' }} />
+      <Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite', color: 'rgba(10,10,10,0.4)' }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -147,14 +148,7 @@ export default function EventDetailsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Event details</span>
-      </div>
-      {/* Descriptor strip */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Manage your wedding event information</span>
-      </div>
+      <DashboardPageHeader title="Event details" subtitle="Manage your wedding event information" />
 
       {/* Tab bar */}
       <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', background: '#FFFFFF', overflowX: 'auto' }}>
@@ -180,7 +174,7 @@ export default function EventDetailsPage() {
           </div>
           <div style={{ flexShrink: 0, paddingLeft: 16 }}>
             {saveStatus === 'saving' && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#888' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(10,10,10,0.4)' }}>
                 <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Saving…
               </span>
             )}

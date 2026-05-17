@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Star, Filter, Sparkles } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
-import { motion } from "framer-motion";
+import { Search, MapPin, Sparkles } from "lucide-react";
+import toast from "react-hot-toast";
 
+import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import VendorCard from "../components/marketplace/VendorCard";
 import VendorProfileModal from "../components/marketplace/VendorProfileModal";
 import QuoteRequestModal from "../components/marketplace/QuoteRequestModal";
+
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+const CATEGORIES = [
+  "all", "photography", "videography", "catering", "flowers",
+  "music", "venue", "planning", "beauty", "transportation", "decorations"
+];
 
 export default function VendorMarketplace() {
   const [vendors, setVendors] = useState([]);
@@ -22,14 +25,7 @@ export default function VendorMarketplace() {
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [location, setLocation] = useState("");
 
-  const categories = [
-    "all", "photography", "videography", "catering", "flowers", 
-    "music", "venue", "planning", "beauty", "transportation", "decorations"
-  ];
-
-  useEffect(() => {
-    loadMarketplaceVendors();
-  }, []);
+  useEffect(() => { loadMarketplaceVendors(); }, []);
 
   const loadMarketplaceVendors = async () => {
     setLoading(true);
@@ -54,156 +50,130 @@ export default function VendorMarketplace() {
   };
 
   const filteredVendors = vendors.filter(vendor => {
-    const matchesSearch = vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         vendor.category?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = !searchTerm ||
+      vendor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vendor.category?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || vendor.category === selectedCategory;
     const matchesLocation = !location || vendor.address?.toLowerCase().includes(location.toLowerCase());
-    
     return matchesSearch && matchesCategory && matchesLocation;
   });
 
+  const stats = [
+    { label: "Available vendors", value: filteredVendors.length },
+    { label: "Top rated", value: filteredVendors.filter(v => v.google_rating >= 4.5).length },
+    { label: "Categories", value: new Set(filteredVendors.map(v => v.category)).size },
+    { label: "Support", value: "24/7" },
+  ];
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-black">
-        <div className="p-6 lg:p-8">
-          <div className="animate-pulse space-y-8">
-            <div className="h-12 bg-gray-800 rounded-lg w-96"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-64 bg-gray-800 rounded-xl"></div>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div style={{ minHeight: '100vh', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Loading vendors…</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <Toaster />
-      
-      <div className="p-6 lg:p-8 space-y-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Badge className="inline-flex items-center gap-2 mb-4 bg-pink-500/10 text-pink-400 border-pink-500/20 backdrop-blur-sm px-4 py-2">
-            <Sparkles className="w-4 h-4" />
-            Discover Top Vendors
-          </Badge>
-          <h1 className="text-5xl font-bold mb-2">
-            <span className="bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-              Vendor Marketplace
-            </span>
-          </h1>
-          <p className="text-gray-400 text-base">
-            Find and book the perfect vendors for your special day
-          </p>
-        </motion.div>
-
-        {/* Search and Filters */}
-        <div className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input
-                placeholder="Search vendors by name or service..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-              />
-            </div>
-            <div className="relative w-full md:w-64">
-              <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input
-                placeholder="Location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="pl-12 h-12 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-              />
-            </div>
+    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+      <DashboardPageHeader
+        title="Vendor marketplace"
+        subtitle="Discover and book the perfect vendors for your day"
+        actions={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 999, background: '#0A0A0A' }}>
+            <Sparkles size={12} style={{ color: '#DDF762' }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#FFFFFF', fontFamily: PJS }}>Top vendors</span>
           </div>
+        }
+      />
 
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map(category => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className={`capitalize ${
-                  selectedCategory === category 
-                    ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white border-0" 
-                    : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"
-                }`}
-              >
-                {category === 'all' ? 'All Vendors' : category}
-              </Button>
-            ))}
+      {/* Stat strip */}
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        {stats.map((s, i, arr) => (
+          <div key={s.label} style={{ flex: 1, padding: '20px 32px', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : undefined }}>
+            <div style={{ fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.02em' }}>{s.value}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, letterSpacing: '0.06em', marginTop: 2 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ padding: '24px 32px 48px' }}>
+
+        {/* Search row */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Search size={14} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.3)' }} />
+            <input
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Search vendors by name or service…"
+              style={{
+                width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.15)',
+                background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS,
+                outline: 'none', padding: '8px 0 8px 22px', boxSizing: 'border-box',
+              }}
+              onFocus={e => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; }}
+              onBlur={e => { e.target.style.borderBottomColor = 'rgba(10,10,10,0.15)'; e.target.style.borderBottomWidth = '1px'; }}
+            />
+          </div>
+          <div style={{ position: 'relative', width: 220 }}>
+            <MapPin size={14} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.3)' }} />
+            <input
+              value={location}
+              onChange={e => setLocation(e.target.value)}
+              placeholder="Location"
+              style={{
+                width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.15)',
+                background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS,
+                outline: 'none', padding: '8px 0 8px 22px', boxSizing: 'border-box',
+              }}
+              onFocus={e => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; }}
+              onBlur={e => { e.target.style.borderBottomColor = 'rgba(10,10,10,0.15)'; e.target.style.borderBottomWidth = '1px'; }}
+            />
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6">
-            <div className="text-3xl font-bold text-white mb-1">{filteredVendors.length}</div>
-            <div className="text-sm text-gray-400">Available Vendors</div>
-          </div>
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6">
-            <div className="text-3xl font-bold text-pink-400 mb-1">
-              {filteredVendors.filter(v => v.google_rating >= 4.5).length}
-            </div>
-            <div className="text-sm text-gray-400">Top Rated</div>
-          </div>
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6">
-            <div className="text-3xl font-bold text-purple-400 mb-1">
-              {new Set(filteredVendors.map(v => v.category)).size}
-            </div>
-            <div className="text-sm text-gray-400">Categories</div>
-          </div>
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6">
-            <div className="text-3xl font-bold text-blue-400 mb-1">24/7</div>
-            <div className="text-sm text-gray-400">Support</div>
-          </div>
+        {/* Category filter pills */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 28 }}>
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              style={{
+                padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600,
+                fontFamily: PJS, cursor: 'pointer', border: 'none', transition: 'all 0.12s',
+                background: selectedCategory === cat ? '#0A0A0A' : 'rgba(10,10,10,0.06)',
+                color: selectedCategory === cat ? '#FFFFFF' : '#444444',
+              }}
+            >
+              {cat === 'all' ? 'All vendors' : cat}
+            </button>
+          ))}
         </div>
 
-        {/* Vendor Grid */}
+        {/* Vendor grid */}
         {filteredVendors.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-gray-400 text-lg">No vendors found. Try adjusting your filters.</p>
+          <div style={{ padding: '64px 0', textAlign: 'center' }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No vendors found. Try adjusting your filters.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredVendors.map((vendor, index) => (
-              <motion.div
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+            {filteredVendors.map(vendor => (
+              <VendorCard
                 key={vendor.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <VendorCard
-                  vendor={vendor}
-                  onViewProfile={handleViewProfile}
-                  onRequestQuote={handleRequestQuote}
-                />
-              </motion.div>
+                vendor={vendor}
+                onViewProfile={handleViewProfile}
+                onRequestQuote={handleRequestQuote}
+              />
             ))}
           </div>
         )}
       </div>
 
-      {/* Modals */}
       {showProfileModal && selectedVendor && (
         <VendorProfileModal
           vendor={selectedVendor}
           onClose={() => setShowProfileModal(false)}
-          onRequestQuote={() => {
-            setShowProfileModal(false);
-            setShowQuoteModal(true);
-          }}
+          onRequestQuote={() => { setShowProfileModal(false); setShowQuoteModal(true); }}
         />
       )}
 
@@ -211,10 +181,7 @@ export default function VendorMarketplace() {
         <QuoteRequestModal
           vendor={selectedVendor}
           onClose={() => setShowQuoteModal(false)}
-          onSuccess={() => {
-            setShowQuoteModal(false);
-            toast.success("Quote request sent!");
-          }}
+          onSuccess={() => { setShowQuoteModal(false); toast.success("Quote request sent!"); }}
         />
       )}
     </div>

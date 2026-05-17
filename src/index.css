@@ -60,7 +60,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     --secondary: 0 0% 94%;
     --secondary-foreground: 0 0% 4%;
     --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 53%;  /* #888888 */
+    --muted-foreground: 0 0% 62%;  /* rgba(10,10,10,0.4) on white */
     --accent: 0 0% 94%;
     --accent-foreground: 0 0% 4%;
     --destructive: 0 72% 51%;
@@ -133,6 +133,8 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   body {
     @apply bg-[#F4F4F4] text-[#0A0A0A];
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    color: #0A0A0A;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -597,6 +599,30 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     color: rgba(255,255,255,0.7);
     line-height: 1.7;
   }
+
+  /* ── Spec utility classes ───────────────────────────────── */
+  .page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0A0A0A;
+    letter-spacing: -0.02em;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(10,10,10,0.4);
+    letter-spacing: 0.06em;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .muted {
+    color: rgba(10,10,10,0.4);
+  }
+  .card {
+    background: #fff;
+    border: 1px solid rgba(10,10,10,0.08);
+    padding: 20px;
+  }
 }
 
 /* ── Sidebar overrides ─────────────────────────────────────── */
@@ -908,13 +934,13 @@ body {
 .stat-card-user .stat-label {
   font-weight: 600;
   font-size: 11px;
-  color: #888888;
+  color: rgba(10,10,10,0.4);
   letter-spacing: 0.1em;
 }
 
 /* ── User area tables ──────────────────────────────────────── */
 .table-user thead { background: #FAFAFA; border-bottom: 1px solid #EEEEEE; }
-.table-user thead th { font-weight: 700; font-size: 11px; color: #888888; letter-spacing: 0.1em; }
+.table-user thead th { font-weight: 700; font-size: 11px; color: rgba(10,10,10,0.4); letter-spacing: 0.1em; }
 .table-user tbody tr { background: #FFFFFF; border-bottom: 1px solid #F5F5F5; }
 .table-user tbody tr:hover { background: #FAFAFA; }
 .table-user tbody td { font-weight: 400; font-size: 14px; color: #0A0A0A; }

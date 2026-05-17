@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { MapPin, Hotel, Car, Camera, Utensils, Loader2, Brain, ClipboardList, Info, ArrowRight, Calendar, Users } from "lucide-react";
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 import AIGuestExperienceAssistant from "../components/guest-experience/AIGuestExperienceAssistant";
 import HotelRecommendations from "../components/guest-experience/HotelRecommendations";
@@ -125,7 +125,7 @@ export default function GuestExperiencePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      <Toaster />
+
 
       <DashboardPageHeader title="Guest experience" subtitle="Curate an unforgettable experience for your guests" />
 

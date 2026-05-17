@@ -37,7 +37,7 @@ import {
   Send
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import InteractiveMap from '../components/guest-experience/InteractiveMap';
 import OurStoryTimeline from '../components/wedding-website/OurStoryTimeline';
 
@@ -603,7 +603,7 @@ export default function WeddingWebsite() {
 
   return (
     <div className="min-h-screen bg-white" style={themeStyles}>
-      <Toaster position="top-center" />
+
       
       {/* Elegant Hero */}
       <div 

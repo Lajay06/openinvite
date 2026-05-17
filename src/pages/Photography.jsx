@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, Plus, Video, Image, Clock, Loader2 } from "lucide-react";
 import toast from 'react-hot-toast';
+import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 
 import PhotographerList from "../components/photography/PhotographerList";
 import PhotographerForm from "../components/photography/PhotographerForm";
@@ -181,14 +182,7 @@ export default function PhotographyPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      {/* Sub-header */}
-      <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Photography & videography</span>
-      </div>
-      {/* Descriptor */}
-      <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Plan your photography, videography, and visual storytelling</span>
-      </div>
+      <DashboardPageHeader title="Photography & videography" subtitle="Plan your photography, videography, and visual storytelling" />
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

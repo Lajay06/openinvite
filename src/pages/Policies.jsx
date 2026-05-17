@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Accordion } from "@/components/ui/accordion";
 import { Shield, Baby, Users, Loader2, Camera, Wifi, Gift, Sparkles, Phone, Clock } from "lucide-react";
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
@@ -118,7 +118,7 @@ export default function PoliciesPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Toaster />
+
       <div className="p-6 lg:p-8 space-y-8">
         {/* Actions */}
         <div className="flex items-center justify-end">

@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Palette, Upload, Loader2, Eye, Plus, Trash2, X } from "lucide-react";
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { Textarea } from "@/components/ui/textarea";
 
 export default function WebsiteCustomizationPage() {
@@ -170,7 +170,7 @@ export default function WebsiteCustomizationPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Toaster />
+
       <div className="p-6 lg:p-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
