@@ -1,204 +1,338 @@
-import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { X, Star, MapPin, Phone, Mail, Globe, MessageSquare, Calendar } from "lucide-react";
-import { motion } from "framer-motion";
+import React, { useState } from 'react';
+import { X, MapPin, Globe, Phone, Mail, Star, Check, ExternalLink, Bookmark, ChevronRight } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import toast from 'react-hot-toast';
 
-export default function VendorProfileModal({ vendor, onClose, onRequestQuote }) {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+const PJS = "'Plus Jakarta Sans', sans-serif";
 
-  useEffect(() => {
-    loadReviews();
-  }, [vendor.id]);
+const TABS = ['About', 'Services & pricing', 'Reviews', 'Gallery', 'Contact'];
 
-  const loadReviews = async () => {
-    try {
-      const vendorReviews = await base44.entities.VendorReview.filter({ vendor_id: vendor.id }, '-created_date', 10);
-      setReviews(vendorReviews);
-    } catch (error) {
-      console.error("Error loading reviews:", error);
-    }
-    setLoading(false);
-  };
+const inputStyle = {
+  width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)',
+  background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS,
+  outline: 'none', padding: '6px 0', boxSizing: 'border-box',
+};
+const labelStyle = {
+  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, display: 'block', marginBottom: 6,
+};
 
-  const averageRating = reviews.length > 0 
-    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-    : vendor.google_rating || vendor.rating || 0;
+function StarRow({ rating, size = 13 }) {
+  return (
+    <span style={{ display: 'inline-flex', gap: 2 }}>
+      {[1,2,3,4,5].map(n => (
+        <Star key={n} size={size}
+          style={{ color: n <= Math.round(rating) ? '#F59E0B' : 'rgba(10,10,10,0.15)',
+            fill: n <= Math.round(rating) ? '#F59E0B' : 'transparent' }} />
+      ))}
+    </span>
+  );
+}
+
+function AboutTab({ vendor }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.7)', fontFamily: PJS, lineHeight: 1.7 }}>{vendor.description}</p>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        {vendor.yearsInBusiness && (
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 4 }}>Years in business</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>{vendor.yearsInBusiness} years</div>
+          </div>
+        )}
+        {vendor.languages?.length > 0 && (
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 4 }}>Languages</div>
+            <div style={{ fontSize: 14, color: '#0A0A0A', fontFamily: PJS }}>{vendor.languages.join(', ')}</div>
+          </div>
+        )}
+      </div>
+      {vendor.serviceArea?.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8 }}>Service area</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {vendor.serviceArea.map(area => (
+              <span key={area} style={{ fontSize: 12, color: '#0A0A0A', background: 'rgba(10,10,10,0.06)', padding: '4px 10px', borderRadius: 999, fontFamily: PJS }}>{area}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {vendor.certifications?.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8 }}>Awards & certifications</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {vendor.certifications.map(c => (
+              <div key={c} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check size={12} style={{ color: '#10B981', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>{c}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ServicesTab({ vendor }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {vendor.packages?.map((pkg, i) => (
+        <div key={i} style={{ borderBottom: '1px solid rgba(10,10,10,0.06)', paddingBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{pkg.name}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#E03553', fontFamily: PJS }}>{pkg.price}</div>
+          </div>
+          {pkg.includes?.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {pkg.includes.map((item, j) => (
+                <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <Check size={12} style={{ color: '#10B981', marginTop: 2, flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.7)', fontFamily: PJS }}>{item}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+      {vendor.depositTerms && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6 }}>Deposit & payment terms</div>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.7)', fontFamily: PJS, lineHeight: 1.6 }}>{vendor.depositTerms}</p>
+        </div>
+      )}
+      {vendor.cancellationPolicy && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6 }}>Cancellation policy</div>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.7)', fontFamily: PJS, lineHeight: 1.6 }}>{vendor.cancellationPolicy}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReviewsTab({ vendor }) {
+  const reviews = vendor.reviews || [];
+  const avg = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : vendor.rating;
+  const breakdown = [5,4,3,2,1].map(n => ({ star: n, count: reviews.filter(r => r.rating === n).length }));
+  const maxCount = Math.max(...breakdown.map(b => b.count), 1);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-gray-900 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-white/10"
-      >
-        {/* Header */}
-        <div className="sticky top-0 bg-gray-900/95 backdrop-blur-sm border-b border-white/10 p-6 flex items-center justify-between z-10">
-          <div className="flex items-center gap-4">
-            {vendor.image_url && (
-              <img src={vendor.image_url} alt={vendor.name} className="w-16 h-16 rounded-lg object-cover" />
-            )}
-            <div>
-              <h2 className="text-2xl font-bold text-white">{vendor.name}</h2>
-              <p className="text-pink-400 capitalize">{vendor.category}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Summary */}
+      <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 48, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.03em', lineHeight: 1 }}>{avg}</div>
+          <StarRow rating={parseFloat(avg)} size={16} />
+          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginTop: 4 }}>{reviews.length || vendor.reviewCount} reviews</div>
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {breakdown.map(b => (
+            <div key={b.star} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, width: 12, textAlign: 'right' }}>{b.star}</span>
+              <Star size={10} style={{ color: '#F59E0B', fill: '#F59E0B', flexShrink: 0 }} />
+              <div style={{ flex: 1, height: 6, background: 'rgba(10,10,10,0.06)', borderRadius: 999, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${(b.count / maxCount) * 100}%`, background: '#F59E0B', borderRadius: 999 }} />
+              </div>
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, width: 16 }}>{b.count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Individual reviews */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {reviews.map((r, i) => (
+          <div key={i} style={{ borderBottom: '1px solid rgba(10,10,10,0.06)', paddingBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{r.name}</div>
+                <div style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{r.date}</div>
+              </div>
+              <StarRow rating={r.rating} size={11} />
+            </div>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.7)', fontFamily: PJS, lineHeight: 1.6 }}>{r.comment}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GalleryTab() {
+  const GRAD = [
+    'linear-gradient(135deg, #fce7f3, #fbcfe8)',
+    'linear-gradient(135deg, #ede9fe, #ddd6fe)',
+    'linear-gradient(135deg, #dcfce7, #bbf7d0)',
+    'linear-gradient(135deg, #fef9c3, #fde68a)',
+    'linear-gradient(135deg, #dbeafe, #bfdbfe)',
+    'linear-gradient(135deg, #ffe4e6, #fecdd3)',
+  ];
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+      {GRAD.map((g, i) => (
+        <div key={i} style={{ height: 160, background: g, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>Photo {i + 1}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ContactTab({ vendor, onSave, isSaved }) {
+  const [form, setForm] = useState({ name: '', email: '', date: localStorage.getItem('oi_wedding_date') || '', message: '' });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Direct links */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {vendor.website && (
+          <a href={vendor.website} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
+            onMouseLeave={e => e.currentTarget.style.color = '#0A0A0A'}>
+            <Globe size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />
+            {vendor.website}
+            <ExternalLink size={11} style={{ color: 'rgba(10,10,10,0.3)' }} />
+          </a>
+        )}
+        {vendor.phone && (
+          <a href={`tel:${vendor.phone}`} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
+            onMouseLeave={e => e.currentTarget.style.color = '#0A0A0A'}>
+            <Phone size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />
+            {vendor.phone}
+          </a>
+        )}
+        {vendor.email && (
+          <a href={`mailto:${vendor.email}`} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
+            onMouseLeave={e => e.currentTarget.style.color = '#0A0A0A'}>
+            <Mail size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />
+            {vendor.email}
+          </a>
+        )}
+      </div>
+
+      <div style={{ borderTop: '1px solid rgba(10,10,10,0.08)', paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>Send an enquiry</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div>
+            <label style={labelStyle}>Your name</label>
+            <input value={form.name} onChange={e => set('name', e.target.value)} placeholder="Full name" style={inputStyle}
+              onFocus={e => e.target.style.borderBottomColor = '#E03553'} onBlur={e => e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'} />
+          </div>
+          <div>
+            <label style={labelStyle}>Email</label>
+            <input value={form.email} onChange={e => set('email', e.target.value)} placeholder="you@email.com" style={inputStyle}
+              onFocus={e => e.target.style.borderBottomColor = '#E03553'} onBlur={e => e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'} />
+          </div>
+        </div>
+        <div>
+          <label style={labelStyle}>Wedding date</label>
+          <input type="date" value={form.date} onChange={e => set('date', e.target.value)} style={inputStyle}
+            onFocus={e => e.target.style.borderBottomColor = '#E03553'} onBlur={e => e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'} />
+        </div>
+        <div>
+          <label style={labelStyle}>Message</label>
+          <textarea value={form.message} onChange={e => set('message', e.target.value)}
+            placeholder="Tell them about your wedding and what you need…"
+            rows={3} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
+            onFocus={e => e.target.style.borderBottomColor = '#E03553'} onBlur={e => e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'} />
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            style={{ flex: 2, padding: '10px 0', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: 'none', background: '#E03553', color: '#FFFFFF' }}
+            onClick={() => toast.success('Enquiry sent!')}
+          >
+            Send enquiry
+          </button>
+          <button
+            onClick={() => onSave(vendor)}
+            disabled={isSaved}
+            style={{ flex: 1, padding: '10px 0', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: isSaved ? 'default' : 'pointer', border: '1.5px solid rgba(10,10,10,0.15)', background: 'none', color: isSaved ? '#10B981' : '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}
+          >
+            <Bookmark size={12} style={{ fill: isSaved ? '#10B981' : 'transparent', color: isSaved ? '#10B981' : '#0A0A0A' }} />
+            {isSaved ? 'Saved' : 'Save to my vendors'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function VendorProfileModal({ vendor, onClose, onGetQuote, onSave, isSaved }) {
+  const [tab, setTab] = useState('About');
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 24, overflowY: 'auto' }}>
+      <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 680, maxHeight: '90vh', overflowY: 'auto', fontFamily: PJS }}>
+        {/* Cover gradient */}
+        <div style={{ height: 100, background: 'linear-gradient(135deg, rgba(224,53,83,0.15), rgba(147,51,234,0.12))', position: 'relative' }}>
+          <button onClick={onClose}
+            style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(255,255,255,0.9)', border: 'none', cursor: 'pointer', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Vendor identity */}
+        <div style={{ padding: '20px 28px 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', letterSpacing: '-0.02em' }}>{vendor.name}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#E03553', background: 'rgba(224,53,83,0.1)', padding: '2px 9px', borderRadius: 999 }}>{vendor.category}</span>
+                {vendor.online && <span style={{ fontSize: 11, fontWeight: 600, color: '#10B981', background: 'rgba(16,185,129,0.1)', padding: '2px 9px', borderRadius: 999 }}>Online</span>}
+                {vendor.location && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgba(10,10,10,0.5)' }}>
+                    <MapPin size={11} />
+                    {vendor.location}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                <StarRow rating={vendor.rating} size={13} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A' }}>{vendor.rating}</span>
+                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)' }}>({vendor.reviewCount} reviews)</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', marginLeft: 4 }}>{vendor.priceRange}</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+              <button onClick={() => onGetQuote(vendor)}
+                style={{ padding: '9px 18px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: 'none', background: '#E03553', color: '#FFFFFF' }}>
+                Get quote
+              </button>
+              <button onClick={() => onSave(vendor)} disabled={isSaved}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, fontFamily: PJS, cursor: isSaved ? 'default' : 'pointer', border: 'none', background: 'none', color: isSaved ? '#10B981' : 'rgba(10,10,10,0.4)', padding: 0 }}>
+                <Bookmark size={12} style={{ fill: isSaved ? '#10B981' : 'transparent' }} />
+                {isSaved ? 'Saved' : 'Save'}
+              </button>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-400 hover:text-white">
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
 
-        <div className="p-6 space-y-6">
-          {/* Quick Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-white/5 border-white/10">
-              <CardContent className="p-4 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                  <span className="text-2xl font-bold text-white">{averageRating}</span>
-                </div>
-                <p className="text-sm text-gray-400">{reviews.length || vendor.google_reviews_count || 0} reviews</p>
-              </CardContent>
-            </Card>
-            
-            {vendor.price_range && (
-              <Card className="bg-white/5 border-white/10">
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-pink-400 mb-2">{vendor.price_range}</div>
-                  <p className="text-sm text-gray-400">Price Range</p>
-                </CardContent>
-              </Card>
-            )}
-
-            <Card className="bg-white/5 border-white/10">
-              <CardContent className="p-4 text-center">
-                <Badge className="bg-green-500/20 text-green-400 border-0 mb-2">
-                  {vendor.status || 'Available'}
-                </Badge>
-                <p className="text-sm text-gray-400">Status</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Contact Info */}
-          <div className="space-y-3">
-            {vendor.address && (
-              <div className="flex items-center gap-3 text-gray-300">
-                <MapPin className="w-5 h-5 text-pink-400" />
-                <span>{vendor.address}</span>
-              </div>
-            )}
-            {vendor.phone && (
-              <div className="flex items-center gap-3 text-gray-300">
-                <Phone className="w-5 h-5 text-pink-400" />
-                <a href={`tel:${vendor.phone}`} className="hover:text-pink-400">{vendor.phone}</a>
-              </div>
-            )}
-            {vendor.email && (
-              <div className="flex items-center gap-3 text-gray-300">
-                <Mail className="w-5 h-5 text-pink-400" />
-                <a href={`mailto:${vendor.email}`} className="hover:text-pink-400">{vendor.email}</a>
-              </div>
-            )}
-            {vendor.website && (
-              <div className="flex items-center gap-3 text-gray-300">
-                <Globe className="w-5 h-5 text-pink-400" />
-                <a href={vendor.website} target="_blank" rel="noopener noreferrer" className="hover:text-pink-400">
-                  Visit Website
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Tabs */}
-          <Tabs defaultValue="about" className="w-full">
-            <TabsList className="bg-white/5 border-white/10">
-              <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({reviews.length})</TabsTrigger>
-              <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="about" className="space-y-4">
-              {vendor.notes && (
-                <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-white mb-3">About</h3>
-                  <p className="text-gray-300 leading-relaxed">{vendor.notes}</p>
-                </div>
-              )}
-              
-              {vendor.payment_schedule && (
-                <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-white mb-3">Payment Terms</h3>
-                  <p className="text-gray-300">{vendor.payment_schedule}</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="reviews" className="space-y-4">
-              {reviews.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">No reviews yet</p>
-              ) : (
-                reviews.map((review) => (
-                  <Card key={review.id} className="bg-white/5 border-white/10">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <p className="font-semibold text-white">{review.reviewer_name}</p>
-                          {review.event_date && (
-                            <p className="text-sm text-gray-400">Event: {new Date(review.event_date).toLocaleDateString()}</p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-600'}`} />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-gray-300">{review.review_text}</p>
-                      {review.verified && (
-                        <Badge className="mt-3 bg-blue-500/20 text-blue-400 border-0">Verified</Badge>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </TabsContent>
-
-            <TabsContent value="portfolio">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {vendor.image_url && (
-                  <img src={vendor.image_url} alt="Portfolio" className="w-full h-48 object-cover rounded-lg" />
-                )}
-                <div className="text-center py-12 text-gray-400 col-span-2 md:col-span-3">
-                  Portfolio coming soon
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-white/10">
-            <Button
-              onClick={onRequestQuote}
-              className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Request Quote
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1 border-white/20 text-white hover:bg-white/10"
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Check Availability
-            </Button>
+          {/* Tab bar */}
+          <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+            {TABS.map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                style={{ padding: '10px 16px', fontSize: 13, fontWeight: tab === t ? 700 : 500, fontFamily: PJS, cursor: 'pointer', border: 'none', background: 'none', color: tab === t ? '#0A0A0A' : 'rgba(10,10,10,0.45)', borderBottom: tab === t ? '2px solid #0A0A0A' : '2px solid transparent', marginBottom: -1 }}>
+                {t}
+              </button>
+            ))}
           </div>
         </div>
-      </motion.div>
+
+        {/* Tab content */}
+        <div style={{ padding: '24px 28px 32px' }}>
+          {tab === 'About' && <AboutTab vendor={vendor} />}
+          {tab === 'Services & pricing' && <ServicesTab vendor={vendor} />}
+          {tab === 'Reviews' && <ReviewsTab vendor={vendor} />}
+          {tab === 'Gallery' && <GalleryTab />}
+          {tab === 'Contact' && <ContactTab vendor={vendor} onSave={onSave} isSaved={isSaved} />}
+        </div>
+      </div>
     </div>
   );
 }
