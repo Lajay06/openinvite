@@ -1,308 +1,405 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { createPageUrl } from "@/utils";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const FREE_FEATURES = [
+const STARTER_FEATURES = [
   "Up to 20 guests",
   "Guest list and RSVPs",
   "Basic budget tracker",
   "Wedding checklist",
-  "1 vendor",
-  "Ava AI (10 messages)",
-  "Basic wedding website",
+  "1 vendor slot",
+  "Ava AI (10 conversations)",
+  "Basic wedding website preview",
 ];
 
 const PRO_FEATURES = [
   "Unlimited guests",
   "Full guest management and RSVPs",
   "Complete budget suite",
-  "Ava AI — unlimited, context-aware",
-  "Vendor management and marketplace",
+  "Ava AI — unlimited and context-aware",
+  "Full vendor management",
+  "Vendor marketplace access",
   "Seating planner",
-  "Wedding website builder",
-  "Invitations and design studio",
-  "Photography and styling tools",
+  "Wedding website (preview only)",
   "Schedule and day-of timeline",
-  "Moodboard and inspiration",
-  "Music planner",
+  "Photography and styling tools",
+  "Moodboard and inspiration boards",
+  "Music playlist planner",
   "Registry management",
   "Vows and speeches writer",
   "Collaborate with wedding party",
+  "24-month access",
   "Priority support",
+];
+
+const ULTRA_EXTRAS = [
+  "Full invitation design suite",
+  "Custom invitation templates",
+  "Digital and printable invitations",
+  "RSVP tracking via invitations",
+  "Save the dates",
+  "Thank you cards",
+  "Envelope addressing",
+  "Guest portal with invitations",
 ];
 
 const FAQS = [
   {
-    q: "Can I try before I pay?",
-    a: "Yes. Your 14-day free trial includes everything in Pro with no credit card required. If you love it, upgrade to keep planning.",
+    q: "Is this really a one-time payment?",
+    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is $149 total. Ultra is $249 total.",
   },
   {
-    q: "What happens after the trial?",
-    a: "You'll be asked to choose a plan. If you don't upgrade, your account moves to read-only — your data is safe, you just can't add anything new.",
+    q: "What's included in the 24 months?",
+    a: "Full access to everything in your plan from the day you purchase. Most couples plan 12–18 months ahead — 24 months gives you plenty of room.",
   },
   {
-    q: "Can I cancel anytime?",
-    a: "Always. No contracts, no cancellation fees. Cancel from your account settings in 30 seconds.",
+    q: "Can I upgrade from Pro to Ultra later?",
+    a: "Yes — you can upgrade at any time and pay only the difference ($100).",
   },
   {
-    q: "Do you offer refunds?",
-    a: "Annual plans include a 14-day money-back guarantee. See our Refund Policy for full details.",
+    q: "What if I want a refund?",
+    a: "We offer a 14-day money-back guarantee from your purchase date, no questions asked.",
   },
+  {
+    q: "Do I need a credit card for the trial?",
+    a: "No. Start free with just your email. No card details required until you upgrade.",
+  },
+  {
+    q: "What happens to my data after 24 months?",
+    a: "Your data stays safe in archive mode. Add a $49 archive plan to keep permanent access to your wedding story.",
+  },
+];
+
+const TABLE_ROWS = [
+  { feature: "Guests",           starter: "20",       pro: "∞",        ultra: "∞" },
+  { feature: "Ava AI",           starter: "10 msgs",  pro: "∞",        ultra: "∞" },
+  { feature: "Budget tracker",   starter: "Basic",    pro: "Full",     ultra: "Full" },
+  { feature: "Vendor tools",     starter: "1",        pro: "∞",        ultra: "∞" },
+  { feature: "Seating planner",  starter: false,      pro: true,       ultra: true },
+  { feature: "Wedding website",  starter: "Preview",  pro: true,       ultra: true },
+  { feature: "Invitations",      starter: false,      pro: false,      ultra: true },
+  { feature: "Save the dates",   starter: false,      pro: false,      ultra: true },
+  { feature: "Thank you cards",  starter: false,      pro: false,      ultra: true },
+  { feature: "Guest portal",     starter: false,      pro: true,       ultra: true },
+  { feature: "Collaborate",      starter: false,      pro: true,       ultra: true },
+  { feature: "Support",          starter: "Email",    pro: "Priority", ultra: "Priority" },
+  { feature: "Access duration",  starter: "14 days",  pro: "24 mo",    ultra: "24 mo" },
+  { feature: "Price",            starter: "Free",     pro: "$149",     ultra: "$249" },
 ];
 
 function CheckIcon({ color = "#0A0A0A" }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
-      <path d="M2.5 7L5.5 10L11.5 4" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+      <path d="M2.5 7L5.5 10L11.5 4" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
+function CellValue({ val }) {
+  if (val === true)  return <CheckIcon color="#0A0A0A" />;
+  if (val === false) return <span style={{ color: "rgba(10,10,10,0.25)", fontSize: 14 }}>—</span>;
+  return <span style={{ fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>{val}</span>;
+}
+
 export default function Pricing() {
-  const [annual, setAnnual] = useState(true);
+  const navigate = useNavigate();
 
-  const handleCTA = () => {
-    base44.auth.redirectToLogin(window.location.origin + createPageUrl("Dashboard"));
-  };
-
-  const monthlyPrice = "$19.90";
-  const annualPrice  = "$199";
-  const annualOld    = "$238.80";
-  const annualSaving = "Save $39.80";
+  const goFree  = () => navigate("/onboarding");
+  const goPro   = () => navigate("/onboarding?plan=pro");
+  const goUltra = () => navigate("/onboarding?plan=ultra");
 
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100vh", fontFamily: PJS }}>
       <PublicNav />
 
       {/* ── HERO ── */}
-      <section style={{ background: "#0A0A0A", padding: "140px 24px 100px", textAlign: "center" }}>
-        <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", color: "#E03553", marginBottom: 20, fontFamily: PJS }}>
-          Simple, transparent pricing
+      <section style={{ background: "#0A0A0A", padding: "100px 24px 80px", textAlign: "center" }}>
+        <p style={{
+          fontSize: 11, fontWeight: 600, letterSpacing: "0.1em",
+          color: "#E03553", marginBottom: 20, fontFamily: PJS,
+        }}>
+          Simple, honest pricing
         </p>
         <h1 style={{
-          fontSize: "clamp(40px, 5vw, 56px)", fontWeight: 800, letterSpacing: "-0.03em",
-          color: "#FFFFFF", lineHeight: 1.1, maxWidth: 600, margin: "0 auto 24px",
+          fontSize: "clamp(36px, 5vw, 54px)", fontWeight: 800, letterSpacing: "-0.03em",
+          color: "#FFFFFF", lineHeight: 1.1, maxWidth: 640, margin: "0 auto 20px",
           fontFamily: PJS,
         }}>
-          Plan the wedding<br />you actually want.
+          Pay once.<br />Plan your entire wedding.
         </h1>
         <p style={{
-          fontSize: 18, lineHeight: 1.6, color: "rgba(255,255,255,0.6)",
-          maxWidth: 500, margin: "0 auto", fontFamily: PJS,
+          fontSize: 17, lineHeight: 1.65, color: "rgba(255,255,255,0.6)",
+          maxWidth: 480, margin: "0 auto 40px", fontFamily: PJS,
         }}>
-          One plan. Everything included.<br />No surprises on your big day.
+          No monthly fees. No subscriptions.<br />
+          One payment covers your full wedding journey.
         </p>
-      </section>
 
-      {/* ── BILLING TOGGLE ── */}
-      <section style={{ background: "#FFFFFF", padding: "64px 24px 0", textAlign: "center" }}>
-        <div style={{ display: "inline-flex", background: "rgba(10,10,10,0.06)", padding: 4, borderRadius: 999, gap: 2 }}>
-          <button
-            onClick={() => setAnnual(false)}
-            style={{
-              padding: "9px 20px", borderRadius: 999, fontSize: 13, fontWeight: 700,
-              fontFamily: PJS, cursor: "pointer", border: "none", transition: "all 0.2s",
-              background: !annual ? "#0A0A0A" : "transparent",
-              color: !annual ? "#FFFFFF" : "rgba(10,10,10,0.5)",
-            }}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setAnnual(true)}
-            style={{
-              padding: "9px 20px", borderRadius: 999, fontSize: 13, fontWeight: 700,
-              fontFamily: PJS, cursor: "pointer", border: "none", transition: "all 0.2s",
-              background: annual ? "#0A0A0A" : "transparent",
-              color: annual ? "#FFFFFF" : "rgba(10,10,10,0.5)",
-              display: "flex", alignItems: "center", gap: 8,
-            }}
-          >
-            Annual
-            <span style={{
-              fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999,
-              background: annual ? "#E03553" : "rgba(10,10,10,0.12)",
-              color: annual ? "#FFFFFF" : "rgba(10,10,10,0.4)",
-              transition: "all 0.2s",
-            }}>
-              save 2 months
+        {/* Trust badges */}
+        <div style={{
+          display: "flex", justifyContent: "center", alignItems: "center",
+          flexWrap: "wrap", gap: "8px 32px",
+        }}>
+          {["🔒 Secure checkout", "✓ 24-month access", "↩ 14-day money back"].map(badge => (
+            <span key={badge} style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: PJS }}>
+              {badge}
             </span>
-          </button>
+          ))}
         </div>
       </section>
 
       {/* ── PRICING CARDS ── */}
-      <section style={{ background: "#FFFFFF", padding: "48px 24px 80px" }}>
+      <section style={{ background: "#FFFFFF", padding: "80px 24px" }}>
         <div style={{
-          maxWidth: 880, margin: "0 auto",
-          display: "flex", gap: 24, alignItems: "flex-start",
+          maxWidth: 1100, margin: "0 auto",
+          display: "flex", gap: 20, alignItems: "stretch",
           flexWrap: "wrap", justifyContent: "center",
         }}>
 
-          {/* FREE CARD */}
+          {/* STARTER */}
           <div style={{
-            flex: "0 1 380px", minWidth: 280,
+            flex: "0 1 320px", minWidth: 260,
             border: "1px solid rgba(10,10,10,0.1)",
-            background: "#FFFFFF", padding: "40px 36px",
+            background: "#FFFFFF", padding: "36px 32px",
+            display: "flex", flexDirection: "column",
           }}>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 20, fontFamily: PJS }}>
-              Free trial
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
+              Starter
             </p>
-            <div style={{ marginBottom: 6 }}>
-              <span style={{ fontSize: 52, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$0</span>
+            <div style={{ marginBottom: 4 }}>
+              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$0</span>
             </div>
-            <p style={{ fontSize: 13, color: "rgba(10,10,10,0.45)", marginBottom: 28, fontFamily: PJS }}>14 days, no credit card required</p>
-            <div style={{ height: 1, background: "rgba(10,10,10,0.08)", marginBottom: 28 }} />
-            <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 28, fontFamily: PJS }}>
-              Experience the full power of OpenInvite. Everything included, no limits, for 14 days.
+            <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
+              Free for 14 days
             </p>
-            <ul style={{ listStyle: "none", padding: 0, margin: "0 0 36px", display: "flex", flexDirection: "column", gap: 12 }}>
-              {FREE_FEATURES.map((f, i) => (
-                <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: "#0A0A0A", fontFamily: PJS }}>
-                  <CheckIcon color="#0A0A0A" />
+            <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 24, fontFamily: PJS }}>
+              Try everything free for 14 days. No credit card required.
+            </p>
+            <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 24 }} />
+            <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
+              {STARTER_FEATURES.map((f, i) => (
+                <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
+                  <CheckIcon color="rgba(10,10,10,0.3)" />
                   {f}
                 </li>
               ))}
             </ul>
             <button
-              onClick={handleCTA}
+              onClick={goFree}
               style={{
-                width: "100%", padding: "14px 0", borderRadius: 999, fontSize: 14, fontWeight: 700,
+                width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 600,
                 fontFamily: PJS, cursor: "pointer", border: "none",
                 background: "#0A0A0A", color: "#FFFFFF", transition: "opacity 0.15s",
               }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
               onMouseLeave={e => e.currentTarget.style.opacity = "1"}
             >
               Start free — no card needed
             </button>
+            <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
+              14 days · then choose a plan
+            </p>
           </div>
 
-          {/* PRO CARD */}
-          <div style={{ flex: "0 1 420px", minWidth: 280, paddingTop: 20, position: "relative" }}>
-            {/* "Most popular" badge floating above card */}
+          {/* PRO (featured) */}
+          <div style={{ flex: "0 1 360px", minWidth: 280, paddingTop: 24, position: "relative" }}>
+            {/* Badge above card */}
             <div style={{
               position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
               background: "linear-gradient(135deg, #ec4899, #9333ea)",
-              padding: "5px 18px", borderRadius: 999, fontSize: 11, fontWeight: 700,
-              color: "#FFFFFF", letterSpacing: "0.06em", whiteSpace: "nowrap", fontFamily: PJS,
+              padding: "4px 14px", borderRadius: 999, fontSize: 11, fontWeight: 600,
+              color: "#FFFFFF", letterSpacing: "0.04em", whiteSpace: "nowrap", fontFamily: PJS,
               zIndex: 1,
             }}>
               Most popular
             </div>
 
             <div style={{
-              border: "2px solid #0A0A0A", background: "#0A0A0A", padding: "44px 36px",
+              border: "2px solid #0A0A0A", background: "#0A0A0A",
+              padding: "40px 32px 36px",
+              display: "flex", flexDirection: "column", height: "100%",
             }}>
-              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(255,255,255,0.45)", marginBottom: 20, fontFamily: PJS }}>
+              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)", marginBottom: 16, fontFamily: PJS }}>
                 Pro
               </p>
-
-              {/* Price */}
-              <div style={{ marginBottom: 4, display: "flex", alignItems: "flex-end", gap: 8 }}>
-                <span style={{ fontSize: 52, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>
-                  {annual ? annualPrice : monthlyPrice}
-                </span>
-                <span style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", fontFamily: PJS, paddingBottom: 8 }}>
-                  {annual ? "/yr" : "/mo"}
-                </span>
+              <div style={{ marginBottom: 4 }}>
+                <span style={{ fontSize: 48, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$149</span>
               </div>
-
-              {annual ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textDecoration: "line-through", fontFamily: PJS }}>{annualOld}</span>
-                  <span style={{
-                    fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999,
-                    background: "rgba(224,53,83,0.25)", color: "#E03553", fontFamily: PJS,
-                  }}>{annualSaving}</span>
-                </div>
-              ) : (
-                <div style={{ height: 24, marginBottom: 8 }} />
-              )}
-
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 20, fontFamily: PJS }}>
-                {annual ? "Billed annually · cancel anytime" : "Billed monthly · cancel anytime"}
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16, fontFamily: PJS }}>
+                One-time payment
               </p>
-
-              <div style={{ height: 1, background: "rgba(255,255,255,0.1)", marginBottom: 20 }} />
-
-              <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.7)", marginBottom: 28, fontFamily: PJS }}>
-                Everything you need for the wedding of your dreams.
+              <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.7)", marginBottom: 24, fontFamily: PJS }}>
+                Your complete wedding command centre. Everything you need from first plan to final dance.
               </p>
-
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 36px", display: "flex", flexDirection: "column", gap: 11 }}>
+              <div style={{ height: 1, background: "rgba(255,255,255,0.1)", marginBottom: 24 }} />
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
                 {PRO_FEATURES.map((f, i) => (
-                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: "rgba(255,255,255,0.85)", fontFamily: PJS }}>
-                    <CheckIcon color="#E03553" />
+                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "rgba(255,255,255,0.9)", fontFamily: PJS }}>
+                    <CheckIcon color="#ec4899" />
                     {f}
                   </li>
                 ))}
               </ul>
-
               <button
-                onClick={handleCTA}
+                onClick={goPro}
                 style={{
-                  width: "100%", padding: "14px 0", borderRadius: 999, fontSize: 14, fontWeight: 700,
+                  width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 600,
                   fontFamily: PJS, cursor: "pointer", border: "none",
-                  background: "#FFFFFF", color: "#0A0A0A", transition: "opacity 0.15s",
+                  background: "linear-gradient(135deg, #ec4899, #9333ea)",
+                  color: "#FFFFFF", transition: "opacity 0.15s",
                 }}
-                onMouseEnter={e => e.currentTarget.style.opacity = "0.9"}
+                onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
                 onMouseLeave={e => e.currentTarget.style.opacity = "1"}
               >
-                Start your free trial
+                Get Pro — $149
               </button>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textAlign: "center", marginTop: 12, fontFamily: PJS }}>
-                {annual ? `Then ${annualPrice}/yr · cancel anytime` : `Then ${monthlyPrice}/mo · cancel anytime`}
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
+                24-month access · one-time payment
               </p>
             </div>
+          </div>
+
+          {/* ULTRA */}
+          <div style={{
+            flex: "0 1 320px", minWidth: 260,
+            border: "1px solid rgba(10,10,10,0.1)",
+            background: "#FFFFFF", padding: "36px 32px",
+            display: "flex", flexDirection: "column",
+          }}>
+            {/* Tag */}
+            <div style={{ marginBottom: 16 }}>
+              <span style={{
+                display: "inline-block", padding: "3px 10px", borderRadius: 999,
+                background: "rgba(147,51,234,0.08)", color: "#9333ea",
+                fontSize: 11, fontWeight: 600, fontFamily: PJS,
+              }}>
+                Pro + Invitations
+              </span>
+            </div>
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
+              Ultra
+            </p>
+            <div style={{ marginBottom: 4 }}>
+              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$249</span>
+            </div>
+            <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
+              One-time payment
+            </p>
+            <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 24, fontFamily: PJS }}>
+              Everything in Pro, plus a stunning invitation suite to match your wedding vision.
+            </p>
+            <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 24 }} />
+            <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.4)", marginBottom: 12, letterSpacing: "0.04em", fontFamily: PJS }}>
+              Everything in Pro, plus:
+            </p>
+            <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
+              {ULTRA_EXTRAS.map((f, i) => (
+                <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
+                  <CheckIcon color="#9333ea" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={goUltra}
+              style={{
+                width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 600,
+                fontFamily: PJS, cursor: "pointer",
+                background: "#FFFFFF", border: "1.5px solid #0A0A0A", color: "#0A0A0A",
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "#F3F3F3"}
+              onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}
+            >
+              Get Ultra — $249
+            </button>
+            <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
+              24-month access · one-time payment
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── AFTER 24 MONTHS ── */}
+      <section style={{ background: "#F7F7F7", padding: "40px 24px" }}>
+        <div style={{
+          maxWidth: 720, margin: "0 auto",
+          borderLeft: "3px solid #E03553", paddingLeft: 24,
+        }}>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "#0A0A0A", marginBottom: 10, fontFamily: PJS }}>
+            What happens after 24 months?
+          </p>
+          <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(10,10,10,0.6)", marginBottom: 10, fontFamily: PJS }}>
+            Your wedding is done — congratulations. After 24 months, your account moves to archive mode.
+            Your data, photos, and memories stay safe. To keep full access to your wedding story,
+            add an archive plan for a single $49 payment. No recurring fees, ever.
+          </p>
+          <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", margin: 0, fontFamily: PJS }}>
+            Archive access covers your guest list, photos, messages, and wedding website permanently.
+          </p>
+        </div>
+      </section>
+
+      {/* ── COMPARISON TABLE ── */}
+      <section style={{ background: "#FFFFFF", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 860, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 40, fontFamily: PJS }}>
+            Compare plans
+          </h2>
+
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: PJS }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left", fontSize: 12, fontWeight: 600, color: "rgba(10,10,10,0.4)", padding: "0 0 20px", width: "40%" }} />
+                  {["Starter", "Pro", "Ultra"].map(label => (
+                    <th key={label} style={{
+                      textAlign: "center", fontSize: 13, fontWeight: 700,
+                      color: "#0A0A0A", padding: "0 16px 20px",
+                    }}>
+                      {label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {TABLE_ROWS.map((row, i) => (
+                  <tr key={i} style={{ borderTop: "1px solid rgba(10,10,10,0.05)" }}>
+                    <td style={{ padding: "14px 0", fontSize: 13, color: "rgba(10,10,10,0.7)", fontFamily: PJS }}>
+                      {row.feature}
+                    </td>
+                    {[row.starter, row.pro, row.ultra].map((val, j) => (
+                      <td key={j} style={{ padding: "14px 16px", textAlign: "center" }}>
+                        <CellValue val={val} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
 
-      {/* ── TRUST STRIP ── */}
-      <section style={{ background: "#F7F7F7", padding: "48px 24px" }}>
-        <div style={{
-          maxWidth: 680, margin: "0 auto",
-          display: "flex", justifyContent: "center", gap: "clamp(32px, 6vw, 80px)",
-          flexWrap: "wrap", textAlign: "center",
-        }}>
-          {[
-            { num: "10,000+", label: "couples" },
-            { num: "4.9★",    label: "average rating" },
-            { num: "142",     label: "countries" },
-          ].map(({ num, label }) => (
-            <div key={label}>
-              <div style={{ fontSize: "clamp(24px, 3vw, 32px)", fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.02em", fontFamily: PJS }}>{num}</div>
-              <div style={{ fontSize: 13, color: "rgba(10,10,10,0.45)", fontFamily: PJS, marginTop: 2 }}>{label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── FAQ ── */}
-      <section style={{ background: "#FFFFFF", padding: "96px 24px" }}>
+      <section style={{ background: "#FFFFFF", padding: "0 24px 80px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
-          <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", color: "#E03553", marginBottom: 12, fontFamily: PJS }}>
-            Common questions
-          </p>
-          <h2 style={{ fontSize: "clamp(26px, 3vw, 36px)", fontWeight: 800, letterSpacing: "-0.02em", color: "#0A0A0A", marginBottom: 56, fontFamily: PJS }}>
-            Everything you need to know.
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 40, fontFamily: PJS }}>
+            Questions
           </h2>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
             {FAQS.map((faq, i) => (
-              <div key={i} style={{ borderBottom: "1px solid rgba(10,10,10,0.08)", padding: "28px 0" }}>
-                <p style={{ fontSize: 16, fontWeight: 700, color: "#0A0A0A", marginBottom: 10, fontFamily: PJS }}>{faq.q}</p>
-                <p style={{ fontSize: 15, lineHeight: 1.7, color: "rgba(10,10,10,0.6)", margin: 0, fontFamily: PJS }}>
-                  {faq.a}{" "}
-                  {faq.q.includes("refund") && (
-                    <Link to="/refund-policy" style={{ color: "#E03553", textDecoration: "none", fontWeight: 600 }}>Refund policy →</Link>
-                  )}
+              <div key={i}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#0A0A0A", marginBottom: 8, fontFamily: PJS }}>
+                  {faq.q}
+                </p>
+                <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(10,10,10,0.6)", margin: 0, fontFamily: PJS }}>
+                  {faq.a}
                 </p>
               </div>
             ))}
@@ -313,30 +410,42 @@ export default function Pricing() {
       {/* ── BOTTOM CTA ── */}
       <section style={{ background: "#0A0A0A", padding: "100px 24px", textAlign: "center" }}>
         <h2 style={{
-          fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 800, letterSpacing: "-0.02em",
+          fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, letterSpacing: "-0.02em",
           color: "#FFFFFF", marginBottom: 16, lineHeight: 1.15, fontFamily: PJS,
         }}>
-          Your wedding deserves the best.
+          Your wedding deserves this.
         </h2>
-        <p style={{ fontSize: 17, color: "rgba(255,255,255,0.55)", marginBottom: 40, fontFamily: PJS }}>
-          Join thousands of couples planning with confidence.
+        <p style={{ fontSize: 16, lineHeight: 1.6, color: "rgba(255,255,255,0.6)", marginBottom: 40, fontFamily: PJS }}>
+          Join thousands of couples planning with confidence,<br />
+          clarity, and a little Ava magic.
         </p>
-        <button
-          onClick={handleCTA}
-          style={{
-            padding: "16px 40px", borderRadius: 999, fontSize: 15, fontWeight: 700,
-            fontFamily: PJS, cursor: "pointer", border: "none",
-            background: "linear-gradient(135deg, #ec4899, #9333ea)",
-            color: "#FFFFFF", transition: "opacity 0.15s",
-          }}
-          onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
-          onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-        >
-          Start free today
-        </button>
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 16, fontFamily: PJS }}>
-          14-day free trial · no credit card required
-        </p>
+        <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+          <button
+            onClick={goFree}
+            style={{
+              padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 600,
+              fontFamily: PJS, cursor: "pointer", border: "none",
+              background: "linear-gradient(135deg, #ec4899, #9333ea)",
+              color: "#FFFFFF", transition: "opacity 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            Start free trial
+          </button>
+          <button
+            onClick={goPro}
+            style={{
+              padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 600,
+              fontFamily: PJS, cursor: "pointer", border: "none",
+              background: "#FFFFFF", color: "#0A0A0A", transition: "opacity 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            Get Pro — $149
+          </button>
+        </div>
       </section>
 
       <PublicFooter />
