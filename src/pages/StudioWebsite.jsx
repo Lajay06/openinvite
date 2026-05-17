@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Monitor, Tablet, Smartphone } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink, Sparkles } from 'lucide-react';
 import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
 import SectionTemplatePicker from '@/components/website-builder/SectionTemplatePicker';
@@ -179,33 +179,57 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
   };
 
   if (isLoading || details === null) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
-      <div style={{ width: 24, height: 24, border: '2px solid #EEE', borderTopColor: '#E03553', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0F0F0F' }}>
+      <div style={{ width: 24, height: 24, border: '2px solid rgba(255,255,255,0.08)', borderTopColor: '#E03553', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 
   return (
-    <div style={{ height: '100vh', overflow: 'hidden', fontFamily: "'Plus Jakarta Sans',sans-serif", background: '#fff', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100vh', overflow: 'hidden', fontFamily: "'Plus Jakarta Sans',sans-serif", background: '#0F0F0F', display: 'flex', flexDirection: 'column' }}>
 
       {/* TOP BAR */}
-      <div style={{ height: 56, flexShrink: 0, background: '#FFFFFF', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', gap: 16, position: 'sticky', top: 0, zIndex: 100 }}>
-        <button onClick={() => navigate('/studio/guest-suite')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#444444', fontSize: 13, fontWeight: 500, padding: 0 }}>
-          ← Guest Suite
+      <div style={{ height: 48, flexShrink: 0, background: '#0A0A0A', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', gap: 16, position: 'sticky', top: 0, zIndex: 100 }}>
+        <button
+          onClick={() => navigate('/studio/guest-suite')}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: 4, transition: 'color 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+        >
+          <ChevronLeft size={14} />
+          Guest suite
         </button>
-        <span style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', position: 'absolute', left: '50%', transform: 'translateX(-50%)', margin: 0, pointerEvents: 'none' }}>
-          Website Builder
+        <span style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF', position: 'absolute', left: '50%', transform: 'translateX(-50%)', margin: 0, pointerEvents: 'none', letterSpacing: '0.01em' }}>
+          Website builder
         </span>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginLeft: 'auto' }}>
           {previewUrl && (
-            <a href={previewUrl} target="_blank" rel="noreferrer" style={{ padding: '8px 16px', border: '1px solid #EEEEEE', background: 'transparent', color: '#444444', fontSize: 12, fontWeight: 500, cursor: 'pointer', textDecoration: 'none' }}>
-              ↗ Preview
+            <a
+              href={previewUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 12px', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 500, cursor: 'pointer', textDecoration: 'none', border: 'none', transition: 'color 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.color = '#FFFFFF'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+            >
+              <ExternalLink size={12} />
+              Preview
             </a>
           )}
-          <button onClick={() => navigate('/studio/guest-suite/share')} style={{ padding: '8px 16px', border: '1px solid #EEEEEE', background: 'transparent', color: '#444444', fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
-            Share ↗
+          <button
+            onClick={() => navigate('/studio/guest-suite/share')}
+            style={{ padding: '5px 14px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 999, transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+          >
+            Share
           </button>
-          <button onClick={() => doSave(true).then(() => { setPublishModalTab('website'); setPublishModalOpen(true); })} style={{ padding: '8px 20px', background: '#0A0A0A', color: '#FFFFFF', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none' }}>
+          <button
+            onClick={() => doSave(true).then(() => { setPublishModalTab('website'); setPublishModalOpen(true); })}
+            style={{ padding: '5px 16px', background: '#E03553', color: '#FFFFFF', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', borderRadius: 999, transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#C42D47'}
+            onMouseLeave={e => e.currentTarget.style.background = '#E03553'}
+          >
             Publish
           </button>
         </div>
@@ -218,37 +242,48 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
         <LeftPanel details={details} currentPage={currentPage} onPageChange={(p) => { setCurrentPage(p); setSelectedSection(null); setRightPanelTab('design'); }} onAvaClick={() => setAvaModalOpen(true)} />
 
         {/* CENTER PREVIEW */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#F0F0F0', minWidth: 0, borderLeft: '1px solid #EEEEEE' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#1A1A1A', minWidth: 0, borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
 
-          {/* Preview device toolbar */}
-          <div style={{ height: 44, background: '#FFFFFF', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 8, flexShrink: 0 }}>
-            {[{ id: 'desktop', Icon: Monitor }, { id: 'tablet', Icon: Tablet }, { id: 'mobile', Icon: Smartphone }].map(({ id, Icon }) => (
-              <button key={id} onClick={() => setPreviewDevice(id)} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${previewDevice === id ? '#0A0A0A' : '#EEEEEE'}`, background: previewDevice === id ? '#0A0A0A' : 'transparent', cursor: 'pointer' }}>
-                <Icon size={13} color={previewDevice === id ? '#fff' : '#888888'} strokeWidth={1.5} />
-              </button>
-            ))}
-            <div style={{ flex: 1, height: 28, background: '#F5F5F5', border: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', padding: '0 12px', overflow: 'hidden', maxWidth: 400, margin: '0 8px' }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', marginRight: 6, flexShrink: 0 }} />
-              <span style={{ fontSize: 12, color: '#888888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>
+          {/* Device switcher toolbar */}
+          <div style={{ height: 48, background: '#1A1A1A', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px', flexShrink: 0, position: 'relative' }}>
+            {/* URL indicator — left */}
+            <div style={{ position: 'absolute', left: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', flexShrink: 0 }} />
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>
                 openinvite.com/w/{details.slug || 'your-wedding'}/{currentPage !== 'home' ? currentPage : ''}
               </span>
             </div>
-            <span style={{ fontSize: 12, fontWeight: 500, color: '#444444' }}>{allPageLabels[currentPage] || currentPage}</span>
+            {/* Device pill */}
+            <div style={{ display: 'inline-flex', background: 'rgba(0,0,0,0.3)', borderRadius: 999, padding: 3 }}>
+              {[{ id: 'desktop', Icon: Monitor }, { id: 'tablet', Icon: Tablet }, { id: 'mobile', Icon: Smartphone }].map(({ id, Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setPreviewDevice(id)}
+                  style={{ padding: '5px 12px', borderRadius: 999, background: previewDevice === id ? 'rgba(255,255,255,0.1)' : 'transparent', color: previewDevice === id ? '#FFFFFF' : 'rgba(255,255,255,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.15s' }}
+                >
+                  <Icon size={13} strokeWidth={1.5} />
+                </button>
+              ))}
+            </div>
+            {/* Page label — right */}
+            <span style={{ position: 'absolute', right: 16, fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>
+              {allPageLabels[currentPage] || currentPage}
+            </span>
           </div>
 
           {/* Website Frame */}
-          <div style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', padding: 16 }}>
-            <div style={{ width: frameWidth, background: '#fff', boxShadow: previewDevice === 'mobile' ? '0 8px 40px rgba(0,0,0,0.2)' : '0 2px 20px rgba(0,0,0,0.12)', borderRadius: previewDevice === 'mobile' ? 36 : previewDevice === 'tablet' ? 8 : 0, border: previewDevice === 'mobile' ? '6px solid #1D1D1F' : previewDevice === 'tablet' ? '1px solid #DDD' : 'none', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+          <div style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', padding: 24 }}>
+            <div style={{ width: frameWidth, background: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
               {/* Nav bar inside preview */}
               <div style={{ background: theme.darkBg || '#0A0A0A', padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', color: '#fff', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: '#fff' }}>
                   {details.coupleNames || 'Your Names'}
                 </span>
                 <div style={{ display: 'flex', gap: 20 }}>
                   {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
                     const label = allPageLabels[slug] || slug;
                     return (
-                      <span key={slug} onClick={() => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }} style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: currentPage === slug ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? '1px solid #fff' : '1px solid transparent' }}>
+                      <span key={slug} onClick={() => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: currentPage === slug ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? '1px solid #fff' : '1px solid transparent' }}>
                         {label}
                       </span>
                     );
@@ -260,11 +295,11 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
               <div style={{ flex: 1, overflowY: 'auto', background: theme.lightBg || '#F8F7F5' }}>
                 {currentPageSections.length === 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
-                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28 }}>+</div>
+                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28 }}>+</div>
                     <p style={{ fontSize: 18, fontWeight: 600, color: '#0A0A0A', marginBottom: 8 }}>No sections yet</p>
-                    <p style={{ fontSize: 14, color: '#888', marginBottom: 24 }}>Add your first section to start building this page</p>
-                    <button onClick={() => { setInsertAfterIndex(0); setSectionPickerOpen(true); }} style={{ padding: '12px 24px', background: '#0A0A0A', color: '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                      + Add First Section
+                    <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', marginBottom: 24 }}>Add your first section to start building this page</p>
+                    <button onClick={() => { setInsertAfterIndex(0); setSectionPickerOpen(true); }} style={{ padding: '12px 24px', background: '#0A0A0A', color: '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
+                      + Add first section
                     </button>
                   </div>
                 ) : (
@@ -292,11 +327,11 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
                 <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}>
                   <button
                     onClick={() => { setInsertAfterIndex(currentPageSections.length); setSectionPickerOpen(true); }}
-                    style={{ width: '100%', maxWidth: 500, height: 48, border: '2px dashed #DDDDDD', background: 'transparent', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'all 0.15s' }}
+                    style={{ width: '100%', maxWidth: 500, height: 48, border: '2px dashed rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'rgba(10,10,10,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'all 0.15s' }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#DDDDDD'; e.currentTarget.style.color = '#888'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(10,10,10,0.15)'; e.currentTarget.style.color = 'rgba(10,10,10,0.4)'; }}
                   >
-                    + Add Section
+                    + Add section
                   </button>
                 </div>
               </div>
@@ -305,7 +340,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
         </div>
 
         {/* RIGHT PANEL */}
-        <div style={{ width: 320, background: '#FFFFFF', borderLeft: '1px solid #EEEEEE', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ width: 280, background: '#161616', borderLeft: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', overflow: 'hidden', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
           <WBRightPanel
             details={details}
             onChange={rightPanelTab === 'section-editor' ? handleSectionContentChange : updateField}
@@ -368,9 +403,11 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 
 // LEFT PANEL
 function LeftPanel({ details, currentPage, onPageChange, onAvaClick }) {
+  const [hoveredPage, setHoveredPage] = useState(null);
+
   const pageList = [
     { id: 'home', label: 'Home', icon: '🏠' },
-    { id: 'our-story', label: 'Our Story', icon: '📖' },
+    { id: 'our-story', label: 'Our story', icon: '📖' },
     { id: 'celebration', label: 'Celebration', icon: '🎉' },
     { id: 'rsvp', label: 'RSVP', icon: '✉️' },
     { id: 'travel', label: 'Travel', icon: '✈️' },
@@ -380,47 +417,58 @@ function LeftPanel({ details, currentPage, onPageChange, onAvaClick }) {
     { id: 'faq', label: 'FAQ', icon: '❓' },
   ];
 
-  const enabledPages = details?.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'];
-
   return (
-    <div style={{ width: 280, background: '#FFFFFF', borderRight: '1px solid #EEEEEE', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        {/* PAGES */}
-        <div style={{ padding: '16px 20px 8px' }}>
-          <p style={{ fontSize: 10, fontWeight: 600, color: '#555555', textTransform: 'uppercase', letterSpacing: '0.15em', margin: 0 }}>Pages</p>
-        </div>
-        {pageList.map(page => (
-          <div
-            key={page.id}
-            onClick={() => onPageChange(page.id)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '8px 20px',
-              gap: 10,
-              cursor: 'pointer',
-              background: currentPage === page.id ? '#F5F5F5' : 'transparent',
-              borderLeft: currentPage === page.id ? '2px solid #E03553' : '2px solid transparent',
-            }}
-          >
-            <span style={{ fontSize: 12 }}>{page.icon}</span>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: currentPage === page.id ? '#0A0A0A' : '#444444', fontFamily: "'Plus Jakarta Sans'" }}>
-              {page.label}
-            </span>
-          </div>
-        ))}
-
-        {/* Ava section at bottom */}
+    <div style={{ width: 200, background: '#111111', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, overflowY: 'auto', paddingTop: 16 }}>
+        {/* Pages label */}
+        <p style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em', margin: '0 0 8px', padding: '0 16px' }}>
+          Pages
+        </p>
+        {pageList.map(page => {
+          const isActive = currentPage === page.id;
+          const isHovered = hoveredPage === page.id && !isActive;
+          return (
+            <div
+              key={page.id}
+              onClick={() => onPageChange(page.id)}
+              onMouseEnter={() => setHoveredPage(page.id)}
+              onMouseLeave={() => setHoveredPage(null)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: isActive ? '7px 16px 7px 14px' : '7px 16px',
+                gap: 8,
+                cursor: 'pointer',
+                background: isActive ? 'rgba(255,255,255,0.06)' : isHovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+                borderLeft: isActive ? '2px solid #E03553' : '2px solid transparent',
+                transition: 'background 0.12s',
+              }}
+            >
+              <span style={{ fontSize: 12 }}>{page.icon}</span>
+              <span style={{ flex: 1, fontSize: 12, fontWeight: isActive ? 500 : 400, color: isActive ? '#FFFFFF' : isHovered ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.5)', fontFamily: "'Plus Jakarta Sans'", transition: 'color 0.12s' }}>
+                {page.label}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      <div style={{ borderTop: '1px solid #EEEEEE', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <button onClick={onAvaClick} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'linear-gradient(135deg,#E03553,#803D81)', color: '#FFFFFF', border: 'none', cursor: 'pointer', width: '100%', fontSize: 12, fontWeight: 600, fontFamily: "'Plus Jakarta Sans'" }}>
-          <span>✦</span>
-          <span>Auto-Fill with Ava</span>
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <button
+          onClick={onAvaClick}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'linear-gradient(135deg, #ec4899, #9333ea)', color: '#FFFFFF', border: 'none', cursor: 'pointer', width: '100%', fontSize: 11, fontWeight: 600, fontFamily: "'Plus Jakarta Sans'", borderRadius: 999 }}
+        >
+          <Sparkles size={12} />
+          Auto-fill with Ava
         </button>
-        <button onClick={() => window.location.href = '/studio/ava'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'transparent', color: '#0A0A0A', border: '1px solid #EEEEEE', cursor: 'pointer', width: '100%', fontSize: 12, fontWeight: 600, fontFamily: "'Plus Jakarta Sans'" }}>
+        <button
+          onClick={() => window.location.href = '/studio/ava'}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'transparent', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', width: '100%', fontSize: 11, fontWeight: 600, fontFamily: "'Plus Jakarta Sans'", borderRadius: 999, transition: 'color 0.15s' }}
+          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+        >
           <span style={{ fontSize: 10 }}>✦</span>
-          <span>Ava's Studio</span>
+          Ava's studio
         </button>
       </div>
     </div>
@@ -439,7 +487,7 @@ function SectionWrap({ section, index, isSelected, onSelect, onMoveUp, onMoveDow
     >
       <WBSectionRenderer section={section} theme={theme} typo={typo} masterData={masterData} />
       {(hovered || isSelected) && (
-        <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 30, display: 'flex', gap: 4, background: isSelected ? '#E03553' : '#2563EB', borderRadius: 6, padding: '4px 8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+        <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 30, display: 'flex', gap: 4, background: isSelected ? '#E03553' : '#2563EB', borderRadius: 4, padding: '4px 8px' }}>
           <ToolBtn onClick={e => { e.stopPropagation(); onMoveUp(); }} title="Move up">↑</ToolBtn>
           <ToolBtn onClick={e => { e.stopPropagation(); onMoveDown(); }} title="Move down">↓</ToolBtn>
           <ToolBtn onClick={e => { e.stopPropagation(); onSelect(); }} title="Edit" bold>Edit</ToolBtn>
