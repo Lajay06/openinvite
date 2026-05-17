@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X, Download, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 import { base44 } from "@/api/base44Client";
 const Vendor = base44.entities.Vendor;
 const Schedule = base44.entities.Schedule;
@@ -223,6 +224,9 @@ export default function CalendarPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Calendar" subtitle="View and manage all your wedding dates and appointments" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to plan your wedding calendar" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

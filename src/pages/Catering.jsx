@@ -6,6 +6,7 @@ import { createPageUrl } from "@/utils";
 import toast from 'react-hot-toast';
 
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
+import AvaButton from '../components/shared/AvaButton';
 import VendorSearch from "../components/vendors/VendorSearch";
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
@@ -145,6 +146,9 @@ export default function CateringPage() {
           </button>
         }
       />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to find caterers" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

@@ -9,8 +9,8 @@ import ScheduleList from "../components/schedule/ScheduleList";
 import ScheduleTimeline from "../components/schedule/ScheduleTimeline";
 import ScheduleAvaModal from "../components/schedule/ScheduleSuggestionsModal";
 import WeddingDayTimelineBuilder from "../components/schedule/WeddingDayTimelineBuilder";
-import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
+import AvaButton from "@/components/shared/AvaButton";
 import { base44 } from "@/api/base44Client";
 const Schedule = base44.entities.Schedule;
 
@@ -181,6 +181,9 @@ export default function SchedulePage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Schedule" subtitle="Build, visualise and optimise your wedding day timeline" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to build your wedding timeline" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -323,7 +326,7 @@ export default function SchedulePage() {
         scheduleItems={scheduleItems}
       />
 
-      <AIWeddingAssistant />
+
     </div>
   );
 }

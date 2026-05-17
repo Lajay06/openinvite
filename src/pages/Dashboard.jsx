@@ -5,11 +5,11 @@ import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
+import AvaButton from "@/components/shared/AvaButton";
 import RSVPChart from "../components/dashboard/RSVPChart";
 import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
-import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import TipsModal from "../components/dashboard/TipsModal";
 const Guest = base44.entities.Guest;
 const Budget = base44.entities.Budget;
@@ -149,6 +149,9 @@ export default function Dashboard() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Overall" subtitle="Your wedding planning at a glance" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to review your wedding plan" />
+      </div>
 
       {/* Stat cards — full-width horizontal, equal columns */}
       <div style={{
@@ -201,7 +204,7 @@ export default function Dashboard() {
 
       </div>
 
-      <AIWeddingAssistant />
+
       {showTipsModal && (
         <TipsModal onClose={() => {
           setShowTipsModal(false);

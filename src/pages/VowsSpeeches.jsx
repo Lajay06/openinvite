@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import VowSpeechEditor from '../components/vows/VowSpeechEditor';
 import AIVowsSpeechesAssistant from '../components/vows/AIVowsSpeechesAssistant';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -108,6 +109,9 @@ export default function VowsSpeechesPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Vows & speeches" subtitle="Write, store and polish your vows and wedding-day speeches" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to help write your vows" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

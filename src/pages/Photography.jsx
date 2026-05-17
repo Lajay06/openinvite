@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Camera, Plus, Video, Image, Clock, Loader2 } from "lucide-react";
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
+import AvaButton from '../components/shared/AvaButton';
 
 import PhotographerList from "../components/photography/PhotographerList";
 import PhotographerForm from "../components/photography/PhotographerForm";
@@ -183,6 +184,9 @@ export default function PhotographyPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Photography & videography" subtitle="Plan your photography, videography, and visual storytelling" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to plan your photo coverage" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

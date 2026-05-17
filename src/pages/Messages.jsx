@@ -8,6 +8,7 @@ import WhatsAppConnect from "../components/messages/WhatsAppConnect";
 import WhatsAppCompose from "../components/messages/WhatsAppCompose";
 import WhatsAppQRCode from "../components/messages/WhatsAppQRCode";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -146,6 +147,9 @@ export default function MessagesPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Messages" subtitle="Read and reply to messages from your guests" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to draft a message" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

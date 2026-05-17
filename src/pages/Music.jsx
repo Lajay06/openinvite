@@ -10,6 +10,7 @@ import MusicList from '../components/music/MusicList';
 import MusicForm from '../components/music/MusicForm';
 import { Textarea } from '@/components/ui/textarea';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -137,6 +138,9 @@ export default function MusicPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Music" subtitle="Plan playlists, add songs and manage guest song requests" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to curate your playlist" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -157,10 +161,6 @@ export default function MusicPage() {
 
       {/* Toolbar */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button onClick={() => { setShowSuggestions(true); setShowSearch(false); setShowAddForm(false); }}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
-          <Sparkles size={12} style={{ color: '#DDF762' }} />Ask Ava — suggest songs
-        </button>
         <div style={{ flex: 1 }} />
         <button onClick={() => setShowShare(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Share2 size={12} />Share playlist

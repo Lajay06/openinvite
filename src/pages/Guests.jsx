@@ -9,8 +9,8 @@ import toast from 'react-hot-toast';
 import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
 import RSVPManagement from "../components/guests/RSVPManagement";
-import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
+import AvaButton from "@/components/shared/AvaButton";
 import EmailTemplates from "../components/guests/EmailTemplates";
 
 function CountUp({ to, duration = 1200, suffix = '' }) {
@@ -178,6 +178,9 @@ export default function Guests() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Guest list" subtitle="Manage your guests, RSVPs and meal selections" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to help manage your guest list" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -258,7 +261,7 @@ export default function Guests() {
         </Tabs>
       </div>
 
-      <AIWeddingAssistant />
+
     </div>
   );
 }

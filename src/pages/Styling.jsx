@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Accordion } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Brain, Plus, Palette, Flower, Sparkles, User, Camera } from "lucide-react";
+import { Plus, Palette, Flower, Sparkles, User, Camera } from "lucide-react";
 import toast from 'react-hot-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,9 @@ import { createPageUrl } from "@/utils";
 
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
-import AIStylingAssistant from "../components/styling/AIStylingAssistant";
 import VendorForm from "../components/vendors/VendorForm";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 import { base44 } from "@/api/base44Client";
 const WeddingDetails = base44.entities.WeddingDetails;
 const ThemeDetails = base44.entities.ThemeDetails;
@@ -32,8 +32,7 @@ export default function StylingPage() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [showAIStylingAssistant, setShowAIStylingAssistant] = useState(false);
-  const [activeTab, setActiveTab] = useState("attire");
+const [activeTab, setActiveTab] = useState("attire");
   const [showVendorForm, setShowVendorForm] = useState(false);
   const [vendorFormCategory, setVendorFormCategory] = useState('');
   
@@ -162,24 +161,11 @@ export default function StylingPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Styling" subtitle="Attire, flowers and decorations for your big day" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to help with your wedding style" />
+      </div>
 
       <div style={{ padding: '32px 32px 48px' }}>
-        {/* Actions */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
-          <button
-            onClick={() => setShowAIStylingAssistant(true)}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: '#0A1930', color: '#fff', border: 'none',
-              borderRadius: 999, padding: '10px 20px',
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-            }}
-          >
-            <Brain className="w-4 h-4" /> AI designer
-          </button>
-        </div>
-
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="bg-transparent border-b border-[rgba(10,10,10,0.08)] h-12 rounded-none px-0 w-full justify-start">
@@ -472,14 +458,6 @@ export default function StylingPage() {
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* AI Styling Assistant Modal */}
-      <AIStylingAssistant
-        isOpen={showAIStylingAssistant}
-        onClose={() => setShowAIStylingAssistant(false)}
-        weddingDetails={details}
-        themeDetails={themeDetails}
-      />
 
       {/* Vendor form modal */}
       {showVendorForm && (

@@ -8,9 +8,9 @@ import VendorForm from "../components/vendors/VendorForm";
 import VendorList from "../components/vendors/VendorList";
 import VendorDetailPanel from "../components/vendors/VendorDetailPanel";
 import VendorSearch from "../components/vendors/VendorSearch";
-import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import AIVendorAssistant from "../components/vendors/AIVendorAssistant";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
+import AvaButton from "@/components/shared/AvaButton";
 import { base44 } from "@/api/base44Client";
 const Vendor = base44.entities.Vendor;
 
@@ -179,6 +179,9 @@ export default function VendorsPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="My vendors" subtitle="Research, track and manage all your wedding service providers" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to find the perfect vendors" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -325,7 +328,7 @@ export default function VendorsPage() {
         <VendorDetailPanel vendor={managingVendor} onClose={() => setManagingVendor(null)} />
       )}
 
-      <AIWeddingAssistant />
+
     </div>
   );
 }

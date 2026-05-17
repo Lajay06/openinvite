@@ -229,6 +229,12 @@ export default function Layout({ children, currentPageName }) {
   const [savingSettings, setSavingSettings] = React.useState(false);
 
   React.useEffect(() => {
+    const handler = () => setChatOpen(true);
+    window.addEventListener('openAva', handler);
+    return () => window.removeEventListener('openAva', handler);
+  }, []);
+
+  React.useEffect(() => {
     const fetchData = async () => {
       try {
         const currentUser = await base44.auth.me();
@@ -442,20 +448,18 @@ export default function Layout({ children, currentPageName }) {
         <button
           onClick={() => setChatOpen(prev => !prev)}
           style={{
-            borderRadius: 999,
+            width: 44, height: 44, borderRadius: '50%',
             background: chatOpen ? '#0A0A0A' : 'linear-gradient(135deg, #ec4899, #9333ea)',
             border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 7,
-            padding: '10px 18px',
-            boxShadow: '0 8px 32px rgba(147,51,234,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(147,51,234,0.3)',
             transition: 'transform 0.2s ease, background 0.2s ease',
-            color: '#FFFFFF', fontSize: 13, fontWeight: 600, fontFamily: PJS,
+            color: '#FFFFFF',
           }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
         >
-          {chatOpen ? <X size={14} /> : <Sparkles size={14} />}
-          {chatOpen ? 'Close' : 'Ask Ava'}
+          {chatOpen ? <X size={16} /> : <Sparkles size={18} />}
         </button>
       </div>
 

@@ -8,6 +8,7 @@ import PinterestConnect from '../components/moodboard/PinterestConnect';
 import BoardSelector from '../components/moodboard/BoardSelector';
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -135,6 +136,9 @@ export default function MoodboardPage() {
       onDrop={e => { e.preventDefault(); e.dataTransfer.files.length && handleFileUpload(e.dataTransfer.files); }}>
 
       <DashboardPageHeader title="Moodboard" subtitle="Collect and organise inspiration images for your wedding vision" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to find inspiration" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

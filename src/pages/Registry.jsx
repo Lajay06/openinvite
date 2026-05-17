@@ -16,6 +16,7 @@ import ConsolidatedRegistryView from '../components/registry/ConsolidatedRegistr
 import ShareRegistryModal from '../components/registry/ShareRegistryModal';
 import ReceivedGifts from '../components/registry/ReceivedGifts';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -140,6 +141,9 @@ export default function RegistryPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Registry" subtitle="Manage your gift registry, products and cash funds" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to suggest registry items" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

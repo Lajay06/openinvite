@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle2, Circle, XCircle, ArrowRight } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
@@ -334,6 +335,9 @@ export default function ChecklistPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Checklist" subtitle="Track every task from first steps to big day" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to review your checklist" />
+      </div>
 
       {/* Tab bar */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)', padding: '0 32px' }}>

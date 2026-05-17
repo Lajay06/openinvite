@@ -12,8 +12,8 @@ import VisualAsset from '../components/seating/VisualAsset';
 import VenueAssetLibrary from '../components/seating/VenueAssetLibrary';
 import AddTableModal from '../components/seating/AddTableModal';
 import AISeatingGenerator from '../components/seating/AISeatingGenerator';
-import AIWeddingAssistant from '../components/shared/AIWeddingAssistant';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 
 /* ── CountUp ── */
 function CountUp({ to, duration = 1200, suffix = '' }) {
@@ -334,6 +334,9 @@ export default function SeatingPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Seating" subtitle="Design your venue layout and assign guests to tables" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to arrange your seating plan" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -759,7 +762,7 @@ export default function SeatingPage() {
         />
       )}
 
-      <AIWeddingAssistant />
+
     </div>
   );
 }

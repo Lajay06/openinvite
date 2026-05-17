@@ -53,8 +53,12 @@
   padding 6px 14px, font-size 12px, font-weight 600
 - Secondary: background rgba(10,10,10,0.08), border 1px solid rgba(10,10,10,0.12),
   color #0A0A0A, border-radius 999px, padding 6px 14px, font-size 12px
-- Ava floating button: pill shape, gradient bg linear-gradient(135deg,#ec4899,#9333ea),
-  padding 10px 18px, shows Sparkles icon + "Ask Ava" text, bottom-right fixed
+- Ava floating button: circle 44×44px, gradient bg linear-gradient(135deg,#ec4899,#9333ea),
+  Sparkles icon 18px white, bottom 24px right 24px fixed, box-shadow 0 4px 12px rgba(147,51,234,0.3)
+- Ava page button (AvaButton component): pill shape, gradient bg linear-gradient(135deg,#ec4899,#9333ea),
+  padding 7px 14px, Sparkles icon 13px, font-size 12px font-weight 600, color white
+  Position: after DashboardPageHeader, in div padding 16px 32px 0, align-self flex-start
+  Triggers openAva custom event → opens the floating AvaChatPod in Layout
 
 ### Form inputs
 - Underline style only: no box, border-bottom 1px solid rgba(10,10,10,0.15)
@@ -75,7 +79,8 @@
 - Active tab: color #0A0A0A, font-weight 600, 
   border-bottom 2px solid #0A0A0A
 - Inactive tab: color rgba(10,10,10,0.4), font-weight 400
-- Tab label: font-size 13px, sentence case
+- Tab label: font-size 13px, font-weight 600, sentence case — NO uppercase/text-transform
+  (tabs.jsx TabsTrigger uses text-[13px] font-semibold, no uppercase class)
 
 ### Badges/Pills
 - Border-radius: 999px

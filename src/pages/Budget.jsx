@@ -8,8 +8,8 @@ import BudgetForm from "../components/budget/BudgetForm";
 import BudgetList from "../components/budget/BudgetList";
 import BudgetChart from "../components/budget/BudgetChart";
 import BudgetForecasting from "../components/budget/BudgetForecasting";
-import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
+import AvaButton from "@/components/shared/AvaButton";
 import { base44 } from "@/api/base44Client";
 const Budget = base44.entities.Budget;
 
@@ -266,6 +266,9 @@ export default function BudgetPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Budget" subtitle="Plan, track and forecast your wedding spending" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava for budget advice" />
+      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -375,7 +378,7 @@ export default function BudgetPage() {
         </div>
       )}
 
-      <AIWeddingAssistant />
+
     </div>
   );
 }

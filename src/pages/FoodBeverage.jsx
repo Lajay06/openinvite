@@ -5,6 +5,7 @@ import { UtensilsCrossed, Wine, Lightbulb, Loader2, Plus, X, Search, FileText, B
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 import { base44 } from "@/api/base44Client";
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -189,6 +190,9 @@ export default function FoodBeveragePage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Food & beverage" subtitle="Plan your wedding catering, menu, and bar" />
+      <div style={{ padding: '16px 32px 0' }}>
+        <AvaButton label="Ask Ava to plan your menu" />
+      </div>
 
       <div style={{ padding: '32px 32px 48px' }}>
         {/* Toolbar */}
