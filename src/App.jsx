@@ -54,6 +54,7 @@ import AvaStudioAssets from './pages/AvaStudioAssets';
 import Help from './pages/Help';
 import StudioGuestSuite from './pages/StudioGuestSuite';
 import ExperienceGuide from './pages/ExperienceGuide';
+import Features from './pages/Features';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -133,6 +134,7 @@ const AuthenticatedApp = () => {
           <MainPage />
         </LayoutWrapper>
       } />
+      <Route path="/Features" element={<Features />} />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}

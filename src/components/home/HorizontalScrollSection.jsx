@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 
 const prefersReduced = () =>
@@ -65,6 +66,7 @@ const CARDS = [
 const DOT_COLORS = ["#FFFFFF", "#FFFFFF", "#FFFFFF"];
 
 export default function HorizontalScrollSection() {
+  const navigate = useNavigate();
   const sectionRef = useRef(null);
   const trackRef = useRef(null);
   const progressRef = useRef(null);
@@ -292,8 +294,8 @@ export default function HorizontalScrollSection() {
             <p style={{ fontSize: "clamp(20px, 3vw, 32px)", fontWeight: 400, color: "rgba(255,255,255,0.6)", marginBottom: 48 }}>
               One platform.
             </p>
-            <ApplePillButton>
-              Start planning
+            <ApplePillButton onClick={() => navigate('/Features')}>
+              Explore all features
             </ApplePillButton>
           </div>
         </div>

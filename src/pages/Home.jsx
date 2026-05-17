@@ -8,10 +8,6 @@ import AnimDivider from "@/components/motion/AnimDivider";
 import StickyReveal from "@/components/motion/StickyReveal";
 import HeroCollage from "@/components/home/HeroCollage";
 import ValuePropSection from "@/components/home/ValuePropSection";
-import FeatureTimeline from "@/components/home/FeatureTimeline";
-import FeaturePlaylists from "@/components/home/FeaturePlaylists";
-import FeatureGuests from "@/components/home/FeatureGuests";
-import FeatureBudget from "@/components/home/FeatureBudget";
 import FeatureInvitations from "@/components/home/FeatureInvitations";
 import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
 import ScrollMorphSection from "@/components/home/ScrollMorphSection";
@@ -30,10 +26,6 @@ export default function Home() {
   const SECTION_LABELS = [
   { id: "section-hero", label: "OVERVIEW" },
   { id: "section-features", label: "FEATURES" },
-  { id: "section-timeline", label: "TIMELINE" },
-  { id: "section-music", label: "MUSIC" },
-  { id: "section-guests", label: "GUESTS" },
-  { id: "section-budget", label: "BUDGET" },
   { id: "section-invitations", label: "INVITATIONS" },
   { id: "section-pricing", label: "PRICING" }];
 
@@ -64,10 +56,6 @@ export default function Home() {
 
       {/* 5. FEATURE BLOCKS — all on white */}
       <div style={{ background: "#FFFFFF" }}>
-        <div id="section-timeline"><FeatureTimeline /></div>
-        <div id="section-music"><FeaturePlaylists /></div>
-        <div id="section-guests"><FeatureGuests /></div>
-        <div id="section-budget"><FeatureBudget /></div>
         <div id="section-invitations"><FeatureInvitations onCTA={handleCTA} /></div>
       </div>
 

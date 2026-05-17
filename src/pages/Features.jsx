@@ -10,6 +10,10 @@ import AnimDivider from "@/components/motion/AnimDivider";
 import { ArrowUpRight } from "lucide-react";
 import HorizontalCardShelf from "@/components/shared/HorizontalCardShelf";
 import ApplePillButton from "@/components/motion/ApplePillButton";
+import FeatureTimeline from "@/components/home/FeatureTimeline";
+import FeaturePlaylists from "@/components/home/FeaturePlaylists";
+import FeatureGuests from "@/components/home/FeatureGuests";
+import FeatureBudget from "@/components/home/FeatureBudget";
 
 const FEATURE_ZOOM_IMAGES = [
 { src: "https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg", alt: "Wedding planning" },
@@ -106,7 +110,15 @@ export default function Features() {
       {/* ── S6: ACCORDION ────────────────────────────────── */}
       <AccordionSection features={ALL_FEATURES} borders={ACCORDION_BORDERS} dots={DOTS} openFeature={openFeature} setOpenFeature={setOpenFeature} />
 
-      {/* ── S7: FINAL CTA ────────────────────────────────── */}
+      {/* ── S7: FEATURE DEEP DIVES ───────────────────────── */}
+      <div style={{ background: "#FFFFFF" }}>
+        <FeatureTimeline />
+        <FeaturePlaylists />
+        <FeatureGuests />
+        <FeatureBudget />
+      </div>
+
+      {/* ── S8: FINAL CTA ────────────────────────────────── */}
       <FinalCTASection onCTA={handleCTA} />
 
       <PublicFooter />
