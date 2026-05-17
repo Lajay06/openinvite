@@ -173,7 +173,7 @@ export default function VendorsPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      <DashboardPageHeader title="Vendors" subtitle="Research, track and manage all your wedding service providers" />
+      <DashboardPageHeader title="My vendors" subtitle="Research, track and manage all your wedding service providers" />
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Accordion } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, Plus, Palette, Flower, Sparkles, User, Camera } from "lucide-react";
@@ -7,7 +6,6 @@ import toast from 'react-hot-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { createPageUrl } from "@/utils";
-import { Link } from "react-router-dom";
 
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
@@ -35,6 +33,7 @@ export default function StylingPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [showAIStylingAssistant, setShowAIStylingAssistant] = useState(false);
   const [activeTab, setActiveTab] = useState("attire");
+  const [addVendorModal, setAddVendorModal] = useState({ open: false, category: '', name: '' });
   
   const [isCustomDressCode, setIsCustomDressCode] = useState(false);
   
@@ -102,6 +101,21 @@ export default function StylingPage() {
       // Store vendor ID and name for reference
       handleUpdate(section, 'vendorId', vendorId);
       handleUpdate(section, 'vendorName', vendor.name);
+    }
+  };
+
+  const handleAddVendorInline = async () => {
+    if (!addVendorModal.name.trim()) return;
+    const tid = toast.loading('Adding vendor…');
+    try {
+      const created = await Vendor.create({ name: addVendorModal.name.trim(), category: addVendorModal.category, status: 'researching' });
+      toast.success('Vendor added', { id: tid });
+      setAddVendorModal({ open: false, category: '', name: '' });
+      const vendorData = await Vendor.list();
+      setVendors(vendorData);
+      handleVendorSelect(addVendorModal.category === 'flowers' ? 'flowers' : 'decorations', created.id);
+    } catch {
+      toast.error('Failed to add vendor', { id: tid });
     }
   };
 
@@ -190,7 +204,7 @@ export default function StylingPage() {
 
           {/* Attire Tab */}
           <TabsContent value="attire" className="mt-8">
-            <Accordion type="multiple" defaultValue={["dress-code"]} className="w-full space-y-4">
+            <Accordion type="multiple" className="w-full space-y-4">
               <DetailsSection title="Dress Code" icon={Palette} sectionKey="dress-code" onSave={() => handleSectionSave('attire')} isSaving={isSaving}>
                 <div>
                   <Select
@@ -231,7 +245,7 @@ export default function StylingPage() {
 
           {/* Flowers Tab */}
           <TabsContent value="flowers" className="mt-8">
-            <Accordion type="multiple" defaultValue={["florist"]} className="w-full space-y-4">
+            <Accordion type="multiple" className="w-full space-y-4">
               <DetailsSection title="Florist" icon={User} sectionKey="florist" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
                 <div>
                   {floristVendors.length > 0 ? (
@@ -251,11 +265,10 @@ export default function StylingPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Link to={createPageUrl('Vendors')}>
-                        <Button variant="outline" size="icon" className="border-[rgba(10,10,10,0.15)] h-9 w-9">
-                          <Plus className="w-3 h-3" />
-                        </Button>
-                      </Link>
+                      <button type="button" onClick={() => setAddVendorModal({ open: true, category: 'flowers', name: '' })}
+                        style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Plus className="w-3 h-3" />
+                      </button>
                     </div>
                   ) : (
                     <div className="flex gap-2">
@@ -265,11 +278,10 @@ export default function StylingPage() {
                         placeholder="Florist name and contact"
                         className="flex-1 h-9 text-sm"
                       />
-                      <Link to={createPageUrl('Vendors')}>
-                        <Button variant="outline" size="icon" className="border-[rgba(10,10,10,0.15)] h-9 w-9">
-                          <Plus className="w-3 h-3" />
-                        </Button>
-                      </Link>
+                      <button type="button" onClick={() => setAddVendorModal({ open: true, category: 'flowers', name: '' })}
+                        style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Plus className="w-3 h-3" />
+                      </button>
                     </div>
                   )}
                   {floristVendors.length === 0 && (
@@ -343,7 +355,7 @@ export default function StylingPage() {
 
           {/* Decorations Tab */}
           <TabsContent value="decorations" className="mt-8">
-            <Accordion type="multiple" defaultValue={["decorator"]} className="w-full space-y-4">
+            <Accordion type="multiple" className="w-full space-y-4">
               <DetailsSection title="Decorator / Designer" icon={User} sectionKey="decorator" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>
                 <div>
                   {decorationVendors.length > 0 ? (
@@ -363,11 +375,10 @@ export default function StylingPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Link to={createPageUrl('Vendors')}>
-                        <Button variant="outline" size="icon" className="border-[rgba(10,10,10,0.15)] h-9 w-9">
-                          <Plus className="w-3 h-3" />
-                        </Button>
-                      </Link>
+                      <button type="button" onClick={() => setAddVendorModal({ open: true, category: 'decorations', name: '' })}
+                        style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Plus className="w-3 h-3" />
+                      </button>
                     </div>
                   ) : (
                     <div className="flex gap-2">
@@ -377,11 +388,10 @@ export default function StylingPage() {
                         placeholder="Decorator name and contact"
                         className="flex-1 h-9 text-sm"
                       />
-                      <Link to={createPageUrl('Vendors')}>
-                        <Button variant="outline" size="icon" className="border-[rgba(10,10,10,0.15)] h-9 w-9">
-                          <Plus className="w-3 h-3" />
-                        </Button>
-                      </Link>
+                      <button type="button" onClick={() => setAddVendorModal({ open: true, category: 'decorations', name: '' })}
+                        style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Plus className="w-3 h-3" />
+                      </button>
                     </div>
                   )}
                   {decorationVendors.length === 0 && (
@@ -463,12 +473,49 @@ export default function StylingPage() {
       </div>
 
       {/* AI Styling Assistant Modal */}
-      <AIStylingAssistant 
+      <AIStylingAssistant
         isOpen={showAIStylingAssistant}
         onClose={() => setShowAIStylingAssistant(false)}
         weddingDetails={details}
         themeDetails={themeDetails}
       />
+
+      {/* Inline add vendor modal */}
+      {addVendorModal.open && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          onClick={() => setAddVendorModal({ open: false, category: '', name: '' })}>
+          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 400, padding: 32 }}
+            onClick={e => e.stopPropagation()}>
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Add {addVendorModal.category === 'flowers' ? 'florist' : 'decorator'}
+            </p>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 20px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Category: {addVendorModal.category}
+            </p>
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>Vendor name</div>
+              <input
+                autoFocus
+                value={addVendorModal.name}
+                onChange={e => setAddVendorModal(prev => ({ ...prev, name: e.target.value }))}
+                onKeyDown={e => { if (e.key === 'Enter') handleAddVendorInline(); }}
+                placeholder="e.g. The Flower House"
+                style={{ width: '100%', border: 'none', borderBottom: '2px solid #E03553', background: 'transparent', padding: '6px 0', fontSize: 14, fontWeight: 500, color: '#0A0A0A', outline: 'none', fontFamily: "'Plus Jakarta Sans', sans-serif", boxSizing: 'border-box' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button onClick={() => setAddVendorModal({ open: false, category: '', name: '' })}
+                style={{ padding: '9px 20px', borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A' }}>
+                Cancel
+              </button>
+              <button onClick={handleAddVendorInline}
+                style={{ padding: '9px 20px', borderRadius: 999, border: 'none', background: '#E03553', color: '#FFFFFF', cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Add vendor
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

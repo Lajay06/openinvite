@@ -6,7 +6,7 @@ import {
   Users, UserCheck, LayoutGrid, MessageCircle,
   Wallet, Gift, Package,
   Palette, Music2, Image, FileText, Camera,
-  Store,
+  Store, ShoppingBag,
   Clock, Heart, Radio, UtensilsCrossed,
   Plane, Hotel, Car, Phone,
   Settings, UserPlus, LogOut, HelpCircle,
@@ -53,7 +53,8 @@ const NAV_SECTIONS = [
   {
     label: "Vendors",
     items: [
-      { icon: Store, label: "Vendors", url: createPageUrl("Vendors") },
+      { icon: Store,       label: "My vendors",  url: createPageUrl("Vendors") },
+      { icon: ShoppingBag, label: "Marketplace", url: createPageUrl("VendorMarketplace") },
     ],
   },
   {
@@ -80,10 +81,10 @@ const NAV_SECTIONS = [
 // ── Shared style helpers ──────────────────────────────────────────────────────
 
 const sectionLabelStyle = {
-  fontSize: 11,
+  fontSize: 10,
   fontWeight: 700,
   color: "rgba(10,10,10,0.4)",
-  letterSpacing: "0.08em",
+  letterSpacing: "0.06em",
   padding: "0 16px",
   marginTop: 24,
   marginBottom: 2,
@@ -98,8 +99,8 @@ function NavItem({ icon: Icon, label, url, onClick, isActive }) {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 10,
-        padding: "10px 16px",
+        gap: 8,
+        padding: "7px 12px",
         cursor: "pointer",
         borderLeft: isActive ? "2px solid #E03553" : "2px solid transparent",
         background: isActive ? "rgba(224,53,83,0.08)" : "transparent",
@@ -109,13 +110,13 @@ function NavItem({ icon: Icon, label, url, onClick, isActive }) {
       onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
     >
       <Icon
-        size={18}
+        size={14}
         strokeWidth={1.8}
         style={{ color: isActive ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }}
       />
       <span
         style={{
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: 600,
           color: isActive ? "#E03553" : "#0A0A0A",
           overflow: "hidden",
@@ -157,15 +158,6 @@ export function AnimatedSidebar({ weddingName, onOpenTips }) {
         overflow: "hidden",
       }}
     >
-      {/* Logo */}
-      <div style={{ padding: 24, flexShrink: 0, cursor: "pointer" }} onClick={() => navigate(createPageUrl("Dashboard"))}>
-        <img
-          src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
-          alt="Openinvite"
-          style={{ height: 20, width: "auto", objectFit: "contain", objectPosition: "left", display: "block" }}
-        />
-      </div>
-
       {/* Scrollable nav */}
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingBottom: 8 }}>
 
@@ -233,15 +225,15 @@ export function AnimatedSidebar({ weddingName, onOpenTips }) {
           <div
             onClick={onOpenTips}
             style={{
-              display: "flex", alignItems: "center", gap: 10,
-              padding: "9px 16px", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "7px 12px", cursor: "pointer",
               transition: "background 0.15s ease",
             }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(10,10,10,0.04)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
           >
-            <HelpCircle size={18} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <HelpCircle size={14} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.45)", flexShrink: 0 }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Quick tips
             </span>
           </div>
@@ -251,8 +243,8 @@ export function AnimatedSidebar({ weddingName, onOpenTips }) {
         <div
           onClick={() => navigate("/help")}
           style={{
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "9px 16px", cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "7px 12px", cursor: "pointer",
             borderLeft: isActive("/help") ? "2px solid #E03553" : "2px solid transparent",
             background: isActive("/help") ? "rgba(224,53,83,0.08)" : "transparent",
             transition: "background 0.15s ease",
@@ -260,8 +252,8 @@ export function AnimatedSidebar({ weddingName, onOpenTips }) {
           onMouseEnter={e => { if (!isActive("/help")) e.currentTarget.style.background = "rgba(10,10,10,0.04)"; }}
           onMouseLeave={e => { if (!isActive("/help")) e.currentTarget.style.background = "transparent"; }}
         >
-          <HelpCircle size={18} strokeWidth={1.8} style={{ color: isActive("/help") ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: isActive("/help") ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <HelpCircle size={14} strokeWidth={1.8} style={{ color: isActive("/help") ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: isActive("/help") ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Help centre
           </span>
         </div>
@@ -270,15 +262,15 @@ export function AnimatedSidebar({ weddingName, onOpenTips }) {
         <div
           onClick={() => { window.location.href = createPageUrl("Home"); }}
           style={{
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "9px 16px", cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "7px 12px", cursor: "pointer",
             transition: "background 0.15s ease",
           }}
           onMouseEnter={e => { e.currentTarget.style.background = "rgba(224,53,83,0.04)"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
         >
-          <LogOut size={18} strokeWidth={1.8} style={{ color: "#E03553", flexShrink: 0 }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#E03553", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <LogOut size={14} strokeWidth={1.8} style={{ color: "#E03553", flexShrink: 0 }} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: "#E03553", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Leave dashboard
           </span>
         </div>

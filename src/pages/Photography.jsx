@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, Plus, Video, Image, Clock, Loader2 } from "lucide-react";
-import { createPageUrl } from "@/utils";
-import { Link } from "react-router-dom";
 import toast from 'react-hot-toast';
 
-import PhotographerSearch from "../components/photography/PhotographerSearch";
 import PhotographerList from "../components/photography/PhotographerList";
 import PhotographerForm from "../components/photography/PhotographerForm";
 import SectionInput from "../components/event-details/SectionInput";
@@ -156,31 +153,6 @@ export default function PhotographyPage() {
     }
   };
 
-  const handleAddFromSearch = async (searchResult) => {
-    const toastId = toast.loading('Adding photographer...');
-    try {
-      await Photographer.create({
-        name: searchResult.name,
-        type: searchResult.type || "photographer",
-        address: searchResult.address,
-        phone: searchResult.phone,
-        website: searchResult.website,
-        google_place_id: searchResult.place_id,
-        rating: searchResult.rating,
-        reviews_count: searchResult.user_ratings_total,
-        image_url: searchResult.photo_url,
-        price_range: searchResult.price_level ? '$'.repeat(searchResult.price_level) : '$$',
-        status: "researching",
-      });
-      toast.success('Photographer added!', { id: toastId });
-      loadData();
-      setActiveTab("planning");
-    } catch (error) {
-      console.error("Error adding:", error);
-      toast.error('Failed to add photographer', { id: toastId });
-    }
-  };
-
   const photographersList = photographers.filter(p => p.type === 'photographer' || p.type === 'both');
   const videographersList = photographers.filter(p => p.type === 'videographer' || p.type === 'both');
 
@@ -200,8 +172,11 @@ export default function PhotographyPage() {
   }
 
   const TABS = [
-    { key: 'planning', label: 'Photography planning' },
-    { key: 'find-photographers', label: 'Find photographers' },
+    { key: 'photographers',   label: 'Photographers' },
+    { key: 'videographers',   label: 'Videographers' },
+    { key: 'details',         label: 'Photo & video details' },
+    { key: 'shot-list',       label: 'Shot list' },
+    { key: 'timeline',        label: 'Timeline' },
   ];
 
   return (
@@ -245,156 +220,164 @@ export default function PhotographyPage() {
       </div>
 
       <div style={{ padding: '32px 32px 48px' }}>
-        {/* Planning tab */}
-        {activeTab === 'planning' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-            {/* Toolbar */}
+
+        {/* Photographers tab */}
+        {activeTab === 'photographers' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button onClick={() => { setEditingPhotographer(null); setShowForm(true); }} className="btn-primary"
                 style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Plus size={13} />Add professional
+                <Plus size={13} />Add photographer
               </button>
             </div>
-
-            {/* Photographer list */}
-            <PhotographerList photographers={photographers} onEdit={handleEdit} onDelete={handleDelete} />
-
-            {/* Planning detail sections */}
-            {photographers.length > 0 && <div style={{ borderTop: '1px solid rgba(10,10,10,0.08)' }} />}
-
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {/* Photographer section */}
-              <DetailsSection title="Photographer" icon={Camera} sectionKey="photographer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label style={labelStyle}>Select photographer</label>
-                  {photographersList.length > 0 ? (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <div style={{ flex: 1 }}>
-                        <Select value={details.photography?.photographerVendorId || ''} onValueChange={v => handleVendorSelect(v, 'photographer')}>
-                          <SelectTrigger><SelectValue placeholder="Select from your photographers" /></SelectTrigger>
-                          <SelectContent>
-                            {photographersList.map(v => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Link to={createPageUrl('Vendors')}>
-                        <button type="button" style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
-                          <Plus size={13} />
-                        </button>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <input style={{ ...inputStyle, flex: 1 }} placeholder="Photographer name" value={details.photography?.photographer || ''} onChange={e => handleDetailsUpdate('photographer', e.target.value)} />
-                      <Link to={createPageUrl('Vendors')}>
-                        <button type="button" style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
-                          <Plus size={13} />
-                        </button>
-                      </Link>
-                    </div>
-                  )}
-                  {photographersList.length === 0 && (
-                    <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginTop: 4 }}>No photographers added yet. Click + to add one.</p>
-                  )}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <SectionInput label="Contact person" value={details.photography?.photographerContact} onChange={e => handleDetailsUpdate('photographerContact', e.target.value)} placeholder="Contact name" />
-                  <SectionInput label="Phone" value={details.photography?.photographerPhone} onChange={e => handleDetailsUpdate('photographerPhone', e.target.value)} placeholder="Phone number" />
-                </div>
-                <SectionInput label="Email" type="email" value={details.photography?.photographerEmail} onChange={e => handleDetailsUpdate('photographerEmail', e.target.value)} placeholder="Email address" />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <SectionInput label="Package selected" value={details.photography?.photographyPackage} onChange={e => handleDetailsUpdate('photographyPackage', e.target.value)} placeholder="Package name" />
-                  <SectionInput label="Hours booked" type="number" value={details.photography?.photographyHours} onChange={e => handleDetailsUpdate('photographyHours', e.target.value)} placeholder="Hours" />
-                </div>
-                <SectionInput label="Photography style" isTextarea value={details.photography?.photographyStyle} onChange={e => handleDetailsUpdate('photographyStyle', e.target.value)} placeholder="Candid, traditional, artistic, documentary, etc." />
-                <SectionInput label="Must-have shots" isTextarea value={details.photography?.mustHaveShots} onChange={e => handleDetailsUpdate('mustHaveShots', e.target.value)} placeholder="Specific photos or moments you want captured" />
-              </DetailsSection>
-
-              {/* Videographer section */}
-              <DetailsSection title="Videographer" icon={Video} sectionKey="videographer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label style={labelStyle}>Select videographer</label>
-                  {videographersList.length > 0 ? (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <div style={{ flex: 1 }}>
-                        <Select value={details.photography?.videographerVendorId || ''} onValueChange={v => handleVendorSelect(v, 'videographer')}>
-                          <SelectTrigger><SelectValue placeholder="Select from your videographers" /></SelectTrigger>
-                          <SelectContent>
-                            {videographersList.map(v => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Link to={createPageUrl('Vendors')}>
-                        <button type="button" style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
-                          <Plus size={13} />
-                        </button>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <input style={{ ...inputStyle, flex: 1 }} placeholder="Videographer name" value={details.photography?.videographer || ''} onChange={e => handleDetailsUpdate('videographer', e.target.value)} />
-                      <Link to={createPageUrl('Vendors')}>
-                        <button type="button" style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
-                          <Plus size={13} />
-                        </button>
-                      </Link>
-                    </div>
-                  )}
-                  {videographersList.length === 0 && (
-                    <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginTop: 4 }}>No videographers added yet. Click + to add one.</p>
-                  )}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <SectionInput label="Contact person" value={details.photography?.videographerContact} onChange={e => handleDetailsUpdate('videographerContact', e.target.value)} placeholder="Contact name" />
-                  <SectionInput label="Phone" value={details.photography?.videographerPhone} onChange={e => handleDetailsUpdate('videographerPhone', e.target.value)} placeholder="Phone number" />
-                </div>
-                <SectionInput label="Email" type="email" value={details.photography?.videographerEmail} onChange={e => handleDetailsUpdate('videographerEmail', e.target.value)} placeholder="Email address" />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <SectionInput label="Package selected" value={details.photography?.videographyPackage} onChange={e => handleDetailsUpdate('videographyPackage', e.target.value)} placeholder="Package name" />
-                  <SectionInput label="Video length" value={details.photography?.videoLength} onChange={e => handleDetailsUpdate('videoLength', e.target.value)} placeholder="e.g., 3-5 minute highlight reel" />
-                </div>
-                <SectionInput label="Video style" isTextarea value={details.photography?.videoStyle} onChange={e => handleDetailsUpdate('videoStyle', e.target.value)} placeholder="Cinematic, documentary, traditional, etc." />
-              </DetailsSection>
-
-              {/* Shot list */}
-              <DetailsSection title="Shot list & timeline" icon={Image} sectionKey="shotlist" onSave={handleDetailsSave} isSaving={isSavingDetails}>
-                <SectionInput label="Getting ready photos" isTextarea value={details.photography?.gettingReadyShots} onChange={e => handleDetailsUpdate('gettingReadyShots', e.target.value)} placeholder="Details, dress, shoes, rings, etc." />
-                <SectionInput label="Ceremony shots" isTextarea value={details.photography?.ceremonyShots} onChange={e => handleDetailsUpdate('ceremonyShots', e.target.value)} placeholder="Processional, vows, first kiss, recessional" />
-                <SectionInput label="Family portraits" isTextarea value={details.photography?.familyPortraits} onChange={e => handleDetailsUpdate('familyPortraits', e.target.value)} placeholder="List family groupings for formal photos" />
-                <SectionInput label="Reception shots" isTextarea value={details.photography?.receptionShots} onChange={e => handleDetailsUpdate('receptionShots', e.target.value)} placeholder="First dance, cake cutting, toasts, dancing" />
-              </DetailsSection>
-
-              {/* Delivery & editing */}
-              <DetailsSection title="Delivery & editing" icon={Clock} sectionKey="delivery" onSave={handleDetailsSave} isSaving={isSavingDetails}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <SectionInput label="Photo delivery timeline" value={details.photography?.photoDeliveryTimeline} onChange={e => handleDetailsUpdate('photoDeliveryTimeline', e.target.value)} placeholder="e.g., 4-6 weeks" />
-                  <SectionInput label="Number of edited photos" type="number" value={details.photography?.editedPhotosCount} onChange={e => handleDetailsUpdate('editedPhotosCount', e.target.value)} placeholder="Number" />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <SectionInput label="Video delivery timeline" value={details.photography?.videoDeliveryTimeline} onChange={e => handleDetailsUpdate('videoDeliveryTimeline', e.target.value)} placeholder="e.g., 8-12 weeks" />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <label style={labelStyle}>Editing style</label>
-                    <Select value={details.photography?.editingStyle || ''} onValueChange={v => handleDetailsUpdate('editingStyle', v)}>
-                      <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="bright_airy">Bright & airy</SelectItem>
-                        <SelectItem value="dark_moody">Dark & moody</SelectItem>
-                        <SelectItem value="natural">Natural</SelectItem>
-                        <SelectItem value="vintage">Vintage</SelectItem>
-                        <SelectItem value="black_white">Black & white</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <SectionInput label="Delivery format" isTextarea value={details.photography?.deliveryFormat} onChange={e => handleDetailsUpdate('deliveryFormat', e.target.value)} placeholder="Online gallery, USB drive, prints, albums, etc." />
-              </DetailsSection>
-            </div>
+            <PhotographerList photographers={photographersList} onEdit={handleEdit} onDelete={handleDelete} />
+            {photographersList.length === 0 && (
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '40px 0' }}>
+                No photographers added yet. Click "Add photographer" to get started.
+              </p>
+            )}
           </div>
         )}
 
-        {/* Find photographers tab */}
-        {activeTab === 'find-photographers' && (
-          <PhotographerSearch onAddPhotographer={handleAddFromSearch} />
+        {/* Videographers tab */}
+        {activeTab === 'videographers' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setEditingPhotographer(null); setShowForm(true); }} className="btn-primary"
+                style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Plus size={13} />Add videographer
+              </button>
+            </div>
+            <PhotographerList photographers={videographersList} onEdit={handleEdit} onDelete={handleDelete} />
+            {videographersList.length === 0 && (
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '40px 0' }}>
+                No videographers added yet. Click "Add videographer" to get started.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Photo & video details tab */}
+        {activeTab === 'details' && (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <DetailsSection title="Photographer details" icon={Camera} sectionKey="photographer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={labelStyle}>Select photographer</label>
+                {photographersList.length > 0 ? (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ flex: 1 }}>
+                      <Select value={details.photography?.photographerVendorId || ''} onValueChange={v => handleVendorSelect(v, 'photographer')}>
+                        <SelectTrigger><SelectValue placeholder="Select from your photographers" /></SelectTrigger>
+                        <SelectContent>
+                          {photographersList.map(v => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <button type="button" onClick={() => { setEditingPhotographer(null); setShowForm(true); }} style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
+                      <Plus size={13} />
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <input style={{ ...inputStyle, flex: 1 }} placeholder="Photographer name" value={details.photography?.photographer || ''} onChange={e => handleDetailsUpdate('photographer', e.target.value)} />
+                    <button type="button" onClick={() => { setEditingPhotographer(null); setShowForm(true); }} style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
+                      <Plus size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <SectionInput label="Contact person" value={details.photography?.photographerContact} onChange={e => handleDetailsUpdate('photographerContact', e.target.value)} placeholder="Contact name" />
+                <SectionInput label="Phone" value={details.photography?.photographerPhone} onChange={e => handleDetailsUpdate('photographerPhone', e.target.value)} placeholder="Phone number" />
+              </div>
+              <SectionInput label="Email" type="email" value={details.photography?.photographerEmail} onChange={e => handleDetailsUpdate('photographerEmail', e.target.value)} placeholder="Email address" />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <SectionInput label="Package selected" value={details.photography?.photographyPackage} onChange={e => handleDetailsUpdate('photographyPackage', e.target.value)} placeholder="Package name" />
+                <SectionInput label="Hours booked" type="number" value={details.photography?.photographyHours} onChange={e => handleDetailsUpdate('photographyHours', e.target.value)} placeholder="Hours" />
+              </div>
+              <SectionInput label="Photography style" isTextarea value={details.photography?.photographyStyle} onChange={e => handleDetailsUpdate('photographyStyle', e.target.value)} placeholder="Candid, traditional, artistic, documentary, etc." />
+            </DetailsSection>
+
+            <DetailsSection title="Videographer details" icon={Video} sectionKey="videographer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={labelStyle}>Select videographer</label>
+                {videographersList.length > 0 ? (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ flex: 1 }}>
+                      <Select value={details.photography?.videographerVendorId || ''} onValueChange={v => handleVendorSelect(v, 'videographer')}>
+                        <SelectTrigger><SelectValue placeholder="Select from your videographers" /></SelectTrigger>
+                        <SelectContent>
+                          {videographersList.map(v => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <button type="button" onClick={() => { setEditingPhotographer(null); setShowForm(true); }} style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
+                      <Plus size={13} />
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <input style={{ ...inputStyle, flex: 1 }} placeholder="Videographer name" value={details.photography?.videographer || ''} onChange={e => handleDetailsUpdate('videographer', e.target.value)} />
+                    <button type="button" onClick={() => { setEditingPhotographer(null); setShowForm(true); }} style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
+                      <Plus size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <SectionInput label="Contact person" value={details.photography?.videographerContact} onChange={e => handleDetailsUpdate('videographerContact', e.target.value)} placeholder="Contact name" />
+                <SectionInput label="Phone" value={details.photography?.videographerPhone} onChange={e => handleDetailsUpdate('videographerPhone', e.target.value)} placeholder="Phone number" />
+              </div>
+              <SectionInput label="Email" type="email" value={details.photography?.videographerEmail} onChange={e => handleDetailsUpdate('videographerEmail', e.target.value)} placeholder="Email address" />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <SectionInput label="Package selected" value={details.photography?.videographyPackage} onChange={e => handleDetailsUpdate('videographyPackage', e.target.value)} placeholder="Package name" />
+                <SectionInput label="Video length" value={details.photography?.videoLength} onChange={e => handleDetailsUpdate('videoLength', e.target.value)} placeholder="e.g., 3-5 minute highlight reel" />
+              </div>
+              <SectionInput label="Video style" isTextarea value={details.photography?.videoStyle} onChange={e => handleDetailsUpdate('videoStyle', e.target.value)} placeholder="Cinematic, documentary, traditional, etc." />
+            </DetailsSection>
+          </div>
+        )}
+
+        {/* Shot list tab */}
+        {activeTab === 'shot-list' && (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <DetailsSection title="Shot list" icon={Image} sectionKey="shotlist" onSave={handleDetailsSave} isSaving={isSavingDetails}>
+              <SectionInput label="Getting ready" isTextarea value={details.photography?.gettingReadyShots} onChange={e => handleDetailsUpdate('gettingReadyShots', e.target.value)} placeholder="Details, dress, shoes, rings, etc." />
+              <SectionInput label="Ceremony shots" isTextarea value={details.photography?.ceremonyShots} onChange={e => handleDetailsUpdate('ceremonyShots', e.target.value)} placeholder="Processional, vows, first kiss, recessional" />
+              <SectionInput label="Family portraits" isTextarea value={details.photography?.familyPortraits} onChange={e => handleDetailsUpdate('familyPortraits', e.target.value)} placeholder="List family groupings for formal photos" />
+              <SectionInput label="Reception shots" isTextarea value={details.photography?.receptionShots} onChange={e => handleDetailsUpdate('receptionShots', e.target.value)} placeholder="First dance, cake cutting, toasts, dancing" />
+              <SectionInput label="Must-have shots" isTextarea value={details.photography?.mustHaveShots} onChange={e => handleDetailsUpdate('mustHaveShots', e.target.value)} placeholder="Specific photos or moments you want captured" />
+            </DetailsSection>
+          </div>
+        )}
+
+        {/* Timeline tab */}
+        {activeTab === 'timeline' && (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <DetailsSection title="Delivery & editing" icon={Clock} sectionKey="delivery" onSave={handleDetailsSave} isSaving={isSavingDetails}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <SectionInput label="Photo delivery timeline" value={details.photography?.photoDeliveryTimeline} onChange={e => handleDetailsUpdate('photoDeliveryTimeline', e.target.value)} placeholder="e.g., 4-6 weeks" />
+                <SectionInput label="Number of edited photos" type="number" value={details.photography?.editedPhotosCount} onChange={e => handleDetailsUpdate('editedPhotosCount', e.target.value)} placeholder="Number" />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <SectionInput label="Video delivery timeline" value={details.photography?.videoDeliveryTimeline} onChange={e => handleDetailsUpdate('videoDeliveryTimeline', e.target.value)} placeholder="e.g., 8-12 weeks" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={labelStyle}>Editing style</label>
+                  <Select value={details.photography?.editingStyle || ''} onValueChange={v => handleDetailsUpdate('editingStyle', v)}>
+                    <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bright_airy">Bright & airy</SelectItem>
+                      <SelectItem value="dark_moody">Dark & moody</SelectItem>
+                      <SelectItem value="natural">Natural</SelectItem>
+                      <SelectItem value="vintage">Vintage</SelectItem>
+                      <SelectItem value="black_white">Black & white</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <SectionInput label="Delivery format" isTextarea value={details.photography?.deliveryFormat} onChange={e => handleDetailsUpdate('deliveryFormat', e.target.value)} placeholder="Online gallery, USB drive, prints, albums, etc." />
+            </DetailsSection>
+          </div>
         )}
       </div>
 
