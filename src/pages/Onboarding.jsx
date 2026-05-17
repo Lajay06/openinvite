@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft } from 'lucide-react';
-import { WeddingDetails } from '@/entities/WeddingDetails';
-import { Guest } from '@/entities/Guest';
-import { Budget } from '@/entities/Budget';
-import { Vendor } from '@/entities/Vendor';
-import { MoodboardItem } from '@/entities/MoodboardItem';
+import { Sun, Moon } from 'lucide-react';
+
+// TASK 1: entity references via authenticated client (no @/entities/* imports)
+const WeddingDetails = base44.entities.WeddingDetails;
+const Guest = base44.entities.Guest;
+const Budget = base44.entities.Budget;
+const Vendor = base44.entities.Vendor;
+const MoodboardItem = base44.entities.MoodboardItem;
 
 // Step components
+import OnboardingWelcome from '@/components/onboarding/OnboardingWelcome';
 import OnboardingStep1Names from '@/components/onboarding/OnboardingStep1Names';
 import OnboardingStep2Date from '@/components/onboarding/OnboardingStep2Date';
 import OnboardingStep3Location from '@/components/onboarding/OnboardingStep3Location';
 import OnboardingStep4GuestCount from '@/components/onboarding/OnboardingStep4GuestCount';
 import OnboardingStep5WeddingType from '@/components/onboarding/OnboardingStep5WeddingType';
-import OnboardingStep6Priorities from '@/components/onboarding/OnboardingStep6Priorities';
 import OnboardingStep7Ava from '@/components/onboarding/OnboardingStep7Ava';
 import OnboardingStepUniverse from '@/components/onboarding/OnboardingStepUniverse';
 import OnboardingStep8Fork from '@/components/onboarding/OnboardingStep8Fork';
@@ -26,13 +28,14 @@ import OnboardingPathACultural from '@/components/onboarding/OnboardingPathACult
 import OnboardingPathAInspiration from '@/components/onboarding/OnboardingPathAInspiration';
 import OnboardingCompletion from '@/components/onboarding/OnboardingCompletion';
 
+// TASK 6+7: 'welcome' added as step 0; 'priorities' removed
 const STEPS = [
+  'welcome',
   'names',
   'date',
   'location',
   'guestCount',
   'weddingType',
-  'priorities',
   'ava',
   'universe',
   'fork',
@@ -41,7 +44,7 @@ const STEPS = [
   'pathA-vendors',
   'pathA-cultural',
   'pathA-inspiration',
-  'completion'
+  'completion',
 ];
 
 const PATH_A_STEPS = [
@@ -49,13 +52,22 @@ const PATH_A_STEPS = [
   'pathA-budget',
   'pathA-vendors',
   'pathA-cultural',
-  'pathA-inspiration'
+  'pathA-inspiration',
 ];
+
+const LOGO_URL = 'https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png';
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+// Content steps = everything between welcome and completion
+const CONTENT_STEP_COUNT = STEPS.length - 2; // 13
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [user, setUser] = useState(null);
+  // TASK 2: theme state
+  const [theme, setTheme] = useState('dark');
+
   const [onboardingData, setOnboardingData] = useState({
     couple1Name: '',
     couple2Name: '',
@@ -76,8 +88,17 @@ export default function Onboarding() {
   });
 
   const currentStep = STEPS[currentStepIndex];
-  const progress = ((currentStepIndex) / (STEPS.length - 1)) * 100;
-  const showBackArrow = currentStepIndex > 0;
+  const isDark = theme !== 'light';
+
+  // Progress: starts at names (index 1), 0 on welcome, 100 on completion
+  const progress = currentStep === 'welcome' ? 0
+    : currentStep === 'completion' ? 100
+    : ((currentStepIndex - 1) / CONTENT_STEP_COUNT) * 100;
+
+  // Step counter display (shown from names through last content step)
+  const showStepCounter = currentStep !== 'welcome' && currentStep !== 'completion';
+  const stepNum = currentStepIndex; // welcome=0, names=1, date=2…
+  const showBack = currentStepIndex > 0 && currentStep !== 'completion';
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -92,7 +113,7 @@ export default function Onboarding() {
   }, [navigate]);
 
   const goNext = (data) => {
-    setOnboardingData(prev => ({ ...prev, ...data }));
+    setOnboardingData(prev => ({ ...prev, ...(data || {}) }));
     setCurrentStepIndex(prev => Math.min(prev + 1, STEPS.length - 1));
     window.scrollTo(0, 0);
   };
@@ -127,7 +148,7 @@ export default function Onboarding() {
         couple1Name: onboardingData.couple1Name,
         couple2Name: onboardingData.couple2Name,
         weddingDate: onboardingData.weddingDate,
-        slug: onboardingData.couple1Name?.toLowerCase().replace(/\s+/g, '-') + '-' + 
+        slug: onboardingData.couple1Name?.toLowerCase().replace(/\s+/g, '-') + '-' +
               onboardingData.couple2Name?.toLowerCase().replace(/\s+/g, '-'),
         mainCeremony: {
           venueName: typeof onboardingData.venue === 'object' ? onboardingData.venue?.name : onboardingData.venue,
@@ -152,7 +173,7 @@ export default function Onboarding() {
         await Budget.create({
           category: 'miscellaneous',
           item_name: 'Total Budget',
-          budgeted_amount: onboardingData.budget
+          budgeted_amount: onboardingData.budget,
         });
       }
 
@@ -162,7 +183,7 @@ export default function Onboarding() {
             name: v.name,
             category: v.category,
             contact_person: v.contact,
-            status: 'researching'
+            status: 'researching',
           })
         ));
       }
@@ -172,7 +193,7 @@ export default function Onboarding() {
           MoodboardItem.create({
             title: 'Inspiration',
             image_url: photo,
-            category: 'other'
+            category: 'other',
           })
         ));
       }
@@ -190,38 +211,94 @@ export default function Onboarding() {
     navigate('/Dashboard');
   };
 
+  const stepProps = { theme, setTheme };
+
   return (
-    <div className="min-h-screen bg-[#0A0A0A] overflow-hidden">
-      {/* Progress bar */}
-      <div className="fixed top-0 left-0 right-0 h-[2px] bg-[#1a1a1a] z-50">
+    <div style={{
+      minHeight: '100vh',
+      background: isDark ? '#0A0A0A' : '#FAFAFA',
+      overflow: 'hidden',
+      transition: 'background 0.3s ease',
+    }}>
+
+      {/* TASK 4: Progress bar — fixed top, 2px */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0,
+        height: 2, zIndex: 100,
+        background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+      }}>
         <motion.div
-          className="h-full bg-gradient-to-r from-[#E03553] to-[#803D81]"
+          style={{
+            height: '100%',
+            background: 'linear-gradient(90deg, #ec4899, #9333ea)',
+          }}
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
         />
       </div>
 
-      {/* Back arrow */}
-      {showBackArrow && (
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          onClick={goBack}
-          className="fixed top-8 left-8 z-40 text-[#666666] hover:text-white transition-colors"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </motion.button>
-      )}
+      {/* TASK 3+4+5: Top-left fixed column — logo, step counter, back */}
+      <div style={{
+        position: 'fixed', top: 20, left: 24, zIndex: 50,
+        display: 'flex', flexDirection: 'column', gap: 6,
+      }}>
+        {/* Logo */}
+        <img
+          src={LOGO_URL}
+          alt="openinvite"
+          style={{
+            height: 20, width: 'auto', display: 'block',
+            filter: isDark ? 'brightness(0) invert(1)' : 'brightness(0)',
+          }}
+        />
 
-      {/* Step counter */}
-      <motion.div
-        className="fixed top-8 right-8 z-40"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        {/* Step counter */}
+        {showStepCounter && (
+          <span style={{
+            fontSize: 11, fontFamily: PJS,
+            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+          }}>
+            Step {stepNum} of {CONTENT_STEP_COUNT}
+          </span>
+        )}
+
+        {/* Back button */}
+        {showBack && (
+          <button
+            onClick={goBack}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 13, fontFamily: PJS, padding: 0,
+              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+              textAlign: 'left',
+            }}
+          >
+            ← Back
+          </button>
+        )}
+      </div>
+
+      {/* TASK 2: Theme toggle — fixed top-right */}
+      <button
+        onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+        style={{
+          position: 'fixed', top: 20, right: 24, zIndex: 50,
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '6px 14px', borderRadius: 999,
+          fontSize: 12, fontFamily: PJS, cursor: 'pointer',
+          background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+          color: isDark ? '#FFFFFF' : '#0A0A0A',
+          border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.12)',
+          transition: 'all 0.2s ease',
+        }}
       >
-        {currentStepIndex + 1} of {STEPS.length - 1}
-      </motion.div>
+        {isDark
+          ? <Moon size={14} />
+          : <Sun size={14} />
+        }
+        {isDark ? 'Dark' : 'Light'}
+      </button>
 
       {/* Steps container */}
       <AnimatePresence mode="wait">
@@ -231,29 +308,62 @@ export default function Onboarding() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -40, opacity: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="min-h-screen flex items-center justify-center px-6"
+          style={{
+            minHeight: '100vh',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '80px 24px',
+          }}
         >
-          {currentStep === 'names' && <OnboardingStep1Names onNext={goNext} />}
-          {currentStep === 'date' && <OnboardingStep2Date onNext={goNext} data={onboardingData} />}
-          {currentStep === 'location' && <OnboardingStep3Location onNext={goNext} data={onboardingData} />}
-          {currentStep === 'guestCount' && <OnboardingStep4GuestCount onNext={goNext} data={onboardingData} />}
-          {currentStep === 'weddingType' && <OnboardingStep5WeddingType onNext={goNext} data={onboardingData} />}
-          {currentStep === 'priorities' && <OnboardingStep6Priorities onNext={goNext} data={onboardingData} />}
-          {currentStep === 'ava' && <OnboardingStep7Ava onNext={goNext} data={onboardingData} />}
-          {currentStep === 'universe' && <OnboardingStepUniverse onNext={goNext} data={onboardingData} />}
+          {currentStep === 'welcome' && (
+            <OnboardingWelcome onNext={goNext} {...stepProps} />
+          )}
+          {currentStep === 'names' && (
+            <OnboardingStep1Names onNext={goNext} {...stepProps} />
+          )}
+          {currentStep === 'date' && (
+            <OnboardingStep2Date onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
+          {currentStep === 'location' && (
+            <OnboardingStep3Location onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
+          {currentStep === 'guestCount' && (
+            <OnboardingStep4GuestCount onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
+          {currentStep === 'weddingType' && (
+            <OnboardingStep5WeddingType onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
+          {currentStep === 'ava' && (
+            <OnboardingStep7Ava onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
+          {currentStep === 'universe' && (
+            <OnboardingStepUniverse onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
           {currentStep === 'fork' && (
             <OnboardingStep8Fork
               onPathA={handlePathA}
               onPathB={handlePathB}
               data={onboardingData}
+              {...stepProps}
             />
           )}
-          {currentStep === 'pathA-guestList' && <OnboardingPathAGuestList onNext={goNext} data={onboardingData} />}
-          {currentStep === 'pathA-budget' && <OnboardingPathABudget onNext={goNext} data={onboardingData} />}
-          {currentStep === 'pathA-vendors' && <OnboardingPathAVendors onNext={goNext} data={onboardingData} />}
-          {currentStep === 'pathA-cultural' && <OnboardingPathACultural onNext={goNext} data={onboardingData} />}
-          {currentStep === 'pathA-inspiration' && <OnboardingPathAInspiration onNext={goNext} data={onboardingData} />}
-          {currentStep === 'completion' && <OnboardingCompletion onDone={handleCompletion} data={onboardingData} />}
+          {currentStep === 'pathA-guestList' && (
+            <OnboardingPathAGuestList onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
+          {currentStep === 'pathA-budget' && (
+            <OnboardingPathABudget onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
+          {currentStep === 'pathA-vendors' && (
+            <OnboardingPathAVendors onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
+          {currentStep === 'pathA-cultural' && (
+            <OnboardingPathACultural onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
+          {currentStep === 'pathA-inspiration' && (
+            <OnboardingPathAInspiration onNext={goNext} data={onboardingData} {...stepProps} />
+          )}
+          {currentStep === 'completion' && (
+            <OnboardingCompletion onDone={handleCompletion} data={onboardingData} {...stepProps} />
+          )}
         </motion.div>
       </AnimatePresence>
     </div>
