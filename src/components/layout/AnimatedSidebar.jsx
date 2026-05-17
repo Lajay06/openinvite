@@ -5,9 +5,9 @@ import {
   LayoutDashboard, Calendar, CheckSquare, ListTodo,
   Users, UserCheck, LayoutGrid, MessageCircle,
   Wallet, Gift, Package,
-  Palette, Music2, Image, FileText,
+  Palette, Music2, Image, FileText, Camera,
   Store,
-  Clock, Heart, Radio,
+  Clock, Heart, Radio, UtensilsCrossed,
   Plane, Hotel, Car, Phone,
   Settings, UserPlus, LogOut, HelpCircle,
   Sparkles,
@@ -43,6 +43,7 @@ const NAV_SECTIONS = [
     label: "Creative",
     items: [
       { icon: Palette,  label: "Styling",          url: createPageUrl("Styling") },
+      { icon: Camera,   label: "Photography",       url: createPageUrl("Photography") },
       { icon: Music2,   label: "Music",             url: createPageUrl("Music") },
       { icon: Image,    label: "Moodboard",         url: createPageUrl("Moodboard") },
       { icon: FileText, label: "Vows & speeches",   url: createPageUrl("VowsSpeeches") },
@@ -58,9 +59,10 @@ const NAV_SECTIONS = [
   {
     label: "Day of",
     items: [
-      { icon: Clock,  label: "Schedule",          url: createPageUrl("Schedule") },
-      { icon: Heart,  label: "Ceremony details",  url: "/ceremony-details" },
-      { icon: Radio,  label: "Live stream",       url: createPageUrl("LiveStreaming") },
+      { icon: Clock,           label: "Schedule",          url: createPageUrl("Schedule") },
+      { icon: Heart,           label: "Ceremony details",  url: "/ceremony-details" },
+      { icon: UtensilsCrossed, label: "Food & beverage",   url: createPageUrl("FoodBeverage") },
+      { icon: Radio,           label: "Live stream",       url: createPageUrl("LiveStreaming") },
     ],
   },
   {

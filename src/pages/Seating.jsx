@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Guest } from '@/entities/Guest';
-import { Table } from '@/entities/Table';
-import { VenueAsset } from '@/entities/VenueAsset';
 import { base44 } from '@/api/base44Client';
+const Guest = base44.entities.Guest;
+const Table = base44.entities.Table;
+const VenueAsset = base44.entities.VenueAsset;
 import { Search, Sparkles, Trash2, ZoomIn, ZoomOut, RotateCcw, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';

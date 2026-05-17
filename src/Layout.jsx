@@ -296,7 +296,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* ── Mobile: fixed top bar ───────────────────────── */}
       <div
-        className="lg:hidden"
+        className="flex lg:hidden"
         style={{
           position: 'fixed',
           top: 0, left: 0, right: 0,
@@ -304,7 +304,6 @@ export default function Layout({ children, currentPageName }) {
           height: 64,
           background: '#FFFFFF',
           borderBottom: '1px solid rgba(10,10,10,0.08)',
-          display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 24px',
