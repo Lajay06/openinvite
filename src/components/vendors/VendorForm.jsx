@@ -37,9 +37,9 @@ const PRICE_RANGES = [
   { value: "$$$$", label: "$$$$ — Luxury" },
 ];
 
-export default function VendorForm({ vendor, onSubmit, onCancel }) {
+export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory }) {
   const [formData, setFormData] = useState(vendor || {
-    name: "", category: "", contact_person: "", phone: "", email: "",
+    name: "", category: defaultCategory || "", contact_person: "", phone: "", email: "",
     website: "", address: "", rating: "", price_range: "",
     status: "researching", quoted_price: "", contract_date: "",
     payment_schedule: "", notes: "",
@@ -78,12 +78,19 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label>Category *</Label>
-            <Select value={formData.category} onValueChange={v => set('category', v)} required>
-              <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            {defaultCategory ? (
+              <div style={{ borderBottom: '1px solid rgba(10,10,10,0.18)', padding: '6px 0', fontSize: 14, fontWeight: 500, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 8 }}>
+                {CATEGORIES.find(c => c.value === defaultCategory)?.label || defaultCategory}
+                <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontWeight: 400 }}>pre-selected</span>
+              </div>
+            ) : (
+              <Select value={formData.category} onValueChange={v => set('category', v)} required>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

@@ -78,6 +78,7 @@ export default function SeatingPage() {
 
   const [showAddTable, setShowAddTable] = useState(false);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [tableGuestSearch, setTableGuestSearch] = useState('');
 
   const [venueImageUrl, setVenueImageUrl] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -507,111 +508,238 @@ export default function SeatingPage() {
             </div>
           </div>
 
-          {/* Right: Guest list panel */}
+          {/* Right: Guest panel */}
           <div style={{ width: 260, borderLeft: '1px solid rgba(10,10,10,0.08)', flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-            {/* Panel header */}
-            <div style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
-              <div style={{ display: 'flex', gap: 5 }}>
-                {['all', 'unassigned', 'assigned'].map(f => (
-                  <Pill key={f} label={f} active={guestFilter === f} onClick={() => setGuestFilter(f)} />
-                ))}
-              </div>
-            </div>
-
-            {/* Selected table banner */}
-            {selectedTable && (
-              <div style={{ padding: '8px 16px', background: 'rgba(224,53,83,0.05)', borderBottom: '1px solid rgba(224,53,83,0.12)', flexShrink: 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 2px' }}>
-                  Assigning to: {selectedTable.name}
-                </p>
-                <p style={{ fontSize: 10, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>
-                  {(selectedTable.assigned_guests || []).length}/{selectedTable.capacity} seats · click guest to assign
-                </p>
-              </div>
-            )}
-
-            {/* Search */}
-            <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(10,10,10,0.06)', flexShrink: 0, position: 'relative' }}>
-              <Search size={11} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
-              <Input
-                placeholder="Search guests…"
-                value={guestSearch}
-                onChange={e => setGuestSearch(e.target.value)}
-                style={{ paddingLeft: 22, fontSize: 11, height: 28 }}
-              />
-            </div>
-
-            {/* Guest list */}
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              {loading ? (
-                <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-                  <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Loading…</p>
+            {selectedTable ? (
+              /* ── TABLE DETAIL MODE ── */
+              <>
+                {/* Table header */}
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{selectedTable.name}</p>
+                    <button onClick={() => setSelectedTableId(null)}
+                      style={{ fontSize: 10, fontWeight: 600, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 999, background: 'rgba(10,10,10,0.06)' }}>
+                      ← Back
+                    </button>
+                  </div>
+                  <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
+                    {(selectedTable.assigned_guests || []).length}/{selectedTable.capacity} seats used
+                  </p>
+                  {/* Capacity bar */}
+                  <div style={{ height: 3, background: 'rgba(10,10,10,0.08)', marginTop: 8 }}>
+                    <div style={{ height: '100%', width: `${Math.min(100, ((selectedTable.assigned_guests || []).length / (selectedTable.capacity || 1)) * 100)}%`, background: 'linear-gradient(90deg, #E03553, #803D81)', transition: 'width 0.3s' }} />
+                  </div>
                 </div>
-              ) : filteredGuests.length === 0 ? (
-                <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-                  <Users size={20} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 8px', display: 'block' }} />
-                  <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>No guests found</p>
+
+                {/* Assigned guests list */}
+                <div style={{ flexShrink: 0, maxHeight: 200, overflowY: 'auto', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                  <div style={{ padding: '8px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      Assigned ({(selectedTable.assigned_guests || []).length})
+                    </span>
+                  </div>
+                  {(selectedTable.assigned_guests || []).length === 0 ? (
+                    <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '4px 16px 10px', margin: 0 }}>No guests yet</p>
+                  ) : (
+                    (selectedTable.assigned_guests || []).map(a => {
+                      const g = guests.find(x => x.id === a.guest_id);
+                      if (!g) return null;
+                      return (
+                        <div key={a.guest_id} style={{ display: 'flex', alignItems: 'center', padding: '6px 16px', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
+                          <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#E03553', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8 }}>
+                            <span style={{ fontSize: 8, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                              {g.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                          <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {g.name}
+                          </span>
+                          <button
+                            onClick={() => handleUnassignGuest(selectedTableId, a.seat_index, a.guest_id)}
+                            style={{ fontSize: 9, color: '#E03553', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, flexShrink: 0, padding: '2px 4px' }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
-              ) : (
-                filteredGuests.map(guest => {
-                  const isAtSelected = guestsAtSelectedTable.has(guest.id);
-                  const isAssigned = assignedGuestIds.has(guest.id);
-                  const tableName = isAssigned ? getGuestTableName(guest.id) : null;
-                  const isClickable = !!selectedTableId;
 
-                  return (
-                    <div
-                      key={guest.id}
-                      onClick={() => isClickable && handleGuestPanelClick(guest)}
-                      style={{
-                        display: 'flex', alignItems: 'center', padding: '8px 16px',
-                        borderBottom: '1px solid rgba(10,10,10,0.05)',
-                        background: isAtSelected ? 'rgba(224,53,83,0.04)' : 'transparent',
-                        cursor: isClickable ? 'pointer' : 'default',
-                        transition: 'background 0.12s',
-                      }}
-                      onMouseEnter={e => { if (isClickable) e.currentTarget.style.background = isAtSelected ? 'rgba(224,53,83,0.08)' : 'rgba(10,10,10,0.03)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = isAtSelected ? 'rgba(224,53,83,0.04)' : 'transparent'; }}
-                    >
-                      {/* Avatar initial */}
-                      <div style={{
-                        width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
-                        background: isAtSelected ? '#E03553' : isAssigned ? '#0A1930' : 'rgba(10,10,10,0.08)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        marginRight: 10,
-                      }}>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: isAtSelected || isAssigned ? '#FFFFFF' : '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                          {guest.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                        </span>
-                      </div>
+                {/* Add guest search */}
+                <div style={{ flexShrink: 0, padding: '8px 12px 4px', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'block', marginBottom: 6 }}>
+                    Add guest
+                  </span>
+                  <div style={{ position: 'relative' }}>
+                    <Search size={11} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                    <Input
+                      placeholder="Search unassigned…"
+                      value={tableGuestSearch}
+                      onChange={e => setTableGuestSearch(e.target.value)}
+                      style={{ paddingLeft: 18, fontSize: 11, height: 28 }}
+                    />
+                  </div>
+                </div>
 
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {guest.name}
-                          {guest.plus_one ? <span style={{ color: '#444444', fontWeight: 400 }}> +1</span> : null}
-                        </p>
-                        {tableName && (
-                          <p style={{ fontSize: 9, color: isAtSelected ? '#E03553' : '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '1px 0 0', fontWeight: isAtSelected ? 700 : 400 }}>
-                            {tableName}
+                {/* Unassigned guest list for adding */}
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                  {guests
+                    .filter(g => !assignedGuestIds.has(g.id))
+                    .filter(g => !tableGuestSearch || g.name?.toLowerCase().includes(tableGuestSearch.toLowerCase()))
+                    .map(guest => (
+                      <div key={guest.id}
+                        onClick={() => handleGuestPanelClick(guest)}
+                        style={{ display: 'flex', alignItems: 'center', padding: '7px 16px', borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer', transition: 'background 0.12s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(224,53,83,0.04)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                      >
+                        <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8 }}>
+                          <span style={{ fontSize: 8, fontWeight: 700, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                            {guest.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                          </span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 11, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {guest.name}
+                            {guest.plus_one ? <span style={{ fontWeight: 400, color: '#444444' }}> +1</span> : null}
                           </p>
-                        )}
-                        {guest.dietary_restrictions && (
-                          <p style={{ fontSize: 9, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {guest.dietary_restrictions}
-                          </p>
-                        )}
+                          {guest.dietary_restrictions && (
+                            <p style={{ fontSize: 9, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {guest.dietary_restrictions}
+                            </p>
+                          )}
+                        </div>
+                        <span style={{ fontSize: 10, color: '#E03553', fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", flexShrink: 0 }}>+</span>
                       </div>
-
-                      {/* Status dot */}
-                      {isAtSelected && (
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#E03553', flexShrink: 0, marginLeft: 6 }} />
-                      )}
+                    ))
+                  }
+                  {guests.filter(g => !assignedGuestIds.has(g.id)).length === 0 && (
+                    <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+                      <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>All guests assigned</p>
                     </div>
-                  );
-                })
-              )}
-            </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* ── ALL GUESTS MODE ── */
+              <>
+                {/* Filter pills */}
+                <div style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: 5 }}>
+                    {['all', 'unassigned', 'assigned'].map(f => (
+                      <Pill key={f} label={f} active={guestFilter === f} onClick={() => setGuestFilter(f)} />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Hint */}
+                <div style={{ padding: '6px 16px', background: '#F5F5F5', borderBottom: '1px solid rgba(10,10,10,0.06)', flexShrink: 0 }}>
+                  <p style={{ fontSize: 10, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
+                    Click a table on the canvas to assign guests
+                  </p>
+                </div>
+
+                {/* Search */}
+                <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(10,10,10,0.06)', flexShrink: 0, position: 'relative' }}>
+                  <Search size={11} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                  <Input
+                    placeholder="Search guests…"
+                    value={guestSearch}
+                    onChange={e => setGuestSearch(e.target.value)}
+                    style={{ paddingLeft: 22, fontSize: 11, height: 28 }}
+                  />
+                </div>
+
+                {/* Guest list: Unassigned section then Assigned section */}
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                  {loading ? (
+                    <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+                      <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Loading…</p>
+                    </div>
+                  ) : (() => {
+                    const unassigned = filteredGuests.filter(g => !assignedGuestIds.has(g.id));
+                    const assigned = filteredGuests.filter(g => assignedGuestIds.has(g.id));
+                    const showUnassigned = guestFilter !== 'assigned';
+                    const showAssigned = guestFilter !== 'unassigned';
+
+                    const GuestRow = ({ guest, isAssigned: isAsgn }) => {
+                      const tableName = isAsgn ? getGuestTableName(guest.id) : null;
+                      return (
+                        <div
+                          key={guest.id}
+                          style={{
+                            display: 'flex', alignItems: 'center', padding: '7px 16px',
+                            borderBottom: '1px solid rgba(10,10,10,0.04)',
+                          }}
+                        >
+                          <div style={{
+                            width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                            background: isAsgn ? '#0A1930' : 'rgba(10,10,10,0.08)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 8,
+                          }}>
+                            <span style={{ fontSize: 8, fontWeight: 700, color: isAsgn ? '#FFFFFF' : '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                              {guest.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 11, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {guest.name}
+                              {guest.plus_one ? <span style={{ color: '#444444', fontWeight: 400 }}> +1</span> : null}
+                            </p>
+                            {tableName && (
+                              <p style={{ fontSize: 9, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '1px 0 0' }}>{tableName}</p>
+                            )}
+                            {guest.dietary_restrictions && (
+                              <p style={{ fontSize: 9, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {guest.dietary_restrictions}
+                              </p>
+                            )}
+                          </div>
+                          {isAsgn && (
+                            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.04em', color: '#0A1930', fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#DDF762', padding: '1px 5px', borderRadius: 999, flexShrink: 0 }}>
+                              seated
+                            </span>
+                          )}
+                        </div>
+                      );
+                    };
+
+                    return (
+                      <>
+                        {showUnassigned && (
+                          <>
+                            <div style={{ padding: '8px 16px 4px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                Unassigned ({unassigned.length})
+                              </span>
+                            </div>
+                            {unassigned.length === 0
+                              ? <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '10px 16px', margin: 0 }}>All guests seated</p>
+                              : unassigned.map(g => <GuestRow key={g.id} guest={g} isAssigned={false} />)
+                            }
+                          </>
+                        )}
+                        {showAssigned && (
+                          <>
+                            <div style={{ padding: '8px 16px 4px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                Assigned ({assigned.length})
+                              </span>
+                            </div>
+                            {assigned.length === 0
+                              ? <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '10px 16px', margin: 0 }}>None yet</p>
+                              : assigned.map(g => <GuestRow key={g.id} guest={g} isAssigned={true} />)
+                            }
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              </>
+            )}
           </div>
 
         </div>{/* end three-panel */}

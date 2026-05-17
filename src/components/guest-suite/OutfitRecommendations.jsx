@@ -51,7 +51,7 @@ const OutfitRecommendations = ({ recommendations, theme, onRetake }) => {
                 </Button>
             </div>
 
-            <Accordion type="multiple" defaultValue={["overview", "outfit"]} className="w-full">
+            <Accordion type="multiple" defaultValue={[]} className="w-full">
                 <AccordionItem value="overview">
                     <AccordionTrigger className="text-lg font-semibold">
                         <div className="flex items-center gap-2">

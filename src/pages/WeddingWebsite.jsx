@@ -722,7 +722,7 @@ export default function WeddingWebsite() {
               </p>
             </div>
             
-            <Accordion type="multiple" defaultValue={["ceremony", "reception"]} className="w-full space-y-4">
+            <Accordion type="multiple" defaultValue={[]} className="w-full space-y-4">
               {/* Ceremony */}
               <AccordionItem value="ceremony" className="border-0 shadow-sm rounded-lg overflow-hidden">
                 <AccordionTrigger className="px-8 py-6 hover:bg-gray-50 hover:no-underline data-[state=open]:bg-gray-50">
@@ -1459,7 +1459,7 @@ export default function WeddingWebsite() {
               </div>
             )}
 
-            <Accordion type="multiple" defaultValue={["map", "local-favorites"]} className="w-full space-y-4">
+            <Accordion type="multiple" defaultValue={[]} className="w-full space-y-4">
               {/* Interactive Map */}
               <AccordionItem value="map" className="border-0 shadow-sm rounded-lg overflow-hidden">
                 <AccordionTrigger className="px-8 py-6 hover:bg-gray-50 hover:no-underline data-[state=open]:bg-gray-50">

@@ -49,7 +49,7 @@ export default function PhotographyPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingPhotographer, setEditingPhotographer] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("planning");
+  const [activeTab, setActiveTab] = useState("photographers");
 
   const [details, setDetails] = useState({ photography: {} });
   const [detailsId, setDetailsId] = useState(null);
@@ -211,7 +211,7 @@ export default function PhotographyPage() {
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer',
-              color: activeTab === tab.key ? '#0A0A0A' : '#444444',
+              color: activeTab === tab.key ? '#E03553' : '#444444',
               borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
             }}>
             {tab.label}

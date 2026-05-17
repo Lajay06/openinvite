@@ -131,7 +131,7 @@ export default function PoliciesPage() {
           </Button>
         </div>
 
-        <Accordion type="multiple" defaultValue={["childrenPolicy", "plusOnePolicy"]} className="w-full space-y-4">
+        <Accordion type="multiple" defaultValue={[]} className="w-full space-y-4">
             {/* Children Policy */}
             <DetailsSection title="Children Policy" icon={Baby} sectionKey="childrenPolicy" onSave={handleSectionSave} isSaving={isSaving}>
                  <div>

@@ -10,6 +10,7 @@ import { createPageUrl } from "@/utils";
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
 import AIStylingAssistant from "../components/styling/AIStylingAssistant";
+import VendorForm from "../components/vendors/VendorForm";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
 const WeddingDetails = base44.entities.WeddingDetails;
@@ -33,7 +34,8 @@ export default function StylingPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [showAIStylingAssistant, setShowAIStylingAssistant] = useState(false);
   const [activeTab, setActiveTab] = useState("attire");
-  const [addVendorModal, setAddVendorModal] = useState({ open: false, category: '', name: '' });
+  const [showVendorForm, setShowVendorForm] = useState(false);
+  const [vendorFormCategory, setVendorFormCategory] = useState('');
   
   const [isCustomDressCode, setIsCustomDressCode] = useState(false);
   
@@ -104,16 +106,15 @@ export default function StylingPage() {
     }
   };
 
-  const handleAddVendorInline = async () => {
-    if (!addVendorModal.name.trim()) return;
+  const handleVendorFormSubmit = async (vendorData) => {
     const tid = toast.loading('Adding vendor…');
     try {
-      const created = await Vendor.create({ name: addVendorModal.name.trim(), category: addVendorModal.category, status: 'researching' });
+      const created = await Vendor.create({ ...vendorData, category: vendorFormCategory || vendorData.category });
       toast.success('Vendor added', { id: tid });
-      setAddVendorModal({ open: false, category: '', name: '' });
-      const vendorData = await Vendor.list();
-      setVendors(vendorData);
-      handleVendorSelect(addVendorModal.category === 'flowers' ? 'flowers' : 'decorations', created.id);
+      setShowVendorForm(false);
+      const refreshed = await Vendor.list();
+      setVendors(refreshed);
+      if (vendorFormCategory) handleVendorSelect(vendorFormCategory, created.id);
     } catch {
       toast.error('Failed to add vendor', { id: tid });
     }
@@ -265,7 +266,7 @@ export default function StylingPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <button type="button" onClick={() => setAddVendorModal({ open: true, category: 'flowers', name: '' })}
+                      <button type="button" onClick={() => { setVendorFormCategory('flowers'); setShowVendorForm(true); }}
                         style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus className="w-3 h-3" />
                       </button>
@@ -278,7 +279,7 @@ export default function StylingPage() {
                         placeholder="Florist name and contact"
                         className="flex-1 h-9 text-sm"
                       />
-                      <button type="button" onClick={() => setAddVendorModal({ open: true, category: 'flowers', name: '' })}
+                      <button type="button" onClick={() => { setVendorFormCategory('flowers'); setShowVendorForm(true); }}
                         style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus className="w-3 h-3" />
                       </button>
@@ -375,7 +376,7 @@ export default function StylingPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <button type="button" onClick={() => setAddVendorModal({ open: true, category: 'decorations', name: '' })}
+                      <button type="button" onClick={() => { setVendorFormCategory('decorations'); setShowVendorForm(true); }}
                         style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus className="w-3 h-3" />
                       </button>
@@ -388,7 +389,7 @@ export default function StylingPage() {
                         placeholder="Decorator name and contact"
                         className="flex-1 h-9 text-sm"
                       />
-                      <button type="button" onClick={() => setAddVendorModal({ open: true, category: 'decorations', name: '' })}
+                      <button type="button" onClick={() => { setVendorFormCategory('decorations'); setShowVendorForm(true); }}
                         style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus className="w-3 h-3" />
                       </button>
@@ -480,39 +481,17 @@ export default function StylingPage() {
         themeDetails={themeDetails}
       />
 
-      {/* Inline add vendor modal */}
-      {addVendorModal.open && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-          onClick={() => setAddVendorModal({ open: false, category: '', name: '' })}>
-          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 400, padding: 32 }}
+      {/* Vendor form modal */}
+      {showVendorForm && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          onClick={() => setShowVendorForm(false)}>
+          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
             onClick={e => e.stopPropagation()}>
-            <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Add {addVendorModal.category === 'flowers' ? 'florist' : 'decorator'}
-            </p>
-            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 20px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Category: {addVendorModal.category}
-            </p>
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>Vendor name</div>
-              <input
-                autoFocus
-                value={addVendorModal.name}
-                onChange={e => setAddVendorModal(prev => ({ ...prev, name: e.target.value }))}
-                onKeyDown={e => { if (e.key === 'Enter') handleAddVendorInline(); }}
-                placeholder="e.g. The Flower House"
-                style={{ width: '100%', border: 'none', borderBottom: '2px solid #E03553', background: 'transparent', padding: '6px 0', fontSize: 14, fontWeight: 500, color: '#0A0A0A', outline: 'none', fontFamily: "'Plus Jakarta Sans', sans-serif", boxSizing: 'border-box' }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={() => setAddVendorModal({ open: false, category: '', name: '' })}
-                style={{ padding: '9px 20px', borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A' }}>
-                Cancel
-              </button>
-              <button onClick={handleAddVendorInline}
-                style={{ padding: '9px 20px', borderRadius: 999, border: 'none', background: '#E03553', color: '#FFFFFF', cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Add vendor
-              </button>
-            </div>
+            <VendorForm
+              defaultCategory={vendorFormCategory}
+              onSubmit={handleVendorFormSubmit}
+              onCancel={() => setShowVendorForm(false)}
+            />
           </div>
         </div>
       )}

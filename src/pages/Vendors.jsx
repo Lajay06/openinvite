@@ -61,10 +61,17 @@ const statValueStyle = {
   fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0,
 };
 
-const CATEGORIES = [
-  "all", "attire", "bakery", "beauty", "catering", "decorations", "entertainment",
-  "flowers", "music", "other", "photography", "planning", "transportation", "venue", "videography",
+const CATEGORY_ORDER = [
+  "venue", "catering", "photography", "videography", "flowers", "music",
+  "bakery", "beauty", "attire", "transportation", "planning", "decorations", "entertainment", "other",
 ];
+
+const CATEGORY_LABELS = {
+  venue: "Venue", catering: "Catering", photography: "Photography", videography: "Videography",
+  flowers: "Flowers & florist", music: "Music & DJ", bakery: "Bakery & cake",
+  beauty: "Beauty & hair", attire: "Attire & fashion", transportation: "Transportation",
+  planning: "Wedding planning", decorations: "Decorations", entertainment: "Entertainment", other: "Other",
+};
 
 const STATUSES = ["all", "booked", "contacted", "quoted", "rejected", "researching"];
 
@@ -73,7 +80,6 @@ export default function VendorsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingVendor, setEditingVendor] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeCategory, setActiveCategory] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("my-vendors");
@@ -151,9 +157,8 @@ export default function VendorsPage() {
   const filteredVendors = vendors.filter(v => {
     const matchesSearch = v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.contact_person?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = activeCategory === "all" || v.category === activeCategory;
     const matchesStatus = statusFilter === "all" || v.status === statusFilter;
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesStatus;
   });
 
   const stats = React.useMemo(() => ({
@@ -220,55 +225,70 @@ export default function VendorsPage() {
 
           {/* My Vendors */}
           <TabsContent value="my-vendors" className="mt-8">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-              {/* Search */}
-              <div style={{ position: 'relative', maxWidth: 400 }}>
-                <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
-                <Input
-                  placeholder="Search vendors by name or contact…"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  style={{ paddingLeft: 20 }}
-                />
-              </div>
-
-              {/* Category filter */}
-              <div>
-                <p style={{ ...statLabelStyle, marginBottom: 8 }}>Category</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {CATEGORIES.map(cat => (
-                    <FilterPill
-                      key={cat}
-                      label={cat === 'all' ? 'All' : cat}
-                      active={activeCategory === cat}
-                      onClick={() => setActiveCategory(cat)}
-                    />
-                  ))}
+              {/* Search + status filter row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: '1 1 260px', maxWidth: 400 }}>
+                  <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                  <Input
+                    placeholder="Search vendors…"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    style={{ paddingLeft: 20 }}
+                  />
                 </div>
-              </div>
-
-              {/* Status filter */}
-              <div>
-                <p style={{ ...statLabelStyle, marginBottom: 8 }}>Status</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {STATUSES.map(s => (
-                    <FilterPill
-                      key={s}
-                      label={s === 'all' ? 'All' : s}
-                      active={statusFilter === s}
-                      onClick={() => setStatusFilter(s)}
-                    />
+                    <FilterPill key={s} label={s === 'all' ? 'All statuses' : s} active={statusFilter === s} onClick={() => setStatusFilter(s)} />
                   ))}
                 </div>
               </div>
 
-              <VendorList
-                vendors={filteredVendors}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onManage={setManagingVendor}
-              />
+              {/* Empty state */}
+              {vendors.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px solid rgba(10,10,10,0.08)' }}>
+                  <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <Search size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                  </div>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 6px' }}>No vendors added yet</p>
+                  <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 20px' }}>Click + Add vendor to start tracking your suppliers</p>
+                  <button onClick={() => { setEditingVendor(null); setShowForm(true); }} className="btn-primary" style={{ fontSize: 13 }}>+ Add vendor</button>
+                </div>
+              ) : filteredVendors.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 32px', border: '1px solid rgba(10,10,10,0.08)' }}>
+                  <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>No vendors match your search or filter.</p>
+                </div>
+              ) : (
+                /* Grouped by category */
+                (() => {
+                  const grouped = filteredVendors.reduce((acc, v) => {
+                    const cat = v.category || 'other';
+                    if (!acc[cat]) acc[cat] = [];
+                    acc[cat].push(v);
+                    return acc;
+                  }, {});
+                  const visibleCategories = CATEGORY_ORDER.filter(c => grouped[c]?.length > 0);
+                  const uncategorised = Object.keys(grouped).filter(c => !CATEGORY_ORDER.includes(c));
+                  return [...visibleCategories, ...uncategorised].map(cat => (
+                    <div key={cat}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                          {CATEGORY_LABELS[cat] || cat}
+                        </span>
+                        <span style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>({grouped[cat].length})</span>
+                        <div style={{ flex: 1, height: 1, background: 'rgba(10,10,10,0.08)' }} />
+                      </div>
+                      <VendorList
+                        vendors={grouped[cat]}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onManage={setManagingVendor}
+                      />
+                    </div>
+                  ));
+                })()
+              )}
             </div>
           </TabsContent>
 
