@@ -35,18 +35,13 @@ function CountUp({ to, duration = 1200, format }) {
 }
 
 function FilterPill({ label, active, onClick }) {
-  const [hovered, setHovered] = useState(false);
   return (
-    <button onClick={onClick}
-      style={{
-        fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '5px 12px', borderRadius: 999,
-        border: active ? '1px solid #0A0A0A' : '1px solid rgba(10,10,10,0.18)',
-        background: active ? '#0A0A0A' : hovered ? 'rgba(10,10,10,0.04)' : 'transparent',
-        color: active ? '#FFFFFF' : '#444444', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >{label}</button>
+    <button
+      onClick={onClick}
+      className={`filter-pill${active ? ' active' : ''}`}
+    >
+      {label}
+    </button>
   );
 }
 

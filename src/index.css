@@ -1043,3 +1043,26 @@ body {
   background-repeat: repeat;
   background-size: 128px 128px;
 }
+/* ── Filter pill — standard filter/tab pill ─────────────────── */
+.filter-pill {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 500;
+  border: 1px solid rgba(10,10,10,0.15);
+  background: transparent;
+  color: rgba(10,10,10,0.6);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  white-space: nowrap;
+}
+.filter-pill.active {
+  background: #0A0A0A;
+  color: #FFFFFF;
+  border-color: #0A0A0A;
+}
+.filter-pill:hover:not(.active) {
+  border-color: rgba(10,10,10,0.3);
+  color: #0A0A0A;
+}
