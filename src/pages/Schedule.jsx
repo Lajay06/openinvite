@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
 import toast from 'react-hot-toast';
 
 import ScheduleForm from "../components/schedule/ScheduleForm";
 import ScheduleList from "../components/schedule/ScheduleList";
 import ScheduleTimeline from "../components/schedule/ScheduleTimeline";
-import ScheduleAvaModal from "../components/schedule/ScheduleSuggestionsModal";
 import WeddingDayTimelineBuilder from "../components/schedule/WeddingDayTimelineBuilder";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
+import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 const Schedule = base44.entities.Schedule;
 
@@ -74,7 +74,7 @@ export default function SchedulePage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeTab, setActiveTab] = useState("visual");
   const [loading, setLoading] = useState(true);
-  const [showAvaModal, setShowAvaModal] = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => { loadScheduleItems(); }, []);
 
@@ -181,9 +181,6 @@ export default function SchedulePage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Schedule" subtitle="Build, visualise and optimise your wedding day timeline" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to build your wedding timeline" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -198,25 +195,16 @@ export default function SchedulePage() {
         ))}
       </div>
 
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to build your wedding timeline" onClick={() => setAvaOpen(true)} />
+      </div>
+
       {/* Content */}
       <div style={{ padding: '32px 32px 48px' }}>
 
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
-          <button
-            onClick={() => setShowAvaModal(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px',
-              borderRadius: 999, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', cursor: 'pointer',
-              fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif",
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-          >
-            <Sparkles size={14} />
-            Ask Ava — optimise my schedule
-          </button>
           <div style={{ display: 'flex', gap: 10 }}>
             <button
               onClick={exportSchedule}
@@ -318,12 +306,12 @@ export default function SchedulePage() {
         </div>
       )}
 
-      {/* Ask Ava modal */}
-      <ScheduleAvaModal
-        isOpen={showAvaModal}
-        onClose={() => setShowAvaModal(false)}
-        onAddSuggestion={handleAddSuggestion}
-        scheduleItems={scheduleItems}
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Wedding timeline expert"
+        systemPrompt="You are Ava, a wedding day timeline expert. Help build a realistic wedding day schedule."
+        quickActions={["Build me a wedding day timeline", "How long should each part take?", "What time should I start getting ready?", "Add buffer time suggestions"]}
       />
 
 

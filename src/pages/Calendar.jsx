@@ -3,6 +3,7 @@ import { Plus, X, Download, ChevronLeft, ChevronRight, Loader2 } from "lucide-re
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 import { base44 } from "@/api/base44Client";
 const Vendor = base44.entities.Vendor;
 const Schedule = base44.entities.Schedule;
@@ -55,6 +56,7 @@ export default function CalendarPage() {
   const [customEvents, setCustomEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', description: '', type: 'custom' });
+  const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => { loadAllEvents(); }, []);
 
@@ -224,9 +226,6 @@ export default function CalendarPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Calendar" subtitle="View and manage all your wedding dates and appointments" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to plan your wedding calendar" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -243,6 +242,11 @@ export default function CalendarPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to plan your wedding calendar" onClick={() => setAvaOpen(true)} />
       </div>
 
       <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -426,6 +430,14 @@ export default function CalendarPage() {
           })}
         </div>
       </div>
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Wedding calendar planner"
+        systemPrompt="You are Ava, a wedding planning AI. Help the couple plan their wedding calendar, schedule appointments, and stay on track with key dates and deadlines."
+        quickActions={["What key dates should I add?", "When should I book vendors?", "Help me plan the month before", "Create a countdown plan"]}
+      />
     </div>
   );
 }

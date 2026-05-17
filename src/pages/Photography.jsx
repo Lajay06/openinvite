@@ -4,6 +4,7 @@ import { Camera, Plus, Video, Image, Clock, Loader2 } from "lucide-react";
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import AvaButton from '../components/shared/AvaButton';
+import AvaModal from '../components/layout/AvaModal';
 
 import PhotographerList from "../components/photography/PhotographerList";
 import PhotographerForm from "../components/photography/PhotographerForm";
@@ -52,6 +53,7 @@ export default function PhotographyPage() {
   const [editingPhotographer, setEditingPhotographer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("photographers");
+  const [avaOpen, setAvaOpen] = useState(false);
 
   const [details, setDetails] = useState({ photography: {} });
   const [detailsId, setDetailsId] = useState(null);
@@ -184,9 +186,6 @@ export default function PhotographyPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Photography & videography" subtitle="Plan your photography, videography, and visual storytelling" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to plan your photo coverage" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -202,6 +201,11 @@ export default function PhotographyPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to plan your photo coverage" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* Tab bar */}
@@ -387,6 +391,14 @@ export default function PhotographyPage() {
           onCancel={() => { setShowForm(false); setEditingPhotographer(null); }}
         />
       )}
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Photography advisor"
+        systemPrompt="You are Ava, a wedding photography advisor. Help plan shots, timelines and photographer selection."
+        quickActions={["Create a shot list for my wedding", "How many hours of coverage do I need?", "What should I ask a photographer?", "Golden hour timing suggestions"]}
+      />
     </div>
   );
 }

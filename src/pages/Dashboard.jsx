@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
+import AvaModal from "@/components/layout/AvaModal";
 import RSVPChart from "../components/dashboard/RSVPChart";
 import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
@@ -105,6 +106,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
   const [showTipsModal, setShowTipsModal] = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => { init(); }, []);
 
@@ -149,9 +151,6 @@ export default function Dashboard() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Overall" subtitle="Your wedding planning at a glance" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to review your wedding plan" />
-      </div>
 
       {/* Stat cards — full-width horizontal, equal columns */}
       <div style={{
@@ -170,6 +169,11 @@ export default function Dashboard() {
             loading={loading}
           />
         ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to review your wedding plan" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* Quick navigation links */}
@@ -211,6 +215,14 @@ export default function Dashboard() {
           localStorage.setItem('openinvite_tips_shown', 'true');
         }} />
       )}
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Review your wedding plan"
+        systemPrompt="You are Ava, a wedding planning AI for Openinvite. Help the couple review their overall wedding plan, identify gaps, and suggest next steps."
+        quickActions={["What should I focus on this week?", "What's missing from my plan?", "Give me a wedding planning checklist", "How far along am I?"]}
+      />
     </div>
   );
 }

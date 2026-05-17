@@ -3,10 +3,10 @@ import { Sparkles } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-export default function AvaButton({ label }) {
+export default function AvaButton({ label, onClick }) {
   return (
     <button
-      onClick={() => window.dispatchEvent(new CustomEvent('openAva'))}
+      onClick={onClick || (() => window.dispatchEvent(new CustomEvent('openAva')))}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
         borderRadius: 999, padding: '7px 14px',

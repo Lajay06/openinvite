@@ -9,6 +9,7 @@ import BoardSelector from '../components/moodboard/BoardSelector';
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -50,6 +51,7 @@ export default function MoodboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [avaOpen, setAvaOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => { loadItems(); }, []);
@@ -136,9 +138,6 @@ export default function MoodboardPage() {
       onDrop={e => { e.preventDefault(); e.dataTransfer.files.length && handleFileUpload(e.dataTransfer.files); }}>
 
       <DashboardPageHeader title="Moodboard" subtitle="Collect and organise inspiration images for your wedding vision" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to find inspiration" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -152,12 +151,13 @@ export default function MoodboardPage() {
         ))}
       </div>
 
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to find inspiration" onClick={() => setAvaOpen(true)} />
+      </div>
+
       {/* Toolbar */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button onClick={() => setShowSearch(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#0A1930', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
-          <Sparkles size={12} style={{ color: '#DDF762' }} />Find inspiration
-        </button>
         <div style={{ flex: 1 }} />
         <button onClick={() => fileInputRef.current?.click()} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Upload size={12} />Upload
@@ -206,6 +206,14 @@ export default function MoodboardPage() {
 
       {showAddModal && <AddItemModal onClose={() => setShowAddModal(false)} onAddItem={handleAddItem} categories={CATEGORIES.filter(c => c !== 'all')} />}
       {showSearch && <PinterestConnect onClose={() => setShowSearch(false)} onAddItems={loadItems} activeBoard={activeBoard} />}
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Inspiration curator"
+        systemPrompt="You are Ava, a wedding inspiration curator. Help find and organise wedding aesthetic ideas."
+        quickActions={["Describe my wedding aesthetic", "Find trending wedding styles", "Colour palette suggestions", "Theme ideas for my venue"]}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle2, Circle, XCircle, ArrowRight } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
@@ -313,6 +314,7 @@ const TABS = [
 export default function ChecklistPage() {
   const [lists, setLists] = useState(() => loadChecklist());
   const [activeTab, setActiveTab] = useState('my-checklist');
+  const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('oi_checklist', JSON.stringify(lists));
@@ -335,9 +337,6 @@ export default function ChecklistPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Checklist" subtitle="Track every task from first steps to big day" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to review your checklist" />
-      </div>
 
       {/* Tab bar */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)', padding: '0 32px' }}>
@@ -357,6 +356,11 @@ export default function ChecklistPage() {
             {tab.label}
           </button>
         ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to review your checklist" onClick={() => setAvaOpen(true)} />
       </div>
 
       {activeTab === 'my-checklist' && (
@@ -405,6 +409,14 @@ export default function ChecklistPage() {
       )}
 
       {activeTab === 'overview' && <PlanningOverview />}
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Checklist advisor"
+        systemPrompt="You are Ava, a wedding planning checklist advisor. Help prioritise tasks and stay on track."
+        quickActions={["What should I do this month?", "Am I behind schedule?", "Most important tasks right now", "12-month wedding checklist"]}
+      />
     </div>
   );
 }

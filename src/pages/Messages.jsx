@@ -9,6 +9,7 @@ import WhatsAppCompose from "../components/messages/WhatsAppCompose";
 import WhatsAppQRCode from "../components/messages/WhatsAppQRCode";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -50,6 +51,7 @@ export default function MessagesPage() {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [loading, setLoading] = useState(true);
+  const [avaOpen, setAvaOpen] = useState(false);
   const [whatsappConnected, setWhatsappConnected] = useState(false);
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [composingGuest, setComposingGuest] = useState(null);
@@ -147,9 +149,6 @@ export default function MessagesPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Messages" subtitle="Read and reply to messages from your guests" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to draft a message" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -166,6 +165,11 @@ export default function MessagesPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to draft a message" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* WhatsApp banner */}
@@ -332,6 +336,14 @@ export default function MessagesPage() {
           onSent={() => loadMessages()}
         />
       )}
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Message drafter"
+        systemPrompt="You are Ava, a wedding communication assistant. Help draft messages to guests, write RSVP reminders, and communicate important wedding details."
+        quickActions={["Draft an RSVP reminder", "Write a thank you message", "Send directions to guests", "Compose a schedule update"]}
+      />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import VowSpeechEditor from '../components/vows/VowSpeechEditor';
 import AIVowsSpeechesAssistant from '../components/vows/AIVowsSpeechesAssistant';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -40,6 +41,7 @@ export default function VowsSpeechesPage() {
   const [loading, setLoading] = useState(true);
   const [showAI, setShowAI] = useState(false);
   const [aiType, setAiType] = useState('vow');
+  const [avaOpen, setAvaOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('vows');
 
   useEffect(() => { loadItems(); }, []);
@@ -109,9 +111,6 @@ export default function VowsSpeechesPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Vows & speeches" subtitle="Write, store and polish your vows and wedding-day speeches" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to help write your vows" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -125,11 +124,16 @@ export default function VowsSpeechesPage() {
         ))}
       </div>
 
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to help write your vows" onClick={() => setAvaOpen(true)} />
+      </div>
+
       {/* Toolbar */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
         <button onClick={() => { setAiType(activeTab === 'vows' ? 'vow' : 'speech'); setShowAI(true); }}
           style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
-          <Sparkles size={12} style={{ color: '#DDF762' }} />Ask Ava — write with AI
+          <Sparkles size={12} style={{ color: '#DDF762' }} />Write with AI
         </button>
         <div style={{ flex: 1 }} />
         <button onClick={() => { setSelectedItem(null); setIsEditing(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -264,6 +268,14 @@ export default function VowsSpeechesPage() {
       {showAI && (
         <AIVowsSpeechesAssistant isOpen={showAI} onClose={() => setShowAI(false)} onApply={handleAIApply} type={aiType} />
       )}
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Vows & speeches writing coach"
+        systemPrompt="You are Ava, a wedding speech and vows writing coach. Help write heartfelt, personal vows and speeches."
+        quickActions={["Help me write my vows", "Best man speech structure", "How long should vows be?", "Opening lines for a speech"]}
+      />
     </div>
   );
 }

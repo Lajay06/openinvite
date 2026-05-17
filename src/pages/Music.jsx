@@ -11,6 +11,7 @@ import MusicForm from '../components/music/MusicForm';
 import { Textarea } from '@/components/ui/textarea';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -68,6 +69,7 @@ export default function MusicPage() {
   const [showShare, setShowShare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [editingTrack, setEditingTrack] = useState(null);
+  const [avaOpen, setAvaOpen] = useState(false);
 
   const { data: details } = useQuery({
     queryKey: ['musicDetails'],
@@ -138,9 +140,6 @@ export default function MusicPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Music" subtitle="Plan playlists, add songs and manage guest song requests" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to curate your playlist" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -157,6 +156,11 @@ export default function MusicPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to curate your playlist" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* Toolbar */}
@@ -319,6 +323,14 @@ export default function MusicPage() {
           </div>
         </div>
       )}
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Music curator"
+        systemPrompt="You are Ava, a wedding music curator. Help plan playlists, find songs, and coordinate music."
+        quickActions={["Suggest first dance songs", "Build a reception playlist", "What songs to avoid?", "Ceremony music suggestions"]}
+      />
     </div>
   );
 }

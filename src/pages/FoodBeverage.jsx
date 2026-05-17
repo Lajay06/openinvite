@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { InvokeLLM } from "@/integrations/Core";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UtensilsCrossed, Wine, Lightbulb, Loader2, Plus, X, Search, FileText, BookOpen, Check } from "lucide-react";
+import { UtensilsCrossed, Wine, Loader2, Plus, X, Search, FileText, BookOpen, Check } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 import { base44 } from "@/api/base44Client";
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -42,78 +42,13 @@ function GoogleField({ label, value, onChange, placeholder }) {
   );
 }
 
-const AVA_PROMPTS = [
-  "Suggest a 3-course wedding menu with dietary options",
-  "What questions should I ask a caterer before booking?",
-  "How do I calculate catering portions for a wedding?",
-  "Give me ideas for signature cocktails at a wedding",
-];
-
-function AvaModal({ onClose }) {
-  const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const ask = async (q) => {
-    const question = (q || prompt).trim();
-    if (!question) return;
-    setLoading(true); setResponse('');
-    try {
-      const res = await InvokeLLM({ prompt: `Wedding food & beverage planning: ${question}` });
-      setResponse(typeof res === 'string' ? res : JSON.stringify(res));
-    } catch { setResponse('Something went wrong. Please try again.'); }
-    setLoading(false);
-  };
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-      onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', width: '100%', maxWidth: 520, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ background: '#0A1930', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Lightbulb size={16} style={{ color: '#DDF762' }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Ask Ava — food & beverage</span>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
-        </div>
-        <div style={{ padding: 24, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {AVA_PROMPTS.map(p => (
-              <button key={p} onClick={() => ask(p)} disabled={loading}
-                style={{ textAlign: 'left', padding: '10px 14px', background: '#F5F5F5', border: 'none', borderLeft: '2px solid rgba(10,10,10,0.12)', cursor: loading ? 'not-allowed' : 'pointer', fontSize: 13, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {p}
-              </button>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-            <input value={prompt} onChange={e => setPrompt(e.target.value)} onKeyDown={e => e.key === 'Enter' && ask()} disabled={loading}
-              placeholder="Or ask your own question…" style={{ ...inputStyle, flex: 1 }} />
-            <button onClick={() => ask()} disabled={loading || !prompt.trim()} className="btn-primary" style={{ fontSize: 12, flexShrink: 0 }}>Ask</button>
-          </div>
-          {loading && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Loader2 size={14} style={{ color: '#E03553' }} className="animate-spin" />
-              <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Thinking…</span>
-            </div>
-          )}
-          {response && (
-            <div style={{ background: '#F5F5F5', padding: '14px 16px', fontSize: 13, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-              {response}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function FoodBeveragePage() {
   const [data, setData] = useState({});
   const [menuItems, setMenuItems] = useState([]);
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
-  const [showAva, setShowAva] = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
 
@@ -190,17 +125,15 @@ export default function FoodBeveragePage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Food & beverage" subtitle="Plan your wedding catering, menu, and bar" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to plan your menu" />
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to plan your menu" onClick={() => setAvaOpen(true)} />
       </div>
 
       <div style={{ padding: '32px 32px 48px' }}>
         {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <button onClick={() => setShowAva(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 999, background: '#0A1930', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            <Lightbulb size={14} style={{ color: '#DDF762' }} />Ask Ava
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
             {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
             {saveStatus === 'saved' && <><Check size={12} />Saved</>}
@@ -282,7 +215,13 @@ export default function FoodBeveragePage() {
         </div>
       </div>
 
-      {showAva && <AvaModal onClose={() => setShowAva(false)} />}
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Catering advisor"
+        systemPrompt="You are Ava, a wedding catering advisor. Help plan menus, drinks and dietary requirements."
+        quickActions={["Suggest a wedding menu", "How much food per person?", "Signature cocktail ideas", "Handle dietary restrictions"]}
+      />
     </div>
   );
 }

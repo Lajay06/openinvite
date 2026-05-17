@@ -11,6 +11,7 @@ import GuestList from "../components/guests/GuestList";
 import RSVPManagement from "../components/guests/RSVPManagement";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
+import AvaModal from "@/components/layout/AvaModal";
 import EmailTemplates from "../components/guests/EmailTemplates";
 
 function CountUp({ to, duration = 1200, suffix = '' }) {
@@ -80,6 +81,7 @@ export default function Guests() {
   const [activeTab, setActiveTab] = useState("list");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => { loadGuests(); }, []);
 
@@ -178,9 +180,6 @@ export default function Guests() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Guest list" subtitle="Manage your guests, RSVPs and meal selections" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to help manage your guest list" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -193,6 +192,11 @@ export default function Guests() {
             }
           </div>
         ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to help manage your guest list" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* Content */}
@@ -261,7 +265,13 @@ export default function Guests() {
         </Tabs>
       </div>
 
-
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Guest list management"
+        systemPrompt="You are Ava, helping manage a wedding guest list. Help with RSVPs, dietary requirements, plus ones, and seating considerations."
+        quickActions={["How should I handle plus ones?", "Draft an RSVP reminder message", "What dietary options should I offer?", "Help me organise my guest groups"]}
+      />
     </div>
   );
 }

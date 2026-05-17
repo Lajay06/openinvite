@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
 import toast from 'react-hot-toast';
 
 import VendorForm from "../components/vendors/VendorForm";
 import VendorList from "../components/vendors/VendorList";
 import VendorDetailPanel from "../components/vendors/VendorDetailPanel";
 import VendorSearch from "../components/vendors/VendorSearch";
-import AIVendorAssistant from "../components/vendors/AIVendorAssistant";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
+import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 const Vendor = base44.entities.Vendor;
 
@@ -83,7 +83,7 @@ export default function VendorsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("my-vendors");
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
   const [managingVendor, setManagingVendor] = useState(null);
 
   useEffect(() => { loadVendors(); }, []);
@@ -179,9 +179,6 @@ export default function VendorsPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="My vendors" subtitle="Research, track and manage all your wedding service providers" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to find the perfect vendors" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -196,25 +193,16 @@ export default function VendorsPage() {
         ))}
       </div>
 
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to find the perfect vendors" onClick={() => setAvaOpen(true)} />
+      </div>
+
       {/* Content */}
       <div style={{ padding: '32px 32px 48px' }}>
 
         {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
-          <button
-            onClick={() => setShowAIAssistant(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px',
-              borderRadius: 999, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', cursor: 'pointer',
-              fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif",
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-          >
-            <Sparkles size={14} />
-            Ask Ava — manage my vendors
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
           <button onClick={() => { setEditingVendor(null); setShowForm(true); }} className="btn-primary">
             + Add vendor
           </button>
@@ -315,12 +303,12 @@ export default function VendorsPage() {
         </div>
       )}
 
-      {/* AI Vendor Assistant modal */}
-      <AIVendorAssistant
-        isOpen={showAIAssistant}
-        onClose={() => setShowAIAssistant(false)}
-        vendors={vendors}
-        onVendorUpdate={handleVendorUpdateFromAI}
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Vendor expert"
+        systemPrompt="You are Ava, a wedding vendor expert. Help find, evaluate, and manage wedding vendors."
+        quickActions={["What vendors do I still need?", "What questions should I ask vendors?", "Help me compare vendor quotes", "Draft a vendor enquiry email"]}
       />
 
       {/* Vendor detail panel */}

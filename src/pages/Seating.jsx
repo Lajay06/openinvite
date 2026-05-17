@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 const Guest = base44.entities.Guest;
 const Table = base44.entities.Table;
 const VenueAsset = base44.entities.VenueAsset;
-import { Search, Sparkles, Trash2, ZoomIn, ZoomOut, RotateCcw, Users } from 'lucide-react';
+import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 
@@ -14,6 +14,7 @@ import AddTableModal from '../components/seating/AddTableModal';
 import AISeatingGenerator from '../components/seating/AISeatingGenerator';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 
 /* ── CountUp ── */
 function CountUp({ to, duration = 1200, suffix = '' }) {
@@ -78,6 +79,7 @@ export default function SeatingPage() {
 
   const [showAddTable, setShowAddTable] = useState(false);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
   const [tableGuestSearch, setTableGuestSearch] = useState('');
 
   const [venueImageUrl, setVenueImageUrl] = useState(null);
@@ -334,9 +336,6 @@ export default function SeatingPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Seating" subtitle="Design your venue layout and assign guests to tables" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to arrange your seating plan" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -349,6 +348,11 @@ export default function SeatingPage() {
             }
           </div>
         ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to arrange your seating plan" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* Content */}
@@ -382,20 +386,12 @@ export default function SeatingPage() {
             </button>
           </div>
 
-          {/* Ask Ava */}
           <button
             onClick={() => setShowAIGenerator(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px',
-              borderRadius: 999, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', cursor: 'pointer',
-              fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif",
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+            className="btn-primary"
+            style={{ fontSize: 12 }}
           >
-            <Sparkles size={14} />
-            Ask Ava — allocate seats
+            Auto-allocate seats
           </button>
         </div>
 
@@ -762,7 +758,13 @@ export default function SeatingPage() {
         />
       )}
 
-
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Seating arrangement specialist"
+        systemPrompt="You are Ava, a seating arrangement specialist. Help couples arrange tables, handle family dynamics, and optimise their seating plan."
+        quickActions={["Suggest a seating arrangement", "How do I handle divorced parents?", "What table shapes work best?", "Help me group my guests"]}
+      />
     </div>
   );
 }

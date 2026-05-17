@@ -10,6 +10,7 @@ import BudgetChart from "../components/budget/BudgetChart";
 import BudgetForecasting from "../components/budget/BudgetForecasting";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
+import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 const Budget = base44.entities.Budget;
 
@@ -176,6 +177,7 @@ export default function BudgetPage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
+  const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => { loadBudgetItems(); }, []);
 
@@ -266,9 +268,6 @@ export default function BudgetPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Budget" subtitle="Plan, track and forecast your wedding spending" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava for budget advice" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -281,6 +280,11 @@ export default function BudgetPage() {
             }
           </div>
         ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava for budget advice" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* Content */}
@@ -378,7 +382,13 @@ export default function BudgetPage() {
         </div>
       )}
 
-
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Budget advisor"
+        systemPrompt="You are Ava, a wedding budget advisor. Help couples allocate budget, find savings, and track spending across all wedding categories."
+        quickActions={["What's a typical wedding budget breakdown?", "Where can I save money?", "Am I spending too much on vendors?", "Help me negotiate with vendors"]}
+      />
     </div>
   );
 }

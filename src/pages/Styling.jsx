@@ -12,6 +12,7 @@ import DetailsSection from "../components/event-details/DetailsSection";
 import VendorForm from "../components/vendors/VendorForm";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 import { base44 } from "@/api/base44Client";
 const WeddingDetails = base44.entities.WeddingDetails;
 const ThemeDetails = base44.entities.ThemeDetails;
@@ -37,6 +38,7 @@ const [activeTab, setActiveTab] = useState("attire");
   const [vendorFormCategory, setVendorFormCategory] = useState('');
   
   const [isCustomDressCode, setIsCustomDressCode] = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
   
   useEffect(() => {
     if (details.attire?.dressCode && !DRESS_CODES.includes(details.attire.dressCode)) {
@@ -161,8 +163,10 @@ const [activeTab, setActiveTab] = useState("attire");
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Styling" subtitle="Attire, flowers and decorations for your big day" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to help with your wedding style" />
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to help with your wedding style" onClick={() => setAvaOpen(true)} />
       </div>
 
       <div style={{ padding: '32px 32px 48px' }}>
@@ -474,6 +478,13 @@ const [activeTab, setActiveTab] = useState("attire");
         </div>
       )}
 
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Style and fashion advisor"
+        systemPrompt="You are Ava, a wedding style and fashion advisor. Help with attire, flowers, colour palettes and decorations."
+        quickActions={["Suggest a colour palette", "What flowers are in season?", "Help me describe my wedding style", "Bridal party outfit ideas"]}
+      />
     </div>
   );
 }

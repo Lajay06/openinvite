@@ -17,6 +17,7 @@ import ShareRegistryModal from '../components/registry/ShareRegistryModal';
 import ReceivedGifts from '../components/registry/ReceivedGifts';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -57,6 +58,7 @@ export default function RegistryPage() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -141,9 +143,6 @@ export default function RegistryPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Registry" subtitle="Manage your gift registry, products and cash funds" />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to suggest registry items" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -162,11 +161,13 @@ export default function RegistryPage() {
         ))}
       </div>
 
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to suggest registry items" onClick={() => setAvaOpen(true)} />
+      </div>
+
       {/* Toolbar */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
-          <Sparkles size={12} style={{ color: '#DDF762' }} />Ask Ava
-        </button>
         <div style={{ flex: 1 }} />
         <button onClick={() => setShowShareModal(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Share2 size={12} />Share
@@ -214,6 +215,14 @@ export default function RegistryPage() {
       {showCustomForm && <CustomGiftForm item={editingCustomGift} onSubmit={handleCustomSubmit} onClose={() => { setShowCustomForm(false); setEditingCustomGift(null); }} />}
       {showProductForm && <RegistryProductForm item={editingProduct} onSubmit={handleProductSubmit} onClose={() => { setShowProductForm(false); setEditingProduct(null); }} />}
       {showShareModal && <ShareRegistryModal onClose={() => setShowShareModal(false)} registryData={{ storeItems, products, customGifts }} />}
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Registry advisor"
+        systemPrompt="You are Ava, a wedding registry advisor. Help couples choose registry items and platforms."
+        quickActions={["What should be on my registry?", "Cash fund ideas", "Best registry platforms?", "How much should items cost?"]}
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import AvaButton from '../components/shared/AvaButton';
+import AvaModal from '../components/layout/AvaModal';
 import VendorSearch from "../components/vendors/VendorSearch";
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
@@ -31,6 +32,7 @@ export default function CateringPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("planning");
   const [searchTerm, setSearchTerm] = useState("");
+  const [avaOpen, setAvaOpen] = useState(false);
 
   const [details, setDetails] = useState({ foodAndBeverage: {} });
   const [detailsId, setDetailsId] = useState(null);
@@ -146,9 +148,6 @@ export default function CateringPage() {
           </button>
         }
       />
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to find caterers" />
-      </div>
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -163,6 +162,11 @@ export default function CateringPage() {
             <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, letterSpacing: '0.06em', marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to find caterers" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* Tab bar */}
@@ -304,6 +308,13 @@ export default function CateringPage() {
           />
         )}
       </div>
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Catering advisor"
+        systemPrompt="You are Ava, a wedding catering advisor. Help plan menus, drinks and dietary requirements."
+        quickActions={["Suggest a wedding menu", "How much food per person?", "Signature cocktail ideas", "Handle dietary restrictions"]}
+      />
     </div>
   );
 }
