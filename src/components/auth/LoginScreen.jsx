@@ -100,10 +100,28 @@ export default function LoginScreen() {
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resetMsg, setResetMsg] = useState("");
 
   const switchMode = (next) => {
     setMode(next);
     setError("");
+    setResetMsg("");
+  };
+
+  // SDK method is resetPasswordRequest, not sendPasswordResetEmail
+  const handleForgotPassword = async () => {
+    setError("");
+    setResetMsg("");
+    if (!email.trim()) {
+      setError("Please enter your email address first.");
+      return;
+    }
+    try {
+      await base44.auth.resetPasswordRequest(email);
+      setResetMsg("Password reset email sent. Check your inbox.");
+    } catch (err) {
+      setError(err?.message || "Could not send reset email. Please try again.");
+    }
   };
 
   // FIX 1: Google OAuth — loginWithProvider is the correct SDK method.
@@ -224,6 +242,13 @@ export default function LoginScreen() {
                   <motion.div variants={item} style={{ marginBottom: 8 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                       <label style={labelStyle}>Password</label>
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        style={{ fontSize: 12, fontWeight: 500, color: "#E03553", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                      >
+                        Forgot?
+                      </button>
                     </div>
                     <input
                       type="password"
@@ -236,6 +261,16 @@ export default function LoginScreen() {
                       onBlur={blurNormal}
                     />
                   </motion.div>
+
+                  {resetMsg && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{ fontSize: 12, color: "#444444", marginBottom: 12, marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {resetMsg}
+                    </motion.p>
+                  )}
 
                   {error && (
                     <motion.p
