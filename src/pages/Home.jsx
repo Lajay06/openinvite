@@ -65,7 +65,16 @@ export default function Home() {
       {/* 7. TESTIMONIALS */}
       <TestimonialsSection />
 
-      {/* 8. AVA AI SPOTLIGHT */}
+      {/* 8. AVA GRADIENT BANNER + SPOTLIGHT */}
+      <div style={{
+        height: 48,
+        background: "linear-gradient(90deg, #f5d020 0%, #f5a623 25%, #e8a598 50%, #c490d1 75%, #9333ea 100%)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#0A0A0A", letterSpacing: "0.04em", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          AI meets I do. — Meet Ava.
+        </span>
+      </div>
       <AvaSpotlightSection />
 
       {/* 9. FULL BLEED PHOTO CTA */}

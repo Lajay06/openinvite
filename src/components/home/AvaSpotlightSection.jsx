@@ -1,185 +1,124 @@
-/**
- * Ava AI Spotlight — light #F5F5F3, two columns
- */
-import React, { useRef, useState, useEffect } from "react";
-import ApplePillButton from "@/components/motion/ApplePillButton";
-import { createPageUrl } from "@/utils";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Sparkles, TrendingUp, Users, Clock } from "lucide-react";
 
-const EASE = "cubic-bezier(0.16,1,0.3,1)";
-const prefersReduced = () =>
-typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const GRID_FEATURES = [
+  {
+    icon: Sparkles,
+    iconColor: "#ec4899",
+    title: "Smart suggestions",
+    body: "Personalised recommendations based on your style and budget",
+  },
+  {
+    icon: TrendingUp,
+    iconColor: "#9333ea",
+    title: "Budget intelligence",
+    body: "Real-time tips to keep spending on track without compromise",
+  },
+  {
+    icon: Users,
+    iconColor: "#ec4899",
+    title: "Guest insights",
+    body: "Dietary, seating, and RSVP patterns analysed automatically",
+  },
+  {
+    icon: Clock,
+    iconColor: "#9333ea",
+    title: "Timeline optimisation",
+    body: "Day-of schedule refined to perfection",
+  },
+];
 
-const CAPABILITIES = [
-{
-  icon: "✦",
-  title: "Smart Suggestions",
-  body: "Personalised recommendations based on your style and budget"
-},
-{
-  icon: "✦",
-  title: "Budget Intelligence",
-  body: "Real-time tips to keep spending on track without compromise"
-},
-{
-  icon: "✦",
-  title: "Guest Insights",
-  body: "Dietary, seating, and RSVP patterns analysed automatically"
-},
-{
-  icon: "✦",
-  title: "Timeline Optimisation",
-  body: "Day-of schedule refined to perfection"
-}];
-
+const PJS = "'Plus Jakarta Sans', sans-serif";
 
 export default function AvaSpotlightSection() {
-  const sectionRef = useRef(null);
-  const [visible, setVisible] = useState(prefersReduced());
-
-  useEffect(() => {
-    if (prefersReduced()) return;
-    const obs = new IntersectionObserver(
-      ([e]) => {if (e.isIntersecting) {setVisible(true);obs.disconnect();}},
-      { threshold: 0.15 }
-    );
-    if (sectionRef.current) obs.observe(sectionRef.current);
-    return () => obs.disconnect();
-  }, []);
+  const navigate = useNavigate();
 
   return (
-    <section
-      ref={sectionRef}
-      style={{
-        background: "#F5F5F3",
-        padding: "120px clamp(24px, 6vw, 80px)"
-      }}>
-      
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "80px",
-          alignItems: "center"
+    <section style={{ background: "#FFFFFF", padding: "100px 24px" }}>
+      <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
+
+        {/* Eyebrow pill */}
+        <div style={{
+          display: "inline-block",
+          background: "linear-gradient(135deg, rgba(236,72,153,0.08), rgba(147,51,234,0.08))",
+          border: "1px solid rgba(147,51,234,0.2)",
+          borderRadius: 999,
+          padding: "4px 14px",
         }}>
-        
-        {/* LEFT — text */}
-        <div
-          style={{
-            opacity: visible ? 1 : 0,
-            transform: visible ? "translateX(0)" : "translateX(-32px)",
-            transition: prefersReduced() ? "none" : `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`
-          }}>
-          
-          
-
-
-           <h2
-             style={{
-               fontSize: "clamp(28px, 3.5vw, 48px)",
-               fontWeight: 700,
-               letterSpacing: "-0.02em",
-               color: "#0A0A0A",
-               hyphens: "none",
-               marginBottom: 20,
-               lineHeight: 1.2,
-               fontFamily: "'Plus Jakarta Sans',sans-serif",
-             }}>
-
-             Meet Ava. Your personal wedding intelligence.
-           </h2>
-           <p
-             style={{
-               fontSize: 16,
-               color: "#444444",
-               lineHeight: 1.7,
-               maxWidth: 640,
-               margin: '0 auto 40px'
-             }}>
-
-             Ava learns your style, your budget, and your vision — then helps you make smarter decisions at every step. From vendor suggestions to seating optimisation, Ava is always thinking ahead.
-           </p>
-
-          {/* Capabilities list — clean rows with separators */}
-          <div style={{ maxWidth: 640, margin: "0 auto 40px", width: "100%" }}>
-            {CAPABILITIES.map((cap, i) => (
-              <div key={i} style={{
-                padding: "16px 0",
-                borderBottom: i < CAPABILITIES.length - 1 ? "1px solid rgba(10,10,10,0.08)" : "none",
-                textAlign: "left",
-              }}>
-                <p style={{ fontSize: 15, fontWeight: 700, color: "#0A0A0A", margin: "0 0 4px 0", fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
-                  {cap.title}
-                </p>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#444444", margin: 0, lineHeight: 1.6, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
-                  {cap.body}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <ApplePillButton href={createPageUrl("Features")} theme="dark">
-            Meet Ava +
-          </ApplePillButton>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#9333ea", letterSpacing: "0.08em", fontFamily: PJS }}>
+            Your AI wedding planner
+          </span>
         </div>
 
-        {/* RIGHT — Ava visual */}
-        
+        {/* Headline */}
+        <h2 style={{
+          fontSize: 52, fontWeight: 800, letterSpacing: "-0.03em",
+          color: "#0A0A0A", lineHeight: 1.1,
+          margin: "16px 0 0", fontFamily: PJS,
+        }}>
+          Say hello to Ava.
+        </h2>
 
+        {/* Subheadline */}
+        <p style={{
+          fontSize: 18, fontWeight: 400,
+          color: "rgba(10,10,10,0.55)", lineHeight: 1.65,
+          maxWidth: 520, margin: "20px auto 0", fontFamily: PJS,
+        }}>
+          Ava learns your style, your budget, and your vision — then helps you make smarter decisions at every step. From vendor suggestions to seating optimisation, she's always one step ahead.
+        </p>
 
+        {/* 2×2 feature grid */}
+        <div style={{
+          display: "grid", gridTemplateColumns: "1fr 1fr",
+          maxWidth: 560, margin: "48px auto 0",
+          gap: 1, background: "rgba(10,10,10,0.06)",
+        }}>
+          {GRID_FEATURES.map((f, i) => {
+            const Icon = f.icon;
+            return (
+              <div key={i} style={{ background: "#FFFFFF", padding: "28px 24px", textAlign: "left" }}>
+                <Icon size={20} color={f.iconColor} style={{ marginBottom: 12, display: "block" }} />
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#0A0A0A", margin: "0 0 6px", fontFamily: PJS }}>
+                  {f.title}
+                </p>
+                <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", margin: 0, lineHeight: 1.55, fontFamily: PJS }}>
+                  {f.body}
+                </p>
+              </div>
+            );
+          })}
+        </div>
 
+        {/* CTA buttons */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 48, flexWrap: "wrap" }}>
+          <button
+            onClick={() => navigate('/ava')}
+            style={{
+              background: "linear-gradient(135deg, #ec4899, #9333ea)",
+              color: "#FFFFFF", borderRadius: 999,
+              padding: "12px 28px", fontSize: 14, fontWeight: 600,
+              border: "none", cursor: "pointer", fontFamily: PJS,
+            }}
+          >
+            Meet Ava
+          </button>
+          <button
+            onClick={() => navigate('/Features')}
+            style={{
+              background: "transparent",
+              border: "1px solid rgba(10,10,10,0.2)",
+              color: "#0A0A0A", borderRadius: 999,
+              padding: "12px 28px", fontSize: 14, fontWeight: 600,
+              cursor: "pointer", fontFamily: PJS,
+            }}
+          >
+            See how it works
+          </button>
+        </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
       </div>
-
-      <style>{`
-        @keyframes orbPulse {
-          0%, 100% { transform: scale(1); opacity: 0.6; }
-          50% { transform: scale(1.15); opacity: 1; }
-        }
-        @media (max-width: 768px) {
-          .ava-spotlight-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-    </section>);
-
+    </section>
+  );
 }
