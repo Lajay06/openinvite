@@ -38,28 +38,6 @@ export default function AvaSpotlightSection() {
     <section style={{ background: "#FFFFFF", padding: "100px 24px" }}>
       <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
 
-        {/* Eyebrow pill */}
-        <div style={{
-          display: "inline-block",
-          background: "linear-gradient(135deg, rgba(236,72,153,0.08), rgba(147,51,234,0.08))",
-          border: "1px solid rgba(147,51,234,0.2)",
-          borderRadius: 999,
-          padding: "4px 14px",
-        }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#9333ea", letterSpacing: "0.08em", fontFamily: PJS }}>
-            Your AI wedding planner
-          </span>
-        </div>
-
-        {/* Headline */}
-        <h2 style={{
-          fontSize: 52, fontWeight: 800, letterSpacing: "-0.03em",
-          color: "#0A0A0A", lineHeight: 1.1,
-          margin: "16px 0 0", fontFamily: PJS,
-        }}>
-          Say hello to Ava.
-        </h2>
-
         {/* Subheadline */}
         <p style={{
           fontSize: 18, fontWeight: 400,

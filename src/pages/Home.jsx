@@ -71,7 +71,7 @@ export default function Home() {
         background: "linear-gradient(90deg, #f5d020 0%, #f5a623 25%, #e8a598 50%, #c490d1 75%, #9333ea 100%)",
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.04em", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <span style={{ fontSize: 36, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           AI meets I Do. Say hello to Ava.
         </span>
       </div>
