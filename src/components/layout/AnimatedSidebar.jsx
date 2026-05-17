@@ -176,7 +176,7 @@ export function AnimatedSidebar({ weddingName, onAccountSettings, onCollaborate,
       {/* Scrollable nav */}
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingBottom: 8 }}>
 
-        {/* Studio section — pill button */}
+        {/* Studio section — pill button + Event details */}
         <div style={{ padding: "0 12px", marginTop: 4 }}>
           <span style={sectionLabelStyle}>Studio</span>
           <button
@@ -206,6 +206,13 @@ export function AnimatedSidebar({ weddingName, onAccountSettings, onCollaborate,
             Design studio
           </button>
         </div>
+        <NavItem
+          icon={FileText}
+          label="Event details"
+          url="/event-details"
+          isActive={isActive("/event-details")}
+          onClick={() => navigate("/event-details")}
+        />
 
         {/* Nav sections */}
         {NAV_SECTIONS.map((section, si) => (
@@ -362,6 +369,27 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
             Design studio
           </button>
         </div>
+        {/* Event details link */}
+        {(() => {
+          const active = isActive("/event-details");
+          return (
+            <div
+              onClick={() => handleNav("/event-details")}
+              style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "10px 16px", cursor: "pointer",
+                borderLeft: active ? "2px solid #E03553" : "2px solid transparent",
+                background: active ? "rgba(224,53,83,0.08)" : "transparent",
+                transition: "background 0.15s ease",
+              }}
+            >
+              <FileText size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Event details
+              </span>
+            </div>
+          );
+        })()}
 
         {NAV_SECTIONS.map((section, si) => (
           <div key={si}>

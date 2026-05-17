@@ -40,6 +40,7 @@ import EmergencyContact from './pages/EmergencyContact';
 import LiveStreaming from './pages/LiveStreaming';
 import WeddingParty from './pages/WeddingParty';
 import WeddingFavours from './pages/WeddingFavours';
+import EventDetails from './pages/EventDetails';
 import StudioAman from './pages/StudioAman';
 import StudioShare from './pages/StudioShare';
 import AvaStudio from './pages/AvaStudio';
@@ -185,6 +186,7 @@ const AuthenticatedApp = () => {
       <Route path="/LiveStreaming" element={<LayoutWrapper currentPageName="LiveStreaming"><LiveStreaming /></LayoutWrapper>} />
       <Route path="/wedding-party" element={<LayoutWrapper currentPageName="WeddingParty"><WeddingParty /></LayoutWrapper>} />
       <Route path="/wedding-favours" element={<LayoutWrapper currentPageName="WeddingFavours"><WeddingFavours /></LayoutWrapper>} />
+      <Route path="/event-details" element={<LayoutWrapper currentPageName="EventDetails"><EventDetails /></LayoutWrapper>} />
       <Route path="/studio/universe/aman" element={<StudioAman />} />
       <Route path="/studio/share" element={<StudioShare />} />
       <Route path="/studio/ava" element={<AvaStudio />} />
