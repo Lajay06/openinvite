@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
 import { createPageUrl } from "@/utils";
-import { base44 } from "@/api/base44Client";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -25,7 +24,7 @@ import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
 
 export default function Home() {
   const handleCTA = () => {
-    base44.auth.redirectToLogin(window.location.origin + createPageUrl("Dashboard"));
+    window.location.href = '/login';
   };
 
   const SECTION_LABELS = [

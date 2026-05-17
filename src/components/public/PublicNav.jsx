@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Menu, X } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 
 const NAV_LINKS = [
   { label: "Features", to: "/Features" },
@@ -24,7 +23,7 @@ export default function PublicNav() {
   const location = useLocation();
 
   const handleLogin = () => {
-    base44.auth.redirectToLogin(window.location.origin + createPageUrl("Dashboard"));
+    window.location.href = '/login';
   };
 
   const isActive = (path) => location.pathname === path;
