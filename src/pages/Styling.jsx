@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Accordion } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, Plus, Palette, Flower, Sparkles, User, Camera } from "lucide-react";
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
@@ -30,7 +29,7 @@ const initialDetailsState = {
 export default function StylingPage() {
   const [details, setDetails] = useState(initialDetailsState);
   const [detailsId, setDetailsId] = useState(null);
-  const [themeDetails, setThemeDetails] = useState(null);
+  const [themeDetails, setThemeDetails] = useState({});
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -133,24 +132,20 @@ export default function StylingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="p-6 lg:p-8">
-          <div className="animate-pulse space-y-8">
-            <div className="h-12 bg-gray-200 rounded-lg w-96"></div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
-              ))}
-            </div>
-          </div>
+      <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+        <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)' }} />
+        <div style={{ background: '#F5F5F5', height: 44 }} />
+        <div style={{ padding: '32px 32px 48px' }}>
+          {[120, 80, 80, 60].map((w, i) => (
+            <div key={i} style={{ height: 16, width: `${w}%`, background: 'rgba(10,10,10,0.06)', marginBottom: 16 }} />
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <Toaster />
+    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Styling" subtitle="Attire, flowers and decorations for your big day" />
 
       <div style={{ padding: '32px 32px 48px' }}>

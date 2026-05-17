@@ -88,6 +88,7 @@ import Schedule from './pages/Schedule';
 import Seating from './pages/Seating';
 import Styling from './pages/Styling';
 import Theme from './pages/Theme';
+import TodoList from './pages/TodoList';
 import Vendors from './pages/Vendors';
 import VowsSpeeches from './pages/VowsSpeeches';
 import WebsiteCustomization from './pages/WebsiteCustomization';
@@ -138,6 +139,7 @@ export const PAGES = {
     "Seating": Seating,
     "Styling": Styling,
     "Theme": Theme,
+    "TodoList": TodoList,
     "Vendors": Vendors,
     "VowsSpeeches": VowsSpeeches,
     "WebsiteCustomization": WebsiteCustomization,

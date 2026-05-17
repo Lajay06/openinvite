@@ -20,7 +20,7 @@ const NAV_SECTIONS = [
       { icon: LayoutDashboard, label: "Overall",     url: createPageUrl("Dashboard") },
       { icon: Calendar,        label: "Calendar",    url: createPageUrl("Calendar") },
       { icon: CheckSquare,     label: "Checklist",   url: createPageUrl("Checklist") },
-      { icon: ListTodo,        label: "To do list",  url: createPageUrl("Notes") },
+      { icon: ListTodo,        label: "To do list",  url: createPageUrl("TodoList") },
     ],
   },
   {

@@ -51,6 +51,7 @@ function Pill({ label, active, onClick }) {
   );
 }
 
+const statLabel = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" };
 const statValue = { fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 };
 
 const CANVAS_W = 1400;
@@ -197,10 +198,18 @@ export default function SeatingPage() {
     if (!file) return;
     setUploadingImage(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const uploadFn = base44?.integrations?.Core?.UploadFile;
+      if (!uploadFn) throw new Error('not_supported');
+      const { file_url } = await uploadFn({ file });
       setVenueImageUrl(file_url);
       toast.success('Venue layout imported');
-    } catch { toast.error('Failed to upload image'); }
+    } catch (err) {
+      if (err?.message === 'not_supported') {
+        toast.error('Image upload not supported yet');
+      } else {
+        toast.error('Failed to upload image');
+      }
+    }
     setUploadingImage(false);
   };
 
