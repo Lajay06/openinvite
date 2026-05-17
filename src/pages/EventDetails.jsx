@@ -29,14 +29,6 @@ const STYLE_GROUPS = [
   { label: 'Vibe', options: ['Intimate & romantic', 'Party & dancing', 'Outdoor & nature', 'Destination', 'Multi-day', 'Elopement'] },
 ];
 
-const FEATURES = [
-  { id: 'guest_management', label: 'Guest management', emoji: '👥' },
-  { id: 'budget',           label: 'Budget',           emoji: '💰' },
-  { id: 'invitations',      label: 'Invitations',      emoji: '✉️' },
-  { id: 'music',            label: 'Music',            emoji: '🎵' },
-  { id: 'vendors',          label: 'Vendors',          emoji: '🏪' },
-  { id: 'all',              label: 'All of it',        emoji: '✨' },
-];
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -144,7 +136,6 @@ export default function EventDetailsPage() {
   const mc = r.mainCeremony || {};
   const rc = r.reception || {};
   const styles = r.weddingStyle || [];
-  const features = r.importantFeatures || [];
   const theme = { ...DEFAULT_THEME, ...(r.theme || {}) };
   const foodBeverage = r.foodBeverage || {};
   const qna = r.qna || [];
@@ -152,11 +143,6 @@ export default function EventDetailsPage() {
   const toggleStyle = (s) => {
     const arr = r.weddingStyle || [];
     update({ weddingStyle: arr.includes(s) ? arr.filter(x => x !== s) : [...arr, s] });
-  };
-
-  const toggleFeature = (f) => {
-    const arr = r.importantFeatures || [];
-    update({ importantFeatures: arr.includes(f) ? arr.filter(x => x !== f) : [...arr, f] });
   };
 
   return (
@@ -264,19 +250,6 @@ export default function EventDetailsPage() {
               </div>
             ))}
 
-            <div style={divider} />
-            <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px' }}>What matters most</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-              {FEATURES.map(f => {
-                const sel = features.includes(f.id);
-                return (
-                  <div key={f.id} onClick={() => toggleFeature(f.id)} style={{ border: `2px solid ${sel ? '#E03553' : 'rgba(10,10,10,0.1)'}`, borderRadius: 0, padding: '14px 10px', cursor: 'pointer', background: sel ? 'rgba(224,53,83,0.04)' : '#FAFAFA', textAlign: 'center', transition: 'all 0.15s' }}>
-                    <div style={{ fontSize: 22, marginBottom: 6 }}>{f.emoji}</div>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: sel ? '#E03553' : '#444', margin: 0 }}>{f.label}</p>
-                  </div>
-                );
-              })}
-            </div>
           </>
         )}
 

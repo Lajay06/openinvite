@@ -51,15 +51,17 @@ function TopBar({ weddingName, unreadCount }) {
   const [weather, setWeather] = useState(null);
 
   // Couple info from localStorage
-  const coupleName = localStorage.getItem('oi_couple_name') || weddingName || '';
+  const storedUserRaw = getStoredUser();
+  const coupleName = storedUserRaw?.couple_name || localStorage.getItem('oi_couple_name') || weddingName || '';
   const dateStr = localStorage.getItem('oi_wedding_date') || '';
+  const weddingCity = localStorage.getItem('oi_wedding_city') || '';
   const daysToGo = dateStr ? Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24)) : null;
   const formattedDate = dateStr
     ? new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     : '';
 
   // User info
-  const storedUser = getStoredUser();
+  const storedUser = storedUserRaw;
   const initials = coupleName
     ? coupleName.split(/\s*[&+,]\s*/).map(n => n.trim()[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
     : (storedUser.email || 'U').slice(0, 2).toUpperCase();
@@ -92,7 +94,7 @@ function TopBar({ weddingName, unreadCount }) {
     window.location.href = '/login';
   };
 
-  const dot = <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(10,10,10,0.2)', flexShrink: 0, display: 'inline-block' }} />;
+  const pinkDot = <span style={{ color: '#ec4899', fontFamily: PJS, lineHeight: 1, flexShrink: 0 }}>·</span>;
 
   return (
     <div
@@ -104,23 +106,36 @@ function TopBar({ weddingName, unreadCount }) {
         padding: '0 24px',
       }}
     >
-      {/* Left: couple info chips */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {coupleName && (
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS }}>
-            {coupleName}
-          </span>
-        )}
+      {/* Left: logo + wedding info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, overflow: 'hidden' }}>
+        {/* Logo */}
+        <img
+          src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
+          alt="Openinvite"
+          onClick={() => navigate('/Dashboard')}
+          style={{ height: 18, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', cursor: 'pointer', flexShrink: 0 }}
+        />
+        {/* Divider */}
+        <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
+        {/* Couple name */}
+        <span style={{ fontSize: 14, fontWeight: 500, color: '#FFFFFF', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+          {coupleName || 'Your wedding'}
+        </span>
+        {/* Date */}
         {formattedDate && (
-          <>{dot}<span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontFamily: PJS }}>{formattedDate}</span></>
+          <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS, whiteSpace: 'nowrap' }}>{formattedDate}</span></>
         )}
-        {daysToGo !== null && (
-          <>{dot}<span style={{ fontSize: 12, fontWeight: 600, color: '#E03553', fontFamily: PJS }}>
-            {daysToGo > 0 ? `${daysToGo} days to go` : daysToGo === 0 ? 'Today!' : 'Past'}
-          </span></>
+        {/* Countdown */}
+        {daysToGo !== null && daysToGo > 0 && (
+          <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS, whiteSpace: 'nowrap' }}>{daysToGo} days</span></>
         )}
+        {/* City */}
+        {weddingCity && (
+          <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS, whiteSpace: 'nowrap' }}>{weddingCity}</span></>
+        )}
+        {/* Temperature */}
         {weather && (
-          <>{dot}<span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontFamily: PJS }}>☀ {weather.temp}°C</span></>
+          <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS }}>{weather.temp}°C</span></>
         )}
       </div>
 

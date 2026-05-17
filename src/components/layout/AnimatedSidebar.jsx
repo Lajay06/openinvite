@@ -76,10 +76,6 @@ const NAV_SECTIONS = [
   },
 ];
 
-const BOTTOM_ACTIONS = [
-  { icon: Settings, label: "Account settings", key: "account" },
-  { icon: UserPlus, label: "Collaborate",       key: "collaborate" },
-];
 
 // ── Shared style helpers ──────────────────────────────────────────────────────
 
@@ -136,18 +132,13 @@ function NavItem({ icon: Icon, label, url, onClick, isActive }) {
 
 // ── Desktop sidebar ───────────────────────────────────────────────────────────
 
-export function AnimatedSidebar({ weddingName, onAccountSettings, onCollaborate, onOpenTips }) {
+export function AnimatedSidebar({ weddingName, onOpenTips }) {
   const navigate = useNavigate();
   const location = useLocation();
 
   const isActive = (url) => {
     const path = url.split("?")[0];
     return location.pathname === path || location.pathname.startsWith(path + "/");
-  };
-
-  const handleBottom = (key) => {
-    if (key === "account")    onAccountSettings?.();
-    if (key === "collaborate") onCollaborate?.();
   };
 
   return (
@@ -236,25 +227,6 @@ export function AnimatedSidebar({ weddingName, onAccountSettings, onCollaborate,
 
       {/* Bottom static actions */}
       <div style={{ borderTop: "1px solid rgba(10,10,10,0.08)", paddingTop: 4, paddingBottom: 4, flexShrink: 0 }}>
-
-        {BOTTOM_ACTIONS.map(({ icon: Icon, label, key }) => (
-          <div
-            key={key}
-            onClick={() => handleBottom(key)}
-            style={{
-              display: "flex", alignItems: "center", gap: 10,
-              padding: "9px 16px", cursor: "pointer",
-              transition: "background 0.15s ease",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(10,10,10,0.04)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-          >
-            <Icon size={18} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              {label}
-            </span>
-          </div>
-        ))}
 
         {/* Quick tips */}
         {onOpenTips && (
