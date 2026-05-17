@@ -6,10 +6,13 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 export default function OnboardingStep1Names({ onNext, theme }) {
   const [name1, setName1] = useState('');
   const [name2, setName2] = useState('');
+  const [focus1, setFocus1] = useState(false);
+  const [focus2, setFocus2] = useState(false);
   const isDark = theme !== 'light';
-  const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
-  const inputBorder = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
-  const inputBorderFocus = isDark ? '#FFFFFF' : '#0A0A0A';
+
+  const labelColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
+  const inputColor = isDark ? '#FFFFFF' : '#0A0A0A';
+  const inputBorderDefault = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
 
   const handleSubmit = () => {
     if (name1.trim() && name2.trim()) {
@@ -18,32 +21,31 @@ export default function OnboardingStep1Names({ onNext, theme }) {
   };
 
   const sentenceStyle = {
-    fontSize: 32, fontWeight: 700,
-    color: textPrimary, fontFamily: PJS,
+    fontSize: 32, fontWeight: 400,
+    color: labelColor, fontFamily: PJS,
     whiteSpace: 'nowrap', margin: 0,
   };
 
   const inputStyle = (value, focused) => ({
     background: 'transparent',
     border: 'none',
-    borderBottom: `1px solid ${value || focused ? inputBorderFocus : inputBorder}`,
+    borderBottom: (value || focused)
+      ? '2px solid #ec4899'
+      : `1px solid ${inputBorderDefault}`,
     width: 220,
     fontSize: 32,
     fontWeight: 700,
-    color: textPrimary,
+    color: inputColor,
     fontFamily: PJS,
     padding: '4px 8px',
     outline: 'none',
     textAlign: 'left',
   });
 
-  const [focus1, setFocus1] = useState(false);
-  const [focus2, setFocus2] = useState(false);
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, width: '100%', maxWidth: 700, margin: '0 auto' }}>
       <style>{`
-        .s1-input::placeholder { color: ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}; }
+        .s1-input::placeholder { color: ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'}; }
       `}</style>
 
       {/* Line 1 */}
