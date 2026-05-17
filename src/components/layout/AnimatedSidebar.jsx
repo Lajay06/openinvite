@@ -312,6 +312,16 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
   const navigate = useNavigate();
   const location = useLocation();
 
+  const storedUser = (() => { try { return JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch { return {}; } })();
+  const initials = (storedUser.full_name || storedUser.email || 'U')
+    .split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
+
+  const mobileLogout = () => {
+    ['oi_auth', 'oi_user', 'base44_access_token', 'token', 'oi_couple_name', 'oi_wedding_date']
+      .forEach(k => localStorage.removeItem(k));
+    window.location.href = '/login';
+  };
+
   const isActive = (url) => {
     const path = url.split("?")[0];
     return location.pathname === path || location.pathname.startsWith(path + "/");
@@ -381,42 +391,60 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
         ))}
       </div>
 
-      {/* Bottom */}
-      <div style={{ borderTop: "1px solid rgba(10,10,10,0.08)", paddingTop: 4, paddingBottom: 4, flexShrink: 0 }}>
+      {/* User + account section */}
+      <div style={{ borderTop: "1px solid rgba(10,10,10,0.08)", flexShrink: 0 }}>
+        {/* Avatar + name/email */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px 10px" }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: "50%",
+            background: "linear-gradient(135deg, #ec4899, #9333ea)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "#fff", fontSize: 13, fontWeight: 700, flexShrink: 0,
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+          }}>
+            {initials}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#0A0A0A", margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {storedUser.full_name || "Your account"}
+            </p>
+            {storedUser.email && (
+              <p style={{ fontSize: 11, color: "rgba(10,10,10,0.4)", margin: "1px 0 0", fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {storedUser.email}
+              </p>
+            )}
+          </div>
+        </div>
+        <div style={{ height: 1, background: "rgba(10,10,10,0.08)", margin: "0 16px" }} />
+        {/* Account settings + Collaborate */}
         {[
-          { icon: Settings, label: "Account settings", onClick: onAccountSettings },
-          { icon: UserPlus, label: "Collaborate",       onClick: onCollaborate },
+          { icon: Settings, label: "Account settings", action: () => { onClose?.(); navigate("/AccountSettings"); } },
+          { icon: UserPlus, label: "Collaborate",       action: () => { onClose?.(); navigate("/Collaborate"); } },
         ].map((item, i) => (
           <div
             key={i}
-            onClick={item.onClick}
-            style={{
-              display: "flex", alignItems: "center", gap: 10,
-              padding: "9px 16px", cursor: "pointer",
-              transition: "background 0.15s ease",
-            }}
+            onClick={item.action}
+            style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", cursor: "pointer", transition: "background 0.15s ease" }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(10,10,10,0.04)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
           >
-            <item.icon size={18} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <item.icon size={16} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.45)", flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {item.label}
             </span>
           </div>
         ))}
+        <div style={{ height: 1, background: "rgba(10,10,10,0.08)", margin: "2px 16px" }} />
+        {/* Log out */}
         <div
-          onClick={() => { window.location.href = createPageUrl("Home"); }}
-          style={{
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "9px 16px", cursor: "pointer",
-            transition: "background 0.15s ease",
-          }}
+          onClick={mobileLogout}
+          style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px 14px", cursor: "pointer", transition: "background 0.15s ease" }}
           onMouseEnter={e => { e.currentTarget.style.background = "rgba(224,53,83,0.04)"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
         >
-          <LogOut size={18} strokeWidth={1.8} style={{ color: "#E03553", flexShrink: 0 }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#E03553", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Leave dashboard
+          <LogOut size={16} strokeWidth={1.8} style={{ color: "#E03553", flexShrink: 0 }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#E03553", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Log out
           </span>
         </div>
       </div>
