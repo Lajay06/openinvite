@@ -2,8 +2,14 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import DatePicker, { formatDateDisplay } from '@/components/shared/DatePicker';
 
-export default function OnboardingStep2Date({ onNext, data }) {
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+export default function OnboardingStep2Date({ onNext, data, theme }) {
   const [date, setDate] = useState(data?.weddingDate || '');
+  const isDark = theme !== 'light';
+  const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
+  const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
+  const skipColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
 
   const handleSubmit = () => {
     if (date) onNext({ weddingDate: date });
@@ -14,8 +20,7 @@ export default function OnboardingStep2Date({ onNext, data }) {
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="font-bold text-white mb-3"
-        style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
+        style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 700, color: textPrimary, fontFamily: PJS, marginBottom: 12 }}
       >
         When's the big day?
       </motion.h1>
@@ -24,7 +29,7 @@ export default function OnboardingStep2Date({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="text-[#666666] text-sm mb-12"
+        style={{ color: textMuted, fontSize: 14, marginBottom: 48, fontFamily: PJS }}
       >
         Don't worry if you haven't set a date yet.
       </motion.p>
@@ -39,10 +44,10 @@ export default function OnboardingStep2Date({ onNext, data }) {
           value={date}
           onChange={setDate}
           placeholder="Select your wedding date"
-          dark
+          dark={isDark}
         />
         {date && (
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 8, textAlign: 'center' }}>
+          <p style={{ color: textMuted, fontSize: 13, marginTop: 8, textAlign: 'center', fontFamily: PJS }}>
             {formatDateDisplay(date)}
           </p>
         )}
@@ -57,14 +62,14 @@ export default function OnboardingStep2Date({ onNext, data }) {
         {date && (
           <button
             onClick={handleSubmit}
-            className="px-8 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
           >
             Continue →
           </button>
         )}
         <button
           onClick={() => onNext({ weddingDate: null })}
-          className="block mx-auto text-[#666666] hover:text-white text-sm transition-colors"
+          style={{ display: 'block', margin: '0 auto', color: skipColor, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS }}
         >
           We haven't set a date yet →
         </button>

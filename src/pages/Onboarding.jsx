@@ -58,8 +58,9 @@ const PATH_A_STEPS = [
 const LOGO_URL = 'https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-// Content steps = everything between welcome and completion
-const CONTENT_STEP_COUNT = STEPS.length - 2; // 13
+// Core steps counted in the progress indicator (excludes welcome, pathA, and completion)
+const CORE_STEPS = ['names', 'date', 'location', 'guestCount', 'weddingType', 'ava', 'universe', 'fork'];
+const DISPLAY_STEP_COUNT = CORE_STEPS.length; // 8
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -90,14 +91,16 @@ export default function Onboarding() {
   const currentStep = STEPS[currentStepIndex];
   const isDark = theme !== 'light';
 
-  // Progress: starts at names (index 1), 0 on welcome, 100 on completion
+  // Progress: 0 on welcome, fills across the 8 core steps, 100 on completion
+  const coreIndex = CORE_STEPS.indexOf(currentStep); // -1 if not a core step
   const progress = currentStep === 'welcome' ? 0
     : currentStep === 'completion' ? 100
-    : ((currentStepIndex - 1) / CONTENT_STEP_COUNT) * 100;
+    : coreIndex >= 0 ? ((coreIndex + 1) / DISPLAY_STEP_COUNT) * 100
+    : 100; // pathA steps show full bar
 
-  // Step counter display (shown from names through last content step)
-  const showStepCounter = currentStep !== 'welcome' && currentStep !== 'completion';
-  const stepNum = currentStepIndex; // welcome=0, names=1, date=2…
+  // Step counter: only shown on core steps ("Step 1 of 8")
+  const showStepCounter = coreIndex >= 0;
+  const stepNum = coreIndex + 1;
   const showBack = currentStepIndex > 0 && currentStep !== 'completion';
 
   useEffect(() => {
@@ -259,7 +262,7 @@ export default function Onboarding() {
             fontSize: 11, fontFamily: PJS,
             color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
           }}>
-            Step {stepNum} of {CONTENT_STEP_COUNT}
+            Step {stepNum} of {DISPLAY_STEP_COUNT}
           </span>
         )}
 

@@ -2,15 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
 const CHECKLIST_ITEMS = [
   { id: 1, label: 'Wedding details saved' },
   { id: 2, label: 'Dashboard personalised' },
-  { id: 3, label: 'Ava is ready' }
+  { id: 3, label: 'Ava is ready' },
 ];
 
-export default function OnboardingCompletion({ onDone, data }) {
+export default function OnboardingCompletion({ onDone, data, theme }) {
   const [completedItems, setCompletedItems] = useState([]);
   const [showButton, setShowButton] = useState(false);
+  const isDark = theme !== 'light';
+  const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
+  const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
+  const itemBg = isDark ? '#111111' : '#FFFFFF';
+  const itemBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
 
   useEffect(() => {
     CHECKLIST_ITEMS.forEach((item, i) => {
@@ -18,7 +25,6 @@ export default function OnboardingCompletion({ onDone, data }) {
         setCompletedItems(prev => [...prev, item.id]);
       }, (i + 1) * 600);
     });
-
     setTimeout(() => {
       setShowButton(true);
     }, CHECKLIST_ITEMS.length * 600 + 300);
@@ -38,7 +44,10 @@ export default function OnboardingCompletion({ onDone, data }) {
           transition={{ duration: 2.5, repeat: Infinity }}
           className="absolute inset-0 rounded-full bg-gradient-to-r from-[#E03553] to-[#803D81] opacity-20 blur-xl"
         />
-        <div className="absolute inset-0 rounded-full flex items-center justify-center text-white text-3xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800 }}>
+        <div
+          className="absolute inset-0 rounded-full flex items-center justify-center text-3xl"
+          style={{ fontFamily: PJS, fontWeight: 800, color: textPrimary }}
+        >
           ✦
         </div>
       </motion.div>
@@ -47,8 +56,7 @@ export default function OnboardingCompletion({ onDone, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="font-bold text-white mb-3"
-        style={{ fontSize: 'clamp(32px, 5vw, 56px)' }}
+        style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, color: textPrimary, fontFamily: PJS, marginBottom: 12 }}
       >
         You're all set, {data.couple1Name || 'friend'}.
       </motion.h1>
@@ -57,7 +65,7 @@ export default function OnboardingCompletion({ onDone, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="text-[#AAAAAA] text-base mb-12"
+        style={{ color: textMuted, fontSize: 16, marginBottom: 48, fontFamily: PJS }}
       >
         Ava is setting up your dashboard now.
       </motion.p>
@@ -69,33 +77,37 @@ export default function OnboardingCompletion({ onDone, data }) {
         transition={{ delay: 0.4 }}
         className="space-y-4 mb-12"
       >
-        {CHECKLIST_ITEMS.map((item, i) => (
+        {CHECKLIST_ITEMS.map(item => (
           <motion.div
             key={item.id}
             initial={{ opacity: 0, x: -20 }}
             animate={completedItems.includes(item.id) ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.4 }}
-            className="flex items-center gap-4 bg-[#111111] border border-[#333] rounded-none p-4"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 16,
+              background: itemBg,
+              border: `1px solid ${itemBorder}`,
+              padding: 16,
+            }}
           >
             <motion.div
               initial={{ scale: 0 }}
               animate={completedItems.includes(item.id) ? { scale: 1 } : { scale: 0 }}
-              className="flex-shrink-0"
+              style={{ flexShrink: 0 }}
             >
-              <Check className="w-5 h-5 text-green-500" />
+              <Check style={{ width: 20, height: 20, color: '#22c55e' }} />
             </motion.div>
-            <span className="text-white text-sm">{item.label}</span>
+            <span style={{ color: textPrimary, fontSize: 14, fontFamily: PJS }}>{item.label}</span>
           </motion.div>
         ))}
       </motion.div>
 
-      {/* Button */}
       {showButton && (
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={onDone}
-          className="px-8 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+          className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
         >
           Let's go →
         </motion.button>
