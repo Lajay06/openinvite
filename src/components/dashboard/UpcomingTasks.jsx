@@ -27,7 +27,7 @@ export default function UpcomingTasks({ schedule }) {
   );
 
   return (
-    <div style={{ background: '#fff' }}>
+    <div>
       <div style={{ padding: '4px 0 16px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <p style={labelStyle}>Upcoming events</p>
         <Link to={createPageUrl("Schedule")} style={{ ...labelStyle, fontSize: 9, color: 'rgba(10,10,10,0.4)', textDecoration: 'none' }}>View all</Link>
@@ -49,7 +49,8 @@ export default function UpcomingTasks({ schedule }) {
               <span style={{
                 background: colour, color: '#fff',
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                padding: '2px 8px', borderRadius: 999,
+                fontSize: 10, fontWeight: 600, letterSpacing: '0.02em',
+                padding: '2px 7px', borderRadius: 999,
               }}>
                 {ev.category?.replace(/_/g, ' ')}
               </span>

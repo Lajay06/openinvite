@@ -238,15 +238,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     color: #FFFFFF;
     border: none;
     border-radius: 999px;
-    padding: 12px 24px;
+    padding: 6px 14px;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: clamp(13px, 1.2vw, 15px);
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s ease, background 0.2s ease;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
   .btn-primary:hover {
     transform: scale(1.03);
@@ -301,9 +301,9 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     color: #FFFFFF;
     border: none;
     border-radius: 999px;
-    padding: 12px 24px;
+    padding: 6px 14px;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: clamp(13px, 1.2vw, 15px);
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s ease, background 0.2s ease;
@@ -358,16 +358,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     color: #0A0A0A;
     border: 1px solid rgba(10,10,10,0.12);
     border-radius: 999px;
-    padding: 12px 24px;
+    padding: 6px 14px;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    min-height: 44px;
     transition: transform 0.2s ease;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
   .btn-editorial-secondary:hover {
     transform: scale(1.03);

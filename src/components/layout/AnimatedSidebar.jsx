@@ -63,6 +63,8 @@ const NAV_SECTIONS = [
       { icon: Clock,           label: "Schedule",          url: createPageUrl("Schedule") },
       { icon: Heart,           label: "Ceremony details",  url: "/ceremony-details" },
       { icon: UtensilsCrossed, label: "Food & beverage",   url: createPageUrl("FoodBeverage") },
+      { icon: Hotel,           label: "Accommodation",     url: "/accommodation" },
+      { icon: Car,             label: "Transport",         url: "/transport" },
       { icon: Radio,           label: "Live stream",       url: createPageUrl("LiveStreaming") },
     ],
   },
@@ -70,8 +72,6 @@ const NAV_SECTIONS = [
     label: "Extras",
     items: [
       { icon: Plane, label: "Honeymoon",         url: "/honeymoon" },
-      { icon: Hotel, label: "Accommodation",     url: "/accommodation" },
-      { icon: Car,   label: "Transport",         url: "/transport" },
       { icon: Phone, label: "Emergency contact", url: "/emergency-contact" },
     ],
   },
@@ -161,36 +161,13 @@ export function AnimatedSidebar({ weddingName, onOpenTips }) {
       {/* Scrollable nav */}
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingBottom: 8 }}>
 
-        {/* Studio section — pill button + Event details */}
-        <div style={{ padding: "0 12px", marginTop: 4 }}>
-          <span style={sectionLabelStyle}>Studio</span>
-          <button
-            onClick={() => navigate("/studio")}
-            style={{
-              width: "100%",
-              background: "#E03553",
-              color: "#FFFFFF",
-              border: "none",
-              borderRadius: 999,
-              padding: "10px 16px",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              marginTop: 6,
-              transition: "transform 0.2s ease, background 0.2s ease",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.03)"; e.currentTarget.style.background = "#c42d47"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.background = "#E03553"; }}
-          >
-            <Sparkles size={14} strokeWidth={2} />
-            Design studio
-          </button>
-        </div>
+        <NavItem
+          icon={Sparkles}
+          label="Design studio"
+          url="/studio"
+          isActive={isActive("/studio")}
+          onClick={() => navigate("/studio")}
+        />
         <NavItem
           icon={FileText}
           label="Event details"
@@ -319,22 +296,28 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
       {/* Nav */}
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 8 }}>
 
-        {/* Studio button */}
-        <div style={{ padding: "12px 12px 0" }}>
-          <span style={sectionLabelStyle}>Studio</span>
-          <button
-            onClick={() => handleNav("/studio")}
-            style={{
-              width: "100%", background: "#E03553", color: "#FFFFFF", border: "none",
-              borderRadius: 999, padding: "10px 16px", fontSize: 13, fontWeight: 600,
-              cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 6,
-            }}
-          >
-            <Sparkles size={14} strokeWidth={2} />
-            Design studio
-          </button>
-        </div>
+        {/* Design studio link */}
+        {(() => {
+          const active = isActive("/studio");
+          return (
+            <div
+              onClick={() => handleNav("/studio")}
+              style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "10px 16px", cursor: "pointer",
+                borderLeft: active ? "2px solid #E03553" : "2px solid transparent",
+                background: active ? "rgba(224,53,83,0.08)" : "transparent",
+                transition: "background 0.15s ease",
+              }}
+            >
+              <Sparkles size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Design studio
+              </span>
+            </div>
+          );
+        })()}
+
         {/* Event details link */}
         {(() => {
           const active = isActive("/event-details");

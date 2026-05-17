@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { X, Loader2, Bell } from "lucide-react";
+import { X, Loader2, Bell, Search, Sparkles } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -8,7 +8,6 @@ import { AnimatedSidebar, MobileSidebarContent } from "./components/layout/Anima
 import TipsModal from "./components/dashboard/TipsModal";
 import CollaborateModal from "./components/layout/CollaborateModal";
 import AvaChatPod from "./components/layout/AvaChatPod";
-import Header from "./components/layout/Header";
 import { base44 } from '@/api/base44Client';
 import { Invitation } from '@/entities/Invitation';
 import { GuestMessage } from '@/entities/GuestMessage';
@@ -17,7 +16,6 @@ import toast, { Toaster } from 'react-hot-toast';
 
 const SIDEBAR_WIDTH = 200;
 const TOP_BAR_H = 48;
-const SUB_HEADER_H = 48;
 
 const noLayoutPages = [
   "Home", "Features", "Pricing", "CouplesStudio", "PlanSelection",
@@ -137,6 +135,17 @@ function TopBar({ weddingName, unreadCount }) {
         {weather && (
           <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS }}>{weather.temp}°C</span></>
         )}
+      </div>
+
+      {/* Center: search pill */}
+      <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 999, padding: '5px 14px', width: 220 }}>
+          <Search size={13} style={{ color: 'rgba(255,255,255,0.45)', flexShrink: 0 }} />
+          <input
+            placeholder="Search…"
+            style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: 13, fontFamily: PJS, width: '100%' }}
+          />
+        </div>
       </div>
 
       {/* Right: bell + avatar */}
@@ -291,24 +300,6 @@ export default function Layout({ children, currentPageName }) {
         />
       </div>
 
-      {/* ── Desktop: sub-header (page name + search) ──────── */}
-      <div
-        className="hidden lg:block"
-        style={{
-          position: 'fixed',
-          top: TOP_BAR_H,
-          left: SIDEBAR_WIDTH,
-          right: 0,
-          zIndex: 30,
-        }}
-      >
-        <Header
-          weddingName={weddingName}
-          onAccountSettings={() => setShowAccountSettings(true)}
-          unreadCount={unreadMessagesCount}
-        />
-      </div>
-
       {/* ── Mobile: fixed top bar ───────────────────────── */}
       <div
         className="flex lg:hidden"
@@ -451,35 +442,20 @@ export default function Layout({ children, currentPageName }) {
         <button
           onClick={() => setChatOpen(prev => !prev)}
           style={{
-            width: 56, height: 56, borderRadius: '50%',
+            borderRadius: 999,
             background: chatOpen ? '#0A0A0A' : 'linear-gradient(135deg, #ec4899, #9333ea)',
             border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', alignItems: 'center', gap: 7,
+            padding: '10px 18px',
             boxShadow: '0 8px 32px rgba(147,51,234,0.35)',
             transition: 'transform 0.2s ease, background 0.2s ease',
-            color: '#FFFFFF',
+            color: '#FFFFFF', fontSize: 13, fontWeight: 600, fontFamily: PJS,
           }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05) rotate(5deg)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1) rotate(0deg)'; }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
         >
-          {chatOpen ? (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="5" r="1.5" fill="white" />
-              <circle cx="19" cy="10" r="1.5" fill="white" />
-              <circle cx="5" cy="10" r="1.5" fill="white" />
-              <circle cx="16" cy="18" r="1.5" fill="white" />
-              <circle cx="8" cy="18" r="1.5" fill="white" />
-              <line x1="12" y1="5" x2="19" y2="10" stroke="white" strokeWidth="0.75" strokeOpacity="0.6" />
-              <line x1="12" y1="5" x2="5" y2="10" stroke="white" strokeWidth="0.75" strokeOpacity="0.6" />
-              <line x1="5" y1="10" x2="8" y2="18" stroke="white" strokeWidth="0.75" strokeOpacity="0.6" />
-              <line x1="19" y1="10" x2="16" y2="18" stroke="white" strokeWidth="0.75" strokeOpacity="0.6" />
-              <line x1="8" y1="18" x2="16" y2="18" stroke="white" strokeWidth="0.75" strokeOpacity="0.6" />
-            </svg>
-          )}
+          {chatOpen ? <X size={14} /> : <Sparkles size={14} />}
+          {chatOpen ? 'Close' : 'Ask Ava'}
         </button>
       </div>
 
@@ -487,7 +463,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Desktop: right of sidebar, below top bar + sub-header */}
       <div
         className="hidden lg:block page-content"
-        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: TOP_BAR_H + SUB_HEADER_H }}
+        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: TOP_BAR_H }}
       >
         {children}
       </div>
