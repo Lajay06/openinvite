@@ -91,30 +91,18 @@ export default function AvaSpotlightSection() {
           })}
         </div>
 
-        {/* CTA buttons */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 48, flexWrap: "wrap" }}>
+        {/* CTA button */}
+        <div style={{ display: "flex", justifyContent: "center", marginTop: 48 }}>
           <button
             onClick={() => navigate('/ava')}
             style={{
-              background: "linear-gradient(135deg, #ec4899, #9333ea)",
+              background: "#E03553",
               color: "#FFFFFF", borderRadius: 999,
               padding: "12px 28px", fontSize: 14, fontWeight: 600,
               border: "none", cursor: "pointer", fontFamily: PJS,
             }}
           >
             Meet Ava
-          </button>
-          <button
-            onClick={() => navigate('/Features')}
-            style={{
-              background: "transparent",
-              border: "1px solid rgba(10,10,10,0.2)",
-              color: "#0A0A0A", borderRadius: 999,
-              padding: "12px 28px", fontSize: 14, fontWeight: 600,
-              cursor: "pointer", fontFamily: PJS,
-            }}
-          >
-            See how it works
           </button>
         </div>
 
