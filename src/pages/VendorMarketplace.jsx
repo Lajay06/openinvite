@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, MapPin, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Search, MapPin, SlidersHorizontal, ChevronDown, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -518,6 +518,9 @@ const MOCK_VENDORS = [
 
 const PRICE_ORDER = { '$': 1, '$$': 2, '$$$': 3, '$$$$': 4 };
 
+// Add VITE_GOOGLE_PLACES_KEY to your Vercel environment variables to enable real vendor search.
+// Get a key from console.cloud.google.com and enable: Places API.
+
 export default function VendorMarketplace() {
   const [search, setSearch] = useState('');
   const [locationQ, setLocationQ] = useState('');
@@ -532,6 +535,8 @@ export default function VendorMarketplace() {
   const [avaOpen, setAvaOpen] = useState(false);
   const [savedIds, setSavedIds] = useState(new Set());
   const [savingIds, setSavingIds] = useState(new Set());
+  const [placeVendors, setPlaceVendors] = useState(null);
+  const [apiStatus, setApiStatus] = useState('');
 
   const handleSave = async (vendor) => {
     if (savedIds.has(vendor.id)) return;
@@ -555,10 +560,50 @@ export default function VendorMarketplace() {
   const handleViewProfile = (vendor) => { setSelectedVendor(vendor); setProfileOpen(true); };
   const handleGetQuote = (vendor) => { setSelectedVendor(vendor); setQuoteOpen(true); };
 
+  const handleSearch = async () => {
+    const key = import.meta.env.VITE_GOOGLE_PLACES_KEY;
+    if (!key) { setApiStatus('no_key'); setPlaceVendors(null); return; }
+    setApiStatus('searching');
+    const queryParts = [category !== 'All' ? category : 'wedding vendor', locationQ || ''].filter(Boolean);
+    const query = `${queryParts.join(' ')} wedding`;
+    try {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${key}`
+      );
+      const data = await res.json();
+      if (data.results?.length) {
+        const priceMap = ['$', '$$', '$$$', '$$$$'];
+        const mapped = data.results.map((r, i) => ({
+          id: `places_${r.place_id || i}`,
+          name: r.name,
+          category: category !== 'All' ? category : 'Other',
+          rating: r.rating || 4.0,
+          reviewCount: r.user_ratings_total || 0,
+          location: r.formatted_address || locationQ,
+          online: false,
+          priceRange: r.price_level ? priceMap[Math.min(r.price_level - 1, 3)] : '$$',
+          description: (r.types || []).map(t => t.replace(/_/g, ' ')).join(', '),
+          tags: [],
+          website: null, phone: null, email: null,
+          serviceArea: [], languages: [], certifications: [],
+          packages: [], reviews: [], depositTerms: '', cancellationPolicy: '',
+        }));
+        setPlaceVendors(mapped);
+      } else {
+        setPlaceVendors([]);
+      }
+      setApiStatus('done');
+    } catch {
+      setApiStatus('error');
+      setPlaceVendors(null);
+    }
+  };
+
   const filtered = useMemo(() => {
-    let list = MOCK_VENDORS.filter(v => {
-      if (search && !v.name.toLowerCase().includes(search.toLowerCase()) && !v.category.toLowerCase().includes(search.toLowerCase()) && !v.description.toLowerCase().includes(search.toLowerCase())) return false;
-      if (locationQ && !v.location.toLowerCase().includes(locationQ.toLowerCase())) return false;
+    const source = placeVendors !== null ? placeVendors : MOCK_VENDORS;
+    let list = source.filter(v => {
+      if (search && !v.name.toLowerCase().includes(search.toLowerCase()) && !v.category.toLowerCase().includes(search.toLowerCase()) && !(v.description || '').toLowerCase().includes(search.toLowerCase())) return false;
+      if (locationQ && placeVendors === null && !v.location.toLowerCase().includes(locationQ.toLowerCase())) return false;
       if (onlineOnly && !v.online) return false;
       if (category !== 'All' && v.category !== category) return false;
       if (minRating && v.rating < 4) return false;
@@ -569,7 +614,7 @@ export default function VendorMarketplace() {
     else if (sortBy === 'Price low–high') list = [...list].sort((a, b) => PRICE_ORDER[a.priceRange] - PRICE_ORDER[b.priceRange]);
     else if (sortBy === 'Price high–low') list = [...list].sort((a, b) => PRICE_ORDER[b.priceRange] - PRICE_ORDER[a.priceRange]);
     return list;
-  }, [search, locationQ, onlineOnly, category, minRating, priceFilter, sortBy]);
+  }, [search, locationQ, onlineOnly, category, minRating, priceFilter, sortBy, placeVendors]);
 
   const underlineInput = (extraStyle = {}) => ({
     border: 'none', borderBottom: '1px solid rgba(10,10,10,0.15)',
@@ -617,6 +662,11 @@ export default function VendorMarketplace() {
               style={{ accentColor: '#E03553', width: 14, height: 14 }} />
             Online businesses
           </label>
+          <button onClick={handleSearch} disabled={apiStatus === 'searching'}
+            style={{ padding: '8px 18px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: apiStatus === 'searching' ? 'not-allowed' : 'pointer', border: 'none', background: '#E03553', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, opacity: apiStatus === 'searching' ? 0.7 : 1 }}>
+            {apiStatus === 'searching' ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+            Search
+          </button>
         </div>
 
         {/* Row 2: category pills */}
@@ -663,8 +713,24 @@ export default function VendorMarketplace() {
 
       {/* Results */}
       <div style={{ padding: '8px 32px 48px' }}>
+        {apiStatus === 'no_key' && (
+          <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 12, fontSize: 12, color: '#92400e', fontFamily: PJS }}>
+            Add a <code style={{ fontFamily: 'monospace', background: 'rgba(0,0,0,0.06)', padding: '1px 4px' }}>VITE_GOOGLE_PLACES_KEY</code> environment variable to enable real vendor search. Showing sample data for now.
+          </div>
+        )}
+        {apiStatus === 'error' && (
+          <div style={{ padding: '10px 14px', background: 'rgba(224,53,83,0.06)', border: '1px solid rgba(224,53,83,0.2)', marginBottom: 12, fontSize: 12, color: '#c42d47', fontFamily: PJS }}>
+            Could not connect to Google Places (CORS or network error). Showing sample data. Consider setting up a server-side proxy.
+          </div>
+        )}
+        {apiStatus === 'done' && placeVendors !== null && (
+          <div style={{ padding: '10px 14px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', marginBottom: 12, fontSize: 12, color: '#065f46', fontFamily: PJS, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Showing real results from Google Places.</span>
+            <button onClick={() => { setPlaceVendors(null); setApiStatus(''); }} style={{ fontSize: 11, fontWeight: 700, color: '#065f46', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: PJS }}>Back to sample data</button>
+          </div>
+        )}
         <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: '12px 0', marginBottom: 4 }}>
-          {filtered.length} vendor{filtered.length !== 1 ? 's' : ''} found
+          {filtered.length} vendor{filtered.length !== 1 ? 's' : ''} found{placeVendors !== null ? ' (Google Places)' : ''}
         </div>
 
         {filtered.length === 0 ? (
