@@ -273,7 +273,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 
           {/* Website Frame */}
           <div style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', padding: 24 }}>
-            <div style={{ width: frameWidth, background: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+            <div style={{ width: frameWidth, background: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: '100%', border: 'none', outline: 'none' }}>
               {/* Nav bar inside preview */}
               <div style={{ background: theme.darkBg || '#0A0A0A', padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: '#fff' }}>

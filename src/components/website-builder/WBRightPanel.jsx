@@ -13,16 +13,16 @@ import MediaLibraryModal from './MediaLibraryModal';
 
 // ── Extra primitives used only here ───────────────────────────
 function SLabel({ children }) {
-  return <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#888', margin: '0 0 10px' }}>{children}</p>;
+  return <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)', margin: '0 0 10px' }}>{children}</p>;
 }
 function UTextarea({ label, value, onChange, rows = 3, placeholder = '' }) {
   return (
     <div style={{ marginBottom: 14 }}>
       {label && <FLabel>{label}</FLabel>}
       <textarea value={value || ''} onChange={e => onChange(e.target.value)} rows={rows} placeholder={placeholder}
-        style={{ width: '100%', border: '1px solid #EEE', padding: '8px', fontSize: 13, color: '#0A0A0A', outline: 'none', fontFamily: 'inherit', resize: 'vertical', background: '#FAFAFA', boxSizing: 'border-box', borderRadius: 4 }}
+        style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', padding: '8px', fontSize: 13, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit', resize: 'vertical', background: 'rgba(255,255,255,0.06)', boxSizing: 'border-box', borderRadius: 0 }}
         onFocus={e => e.target.style.borderColor = '#E03553'}
-        onBlur={e => e.target.style.borderColor = '#EEE'}
+        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
       />
     </div>
   );
@@ -33,7 +33,7 @@ function PillGroup({ options, value, onChange }) {
       {options.map(opt => {
         const sel = value === opt.id;
         return (
-          <button key={opt.id} onClick={() => onChange(opt.id)} style={{ padding: '5px 12px', fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 100, border: '1px solid ' + (sel ? '#0A0A0A' : '#DDD'), background: sel ? '#0A0A0A' : 'transparent', color: sel ? '#fff' : '#444', fontFamily: 'inherit' }}>{opt.name}</button>
+          <button key={opt.id} onClick={() => onChange(opt.id)} style={{ padding: '5px 12px', fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 999, border: '1px solid ' + (sel ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.15)'), background: sel ? 'rgba(255,255,255,0.12)' : 'transparent', color: sel ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'inherit' }}>{opt.name}</button>
         );
       })}
     </div>
@@ -46,15 +46,15 @@ function ChipInput({ label, items = [], onAdd, onRemove }) {
       {label && <FLabel>{label}</FLabel>}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
         {items.map((it, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#F0F0F0', padding: '4px 10px', fontSize: 12, borderRadius: 4 }}>
-            {it}
-            <button onClick={() => onRemove(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999', padding: 0, lineHeight: 1, fontSize: 14 }}>×</button>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.08)', padding: '4px 10px', fontSize: 12, borderRadius: 999 }}>
+            <span style={{ color: '#FFFFFF' }}>{it}</span>
+            <button onClick={() => onRemove(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: 0, lineHeight: 1, fontSize: 14 }}>×</button>
           </div>
         ))}
       </div>
       <div style={{ display: 'flex', gap: 6 }}>
         <input value={val} onChange={e => setVal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && val.trim()) { onAdd(val.trim()); setVal(''); } }}
-          placeholder="Type and press Enter" style={{ flex: 1, border: 'none', borderBottom: '1px solid #DDD', padding: '5px 0', fontSize: 12, outline: 'none', background: 'transparent', fontFamily: 'inherit' }} />
+          placeholder="Type and press Enter" style={{ flex: 1, border: 'none', borderBottom: '1px solid rgba(255,255,255,0.12)', padding: '5px 0', fontSize: 12, outline: 'none', background: 'transparent', fontFamily: 'inherit', color: '#FFFFFF' }} />
         <button onClick={() => { if (val.trim()) { onAdd(val.trim()); setVal(''); } }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#E03553', fontWeight: 700, fontSize: 12, fontFamily: 'inherit' }}>+ Add</button>
       </div>
     </div>
@@ -71,7 +71,8 @@ function DesignTab({ details, onChange }) {
           const sel = (details.activeTheme || 'still') === t.id;
           return (
             <div key={t.id} onClick={() => onChange('activeTheme', t.id)} style={{ cursor: 'pointer' }}>
-              <div style={{ borderRadius: 5, overflow: 'hidden', position: 'relative', aspectRatio: '3/2', outline: sel ? '2px solid #0A0A0A' : '2px solid transparent', outlineOffset: 1, transition: 'transform 0.15s' }}
+              <div
+                style={{ overflow: 'hidden', position: 'relative', aspectRatio: '3/2', border: sel ? '2px solid #FFFFFF' : '1px solid rgba(255,255,255,0.1)', transition: 'transform 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
               >
@@ -82,7 +83,7 @@ function DesignTab({ details, onChange }) {
                   <span style={{ width: 16, height: 16, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700 }}>✓</span>
                 </div>}
               </div>
-              <p style={{ fontSize: 9, fontWeight: 700, textAlign: 'center', margin: '3px 0 0', color: '#0A0A0A' }}>{t.name}</p>
+              <p style={{ fontSize: 10, fontWeight: 600, textAlign: 'center', margin: '3px 0 0', color: 'rgba(255,255,255,0.4)' }}>{t.name}</p>
             </div>
           );
         })}
@@ -93,12 +94,12 @@ function DesignTab({ details, onChange }) {
         {TYPOGRAPHY_PAIRINGS.map(t => {
           const sel = (details.activeTypography || 'classic') === t.id;
           return (
-            <div key={t.id} onClick={() => onChange('activeTypography', t.id)} style={{ border: sel ? '2px solid #0A0A0A' : '1px solid #EEE', borderRadius: 8, padding: 12, cursor: 'pointer', position: 'relative', background: sel ? '#FAFAFA' : '#fff', transition: 'border-color 0.15s' }}>
-              {sel && <span style={{ position: 'absolute', top: 6, right: 6, fontSize: 8, background: '#0A0A0A', color: '#fff', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</span>}
-              <p style={{ fontFamily: t.headingFont + ',serif', fontSize: 14, fontWeight: t.headingWeight, fontStyle: t.headingStyle || 'normal', color: '#0A0A0A', margin: '0 0 2px' }}>S & J</p>
-              <p style={{ fontFamily: t.bodyFont, fontSize: 10, color: '#888', margin: '0 0 6px' }}>Together forever.</p>
-              <p style={{ fontSize: 10, fontWeight: 700, color: '#0A0A0A', margin: '0 0 1px' }}>{t.name}</p>
-              <p style={{ fontSize: 9, color: '#AAA', margin: 0 }}>{t.mood}</p>
+            <div key={t.id} onClick={() => onChange('activeTypography', t.id)} style={{ border: sel ? '2px solid #FFFFFF' : '1px solid rgba(255,255,255,0.08)', padding: 12, cursor: 'pointer', position: 'relative', background: 'rgba(255,255,255,0.04)', transition: 'border-color 0.15s' }}>
+              {sel && <span style={{ position: 'absolute', top: 6, right: 6, fontSize: 8, background: '#fff', color: '#0A0A0A', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</span>}
+              <p style={{ fontFamily: t.headingFont + ',serif', fontSize: 14, fontWeight: t.headingWeight, fontStyle: t.headingStyle || 'normal', color: '#FFFFFF', margin: '0 0 2px' }}>S & J</p>
+              <p style={{ fontFamily: t.bodyFont, fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: '0 0 6px' }}>Together forever.</p>
+              <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', margin: '0 0 1px' }}>{t.name}</p>
+              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', margin: 0 }}>{t.mood}</p>
             </div>
           );
         })}
@@ -106,15 +107,15 @@ function DesignTab({ details, onChange }) {
       <Divider />
       <SLabel>Animations</SLabel>
       <div style={{ marginBottom: 10 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, color: '#555', margin: '0 0 6px' }}>Page Transition</p>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Page transition</p>
         <PillGroup options={TRANSITION_OPTIONS} value={details.pageTransition || 'fade'} onChange={v => onChange('pageTransition', v)} />
       </div>
       <div style={{ marginBottom: 10 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, color: '#555', margin: '0 0 6px' }}>Scroll Animation</p>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Scroll animation</p>
         <PillGroup options={SCROLL_ANIMATION_OPTIONS} value={details.scrollAnimation || 'subtle'} onChange={v => onChange('scrollAnimation', v)} />
       </div>
       <div>
-        <p style={{ fontSize: 11, fontWeight: 500, color: '#555', margin: '0 0 6px' }}>Hero Effect</p>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Hero effect</p>
         <PillGroup options={HERO_EFFECT_OPTIONS} value={details.heroEffect || 'static'} onChange={v => onChange('heroEffect', v)} />
       </div>
     </div>
@@ -134,35 +135,35 @@ function SettingsTab({ details, onChange }) {
   };
   return (
     <div>
-      <SLabel>Your Site URL</SLabel>
-      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #EEE', background: '#FAFAFA', padding: '7px 10px', marginBottom: 8, borderRadius: 4 }}>
-        <span style={{ fontSize: 12, color: '#999', flexShrink: 0 }}>openinvite.com/w/</span>
+      <SLabel>Your site URL</SLabel>
+      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.06)', padding: '7px 10px', marginBottom: 8 }}>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }}>openinvite.com/w/</span>
         <input value={details.slug || ''} onChange={e => onChange('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-          placeholder="your-names" style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#0A0A0A', outline: 'none', fontFamily: 'inherit' }} />
+          placeholder="your-names" style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit' }} />
       </div>
       {siteUrl && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#F5F5F5', padding: '6px 10px', borderRadius: 4, marginBottom: 16 }}>
-          <span style={{ flex: 1, fontSize: 11, fontFamily: 'monospace', color: '#555', wordBreak: 'break-all' }}>{siteUrl}</span>
-          <button onClick={copyLink} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: copied ? '#22C55E' : '#888', fontWeight: 700, flexShrink: 0, fontFamily: 'inherit' }}>{copied ? 'Copied!' : 'Copy'}</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', padding: '6px 10px', marginBottom: 16 }}>
+          <span style={{ flex: 1, fontSize: 11, fontFamily: 'monospace', color: 'rgba(255,255,255,0.5)', wordBreak: 'break-all' }}>{siteUrl}</span>
+          <button onClick={copyLink} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: copied ? '#22C55E' : 'rgba(255,255,255,0.4)', fontWeight: 700, flexShrink: 0, fontFamily: 'inherit' }}>{copied ? 'Copied!' : 'Copy'}</button>
         </div>
       )}
       <Divider />
       <SLabel>Status</SLabel>
       <Toggle label={`Website is ${details.websiteEnabled ? 'Live' : 'Hidden'}`} value={details.websiteEnabled} onChange={v => onChange('websiteEnabled', v)} />
       <Divider />
-      <SLabel>Password Protection</SLabel>
-      <Toggle label="Require Password" value={!!(details.websitePassword?.trim())} onChange={v => onChange('websitePassword', v ? ' ' : '')} />
+      <SLabel>Password protection</SLabel>
+      <Toggle label="Require password" value={!!(details.websitePassword?.trim())} onChange={v => onChange('websitePassword', v ? ' ' : '')} />
       {details.websitePassword?.trim() && (
         <UInput label="Password" value={details.websitePassword} onChange={v => onChange('websitePassword', v)} />
       )}
       <Divider />
       {siteUrl && (
         <>
-          <button onClick={copyLink} style={{ width: '100%', padding: '10px 0', border: '1px solid #0A0A0A', background: 'transparent', color: '#0A0A0A', cursor: 'pointer', fontSize: 13, fontWeight: 600, borderRadius: 4, marginBottom: 8, fontFamily: 'inherit' }}>
-            {copied ? '✓ Copied!' : 'Copy Link'}
+          <button onClick={copyLink} style={{ width: '100%', padding: '10px 0', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', fontSize: 13, fontWeight: 600, borderRadius: 999, marginBottom: 8, fontFamily: 'inherit' }}>
+            {copied ? '✓ Copied!' : 'Copy link'}
           </button>
           <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("You're invited! " + siteUrl)}`, '_blank')}
-            style={{ width: '100%', padding: '10px 0', border: 'none', background: '#25D366', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, borderRadius: 4, marginBottom: 12, fontFamily: 'inherit' }}>
+            style={{ width: '100%', padding: '10px 0', border: 'none', background: '#25D366', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, borderRadius: 999, marginBottom: 12, fontFamily: 'inherit' }}>
             Share on WhatsApp
           </button>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -185,11 +186,11 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
     return (
       <div>
         <MasterDataReference label="Names / Heading" value={md.coupleNames} />
-        <MasterDataReference label="Wedding Date" value={md.weddingDate} />
+        <MasterDataReference label="Wedding date" value={md.weddingDate} />
         <MasterDataReference label="Location" value={md.mainCeremony?.venueName} />
         <Divider />
-        <UInput label="Custom Subtitle" value={c.subtitle} onChange={v => uc('subtitle', v)} placeholder="Are getting married" />
-        <MediaPicker label="Background Photo" value={c.photoUrl} onChange={v => uc('photoUrl', v)} aspectRatio="16/9" />
+        <UInput label="Custom subtitle" value={c.subtitle} onChange={v => uc('subtitle', v)} placeholder="Are getting married" />
+        <MediaPicker label="Background photo" value={c.photoUrl} onChange={v => uc('photoUrl', v)} aspectRatio="16/9" />
         {type === 'cinematic-hero' && (
           <UInput label="Video URL (YouTube / Vimeo / .mp4)" value={c.videoUrl} onChange={v => uc('videoUrl', v)} placeholder="https://youtube.com/..." />
         )}
@@ -200,16 +201,16 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
   if (['our-story', 'how-we-met'].includes(type)) {
     return (
       <div>
-        <RichTextField label="Story Text" value={c.text} onChange={v => uc('text', v)} rows={6} placeholder="Tell your love story here..." />
+        <RichTextField label="Story text" value={c.text} onChange={v => uc('text', v)} rows={6} placeholder="Tell your love story here..." />
         <Divider />
-        <FLabel>Story Photos</FLabel>
+        <FLabel>Story photos</FLabel>
         {(c.photos || []).map((p, i) => (
           <div key={i} style={{ position: 'relative', marginBottom: 8 }}>
-            <img src={p} style={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 4 }} alt="" />
+            <img src={p} style={{ width: '100%', height: 80, objectFit: 'cover' }} alt="" />
             <button onClick={() => uc('photos', c.photos.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: 12 }}>×</button>
           </div>
         ))}
-        <MediaPicker label="Add Photo" value="" onChange={v => v && uc('photos', [...(c.photos || []), v])} />
+        <MediaPicker label="Add photo" value="" onChange={v => v && uc('photos', [...(c.photos || []), v])} />
       </div>
     );
   }
@@ -235,17 +236,17 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
   if (type === 'event-details') {
     return (
       <div>
-        <div style={{ background: 'rgba(224,53,83,0.04)', border: '1px solid rgba(224,53,83,0.12)', borderRadius: 6, padding: '10px 12px', marginBottom: 12 }}>
-          <p style={{ fontSize: 12, color: '#666', margin: 0 }}>Venue and address come from your planner. Edit them in <a href="/EventDetails" style={{ color: '#E03553', fontWeight: 600, textDecoration: 'none' }}>Event Details →</a></p>
+        <div style={{ background: 'rgba(224,53,83,0.08)', border: '1px solid rgba(224,53,83,0.2)', padding: '10px 12px', marginBottom: 12 }}>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: 0 }}>Venue and address come from your planner. Edit them in <a href="/EventDetails" style={{ color: '#E03553', fontWeight: 600, textDecoration: 'none' }}>Event details →</a></p>
         </div>
-        <MasterDataReference label="Ceremony Venue" value={md.mainCeremony?.venueName} />
-        <MasterDataReference label="Ceremony Address" value={md.mainCeremony?.address} />
-        <UInput label="Ceremony Time" value={c.ceremony?.time} onChange={v => uc('ceremony', { ...c.ceremony, time: v })} placeholder="e.g. 3:00 PM" />
-        <UInput label="Dress Code" value={c.ceremony?.dressCode} onChange={v => uc('ceremony', { ...c.ceremony, dressCode: v })} />
+        <MasterDataReference label="Ceremony venue" value={md.mainCeremony?.venueName} />
+        <MasterDataReference label="Ceremony address" value={md.mainCeremony?.address} />
+        <UInput label="Ceremony time" value={c.ceremony?.time} onChange={v => uc('ceremony', { ...c.ceremony, time: v })} placeholder="e.g. 3:00 PM" />
+        <UInput label="Dress code" value={c.ceremony?.dressCode} onChange={v => uc('ceremony', { ...c.ceremony, dressCode: v })} />
         <Divider />
-        <MasterDataReference label="Reception Venue" value={md.reception?.venueName} />
-        <MasterDataReference label="Reception Address" value={md.reception?.address} />
-        <UInput label="Reception Time" value={c.reception?.time} onChange={v => uc('reception', { ...c.reception, time: v })} placeholder="e.g. 6:00 PM" />
+        <MasterDataReference label="Reception venue" value={md.reception?.venueName} />
+        <MasterDataReference label="Reception address" value={md.reception?.address} />
+        <UInput label="Reception time" value={c.reception?.time} onChange={v => uc('reception', { ...c.reception, time: v })} placeholder="e.g. 6:00 PM" />
       </div>
     );
   }
@@ -255,14 +256,14 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
     return (
       <div>
         {events.map((ev, i) => (
-          <div key={i} style={{ border: '1px solid #EEE', borderRadius: 6, padding: 10, marginBottom: 8, position: 'relative' }}>
-            <button onClick={() => uc('events', events.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#CCC', fontSize: 16 }}>×</button>
+          <div key={i} style={{ border: '1px solid rgba(255,255,255,0.08)', padding: 10, marginBottom: 8, position: 'relative' }}>
+            <button onClick={() => uc('events', events.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 16 }}>×</button>
             <UInput label="Time" value={ev.time} onChange={v => { const n = [...events]; n[i] = { ...ev, time: v }; uc('events', n); }} placeholder="3:00 PM" />
             <UInput label="Title" value={ev.title} onChange={v => { const n = [...events]; n[i] = { ...ev, title: v }; uc('events', n); }} />
             <UInput label="Description" value={ev.description} onChange={v => { const n = [...events]; n[i] = { ...ev, description: v }; uc('events', n); }} />
           </div>
         ))}
-        <AddBtn onClick={() => uc('events', [...events, { time: '', title: '', description: '' }])}>Add Event</AddBtn>
+        <AddBtn onClick={() => uc('events', [...events, { time: '', title: '', description: '' }])}>Add event</AddBtn>
       </div>
     );
   }
@@ -270,9 +271,9 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
   if (type === 'venue-showcase') {
     return (
       <div>
-        <UInput label="Venue Name" value={c.venue} onChange={v => uc('venue', v)} />
+        <UInput label="Venue name" value={c.venue} onChange={v => uc('venue', v)} />
         <UInput label="Address" value={c.address} onChange={v => uc('address', v)} />
-        <MediaPicker label="Venue Photo" value={c.photoUrl} onChange={v => uc('photoUrl', v)} aspectRatio="16/9" />
+        <MediaPicker label="Venue photo" value={c.photoUrl} onChange={v => uc('photoUrl', v)} aspectRatio="16/9" />
         <UInput label="Google Maps URL" value={c.mapUrl} onChange={v => uc('mapUrl', v)} placeholder="https://maps.google.com/..." />
       </div>
     );
@@ -285,18 +286,18 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
   if (['full-rsvp', 'simple-rsvp', 'rsvp-meal'].includes(type)) {
     return (
       <div>
-        <DatePickerField label="RSVP Deadline" value={c.deadline} onChange={v => uc('deadline', v)} />
-        <UInput label="Closing Message" value={c.closingMessage} onChange={v => uc('closingMessage', v)} />
+        <DatePickerField label="RSVP deadline" value={c.deadline} onChange={v => uc('deadline', v)} />
+        <UInput label="Closing message" value={c.closingMessage} onChange={v => uc('closingMessage', v)} />
         {type === 'rsvp-meal' && (
           <div>
-            <FLabel>Meal Options</FLabel>
+            <FLabel>Meal options</FLabel>
             {(c.mealOptions || []).map((opt, i) => (
               <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
-                <input value={opt} onChange={e => { const n = [...(c.mealOptions || [])]; n[i] = e.target.value; uc('mealOptions', n); }} style={{ flex: 1, border: 'none', borderBottom: '1px solid #DDD', background: 'transparent', fontSize: 13, padding: '4px 0', outline: 'none', fontFamily: 'inherit' }} />
+                <input value={opt} onChange={e => { const n = [...(c.mealOptions || [])]; n[i] = e.target.value; uc('mealOptions', n); }} style={{ flex: 1, border: 'none', borderBottom: '1px solid rgba(255,255,255,0.12)', background: 'transparent', fontSize: 13, padding: '4px 0', outline: 'none', fontFamily: 'inherit', color: '#FFFFFF' }} />
                 <button onClick={() => uc('mealOptions', (c.mealOptions || []).filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', fontSize: 16 }}>×</button>
               </div>
             ))}
-            <button onClick={() => uc('mealOptions', [...(c.mealOptions || []), ''])} style={{ width: '100%', padding: '6px', border: '1px dashed #DDD', background: 'transparent', borderRadius: 4, fontSize: 12, color: '#888', cursor: 'pointer', fontFamily: 'inherit', marginTop: 4 }}>+ Add Option</button>
+            <button onClick={() => uc('mealOptions', [...(c.mealOptions || []), ''])} style={{ width: '100%', padding: '6px', border: '1px dashed rgba(255,255,255,0.15)', background: 'transparent', fontSize: 12, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'inherit', marginTop: 4 }}>+ Add option</button>
           </div>
         )}
       </div>
@@ -307,18 +308,18 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
     const hotels = c.hotels || [];
     return (
       <div>
-        <RichTextField label="Getting There" value={c.gettingThere} onChange={v => uc('gettingThere', v)} rows={3} />
-        <UInput label="Parking Info" value={c.parking} onChange={v => uc('parking', v)} />
+        <RichTextField label="Getting there" value={c.gettingThere} onChange={v => uc('gettingThere', v)} rows={3} />
+        <UInput label="Parking info" value={c.parking} onChange={v => uc('parking', v)} />
         <Divider />
-        <FLabel>Hotels / Accommodations</FLabel>
+        <FLabel>Hotels / accommodations</FLabel>
         {hotels.map((h, i) => (
-          <div key={i} style={{ border: '1px solid #EEE', borderRadius: 6, padding: 10, marginBottom: 8, position: 'relative' }}>
-            <button onClick={() => uc('hotels', hotels.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#CCC', fontSize: 16 }}>×</button>
+          <div key={i} style={{ border: '1px solid rgba(255,255,255,0.08)', padding: 10, marginBottom: 8, position: 'relative' }}>
+            <button onClick={() => uc('hotels', hotels.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 16 }}>×</button>
             <UInput label="Name" value={h.name} onChange={v => { const n = [...hotels]; n[i] = { ...h, name: v }; uc('hotels', n); }} />
             <UInput label="Address" value={h.address} onChange={v => { const n = [...hotels]; n[i] = { ...h, address: v }; uc('hotels', n); }} />
           </div>
         ))}
-        <AddBtn onClick={() => uc('hotels', [...hotels, { name: '', address: '' }])}>Add Hotel</AddBtn>
+        <AddBtn onClick={() => uc('hotels', [...hotels, { name: '', address: '' }])}>Add hotel</AddBtn>
       </div>
     );
   }
@@ -330,13 +331,13 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
         <RichTextField label="Message" value={c.message} onChange={v => uc('message', v)} rows={2} />
         <Divider />
         {links.map((link, i) => (
-          <div key={i} style={{ border: '1px solid #EEE', borderRadius: 6, padding: 10, marginBottom: 8, position: 'relative' }}>
-            <button onClick={() => uc('links', links.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#CCC', fontSize: 16 }}>×</button>
-            <UInput label="Store Name" value={link.label} onChange={v => { const n = [...links]; n[i] = { ...link, label: v }; uc('links', n); }} />
+          <div key={i} style={{ border: '1px solid rgba(255,255,255,0.08)', padding: 10, marginBottom: 8, position: 'relative' }}>
+            <button onClick={() => uc('links', links.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 16 }}>×</button>
+            <UInput label="Store name" value={link.label} onChange={v => { const n = [...links]; n[i] = { ...link, label: v }; uc('links', n); }} />
             <UInput label="URL" value={link.url} onChange={v => { const n = [...links]; n[i] = { ...link, url: v }; uc('links', n); }} placeholder="https://..." />
           </div>
         ))}
-        <AddBtn onClick={() => uc('links', [...links, { label: '', url: '' }])}>Add Registry</AddBtn>
+        <AddBtn onClick={() => uc('links', [...links, { label: '', url: '' }])}>Add registry</AddBtn>
       </div>
     );
   }
@@ -346,13 +347,13 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
     return (
       <div>
         {items.map((item, i) => (
-          <div key={i} style={{ border: '1px solid #EEE', borderRadius: 6, padding: 10, marginBottom: 8, position: 'relative' }}>
-            <button onClick={() => uc('items', items.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#CCC', fontSize: 16 }}>×</button>
+          <div key={i} style={{ border: '1px solid rgba(255,255,255,0.08)', padding: 10, marginBottom: 8, position: 'relative' }}>
+            <button onClick={() => uc('items', items.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 16 }}>×</button>
             <UInput label="Question" value={item.question} onChange={v => { const n = [...items]; n[i] = { ...item, question: v }; uc('items', n); }} />
             <UTextarea label="Answer" value={item.answer} onChange={v => { const n = [...items]; n[i] = { ...item, answer: v }; uc('items', n); }} rows={2} />
           </div>
         ))}
-        <AddBtn onClick={() => uc('items', [...items, { question: '', answer: '' }])}>Add FAQ Item</AddBtn>
+        <AddBtn onClick={() => uc('items', [...items, { question: '', answer: '' }])}>Add FAQ item</AddBtn>
       </div>
     );
   }
@@ -360,7 +361,7 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
   if (['spotify-playlist', 'music-playlist'].includes(type)) {
     return (
       <div>
-        <UInput label="Spotify Playlist URL" value={c.playlistUrl || c.url} onChange={v => uc('playlistUrl', v)} placeholder="https://open.spotify.com/playlist/..." />
+        <UInput label="Spotify playlist URL" value={c.playlistUrl || c.url} onChange={v => uc('playlistUrl', v)} placeholder="https://open.spotify.com/playlist/..." />
         <RichTextField label="Message" value={c.message} onChange={v => uc('message', v)} rows={2} />
       </div>
     );
@@ -382,8 +383,8 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
   if (type === 'save-the-date') {
     return (
       <div>
-        <MasterDataReference label="Wedding Date" value={md.weddingDate} />
-        <UInput label="Custom Date Label" value={c.date} onChange={v => uc('date', v)} placeholder="e.g. June 14, 2026 (overrides planner date)" />
+        <MasterDataReference label="Wedding date" value={md.weddingDate} />
+        <UInput label="Custom date label" value={c.date} onChange={v => uc('date', v)} placeholder="e.g. June 14, 2026 (overrides planner date)" />
         <UInput label="Venue" value={c.venue} onChange={v => uc('venue', v)} />
       </div>
     );
@@ -404,17 +405,17 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
         <FLabel>Photos</FLabel>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 10 }}>
           {(c.photos || []).map((p, i) => (
-            <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 4, overflow: 'hidden', background: '#EEE' }}>
+            <div key={i} style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', background: 'rgba(255,255,255,0.08)' }}>
               <img src={p} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
               <button onClick={() => uc('photos', c.photos.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 2, right: 2, width: 16, height: 16, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: 11, cursor: 'pointer' }}>×</button>
             </div>
           ))}
         </div>
-        <MediaPicker label="Add Photo" value="" onChange={v => v && uc('photos', [...(c.photos || []), v])} />
+        <MediaPicker label="Add photo" value="" onChange={v => v && uc('photos', [...(c.photos || []), v])} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
           <FLabel style={{ margin: 0 }}>Columns</FLabel>
           {[2, 3, 4].map(n => (
-            <button key={n} onClick={() => uc('columns', n)} style={{ width: 32, height: 28, border: `1px solid ${c.columns === n ? '#0A0A0A' : '#DDD'}`, background: c.columns === n ? '#0A0A0A' : '#FFF', color: c.columns === n ? '#FFF' : '#444', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}>{n}</button>
+            <button key={n} onClick={() => uc('columns', n)} style={{ width: 32, height: 28, border: `1px solid ${c.columns === n ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.15)'}`, background: c.columns === n ? 'rgba(255,255,255,0.12)' : 'transparent', color: c.columns === n ? '#FFF' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}>{n}</button>
           ))}
         </div>
       </div>
@@ -449,9 +450,9 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
   if (type === 'map-directions') {
     return (
       <div>
-        <UInput label="Venue Name" value={c.venue} onChange={v => uc('venue', v)} />
+        <UInput label="Venue name" value={c.venue} onChange={v => uc('venue', v)} />
         <UInput label="Address" value={c.address} onChange={v => uc('address', v)} />
-        <UInput label="Google Maps Embed URL" value={c.mapEmbedUrl} onChange={v => uc('mapEmbedUrl', v)} placeholder="https://www.google.com/maps/embed?pb=..." />
+        <UInput label="Google Maps embed URL" value={c.mapEmbedUrl} onChange={v => uc('mapEmbedUrl', v)} placeholder="https://www.google.com/maps/embed?pb=..." />
       </div>
     );
   }
@@ -472,7 +473,6 @@ function SectionContentEditor({ section, onUpdateContent, masterData }) {
 function SectionEditorPanel({ details, onChange, sectionId, onClose, masterData }) {
   const [tab, setTab] = useState('content');
 
-  // Find section in pageSections
   const allSections = details.pageSections || {};
   let section = null;
   let pageSlug = null;
@@ -480,7 +480,7 @@ function SectionEditorPanel({ details, onChange, sectionId, onClose, masterData 
     const found = (secs || []).find(s => s.id === sectionId);
     if (found) { section = found; pageSlug = slug; break; }
   }
-  if (!section) return <p style={{ fontSize: 13, color: '#888', padding: 16 }}>Section not found.</p>;
+  if (!section) return <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', padding: 16 }}>Section not found.</p>;
 
   const updateContent = (key, val) => {
     const pageSecs = [...(allSections[pageSlug] || [])];
@@ -507,18 +507,18 @@ function SectionEditorPanel({ details, onChange, sectionId, onClose, masterData 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', flexShrink: 0, position: 'sticky', top: 0, background: '#fff', zIndex: 10 }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', flexShrink: 0, position: 'sticky', top: 0, background: '#161616', zIndex: 10 }}>
         <div style={{ flex: 1 }}>
-          <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#888' }}>Editing</p>
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#0A0A0A' }}>{getSectionDisplayName(section.type)}</p>
+          <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)' }}>Editing</p>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#FFFFFF' }}>{getSectionDisplayName(section.type)}</p>
         </div>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', padding: 4 }}><X size={16} /></button>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}><X size={16} /></button>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #EEE', flexShrink: 0 }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
         {['content', 'style'].map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: '10px', border: 'none', background: 'none', fontSize: 13, fontWeight: 600, color: tab === t ? '#0A0A0A' : '#888', borderBottom: tab === t ? '2px solid #E03553' : '2px solid transparent', cursor: 'pointer', textTransform: 'capitalize', fontFamily: 'inherit' }}>
+          <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: '10px', border: 'none', background: 'none', fontSize: 13, fontWeight: 600, color: tab === t ? '#FFFFFF' : 'rgba(255,255,255,0.35)', borderBottom: tab === t ? '2px solid #FFFFFF' : '2px solid transparent', cursor: 'pointer', textTransform: 'capitalize', fontFamily: 'inherit' }}>
             {t}
           </button>
         ))}
@@ -536,9 +536,9 @@ function SectionEditorPanel({ details, onChange, sectionId, onClose, masterData 
       </div>
 
       {/* Footer */}
-      <div style={{ padding: '12px 16px', borderTop: '1px solid #F0F0F0', flexShrink: 0 }}>
-        <button onClick={deleteSection} style={{ width: '100%', padding: '8px', border: '1px solid #FFE0E0', background: 'transparent', color: '#E03553', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}>
-          Delete Section
+      <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+        <button onClick={deleteSection} style={{ width: '100%', padding: '8px', border: '1px solid rgba(224,53,83,0.4)', background: 'transparent', color: '#E03553', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', borderRadius: 999 }}>
+          Delete section
         </button>
       </div>
     </div>
@@ -551,7 +551,6 @@ export default function WBRightPanel({ details, onChange, selectedSection, onCle
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   const [mediaCallback, setMediaCallback] = useState(null);
 
-  // Load photo entity for media library
   useEffect(() => {
     base44.entities.Photo.list('-created_date', 100).then(photos => {
       setMediaLibrary(photos.map(p => ({
@@ -578,27 +577,26 @@ export default function WBRightPanel({ details, onChange, selectedSection, onCle
   const isStaticSection = selectedSection && !isDynamicSection;
   const showSectionEditor = isDynamicSection || isStaticSection;
 
-  // Asset editor mode
   const AssetEditorComp = selectedAsset ? ASSET_EDITOR_MAP[selectedAsset] : null;
 
   return (
     <MediaLibraryContext.Provider value={{ open: openMediaLibrary }}>
-      <div style={{ width: 320, flexShrink: 0, background: '#fff', borderLeft: '1px solid #EEE', display: 'flex', flexDirection: 'column', overflowY: (showSectionEditor || selectedAsset) ? 'hidden' : 'auto', zIndex: 50, height: '100%' }}>
+      <div style={{ width: '100%', flexShrink: 0, background: '#161616', borderLeft: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', overflowY: (showSectionEditor || selectedAsset) ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
 
         {selectedAsset ? (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <button onClick={onClearAsset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', padding: 2, display: 'flex', alignItems: 'center' }}><ChevronLeft size={16} /></button>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              <button onClick={onClearAsset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 2, display: 'flex', alignItems: 'center' }}><ChevronLeft size={16} /></button>
               <div>
-                <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#888' }}>Editing Asset</p>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#0A0A0A', textTransform: 'capitalize' }}>{selectedAsset.replace(/([A-Z])/g, ' $1').trim()}</p>
+                <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)' }}>Editing asset</p>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#FFFFFF', textTransform: 'capitalize' }}>{selectedAsset.replace(/([A-Z])/g, ' $1').trim()}</p>
               </div>
             </div>
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {AssetEditorComp ? (
                 <AssetEditorComp content={assetContent} onChange={(field, value) => onAssetChange(selectedAsset, field, value)} />
               ) : (
-                <p style={{ padding: 16, fontSize: 13, color: '#888' }}>No editor for this asset.</p>
+                <p style={{ padding: 16, fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>No editor for this asset.</p>
               )}
             </div>
           </div>
@@ -612,23 +610,22 @@ export default function WBRightPanel({ details, onChange, selectedSection, onCle
               masterData={masterData}
             />
           ) : (
-            // Legacy static section header
             <>
-              <div style={{ padding: '14px 16px', borderBottom: '1px solid #EEE', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>{selectedSection}</p>
-                <button onClick={onClearSection} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', padding: 4 }}><X size={16} /></button>
+              <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF', margin: 0 }}>{selectedSection}</p>
+                <button onClick={onClearSection} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}><X size={16} /></button>
               </div>
               <div style={{ flex: 1, padding: 16, overflowY: 'auto' }}>
-                <p style={{ fontSize: 13, color: '#888' }}>Use the sections above to edit this content.</p>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Use the sections above to edit this content.</p>
               </div>
             </>
           )
         ) : (
           <>
-            {/* Default tabs */}
-            <div style={{ display: 'flex', borderBottom: '1px solid #EEE', flexShrink: 0, position: 'sticky', top: 0, background: '#fff', zIndex: 10 }}>
+            {/* Design / Settings tabs */}
+            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, position: 'sticky', top: 0, background: '#161616', zIndex: 10 }}>
               {[{ id: 'design', label: 'Design' }, { id: 'settings', label: 'Settings' }].map(tab => (
-                <button key={tab.id} onClick={() => onRightTabChange(tab.id)} style={{ flex: 1, height: 44, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: rightTab === tab.id ? '#0A0A0A' : '#888', borderBottom: rightTab === tab.id ? '2px solid #E03553' : '2px solid transparent', fontFamily: 'inherit' }}>
+                <button key={tab.id} onClick={() => onRightTabChange(tab.id)} style={{ flex: 1, height: 44, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: rightTab === tab.id ? '#FFFFFF' : 'rgba(255,255,255,0.35)', borderBottom: rightTab === tab.id ? '2px solid #FFFFFF' : '2px solid transparent', fontFamily: 'inherit' }}>
                   {tab.label}
                 </button>
               ))}
@@ -641,15 +638,14 @@ export default function WBRightPanel({ details, onChange, selectedSection, onCle
               )}
             </div>
             {rightTab === 'design' && (
-              <div style={{ padding: '12px 16px', borderTop: '1px solid #F0F0F0', flexShrink: 0 }}>
-                <p style={{ fontSize: 11, color: '#BBB', textAlign: 'center', margin: 0 }}>💡 Click any section in the preview to edit it</p>
+              <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', textAlign: 'center', margin: 0 }}>Click any section in the preview to edit it</p>
               </div>
             )}
           </>
         )}
       </div>
 
-      {/* Media Library Modal */}
       {mediaModalOpen && (
         <MediaLibraryModal
           library={mediaLibrary}
