@@ -61,6 +61,8 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
   const [avaModalOpen, setAvaModalOpen] = useState(initialOpenAutofill);
   const detailsRef = useRef(null);
   const autofilledRef = useRef(false);
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved'
+  const autosaveTimerRef = useRef(null);
 
   const updateAssetContent = (assetKey, field, value) => {
     setDetailsAndMark(prev => ({
@@ -147,6 +149,14 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
     }));
   }, [details]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Autosave — debounced 2s after last change
+  useEffect(() => {
+    if (!unsaved || !details) return;
+    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    autosaveTimerRef.current = setTimeout(() => { doSave(false); }, 2000);
+    return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current); };
+  }, [unsaved]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const currentPageSections = useMemo(() => {
     if (!details?.pageSections) return [];
     const sections = details.pageSections[currentPage] || [];
@@ -171,6 +181,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 
   const doSave = async (showToast = true) => {
     setIsSaving(true);
+    setSaveStatus('saving');
     try {
       const payload = detailsRef.current;
       if (existing?.id) {
@@ -179,8 +190,11 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
         await base44.entities.WeddingDetails.create(payload);
       }
       setUnsaved(false);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2000);
       if (showToast) toast.success('Saved');
     } catch {
+      setSaveStatus('idle');
       toast.error('Failed to save');
     }
     setIsSaving(false);
@@ -254,9 +268,15 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
           <ChevronLeft size={14} />
           Guest suite
         </button>
-        <span style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF', position: 'absolute', left: '50%', transform: 'translateX(-50%)', margin: 0, pointerEvents: 'none', letterSpacing: '0.01em' }}>
-          Website builder
-        </span>
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'none' }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF', letterSpacing: '0.01em' }}>Website builder</span>
+          {saveStatus === 'saving' && (
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Saving...</span>
+          )}
+          {saveStatus === 'saved' && (
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>✓ Saved</span>
+          )}
+        </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginLeft: 'auto' }}>
           {previewUrl && (
             <a
@@ -271,6 +291,14 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
               Preview
             </a>
           )}
+          <button
+            onClick={() => doSave(true)}
+            style={{ padding: '5px 14px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 999, transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+          >
+            Save
+          </button>
           <button
             onClick={() => navigate('/studio/guest-suite/share')}
             style={{ padding: '5px 14px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 500, cursor: 'pointer', borderRadius: 999, transition: 'background 0.15s' }}
