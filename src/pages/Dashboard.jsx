@@ -153,8 +153,6 @@ export default function Dashboard() {
 
       <DashboardPageHeader title="Overall" subtitle="Your wedding planning at a glance" />
 
-      <DailyBriefing />
-
       {/* Stat cards — full-width horizontal, equal columns */}
       <div style={{
         display: 'flex',
@@ -173,6 +171,8 @@ export default function Dashboard() {
           />
         ))}
       </div>
+
+      <DailyBriefing />
 
       {/* Ava button */}
       <div style={{ padding: '16px 32px' }}>

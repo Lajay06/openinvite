@@ -57,6 +57,18 @@ const PRIORITY_DOT = {
   low: 'rgba(255,255,255,0.18)',
 };
 
+function getTimeOfDay() {
+  const h = new Date().getHours();
+  if (h < 12) return 'morning';
+  if (h < 18) return 'afternoon';
+  return 'evening';
+}
+
+function getFirstName(name) {
+  if (!name || name === 'Not set') return 'there';
+  return name.split(/[\s&]/)[0];
+}
+
 function AlertChip({ iconKey, text }) {
   const ICONS = { Users, Building2, DollarSign, Cloud };
   const Icon = ICONS[iconKey];
@@ -75,7 +87,7 @@ function AlertChip({ iconKey, text }) {
 }
 
 export default function DailyBriefing() {
-  const [phase, setPhase] = useState('loading'); // 'loading' | 'ready' | 'hidden'
+  const [phase, setPhase] = useState('loading');
   const [briefing, setBriefing] = useState(null);
   const [daysUntil, setDaysUntil] = useState(null);
 
@@ -84,7 +96,6 @@ export default function DailyBriefing() {
   const load = async (force = false) => {
     setPhase('loading');
 
-    // Cache check
     if (!force) {
       try {
         const hit = localStorage.getItem(cacheKey());
@@ -98,8 +109,10 @@ export default function DailyBriefing() {
       } catch {}
     }
 
+    // Fetch all data with individual fallbacks
+    let guests = [], budgetItems = [], vendors = [], scheduleItems = [], todos = [], weddingRows = [];
     try {
-      const [guests, budgetItems, vendors, , todos, weddingRows] = await Promise.all([
+      [guests, budgetItems, vendors, scheduleItems, todos, weddingRows] = await Promise.all([
         base44.entities.Guest.list().catch(() => []),
         base44.entities.Budget.list().catch(() => []),
         base44.entities.Vendor.list().catch(() => []),
@@ -107,38 +120,62 @@ export default function DailyBriefing() {
         base44.entities.Note.list().catch(() => []),
         base44.entities.WeddingDetails.list().catch(() => []),
       ]);
+    } catch {}
 
-      const wd = weddingRows[0] || {};
-      const coupleName = wd.coupleNames
-        || (wd.couple1Name && wd.couple2Name ? `${wd.couple1Name} & ${wd.couple2Name}` : null)
-        || localStorage.getItem('oi_couple_name')
-        || 'Not set';
-      const weddingDate = wd.weddingDate || localStorage.getItem('oi_wedding_date');
-      const city = wd.mainCeremony?.address || localStorage.getItem('oi_wedding_city') || null;
+    const wd = weddingRows[0] || {};
+    const coupleName = wd.coupleNames
+      || (wd.couple1Name && wd.couple2Name ? `${wd.couple1Name} & ${wd.couple2Name}` : null)
+      || localStorage.getItem('oi_couple_name')
+      || 'Not set';
+    const weddingDate = wd.weddingDate || localStorage.getItem('oi_wedding_date');
+    const city = wd.mainCeremony?.address || localStorage.getItem('oi_wedding_city') || null;
 
-      let user = null;
-      try { user = JSON.parse(localStorage.getItem('oi_user')); } catch {}
-      let weather = null;
-      try { weather = JSON.parse(localStorage.getItem('oi_weather')); } catch {}
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('oi_user')); } catch {}
+    let weather = null;
+    try { weather = JSON.parse(localStorage.getItem('oi_weather')); } catch {}
 
-      const days = weddingDate
-        ? Math.ceil((new Date(weddingDate) - new Date()) / 86400000)
-        : null;
-      setDaysUntil(days);
+    const firstName = getFirstName(user?.full_name || coupleName);
+    const tod = getTimeOfDay();
 
-      const confirmedGuests = guests.filter(g => g.rsvp_status === 'confirmed' || g.rsvp_status === 'attending').length;
-      const pendingGuests = guests.filter(g => !g.rsvp_status || g.rsvp_status === 'pending').length;
-      const totalGuests = guests.length;
-      const totalBudget = budgetItems.reduce((s, b) => s + (b.total_amount || b.budgeted_amount || 0), 0);
-      const budgetSpent = budgetItems.reduce((s, b) => s + (b.spent_amount || b.actual_amount || 0), 0);
-      const budgetPercent = totalBudget ? Math.round((budgetSpent / totalBudget) * 100) : 0;
-      const bookedVendors = vendors.filter(v => v.status === 'booked').length;
-      const totalVendors = vendors.length;
-      const pendingTodos = todos.filter(t => !t.completed).length;
-      const unseatedGuests = guests.filter(g =>
-        !g.table_assignment && (g.rsvp_status === 'confirmed' || g.rsvp_status === 'attending')
-      ).length;
+    const days = weddingDate
+      ? Math.ceil((new Date(weddingDate) - new Date()) / 86400000)
+      : null;
+    setDaysUntil(days);
 
+    const confirmedGuests = guests.filter(g => g.rsvp_status === 'confirmed' || g.rsvp_status === 'attending').length;
+    const pendingGuests = guests.filter(g => !g.rsvp_status || g.rsvp_status === 'pending').length;
+    const totalGuests = guests.length;
+    const totalBudget = budgetItems.reduce((s, b) => s + (b.total_amount || b.budgeted_amount || 0), 0);
+    const budgetSpent = budgetItems.reduce((s, b) => s + (b.spent_amount || b.actual_amount || 0), 0);
+    const budgetPercent = totalBudget ? Math.round((budgetSpent / totalBudget) * 100) : 0;
+    const bookedVendors = vendors.filter(v => v.status === 'booked').length;
+    const totalVendors = vendors.length;
+    const pendingTodos = todos.filter(t => !t.completed).length;
+    const unseatedGuests = guests.filter(g =>
+      !g.table_assignment && (g.rsvp_status === 'confirmed' || g.rsvp_status === 'attending')
+    ).length;
+
+    // Fallback briefing built from local data only
+    const fallback = {
+      greeting: `Good ${tod}, ${firstName}. Here's where things stand today.`,
+      countdown: {
+        headline: days !== null ? `${days} days to go` : 'Your day is coming',
+        subtext: 'Every detail is coming together.',
+      },
+      thisWeek: [],
+      smartSuggestions: [],
+      guestAlert: pendingGuests > 0
+        ? `${pendingGuests} guest${pendingGuests !== 1 ? 's' : ''} haven't replied yet`
+        : null,
+      vendorNote: null,
+      budgetNote: budgetPercent > 80 ? `Budget is at ${budgetPercent}%` : null,
+      weatherNote: null,
+      emotionalNote: 'You are doing better than you think.',
+      forgottenDetail: 'Confirm your rehearsal dinner headcount with the venue.',
+    };
+
+    try {
       const today = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
 
       const aiPrompt = `You are Ava, a premium wedding planning AI for the platform Openinvite. Generate a daily briefing for ${user?.full_name || 'the couple'} planning their wedding.
@@ -203,12 +240,28 @@ Rules:
         response_json_schema: BRIEFING_SCHEMA,
       });
 
-      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      console.log('[DailyBriefing] Raw AI response:', raw);
+
+      // Handle multiple possible response shapes
+      const rawText = typeof raw === 'string'
+        ? raw
+        : raw?.content?.[0]?.text
+        || raw?.text
+        || JSON.stringify(raw);
+
+      const clean = rawText
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
+
+      const parsed = JSON.parse(clean);
       setBriefing(parsed);
       localStorage.setItem(cacheKey(), JSON.stringify({ briefing: parsed, daysUntil: days }));
       setPhase('ready');
-    } catch {
-      setPhase('hidden');
+    } catch (err) {
+      console.warn('[DailyBriefing] AI call failed, showing fallback:', err);
+      setBriefing(fallback);
+      setPhase('ready');
     }
   };
 
@@ -217,35 +270,28 @@ Rules:
     load(true);
   };
 
-  // ── Date label ──────────────────────────────────────────────────────────────
   const now = new Date();
-  const weekday = now.toLocaleDateString('en-AU', { weekday: 'long' }).toUpperCase();
-  const dayMonth = now.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+  const weekday = now.toLocaleDateString('en-AU', { weekday: 'long' });
+  const dayMonth = now.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
   const dateLabel = `${weekday} · ${dayMonth}`;
 
-  // ── Loading shimmer ──────────────────────────────────────────────────────────
+  // Loading state — single div, no Fragment, no <style> tag (avoids stray bullet)
   if (phase === 'loading') {
     return (
-      <>
-        <style>{`@keyframes oi-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
-        <div style={{
-          width: '100%', height: 120,
-          background: 'linear-gradient(90deg,rgba(10,10,10,0.03) 0%,rgba(10,10,10,0.07) 50%,rgba(10,10,10,0.03) 100%)',
-          backgroundSize: '200% 100%',
-          animation: 'oi-shimmer 1.5s ease-in-out infinite',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>
-            Ava is preparing your briefing...
-          </span>
-        </div>
-      </>
+      <div style={{
+        width: '100%', height: 120,
+        background: 'rgba(10,10,10,0.04)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>
+          Ava is preparing your briefing...
+        </span>
+      </div>
     );
   }
 
-  if (phase === 'hidden' || !briefing) return null;
+  if (!briefing) return null;
 
-  // ── Alert chips ─────────────────────────────────────────────────────────────
   const alertChips = [
     briefing.guestAlert && { iconKey: 'Users', text: briefing.guestAlert },
     briefing.vendorNote && { iconKey: 'Building2', text: briefing.vendorNote },
@@ -253,7 +299,6 @@ Rules:
     briefing.weatherNote && { iconKey: 'Cloud', text: briefing.weatherNote },
   ].filter(Boolean);
 
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div style={{ width: '100%', background: '#0A0A0A', padding: '32px 40px', boxSizing: 'border-box' }}>
 
@@ -271,14 +316,14 @@ Rules:
 
         <div style={{ flexShrink: 0, textAlign: 'right' }}>
           {daysUntil !== null && (
-            <>
-              <div style={{ fontFamily: PJS, fontSize: 56, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.04em', lineHeight: 1 }}>
-                {daysUntil > 0 ? daysUntil : '—'}
-              </div>
-              <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em', margin: '4px 0 8px' }}>
-                DAYS
-              </div>
-            </>
+            <div style={{ fontFamily: PJS, fontSize: 56, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.04em', lineHeight: 1 }}>
+              {daysUntil > 0 ? daysUntil : '—'}
+            </div>
+          )}
+          {daysUntil !== null && (
+            <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em', margin: '4px 0 8px' }}>
+              days
+            </div>
           )}
           {briefing.countdown?.subtext && (
             <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(255,255,255,0.32)', fontStyle: 'italic', maxWidth: 200, margin: 0, lineHeight: 1.55, textAlign: 'right' }}>
@@ -292,7 +337,7 @@ Rules:
       <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', marginBottom: 24 }} />
 
       {/* This week */}
-      {briefing.thisWeek?.length > 0 && (
+      {Array.isArray(briefing.thisWeek) && briefing.thisWeek.length > 0 && (
         <div style={{ marginBottom: 20 }}>
           <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', margin: '0 0 12px' }}>
             This week
@@ -329,7 +374,7 @@ Rules:
       )}
 
       {/* Smart suggestions */}
-      {briefing.smartSuggestions?.length > 0 && (
+      {Array.isArray(briefing.smartSuggestions) && briefing.smartSuggestions.length > 0 && (
         <div style={{ marginBottom: 20 }}>
           <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', margin: '0 0 12px' }}>
             Ava's insight
@@ -361,9 +406,11 @@ Rules:
 
       {/* Bottom row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
-        <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(255,255,255,0.35)', fontStyle: 'italic', maxWidth: 500, margin: 0, lineHeight: 1.65, flex: 1 }}>
-          {briefing.emotionalNote}
-        </p>
+        {briefing.emotionalNote && (
+          <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(255,255,255,0.35)', fontStyle: 'italic', maxWidth: 500, margin: 0, lineHeight: 1.65, flex: 1 }}>
+            {briefing.emotionalNote}
+          </p>
+        )}
 
         {briefing.forgottenDetail && (
           <div style={{ flexShrink: 0, maxWidth: 280 }}>
