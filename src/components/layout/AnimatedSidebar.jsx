@@ -9,7 +9,7 @@ import {
   Store, ShoppingBag,
   Clock, Heart, Radio, UtensilsCrossed,
   Plane, Hotel, Car, Phone,
-  Settings, UserPlus, LogOut, HelpCircle,
+  Settings, UserPlus, LogOut, HelpCircle, Lightbulb,
   Sparkles,
 } from "lucide-react";
 
@@ -19,8 +19,9 @@ const NAV_SECTIONS = [
     items: [
       { icon: LayoutDashboard, label: "Overall",     url: createPageUrl("Dashboard") },
       { icon: Calendar,        label: "Calendar",    url: createPageUrl("Calendar") },
-      { icon: CheckSquare,     label: "Checklist",   url: createPageUrl("Checklist") },
-      { icon: ListTodo,        label: "To do list",  url: createPageUrl("TodoList") },
+      { icon: CheckSquare,     label: "Checklist",       url: createPageUrl("Checklist") },
+      { icon: ListTodo,        label: "To do list",      url: createPageUrl("TodoList") },
+      { icon: Lightbulb,       label: "Considerations",  url: createPageUrl("Considerations") },
     ],
   },
   {
@@ -66,6 +67,7 @@ const NAV_SECTIONS = [
       { icon: Hotel,           label: "Accommodation",     url: "/accommodation" },
       { icon: Car,             label: "Transport",         url: "/transport" },
       { icon: Radio,           label: "Live stream",       url: createPageUrl("LiveStreaming") },
+      { icon: HelpCircle,      label: "Q&A",               url: createPageUrl("QandA") },
     ],
   },
   {
