@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink, Sparkles } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink } from 'lucide-react';
 import WBRightPanel from '@/components/website-builder/WBRightPanel';
+import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
 import SectionTemplatePicker from '@/components/website-builder/SectionTemplatePicker';
 import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, WEDDING_PAGES } from '@/lib/websiteThemes';
@@ -59,6 +60,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
   const [insertAfterIndex, setInsertAfterIndex] = useState(null);
   const [avaModalOpen, setAvaModalOpen] = useState(initialOpenAutofill);
   const detailsRef = useRef(null);
+  const autofilledRef = useRef(false);
 
   const updateAssetContent = (assetKey, field, value) => {
     setDetailsAndMark(prev => ({
@@ -91,6 +93,59 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
       detailsRef.current = { ...DEFAULT };
     }
   }, [existing]);
+
+  // Auto-populate home page with default sections on first open when empty
+  useEffect(() => {
+    if (!details || autofilledRef.current) return;
+    autofilledRef.current = true;
+    const homeSections = details.pageSections?.home || [];
+    if (homeSections.length > 0) return;
+    const ts = Date.now();
+    const defaultSections = [
+      {
+        id: `sec_${ts}_0`, type: 'cinematic-hero', order: 0,
+        content: {
+          title: details.coupleNames || 'Our Wedding',
+          date: details.weddingDate || '',
+          location: details.mainCeremony?.venueName || '',
+          subtitle: 'Join us as we celebrate our love',
+        },
+      },
+      {
+        id: `sec_${ts}_1`, type: 'our-story', order: 1,
+        content: {
+          text: details.coupleStory || 'We met and knew from that moment on that something special had begun. We\'re so excited to celebrate this next chapter with the people we love most.',
+        },
+      },
+      {
+        id: `sec_${ts}_2`, type: 'event-details', order: 2,
+        content: {
+          ceremony: {
+            venue: details.mainCeremony?.venueName || 'Ceremony venue',
+            address: details.mainCeremony?.address || '',
+            time: details.mainCeremony?.startTime || '3:00 PM',
+            dressCode: details.mainCeremony?.dressCode || '',
+          },
+          reception: {
+            venue: details.reception?.venueName || 'Reception venue',
+            address: details.reception?.address || '',
+            time: details.reception?.startTime || '6:00 PM',
+          },
+        },
+      },
+      {
+        id: `sec_${ts}_3`, type: 'full-rsvp', order: 3,
+        content: {
+          deadline: details.rsvpContent?.rsvpDeadline || '',
+          closingMessage: 'We cannot wait to celebrate with you.',
+        },
+      },
+    ];
+    setDetailsAndMark(prev => ({
+      ...prev,
+      pageSections: { ...(prev.pageSections || {}), home: defaultSections },
+    }));
+  }, [details]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentPageSections = useMemo(() => {
     if (!details?.pageSections) return [];
@@ -239,7 +294,14 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
         {/* LEFT PANEL */}
-        <LeftPanel details={details} currentPage={currentPage} onPageChange={(p) => { setCurrentPage(p); setSelectedSection(null); setRightPanelTab('design'); }} onAvaClick={() => setAvaModalOpen(true)} />
+        <WBLeftPanel
+          details={details}
+          onChange={updateField}
+          currentPage={currentPage}
+          onPageChange={(p) => { setCurrentPage(p); setSelectedSection(null); setRightPanelTab('design'); }}
+          selectedAsset={selectedAsset}
+          onAssetSelect={setSelectedAsset}
+        />
 
         {/* CENTER PREVIEW */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#1A1A1A', minWidth: 0, borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
@@ -346,7 +408,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
             onChange={rightPanelTab === 'section-editor' ? handleSectionContentChange : updateField}
             selectedSection={selectedSection?.id || null}
             onClearSection={() => { setSelectedSection(null); setRightPanelTab('design'); }}
-            rightTab={rightPanelTab === 'section-editor' ? 'section' : 'design'}
+            rightTab={rightPanelTab === 'section-editor' ? 'section' : rightPanelTab}
             onRightTabChange={(tab) => setRightPanelTab(tab === 'section' ? 'section-editor' : tab)}
             masterData={details}
             selectedAsset={null}
@@ -397,80 +459,6 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
           }}
         />
       )}
-    </div>
-  );
-}
-
-// LEFT PANEL
-function LeftPanel({ details, currentPage, onPageChange, onAvaClick }) {
-  const [hoveredPage, setHoveredPage] = useState(null);
-
-  const pageList = [
-    { id: 'home', label: 'Home', icon: '🏠' },
-    { id: 'our-story', label: 'Our story', icon: '📖' },
-    { id: 'celebration', label: 'Celebration', icon: '🎉' },
-    { id: 'rsvp', label: 'RSVP', icon: '✉️' },
-    { id: 'travel', label: 'Travel', icon: '✈️' },
-    { id: 'registry', label: 'Registry', icon: '🎁' },
-    { id: 'music', label: 'Music', icon: '🎵' },
-    { id: 'photos', label: 'Photos', icon: '📷' },
-    { id: 'faq', label: 'FAQ', icon: '❓' },
-  ];
-
-  return (
-    <div style={{ width: 200, background: '#111111', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <div style={{ flex: 1, overflowY: 'auto', paddingTop: 16 }}>
-        {/* Pages label */}
-        <p style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.08em', margin: '0 0 8px', padding: '0 16px' }}>
-          Pages
-        </p>
-        {pageList.map(page => {
-          const isActive = currentPage === page.id;
-          const isHovered = hoveredPage === page.id && !isActive;
-          return (
-            <div
-              key={page.id}
-              onClick={() => onPageChange(page.id)}
-              onMouseEnter={() => setHoveredPage(page.id)}
-              onMouseLeave={() => setHoveredPage(null)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: isActive ? '7px 16px 7px 14px' : '7px 16px',
-                gap: 8,
-                cursor: 'pointer',
-                background: isActive ? 'rgba(255,255,255,0.06)' : isHovered ? 'rgba(255,255,255,0.04)' : 'transparent',
-                borderLeft: isActive ? '2px solid #E03553' : '2px solid transparent',
-                transition: 'background 0.12s',
-              }}
-            >
-              <span style={{ fontSize: 12 }}>{page.icon}</span>
-              <span style={{ flex: 1, fontSize: 12, fontWeight: isActive ? 500 : 400, color: isActive ? '#FFFFFF' : isHovered ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.5)', fontFamily: "'Plus Jakarta Sans'", transition: 'color 0.12s' }}>
-                {page.label}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <button
-          onClick={onAvaClick}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'linear-gradient(135deg, #ec4899, #9333ea)', color: '#FFFFFF', border: 'none', cursor: 'pointer', width: '100%', fontSize: 11, fontWeight: 600, fontFamily: "'Plus Jakarta Sans'", borderRadius: 999 }}
-        >
-          <Sparkles size={12} />
-          Auto-fill with Ava
-        </button>
-        <button
-          onClick={() => window.location.href = '/studio/ava'}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'transparent', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', width: '100%', fontSize: 11, fontWeight: 600, fontFamily: "'Plus Jakarta Sans'", borderRadius: 999, transition: 'color 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
-        >
-          <span style={{ fontSize: 10 }}>✦</span>
-          Ava's studio
-        </button>
-      </div>
     </div>
   );
 }
