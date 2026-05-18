@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink, Menu, X } from 'lucide-react';
 import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
@@ -402,6 +402,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
                     onMoveSection={moveSection} onDeleteSection={deleteSection}
                     onInsertAbove={(index) => { setInsertAfterIndex(index - 0.5); setSectionPickerOpen(true); }}
                     onAddSection={(index) => { setInsertAfterIndex(index); setSectionPickerOpen(true); }}
+                    isMobile={true}
                   />
                 </div>
                 <div style={{ height: 24, background: '#0A0A0A', borderRadius: '0 0 32px 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -419,6 +420,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
                   onMoveSection={moveSection} onDeleteSection={deleteSection}
                   onInsertAbove={(index) => { setInsertAfterIndex(index - 0.5); setSectionPickerOpen(true); }}
                   onAddSection={(index) => { setInsertAfterIndex(index); setSectionPickerOpen(true); }}
+                  isMobile={false}
                 />
               </div>
             )}
@@ -519,24 +521,45 @@ function ToolBtn({ children, onClick, title, bold }) {
   );
 }
 
-function PreviewContent({ theme, typo, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection }) {
+function PreviewContent({ theme, typo, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection, isMobile }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   return (
     <>
       {/* Nav bar inside preview */}
-      <div style={{ background: theme.darkBg || '#0A0A0A', padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: theme.darkText || '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {details.coupleNames || 'Your Names'}
-        </span>
-        <div style={{ display: 'flex', gap: 20 }}>
-          {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
-            const label = allPageLabels[slug] || slug;
-            return (
-              <span key={slug} onClick={() => onPageChange(slug)} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: theme.darkText || '#FFFFFF', opacity: currentPage === slug ? 1 : 0.4, cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? `1px solid ${theme.darkText || '#fff'}` : '1px solid transparent' }}>
-                {label}
-              </span>
-            );
-          })}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div style={{ background: theme.darkBg || '#0A0A0A', padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: theme.darkText || '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {details.coupleNames || 'Your Names'}
+          </span>
+          {isMobile ? (
+            <button onClick={() => setMobileMenuOpen(v => !v)} style={{ background: 'none', border: 'none', color: theme.darkText || '#FFFFFF', cursor: 'pointer', padding: 8, display: 'flex', alignItems: 'center' }}>
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          ) : (
+            <div style={{ display: 'flex', gap: 20 }}>
+              {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
+                const label = allPageLabels[slug] || slug;
+                return (
+                  <span key={slug} onClick={() => onPageChange(slug)} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: theme.darkText || '#FFFFFF', opacity: currentPage === slug ? 1 : 0.4, cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? `1px solid ${theme.darkText || '#fff'}` : '1px solid transparent' }}>
+                    {label}
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
+        {isMobile && mobileMenuOpen && (
+          <div style={{ position: 'absolute', top: 48, left: 0, right: 0, background: theme.darkBg || '#0A0A0A', zIndex: 20, padding: '8px 0 16px' }}>
+            {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
+              const label = allPageLabels[slug] || slug;
+              return (
+                <div key={slug} onClick={() => { onPageChange(slug); setMobileMenuOpen(false); }} style={{ padding: '12px 24px', color: theme.darkText || '#FFFFFF', fontSize: 14, cursor: 'pointer', opacity: currentPage === slug ? 1 : 0.6 }}>
+                  {label}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Sections */}

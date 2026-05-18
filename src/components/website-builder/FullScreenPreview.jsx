@@ -123,28 +123,38 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
 
         {device === 'desktop' ? (
           <div style={{ flex: 1, background: '#fff', overflow: 'auto' }}>
-            <WBWebsitePreview details={details} currentPage={currentPage} />
+            <WBWebsitePreview details={details} currentPage={currentPage} isMobile={false} />
           </div>
         ) : device === 'tablet' ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '0 24px 24px', flex: 1 }}>
             <div style={{ width: 768, background: '#fff', flexShrink: 0, overflow: 'hidden' }}>
               <div style={{ overflowY: 'auto', height: 'calc(100vh - 160px)' }}>
-                <WBWebsitePreview details={details} currentPage={currentPage} />
+                <WBWebsitePreview details={details} currentPage={currentPage} isMobile={false} />
               </div>
             </div>
           </div>
         ) : (
           /* Mobile phone chrome */
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px', flex: 1 }}>
-            <div style={{ width: 414, background: '#1A1A1A', borderRadius: 44, padding: 12, boxShadow: '0 0 0 1px rgba(255,255,255,0.1), 0 24px 48px rgba(0,0,0,0.5)', flexShrink: 0, alignSelf: 'flex-start' }}>
-              <div style={{ height: 32, background: '#0A0A0A', borderRadius: '32px 32px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 80, height: 24, background: '#0A0A0A', borderRadius: 999, border: '2px solid rgba(255,255,255,0.08)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, background: '#1A1A1A' }}>
+            <div style={{
+              width: 393,
+              background: '#0A0A0A',
+              borderRadius: 50,
+              padding: 12,
+              boxShadow: '0 0 0 1px rgba(255,255,255,0.12), 0 32px 64px rgba(0,0,0,0.6)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0,
+              maxHeight: '85vh',
+            }}>
+              <div style={{ height: 36, background: '#0A0A0A', borderRadius: '38px 38px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 90, height: 26, background: '#1A1A1A', borderRadius: 999, border: '1px solid rgba(255,255,255,0.08)' }} />
               </div>
-              <div style={{ width: '390px', height: 'calc(100vh - 200px)', overflowY: 'auto', overflowX: 'hidden', background: '#fff' }}>
-                <WBWebsitePreview details={details} currentPage={currentPage} />
+              <div style={{ width: 369, height: 'calc(85vh - 100px)', background: 'white', overflow: 'hidden auto' }}>
+                <WBWebsitePreview details={details} currentPage={currentPage} isMobile={true} />
               </div>
-              <div style={{ height: 24, background: '#0A0A0A', borderRadius: '0 0 32px 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 100, height: 4, background: 'rgba(255,255,255,0.3)', borderRadius: 999 }} />
+              <div style={{ height: 28, background: '#0A0A0A', borderRadius: '0 0 38px 38px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 120, height: 5, background: 'rgba(255,255,255,0.25)', borderRadius: 999 }} />
               </div>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
 import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, WEDDING_PAGES } from '@/lib/websiteThemes';
 
 // Wraps a section in a clickable hover box in preview mode
@@ -342,33 +343,55 @@ function PhotosPreview({ details, theme, typo, selectedSection, onSectionClick }
 }
 
 // ── NAV BAR ───────────────────────────────────────────────────
-function PreviewNav({ details, theme, typo, currentPage }) {
+function PreviewNav({ details, theme, typo, currentPage, isMobile = false }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const enabledPages = details.enabledPages || ['home'];
   return (
-    <div style={{
-      position: 'sticky', top: 0, zIndex: 100,
-      background: `${theme.navBg}F0`, backdropFilter: 'blur(12px)',
-      borderBottom: `1px solid ${theme.accent}20`,
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 24px', height: 56,
-    }}>
-      <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', color: theme.darkText, textTransform: 'uppercase' }}>
-        {details.coupleNames || 'Your Names'}
-      </span>
-      <div style={{ display: 'flex', gap: 24, overflow: 'hidden' }}>
-        {enabledPages.slice(0, 5).map(slug => {
-          const p = WEDDING_PAGES.find(x => x.slug === slug);
-          if (!p) return null;
-          return (
-            <span key={slug} style={{
-              fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase',
-              color: currentPage === slug ? theme.accent : theme.darkText,
-              borderBottom: currentPage === slug ? `2px solid ${theme.accent}` : '2px solid transparent',
-              paddingBottom: 2,
-            }}>{p.label}</span>
-          );
-        })}
+    <div style={{ position: 'relative' }}>
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: `${theme.navBg}F0`, backdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${theme.accent}20`,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 20px', height: 56,
+      }}>
+        <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.04em', color: theme.darkText }}>
+          {details.coupleNames || 'Your Names'}
+        </span>
+        {isMobile ? (
+          <button onClick={() => setMobileMenuOpen(v => !v)} style={{ background: 'none', border: 'none', color: theme.darkText, cursor: 'pointer', padding: 8, display: 'flex', alignItems: 'center' }}>
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        ) : (
+          <div style={{ display: 'flex', gap: 24, overflow: 'hidden' }}>
+            {enabledPages.slice(0, 5).map(slug => {
+              const p = WEDDING_PAGES.find(x => x.slug === slug);
+              if (!p) return null;
+              return (
+                <span key={slug} style={{
+                  fontSize: 11, fontWeight: 600, letterSpacing: '0.06em',
+                  color: currentPage === slug ? theme.accent : theme.darkText,
+                  borderBottom: currentPage === slug ? `2px solid ${theme.accent}` : '2px solid transparent',
+                  paddingBottom: 2,
+                }}>{p.label}</span>
+              );
+            })}
+          </div>
+        )}
       </div>
+      {isMobile && mobileMenuOpen && (
+        <div style={{ position: 'absolute', top: 56, left: 0, right: 0, background: theme.navBg || '#0A0A0A', zIndex: 20, padding: '8px 0 16px' }}>
+          {enabledPages.slice(0, 5).map(slug => {
+            const p = WEDDING_PAGES.find(x => x.slug === slug);
+            if (!p) return null;
+            return (
+              <div key={slug} style={{ padding: '12px 20px', color: theme.darkText, fontSize: 14, cursor: 'default', opacity: currentPage === slug ? 1 : 0.6 }}>
+                {p.label}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -655,7 +678,7 @@ const PAGE_RENDERERS = {
   faq: FAQPreview,
 };
 
-export default function WBWebsitePreview({ details, currentPage = 'home', onSectionClick, selectedSection }) {
+export default function WBWebsitePreview({ details, currentPage = 'home', onSectionClick, selectedSection, isMobile = false }) {
   const theme = WEBSITE_THEMES.find(t => t.id === (details.activeTheme || 'still')) || WEBSITE_THEMES[0];
   const typo = TYPOGRAPHY_PAIRINGS.find(t => t.id === (details.activeTypography || 'classic')) || TYPOGRAPHY_PAIRINGS[0];
   const Renderer = PAGE_RENDERERS[currentPage] || HomePreview;
@@ -688,7 +711,7 @@ export default function WBWebsitePreview({ details, currentPage = 'home', onSect
         .wb-preview-section:hover { outline: 2px solid #2563EB !important; outline-offset: -2px; }
       `}</style>
 
-      <PreviewNav details={details} theme={theme} typo={typo} currentPage={currentPage} />
+      <PreviewNav details={details} theme={theme} typo={typo} currentPage={currentPage} isMobile={isMobile} />
 
       {hasDynamicSections ? (
         // ── Dynamic mode: render pageSections ──
