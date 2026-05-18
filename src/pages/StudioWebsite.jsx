@@ -60,7 +60,6 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
   const [insertAfterIndex, setInsertAfterIndex] = useState(null);
   const [avaModalOpen, setAvaModalOpen] = useState(initialOpenAutofill);
   const detailsRef = useRef(null);
-  const autofilledRef = useRef(false);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved'
   const autosaveTimerRef = useRef(null);
 
@@ -87,9 +86,13 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 
   useEffect(() => {
     if (existing) {
-      const merged = { ...DEFAULT, ...existing, pageSections: existing.pageSections || {} };
-      setDetails(merged);
-      detailsRef.current = merged;
+      const serverSections = existing.pageSections || {};
+      const hasServerSections = Object.values(serverSections).some(arr => Array.isArray(arr) && arr.length > 0);
+      setDetails(prev => {
+        const merged = { ...DEFAULT, ...existing, pageSections: hasServerSections ? serverSections : (prev?.pageSections || {}) };
+        detailsRef.current = merged;
+        return merged;
+      });
     } else if (existing === null) {
       setDetails({ ...DEFAULT });
       detailsRef.current = { ...DEFAULT };
@@ -98,8 +101,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 
   // Auto-populate home page with default sections on first open when empty
   useEffect(() => {
-    if (!details || autofilledRef.current) return;
-    autofilledRef.current = true;
+    if (!details) return;
     const homeSections = details.pageSections?.home || [];
     if (homeSections.length > 0) return;
     const ts = Date.now();
@@ -239,7 +241,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
     }
   };
 
-  const frameWidth = previewDevice === 'mobile' ? 390 : previewDevice === 'tablet' ? 768 : '100%';
+  const frameWidth = previewDevice === 'desktop' ? '100%' : previewDevice === 'tablet' ? '768px' : '390px';
   const previewUrl = details?.slug ? `/w/${details.slug}?preview=true` : null;
 
   const allPageLabels = {
@@ -362,8 +364,8 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
           </div>
 
           {/* Website Frame */}
-          <div style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', padding: 24 }}>
-            <div style={{ width: frameWidth, background: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: '100%', border: 'none', outline: 'none' }}>
+          <div style={{ flex: 1, overflow: 'auto', padding: previewDevice === 'desktop' ? 0 : 24 }}>
+            <div style={{ width: frameWidth, margin: '0 auto', background: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: '100%', border: 'none', outline: 'none', flexShrink: 0 }}>
               {/* Nav bar inside preview */}
               <div style={{ background: theme.darkBg || '#0A0A0A', padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: theme.darkText || '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
