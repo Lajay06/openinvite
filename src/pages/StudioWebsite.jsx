@@ -99,6 +99,19 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
     }
   }, [existing]);
 
+  // Auto-generate slug from couple names if none set
+  useEffect(() => {
+    if (!details?.slug && details?.coupleNames) {
+      const autoSlug = details.coupleNames
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .substring(0, 30);
+      const slug = autoSlug + '-' + Math.random().toString(36).substring(2, 6);
+      updateField('slug', slug);
+    }
+  }, [details?.coupleNames]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-populate home page with default sections on first open when empty
   useEffect(() => {
     if (!details) return;
@@ -280,17 +293,26 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
           )}
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginLeft: 'auto' }}>
+          <button
+            onClick={() => setShowFullPreview(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 500, padding: '5px 12px', fontFamily: 'inherit', transition: 'color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#FFFFFF'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+          >
+            <Monitor size={13} />
+            Preview
+          </button>
           {previewUrl && (
             <a
               href={previewUrl}
               target="_blank"
               rel="noreferrer"
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 12px', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 500, cursor: 'pointer', textDecoration: 'none', border: 'none', transition: 'color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.color = '#FFFFFF'}
-              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+              style={{ color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', padding: '5px 6px', textDecoration: 'none', transition: 'color 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+              title="Open in new tab"
             >
-              <ExternalLink size={12} />
-              Preview
+              <ExternalLink size={11} />
             </a>
           )}
           <button

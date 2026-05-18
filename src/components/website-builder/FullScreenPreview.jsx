@@ -38,35 +38,37 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
       <div style={{
         height: 48, background: '#0A0A0A', display: 'flex',
         alignItems: 'center', padding: '0 16px', gap: 12, flexShrink: 0,
-        borderBottom: '1px solid #222',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
         {/* Exit */}
         <button onClick={onClose} style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          color: '#888', fontSize: 13, fontWeight: 600, display: 'flex',
-          alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 4,
+          color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 500, display: 'flex',
+          alignItems: 'center', gap: 6, padding: '4px 8px',
           fontFamily: 'inherit', transition: 'color 0.15s',
         }}
-          onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-          onMouseLeave={e => e.currentTarget.style.color = '#888'}
+          onMouseEnter={e => e.currentTarget.style.color = '#FFFFFF'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
         >
-          <X size={14} /> Exit Preview
+          <X size={14} /> Exit preview
         </button>
 
         {/* Device toggles — center */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: 2 }}>
-          {DEVICES.map(({ id, icon: Icon, label }) => (
-            <button key={id} onClick={() => setDevice(id)} style={{
-              display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px',
-              border: `1px solid ${device === id ? '#fff' : '#333'}`,
-              background: device === id ? '#fff' : 'transparent',
-              color: device === id ? '#0A0A0A' : '#888',
-              borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
-              transition: 'all 0.15s',
-            }}>
-              <Icon size={13} /> {label}
-            </button>
-          ))}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <div style={{ display: 'inline-flex', background: 'rgba(0,0,0,0.3)', borderRadius: 999, padding: 3 }}>
+            {DEVICES.map(({ id, icon: Icon, label }) => (
+              <button key={id} onClick={() => setDevice(id)} style={{
+                display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px',
+                borderRadius: 999,
+                background: device === id ? 'rgba(255,255,255,0.1)' : 'transparent',
+                color: device === id ? '#FFFFFF' : 'rgba(255,255,255,0.4)',
+                border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+                transition: 'all 0.15s',
+              }}>
+                <Icon size={13} strokeWidth={1.5} /> {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Right side */}
@@ -76,7 +78,7 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
             value={currentPage}
             onChange={e => setCurrentPage(e.target.value)}
             style={{
-              background: '#1A1A1A', border: '1px solid #333', color: '#ccc',
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)',
               padding: '5px 8px', borderRadius: 4, fontSize: 12, cursor: 'pointer',
               outline: 'none', fontFamily: 'inherit',
             }}
@@ -88,17 +90,17 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
 
           {/* Visit live */}
           {previewUrl && (
-            <button onClick={() => window.open(previewUrl, '_blank')} style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'none', border: '1px solid #333', color: '#888',
-              padding: '5px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600,
-              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#888'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#333'; e.currentTarget.style.color = '#888'; }}
+            <a
+              href={previewUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.4)', fontSize: 12, textDecoration: 'none', transition: 'color 0.15s', padding: '5px 4px' }}
+              onMouseEnter={e => e.currentTarget.style.color = '#FFFFFF'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
+              title="Open in new tab"
             >
-              Visit Live <ExternalLink size={11} />
-            </button>
+              Open in tab <ExternalLink size={11} />
+            </a>
           )}
         </div>
       </div>
@@ -116,9 +118,9 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
         <div style={{
           position: 'absolute', top: 12, right: 16, zIndex: 10,
           background: 'rgba(0,0,0,0.5)', color: '#fff',
-          fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+          fontSize: 10, fontWeight: 600,
           padding: '3px 8px', borderRadius: 100, pointerEvents: 'none',
-        }}>PREVIEW</div>
+        }}>Preview</div>
 
         {device === 'desktop' ? (
           <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
