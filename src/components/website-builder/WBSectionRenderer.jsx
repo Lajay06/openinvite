@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 const PLACEHOLDER_PHOTOS = [
   "https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg",
@@ -22,6 +22,31 @@ function PlaceholderImg({ index = 0, style = {}, label = '+ Add Photo' }) {
       <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'rgba(0,0,0,0.5)', borderRadius: 4, padding: '4px 10px', backdropFilter: 'blur(4px)' }}>
         <p style={{ color: '#FFFFFF', fontSize: 11, fontWeight: 600, margin: 0, whiteSpace: 'nowrap' }}>{label}</p>
       </div>
+    </div>
+  );
+}
+
+function SectionEntrance({ children, sectionId }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [sectionId]);
+  return (
+    <div ref={ref} style={{ opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+      {children}
     </div>
   );
 }
@@ -54,6 +79,7 @@ export default function WBSectionRenderer({ section, theme, typo, masterData }) 
   const md = masterData || {};
   const masterDate = md.weddingDate ? new Date(md.weddingDate + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
 
+  function getContent() {
   switch (section.type) {
     case 'cinematic-hero':
     case 'minimal-text-hero': {
@@ -481,4 +507,6 @@ export default function WBSectionRenderer({ section, theme, typo, masterData }) 
       );
     }
   }
+  }
+  return <SectionEntrance sectionId={section.id}>{getContent()}</SectionEntrance>;
 }

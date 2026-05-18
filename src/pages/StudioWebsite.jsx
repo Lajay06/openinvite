@@ -338,14 +338,14 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
             <div style={{ width: frameWidth, background: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: '100%', border: 'none', outline: 'none' }}>
               {/* Nav bar inside preview */}
               <div style={{ background: theme.darkBg || '#0A0A0A', padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: '#fff' }}>
+                <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: theme.darkText || '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   {details.coupleNames || 'Your Names'}
                 </span>
                 <div style={{ display: 'flex', gap: 20 }}>
                   {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
                     const label = allPageLabels[slug] || slug;
                     return (
-                      <span key={slug} onClick={() => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: currentPage === slug ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? '1px solid #fff' : '1px solid transparent' }}>
+                      <span key={slug} onClick={() => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: theme.darkText || '#FFFFFF', opacity: currentPage === slug ? 1 : 0.4, cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? `1px solid ${theme.darkText || '#fff'}` : '1px solid transparent' }}>
                         {label}
                       </span>
                     );

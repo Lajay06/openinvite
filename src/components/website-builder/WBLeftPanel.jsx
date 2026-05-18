@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, CalendarCheck, Send, UtensilsCrossed, LayoutGrid, Clapperboard, Instagram, Signpost, Tag, Heart, Sparkles } from 'lucide-react';
 import { WEDDING_PAGES, WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS } from '@/lib/websiteThemes';
 import NewPageModal from './NewPageModal';
@@ -66,6 +67,7 @@ function Divider() {
 
 export default function WBLeftPanel({ details, onChange, currentPage, onPageChange, selectedAsset, onAssetSelect }) {
   const [showNewPage, setShowNewPage] = useState(false);
+  const navigate = useNavigate();
   const [hoveredPage, setHoveredPage] = useState(null);
   const [hoveredAsset, setHoveredAsset] = useState(null);
   const [hoverNewPage, setHoverNewPage] = useState(false);
@@ -220,12 +222,24 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
             <div style={{ flex: 1, background: theme.lightBg }} />
           </div>
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, fontFamily: PJS }}>{theme.name}</span>
+          <span
+            onClick={() => navigate('/studio/universe')}
+            onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+            style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', cursor: 'pointer', marginLeft: 'auto', fontFamily: PJS, transition: 'color 0.15s', flexShrink: 0 }}
+          >Change →</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.15)', flexShrink: 0 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.5)', fontFamily: 'Georgia,serif', lineHeight: 1 }}>Tt</span>
           </div>
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, fontFamily: PJS }}>{typo.name}</span>
+          <span
+            onClick={() => navigate('/studio/universe')}
+            onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+            style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', cursor: 'pointer', marginLeft: 'auto', fontFamily: PJS, transition: 'color 0.15s', flexShrink: 0 }}
+          >Change →</span>
         </div>
       </div>
 
