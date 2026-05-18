@@ -385,5 +385,6 @@ export const WEDDING_PAGES = [
   { slug: 'registry', label: 'Registry', icon: 'Gift' },
   { slug: 'music', label: 'Music', icon: 'Music' },
   { slug: 'photos', label: 'Photos', icon: 'Camera' },
+  { slug: 'styling', label: 'Styling', icon: 'Sparkles' },
   { slug: 'faq', label: 'FAQ', icon: 'HelpCircle' }
 ];
