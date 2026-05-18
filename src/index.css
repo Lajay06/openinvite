@@ -1,3 +1,8 @@
+/* ── Mobile preview frame — hide scrollbar ───────────────── */
+.mobile-preview-frame::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Brand Gradient ─────────────────────────────────────── */
 :root {
   --brand-red: #E03553;

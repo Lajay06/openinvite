@@ -111,13 +111,19 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
         display: 'flex', alignItems: device === 'desktop' ? 'flex-start' : 'center', justifyContent: 'center',
         overflow: 'hidden',
       }}>
-        <div style={{
-          width: device === 'desktop' ? '100%' : device === 'tablet' ? '768px' : '390px',
-          height: device === 'mobile' ? '693px' : '100%',
-          background: '#fff',
-          overflowY: 'auto', overflowX: 'hidden',
-          flexShrink: 0,
-        }}>
+        <div
+          className={device === 'mobile' ? 'mobile-preview-frame' : undefined}
+          style={{
+            width: device === 'desktop' ? '100%' : device === 'tablet' ? '768px' : '390px',
+            height: device === 'mobile' ? '693px' : '100%',
+            background: '#fff',
+            flexShrink: 0,
+            ...(device === 'mobile'
+              ? { overflow: 'hidden', scrollbarWidth: 'none', msOverflowStyle: 'none' }
+              : { overflowY: 'auto', overflowX: 'hidden' }
+            ),
+          }}
+        >
           <WBWebsitePreview details={details} currentPage={currentPage} isMobile={device === 'mobile'} />
         </div>
       </div>
