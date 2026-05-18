@@ -89,7 +89,7 @@ export default function WBSectionRenderer({ section, theme, typo, masterData }) 
       const displayDate = c.date || masterDate;
       const displayLocation = c.location || md.mainCeremony?.venueName || md.mainCeremony?.address;
       return (
-        <div style={{ background: bg, minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ background: bg, width: '100%', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
           <img src={photo} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: c.photoUrl ? 'none' : 'brightness(0.7)' }} alt="" />
           <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${(c.overlayStrength || 45) / 100})` }} />
           {!c.photoUrl && (

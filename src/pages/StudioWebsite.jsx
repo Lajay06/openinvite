@@ -386,70 +386,42 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
           </div>
 
           {/* Website Frame */}
-          <div style={{ flex: 1, overflow: 'auto', padding: previewDevice === 'desktop' ? 0 : 24 }}>
-            <div style={{ width: frameWidth, margin: '0 auto', background: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: '100%', border: 'none', outline: 'none', flexShrink: 0 }}>
-              {/* Nav bar inside preview */}
-              <div style={{ background: theme.darkBg || '#0A0A0A', padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: theme.darkText || '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  {details.coupleNames || 'Your Names'}
-                </span>
-                <div style={{ display: 'flex', gap: 20 }}>
-                  {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
-                    const label = allPageLabels[slug] || slug;
-                    return (
-                      <span key={slug} onClick={() => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: theme.darkText || '#FFFFFF', opacity: currentPage === slug ? 1 : 0.4, cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? `1px solid ${theme.darkText || '#fff'}` : '1px solid transparent' }}>
-                        {label}
-                      </span>
-                    );
-                  })}
+          <div style={{ flex: 1, overflowY: 'auto', padding: previewDevice === 'desktop' ? 0 : 24 }}>
+            {previewDevice === 'mobile' ? (
+              /* ── Phone chrome ── */
+              <div style={{ width: 414, margin: '24px auto', background: '#1A1A1A', borderRadius: 44, padding: 12, boxShadow: '0 0 0 1px rgba(255,255,255,0.1), 0 24px 48px rgba(0,0,0,0.5)', flexShrink: 0 }}>
+                <div style={{ height: 32, background: '#0A0A0A', borderRadius: '32px 32px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 80, height: 24, background: '#0A0A0A', borderRadius: 999, border: '2px solid rgba(255,255,255,0.08)' }} />
+                </div>
+                <div style={{ width: '390px', height: 'calc(100vh - 200px)', overflowY: 'auto', overflowX: 'hidden', background: '#fff', display: 'flex', flexDirection: 'column' }}>
+                  <PreviewContent
+                    theme={theme} typo={typo} details={details} currentPage={currentPage}
+                    currentPageSections={currentPageSections} allPageLabels={allPageLabels} selectedSection={selectedSection}
+                    onPageChange={(slug) => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }}
+                    onSectionSelect={(section) => { setSelectedSection(section); setRightPanelTab('section-editor'); }}
+                    onMoveSection={moveSection} onDeleteSection={deleteSection}
+                    onInsertAbove={(index) => { setInsertAfterIndex(index - 0.5); setSectionPickerOpen(true); }}
+                    onAddSection={(index) => { setInsertAfterIndex(index); setSectionPickerOpen(true); }}
+                  />
+                </div>
+                <div style={{ height: 24, background: '#0A0A0A', borderRadius: '0 0 32px 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 100, height: 4, background: 'rgba(255,255,255,0.3)', borderRadius: 999 }} />
                 </div>
               </div>
-
-              {/* Sections */}
-              <div style={{ flex: 1, overflowY: 'auto', background: theme.lightBg || '#F8F7F5' }}>
-                {currentPageSections.length === 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
-                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28 }}>+</div>
-                    <p style={{ fontSize: 18, fontWeight: 600, color: '#0A0A0A', marginBottom: 8 }}>No sections yet</p>
-                    <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', marginBottom: 24 }}>Add your first section to start building this page</p>
-                    <button onClick={() => { setInsertAfterIndex(0); setSectionPickerOpen(true); }} style={{ padding: '12px 24px', background: '#0A0A0A', color: '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
-                      + Add first section
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    {currentPageSections.map((section, index) => (
-                      <SectionWrap
-                        key={section.id}
-                        section={section}
-                        index={index}
-                        isSelected={selectedSection?.id === section.id}
-                        onSelect={() => { setSelectedSection(section); setRightPanelTab('section-editor'); }}
-                        onMoveUp={() => moveSection(index, 'up')}
-                        onMoveDown={() => moveSection(index, 'down')}
-                        onDelete={() => deleteSection(section.id)}
-                        onInsertAbove={() => { setInsertAfterIndex(index - 0.5); setSectionPickerOpen(true); }}
-                        theme={theme}
-                        typo={typo}
-                        masterData={details}
-                      />
-                    ))}
-                  </>
-                )}
-
-                {/* Add section at bottom */}
-                <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}>
-                  <button
-                    onClick={() => { setInsertAfterIndex(currentPageSections.length); setSectionPickerOpen(true); }}
-                    style={{ width: '100%', maxWidth: 500, height: 48, border: '2px dashed rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'rgba(10,10,10,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'all 0.15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(10,10,10,0.15)'; e.currentTarget.style.color = 'rgba(10,10,10,0.4)'; }}
-                  >
-                    + Add section
-                  </button>
-                </div>
+            ) : (
+              /* ── Desktop / Tablet frame ── */
+              <div style={{ width: frameWidth, margin: '0 auto', background: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: previewDevice === 'desktop' ? '100%' : undefined }}>
+                <PreviewContent
+                  theme={theme} typo={typo} details={details} currentPage={currentPage}
+                  currentPageSections={currentPageSections} allPageLabels={allPageLabels} selectedSection={selectedSection}
+                  onPageChange={(slug) => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }}
+                  onSectionSelect={(section) => { setSelectedSection(section); setRightPanelTab('section-editor'); }}
+                  onMoveSection={moveSection} onDeleteSection={deleteSection}
+                  onInsertAbove={(index) => { setInsertAfterIndex(index - 0.5); setSectionPickerOpen(true); }}
+                  onAddSection={(index) => { setInsertAfterIndex(index); setSectionPickerOpen(true); }}
+                />
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -544,5 +516,73 @@ function ToolBtn({ children, onClick, title, bold }) {
     <button onClick={onClick} title={title} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: bold ? 11 : 13, fontWeight: bold ? 700 : 400, padding: '2px 4px', fontFamily: 'inherit' }}>
       {children}
     </button>
+  );
+}
+
+function PreviewContent({ theme, typo, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection }) {
+  return (
+    <>
+      {/* Nav bar inside preview */}
+      <div style={{ background: theme.darkBg || '#0A0A0A', padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: theme.darkText || '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          {details.coupleNames || 'Your Names'}
+        </span>
+        <div style={{ display: 'flex', gap: 20 }}>
+          {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
+            const label = allPageLabels[slug] || slug;
+            return (
+              <span key={slug} onClick={() => onPageChange(slug)} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: theme.darkText || '#FFFFFF', opacity: currentPage === slug ? 1 : 0.4, cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? `1px solid ${theme.darkText || '#fff'}` : '1px solid transparent' }}>
+                {label}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Sections */}
+      <div style={{ flex: 1, overflowY: 'auto', background: theme.lightBg || '#F8F7F5' }}>
+        {currentPageSections.length === 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28 }}>+</div>
+            <p style={{ fontSize: 18, fontWeight: 600, color: '#0A0A0A', marginBottom: 8 }}>No sections yet</p>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', marginBottom: 24 }}>Add your first section to start building this page</p>
+            <button onClick={() => onAddSection(0)} style={{ padding: '12px 24px', background: '#0A0A0A', color: '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
+              + Add first section
+            </button>
+          </div>
+        ) : (
+          <>
+            {currentPageSections.map((section, index) => (
+              <SectionWrap
+                key={section.id}
+                section={section}
+                index={index}
+                isSelected={selectedSection?.id === section.id}
+                onSelect={() => onSectionSelect(section)}
+                onMoveUp={() => onMoveSection(index, 'up')}
+                onMoveDown={() => onMoveSection(index, 'down')}
+                onDelete={() => onDeleteSection(section.id)}
+                onInsertAbove={() => onInsertAbove(index)}
+                theme={theme}
+                typo={typo}
+                masterData={details}
+              />
+            ))}
+          </>
+        )}
+
+        {/* Add section at bottom */}
+        <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}>
+          <button
+            onClick={() => onAddSection(currentPageSections.length)}
+            style={{ width: '100%', maxWidth: 500, height: 48, border: '2px dashed rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'rgba(10,10,10,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(10,10,10,0.15)'; e.currentTarget.style.color = 'rgba(10,10,10,0.4)'; }}
+          >
+            + Add section
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

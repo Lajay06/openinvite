@@ -107,54 +107,45 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
 
       {/* Preview content */}
       <div style={{
-        flex: 1, overflow: 'auto', display: 'flex',
-        alignItems: device === 'desktop' ? 'stretch' : 'flex-start',
-        justifyContent: 'center',
-        background: device === 'desktop' ? '#fff' : '#2A2A2A',
-        padding: device === 'desktop' ? 0 : '24px',
-        position: 'relative',
+        flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column',
+        background: '#1A1A1A',
       }}>
-        {/* PREVIEW pill */}
-        <div style={{
-          position: 'absolute', top: 12, right: 16, zIndex: 10,
-          background: 'rgba(0,0,0,0.5)', color: '#fff',
-          fontSize: 10, fontWeight: 600,
-          padding: '3px 8px', borderRadius: 100, pointerEvents: 'none',
-        }}>Preview</div>
+        {/* URL bar — desktop and tablet only */}
+        {device !== 'mobile' && (
+          <div style={{ padding: '10px 0', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 999, padding: '6px 16px', width: 300, textAlign: 'center' }}>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                openinvite.com/w/{details.slug || 'your-wedding'}{currentPage !== 'home' ? `/${currentPage}` : ''}
+              </span>
+            </div>
+          </div>
+        )}
 
         {device === 'desktop' ? (
-          <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+          <div style={{ flex: 1, background: '#fff', overflow: 'auto' }}>
             <WBWebsitePreview details={details} currentPage={currentPage} />
           </div>
         ) : device === 'tablet' ? (
-          <div style={{
-            width: 768, background: '#fff', minHeight: '100%',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
-            borderRadius: 8, overflow: 'hidden',
-          }}>
-            <div style={{ overflowY: 'auto', maxHeight: '80vh' }}>
-              <WBWebsitePreview details={details} currentPage={currentPage} />
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '0 24px 24px', flex: 1 }}>
+            <div style={{ width: 768, background: '#fff', flexShrink: 0, overflow: 'hidden' }}>
+              <div style={{ overflowY: 'auto', height: 'calc(100vh - 160px)' }}>
+                <WBWebsitePreview details={details} currentPage={currentPage} />
+              </div>
             </div>
           </div>
         ) : (
-          /* Mobile frame */
-          <div style={{
-            width: 390, height: 844,
-            border: '8px solid #1D1D1F',
-            borderRadius: 44,
-            overflow: 'hidden',
-            boxShadow: '0 24px 80px rgba(0,0,0,0.4)',
-            position: 'relative',
-            background: '#000',
-            flexShrink: 0,
-          }}>
-            {/* Dynamic island */}
-            <div style={{
-              position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
-              width: 120, height: 34, background: '#000', borderRadius: 20, zIndex: 10,
-            }} />
-            <div style={{ width: '100%', height: '100%', overflowY: 'auto', background: '#fff' }}>
-              <WBWebsitePreview details={details} currentPage={currentPage} />
+          /* Mobile phone chrome */
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px', flex: 1 }}>
+            <div style={{ width: 414, background: '#1A1A1A', borderRadius: 44, padding: 12, boxShadow: '0 0 0 1px rgba(255,255,255,0.1), 0 24px 48px rgba(0,0,0,0.5)', flexShrink: 0, alignSelf: 'flex-start' }}>
+              <div style={{ height: 32, background: '#0A0A0A', borderRadius: '32px 32px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 80, height: 24, background: '#0A0A0A', borderRadius: 999, border: '2px solid rgba(255,255,255,0.08)' }} />
+              </div>
+              <div style={{ width: '390px', height: 'calc(100vh - 200px)', overflowY: 'auto', overflowX: 'hidden', background: '#fff' }}>
+                <WBWebsitePreview details={details} currentPage={currentPage} />
+              </div>
+              <div style={{ height: 24, background: '#0A0A0A', borderRadius: '0 0 32px 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 100, height: 4, background: 'rgba(255,255,255,0.3)', borderRadius: 999 }} />
+              </div>
             </div>
           </div>
         )}
