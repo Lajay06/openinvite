@@ -34,7 +34,7 @@ function PasswordGateSimple({ slug, password }) {
 const PAGE_LABELS = {
   'home': 'Home', 'our-story': 'Our Story', 'celebration': 'Celebration',
   'rsvp': 'RSVP', 'travel': 'Travel', 'registry': 'Registry',
-  'music': 'Music', 'photos': 'Photos', 'styling': 'Styling', 'faq': 'FAQ'
+  'music': 'Music', 'photos': 'Photos', 'styling': 'Styling', 'polls': 'Polls', 'faq': 'FAQ'
 };
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -49,6 +49,7 @@ import WeddingMusicPage from './pages/WeddingMusicPage';
 import WeddingPhotosPage from './pages/WeddingPhotosPage';
 import WeddingFAQPage from './pages/WeddingFAQPage';
 import WeddingStylePage from './pages/WeddingStylePage';
+import WeddingPollsPage from './pages/WeddingPollsPage';
 
 const PAGE_COMPONENTS = {
   home: WeddingHomePage,
@@ -60,6 +61,7 @@ const PAGE_COMPONENTS = {
   'music': WeddingMusicPage,
   'photos': WeddingPhotosPage,
   'styling': WeddingStylePage,
+  'polls': WeddingPollsPage,
   'faq': WeddingFAQPage
 };
 

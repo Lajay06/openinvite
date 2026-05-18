@@ -11,6 +11,7 @@ import {
   Plane, Hotel, Car, Phone,
   Settings, UserPlus, LogOut, HelpCircle, Lightbulb,
   Sparkles,
+  BarChart2,
 } from "lucide-react";
 
 const NAV_SECTIONS = [
@@ -31,6 +32,7 @@ const NAV_SECTIONS = [
       { icon: UserCheck,     label: "Wedding party", url: "/wedding-party" },
       { icon: LayoutGrid,    label: "Seating",       url: createPageUrl("Seating") },
       { icon: MessageCircle, label: "Messages",      url: createPageUrl("Messages") },
+      { icon: BarChart2,    label: "Guest polls",    url: createPageUrl("Polls") },
     ],
   },
   {
