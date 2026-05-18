@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Plus, LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, CalendarCheck, Send, Users, UtensilsCrossed, LayoutGrid, Clapperboard, Instagram, Signpost, Tag, Heart } from 'lucide-react';
+import { Plus, LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, CalendarCheck, Send, UtensilsCrossed, LayoutGrid, Clapperboard, Instagram, Signpost, Tag, Heart, Sparkles } from 'lucide-react';
 import { WEDDING_PAGES, WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS } from '@/lib/websiteThemes';
 import NewPageModal from './NewPageModal';
+
+const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const ASSETS = [
   { id: 'save-the-date', name: 'Save the Date', icon: CalendarCheck },
@@ -22,11 +24,52 @@ const PAGE_ICONS = {
 
 function PageIcon({ name, active }) {
   const Icon = PAGE_ICONS[name] || FileText;
-  return <Icon size={14} strokeWidth={1.5} color={active ? '#E03553' : '#888888'} fill="none" />;
+  return <Icon size={13} strokeWidth={1.5} color={active ? '#FFFFFF' : 'rgba(255,255,255,0.4)'} fill="none" />;
+}
+
+function Toggle({ enabled, onToggle }) {
+  return (
+    <button
+      onClick={e => { e.stopPropagation(); onToggle(); }}
+      style={{
+        width: 28, height: 16, borderRadius: 999, border: 'none', cursor: 'pointer',
+        background: enabled ? '#E03553' : 'rgba(255,255,255,0.1)',
+        position: 'relative', flexShrink: 0, padding: 0, outline: 'none',
+        transition: 'background 0.2s ease',
+      }}
+    >
+      <div style={{
+        position: 'absolute',
+        width: 12, height: 12, borderRadius: '50%',
+        background: '#FFFFFF',
+        top: 2, left: 2,
+        transform: enabled ? 'translateX(12px)' : 'translateX(0)',
+        transition: 'transform 0.2s ease',
+      }} />
+    </button>
+  );
+}
+
+function SLabel({ children }) {
+  return (
+    <p style={{
+      fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
+      color: 'rgba(255,255,255,0.25)', margin: 0,
+      padding: '12px 16px 6px', fontFamily: PJS,
+    }}>{children}</p>
+  );
+}
+
+function Divider() {
+  return <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '8px 0' }} />;
 }
 
 export default function WBLeftPanel({ details, onChange, currentPage, onPageChange, selectedAsset, onAssetSelect }) {
   const [showNewPage, setShowNewPage] = useState(false);
+  const [hoveredPage, setHoveredPage] = useState(null);
+  const [hoveredAsset, setHoveredAsset] = useState(null);
+  const [hoverNewPage, setHoverNewPage] = useState(false);
+
   const enabledPages = details.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'];
   const customPages = details.customPages || [];
 
@@ -39,10 +82,8 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
   };
 
   const handleCreatePage = (page) => {
-    const newCustomPages = [...customPages, page];
-    const newEnabledPages = [...enabledPages, page.slug];
-    onChange('customPages', newCustomPages);
-    onChange('enabledPages', newEnabledPages);
+    onChange('customPages', [...customPages, page]);
+    onChange('enabledPages', [...enabledPages, page.slug]);
     onPageChange(page.slug);
   };
 
@@ -59,48 +100,51 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
   return (
     <div style={{
       width: 240, flexShrink: 0,
-      background: '#FAFAFA', borderRight: '1px solid #EEEEEE',
+      background: '#111111',
+      borderRight: '1px solid rgba(255,255,255,0.06)',
       display: 'flex', flexDirection: 'column', overflowY: 'auto',
+      color: 'rgba(255,255,255,0.6)',
       zIndex: 50,
     }}>
-      {/* Pages header */}
-      <div style={{ padding: '14px 14px 8px' }}>
-        <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#888', margin: 0 }}>Pages</p>
-      </div>
 
-      {/* Built-in page list */}
+      {/* ── Pages ── */}
+      <SLabel>Pages</SLabel>
+
       <div>
         {WEDDING_PAGES.map(({ slug, label, icon }) => {
           const active = currentPage === slug;
           const enabled = enabledPages.includes(slug);
+          const hovered = hoveredPage === slug;
+          const clickable = enabled || slug === 'home';
           return (
             <div
               key={slug}
-              onClick={() => { if (enabled || slug === 'home') onPageChange(slug); }}
+              onClick={() => { if (clickable) onPageChange(slug); }}
+              onMouseEnter={() => { if (!active && clickable) setHoveredPage(slug); }}
+              onMouseLeave={() => setHoveredPage(null)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
-                padding: '9px 10px 9px 12px',
-                cursor: enabled || slug === 'home' ? 'pointer' : 'default',
-                background: active ? '#fff' : 'transparent',
-                borderLeft: active ? '3px solid #E03553' : '3px solid transparent',
+                padding: '6px 16px',
+                cursor: clickable ? 'pointer' : 'default',
+                background: active ? 'rgba(255,255,255,0.06)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+                borderLeft: active ? '2px solid #E03553' : '2px solid transparent',
                 opacity: !enabled && slug !== 'home' ? 0.4 : 1,
+                transition: 'background 0.1s',
               }}
             >
-              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}><PageIcon name={icon} active={active} /></div>
-              <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: active ? '#0A0A0A' : '#555' }}>{label}</span>
+              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                <PageIcon name={icon} active={active} />
+              </div>
+              <span style={{
+                flex: 1, fontSize: 12, fontWeight: 500, fontFamily: PJS,
+                color: active || hovered ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>{label}</span>
 
               {slug !== 'home' ? (
-                <button
-                  onClick={e => { e.stopPropagation(); toggle(slug); }}
-                  style={{
-                    width: 30, height: 17, borderRadius: 9, border: 'none', cursor: 'pointer',
-                    background: enabled ? '#E03553' : '#CCCCCC', position: 'relative', flexShrink: 0, transition: 'background 0.2s',
-                  }}
-                >
-                  <div style={{ position: 'absolute', width: 13, height: 13, borderRadius: '50%', background: '#fff', top: 2, left: enabled ? 15 : 2, transition: 'left 0.2s' }} />
-                </button>
+                <Toggle enabled={enabled} onToggle={() => toggle(slug)} />
               ) : (
-                <span style={{ fontSize: 9, color: '#BBB', fontWeight: 600, letterSpacing: '0.05em' }}>REQ</span>
+                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', fontWeight: 600, fontFamily: PJS }}>Req</span>
               )}
             </div>
           );
@@ -110,28 +154,36 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
       {/* Custom pages */}
       {customPages.length > 0 && (
         <>
-          <div style={{ height: 1, background: '#EEEEEE', margin: '6px 0' }} />
-          <div style={{ padding: '4px 14px 2px' }}>
-            <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#888', margin: 0 }}>Custom</p>
-          </div>
+          <Divider />
+          <SLabel>Custom</SLabel>
           {customPages.map(page => {
             const active = currentPage === page.slug;
+            const hovered = hoveredPage === page.slug;
             return (
               <div
                 key={page.slug}
                 onClick={() => onPageChange(page.slug)}
+                onMouseEnter={() => { if (!active) setHoveredPage(page.slug); }}
+                onMouseLeave={() => setHoveredPage(null)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '9px 10px 9px 12px', cursor: 'pointer',
-                  background: active ? '#fff' : 'transparent',
-                  borderLeft: active ? '3px solid #803D81' : '3px solid transparent',
+                  padding: '6px 16px', cursor: 'pointer',
+                  background: active ? 'rgba(255,255,255,0.06)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+                  borderLeft: active ? '2px solid #E03553' : '2px solid transparent',
+                  transition: 'background 0.1s',
                 }}
               >
-                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}><PageIcon name="FileText" active={active} /></div>
-                <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: active ? '#0A0A0A' : '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{page.name}</span>
+                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                  <PageIcon name="FileText" active={active} />
+                </div>
+                <span style={{
+                  flex: 1, fontSize: 12, fontWeight: 500, fontFamily: PJS,
+                  color: active || hovered ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>{page.name}</span>
                 <button
                   onClick={e => handleDeleteCustomPage(e, page.slug)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#CCC', fontSize: 14, padding: '0 2px', lineHeight: 1, flexShrink: 0 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 14, padding: '0 2px', lineHeight: 1, flexShrink: 0 }}
                   title="Delete page"
                 >×</button>
               </div>
@@ -140,82 +192,95 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
         </>
       )}
 
-      {/* + New Page */}
-      <div style={{ padding: '8px 12px' }}>
-        <button
-          onClick={() => setShowNewPage(true)}
-          style={{
-            width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: 6, border: '1px dashed #DDD', background: 'transparent', cursor: 'pointer',
-            fontSize: 12, fontWeight: 600, color: '#888', borderRadius: 4, fontFamily: 'inherit',
-            transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = '#DDD'; e.currentTarget.style.color = '#888'; }}
-        >
-          <Plus size={13} /> New Page
-        </button>
+      {/* ── New page ── */}
+      <Divider />
+      <div
+        onClick={() => setShowNewPage(true)}
+        onMouseEnter={() => setHoverNewPage(true)}
+        onMouseLeave={() => setHoverNewPage(false)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '7px 16px', cursor: 'pointer',
+          color: hoverNewPage ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)',
+          background: hoverNewPage ? 'rgba(255,255,255,0.04)' : 'transparent',
+          transition: 'all 0.15s', fontFamily: PJS,
+        }}
+      >
+        <Plus size={12} />
+        <span style={{ fontSize: 12, fontWeight: 500 }}>New page</span>
       </div>
 
-      {/* Divider */}
-      <div style={{ height: 1, background: '#EEEEEE', margin: '2px 0 10px' }} />
-
-      {/* Global design quick-view */}
-      <div style={{ padding: '0 14px 14px' }}>
-        <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#888', margin: '0 0 10px' }}>Design</p>
-
-        {/* Theme preview */}
+      {/* ── Design ── */}
+      <Divider />
+      <SLabel>Design</SLabel>
+      <div style={{ padding: '0 16px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <div style={{ display: 'flex', width: 28, height: 18, borderRadius: 3, overflow: 'hidden', flexShrink: 0, border: '1px solid #DDD' }}>
+          <div style={{ display: 'flex', width: 20, height: 20, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,0.15)' }}>
             <div style={{ flex: 1, background: theme.darkBg }} />
             <div style={{ flex: 1, background: theme.lightBg }} />
           </div>
-          <span style={{ fontSize: 12, color: '#555', fontWeight: 500 }}>{theme.name}</span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, fontFamily: PJS }}>{theme.name}</span>
         </div>
-
-        {/* Typography preview */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 15, fontWeight: 700, color: '#888', fontFamily: 'Georgia,serif', flexShrink: 0, lineHeight: 1 }}>Tt</span>
-          <span style={{ fontSize: 12, color: '#555', fontWeight: 500 }}>{typo.name}</span>
+          <div style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.15)', flexShrink: 0 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.5)', fontFamily: 'Georgia,serif', lineHeight: 1 }}>Tt</span>
+          </div>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, fontFamily: PJS }}>{typo.name}</span>
         </div>
       </div>
 
-      {/* Divider */}
-      <div style={{ height: 1, background: '#EEEEEE', margin: '2px 0 10px' }} />
-
-      {/* ASSETS section */}
-      <div style={{ padding: '0 14px 8px' }}>
-        <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#888', margin: '0 0 6px' }}>Assets</p>
-      </div>
+      {/* ── Assets ── */}
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0 0' }} />
+      <SLabel>Assets</SLabel>
       {ASSETS.map(({ id, name, icon: Icon }) => {
         const active = selectedAsset === id;
+        const hovered = hoveredAsset === id;
         return (
           <div
             key={id}
             onClick={() => onAssetSelect(id)}
+            onMouseEnter={() => { if (!active) setHoveredAsset(id); }}
+            onMouseLeave={() => setHoveredAsset(null)}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              padding: '8px 10px 8px 12px', cursor: 'pointer',
-              background: active ? '#fff' : 'transparent',
-              borderLeft: active ? '3px solid #803D81' : '3px solid transparent',
+              padding: '6px 16px', cursor: 'pointer',
+              background: active ? 'rgba(255,255,255,0.06)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+              borderLeft: active ? '2px solid #E03553' : '2px solid transparent',
               transition: 'background 0.1s',
             }}
-            onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F5F5F5'; }}
-            onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
           >
-            <Icon size={13} strokeWidth={1.5} color={active ? '#803D81' : '#888'} />
-            <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: active ? '#0A0A0A' : '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+            <Icon size={13} strokeWidth={1.5} color={active ? '#FFFFFF' : 'rgba(255,255,255,0.5)'} />
+            <span style={{ flex: 1, fontSize: 12, fontWeight: 500, fontFamily: PJS, color: active ? '#FFFFFF' : 'rgba(255,255,255,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
             <span style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 6px',
-              background: active ? '#DDF762' : 'transparent',
-              color: active ? '#0A0A0A' : '#BBBBBB',
-              border: active ? 'none' : '1px solid #DDDDDD',
+              fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 999, fontFamily: PJS,
+              background: active ? '#E03553' : 'rgba(255,255,255,0.08)',
+              color: active ? '#FFFFFF' : 'rgba(255,255,255,0.4)',
             }}>
-              {active ? 'EDIT' : 'READY'}
+              {active ? 'Edit' : 'Ready'}
             </span>
           </div>
         );
       })}
+
+      {/* Spacer pushes Ava button to bottom */}
+      <div style={{ flex: 1, minHeight: 12 }} />
+
+      {/* ── Ava auto-fill ── */}
+      <button
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          background: 'linear-gradient(135deg, #ec4899, #9333ea)',
+          color: '#FFFFFF', border: 'none', borderRadius: 999,
+          fontSize: 11, fontWeight: 600, cursor: 'pointer',
+          padding: '8px 16px',
+          margin: '8px 12px 12px',
+          width: 'calc(100% - 24px)',
+          fontFamily: PJS,
+        }}
+      >
+        <Sparkles size={12} />
+        Auto-fill with Ava
+      </button>
 
       {showNewPage && (
         <NewPageModal
