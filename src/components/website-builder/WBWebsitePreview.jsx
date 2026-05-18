@@ -397,7 +397,7 @@ function PreviewNav({ details, theme, typo, currentPage, isMobile = false }) {
 }
 
 // ── SECTION RENDERER (for dynamic pageSections) ───────────────
-function SectionRenderer({ section, theme, typo, isSelected, onClick }) {
+function SectionRenderer({ section, theme, typo, isSelected, onClick, isMobile = false }) {
   const [hovered, setHovered] = useState(false);
   const c = section.content || {};
   const darkBg = theme.darkBg || '#0A0A0A';
@@ -411,7 +411,7 @@ function SectionRenderer({ section, theme, typo, isSelected, onClick }) {
       case 'cinematic-hero':
       case 'minimal-text-hero':
         return (
-          <div style={{ background: darkBg, minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ background: darkBg, minHeight: isMobile ? '693px' : '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
             {c.photoUrl && <img src={c.photoUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} alt="" />}
             {c.photoUrl && <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${(c.overlayStrength || 40) / 100})` }} />}
             <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '40px 32px' }}>
@@ -724,6 +724,7 @@ export default function WBWebsitePreview({ details, currentPage = 'home', onSect
               typo={typo}
               isSelected={selectedSection === section.id}
               onClick={() => onSectionClick && onSectionClick(section.id)}
+              isMobile={isMobile}
             />
           ))}
         </div>

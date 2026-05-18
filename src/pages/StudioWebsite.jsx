@@ -386,44 +386,30 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
           </div>
 
           {/* Website Frame */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: previewDevice === 'desktop' ? 0 : 24 }}>
-            {previewDevice === 'mobile' ? (
-              /* ── Phone chrome ── */
-              <div style={{ width: 414, margin: '24px auto', background: '#1A1A1A', borderRadius: 44, padding: 12, boxShadow: '0 0 0 1px rgba(255,255,255,0.1), 0 24px 48px rgba(0,0,0,0.5)', flexShrink: 0 }}>
-                <div style={{ height: 32, background: '#0A0A0A', borderRadius: '32px 32px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 80, height: 24, background: '#0A0A0A', borderRadius: 999, border: '2px solid rgba(255,255,255,0.08)' }} />
-                </div>
-                <div style={{ width: '390px', height: 'calc(100vh - 200px)', overflowY: 'auto', overflowX: 'hidden', background: '#fff', display: 'flex', flexDirection: 'column' }}>
-                  <PreviewContent
-                    theme={theme} typo={typo} details={details} currentPage={currentPage}
-                    currentPageSections={currentPageSections} allPageLabels={allPageLabels} selectedSection={selectedSection}
-                    onPageChange={(slug) => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }}
-                    onSectionSelect={(section) => { setSelectedSection(section); setRightPanelTab('section-editor'); }}
-                    onMoveSection={moveSection} onDeleteSection={deleteSection}
-                    onInsertAbove={(index) => { setInsertAfterIndex(index - 0.5); setSectionPickerOpen(true); }}
-                    onAddSection={(index) => { setInsertAfterIndex(index); setSectionPickerOpen(true); }}
-                    isMobile={true}
-                  />
-                </div>
-                <div style={{ height: 24, background: '#0A0A0A', borderRadius: '0 0 32px 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 100, height: 4, background: 'rgba(255,255,255,0.3)', borderRadius: 999 }} />
-                </div>
-              </div>
-            ) : (
-              /* ── Desktop / Tablet frame ── */
-              <div style={{ width: frameWidth, margin: '0 auto', background: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: previewDevice === 'desktop' ? '100%' : undefined }}>
-                <PreviewContent
-                  theme={theme} typo={typo} details={details} currentPage={currentPage}
-                  currentPageSections={currentPageSections} allPageLabels={allPageLabels} selectedSection={selectedSection}
-                  onPageChange={(slug) => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }}
-                  onSectionSelect={(section) => { setSelectedSection(section); setRightPanelTab('section-editor'); }}
-                  onMoveSection={moveSection} onDeleteSection={deleteSection}
-                  onInsertAbove={(index) => { setInsertAfterIndex(index - 0.5); setSectionPickerOpen(true); }}
-                  onAddSection={(index) => { setInsertAfterIndex(index); setSectionPickerOpen(true); }}
-                  isMobile={false}
-                />
-              </div>
-            )}
+          <div style={{
+            flex: 1, overflow: 'hidden',
+            background: '#111111',
+            display: 'flex', alignItems: previewDevice === 'desktop' ? 'flex-start' : 'center', justifyContent: 'center',
+          }}>
+            <div style={{
+              width: previewDevice === 'desktop' ? '100%' : previewDevice === 'tablet' ? '768px' : '390px',
+              height: previewDevice === 'mobile' ? '693px' : '100%',
+              background: '#fff',
+              overflowY: 'auto', overflowX: 'hidden',
+              flexShrink: 0,
+              display: 'flex', flexDirection: 'column',
+            }}>
+              <PreviewContent
+                theme={theme} typo={typo} details={details} currentPage={currentPage}
+                currentPageSections={currentPageSections} allPageLabels={allPageLabels} selectedSection={selectedSection}
+                onPageChange={(slug) => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }}
+                onSectionSelect={(section) => { setSelectedSection(section); setRightPanelTab('section-editor'); }}
+                onMoveSection={moveSection} onDeleteSection={deleteSection}
+                onInsertAbove={(index) => { setInsertAfterIndex(index - 0.5); setSectionPickerOpen(true); }}
+                onAddSection={(index) => { setInsertAfterIndex(index); setSectionPickerOpen(true); }}
+                isMobile={previewDevice === 'mobile'}
+              />
+            </div>
           </div>
         </div>
 
@@ -490,7 +476,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 }
 
 // Section wrapper with hover toolbar
-function SectionWrap({ section, index, isSelected, onSelect, onMoveUp, onMoveDown, onDelete, onInsertAbove, theme, typo, masterData }) {
+function SectionWrap({ section, index, isSelected, onSelect, onMoveUp, onMoveDown, onDelete, onInsertAbove, theme, typo, masterData, isMobile }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
@@ -499,7 +485,7 @@ function SectionWrap({ section, index, isSelected, onSelect, onMoveUp, onMoveDow
       onMouseLeave={() => setHovered(false)}
       onClick={onSelect}
     >
-      <WBSectionRenderer section={section} theme={theme} typo={typo} masterData={masterData} />
+      <WBSectionRenderer section={section} theme={theme} typo={typo} masterData={masterData} isMobile={isMobile} />
       {(hovered || isSelected) && (
         <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 30, display: 'flex', gap: 4, background: isSelected ? '#E03553' : '#2563EB', borderRadius: 4, padding: '4px 8px' }}>
           <ToolBtn onClick={e => { e.stopPropagation(); onMoveUp(); }} title="Move up">↑</ToolBtn>
@@ -589,6 +575,7 @@ function PreviewContent({ theme, typo, details, currentPage, currentPageSections
                 theme={theme}
                 typo={typo}
                 masterData={details}
+                isMobile={isMobile}
               />
             ))}
           </>

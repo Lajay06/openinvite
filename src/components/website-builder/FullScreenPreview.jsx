@@ -107,58 +107,19 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
 
       {/* Preview content */}
       <div style={{
-        flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column',
-        background: '#1A1A1A',
+        flex: 1, background: '#111111',
+        display: 'flex', alignItems: device === 'desktop' ? 'flex-start' : 'center', justifyContent: 'center',
+        overflow: 'hidden',
       }}>
-        {/* URL bar — desktop and tablet only */}
-        {device !== 'mobile' && (
-          <div style={{ padding: '10px 0', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 999, padding: '6px 16px', width: 300, textAlign: 'center' }}>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                openinvite.com/w/{details.slug || 'your-wedding'}{currentPage !== 'home' ? `/${currentPage}` : ''}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {device === 'desktop' ? (
-          <div style={{ flex: 1, background: '#fff', overflow: 'auto' }}>
-            <WBWebsitePreview details={details} currentPage={currentPage} isMobile={false} />
-          </div>
-        ) : device === 'tablet' ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '0 24px 24px', flex: 1 }}>
-            <div style={{ width: 768, background: '#fff', flexShrink: 0, overflow: 'hidden' }}>
-              <div style={{ overflowY: 'auto', height: 'calc(100vh - 160px)' }}>
-                <WBWebsitePreview details={details} currentPage={currentPage} isMobile={false} />
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* Mobile phone chrome */
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, background: '#1A1A1A' }}>
-            <div style={{
-              width: 393,
-              background: '#0A0A0A',
-              borderRadius: 50,
-              padding: 12,
-              boxShadow: '0 0 0 1px rgba(255,255,255,0.12), 0 32px 64px rgba(0,0,0,0.6)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 0,
-              maxHeight: '85vh',
-            }}>
-              <div style={{ height: 36, background: '#0A0A0A', borderRadius: '38px 38px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 90, height: 26, background: '#1A1A1A', borderRadius: 999, border: '1px solid rgba(255,255,255,0.08)' }} />
-              </div>
-              <div style={{ width: 369, height: 'calc(85vh - 100px)', background: 'white', overflow: 'hidden auto' }}>
-                <WBWebsitePreview details={details} currentPage={currentPage} isMobile={true} />
-              </div>
-              <div style={{ height: 28, background: '#0A0A0A', borderRadius: '0 0 38px 38px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 120, height: 5, background: 'rgba(255,255,255,0.25)', borderRadius: 999 }} />
-              </div>
-            </div>
-          </div>
-        )}
+        <div style={{
+          width: device === 'desktop' ? '100%' : device === 'tablet' ? '768px' : '390px',
+          height: device === 'mobile' ? '693px' : '100%',
+          background: '#fff',
+          overflowY: 'auto', overflowX: 'hidden',
+          flexShrink: 0,
+        }}>
+          <WBWebsitePreview details={details} currentPage={currentPage} isMobile={device === 'mobile'} />
+        </div>
       </div>
     </div>
   );
