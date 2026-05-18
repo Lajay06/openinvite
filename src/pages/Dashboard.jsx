@@ -12,6 +12,7 @@ import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import TipsModal from "../components/dashboard/TipsModal";
+import DailyBriefing from "../components/dashboard/DailyBriefing";
 const Guest = base44.entities.Guest;
 const Budget = base44.entities.Budget;
 const Schedule = base44.entities.Schedule;
@@ -151,6 +152,8 @@ export default function Dashboard() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Overall" subtitle="Your wedding planning at a glance" />
+
+      <DailyBriefing />
 
       {/* Stat cards — full-width horizontal, equal columns */}
       <div style={{
