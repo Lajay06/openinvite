@@ -167,7 +167,7 @@ export default function ScrollMorphSection() {
 
   // Phase opacity calculations using linear interpolation
   const headlineOpacity = 1 - lerp01(scrolled, 0, 500);
-  const endTextOpacity = lerp01(scrolled, 3000, 3500);
+  const endTextOpacity = 1;
   const continueOpacity = lerp01(scrolled, 2800, 3200);
   const cardsVisible = scrolled > 300;
 
@@ -244,7 +244,6 @@ export default function ScrollMorphSection() {
             zIndex: 10,
             width: '100%',
             padding: '0 40px',
-            willChange: 'opacity',
           }}>
             <h2 style={{
               color: '#FFFFFF',
