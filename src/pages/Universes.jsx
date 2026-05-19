@@ -80,28 +80,14 @@ const Universes = () => {
       <PublicNav />
 
       {/* SECTION 1: HERO */}
-      <section style={{
-        minHeight: '100vh',
-        background: '#0A0A0A',
-        backgroundImage: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(128,61,129,0.12) 0%, transparent 65%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '120px 40px',
-        marginTop: 64,
-        position: 'relative',
-      }}>
-        <div style={{ textAlign: 'center', maxWidth: 700 }}>
-          <p style={{
-            fontSize: 10,
-            fontWeight: 600,
-            color: 'rgba(255,255,255,0.4)',
-            letterSpacing: '0.3em',
-            marginBottom: 24,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Guest Suite · 9 Universes · 10 Pieces Each
-          </p>
+      <section style={{ position: 'relative', height: '100vh', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779218326/DTS_In_Focus_Daniel_Far%C3%B2_Photos_ID5015_deiknt.jpg"
+          alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', zIndex: 1 }}
+        />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)', zIndex: 2 }} />
+        <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: 800, margin: '0 auto', padding: '0 40px' }}>
           <h1 style={{
             fontFamily: 'Plus Jakarta Sans, sans-serif',
             fontWeight: 700,
@@ -116,11 +102,10 @@ const Universes = () => {
           <p style={{
             fontSize: 'clamp(16px,2vw,22px)',
             fontWeight: 400,
-            color: 'rgba(255,255,255,0.6)',
+            color: 'rgba(255,255,255,0.75)',
             maxWidth: 560,
             margin: '0 auto 40px',
             lineHeight: 1.6,
-            textAlign: 'center',
             fontFamily: 'Plus Jakarta Sans',
           }}>
             Every invitation, menu, seating chart and digital asset — designed around a single aesthetic vision. Choose your universe and everything follows.
@@ -154,18 +139,6 @@ const Universes = () => {
             </button>
           </div>
         </div>
-
-        {/* Scroll indicator */}
-        <div style={{
-          position: 'absolute',
-          bottom: 40,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 1,
-          height: 40,
-          background: 'rgba(255,255,255,0.2)',
-          animation: 'scrollCue 2s ease-in-out infinite',
-        }} />
       </section>
 
       {/* SECTION 2: WHAT IS A UNIVERSE */}
