@@ -76,18 +76,17 @@ export default function Features() {
       <ScrollProgress />
 
       {/* ── S1: HERO ─────────────────────────────────────── */}
-      <section style={{ background: "#F5F5F3", padding: "120px 80px", borderBottom: "1px solid #E0E0DC" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
-          
-
-          
-          <h1 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#0A0A0A", marginBottom: "1rem", overflow: "visible", hyphens: "none", margin: "0 0 1rem 0" }}>
+      <section style={{ position: "relative", height: "100vh", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <img
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx.jpg"
+          alt=""
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", zIndex: 1 }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%)", zIndex: 2 }} />
+        <div style={{ position: "relative", zIndex: 10, textAlign: "center", maxWidth: 800, margin: "0 auto", padding: "0 40px" }}>
+          <h1 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif", margin: "0 0 24px" }}>
             Everything you needed. Plus a few things you didn't expect.
           </h1>
-          
-          
-
-          
           <ApplePillButton onClick={handleCTA} light={false}>Get started +</ApplePillButton>
         </div>
       </section>
