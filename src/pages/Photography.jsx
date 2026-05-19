@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, Plus, Video, Image, Clock, Loader2 } from "lucide-react";
+import PageConsiderations from '../components/shared/PageConsiderations';
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import AvaButton from '../components/shared/AvaButton';
@@ -181,6 +182,7 @@ export default function PhotographyPage() {
     { key: 'details',         label: 'Photo & video details' },
     { key: 'shot-list',       label: 'Shot list' },
     { key: 'timeline',        label: 'Timeline' },
+    { key: 'considerations',  label: 'Considerations' },
   ];
 
   return (
@@ -350,6 +352,13 @@ export default function PhotographyPage() {
               <SectionInput label="Reception shots" isTextarea value={details.photography?.receptionShots} onChange={e => handleDetailsUpdate('receptionShots', e.target.value)} placeholder="First dance, cake cutting, toasts, dancing" />
               <SectionInput label="Must-have shots" isTextarea value={details.photography?.mustHaveShots} onChange={e => handleDetailsUpdate('mustHaveShots', e.target.value)} placeholder="Specific photos or moments you want captured" />
             </DetailsSection>
+          </div>
+        )}
+
+        {/* Considerations tab */}
+        {activeTab === 'considerations' && (
+          <div style={{ maxWidth: 860 }}>
+            <PageConsiderations pageKey="photography" />
           </div>
         )}
 

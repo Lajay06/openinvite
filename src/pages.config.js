@@ -96,6 +96,7 @@ import WeddingWebsite from './pages/WeddingWebsite';
 import VendorMarketplace from './pages/VendorMarketplace';
 import QandA from './pages/QandA';
 import Polls from './pages/Polls';
+import Beauty from './pages/Beauty';
 import __Layout from './Layout.jsx';
 
 
@@ -149,6 +150,7 @@ export const PAGES = {
     "VendorMarketplace": VendorMarketplace,
     "QandA": QandA,
     "Polls": Polls,
+    "Beauty": Beauty,
 }
 
 export const pagesConfig = {

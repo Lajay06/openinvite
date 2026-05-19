@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search } from "lucide-react";
+import PageConsiderations from '../components/shared/PageConsiderations';
 import toast from 'react-hot-toast';
 
 import VendorForm from "../components/vendors/VendorForm";
@@ -77,6 +79,7 @@ export default function VendorsPage() {
   const [loading, setLoading] = useState(true);
   const [avaOpen, setAvaOpen] = useState(false);
   const [managingVendor, setManagingVendor] = useState(null);
+  const [activeTab, setActiveTab] = useState("vendors");
 
   useEffect(() => { loadVendors(); }, []);
 
@@ -171,66 +174,78 @@ export default function VendorsPage() {
         </button>
       </div>
 
-      {/* Filters + list */}
+      {/* Tabs */}
       <div style={{ padding: '0 32px 48px' }}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full justify-start">
+            <TabsTrigger value="vendors">Vendors</TabsTrigger>
+            <TabsTrigger value="considerations">Considerations</TabsTrigger>
+          </TabsList>
 
-        {/* Search */}
-        <div style={{ position: 'relative', maxWidth: 400, marginBottom: 14 }}>
-          <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
-          <Input
-            placeholder="Search vendors…"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            style={{ paddingLeft: 20 }}
-          />
-        </div>
-
-        {/* Row 1 — Status filters */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
-          {STATUS_FILTERS.map(f => (
-            <button
-              key={f.key}
-              onClick={() => setStatusFilter(f.key)}
-              className={`filter-pill${statusFilter === f.key ? ' active' : ''}`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Row 2 — Category filters */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 24 }}>
-          {CATEGORY_FILTERS.map(f => (
-            <button
-              key={f.key}
-              onClick={() => setCategoryFilter(f.key)}
-              className={`filter-pill${categoryFilter === f.key ? ' active' : ''}`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Vendor list */}
-        {vendors.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px solid rgba(10,10,10,0.06)' }}>
-            <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <Search size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
+          <TabsContent value="vendors" className="mt-6">
+            {/* Search */}
+            <div style={{ position: 'relative', maxWidth: 400, marginBottom: 14 }}>
+              <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+              <Input
+                placeholder="Search vendors…"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                style={{ paddingLeft: 20 }}
+              />
             </div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>No vendors added yet</p>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 20px' }}>Click + Add vendor to start tracking your suppliers</p>
-            <button onClick={() => { setEditingVendor(null); setShowForm(true); }} className="btn-primary">
-              + Add vendor
-            </button>
-          </div>
-        ) : (
-          <VendorList
-            vendors={filteredVendors}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onManage={setManagingVendor}
-          />
-        )}
+
+            {/* Row 1 — Status filters */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+              {STATUS_FILTERS.map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setStatusFilter(f.key)}
+                  className={`filter-pill${statusFilter === f.key ? ' active' : ''}`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Row 2 — Category filters */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 24 }}>
+              {CATEGORY_FILTERS.map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setCategoryFilter(f.key)}
+                  className={`filter-pill${categoryFilter === f.key ? ' active' : ''}`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Vendor list */}
+            {vendors.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px solid rgba(10,10,10,0.06)' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <Search size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                </div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>No vendors added yet</p>
+                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 20px' }}>Click + Add vendor to start tracking your suppliers</p>
+                <button onClick={() => { setEditingVendor(null); setShowForm(true); }} className="btn-primary">
+                  + Add vendor
+                </button>
+              </div>
+            ) : (
+              <VendorList
+                vendors={filteredVendors}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onManage={setManagingVendor}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="considerations" className="mt-8" style={{ maxWidth: 860 }}>
+            <PageConsiderations pageKey="vendors" />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Add / Edit Vendor modal */}

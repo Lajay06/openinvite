@@ -47,6 +47,7 @@ const NAV_SECTIONS = [
     items: [
       { icon: Palette,  label: "Styling",          url: createPageUrl("Styling") },
       { icon: Camera,   label: "Photography",       url: createPageUrl("Photography") },
+      { icon: Sparkles, label: "Beauty",            url: createPageUrl("Beauty") },
       { icon: Music2,   label: "Music",             url: createPageUrl("Music") },
       { icon: Image,    label: "Moodboard",         url: createPageUrl("Moodboard") },
       { icon: FileText, label: "Vows & speeches",   url: createPageUrl("VowsSpeeches") },

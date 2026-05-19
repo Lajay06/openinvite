@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UtensilsCrossed, Wine, Loader2, Plus, X, Search, FileText, BookOpen, Check } from "lucide-react";
+import PageConsiderations from '../components/shared/PageConsiderations';
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -132,6 +134,17 @@ export default function FoodBeveragePage() {
       </div>
 
       <div style={{ padding: '32px 32px 48px' }}>
+        <Tabs defaultValue="details">
+          <TabsList className="w-full justify-start">
+            <TabsTrigger value="details">Food & beverage details</TabsTrigger>
+            <TabsTrigger value="considerations">Considerations</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="considerations" className="mt-8" style={{ maxWidth: 860 }}>
+            <PageConsiderations pageKey="food" />
+          </TabsContent>
+
+          <TabsContent value="details" className="mt-6">
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
@@ -213,6 +226,8 @@ export default function FoodBeveragePage() {
             <SectionInput label="Additional catering notes" isTextarea value={data.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else your caterer should know…" />
           </DetailsSection>
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <AvaModal

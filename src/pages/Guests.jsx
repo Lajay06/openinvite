@@ -13,6 +13,7 @@ import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import EmailTemplates from "../components/guests/EmailTemplates";
+import PageConsiderations from '../components/shared/PageConsiderations';
 
 function CountUp({ to, duration = 1200, suffix = '' }) {
   const [value, setValue] = useState(0);
@@ -206,6 +207,7 @@ export default function Guests() {
             <TabsTrigger value="list">Guest list</TabsTrigger>
             <TabsTrigger value="rsvp">RSVP management</TabsTrigger>
             <TabsTrigger value="emails">Email templates</TabsTrigger>
+            <TabsTrigger value="considerations">Considerations</TabsTrigger>
           </TabsList>
 
           <TabsContent value="list" className="mt-8 space-y-6">
@@ -245,6 +247,10 @@ export default function Guests() {
 
           <TabsContent value="emails" className="mt-8">
             <EmailTemplates guests={guests} />
+          </TabsContent>
+
+          <TabsContent value="considerations" className="mt-8" style={{ maxWidth: 860 }}>
+            <PageConsiderations pageKey="guests" />
           </TabsContent>
         </Tabs>
       </div>

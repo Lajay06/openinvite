@@ -5,6 +5,7 @@ import { Search, Sparkles, X } from "lucide-react";
 import toast from 'react-hot-toast';
 
 import BudgetForm from "../components/budget/BudgetForm";
+import PageConsiderations from '../components/shared/PageConsiderations';
 import BudgetList from "../components/budget/BudgetList";
 import BudgetChart from "../components/budget/BudgetChart";
 import BudgetForecasting from "../components/budget/BudgetForecasting";
@@ -324,6 +325,7 @@ export default function BudgetPage() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="forecasting">Forecasting</TabsTrigger>
             <TabsTrigger value="expenses">Expenses</TabsTrigger>
+            <TabsTrigger value="considerations">Considerations</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-8">
@@ -333,6 +335,10 @@ export default function BudgetPage() {
 
           <TabsContent value="forecasting" className="mt-6">
             <BudgetForecasting budgetItems={budgetItems} stats={stats} />
+          </TabsContent>
+
+          <TabsContent value="considerations" className="mt-8" style={{ maxWidth: 860 }}>
+            <PageConsiderations pageKey="budget" />
           </TabsContent>
 
           <TabsContent value="expenses" className="mt-8 space-y-6">

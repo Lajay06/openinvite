@@ -11,6 +11,7 @@ import WeddingDayTimelineBuilder from "../components/schedule/WeddingDayTimeline
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
+import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
 const Schedule = base44.entities.Schedule;
 
@@ -215,6 +216,7 @@ export default function SchedulePage() {
             <TabsTrigger value="visual">Visual builder</TabsTrigger>
             <TabsTrigger value="timeline">Timeline view</TabsTrigger>
             <TabsTrigger value="list">List view</TabsTrigger>
+            <TabsTrigger value="considerations">Considerations</TabsTrigger>
           </TabsList>
 
           {/* Visual Builder */}
@@ -253,6 +255,11 @@ export default function SchedulePage() {
               </div>
               <ScheduleTimeline items={filteredItems} onEdit={handleEdit} onDelete={handleDelete} />
             </div>
+          </TabsContent>
+
+          {/* Considerations */}
+          <TabsContent value="considerations" className="mt-8" style={{ maxWidth: 860 }}>
+            <PageConsiderations pageKey="schedule" />
           </TabsContent>
 
           {/* List View */}
