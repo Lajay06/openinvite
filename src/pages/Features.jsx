@@ -80,7 +80,7 @@ export default function Features() {
         <img
           src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx.jpg"
           alt=""
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", zIndex: 1 }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", zIndex: 1 }}
         />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%)", zIndex: 2 }} />
         <div style={{ position: "relative", zIndex: 10, textAlign: "center", maxWidth: 800, margin: "0 auto", padding: "0 40px" }}>
