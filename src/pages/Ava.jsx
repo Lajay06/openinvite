@@ -35,109 +35,6 @@ function useCountUp(target, inView, duration = 1400) {
   return val;
 }
 
-// ── BeamsBackground ───────────────────────────────────────────
-function BeamsBackground({ intensity = 'strong' }) {
-  const canvasRef = useRef(null);
-  const beamsRef = useRef([]);
-  const animationFrameRef = useRef(0);
-  const MINIMUM_BEAMS = 20;
-  const opacityMap = { subtle: 0.7, medium: 0.85, strong: 1 };
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const brandHues = [0, 310, 280, 0, 310];
-
-    function createBeam(width, height) {
-      const angle = -35 + Math.random() * 10;
-      const hue = brandHues[Math.floor(Math.random() * brandHues.length)];
-      return {
-        x: Math.random() * width * 1.5 - width * 0.25,
-        y: Math.random() * height * 1.5 - height * 0.25,
-        width: 30 + Math.random() * 60,
-        length: height * 2.5,
-        angle,
-        speed: 0.6 + Math.random() * 1.2,
-        opacity: 0.08 + Math.random() * 0.14,
-        hue,
-        pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: 0.02 + Math.random() * 0.03
-      };
-    }
-
-    function resetBeam(beam, index) {
-      const column = index % 3;
-      const spacing = window.innerWidth / 3;
-      beam.y = window.innerHeight + 100;
-      beam.x = column * spacing + spacing / 2 + (Math.random() - 0.5) * spacing * 0.5;
-      beam.width = 100 + Math.random() * 100;
-      beam.speed = 0.5 + Math.random() * 0.4;
-      beam.hue = brandHues[index % brandHues.length];
-      beam.opacity = 0.12 + Math.random() * 0.1;
-      return beam;
-    }
-
-    function drawBeam(ctx, beam) {
-      ctx.save();
-      ctx.translate(beam.x, beam.y);
-      ctx.rotate(beam.angle * Math.PI / 180);
-      const pulsingOpacity = beam.opacity * (0.8 + Math.sin(beam.pulse) * 0.2) * opacityMap[intensity];
-      const gradient = ctx.createLinearGradient(0, 0, 0, beam.length);
-      gradient.addColorStop(0, `hsla(${beam.hue}, 80%, 60%, 0)`);
-      gradient.addColorStop(0.1, `hsla(${beam.hue}, 80%, 60%, ${pulsingOpacity * 0.5})`);
-      gradient.addColorStop(0.4, `hsla(${beam.hue}, 80%, 60%, ${pulsingOpacity})`);
-      gradient.addColorStop(0.6, `hsla(${beam.hue}, 80%, 60%, ${pulsingOpacity})`);
-      gradient.addColorStop(0.9, `hsla(${beam.hue}, 80%, 60%, ${pulsingOpacity * 0.5})`);
-      gradient.addColorStop(1, `hsla(${beam.hue}, 80%, 60%, 0)`);
-      ctx.fillStyle = gradient;
-      ctx.fillRect(-beam.width / 2, 0, beam.width, beam.length);
-      ctx.restore();
-    }
-
-    const updateCanvasSize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-      ctx.scale(dpr, dpr);
-      const totalBeams = MINIMUM_BEAMS * 1.5;
-      beamsRef.current = Array.from({ length: totalBeams }, () => createBeam(window.innerWidth, window.innerHeight));
-    };
-
-    function animate() {
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      ctx.filter = 'blur(35px)';
-      const totalBeams = beamsRef.current.length;
-      beamsRef.current.forEach((beam, index) => {
-        beam.y -= beam.speed;
-        beam.pulse += beam.pulseSpeed;
-        if (beam.y + beam.length < -100) resetBeam(beam, index, totalBeams);
-        drawBeam(ctx, beam);
-      });
-      animationFrameRef.current = requestAnimationFrame(animate);
-    }
-
-    updateCanvasSize();
-    window.addEventListener('resize', updateCanvasSize);
-    animate();
-    return () => {
-      window.removeEventListener('resize', updateCanvasSize);
-      cancelAnimationFrame(animationFrameRef.current);
-    };
-  }, [intensity]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', filter: 'blur(15px)', pointerEvents: 'none' }} />);
-
-
-}
-
 // ── Ava features ──────────────────────────────────────────────
 const avaFeatures = [
 { value: "autofill", label: "Auto-Fill Website", description: "Ava reads your planning details and builds your entire wedding website in seconds — venue, story, FAQ, travel, all populated beautifully.", detail: "Just answer a few questions during setup and Ava writes your welcome message, love story, event details and FAQ automatically. One click, fully personalised.", icon: "✦", color: "#E03553", bg: "https://static.wixstatic.com/media/d2df22_01bfbe691447412ead754d6a68265550~mv2.png" },
@@ -316,39 +213,24 @@ export default function AvaPage() {
       `}</style>
 
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <section style={{ position: "relative", minHeight: "100vh", width: "100%", background: "#09090b", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-        <BeamsBackground intensity="strong" />
+      <section style={{ position: "relative", minHeight: "100vh", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+        <img
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779217006/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6161_isrtef.jpg"
+          alt=""
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 1 }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7))", zIndex: 2 }} />
 
-        {/* Subtle pulsing overlay */}
-        <div style={{ position: "absolute", inset: 0, backdropFilter: "blur(50px)", background: "rgba(9,9,11,0.05)", pointerEvents: "none", animation: "avaOverlayPulse 10s ease-in-out infinite" }} />
-
-        {/* Red glow from top */}
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse 70% 40% at 50% 0%, rgba(224,53,83,0.15) 0%, transparent 60%)" }} />
-
-        {/* Content */}
         <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 40px", maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          {/* Badge */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid rgba(224,53,83,0.3)", borderRadius: 100, padding: "6px 16px", marginBottom: 40, background: "rgba(224,53,83,0.06)" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#E03553", display: "inline-block", animation: "avaPulse 2s ease-in-out infinite" }} />
-          </div>
-
-          {/* Headline */}
-          <h1 style={{ fontSize: "clamp(48px, 7vw, 88px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.05, color: "#0A0A0A", marginBottom: "1rem", overflow: "visible", hyphens: "none", margin: "0 0 1rem 0" }} className="text-base">
+          <h1 style={{ fontSize: "clamp(64px, 10vw, 120px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.0, color: "#FFFFFF", margin: "0 0 24px" }}>
             Meet Ava.
           </h1>
-
-          {/* Gradient lines below headline */}
-          <div style={{ position: "relative", width: "100%", maxWidth: 600, height: 60, marginTop: 0 }}>
-            <div style={{ position: "absolute", left: "15%", right: "15%", top: 0, height: 2, background: "linear-gradient(to right, transparent, #E03553, transparent)", filter: "blur(1px)" }} />
-            <div style={{ position: "absolute", left: "15%", right: "15%", top: 0, height: 1, background: "linear-gradient(to right, transparent, #E03553, transparent)" }} />
-            <div style={{ position: "absolute", left: "35%", right: "35%", top: 0, height: 5, background: "linear-gradient(to right, transparent, #803D81, transparent)", filter: "blur(2px)" }} />
-            <div style={{ position: "absolute", left: "35%", right: "35%", top: 0, height: 1, background: "linear-gradient(to right, transparent, #803D81, transparent)" }} />
-            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 400px 60px at center top, transparent 30%, #09090b 100%)" }} />
-          </div>
-
-          <p style={{ fontWeight: 400, fontSize: "clamp(18px,2.5vw,26px)", color: "rgba(255,255,255,0.6)", marginTop: 16, lineHeight: 1.4 }}>Your AI wedding planner. Always thinking one step ahead.</p>
-          <p style={{ fontWeight: 400, fontSize: 16, color: "rgba(255,255,255,0.4)", maxWidth: 520, margin: "16px auto 0", lineHeight: 1.7 }}>Ava takes the guesswork out of planning — using intelligence to personalise your journey, give smart suggestions, and help you stay calm, clear, and totally in control.</p>
-
+          <p style={{ fontSize: "clamp(18px, 2.5vw, 24px)", color: "rgba(255,255,255,0.75)", margin: "0 0 16px", lineHeight: 1.4 }}>
+            Your AI wedding planner. Always thinking one step ahead.
+          </p>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", maxWidth: 520, margin: "0 auto 40px", lineHeight: 1.7 }}>
+            Ava takes the guesswork out of planning — using intelligence to personalise your journey, give smart suggestions, and help you stay calm, clear, and totally in control.
+          </p>
           <button
             onClick={() => window.location.href = "/Onboarding"}
             className="btn-primary"
@@ -356,17 +238,6 @@ export default function AvaPage() {
             Try Ava Free →
           </button>
         </div>
-
-        {/* Scroll indicator */}
-        <div style={{ position: "absolute", bottom: 32, left: "50%", animation: "avaScrollBounce 2s ease-in-out infinite" }}>
-          <div style={{ width: 1, height: 48, background: "linear-gradient(to bottom, rgba(255,255,255,0.4), transparent)" }} />
-        </div>
-
-        <style>{`
-          @keyframes avaPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
-          @keyframes avaScrollBounce { 0%,100%{transform:translateX(-50%) translateY(0);opacity:0.6} 50%{transform:translateX(-50%) translateY(8px);opacity:1} }
-          @keyframes avaOverlayPulse { 0%,100%{opacity:0.05} 50%{opacity:0.15} }
-        `}</style>
       </section>
 
       {/* ── STATS ────────────────────────────────────────────── */}
