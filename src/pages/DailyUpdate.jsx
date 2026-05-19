@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Users, Building2, DollarSign, Cloud, Sparkles } from 'lucide-react';
+import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
-const cacheKey = () => `oi_briefing_${new Date().toISOString().slice(0, 10)}`;
+
+// v2 key busts any old cache that lacks the headline field
+const cacheKey = () => `oi_briefing_v2_${new Date().toISOString().slice(0, 10)}`;
 
 const BRIEFING_SCHEMA = {
   type: 'object',
   properties: {
-    greeting: { type: 'string' },
+    headline:    { type: 'string' },
+    greeting:    { type: 'string' },
     countdown: {
       type: 'object',
       properties: {
         headline: { type: 'string' },
-        subtext: { type: 'string' },
+        subtext:  { type: 'string' },
       },
       required: ['headline', 'subtext'],
     },
@@ -23,8 +26,8 @@ const BRIEFING_SCHEMA = {
         type: 'object',
         properties: {
           priority: { type: 'string' },
-          task: { type: 'string' },
-          reason: { type: 'string' },
+          task:     { type: 'string' },
+          reason:   { type: 'string' },
         },
         required: ['priority', 'task', 'reason'],
       },
@@ -35,25 +38,25 @@ const BRIEFING_SCHEMA = {
         type: 'object',
         properties: {
           insight: { type: 'string' },
-          action: { type: 'string' },
+          action:  { type: 'string' },
         },
         required: ['insight', 'action'],
       },
     },
-    guestAlert: { type: 'string' },
-    vendorNote: { type: 'string' },
-    budgetNote: { type: 'string' },
-    weatherNote: { type: 'string' },
-    emotionalNote: { type: 'string' },
+    guestAlert:      { type: 'string' },
+    vendorNote:      { type: 'string' },
+    budgetNote:      { type: 'string' },
+    weatherNote:     { type: 'string' },
+    emotionalNote:   { type: 'string' },
     forgottenDetail: { type: 'string' },
   },
-  required: ['greeting', 'countdown', 'thisWeek', 'smartSuggestions', 'emotionalNote', 'forgottenDetail'],
+  required: ['headline', 'greeting', 'countdown', 'thisWeek', 'smartSuggestions', 'emotionalNote', 'forgottenDetail'],
 };
 
 const PRIORITY_CONFIG = {
-  high:   { color: '#E03553',            label: 'Urgent' },
-  medium: { color: '#F59E0B',            label: 'This week' },
-  low:    { color: 'rgba(10,10,10,0.2)', label: 'When ready' },
+  high:   { bg: '#E03553',            color: 'white',                   label: 'Urgent' },
+  medium: { bg: '#F59E0B',            color: 'white',                   label: 'This week' },
+  low:    { bg: 'rgba(10,10,10,0.08)', color: 'rgba(10,10,10,0.5)',     label: 'When ready' },
 };
 
 function getTimeOfDay() {
@@ -72,6 +75,7 @@ export default function DailyUpdate() {
   const [phase, setPhase] = useState('loading');
   const [briefing, setBriefing] = useState(null);
   const [daysUntil, setDaysUntil] = useState(null);
+  const [coupleName, setCoupleName] = useState('');
   const [snapStats, setSnapStats] = useState({
     confirmedGuests: 0, pendingGuests: 0,
     budgetPercent: 0, bookedVendors: 0, totalVendors: 0,
@@ -90,6 +94,7 @@ export default function DailyUpdate() {
           setBriefing(cached.briefing);
           setDaysUntil(cached.daysUntil);
           if (cached.snapStats) setSnapStats(cached.snapStats);
+          if (cached.coupleName) setCoupleName(cached.coupleName);
           setPhase('ready');
           return;
         }
@@ -109,10 +114,12 @@ export default function DailyUpdate() {
     } catch {}
 
     const wd = weddingRows[0] || {};
-    const coupleName = wd.coupleNames
+    const couple = wd.coupleNames
       || (wd.couple1Name && wd.couple2Name ? `${wd.couple1Name} & ${wd.couple2Name}` : null)
       || localStorage.getItem('oi_couple_name')
-      || 'Not set';
+      || '';
+    setCoupleName(couple);
+
     const weddingDate = wd.weddingDate || localStorage.getItem('oi_wedding_date');
     const city = wd.mainCeremony?.address || localStorage.getItem('oi_wedding_city') || null;
 
@@ -121,7 +128,7 @@ export default function DailyUpdate() {
     let weather = null;
     try { weather = JSON.parse(localStorage.getItem('oi_weather')); } catch {}
 
-    const firstName = getFirstName(user?.full_name || coupleName);
+    const firstName = getFirstName(user?.full_name || couple);
     const tod = getTimeOfDay();
 
     const days = weddingDate
@@ -130,85 +137,66 @@ export default function DailyUpdate() {
     setDaysUntil(days);
 
     const confirmedGuests = guests.filter(g => g.rsvp_status === 'confirmed' || g.rsvp_status === 'attending').length;
-    const pendingGuests = guests.filter(g => !g.rsvp_status || g.rsvp_status === 'pending').length;
-    const unseatedGuests = guests.filter(g =>
+    const pendingGuests   = guests.filter(g => !g.rsvp_status || g.rsvp_status === 'pending').length;
+    const unseatedGuests  = guests.filter(g =>
       !g.table_assignment && (g.rsvp_status === 'confirmed' || g.rsvp_status === 'attending')
     ).length;
-    const totalBudget = budgetItems.reduce((s, b) => s + (b.total_amount || b.budgeted_amount || 0), 0);
-    const budgetSpent = budgetItems.reduce((s, b) => s + (b.spent_amount || b.actual_amount || 0), 0);
+    const totalBudget   = budgetItems.reduce((s, b) => s + (b.total_amount || b.budgeted_amount || 0), 0);
+    const budgetSpent   = budgetItems.reduce((s, b) => s + (b.spent_amount || b.actual_amount || 0), 0);
     const budgetPercent = totalBudget ? Math.round((budgetSpent / totalBudget) * 100) : 0;
     const bookedVendors = vendors.filter(v => v.status === 'booked').length;
-    const totalVendors = vendors.length;
-    const pendingTodos = todos.filter(t => !t.completed).length;
+    const totalVendors  = vendors.length;
+    const pendingTodos  = todos.filter(t => !t.completed).length;
 
     const snap = { confirmedGuests, pendingGuests, budgetPercent, bookedVendors, totalVendors };
     setSnapStats(snap);
 
     const fallback = {
+      headline: days !== null ? `${days} days to go.` : 'Your wedding is coming.',
       greeting: `Good ${tod}, ${firstName}. Here's where things stand today.`,
-      countdown: {
-        headline: days !== null ? `${days} days to go` : 'Your day is coming',
-        subtext: 'Every detail is coming together.',
-      },
+      countdown: { headline: `${days ?? '—'} days`, subtext: 'Every detail is coming together.' },
       thisWeek: [],
       smartSuggestions: [],
-      guestAlert: pendingGuests > 0
-        ? `${pendingGuests} guest${pendingGuests !== 1 ? 's' : ''} haven't replied yet`
-        : null,
-      vendorNote: null,
-      budgetNote: budgetPercent > 80 ? `Budget is at ${budgetPercent}%` : null,
+      guestAlert:  pendingGuests > 0 ? `${pendingGuests} guest${pendingGuests !== 1 ? 's' : ''} haven't replied yet` : null,
+      vendorNote:  null,
+      budgetNote:  budgetPercent > 80 ? `Budget is at ${budgetPercent}%` : null,
       weatherNote: null,
-      emotionalNote: 'You are doing better than you think.',
+      emotionalNote:   'You are doing better than you think.',
       forgottenDetail: 'Confirm your rehearsal dinner headcount with the venue.',
     };
 
     try {
       const today = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
 
-      const aiPrompt = `You are Ava, a premium wedding planning AI for the platform Openinvite. Generate a daily briefing for ${user?.full_name || 'the couple'} planning their wedding.
+      const aiPrompt = `You are Ava, a premium wedding planning AI. Generate a daily briefing for ${user?.full_name || 'the couple'}.
 
 Today is ${today}.
 
-WEDDING DATA:
-- Couple: ${coupleName}
-- Wedding date: ${weddingDate || 'Not set'}
-- Days until wedding: ${days ?? 'unknown'}
+DATA:
+- Couple: ${couple || 'Not set'}
+- Wedding date: ${weddingDate || 'Not set'} (${days ?? 'unknown'} days away)
 - Location: ${city || 'Not set'}
-- Weather today: ${weather?.data?.temp || 'unknown'}°C
+- Total guests: ${guests.length}, confirmed: ${confirmedGuests}, pending: ${pendingGuests}, unseated: ${unseatedGuests}
+- Budget: $${totalBudget.toLocaleString()} total, $${budgetSpent.toLocaleString()} spent (${budgetPercent}%)
+- Vendors: ${bookedVendors} booked of ${totalVendors}
+- Pending tasks: ${pendingTodos}
 
-GUEST STATUS:
-- Total guests: ${guests.length}
-- Confirmed: ${confirmedGuests}
-- Pending RSVP: ${pendingGuests}
-- Unseated guests: ${unseatedGuests}
-
-BUDGET:
-- Total budget: $${totalBudget.toLocaleString()}
-- Spent: $${budgetSpent.toLocaleString()} (${budgetPercent}%)
-
-VENDORS:
-- Booked: ${bookedVendors} of ${totalVendors}
-
-TASKS:
-- Pending to-dos: ${pendingTodos}
-
-Generate a daily briefing. Be specific, warm, intelligent, and concise. Every insight must reference their actual data. Vary tone based on how close the wedding is.
-
-Return JSON only, no other text:
+Return JSON only:
 {
-  "greeting": "warm personalised greeting (2 sentences max)",
+  "headline": "punchy newspaper headline, max 8 words, present tense, specific to their data e.g. 'Ten RSVPs outstanding. Time to act.' or 'Budget on track. Three vendors still needed.'",
+  "greeting": "warm personalised 2-sentence summary of their wedding status",
   "countdown": { "headline": "days headline", "subtext": "one warm sentence" },
-  "thisWeek": [{"priority": "high|medium|low", "task": "actionable task", "reason": "why now"}],
-  "smartSuggestions": [{"insight": "specific insight", "action": "what to do"}],
+  "thisWeek": [{ "priority": "high|medium|low", "task": "actionable task", "reason": "why now" }],
+  "smartSuggestions": [{ "insight": "specific insight referencing their data", "action": "what to do" }],
   "guestAlert": "guest insight or null",
   "vendorNote": "vendor insight or null",
   "budgetNote": "budget insight or null",
   "weatherNote": "weather consideration or null",
-  "emotionalNote": "warm encouragement (1-2 sentences)",
+  "emotionalNote": "warm 1-2 sentence encouragement, tasteful not cheesy",
   "forgottenDetail": "one thing couples often forget at this stage"
 }
 
-Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation marks.`;
+Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation marks. headline must be punchy and specific.`;
 
       const raw = await base44.integrations.Core.InvokeLLM({
         prompt: aiPrompt,
@@ -221,10 +209,10 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
       const clean = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsed = JSON.parse(clean);
       setBriefing(parsed);
-      localStorage.setItem(cacheKey(), JSON.stringify({ briefing: parsed, daysUntil: days, snapStats: snap }));
+      localStorage.setItem(cacheKey(), JSON.stringify({ briefing: parsed, daysUntil: days, snapStats: snap, coupleName: couple }));
       setPhase('ready');
     } catch (err) {
-      console.warn('[DailyUpdate] AI failed, using fallback:', err);
+      console.warn('[DailyUpdate] AI failed:', err);
       setBriefing(fallback);
       setPhase('ready');
     }
@@ -236,9 +224,9 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
   };
 
   const now = new Date();
-  const dateLabel = `${now.toLocaleDateString('en-AU', { weekday: 'long' })} · ${now.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+  const dateLabel = now.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-  const alertChips = briefing ? [
+  const alertItems = briefing ? [
     briefing.guestAlert  && { Icon: Users,      text: briefing.guestAlert },
     briefing.vendorNote  && { Icon: Building2,  text: briefing.vendorNote },
     briefing.budgetNote  && { Icon: DollarSign, text: briefing.budgetNote },
@@ -255,106 +243,115 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      {/* ── Hero ── */}
-      <div style={{ background: '#0A0A0A', padding: '40px 40px 32px' }}>
-        {phase === 'loading' ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 140 }}>
-            <Sparkles size={16} color="rgba(255,255,255,0.4)" className="animate-pulse" />
-            <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>
-              Ava is preparing your daily briefing...
-            </span>
+      {/* ── SECTION 1: Masthead ── */}
+      <div style={{
+        background: '#0A0A0A',
+        padding: '20px 40px',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24,
+      }}>
+        <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)' }}>
+          Openinvite daily
+        </span>
+
+        <div style={{ textAlign: 'center' }}>
+          {coupleName && (
+            <div style={{ fontFamily: PJS, fontSize: 13, fontWeight: 600, color: 'white', letterSpacing: '0.04em' }}>
+              {coupleName}
+            </div>
+          )}
+          <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em', marginTop: coupleName ? 2 : 0 }}>
+            {dateLabel}
+          </div>
+        </div>
+
+        {daysUntil !== null ? (
+          <div style={{
+            background: '#E03553', color: 'white',
+            borderRadius: 999, padding: '6px 16px',
+            fontFamily: PJS, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
+            whiteSpace: 'nowrap',
+          }}>
+            {daysUntil > 0 ? `${daysUntil} days to go` : 'Today\'s the day'}
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 40 }}>
-
-            {/* Left — date pill + greeting */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center',
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 999,
-                padding: '4px 12px',
-                fontFamily: PJS, fontSize: 11, fontWeight: 600,
-                color: 'rgba(255,255,255,0.5)',
-                letterSpacing: '0.06em',
-                marginBottom: 24,
-              }}>
-                {dateLabel}
-              </div>
-              <p style={{
-                fontFamily: PJS, fontSize: 32, fontWeight: 700,
-                color: 'white', letterSpacing: '-0.02em',
-                lineHeight: 1.2, margin: 0, maxWidth: 600,
-              }}>
-                {briefing?.greeting}
-              </p>
-            </div>
-
-            {/* Right — countdown */}
-            <div style={{ flexShrink: 0, textAlign: 'right' }}>
-              {daysUntil !== null ? (
-                <>
-                  <div style={{
-                    fontFamily: PJS, fontSize: 80, fontWeight: 800,
-                    color: 'white', letterSpacing: '-0.05em', lineHeight: 1,
-                  }}>
-                    {daysUntil > 0 ? daysUntil : '—'}
-                  </div>
-                  <div style={{
-                    fontFamily: PJS, fontSize: 11, fontWeight: 600,
-                    letterSpacing: '0.1em', color: 'rgba(255,255,255,0.4)',
-                    marginTop: 4,
-                  }}>
-                    Days to go
-                  </div>
-                </>
-              ) : (
-                <div style={{ fontFamily: PJS, fontSize: 14, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
-                  No wedding date set
-                </div>
-              )}
-              {briefing?.countdown?.subtext && (
-                <p style={{
-                  fontFamily: PJS, fontSize: 12, color: 'rgba(255,255,255,0.3)',
-                  fontStyle: 'italic', marginTop: 8, lineHeight: 1.55,
-                  maxWidth: 200, textAlign: 'right',
-                }}>
-                  {briefing.countdown.subtext}
-                </p>
-              )}
-            </div>
-          </div>
+          <div style={{ width: 120 }} />
         )}
       </div>
 
-      {/* ── Content ── */}
-      {phase === 'ready' && briefing && (
-        <div style={{ padding: '0 40px 40px' }}>
-
-          {/* 3-column grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32 }}>
-
-            {/* Col 1 — This week */}
-            <div>
-              <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', margin: '32px 0 16px' }}>
-                This week
+      {/* ── SECTION 2: Hero headline ── */}
+      <div style={{
+        background: '#0A0A0A',
+        padding: '48px 40px 40px',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        {phase === 'loading' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 100 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#E03553', animation: 'pulse 1.4s infinite' }} />
+            <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>
+              Ava is preparing your briefing...
+            </span>
+          </div>
+        ) : (
+          <>
+            <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', color: '#E03553', margin: '0 0 16px' }}>
+              Today's edition
+            </p>
+            <h1 style={{
+              fontFamily: PJS, fontSize: 42, fontWeight: 800,
+              color: 'white', letterSpacing: '-0.03em',
+              lineHeight: 1.15, maxWidth: 800, margin: 0,
+            }}>
+              {briefing?.headline}
+            </h1>
+            {briefing?.greeting && (
+              <p style={{
+                fontFamily: PJS, fontSize: 16, fontWeight: 400,
+                color: 'rgba(255,255,255,0.55)', lineHeight: 1.6,
+                maxWidth: 680, marginTop: 16, marginBottom: 0,
+              }}>
+                {briefing.greeting}
               </p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ── SECTION 3: Editorial grid ── */}
+      {phase === 'ready' && briefing && (
+        <div style={{ background: 'white', padding: '0 40px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr 1px 1fr', gap: 0 }}>
+
+            {/* ── Column A: This week ── */}
+            <div style={{ padding: '32px 32px 32px 0' }}>
+              <div style={{ borderTop: '3px solid #0A0A0A', paddingTop: 16, marginBottom: 24 }}>
+                <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: '#0A0A0A' }}>
+                  This week
+                </span>
+              </div>
+
               {Array.isArray(briefing.thisWeek) && briefing.thisWeek.length > 0 ? (
                 briefing.thisWeek.map((item, i) => {
                   const cfg = PRIORITY_CONFIG[item.priority] || PRIORITY_CONFIG.medium;
+                  const isLast = i === briefing.thisWeek.length - 1;
                   return (
-                    <div key={i} style={{ background: 'white', border: '1px solid rgba(10,10,10,0.08)', padding: 16, marginBottom: 8 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color, flexShrink: 0 }} />
-                        <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)' }}>
-                          {cfg.label}
-                        </span>
-                      </div>
-                      <p style={{ fontFamily: PJS, fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: '6px 0 0', lineHeight: 1.4 }}>
+                    <div key={i} style={{
+                      paddingBottom: 20, marginBottom: isLast ? 0 : 20,
+                      borderBottom: isLast ? 'none' : '1px solid rgba(10,10,10,0.06)',
+                    }}>
+                      <span style={{
+                        display: 'inline-block',
+                        background: cfg.bg, color: cfg.color,
+                        fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
+                        padding: '2px 7px', borderRadius: 999,
+                        fontFamily: PJS,
+                      }}>
+                        {cfg.label}
+                      </span>
+                      <p style={{ fontFamily: PJS, fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '8px 0 0', lineHeight: 1.3 }}>
                         {item.task}
                       </p>
-                      <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                      <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.45)', margin: '6px 0 0', lineHeight: 1.5 }}>
                         {item.reason}
                       </p>
                     </div>
@@ -367,111 +364,121 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
               )}
             </div>
 
-            {/* Col 2 — Ava's insights + alert chips */}
-            <div>
-              <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', margin: '32px 0 16px' }}>
-                Ava's insights
-              </p>
-              {Array.isArray(briefing.smartSuggestions) && briefing.smartSuggestions.map((s, i) => (
-                <div key={i} style={{
-                  background: 'rgba(236,72,153,0.04)',
-                  border: '1px solid rgba(236,72,153,0.1)',
-                  borderLeft: '3px solid #ec4899',
-                  padding: 16, marginBottom: 8,
-                }}>
-                  <span style={{ color: '#ec4899', fontSize: 12, display: 'block', marginBottom: 6, lineHeight: 1 }}>✦</span>
-                  <p style={{ fontFamily: PJS, fontSize: 13, color: '#0A0A0A', fontWeight: 500, margin: '0 0 4px', lineHeight: 1.5 }}>
-                    {s.insight}
-                  </p>
-                  <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0, lineHeight: 1.5 }}>
-                    {s.action}
-                  </p>
-                </div>
-              ))}
-              {alertChips.map((chip, i) => {
-                const Icon = chip.Icon;
+            {/* Divider A/B */}
+            <div style={{ background: 'rgba(10,10,10,0.06)' }} />
+
+            {/* ── Column B: Ava's briefing ── */}
+            <div style={{ padding: '32px' }}>
+              <div style={{ borderTop: '3px solid #E03553', paddingTop: 16, marginBottom: 24 }}>
+                <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: '#E03553' }}>
+                  Ava's briefing
+                </span>
+              </div>
+
+              {Array.isArray(briefing.smartSuggestions) && briefing.smartSuggestions.map((s, i) => {
+                const isLast = i === briefing.smartSuggestions.length - 1 && alertItems.length === 0;
                 return (
                   <div key={i} style={{
-                    background: 'rgba(10,10,10,0.02)', border: '1px solid rgba(10,10,10,0.06)',
-                    padding: '12px 14px', marginBottom: 6,
+                    paddingBottom: 20, marginBottom: isLast ? 0 : 20,
+                    borderBottom: isLast ? 'none' : '1px solid rgba(10,10,10,0.06)',
+                  }}>
+                    <span style={{ color: '#ec4899', fontSize: 12, display: 'block', marginBottom: 8, lineHeight: 1 }}>✦</span>
+                    <p style={{ fontFamily: PJS, fontSize: 15, fontWeight: 600, color: '#0A0A0A', margin: 0, lineHeight: 1.4 }}>
+                      {s.insight}
+                    </p>
+                    <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: '6px 0 0', lineHeight: 1.5 }}>
+                      {s.action}
+                    </p>
+                  </div>
+                );
+              })}
+
+              {alertItems.map((chip, i) => {
+                const Icon = chip.Icon;
+                const isLast = i === alertItems.length - 1;
+                return (
+                  <div key={i} style={{
+                    paddingBottom: 16, marginBottom: isLast ? 0 : 16,
+                    borderBottom: isLast ? 'none' : '1px solid rgba(10,10,10,0.06)',
                     display: 'flex', gap: 10, alignItems: 'flex-start',
                   }}>
-                    <Icon size={14} color="rgba(10,10,10,0.3)" style={{ flexShrink: 0, marginTop: 1 }} />
-                    <span style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', lineHeight: 1.5 }}>
+                    <Icon size={13} color="rgba(10,10,10,0.3)" style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.55)', lineHeight: 1.5 }}>
                       {chip.text}
                     </span>
                   </div>
                 );
               })}
-              {briefing.smartSuggestions?.length === 0 && alertChips.length === 0 && (
+
+              {briefing.smartSuggestions?.length === 0 && alertItems.length === 0 && (
                 <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.35)', margin: 0 }}>
                   No alerts right now.
                 </p>
               )}
             </div>
 
-            {/* Col 3 — Today's snapshot */}
-            <div>
-              <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', margin: '32px 0 16px' }}>
-                Today's snapshot
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {snapCards.map((card, i) => (
-                  <div key={i} style={{
-                    background: 'rgba(10,10,10,0.02)',
-                    border: '1px solid rgba(10,10,10,0.06)',
-                    padding: 16,
-                  }}>
-                    <p style={{ fontFamily: PJS, fontSize: 10, color: 'rgba(10,10,10,0.35)', fontWeight: 600, letterSpacing: '0.06em', margin: '0 0 8px', lineHeight: 1.4 }}>
-                      {card.label}
-                    </p>
-                    <p style={{ fontFamily: PJS, fontSize: 28, fontWeight: 700, color: '#0A0A0A', margin: 0, lineHeight: 1 }}>
-                      {card.value}
-                    </p>
-                  </div>
-                ))}
+            {/* Divider B/C */}
+            <div style={{ background: 'rgba(10,10,10,0.06)' }} />
+
+            {/* ── Column C: Your numbers ── */}
+            <div style={{ padding: '32px 0 32px 32px' }}>
+              <div style={{ borderTop: '3px solid #0A0A0A', paddingTop: 16, marginBottom: 24 }}>
+                <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: '#0A0A0A' }}>
+                  Your numbers
+                </span>
               </div>
+
+              {snapCards.map((card, i) => {
+                const isLast = i === snapCards.length - 1;
+                return (
+                  <div key={i} style={{
+                    paddingBottom: 24, marginBottom: isLast ? 0 : 24,
+                    borderBottom: isLast ? 'none' : '1px solid rgba(10,10,10,0.06)',
+                  }}>
+                    <div style={{ fontFamily: PJS, fontSize: 48, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {card.value}
+                    </div>
+                    <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', marginTop: 4 }}>
+                      {card.label}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
+        </div>
+      )}
 
-          {/* ── Bottom ── */}
-          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', margin: '24px 0' }} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-
-            {briefing.emotionalNote && (
-              <div style={{ background: 'rgba(10,10,10,0.02)', border: '1px solid rgba(10,10,10,0.06)', padding: '20px 24px' }}>
-                <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.3)', margin: '0 0 8px' }}>
-                  A note from Ava
-                </p>
-                <p style={{ fontFamily: PJS, fontSize: 14, color: 'rgba(10,10,10,0.6)', fontStyle: 'italic', lineHeight: 1.6, margin: 0 }}>
-                  {briefing.emotionalNote}
-                </p>
-              </div>
-            )}
-
-            {briefing.forgottenDetail && (
-              <div style={{ background: '#0A0A0A', padding: '20px 24px' }}>
-                <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', margin: '0 0 8px' }}>
-                  Often forgotten
-                </p>
-                <p style={{ fontFamily: PJS, fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, margin: 0 }}>
-                  {briefing.forgottenDetail}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Refresh */}
-          <div style={{ textAlign: 'right', marginTop: 20 }}>
-            <button
-              onClick={handleRefresh}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 10, color: 'rgba(10,10,10,0.25)', padding: 0 }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.5)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.25)'; }}
-            >
-              Refresh briefing
-            </button>
-          </div>
+      {/* ── SECTION 4: Footer bar ── */}
+      {phase === 'ready' && briefing && (
+        <div style={{
+          background: '#0A0A0A',
+          padding: '24px 40px',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 40,
+        }}>
+          {briefing.emotionalNote && (
+            <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(255,255,255,0.45)', fontStyle: 'italic', maxWidth: 500, margin: 0, lineHeight: 1.6, flex: 1 }}>
+              {briefing.emotionalNote}
+            </p>
+          )}
+          {briefing.forgottenDetail && (
+            <div style={{ maxWidth: 320, textAlign: 'right', flexShrink: 0 }}>
+              <p style={{ fontFamily: PJS, fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.25)', margin: '0 0 4px' }}>
+                Often forgotten
+              </p>
+              <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.6 }}>
+                {briefing.forgottenDetail}
+              </p>
+            </div>
+          )}
+          <button
+            onClick={handleRefresh}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 10, color: 'rgba(255,255,255,0.2)', padding: 0, alignSelf: 'flex-end', flexShrink: 0 }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; }}
+          >
+            Refresh
+          </button>
         </div>
       )}
     </div>
