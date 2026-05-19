@@ -82,14 +82,14 @@ export default function FeatureInvitations({ onCTA }) {
   }, []);
 
   // Derived values
-  const overlayOpacity = lerp01(progress, 0, 0.6);          // black fade: 0→1 over first 60%
+  const overlayOpacity = lerp01(progress, 0, 0.7);          // black fade: 0→1 over first 70%
   const textOpacity    = 1 - lerp01(progress, 0, 0.4);      // text out: 1→0 over first 40%
 
   return (
     <section style={{ position: 'relative', background: '#0A0A0A' }}>
 
       {/* ── 300vh scroll driver ── */}
-      <div ref={scrollContainerRef} style={{ position: 'relative', height: '300vh' }}>
+      <div ref={scrollContainerRef} style={{ position: 'relative', height: '200vh' }}>
 
         {/* Sticky viewport */}
         <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
