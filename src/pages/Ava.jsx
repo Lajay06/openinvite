@@ -227,7 +227,7 @@ export default function AvaPage() {
           <p style={{ fontSize: "clamp(18px, 2.5vw, 24px)", fontWeight: 400, color: "rgba(255,255,255,0.75)", margin: "0 0 16px", lineHeight: 1.5, fontFamily: "Plus Jakarta Sans, sans-serif", textAlign: "center" }}>
             Your AI wedding planner. Always thinking one step ahead.
           </p>
-          <p style={{ fontSize: 16, fontWeight: 400, color: "rgba(255,255,255,0.5)", maxWidth: 520, margin: "0 auto", lineHeight: 1.7, fontFamily: "Plus Jakarta Sans, sans-serif", textAlign: "center" }}>
+          <p style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.5)", maxWidth: 520, margin: "0 auto", lineHeight: 1.7, fontFamily: "Plus Jakarta Sans, sans-serif", textAlign: "center" }}>
             Ava takes the guesswork out of planning — using intelligence to personalise your journey, give smart suggestions, and help you stay calm, clear, and totally in control.
           </p>
         </div>
