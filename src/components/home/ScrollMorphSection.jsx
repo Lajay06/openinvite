@@ -192,8 +192,8 @@ export default function ScrollMorphSection() {
         }
       `}</style>
 
-      {/* OUTER: tall container — 6000px for scroll room */}
-      <div ref={containerRef} style={{ position: 'relative', height: '6000px' }}>
+      {/* OUTER: tall container — 4000px for scroll room */}
+      <div ref={containerRef} style={{ position: 'relative', height: '4000px' }}>
 
         {/* INNER: sticky — pins to viewport */}
         <div
@@ -235,9 +235,9 @@ export default function ScrollMorphSection() {
           {/* PHASE 3: End text "Every detail, beautifully handled." — fades in 3000→3500px */}
           <div style={{
             position: 'absolute',
-            top: '15%',
+            top: '50%',
             left: '50%',
-            transform: 'translateX(-50%)',
+            transform: 'translate(-50%, -50%)',
             textAlign: 'center',
             opacity: endTextOpacity,
             pointerEvents: 'none',
@@ -257,6 +257,18 @@ export default function ScrollMorphSection() {
             }}>
               Every detail, beautifully handled.
             </h2>
+            <p style={{
+              color: '#AAAAAA',
+              fontSize: 'clamp(16px, 2vw, 20px)',
+              fontWeight: 400,
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              letterSpacing: '-0.01em',
+              lineHeight: 1.6,
+              maxWidth: '600px',
+              margin: '20px auto 0',
+            }}>
+              Planning, invitations, guests, timelines and budgets, intelligently connected in one seamless experience.
+            </p>
           </div>
 
           {/* Continue scrolling indicator — appears 2800→3200px */}
@@ -274,13 +286,12 @@ export default function ScrollMorphSection() {
               color: '#FFFFFF',
               fontSize: '10px',
               fontWeight: 600,
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               marginBottom: '8px',
               margin: 0,
             }}>
-              CONTINUE SCROLLING
+              Continue scrolling
             </p>
             <div style={{
               width: '20px',
@@ -329,7 +340,7 @@ export default function ScrollMorphSection() {
 
                   const baseR = Math.min(containerSize.width, containerSize.height * 1.5);
                   const arcR = baseR * (isMobile ? 1.4 : 1.1);
-                  const arcApexY = containerSize.height * (isMobile ? 0.35 : 0.25);
+                  const arcApexY = containerSize.height * (isMobile ? 0.1 : 0.05);
                   const arcCenterY = arcApexY + arcR;
                   const spread = isMobile ? 100 : 130;
                   const startAngle = -90 - spread / 2;
