@@ -53,8 +53,8 @@ const BRIEFING_SCHEMA = {
 
 const PRIORITY_DOT = {
   high: '#E03553',
-  medium: 'rgba(255,255,255,0.4)',
-  low: 'rgba(255,255,255,0.18)',
+  medium: 'rgba(10,10,10,0.3)',
+  low: 'rgba(10,10,10,0.15)',
 };
 
 function getTimeOfDay() {
@@ -74,14 +74,14 @@ function AlertChip({ iconKey, text }) {
   const Icon = ICONS[iconKey];
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.04)',
-      border: '1px solid rgba(255,255,255,0.07)',
+      background: 'rgba(10,10,10,0.03)',
+      border: '1px solid rgba(10,10,10,0.08)',
       padding: '8px 12px',
       display: 'flex', alignItems: 'flex-start', gap: 8,
       flex: '1 1 180px', minWidth: 0, maxWidth: 380,
     }}>
-      {Icon && <Icon size={12} color="rgba(255,255,255,0.28)" style={{ flexShrink: 0, marginTop: 2 }} />}
-      <span style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.58)', lineHeight: 1.55 }}>{text}</span>
+      {Icon && <Icon size={12} color="rgba(10,10,10,0.35)" style={{ flexShrink: 0, marginTop: 2 }} />}
+      <span style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', lineHeight: 1.55 }}>{text}</span>
     </div>
   );
 }
@@ -109,7 +109,6 @@ export default function DailyBriefing() {
       } catch {}
     }
 
-    // Fetch all data with individual fallbacks
     let guests = [], budgetItems = [], vendors = [], scheduleItems = [], todos = [], weddingRows = [];
     try {
       [guests, budgetItems, vendors, scheduleItems, todos, weddingRows] = await Promise.all([
@@ -156,7 +155,6 @@ export default function DailyBriefing() {
       !g.table_assignment && (g.rsvp_status === 'confirmed' || g.rsvp_status === 'attending')
     ).length;
 
-    // Fallback briefing built from local data only
     const fallback = {
       greeting: `Good ${tod}, ${firstName}. Here's where things stand today.`,
       countdown: {
@@ -240,9 +238,6 @@ Rules:
         response_json_schema: BRIEFING_SCHEMA,
       });
 
-      console.log('[DailyBriefing] Raw AI response:', raw);
-
-      // Handle multiple possible response shapes
       const rawText = typeof raw === 'string'
         ? raw
         : raw?.content?.[0]?.text
@@ -275,15 +270,16 @@ Rules:
   const dayMonth = now.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
   const dateLabel = `${weekday} · ${dayMonth}`;
 
-  // Loading state — single div, no Fragment, no <style> tag (avoids stray bullet)
   if (phase === 'loading') {
     return (
       <div style={{
         width: '100%', height: 120,
-        background: '#0A0A0A',
+        background: '#FFFFFF',
+        border: '1px solid rgba(10,10,10,0.08)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxSizing: 'border-box',
       }}>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontFamily: PJS }}>
+        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}>
           Ava is preparing your briefing...
         </span>
       </div>
@@ -300,33 +296,37 @@ Rules:
   ].filter(Boolean);
 
   return (
-    <div style={{ width: '100%', background: '#0A0A0A', color: 'white', padding: '32px 40px', boxSizing: 'border-box' }}>
+    <div style={{
+      width: '100%', background: '#FFFFFF',
+      border: '1px solid rgba(10,10,10,0.08)',
+      padding: '32px 40px', boxSizing: 'border-box',
+    }}>
 
       {/* Top row: greeting left, countdown right */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 32, marginBottom: 24 }}>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.3)', margin: '0 0 12px' }}>
+          <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(10,10,10,0.35)', margin: '0 0 12px' }}>
             {dateLabel}
           </p>
-          <p style={{ fontFamily: PJS, fontSize: 18, fontWeight: 300, color: '#FFFFFF', letterSpacing: '-0.01em', lineHeight: 1.5, margin: 0 }}>
+          <p style={{ fontFamily: PJS, fontSize: 17, fontWeight: 300, color: '#0A0A0A', letterSpacing: '-0.01em', lineHeight: 1.5, margin: 0 }}>
             {briefing.greeting}
           </p>
         </div>
 
-        <div style={{ flexShrink: 0, textAlign: 'right' }}>
+        <div style={{ flexShrink: 0, textAlign: 'right', maxWidth: 200, overflow: 'hidden' }}>
           {daysUntil !== null && (
-            <div style={{ fontFamily: PJS, fontSize: 56, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.04em', lineHeight: 1 }}>
+            <div style={{ fontFamily: PJS, fontSize: 56, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.04em', lineHeight: 1 }}>
               {daysUntil > 0 ? daysUntil : '—'}
             </div>
           )}
           {daysUntil !== null && (
-            <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em', margin: '4px 0 8px' }}>
+            <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.4)', letterSpacing: '0.04em', margin: '4px 0 8px' }}>
               days
             </div>
           )}
           {briefing.countdown?.subtext && (
-            <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(255,255,255,0.32)', fontStyle: 'italic', maxWidth: 200, margin: 0, lineHeight: 1.55, textAlign: 'right' }}>
+            <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.4)', fontStyle: 'italic', maxWidth: 200, margin: 0, lineHeight: 1.55, textAlign: 'right', wordBreak: 'break-word' }}>
               {briefing.countdown.subtext}
             </p>
           )}
@@ -334,12 +334,12 @@ Rules:
       </div>
 
       {/* Divider */}
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', marginBottom: 24 }} />
+      <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 24 }} />
 
       {/* This week */}
       {Array.isArray(briefing.thisWeek) && briefing.thisWeek.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', margin: '0 0 12px' }}>
+          <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(10,10,10,0.35)', margin: '0 0 12px' }}>
             This week
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
@@ -347,8 +347,8 @@ Rules:
               <div
                 key={i}
                 style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(10,10,10,0.03)',
+                  border: '1px solid rgba(10,10,10,0.08)',
                   padding: '10px 14px',
                   display: 'flex', alignItems: 'flex-start', gap: 10,
                   flex: '1 1 190px', minWidth: 0, maxWidth: 360,
@@ -360,10 +360,10 @@ Rules:
                   flexShrink: 0, marginTop: 5,
                 }} />
                 <div style={{ minWidth: 0 }}>
-                  <p style={{ fontFamily: PJS, fontSize: 12, color: '#FFFFFF', fontWeight: 500, margin: '0 0 3px', lineHeight: 1.4 }}>
+                  <p style={{ fontFamily: PJS, fontSize: 12, color: '#0A0A0A', fontWeight: 500, margin: '0 0 3px', lineHeight: 1.4 }}>
                     {item.task}
                   </p>
-                  <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0, lineHeight: 1.4 }}>
+                  <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.45)', margin: 0, lineHeight: 1.4 }}>
                     {item.reason}
                   </p>
                 </div>
@@ -376,15 +376,15 @@ Rules:
       {/* Smart suggestions */}
       {Array.isArray(briefing.smartSuggestions) && briefing.smartSuggestions.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', margin: '0 0 12px' }}>
+          <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(10,10,10,0.35)', margin: '0 0 12px' }}>
             Ava's insight
           </p>
           {briefing.smartSuggestions.map((s, i) => (
-            <div key={i} style={{ borderLeft: '2px solid #E03553', padding: '10px 14px', background: 'rgba(224,53,83,0.06)', marginBottom: 8 }}>
-              <p style={{ fontFamily: PJS, fontSize: 13, color: '#FFFFFF', fontWeight: 400, margin: '0 0 3px', lineHeight: 1.5 }}>
+            <div key={i} style={{ borderLeft: '2px solid #E03553', padding: '10px 14px', background: 'rgba(224,53,83,0.04)', marginBottom: 8 }}>
+              <p style={{ fontFamily: PJS, fontSize: 13, color: '#0A0A0A', fontWeight: 400, margin: '0 0 3px', lineHeight: 1.5 }}>
                 {s.insight}
               </p>
-              <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.4 }}>
+              <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.45)', margin: 0, lineHeight: 1.4 }}>
                 {s.action}
               </p>
             </div>
@@ -402,23 +402,23 @@ Rules:
       )}
 
       {/* Divider */}
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 20 }} />
+      <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 20 }} />
 
       {/* Bottom row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
         {briefing.emotionalNote && (
-          <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(255,255,255,0.35)', fontStyle: 'italic', maxWidth: 500, margin: 0, lineHeight: 1.65, flex: 1 }}>
+          <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.45)', fontStyle: 'italic', maxWidth: 500, margin: 0, lineHeight: 1.65, flex: 1 }}>
             {briefing.emotionalNote}
           </p>
         )}
 
         {briefing.forgottenDetail && (
           <div style={{ flexShrink: 0, maxWidth: 280 }}>
-            <p style={{ fontFamily: PJS, fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', margin: '0 0 4px' }}>
+            <p style={{ fontFamily: PJS, fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(10,10,10,0.3)', margin: '0 0 4px' }}>
               Often forgotten
             </p>
-            <div style={{ background: 'rgba(255,255,255,0.06)', padding: '8px 14px' }}>
-              <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.55 }}>
+            <div style={{ background: 'rgba(10,10,10,0.02)', border: '1px solid rgba(10,10,10,0.06)', padding: '8px 14px' }}>
+              <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.5)', margin: 0, lineHeight: 1.55 }}>
                 {briefing.forgottenDetail}
               </p>
             </div>
@@ -430,9 +430,9 @@ Rules:
       <div style={{ textAlign: 'right', marginTop: 16 }}>
         <button
           onClick={handleRefresh}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 10, color: 'rgba(255,255,255,0.2)', padding: 0 }}
-          onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 10, color: 'rgba(10,10,10,0.25)', padding: 0 }}
+          onMouseEnter={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.5)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.25)'; }}
         >
           Refresh briefing
         </button>
