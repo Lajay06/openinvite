@@ -18,7 +18,8 @@ const NAV_SECTIONS = [
   {
     label: "Planning",
     items: [
-      { icon: LayoutDashboard, label: "Overall",     url: createPageUrl("Dashboard") },
+      { icon: Sparkles,        label: "Daily update", url: createPageUrl("DailyUpdate") },
+      { icon: LayoutDashboard, label: "Overall",      url: createPageUrl("Dashboard") },
       { icon: Calendar,        label: "Calendar",    url: createPageUrl("Calendar") },
       { icon: CheckSquare,     label: "Checklist",       url: createPageUrl("Checklist") },
       { icon: ListTodo,        label: "To do list",      url: createPageUrl("TodoList") },
