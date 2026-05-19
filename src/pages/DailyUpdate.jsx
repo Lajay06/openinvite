@@ -250,17 +250,17 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
         borderBottom: '1px solid rgba(255,255,255,0.08)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24,
       }}>
-        <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)' }}>
+        <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.5)' }}>
           Openinvite daily
         </span>
 
         <div style={{ textAlign: 'center' }}>
           {coupleName && (
-            <div style={{ fontFamily: PJS, fontSize: 13, fontWeight: 600, color: 'white', letterSpacing: '0.04em' }}>
+            <div style={{ fontFamily: PJS, fontSize: 13, fontWeight: 700, color: '#FFFFFF', letterSpacing: '0.04em' }}>
               {coupleName}
             </div>
           )}
-          <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em', marginTop: coupleName ? 2 : 0 }}>
+          <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em', marginTop: coupleName ? 2 : 0 }}>
             {dateLabel}
           </div>
         </div>
@@ -299,7 +299,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
             </p>
             <h1 style={{
               fontFamily: PJS, fontSize: 42, fontWeight: 800,
-              color: 'white', letterSpacing: '-0.03em',
+              color: '#FFFFFF', letterSpacing: '-0.03em',
               lineHeight: 1.15, maxWidth: 800, margin: 0,
             }}>
               {briefing?.headline}
@@ -307,7 +307,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
             {briefing?.greeting && (
               <p style={{
                 fontFamily: PJS, fontSize: 16, fontWeight: 400,
-                color: 'rgba(255,255,255,0.55)', lineHeight: 1.6,
+                color: 'rgba(255,255,255,0.7)', lineHeight: 1.6,
                 maxWidth: 680, marginTop: 16, marginBottom: 0,
               }}>
                 {briefing.greeting}
