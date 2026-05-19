@@ -35,8 +35,10 @@ function lerp01(val, min, max) {
 
 export default function FeatureInvitations({ onCTA }) {
   const scrollContainerRef = useRef(null);
+  const rowRefs = useRef([]);
   const [progress, setProgress] = useState(0);
   const [vp, setVp] = useState({ w: 1440, h: 900 });
+  const [visible, setVisible] = useState(FEATURES.map(() => false));
 
   // Track viewport size
   useEffect(() => {
@@ -46,24 +48,21 @@ export default function FeatureInvitations({ onCTA }) {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Track scroll progress through the 300vh scroll container
+  // Fix 1 — scroll progress via getBoundingClientRect (reliable across all scroll positions)
   useEffect(() => {
     let rafId = null;
-
     const handleScroll = () => {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
         rafId = null;
         const el = scrollContainerRef.current;
         if (!el) return;
-        const sectionTop = el.offsetTop;
-        // Effective scroll range = container height - viewport height = 300vh - 100vh = 200vh
+        const rect = el.getBoundingClientRect();
         const scrollRange = el.offsetHeight - window.innerHeight;
-        const scrolled = window.scrollY - sectionTop;
+        const scrolled = -rect.top;
         setProgress(Math.max(0, Math.min(1, scrolled / scrollRange)));
       });
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => {
@@ -72,11 +71,32 @@ export default function FeatureInvitations({ onCTA }) {
     };
   }, []);
 
+  // Fix 2 — IntersectionObserver for feature row colour reveal
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setVisible((prev) => {
+          const next = [...prev];
+          entries.forEach((entry) => {
+            const idx = rowRefs.current.indexOf(entry.target);
+            if (idx !== -1) next[idx] = entry.isIntersecting;
+          });
+          return next;
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    rowRefs.current.forEach((el) => { if (el) observer.observe(el); });
+    return () => observer.disconnect();
+  }, []);
+
   // Animation values
-  const expandProg  = lerp01(progress, 0, 0.4);    // 0–40%: expand & text fade
-  const textOpacity = 1 - lerp01(progress, 0, 0.4); // text fades as image expands
+  const expandProg  = lerp01(progress, 0, 0.4);     // 0–40%: image expands
+  const textOpacity = 1 - lerp01(progress, 0, 0.4); // 0–40%: text fades out
   const imgOpacity  = 1 - lerp01(progress, 0.7, 1); // 70–100%: image fades out
 
+  // Image starts visible (opacity 1) at progress 0 and fades only in the 70–100% range
   const imgW      = 320 + (vp.w - 320) * expandProg;
   const imgH      = 200 + (vp.h - 200) * expandProg;
   const imgRadius = 24 * (1 - expandProg);
@@ -90,7 +110,7 @@ export default function FeatureInvitations({ onCTA }) {
         {/* Sticky viewport — pins for the 200vh scroll range */}
         <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
 
-          {/* Hero text */}
+          {/* Hero text — visible at progress 0, fades 0→40% */}
           <div style={{
             position: 'absolute',
             top: '50%', left: '50%',
@@ -128,7 +148,7 @@ export default function FeatureInvitations({ onCTA }) {
             </p>
           </div>
 
-          {/* Expanding image */}
+          {/* Expanding image — visible at progress 0, fades 70→100% */}
           <div style={{
             position: 'absolute',
             top: '50%', left: '50%',
@@ -158,30 +178,36 @@ export default function FeatureInvitations({ onCTA }) {
       {/* ── Features — revealed after sticky section unpins ── */}
       <div style={{ background: '#0A0A0A', padding: '120px clamp(24px, 6vw, 80px)' }}>
         {FEATURES.map((f, i) => (
-          <div key={i} style={{
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-            padding: '48px 0',
-            display: 'grid',
-            gridTemplateColumns: '40% 60%',
-            gap: 40,
-            alignItems: 'start',
-          }}>
+          <div
+            key={i}
+            ref={(el) => { rowRefs.current[i] = el; }}
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              padding: '48px 0',
+              display: 'grid',
+              gridTemplateColumns: '40% 60%',
+              gap: 40,
+              alignItems: 'start',
+            }}
+          >
             <h3 style={{
               fontSize: 'clamp(24px, 3vw, 36px)',
               fontWeight: 600,
-              color: '#FFFFFF',
+              color: visible[i] ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
               fontFamily: PJS,
               margin: 0,
               lineHeight: 1.2,
+              transition: 'color 0.6s cubic-bezier(0.16,1,0.3,1)',
             }}>
               {f.heading}
             </h3>
             <p style={{
               fontSize: 16,
-              color: '#AAAAAA',
+              color: visible[i] ? '#AAAAAA' : 'rgba(255,255,255,0.1)',
               lineHeight: 1.8,
               fontFamily: PJS,
               margin: 0,
+              transition: 'color 0.6s cubic-bezier(0.16,1,0.3,1)',
             }}>
               {f.description}
             </p>
