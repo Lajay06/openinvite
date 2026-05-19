@@ -280,10 +280,10 @@ Rules:
     return (
       <div style={{
         width: '100%', height: 120,
-        background: 'rgba(10,10,10,0.04)',
+        background: '#0A0A0A',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontFamily: PJS }}>
           Ava is preparing your briefing...
         </span>
       </div>
@@ -300,7 +300,7 @@ Rules:
   ].filter(Boolean);
 
   return (
-    <div style={{ width: '100%', background: '#0A0A0A', padding: '32px 40px', boxSizing: 'border-box' }}>
+    <div style={{ width: '100%', background: '#0A0A0A', color: 'white', padding: '32px 40px', boxSizing: 'border-box' }}>
 
       {/* Top row: greeting left, countdown right */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 32, marginBottom: 24 }}>
