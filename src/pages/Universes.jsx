@@ -162,12 +162,12 @@ const Universes = () => {
 
       {/* SECTION 1: HERO */}
       <section style={{ position: 'relative', height: '100vh', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style>{`@keyframes heroScrollLine { 0%,100% { opacity: 1; transform: scaleY(1); } 50% { opacity: 0.3; transform: scaleY(0.4); } }`}</style>
         <img
           src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779218326/DTS_In_Focus_Daniel_Far%C3%B2_Photos_ID5015_deiknt.jpg"
           alt=""
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', zIndex: 1 }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)', zIndex: 2 }} />
         <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: 800, margin: '0 auto', padding: '0 40px' }}>
           <h1 style={{
             fontFamily: 'Plus Jakarta Sans, sans-serif',
@@ -178,47 +178,24 @@ const Universes = () => {
             lineHeight: 1.05,
             margin: '0 0 24px',
           }}>
-            Your Universe.
+            Your Universe
           </h1>
           <p style={{
             fontSize: 'clamp(16px,2vw,22px)',
             fontWeight: 400,
             color: 'rgba(255,255,255,0.75)',
             maxWidth: 560,
-            margin: '0 auto 40px',
+            margin: '0 auto',
             lineHeight: 1.6,
             fontFamily: 'Plus Jakarta Sans',
           }}>
             Every invitation, menu, seating chart and digital asset — designed around a single aesthetic vision. Choose your universe and everything follows.
           </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={() => navigate('/studio')} style={{
-              padding: '14px 40px',
-              background: 'linear-gradient(135deg, #E03553, #803D81)',
-              color: '#FFFFFF',
-              border: 'none',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'Plus Jakarta Sans',
-              letterSpacing: '0.02em',
-            }}>
-              Explore universes →
-            </button>
-            <button onClick={scrollToAssets} style={{
-              padding: '14px 40px',
-              background: 'transparent',
-              color: '#FFFFFF',
-              border: '1px solid rgba(255,255,255,0.3)',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'Plus Jakarta Sans',
-              letterSpacing: '0.02em',
-            }}>
-              See the assets
-            </button>
-          </div>
+        </div>
+        {/* Scroll indicator */}
+        <div style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, zIndex: 20 }}>
+          <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.5)', fontFamily: 'Plus Jakarta Sans, sans-serif', margin: 0 }}>Scroll</p>
+          <div style={{ width: 1, height: 48, background: 'linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)', transformOrigin: 'top', animation: 'heroScrollLine 2s ease-in-out infinite' }} />
         </div>
       </section>
 
