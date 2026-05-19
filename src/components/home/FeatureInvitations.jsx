@@ -37,18 +37,9 @@ export default function FeatureInvitations({ onCTA }) {
   const scrollContainerRef = useRef(null);
   const rowRefs = useRef([]);
   const [progress, setProgress] = useState(0);
-  const [vp, setVp] = useState({ w: 1440, h: 900 });
   const [visible, setVisible] = useState(FEATURES.map(() => false));
 
-  // Track viewport size
-  useEffect(() => {
-    const update = () => setVp({ w: window.innerWidth, h: window.innerHeight });
-    update();
-    window.addEventListener('resize', update, { passive: true });
-    return () => window.removeEventListener('resize', update);
-  }, []);
-
-  // Fix 1 — scroll progress via getBoundingClientRect (reliable across all scroll positions)
+  // Scroll progress via getBoundingClientRect
   useEffect(() => {
     let rafId = null;
     const handleScroll = () => {
@@ -71,7 +62,7 @@ export default function FeatureInvitations({ onCTA }) {
     };
   }, []);
 
-  // Fix 2 — IntersectionObserver for feature row colour reveal
+  // IntersectionObserver for feature row colour reveal
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -86,31 +77,51 @@ export default function FeatureInvitations({ onCTA }) {
       },
       { threshold: 0.3 }
     );
-
     rowRefs.current.forEach((el) => { if (el) observer.observe(el); });
     return () => observer.disconnect();
   }, []);
 
-  // Animation values
-  const expandProg  = lerp01(progress, 0, 0.4);     // 0–40%: image expands
-  const textOpacity = 1 - lerp01(progress, 0, 0.4); // 0–40%: text fades out
-  const imgOpacity  = 1 - lerp01(progress, 0.7, 1); // 70–100%: image fades out
-
-  // Image starts visible (opacity 1) at progress 0 and fades only in the 70–100% range
-  const imgW      = 320 + (vp.w - 320) * expandProg;
-  const imgH      = 200 + (vp.h - 200) * expandProg;
-  const imgRadius = 24 * (1 - expandProg);
+  // Derived values
+  const overlayOpacity = lerp01(progress, 0, 0.6);          // black fade: 0→1 over first 60%
+  const textOpacity    = 1 - lerp01(progress, 0, 0.4);      // text out: 1→0 over first 40%
 
   return (
-    <section style={{ position: 'relative', background: '#0A0A0A', overflow: 'hidden' }}>
+    <section style={{ position: 'relative', background: '#0A0A0A' }}>
 
       {/* ── 300vh scroll driver ── */}
       <div ref={scrollContainerRef} style={{ position: 'relative', height: '300vh' }}>
 
-        {/* Sticky viewport — pins for the 200vh scroll range */}
+        {/* Sticky viewport */}
         <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
 
-          {/* Hero text — visible at progress 0, fades 0→40% */}
+          {/* 1. Background image — fills viewport from start */}
+          <img
+            src={IMAGE_SRC}
+            alt="Wedding universe"
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover', display: 'block',
+              zIndex: 1,
+            }}
+          />
+
+          {/* 2. Permanent gradient overlay — keeps text readable */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6))',
+            zIndex: 2,
+          }} />
+
+          {/* 3. Black fade overlay — fades in 0–60% of scroll */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: '#0A0A0A',
+            opacity: overlayOpacity,
+            zIndex: 3,
+          }} />
+
+          {/* 4. Hero text — fades out in first 40% of scroll */}
           <div style={{
             position: 'absolute',
             top: '50%', left: '50%',
@@ -136,7 +147,7 @@ export default function FeatureInvitations({ onCTA }) {
               Universes
             </h2>
             <p style={{
-              color: '#AAAAAA',
+              color: '#FFFFFF',
               fontSize: 'clamp(16px, 2vw, 20px)',
               fontWeight: 400,
               fontFamily: PJS,
@@ -148,34 +159,10 @@ export default function FeatureInvitations({ onCTA }) {
             </p>
           </div>
 
-          {/* Expanding image — visible at progress 0, fades 70→100% */}
-          <div style={{
-            position: 'absolute',
-            top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: imgW,
-            height: imgH,
-            borderRadius: imgRadius,
-            overflow: 'hidden',
-            opacity: imgOpacity,
-            zIndex: 5,
-          }}>
-            <img
-              src={IMAGE_SRC}
-              alt="Wedding universe"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            />
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7))',
-            }} />
-          </div>
-
         </div>
       </div>
 
-      {/* ── Features — revealed after sticky section unpins ── */}
+      {/* ── Features — revealed after sticky unpins ── */}
       <div style={{ background: '#0A0A0A', padding: '120px clamp(24px, 6vw, 80px)' }}>
         {FEATURES.map((f, i) => (
           <div
