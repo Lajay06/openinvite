@@ -214,29 +214,20 @@ export default function AvaPage() {
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section style={{ position: "relative", minHeight: "100vh", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+        <style>{`@keyframes heroScrollLine { 0%,100% { opacity: 1; transform: scaleY(1); } 50% { opacity: 0.3; transform: scaleY(0.4); } }`}</style>
         <img
           src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779217006/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6161_isrtef.jpg"
           alt=""
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 1 }}
         />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7))", zIndex: 2 }} />
-
-        <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 40px", maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <h1 style={{ fontSize: "clamp(64px, 10vw, 120px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.0, color: "#FFFFFF", margin: "0 0 24px" }}>
-            Meet Ava.
+        <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 40px", maxWidth: 900, margin: "0 auto" }}>
+          <h1 style={{ fontSize: "clamp(64px, 10vw, 120px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.0, color: "#FFFFFF", margin: 0 }}>
+            Meet Ava
           </h1>
-          <p style={{ fontSize: "clamp(18px, 2.5vw, 24px)", color: "rgba(255,255,255,0.75)", margin: "0 0 16px", lineHeight: 1.4 }}>
-            Your AI wedding planner. Always thinking one step ahead.
-          </p>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", maxWidth: 520, margin: "0 auto 40px", lineHeight: 1.7 }}>
-            Ava takes the guesswork out of planning — using intelligence to personalise your journey, give smart suggestions, and help you stay calm, clear, and totally in control.
-          </p>
-          <button
-            onClick={() => window.location.href = "/Onboarding"}
-            className="btn-primary"
-          >
-            Try Ava Free →
-          </button>
+        </div>
+        <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 20 }}>
+          <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.15em", color: "rgba(255,255,255,0.5)", fontFamily: "Plus Jakarta Sans, sans-serif", margin: 0 }}>Scroll</p>
+          <div style={{ width: 1, height: 48, background: "linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)", transformOrigin: "top", animation: "heroScrollLine 2s ease-in-out infinite" }} />
         </div>
       </section>
 
