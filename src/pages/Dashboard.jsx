@@ -12,7 +12,6 @@ import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import TipsModal from "../components/dashboard/TipsModal";
-import DailyBriefing from "../components/dashboard/DailyBriefing";
 const Guest = base44.entities.Guest;
 const Budget = base44.entities.Budget;
 const Schedule = base44.entities.Schedule;
@@ -171,8 +170,6 @@ export default function Dashboard() {
           />
         ))}
       </div>
-
-      <DailyBriefing />
 
       {/* Ava button */}
       <div style={{ padding: '16px 32px' }}>
