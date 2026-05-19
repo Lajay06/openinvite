@@ -3,11 +3,61 @@ import { useNavigate } from 'react-router-dom';
 import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
 
+const UNIVERSE_DATA = [
+  {
+    id: 'aman',
+    name: 'AMAN',
+    tagline: 'Quiet Luxury',
+    description: 'Inspired by the world\'s most considered resort collection. Every element stripped back to what matters. The AMAN universe speaks quietly — and says more for it.',
+    palette: [{ color: '#0A0A0A', label: 'Obsidian' }, { color: '#F8F7F5', label: 'Linen' }, { color: '#C4956A', label: 'Sand' }, { color: '#FFFFFF', label: 'Pure' }],
+    image: 'https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg',
+    available: true,
+  },
+  {
+    id: 'tulum',
+    name: 'TULUM',
+    tagline: 'Desert Bloom',
+    description: 'Sun-bleached romance. Warm earth tones and organic texture that feel alive under open sky.',
+    palette: [{ color: '#C4956A', label: 'Terracotta' }, { color: '#F5ECD7', label: 'Sand' }, { color: '#7B6B52', label: 'Earth' }, { color: '#FFFFFF', label: 'Pure' }],
+    image: 'https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg',
+    available: false,
+  },
+  {
+    id: 'kyoto',
+    name: 'KYOTO',
+    tagline: 'Zen and Ceremony',
+    description: 'Ancient ritual meets modern refinement. Stillness as a design principle.',
+    palette: [{ color: '#2C2C2C', label: 'Charcoal' }, { color: '#F0EBE3', label: 'Paper' }, { color: '#8B7355', label: 'Bamboo' }, { color: '#E8D5C4', label: 'Blush' }],
+    image: 'https://static.wixstatic.com/media/d2df22_40822e26660c4112aef53ff2526c0345~mv2.jpg',
+    available: false,
+  },
+  {
+    id: 'capri',
+    name: 'CAPRI',
+    tagline: 'Italian Coast',
+    description: 'La dolce vita. Deep blues, warm stone and effortless elegance.',
+    palette: [{ color: '#1B3A6B', label: 'Cobalt' }, { color: '#F4E4C1', label: 'Stone' }, { color: '#7BA7C2', label: 'Sea' }, { color: '#FFFFFF', label: 'Pure' }],
+    image: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg',
+    available: false,
+  },
+  {
+    id: 'paris',
+    name: 'PARIS',
+    tagline: 'Haussmann Romance',
+    description: 'Grand and timeless. The language of French elegance.',
+    palette: [{ color: '#1A1A2E', label: 'Midnight' }, { color: '#F5F0E8', label: 'Cream' }, { color: '#C9A96E', label: 'Gold' }, { color: '#8B4B6B', label: 'Rose' }],
+    image: 'https://static.wixstatic.com/media/d2df22_5ea2e70835a14465be546237fd1dd55a~mv2.jpg',
+    available: false,
+  },
+];
+
 const Universes = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [scrollAnimations, setScrollAnimations] = useState({});
   const observerRef = useRef(null);
+  const universeContainerRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver((entries) => {
@@ -29,6 +79,37 @@ const Universes = () => {
 
   const scrollToAssets = () => {
     document.getElementById('assets-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    let rafId = null;
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const el = universeContainerRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const scrollRange = el.offsetHeight - window.innerHeight;
+        const scrolled = -rect.top;
+        const progress = Math.max(0, Math.min(1, scrolled / scrollRange));
+        setActiveIndex(Math.min(Math.floor(progress * 5), 4));
+      });
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  const scrollToUniverse = (index) => {
+    const el = universeContainerRef.current;
+    if (!el) return;
+    const sectionTop = el.getBoundingClientRect().top + window.scrollY;
+    const scrollRange = el.offsetHeight - window.innerHeight;
+    window.scrollTo({ top: sectionTop + (index / 5) * scrollRange, behavior: 'smooth' });
   };
 
   const assets = [
@@ -350,129 +431,116 @@ const Universes = () => {
         </div>
       </section>
 
-      {/* SECTION 4: AMAN UNIVERSE */}
-      <section data-animate style={{
-        background: '#0A0A0A',
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        minHeight: '100vh',
-        className: animationClass('aman-section'),
-      }}>
-        <div style={{
-          backgroundImage: 'url(https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }} />
-
-        <div style={{
-          padding: '80px 60px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-        }}>
-          <p style={{
-            fontSize: 10,
-            fontWeight: 600,
-            color: 'rgba(255,255,255,0.3)',
-            letterSpacing: '0.3em',
-            marginBottom: 20,
-            fontFamily: 'Plus Jakarta Sans',
-            margin: 0,
-          }}>
-            NO. 01
-          </p>
-          <h2 style={{
-            fontFamily: 'Plus Jakarta Sans, sans-serif',
-            fontWeight: 700,
-            fontSize: 'clamp(40px, 6vw, 72px)',
-            color: '#FFFFFF',
-            letterSpacing: '0.05em',
-            lineHeight: 1,
-            margin: '12px 0 0',
-            marginBottom: 12,
-          }}>
-            AMAN
-          </h2>
-          <p style={{
-            fontFamily: 'Plus Jakarta Sans, sans-serif',
-            fontWeight: 400,
-            fontStyle: 'italic',
-            fontSize: 18,
-            color: 'rgba(255,255,255,0.5)',
-            margin: '0 0 24px',
-          }}>
-            Quiet Luxury
-          </p>
-          <div style={{ width: 48, height: 1, background: 'rgba(255,255,255,0.15)', margin: '24px 0' }} />
-          <p style={{
-            fontSize: 14,
-            fontWeight: 400,
-            color: 'rgba(255,255,255,0.65)',
-            lineHeight: 1.7,
-            marginBottom: 32,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Inspired by the world's most considered resort collection. Every element stripped back to what matters. The AMAN universe speaks quietly — and says more for it.
-          </p>
-
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
-              {[
-                { color: '#0A0A0A', label: 'Obsidian' },
-                { color: '#F8F7F5', label: 'Linen' },
-                { color: '#C4956A', label: 'Sand' },
-                { color: '#FFFFFF', label: 'Pure' },
-              ].map((swatch, i) => (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{
-                    width: 56,
-                    height: 56,
-                    background: swatch.color,
-                    border: swatch.color === '#FFFFFF' ? '1px solid #444' : 'none',
-                    marginBottom: 8,
-                  }} />
-                  <p style={{
-                    fontSize: 10,
-                    color: 'rgba(255,255,255,0.5)',
-                    fontFamily: 'Plus Jakarta Sans',
-                    margin: 0,
-                  }}>
-                    {swatch.label}
-                  </p>
+      {/* SECTION 4: UNIVERSE SHOWCASE */}
+      <div ref={universeContainerRef} style={{ position: 'relative', height: '600vh' }}>
+        <style>{`@keyframes universeFadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
+        <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', background: '#0A0A0A' }}>
+          {/* Crossfading background images */}
+          {UNIVERSE_DATA.map((u, i) => (
+            <img
+              key={u.id}
+              src={u.image}
+              alt=""
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%',
+                objectFit: 'cover', objectPosition: 'center', zIndex: 1,
+                opacity: i === activeIndex ? 1 : 0,
+                transition: 'opacity 0.8s ease',
+              }}
+            />
+          ))}
+          {/* Dark overlay */}
+          <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.75))' }} />
+          {/* Content grid */}
+          <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', height: '100%' }}>
+            {/* Left column: universe name list */}
+            <div style={{ padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {UNIVERSE_DATA.map((u, i) => (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => scrollToUniverse(i)}
+                    style={{
+                      background: 'none', border: 'none', padding: 0, textAlign: 'left',
+                      cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
+                      fontSize: i === activeIndex ? 'clamp(32px, 4vw, 52px)' : 'clamp(20px, 2.5vw, 32px)',
+                      fontWeight: i === activeIndex ? 700 : 400,
+                      color: i === activeIndex ? '#FFFFFF' : 'rgba(255,255,255,0.2)',
+                      letterSpacing: '0.05em',
+                      transition: 'all 0.4s ease',
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {u.name}
+                  </button>
+                ))}
+              </div>
+              <p style={{
+                fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em',
+                margin: '40px 0 0', fontFamily: 'Plus Jakarta Sans, sans-serif',
+              }}>
+                {String(activeIndex + 1).padStart(2, '0')} / 05
+              </p>
+            </div>
+            {/* Right column: universe detail */}
+            <div style={{ padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}>
+              {/* Large ghost name */}
+              <div style={{
+                position: 'absolute', top: 40, right: 80,
+                fontSize: 'clamp(64px, 10vw, 140px)', fontWeight: 700, letterSpacing: '0.08em',
+                color: 'rgba(255,255,255,0.06)', lineHeight: 1,
+                pointerEvents: 'none', userSelect: 'none',
+                fontFamily: 'Plus Jakarta Sans, sans-serif',
+              }}>
+                {UNIVERSE_DATA[activeIndex].name}
+              </div>
+              {/* Fading content */}
+              <div key={activeIndex} style={{ display: 'flex', flexDirection: 'column', animation: 'universeFadeIn 0.4s ease' }}>
+                <p style={{ fontStyle: 'italic', fontSize: 18, color: 'rgba(255,255,255,0.5)', margin: '0 0 16px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                  {UNIVERSE_DATA[activeIndex].tagline}
+                </p>
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, maxWidth: 440, margin: '0 0 32px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                  {UNIVERSE_DATA[activeIndex].description}
+                </p>
+                <div style={{ display: 'flex', gap: 16 }}>
+                  {UNIVERSE_DATA[activeIndex].palette.map((swatch, i) => (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div style={{ width: 48, height: 48, background: swatch.color, border: swatch.color === '#FFFFFF' ? '1px solid #444' : 'none' }} />
+                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Plus Jakarta Sans, sans-serif', textAlign: 'center', margin: '6px 0 0' }}>
+                        {swatch.label}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+                <div style={{
+                  border: '1px solid rgba(255,255,255,0.2)', padding: '4px 14px',
+                  fontSize: 10, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.2em',
+                  display: 'inline-block', marginTop: 24, fontFamily: 'Plus Jakarta Sans, sans-serif',
+                  alignSelf: 'flex-start',
+                }}>
+                  {UNIVERSE_DATA[activeIndex].available ? 'Available now' : 'Coming soon'}
+                </div>
+                {UNIVERSE_DATA[activeIndex].available && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/studio/universe/aman')}
+                    style={{
+                      marginTop: 16, padding: '14px 40px', background: 'transparent',
+                      color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)',
+                      fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                      fontFamily: 'Plus Jakarta Sans, sans-serif', letterSpacing: '0.02em',
+                      alignSelf: 'flex-start',
+                    }}
+                  >
+                    Explore AMAN →
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-
-          <div style={{
-            border: '1px solid rgba(255,255,255,0.2)',
-            padding: '4px 14px',
-            fontSize: 10,
-            color: 'rgba(255,255,255,0.5)',
-            letterSpacing: '0.2em',
-            display: 'inline-block',
-            marginBottom: 24,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Available now
-          </div>
-
-          <button onClick={() => navigate('/studio/universe/aman')} style={{
-            padding: '14px 40px',
-            background: 'transparent',
-            color: '#FFFFFF',
-            border: '1px solid rgba(255,255,255,0.3)',
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontFamily: 'Plus Jakarta Sans',
-            letterSpacing: '0.02em',
-            alignSelf: 'flex-start',
-          }}>
-            Explore AMAN →
-          </button>
         </div>
-      </section>
+      </div>
 
       {/* SECTION 5: COMING SOON */}
       <section id="coming-soon-section" data-animate style={{
