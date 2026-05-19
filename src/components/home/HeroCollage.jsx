@@ -88,10 +88,9 @@ export default function HeroCollage({ onCTA }) {
           transition: `opacity 0.9s ${EASE}, filter 0.9s ${EASE}`,
         }}
       >
-        <h1 style={{ ...HEADLINE_STYLE, marginBottom: 6, fontWeight: 700 }}>Openinvite.</h1>
-        <p style={{ ...HEADLINE_STYLE, color: "#FFFFFF", marginBottom: "2rem", fontWeight: 700 }}>
+        <h1 style={{ ...HEADLINE_STYLE, marginBottom: "2rem", fontWeight: 700 }}>
           Because planning your wedding should feel exciting.
-        </p>
+        </h1>
 
         <button onClick={onCTA} className="btn-primary" style={{ padding: '14px 40px', fontSize: 13 }}>
           Start planning
