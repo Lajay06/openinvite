@@ -252,18 +252,28 @@ export default function AvaPage() {
       </section>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────── */}
-      <section style={{ background: "#F5F5F5", padding: "120px clamp(24px,5vw,80px)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(32px,4vw,56px)", fontWeight: 700, color: "#0A0A0A", margin: "0 0 64px", letterSpacing: "-0.02em" }}>Ava learns. Ava plans. Ava delivers.</h2>
-          <div ref={howRef} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 24 }}>
-            {HOW_CARDS.map((c, i) =>
-            <div key={i} style={{ background: "#fff", border: "1px solid #E8E8E8", padding: 40, position: "relative", overflow: "hidden", opacity: howInView ? 1 : 0, transform: howInView ? "none" : "translateY(30px)", transition: `opacity 0.6s ${i * 0.1}s ease, transform 0.6s ${i * 0.1}s ease` }}>
-                <p style={{ position: "absolute", top: 20, right: 24, fontSize: 64, fontWeight: 700, color: "#EEEEEE", margin: 0, lineHeight: 1, pointerEvents: "none" }}>{c.num}</p>
-                <p style={{ fontSize: 24, marginBottom: 12 }}>{c.icon}</p>
-                <h3 style={{ fontSize: 20, fontWeight: 700, color: "#0A0A0A", margin: "0 0 12px" }}>{c.heading}</h3>
-                <p style={{ fontSize: 15, color: "#444444", lineHeight: 1.7, margin: 0 }}>{c.body}</p>
+      <section style={{ background: '#0A0A0A', padding: '120px clamp(24px, 5vw, 80px)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: 700, color: '#FFFFFF', margin: '0 0 64px', letterSpacing: '-0.02em', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+            Ava learns. Ava plans. Ava delivers.
+          </h2>
+          <div ref={howRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, background: 'rgba(255,255,255,0.08)' }}>
+            {HOW_CARDS.map((c, i) => (
+              <div key={i} style={{
+                background: '#0A0A0A',
+                padding: 40,
+                position: 'relative',
+                overflow: 'hidden',
+                opacity: howInView ? 1 : 0,
+                transform: howInView ? 'none' : 'translateY(30px)',
+                transition: `opacity 0.6s ${i * 0.1}s ease, transform 0.6s ${i * 0.1}s ease`,
+              }}>
+                <p style={{ position: 'absolute', top: 20, right: 24, fontSize: 64, fontWeight: 700, color: 'rgba(255,255,255,0.04)', margin: 0, lineHeight: 1, pointerEvents: 'none', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>{c.num}</p>
+                <div style={{ width: 32, height: 1, background: 'rgba(255,255,255,0.15)', marginBottom: 32 }} />
+                <h3 style={{ fontSize: 20, fontWeight: 600, color: '#FFFFFF', margin: '0 0 16px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>{c.heading}</h3>
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, margin: 0, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>{c.body}</p>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </section>
