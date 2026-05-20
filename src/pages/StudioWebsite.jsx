@@ -22,48 +22,120 @@ const UNIVERSE_THEMES = {
     background: '#F8F7F5',
     text: '#0A0A0A',
     accent: '#C4956A',
-    fontDisplay: 'Cormorant Garamond, serif',
-    fontBody: 'Plus Jakarta Sans, sans-serif',
+    fontDisplay: '"Cormorant Garamond", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Quiet luxury',
   },
   tulum: {
     name: 'Tulum',
-    primary: '#7B6B52',
+    primary: '#3D2B1F',
     secondary: '#C4956A',
     background: '#F5ECD7',
     text: '#3D2B1F',
-    accent: '#C4956A',
-    fontDisplay: 'Playfair Display, serif',
-    fontBody: 'Plus Jakarta Sans, sans-serif',
+    accent: '#D4845A',
+    highlight: '#8B7355',
+    fontDisplay: '"Cormorant Garamond", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Barefoot luxury, earthy, editorial, sunset energy',
   },
   kyoto: {
     name: 'Kyoto',
-    primary: '#2C2C2C',
+    primary: '#1A1A1A',
     secondary: '#8B7355',
-    background: '#F0EBE3',
+    background: '#F5F2ED',
     text: '#2C2C2C',
-    accent: '#8B7355',
-    fontDisplay: 'Noto Serif JP, serif',
-    fontBody: 'Plus Jakarta Sans, sans-serif',
+    accent: '#6B6B5A',
+    fontDisplay: '"Noto Serif JP", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Elegant restraint, balance, calm sophistication',
   },
   capri: {
     name: 'Capri',
     primary: '#1B3A6B',
     secondary: '#7BA7C2',
-    background: '#F4E4C1',
+    background: '#FEFBF3',
     text: '#1B3A6B',
-    accent: '#7BA7C2',
-    fontDisplay: 'Playfair Display, serif',
-    fontBody: 'Plus Jakarta Sans, sans-serif',
+    accent: '#E8C547',
+    fontDisplay: '"Playfair Display", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Joyful luxury, coastal summer, effortless glamour',
+  },
+  tokyo: {
+    name: 'Tokyo',
+    primary: '#FFFFFF',
+    secondary: '#C0C0C0',
+    background: '#0A0A0A',
+    text: '#FFFFFF',
+    accent: '#B8FF00',
+    fontDisplay: '"Cormorant Garamond", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Editorial nightlife, modern luxury, elevated tech',
+  },
+  marrakech: {
+    name: 'Marrakech',
+    primary: '#2C1810',
+    secondary: '#C9A96E',
+    background: '#F2E8D9',
+    text: '#2C1810',
+    accent: '#8B2635',
+    fontDisplay: '"Playfair Display", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Intimate, layered, atmospheric, luxurious',
   },
   paris: {
     name: 'Paris',
     primary: '#1A1A2E',
     secondary: '#C9A96E',
-    background: '#F5F0E8',
+    background: '#FAF7F2',
     text: '#1A1A2E',
     accent: '#C9A96E',
-    fontDisplay: 'Cormorant Garamond, serif',
-    fontBody: 'Plus Jakarta Sans, sans-serif',
+    fontDisplay: '"Cormorant Garamond", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Chic, timeless, understated luxury',
+  },
+  amalfi: {
+    name: 'Amalfi',
+    primary: '#1B4B6B',
+    secondary: '#E8A040',
+    background: '#FEFDF9',
+    text: '#1B3A4B',
+    accent: '#2E8B8B',
+    fontDisplay: '"Playfair Display", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Sun-drenched, luxurious, vibrant',
+  },
+  sedona: {
+    name: 'Sedona',
+    primary: '#3D2415',
+    secondary: '#C4783A',
+    background: '#F2EAE0',
+    text: '#3D2415',
+    accent: '#8B4513',
+    fontDisplay: '"Playfair Display", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Earthy, intimate, spiritual luxury',
+  },
+  aspen: {
+    name: 'Aspen',
+    primary: '#1A1A1A',
+    secondary: '#2D5A27',
+    background: '#F8F8F6',
+    text: '#1A1A1A',
+    accent: '#2D5A27',
+    fontDisplay: '"Cormorant Garamond", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Cozy luxury, black tie winter romance',
+  },
+  santorini: {
+    name: 'Santorini',
+    primary: '#0A2540',
+    secondary: '#4A90D9',
+    background: '#FAFCFF',
+    text: '#0A2540',
+    accent: '#4A90D9',
+    fontDisplay: '"Cormorant Garamond", serif',
+    fontBody: '"Plus Jakarta Sans", sans-serif',
+    feeling: 'Sculptural, crisp, modern coastal elegance',
   },
 };
 
@@ -647,8 +719,12 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const placeholderData = PLACEHOLDER_PAGES[currentPage];
   const showPlaceholders = currentPageSections.length === 0 && !!placeholderData;
-  const addBtnBorder = showPlaceholders ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
-  const addBtnColor = showPlaceholders ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
+  // Detect dark universe backgrounds (e.g. Tokyo) so button/empty-state colours stay readable
+  const bgHex = universeTheme.background || '#F8F7F5';
+  const bgR = parseInt(bgHex.slice(1, 3), 16);
+  const bgIsDark = (bgR * 299 + parseInt(bgHex.slice(3, 5), 16) * 587 + parseInt(bgHex.slice(5, 7), 16) * 114) / 1000 < 128;
+  const addBtnBorder = (showPlaceholders && !bgIsDark) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
+  const addBtnColor = (showPlaceholders && !bgIsDark) ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
 
   return (
     <>
@@ -703,10 +779,10 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
             ))
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28 }}>+</div>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: bgIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28, color: universeTheme.text }}>+</div>
               <p style={{ fontSize: 18, fontWeight: 600, color: universeTheme.text, marginBottom: 8, fontFamily: universeTheme.fontBody }}>No sections yet</p>
-              <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', marginBottom: 24, fontFamily: universeTheme.fontBody }}>Add your first section to start building this page</p>
-              <button onClick={() => onAddSection(0)} style={{ padding: '12px 24px', background: universeTheme.primary, color: '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
+              <p style={{ fontSize: 14, color: bgIsDark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.4)', marginBottom: 24, fontFamily: universeTheme.fontBody }}>Add your first section to start building this page</p>
+              <button onClick={() => onAddSection(0)} style={{ padding: '12px 24px', background: universeTheme.primary, color: bgIsDark ? universeTheme.background : '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
                 + Add first section
               </button>
             </div>
