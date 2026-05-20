@@ -167,7 +167,7 @@ export default function ScrollMorphSection() {
 
   // Phase opacity calculations using linear interpolation
   const headlineOpacity = 1 - lerp01(scrolled, 0, 500);
-  const endTextOpacity = 1;
+  const endTextOpacity = lerp01(scrolled, 3000, 3500);
   const continueOpacity = lerp01(scrolled, 2800, 3200);
   const cardsVisible = scrolled > 300;
 
@@ -240,7 +240,7 @@ export default function ScrollMorphSection() {
             transform: 'translate(-50%, -50%)',
             textAlign: 'center',
             opacity: endTextOpacity,
-            pointerEvents: 'none',
+            pointerEvents: endTextOpacity === 0 ? 'none' : 'auto',
             zIndex: 10,
             width: '100%',
             padding: '0 40px',
