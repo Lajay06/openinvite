@@ -243,15 +243,6 @@ export default function AvaPage() {
         </div>
       </section>
 
-      {/* ── STATS ────────────────────────────────────────────── */}
-      <div style={{ background: "#0A0A0A", borderTop: "1px solid #1A1A1A", borderBottom: "1px solid #1A1A1A" }}>
-        <div ref={statsRef} style={{ display: "flex", flexWrap: "wrap", maxWidth: 1200, margin: "0 auto" }}>
-          {STATS.map((s, i) =>
-          <StatCell key={i} stat={s} index={i} inView={statsInView} />
-          )}
-        </div>
-      </div>
-
       {/* ── CAROUSEL ─────────────────────────────────────────── */}
       <section ref={carouselRef} style={{ background: "#0A0A0A", padding: "80px 0 0" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 clamp(24px,5vw,80px)" }}>
