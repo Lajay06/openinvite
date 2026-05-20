@@ -245,22 +245,22 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
 
       {/* ── SECTION 1: Masthead ── */}
       <div style={{
-        background: '#0A0A0A',
+        background: '#FFFFFF',
         padding: '20px 40px',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        borderBottom: '1px solid #E8E8E5',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24,
       }}>
-        <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.5)' }}>
+        <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: '#AAAAAA' }}>
           Openinvite daily
         </span>
 
         <div style={{ textAlign: 'center' }}>
           {coupleName && (
-            <div style={{ fontFamily: PJS, fontSize: 13, fontWeight: 700, color: '#FFFFFF', letterSpacing: '0.04em' }}>
+            <div style={{ fontFamily: PJS, fontSize: 13, fontWeight: 700, color: '#0A0A0A', letterSpacing: '0.04em' }}>
               {coupleName}
             </div>
           )}
-          <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em', marginTop: coupleName ? 2 : 0 }}>
+          <div style={{ fontFamily: PJS, fontSize: 11, color: '#888888', letterSpacing: '0.06em', marginTop: coupleName ? 2 : 0 }}>
             {dateLabel}
           </div>
         </div>
@@ -281,14 +281,14 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
 
       {/* ── SECTION 2: Hero headline ── */}
       <div style={{
-        background: '#0A0A0A',
+        background: '#FFFFFF',
         padding: '48px 40px 40px',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid #E8E8E5',
       }}>
         {phase === 'loading' ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 100 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#E03553', animation: 'pulse 1.4s infinite' }} />
-            <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>
+            <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.4)' }}>
               Ava is preparing your briefing...
             </span>
           </div>
@@ -299,7 +299,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
             </p>
             <h1 style={{
               fontFamily: PJS, fontSize: 42, fontWeight: 800,
-              color: '#FFFFFF', letterSpacing: '-0.03em',
+              color: '#0A0A0A', letterSpacing: '-0.03em',
               lineHeight: 1.15, maxWidth: 800, margin: 0,
             }}>
               {briefing?.headline}
@@ -307,7 +307,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
             {briefing?.greeting && (
               <p style={{
                 fontFamily: PJS, fontSize: 16, fontWeight: 400,
-                color: 'rgba(255,255,255,0.7)', lineHeight: 1.6,
+                color: '#444444', lineHeight: 1.6,
                 maxWidth: 680, marginTop: 16, marginBottom: 0,
               }}>
                 {briefing.greeting}
