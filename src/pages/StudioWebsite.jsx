@@ -8,7 +8,7 @@ import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
 import SectionTemplatePicker from '@/components/website-builder/SectionTemplatePicker';
-import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, WEDDING_PAGES } from '@/lib/websiteThemes';
+import { WEBSITE_THEMES, FONT_OPTIONS, WEDDING_PAGES } from '@/lib/websiteThemes';
 import WBSectionRenderer from '@/components/website-builder/WBSectionRenderer';
 import AvaAutoFillModal from '@/components/website-builder/AvaAutoFillModal';
 import PublishModal from '@/components/website-builder/PublishModal';
@@ -333,10 +333,11 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
   }, [details, currentPage]);
 
   const theme = WEBSITE_THEMES.find(t => t.id === (details?.activeTheme || 'still')) || WEBSITE_THEMES[0];
-  const typo = details?.activeTypography
-    ? (TYPOGRAPHY_PAIRINGS.find(t => t.id === details.activeTypography) || null)
-    : null;
   const universeTheme = UNIVERSE_THEMES[details?.activeUniverse] || UNIVERSE_THEMES.aman;
+  const typo = {
+    fontDisplay: details?.displayFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif',
+    fontBody: details?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif',
+  };
 
   const setDetailsAndMark = (updater) => {
     setDetails(prev => {
@@ -442,9 +443,9 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
         </button>
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'none' }}>
           <span style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF', letterSpacing: '0.01em' }}>Website builder</span>
-          {typo && (
+          {details?.displayFont && (
             <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 999 }}>
-              {typo.name} · {typo.fontDisplay.replace(/['"]/g, '').split(',')[0]}
+              {FONT_OPTIONS.find(f => f.value === details.displayFont)?.label || details.displayFont.replace(/['"]/g, '').split(',')[0]}
             </span>
           )}
           {saveStatus === 'saving' && (
@@ -740,9 +741,9 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
     const univName = universeTheme?.fontDisplay?.replace(/['"]/g, '').split(',')[0].trim();
     if (univName && UNIVERSE_GFONTS[univName]) needed.add(UNIVERSE_GFONTS[univName]);
 
-    // Preload every typography pairing font using its googleFonts field
-    TYPOGRAPHY_PAIRINGS.forEach(t => {
-      if (t.googleFonts) needed.add(`https://fonts.googleapis.com/css2?family=${t.googleFonts}&display=swap`);
+    // Preload every font option so switching is instant
+    FONT_OPTIONS.forEach(f => {
+      if (f.google) needed.add(`https://fonts.googleapis.com/css2?family=${f.google}&display=swap`);
     });
 
     // Remove previously injected font links
@@ -757,7 +758,7 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
       document.head.appendChild(link);
     });
     console.log('[fonts] preloaded', needed.size, 'font URLs');
-  }, [universeTheme?.fontDisplay, typo?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [universeTheme?.fontDisplay, details?.displayFont, details?.bodyFont]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const placeholderData = PLACEHOLDER_PAGES[currentPage];
   const showPlaceholders = currentPageSections.length === 0 && !!placeholderData;
@@ -771,7 +772,7 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
   const effectiveHf = typo?.fontDisplay || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
   const effectiveBf = typo?.fontBody || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
 
-  console.log('[typo] PreviewContent — id:', typo?.id || 'none', '| hf:', effectiveHf);
+  console.log('[typo] PreviewContent — hf:', effectiveHf, '| bf:', effectiveBf);
 
   return (
     <>

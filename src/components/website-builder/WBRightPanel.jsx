@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Plus, ChevronLeft } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
-import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, HERO_EFFECT_OPTIONS } from '@/lib/websiteThemes';
+import { WEBSITE_THEMES, FONT_OPTIONS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, HERO_EFFECT_OPTIONS } from '@/lib/websiteThemes';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
 import {
@@ -74,10 +74,59 @@ function ChipInput({ label, items = [], onAdd, onRemove }) {
   );
 }
 
+const selectStyle = {
+  width: '100%',
+  background: '#2C2C2E',
+  color: '#FFFFFF',
+  border: '1px solid rgba(255,255,255,0.1)',
+  padding: '8px 12px',
+  fontSize: 13,
+  fontFamily: '"Plus Jakarta Sans", sans-serif',
+  borderRadius: 4,
+  outline: 'none',
+  cursor: 'pointer',
+  boxSizing: 'border-box',
+};
+
 // ── DESIGN TAB ────────────────────────────────────────────────
-function DesignTab({ details, onChange }) {
+function DesignTab({ details, onChange, universeTheme }) {
   const [themeOpen, setThemeOpen] = useState(true);
   const [typoOpen, setTypoOpen] = useState(false);
+
+  const defDisplay = universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
+  const defBody = universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
+  const [displayFont, setDisplayFont] = useState(details.displayFont || defDisplay);
+  const [bodyFont, setBodyFont] = useState(details.bodyFont || defBody);
+
+  useEffect(() => {
+    const injectFont = (fontValue) => {
+      const opt = FONT_OPTIONS.find(f => f.value === fontValue);
+      if (!opt?.google) return;
+      const href = `https://fonts.googleapis.com/css2?family=${opt.google}&display=swap`;
+      if (!document.head.querySelector(`link[href="${href}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.setAttribute('data-wf-font-sel', '1');
+        document.head.appendChild(link);
+      }
+    };
+    injectFont(displayFont);
+    injectFont(bodyFont);
+  }, [displayFont, bodyFont]);
+
+  const handleDisplayFont = (val) => {
+    setDisplayFont(val);
+    onChange('displayFont', val);
+  };
+
+  const handleBodyFont = (val) => {
+    setBodyFont(val);
+    onChange('bodyFont', val);
+  };
+
+  const displayFontLabel = FONT_OPTIONS.find(f => f.value === displayFont)?.label;
+
   return (
     <div>
       <SLabel onClick={() => setThemeOpen(o => !o)} isOpen={themeOpen}>Theme</SLabel>
@@ -104,29 +153,25 @@ function DesignTab({ details, onChange }) {
           );
         })}
       </div>
-      </div>{/* end theme collapsible */}
+      </div>
       <Divider />
       <SLabel onClick={() => setTypoOpen(o => !o)} isOpen={typoOpen}>
-        {details.activeTypography
-          ? `Typography · ${TYPOGRAPHY_PAIRINGS.find(t => t.id === details.activeTypography)?.name || ''}`
-          : 'Typography'}
+        {displayFontLabel ? `Typography · ${displayFontLabel}` : 'Typography'}
       </SLabel>
-      <div style={{ overflow: 'hidden', maxHeight: typoOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8, marginBottom: 8 }}>
-        {TYPOGRAPHY_PAIRINGS.map(t => {
-          const sel = details.activeTypography === t.id;
-          return (
-            <div key={t.id} onClick={() => { console.log('[typo] selected:', t.id, t.name); onChange('activeTypography', t.id); }} style={{ border: sel ? '2px solid #FFFFFF' : '1px solid rgba(255,255,255,0.08)', padding: 12, cursor: 'pointer', position: 'relative', background: '#2C2C2E', transition: 'border-color 0.15s' }}>
-              {sel && <span style={{ position: 'absolute', top: 6, right: 6, fontSize: 8, background: '#fff', color: '#0A0A0A', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</span>}
-              <p style={{ fontFamily: t.fontDisplay, fontSize: 14, fontWeight: 400, color: '#FFFFFF', margin: '0 0 2px', lineHeight: 1.2 }}>S & J</p>
-              <p style={{ fontFamily: t.fontBody, fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: '0 0 6px' }}>Together forever.</p>
-              <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', margin: '0 0 1px' }}>{t.name}</p>
-              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', margin: 0 }}>{t.description}</p>
-            </div>
-          );
-        })}
+      <div style={{ overflow: 'hidden', maxHeight: typoOpen ? '400px' : '0px', transition: 'max-height 0.2s ease' }}>
+        <div style={{ marginBottom: 12 }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Primary font</p>
+          <select value={displayFont} onChange={e => handleDisplayFont(e.target.value)} style={selectStyle}>
+            {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+          </select>
+        </div>
+        <div style={{ marginBottom: 8 }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Secondary font</p>
+          <select value={bodyFont} onChange={e => handleBodyFont(e.target.value)} style={selectStyle}>
+            {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+          </select>
+        </div>
       </div>
-      </div>{/* end typography collapsible */}
       <Divider />
       <SLabel>Animations</SLabel>
       <div style={{ marginBottom: 10 }}>
@@ -569,7 +614,7 @@ function SectionEditorPanel({ details, onChange, sectionId, onClose, masterData 
 }
 
 // ── MAIN COMPONENT ────────────────────────────────────────────
-export default function WBRightPanel({ details, onChange, selectedSection, onClearSection, rightTab, onRightTabChange, masterData, selectedAsset, assetContent, onAssetChange, onClearAsset }) {
+export default function WBRightPanel({ details, universeTheme, onChange, selectedSection, onClearSection, rightTab, onRightTabChange, masterData, selectedAsset, assetContent, onAssetChange, onClearAsset }) {
   const [mediaLibrary, setMediaLibrary] = useState([]);
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   const [mediaCallback, setMediaCallback] = useState(null);
@@ -655,7 +700,7 @@ export default function WBRightPanel({ details, onChange, selectedSection, onCle
             </div>
             <div style={{ flex: 1, padding: 16, overflowY: 'auto' }}>
               {rightTab === 'design' ? (
-                <DesignTab details={details} onChange={onChange} />
+                <DesignTab details={details} onChange={onChange} universeTheme={universeTheme} />
               ) : (
                 <SettingsTab details={details} onChange={onChange} />
               )}

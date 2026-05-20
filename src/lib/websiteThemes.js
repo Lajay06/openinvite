@@ -383,6 +383,29 @@ export const HERO_EFFECT_OPTIONS = [
   { id: 'static', name: 'Static', description: 'No movement, clean and still' }
 ];
 
+export const FONT_OPTIONS = [
+  { label: 'Cormorant Garamond', value: '"Cormorant Garamond", serif', google: 'Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400' },
+  { label: 'Playfair Display', value: '"Playfair Display", serif', google: 'Playfair+Display:ital,wght@0,400;0,700;1,400' },
+  { label: 'DM Serif Display', value: '"DM Serif Display", serif', google: 'DM+Serif+Display:ital@0;1' },
+  { label: 'Lora', value: '"Lora", serif', google: 'Lora:ital,wght@0,400;0,600;1,400' },
+  { label: 'Fraunces', value: '"Fraunces", serif', google: 'Fraunces:ital,wght@0,300;0,700;1,400' },
+  { label: 'Libre Baskerville', value: '"Libre Baskerville", serif', google: 'Libre+Baskerville:ital,wght@0,400;0,700;1,400' },
+  { label: 'Bodoni Moda', value: '"Bodoni Moda", serif', google: 'Bodoni+Moda:ital,wght@0,400;0,600;1,400' },
+  { label: 'Rozha One', value: '"Rozha One", serif', google: 'Rozha+One' },
+  { label: 'Marcellus', value: '"Marcellus", serif', google: 'Marcellus' },
+  { label: 'Abril Fatface', value: '"Abril Fatface", serif', google: 'Abril+Fatface' },
+  { label: 'Gilda Display', value: '"Gilda Display", serif', google: 'Gilda+Display' },
+  { label: 'Plus Jakarta Sans', value: '"Plus Jakarta Sans", sans-serif', google: '' },
+  { label: 'DM Sans', value: '"DM Sans", sans-serif', google: 'DM+Sans:wght@300;400;500' },
+  { label: 'Josefin Sans', value: '"Josefin Sans", sans-serif', google: 'Josefin+Sans:wght@100;300;400' },
+  { label: 'Raleway', value: '"Raleway", sans-serif', google: 'Raleway:wght@300;400;500' },
+  { label: 'Jost', value: '"Jost", sans-serif', google: 'Jost:wght@300;400;500' },
+  { label: 'Nunito', value: '"Nunito", sans-serif', google: 'Nunito:wght@300;400;500' },
+  { label: 'Karla', value: '"Karla", sans-serif', google: 'Karla:wght@300;400;500' },
+  { label: 'Inter', value: '"Inter", sans-serif', google: 'Inter:wght@300;400;500' },
+  { label: 'Bebas Neue', value: '"Bebas Neue", sans-serif', google: 'Bebas+Neue' },
+];
+
 export const WEDDING_PAGES = [
   { slug: 'home', label: 'Home', icon: 'LayoutDashboard' },
   { slug: 'our-story', label: 'Our Story', icon: 'BookOpen' },
