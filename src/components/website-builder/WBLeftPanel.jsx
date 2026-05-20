@@ -34,7 +34,7 @@ function Toggle({ enabled, onToggle }) {
       onClick={e => { e.stopPropagation(); onToggle(); }}
       style={{
         width: 28, height: 16, borderRadius: 999, border: 'none', cursor: 'pointer',
-        background: enabled ? '#E03553' : 'rgba(255,255,255,0.1)',
+        background: enabled ? '#E03553' : '#2C2C2E',
         position: 'relative', flexShrink: 0, padding: 0, outline: 'none',
         transition: 'background 0.2s ease',
       }}
@@ -55,14 +55,14 @@ function SLabel({ children }) {
   return (
     <p style={{
       fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
-      color: 'rgba(255,255,255,0.25)', margin: 0,
+      color: 'rgba(255,255,255,0.4)', margin: 0,
       padding: '12px 16px 6px', fontFamily: PJS,
     }}>{children}</p>
   );
 }
 
 function Divider() {
-  return <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '8px 0' }} />;
+  return <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '8px 0' }} />;
 }
 
 export default function WBLeftPanel({ details, onChange, currentPage, onPageChange, selectedAsset, onAssetSelect }) {
@@ -102,8 +102,8 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
   return (
     <div style={{
       width: 240, flexShrink: 0,
-      background: '#111111',
-      borderRight: '1px solid rgba(255,255,255,0.06)',
+      background: '#1C1C1E',
+      borderRight: '1px solid rgba(255,255,255,0.08)',
       display: 'flex', flexDirection: 'column', overflowY: 'auto',
       color: 'rgba(255,255,255,0.6)',
       zIndex: 50,
@@ -244,7 +244,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
       </div>
 
       {/* ── Assets ── */}
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0 0' }} />
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 0 0' }} />
       <SLabel>Assets</SLabel>
       {ASSETS.map(({ id, name, icon: Icon }) => {
         const active = selectedAsset === id;

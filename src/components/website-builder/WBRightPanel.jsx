@@ -13,14 +13,14 @@ import MediaLibraryModal from './MediaLibraryModal';
 
 // ── Extra primitives used only here ───────────────────────────
 function SLabel({ children }) {
-  return <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)', margin: '0 0 10px' }}>{children}</p>;
+  return <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.4)', margin: '0 0 10px' }}>{children}</p>;
 }
 function UTextarea({ label, value, onChange, rows = 3, placeholder = '' }) {
   return (
     <div style={{ marginBottom: 14 }}>
       {label && <FLabel>{label}</FLabel>}
       <textarea value={value || ''} onChange={e => onChange(e.target.value)} rows={rows} placeholder={placeholder}
-        style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', padding: '8px', fontSize: 13, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit', resize: 'vertical', background: 'rgba(255,255,255,0.06)', boxSizing: 'border-box', borderRadius: 0 }}
+        style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', padding: '8px', fontSize: 13, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit', resize: 'vertical', background: 'rgba(255,255,255,0.08)', boxSizing: 'border-box', borderRadius: 0 }}
         onFocus={e => e.target.style.borderColor = '#E03553'}
         onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
       />
@@ -94,7 +94,7 @@ function DesignTab({ details, onChange }) {
         {TYPOGRAPHY_PAIRINGS.map(t => {
           const sel = (details.activeTypography || 'classic') === t.id;
           return (
-            <div key={t.id} onClick={() => onChange('activeTypography', t.id)} style={{ border: sel ? '2px solid #FFFFFF' : '1px solid rgba(255,255,255,0.08)', padding: 12, cursor: 'pointer', position: 'relative', background: 'rgba(255,255,255,0.04)', transition: 'border-color 0.15s' }}>
+            <div key={t.id} onClick={() => onChange('activeTypography', t.id)} style={{ border: sel ? '2px solid #FFFFFF' : '1px solid rgba(255,255,255,0.08)', padding: 12, cursor: 'pointer', position: 'relative', background: '#2C2C2E', transition: 'border-color 0.15s' }}>
               {sel && <span style={{ position: 'absolute', top: 6, right: 6, fontSize: 8, background: '#fff', color: '#0A0A0A', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</span>}
               <p style={{ fontFamily: t.headingFont + ',serif', fontSize: 14, fontWeight: t.headingWeight, fontStyle: t.headingStyle || 'normal', color: '#FFFFFF', margin: '0 0 2px' }}>S & J</p>
               <p style={{ fontFamily: t.bodyFont, fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: '0 0 6px' }}>Together forever.</p>
@@ -136,7 +136,7 @@ function SettingsTab({ details, onChange }) {
   return (
     <div>
       <SLabel>Your site URL</SLabel>
-      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.06)', padding: '7px 10px', marginBottom: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.08)', padding: '7px 10px', marginBottom: 8 }}>
         <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }}>openinvite.com/w/</span>
         <input value={details.slug || ''} onChange={e => onChange('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
           placeholder="your-names" style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit' }} />
@@ -507,7 +507,7 @@ function SectionEditorPanel({ details, onChange, sectionId, onClose, masterData 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', flexShrink: 0, position: 'sticky', top: 0, background: '#161616', zIndex: 10 }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', flexShrink: 0, position: 'sticky', top: 0, background: '#1C1C1E', zIndex: 10 }}>
         <div style={{ flex: 1 }}>
           <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)' }}>Editing</p>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#FFFFFF' }}>{getSectionDisplayName(section.type)}</p>
@@ -516,7 +516,7 @@ function SectionEditorPanel({ details, onChange, sectionId, onClose, masterData 
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
         {['content', 'style'].map(t => (
           <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: '10px', border: 'none', background: 'none', fontSize: 13, fontWeight: 600, color: tab === t ? '#FFFFFF' : 'rgba(255,255,255,0.35)', borderBottom: tab === t ? '2px solid #FFFFFF' : '2px solid transparent', cursor: 'pointer', textTransform: 'capitalize', fontFamily: 'inherit' }}>
             {t}
@@ -536,7 +536,7 @@ function SectionEditorPanel({ details, onChange, sectionId, onClose, masterData 
       </div>
 
       {/* Footer */}
-      <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+      <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
         <button onClick={deleteSection} style={{ width: '100%', padding: '8px', border: '1px solid rgba(224,53,83,0.4)', background: 'transparent', color: '#E03553', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', borderRadius: 999 }}>
           Delete section
         </button>
@@ -581,11 +581,11 @@ export default function WBRightPanel({ details, onChange, selectedSection, onCle
 
   return (
     <MediaLibraryContext.Provider value={{ open: openMediaLibrary }}>
-      <div style={{ width: '100%', flexShrink: 0, background: '#161616', borderLeft: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', overflowY: (showSectionEditor || selectedAsset) ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
+      <div style={{ width: '100%', flexShrink: 0, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: (showSectionEditor || selectedAsset) ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
 
         {selectedAsset ? (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <button onClick={onClearAsset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 2, display: 'flex', alignItems: 'center' }}><ChevronLeft size={16} /></button>
               <div>
                 <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)' }}>Editing asset</p>
@@ -611,7 +611,7 @@ export default function WBRightPanel({ details, onChange, selectedSection, onCle
             />
           ) : (
             <>
-              <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF', margin: 0 }}>{selectedSection}</p>
                 <button onClick={onClearSection} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}><X size={16} /></button>
               </div>
@@ -623,7 +623,7 @@ export default function WBRightPanel({ details, onChange, selectedSection, onCle
         ) : (
           <>
             {/* Design / Settings tabs */}
-            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, position: 'sticky', top: 0, background: '#161616', zIndex: 10 }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0, position: 'sticky', top: 0, background: '#1C1C1E', zIndex: 10 }}>
               {[{ id: 'design', label: 'Design' }, { id: 'settings', label: 'Settings' }].map(tab => (
                 <button key={tab.id} onClick={() => onRightTabChange(tab.id)} style={{ flex: 1, height: 44, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: rightTab === tab.id ? '#FFFFFF' : 'rgba(255,255,255,0.35)', borderBottom: rightTab === tab.id ? '2px solid #FFFFFF' : '2px solid transparent', fontFamily: 'inherit' }}>
                   {tab.label}
@@ -638,7 +638,7 @@ export default function WBRightPanel({ details, onChange, selectedSection, onCle
               )}
             </div>
             {rightTab === 'design' && (
-              <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+              <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
                 <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', textAlign: 'center', margin: 0 }}>Click any section in the preview to edit it</p>
               </div>
             )}
