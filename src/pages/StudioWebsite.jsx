@@ -719,25 +719,9 @@ function PlaceholderSection({ section, universeTheme, effectiveHf, effectiveBf, 
   );
 }
 
-// Map of font names to Google Fonts URLs
-const GFONT_URLS = {
-  'Cormorant Garamond': 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap',
-  'Playfair Display': 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&display=swap',
+// Universe fonts not covered by any TYPOGRAPHY_PAIRINGS entry
+const UNIVERSE_GFONTS = {
   'Noto Serif JP': 'https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400&display=swap',
-  'DM Serif Display': 'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital,wght@0,400;1,400&display=swap',
-  'DM Sans': 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400&display=swap',
-  'Libre Baskerville': 'https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap',
-  'Lato': 'https://fonts.googleapis.com/css2?family=Lato:wght@300;400&display=swap',
-  'Josefin Sans': 'https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400&display=swap',
-  'EB Garamond': 'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,300;0,400;1,300&display=swap',
-  'Montserrat': 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap',
-  'Lora': 'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;1,400&display=swap',
-  'Source Sans Pro': 'https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400&display=swap',
-  'Cinzel': 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&display=swap',
-  'Raleway': 'https://fonts.googleapis.com/css2?family=Raleway:wght@300;400&display=swap',
-  'Dancing Script': 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500&display=swap',
-  'Great Vibes': 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap',
-  'Bodoni Moda': 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;1,400&display=swap',
 };
 
 function PreviewContent({ theme, typo, universeTheme, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection, isMobile }) {
@@ -747,14 +731,13 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
   useEffect(() => {
     const needed = new Set();
 
-    // Universe display font
+    // Universe display font (for fonts not covered by any typography pairing)
     const univName = universeTheme?.fontDisplay?.replace(/['"]/g, '').split(',')[0].trim();
-    if (univName && GFONT_URLS[univName]) needed.add(GFONT_URLS[univName]);
+    if (univName && UNIVERSE_GFONTS[univName]) needed.add(UNIVERSE_GFONTS[univName]);
 
-    // Preload every typography pairing font so they're cached before selection
+    // Preload every typography pairing font using its googleFonts field
     TYPOGRAPHY_PAIRINGS.forEach(t => {
-      if (t.headingFont && GFONT_URLS[t.headingFont]) needed.add(GFONT_URLS[t.headingFont]);
-      if (t.bodyFont && GFONT_URLS[t.bodyFont]) needed.add(GFONT_URLS[t.bodyFont]);
+      if (t.googleFonts) needed.add(`https://fonts.googleapis.com/css2?family=${t.googleFonts}&display=swap`);
     });
 
     // Remove previously injected font links
@@ -780,11 +763,10 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
   const addBtnBorder = (showPlaceholders && !bgIsDark) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
   const addBtnColor = (showPlaceholders && !bgIsDark) ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
   // Typography overrides universe fonts; universe fonts override system defaults
-  const effectiveHf = typo?.headingFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
-  const effectiveBf = typo?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
-  const effectiveHw = typo?.headingWeight || '300';
+  const effectiveHf = typo?.fontDisplay || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
+  const effectiveBf = typo?.fontBody || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
 
-  console.log('[typo] PreviewContent — id:', typo?.id || 'none', '| hf:', effectiveHf, '| hw:', effectiveHw);
+  console.log('[typo] PreviewContent — id:', typo?.id || 'none', '| hf:', effectiveHf);
 
   return (
     <>

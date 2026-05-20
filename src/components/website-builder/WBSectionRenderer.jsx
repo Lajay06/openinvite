@@ -61,10 +61,10 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
   const darkText = theme?.darkText || '#FFFFFF';
   const accent = theme?.accent || universeTheme?.accent || '#888888';
   // typo explicitly overrides universe fonts; universe fonts override system defaults
-  const hf = typo?.headingFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
-  const bf = typo?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
-  const hw = typo?.headingWeight || '300';
-  const bw = typo?.bodyWeight || '400';
+  const hf = typo?.fontDisplay || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
+  const bf = typo?.fontBody || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
+  const hw = '300'; // display weight — sections use light by default for elegance
+  const bw = '400';
 
   // Style overrides from section.style
   const sStyle = section.style || {};
