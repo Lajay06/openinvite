@@ -256,7 +256,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
 
         <div style={{ textAlign: 'center' }}>
           {coupleName && (
-            <div style={{ fontFamily: PJS, fontSize: 13, fontWeight: 700, color: '#FFFFFF', letterSpacing: '0.04em' }}>
+            <div style={{ fontFamily: PJS, fontSize: 13, fontWeight: 700, color: '#0A0A0A', letterSpacing: '0.04em' }}>
               {coupleName}
             </div>
           )}
@@ -299,7 +299,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
             </p>
             <h1 style={{
               fontFamily: PJS, fontSize: 42, fontWeight: 800,
-              color: '#FFFFFF', letterSpacing: '-0.03em',
+              color: '#0A0A0A', letterSpacing: '-0.03em',
               lineHeight: 1.15, maxWidth: 800, margin: 0,
             }}>
               {briefing?.headline}
