@@ -63,6 +63,8 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
   // typo explicitly overrides universe fonts; universe fonts override system defaults
   const hf = typo?.headingFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
   const bf = typo?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
+  const hw = typo?.headingWeight || '300';
+  const bw = typo?.bodyWeight || '400';
 
   // Style overrides from section.style
   const sStyle = section.style || {};
@@ -100,7 +102,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
           )}
           <div style={{ position: 'relative', zIndex: 2, textAlign: textAlign || 'center', padding: '48px 32px', maxWidth: maxW || 700, width: '100%', margin: '0 auto' }}>
             <div style={{ width: 50, height: 1, background: 'rgba(255,255,255,0.3)', margin: '0 auto 20px' }} />
-            <h1 style={{ fontFamily: hf, fontWeight: 300, fontSize: 'clamp(28px,5vw,56px)', color: sStyle.textColor || '#fff', letterSpacing: '0.12em', margin: '0 0 12px' }}>
+            <h1 style={{ fontFamily: hf, fontWeight: hw, fontSize: 'clamp(28px,5vw,56px)', color: sStyle.textColor || '#fff', letterSpacing: '0.12em', margin: '0 0 12px' }}>
               {displayTitle}
             </h1>
             {displayDate && <p style={{ fontFamily: bf, fontSize: 13, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.25em', textTransform: 'uppercase', margin: '0 0 6px' }}>{displayDate}</p>}
@@ -124,7 +126,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
           </div>
           <div style={{ display: 'flex', alignItems: 'center', padding: '40px 32px' }}>
             <div>
-              <h2 style={{ fontFamily: hf, fontWeight: 300, fontSize: 'clamp(20px,3vw,40px)', color: sStyle.textColor || darkText, letterSpacing: '0.08em', margin: '0 0 12px' }}>{c.title || 'Your Names'}</h2>
+              <h2 style={{ fontFamily: hf, fontWeight: hw, fontSize: 'clamp(20px,3vw,40px)', color: sStyle.textColor || darkText, letterSpacing: '0.08em', margin: '0 0 12px' }}>{c.title || 'Your Names'}</h2>
               {c.subtitle && <p style={{ fontFamily: bf, fontSize: 15, color: 'rgba(255,255,255,0.6)', margin: '0 0 12px' }}>{c.subtitle}</p>}
               {c.date && <p style={{ fontFamily: bf, fontSize: 12, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.2em', margin: 0 }}>{c.date}</p>}
             </div>
@@ -141,7 +143,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
       return (
         <div style={{ background: bg, padding: `${padY || 60}px 40px`, textAlign: textAlign || 'center' }}>
           <p style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 20 }}>Our Story</p>
-          <p style={{ fontFamily: hf, fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(16px,2.5vw,24px)', color: sStyle.textColor || lightText, lineHeight: 1.7, maxWidth: maxW || 600, margin: '0 auto' }}>
+          <p style={{ fontFamily: hf, fontStyle: typo?.headingStyle || 'italic', fontWeight: hw, fontSize: 'clamp(16px,2.5vw,24px)', color: sStyle.textColor || lightText, lineHeight: 1.7, maxWidth: maxW || 600, margin: '0 auto' }}>
             {c.text || 'Tell your love story here...'}
           </p>
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginTop: 32, justifyContent: 'center' }}>
@@ -167,7 +169,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
       const bg = getBg(darkBg);
       return (
         <div style={{ background: bg, padding: `${padY || 60}px 40px`, textAlign: textAlign || 'center' }}>
-          <p style={{ fontFamily: hf, fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(18px,3vw,32px)', color: sStyle.textColor || darkText, lineHeight: 1.6, maxWidth: maxW || 600, margin: '0 auto' }}>
+          <p style={{ fontFamily: hf, fontStyle: typo?.headingStyle || 'italic', fontWeight: hw, fontSize: 'clamp(18px,3vw,32px)', color: sStyle.textColor || darkText, lineHeight: 1.6, maxWidth: maxW || 600, margin: '0 auto' }}>
             "{c.quote || c.text || 'Add your message here...'}"
           </p>
           {c.attribution && <p style={{ fontFamily: bf, fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 20 }}>— {c.attribution}</p>}
@@ -179,7 +181,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
       const bg = getBg(darkBg);
       return (
         <div style={{ background: bg, padding: `${padY || 60}px 40px`, textAlign: textAlign || 'center' }}>
-          <p style={{ fontFamily: hf, fontStyle: 'italic', fontWeight: 300, fontSize: 'clamp(16px,2.5vw,28px)', color: sStyle.textColor || darkText, maxWidth: maxW || 540, margin: '0 auto', lineHeight: 1.6 }}>
+          <p style={{ fontFamily: hf, fontStyle: typo?.headingStyle || 'italic', fontWeight: hw, fontSize: 'clamp(16px,2.5vw,28px)', color: sStyle.textColor || darkText, maxWidth: maxW || 540, margin: '0 auto', lineHeight: 1.6 }}>
             {c.message || 'Thank you for being part of our special day.'}
           </p>
         </div>
@@ -260,7 +262,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
       return (
         <div style={{ background: bg, padding: `${padY || 60}px 40px` }}>
           <p style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.2em', textAlign: textAlign || 'center', marginBottom: 12 }}>RSVP</p>
-          <h2 style={{ fontFamily: hf, fontWeight: 300, fontSize: 'clamp(24px,4vw,44px)', color: sStyle.textColor || lightText, textAlign: textAlign || 'center', marginBottom: 36 }}>Will you join us?</h2>
+          <h2 style={{ fontFamily: hf, fontWeight: hw, fontSize: 'clamp(24px,4vw,44px)', color: sStyle.textColor || lightText, textAlign: textAlign || 'center', marginBottom: 36 }}>Will you join us?</h2>
           <div style={{ maxWidth: 440, margin: '0 auto' }}>
             <div style={{ borderBottom: '1px solid #CCC', marginBottom: 20, paddingBottom: 6 }}>
               <p style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', marginBottom: 4 }}>Full Name</p>
@@ -344,7 +346,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
             )}
           </div>
           <div style={{ padding: '32px 40px', textAlign: textAlign || 'center' }}>
-            <p style={{ fontFamily: hf, fontWeight: 300, fontSize: 24, color: sStyle.textColor || lightText, marginBottom: 8 }}>{c.venue || 'Venue Name'}</p>
+            <p style={{ fontFamily: hf, fontWeight: hw, fontSize: 24, color: sStyle.textColor || lightText, marginBottom: 8 }}>{c.venue || 'Venue Name'}</p>
             {c.address && <p style={{ fontSize: 13, color: '#888' }}>{c.address}</p>}
           </div>
         </div>
@@ -399,7 +401,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
       return (
         <div style={{ background: bg, padding: `${padY || 60}px 40px`, textAlign: textAlign || 'center' }}>
           <p style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 24 }}>Save The Date</p>
-          <p style={{ fontFamily: hf, fontWeight: 300, fontSize: 'clamp(24px,4vw,48px)', color: sStyle.textColor || darkText, margin: '0 0 16px' }}>{displayDate}</p>
+          <p style={{ fontFamily: hf, fontWeight: hw, fontSize: 'clamp(24px,4vw,48px)', color: sStyle.textColor || darkText, margin: '0 0 16px' }}>{displayDate}</p>
           {c.venue && <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>{c.venue}</p>}
         </div>
       );
@@ -457,7 +459,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
       return (
         <div style={{ background: bg, padding: `${padY || 60}px 40px`, textAlign: textAlign || 'center' }}>
           <p style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 16 }}>Guest Book</p>
-          <p style={{ fontFamily: hf, fontStyle: 'italic', fontSize: 20, color: sStyle.textColor || lightText, marginBottom: 32 }}>{c.message || 'Leave us a note!'}</p>
+          <p style={{ fontFamily: hf, fontStyle: typo?.headingStyle || 'italic', fontWeight: hw, fontSize: 20, color: sStyle.textColor || lightText, marginBottom: 32 }}>{c.message || 'Leave us a note!'}</p>
           <div style={{ maxWidth: 480, margin: '0 auto', border: '1px solid #DDD', borderRadius: 8, padding: '20px', textAlign: 'left', background: '#fff' }}>
             <div style={{ height: 24, background: '#F0F0F0', borderRadius: 4, marginBottom: 12 }} />
             <div style={{ height: 60, background: '#F0F0F0', borderRadius: 4, marginBottom: 16 }} />
@@ -473,7 +475,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
       const bg = getBg(lightBg);
       return (
         <div style={{ background: bg, padding: `${padY || 48}px 40px`, textAlign: textAlign || 'center' }}>
-          <p style={{ fontFamily: hf, fontStyle: 'italic', fontSize: 20, color: sStyle.textColor || lightText, marginBottom: 16 }}>
+          <p style={{ fontFamily: hf, fontStyle: typo?.headingStyle || 'italic', fontWeight: hw, fontSize: 20, color: sStyle.textColor || lightText, marginBottom: 16 }}>
             {c.message || c.hashtag || 'Interactive section'}
           </p>
           <p style={{ fontSize: 12, color: '#888' }}>{section.type.replace(/-/g, ' ')}</p>
@@ -486,7 +488,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
       return (
         <div style={{ background: bg, padding: `${padY || 48}px 40px`, textAlign: textAlign || 'center' }}>
           <p style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 16 }}>Getting There</p>
-          <p style={{ fontFamily: hf, fontWeight: 300, fontSize: 20, color: sStyle.textColor || lightText, marginBottom: 8 }}>{c.venue || 'Venue'}</p>
+          <p style={{ fontFamily: hf, fontWeight: hw, fontSize: 20, color: sStyle.textColor || lightText, marginBottom: 8 }}>{c.venue || 'Venue'}</p>
           {c.address && <p style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>{c.address}</p>}
           <div style={{ height: 200, background: '#E8E8E8', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <p style={{ fontSize: 13, color: '#888' }}>Map preview</p>

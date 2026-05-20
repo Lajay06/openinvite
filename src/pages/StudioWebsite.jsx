@@ -737,13 +737,13 @@ const GFONT_URLS = {
   'Raleway': 'https://fonts.googleapis.com/css2?family=Raleway:wght@300;400&display=swap',
   'Dancing Script': 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500&display=swap',
   'Great Vibes': 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap',
-  'Bodoni Moda': 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&display=swap',
+  'Bodoni Moda': 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;1,400&display=swap',
 };
 
 function PreviewContent({ theme, typo, universeTheme, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection, isMobile }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Inject Google Fonts for the active universe and typography pairing
+  // Preload ALL typography fonts at mount so switching is instant (no loading delay)
   useEffect(() => {
     const needed = new Set();
 
@@ -751,9 +751,11 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
     const univName = universeTheme?.fontDisplay?.replace(/['"]/g, '').split(',')[0].trim();
     if (univName && GFONT_URLS[univName]) needed.add(GFONT_URLS[univName]);
 
-    // Typography pairing fonts (when user has explicitly selected one)
-    if (typo?.headingFont && GFONT_URLS[typo.headingFont]) needed.add(GFONT_URLS[typo.headingFont]);
-    if (typo?.bodyFont && GFONT_URLS[typo.bodyFont]) needed.add(GFONT_URLS[typo.bodyFont]);
+    // Preload every typography pairing font so they're cached before selection
+    TYPOGRAPHY_PAIRINGS.forEach(t => {
+      if (t.headingFont && GFONT_URLS[t.headingFont]) needed.add(GFONT_URLS[t.headingFont]);
+      if (t.bodyFont && GFONT_URLS[t.bodyFont]) needed.add(GFONT_URLS[t.bodyFont]);
+    });
 
     // Remove previously injected font links
     document.head.querySelectorAll('link[data-wf-font]').forEach(el => el.remove());
@@ -766,7 +768,8 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
       link.setAttribute('data-wf-font', '1');
       document.head.appendChild(link);
     });
-  }, [universeTheme?.fontDisplay, typo?.id]);
+    console.log('[fonts] preloaded', needed.size, 'font URLs');
+  }, [universeTheme?.fontDisplay]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const placeholderData = PLACEHOLDER_PAGES[currentPage];
   const showPlaceholders = currentPageSections.length === 0 && !!placeholderData;
@@ -779,13 +782,16 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
   // Typography overrides universe fonts; universe fonts override system defaults
   const effectiveHf = typo?.headingFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
   const effectiveBf = typo?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
+  const effectiveHw = typo?.headingWeight || '300';
+
+  console.log('[typo] PreviewContent — id:', typo?.id || 'none', '| hf:', effectiveHf, '| hw:', effectiveHw);
 
   return (
     <>
       {/* Nav bar inside preview */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
         <div style={{ background: universeTheme.primary, padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: '#FFFFFF', fontFamily: effectiveBf }}>
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: '#FFFFFF', fontFamily: effectiveHf }}>
             {details.coupleNames || 'Your Names'}
           </span>
           {isMobile ? (
@@ -820,7 +826,7 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
       </div>
 
       {/* Sections */}
-      <div style={{ flex: 1, overflowY: 'auto', background: universeTheme.background }}>
+      <div style={{ flex: 1, overflowY: 'auto', background: universeTheme.background, fontFamily: effectiveBf }}>
         {currentPageSections.length === 0 ? (
           showPlaceholders ? (
             placeholderData.sections.map((section, i) => (

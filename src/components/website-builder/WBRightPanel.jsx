@@ -116,7 +116,7 @@ function DesignTab({ details, onChange }) {
         {TYPOGRAPHY_PAIRINGS.map(t => {
           const sel = details.activeTypography === t.id;
           return (
-            <div key={t.id} onClick={() => onChange('activeTypography', t.id)} style={{ border: sel ? '2px solid #FFFFFF' : '1px solid rgba(255,255,255,0.08)', padding: 12, cursor: 'pointer', position: 'relative', background: '#2C2C2E', transition: 'border-color 0.15s' }}>
+            <div key={t.id} onClick={() => { console.log('[typo] selected:', t.id, t.name); onChange('activeTypography', t.id); }} style={{ border: sel ? '2px solid #FFFFFF' : '1px solid rgba(255,255,255,0.08)', padding: 12, cursor: 'pointer', position: 'relative', background: '#2C2C2E', transition: 'border-color 0.15s' }}>
               {sel && <span style={{ position: 'absolute', top: 6, right: 6, fontSize: 8, background: '#fff', color: '#0A0A0A', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</span>}
               <p style={{ fontFamily: t.headingFont + ',serif', fontSize: 14, fontWeight: t.headingWeight, fontStyle: t.headingStyle || 'normal', color: '#FFFFFF', margin: '0 0 2px' }}>S & J</p>
               <p style={{ fontFamily: t.bodyFont, fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: '0 0 6px' }}>Together forever.</p>
