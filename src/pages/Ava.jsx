@@ -323,21 +323,21 @@ export default function AvaPage() {
       
 
       {/* ── COMPARISON TABLE ─────────────────────────────────── */}
-      <section style={{ background: "#fff", padding: "120px clamp(24px,5vw,80px)" }}>
+      <section style={{ background: "#0A0A0A", padding: "120px clamp(24px,5vw,80px)" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(28px,3vw,48px)", fontWeight: 700, color: "#0A0A0A", margin: "0 0 48px", letterSpacing: "-0.02em" }}>Planning with Ava vs. planning without.</h2>
-          <div ref={tableRef} style={{ border: "1px solid #EEEEEE", overflow: "hidden" }}>
+          <h2 style={{ fontSize: "clamp(28px,3vw,48px)", fontWeight: 700, color: "#FFFFFF", margin: "0 0 48px", letterSpacing: "-0.02em" }}>Planning with Ava vs. planning without.</h2>
+          <div ref={tableRef} style={{ border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
             {/* Header */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#0A0A0A" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#1A1A1A" }}>
               {["", "Without Ava", "With Ava"].map((h, i) =>
                 <div key={i} style={{ padding: "18px 24px", fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: i === 0 ? "transparent" : "#FFFFFF", borderRight: i < 2 ? "1px solid rgba(255,255,255,0.1)" : "none", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{h}</div>
               )}
             </div>
             {TABLE_ROWS.map((row, i) =>
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: i % 2 === 1 ? "#FAFAFA" : "#fff", borderTop: "1px solid #EEEEEE", opacity: tableInView ? 1 : 0, transform: tableInView ? "none" : "translateY(8px)", transition: `opacity 0.4s ${i * 0.05}s ease, transform 0.4s ${i * 0.05}s ease` }}>
-                <div style={{ padding: "18px 24px", fontSize: 14, fontWeight: 600, color: "#0A0A0A", borderRight: "1px solid #EEEEEE" }}>{row.feature}</div>
-                <div style={{ padding: "18px 24px", fontSize: 14, color: "#444444", borderRight: "1px solid #EEEEEE" }}>{row.without}</div>
-                <div style={{ padding: "18px 24px", fontSize: 14, fontWeight: 600, color: "#0A0A0A", display: "flex", alignItems: "center", gap: 8 }}>
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: i % 2 === 1 ? "#111111" : "#0A0A0A", borderTop: "1px solid rgba(255,255,255,0.06)", opacity: tableInView ? 1 : 0, transform: tableInView ? "none" : "translateY(8px)", transition: `opacity 0.4s ${i * 0.05}s ease, transform 0.4s ${i * 0.05}s ease` }}>
+                <div style={{ padding: "18px 24px", fontSize: 14, fontWeight: 600, color: "#FFFFFF", borderRight: "1px solid rgba(255,255,255,0.06)" }}>{row.feature}</div>
+                <div style={{ padding: "18px 24px", fontSize: 14, color: "rgba(255,255,255,0.35)", borderRight: "1px solid rgba(255,255,255,0.06)" }}>{row.without}</div>
+                <div style={{ padding: "18px 24px", fontSize: 14, fontWeight: 600, color: "#FFFFFF", display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#DDF762", border: "1px solid #AAB000", flexShrink: 0 }} />
                   {row.with}
                 </div>
