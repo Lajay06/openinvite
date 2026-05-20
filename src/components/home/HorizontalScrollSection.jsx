@@ -54,13 +54,7 @@ const CARDS = [
   bullets: ["Custom invitation designs", "Real-time RSVP tracking", "Guest messaging"],
   photo: "https://static.wixstatic.com/media/d2df22_e30eff6d03424dd6baf63143722b2a3d~mv2.jpg"
 },
-{
-  num: "06",
-  title: "AI Assistant — Ava",
-  desc: "Ava takes the guesswork out of planning — smart suggestions, personalised insights, always one step ahead.",
-  bullets: ["Personalised recommendations", "Smart budget tips", "Automated task suggestions"],
-  photo: "https://static.wixstatic.com/media/d2df22_6aab4aa83a3b40eabd571d355ed75c7c~mv2.jpg"
-}];
+];
 
 
 const DOT_COLORS = ["#FFFFFF", "#FFFFFF", "#FFFFFF"];
