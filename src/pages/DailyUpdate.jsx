@@ -241,7 +241,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', color: '#0A0A0A' }}>
 
       {/* ── SECTION 1: Masthead ── */}
       <div style={{
