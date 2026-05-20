@@ -14,6 +14,88 @@ import AvaAutoFillModal from '@/components/website-builder/AvaAutoFillModal';
 import PublishModal from '@/components/website-builder/PublishModal';
 import { ASSET_PREVIEW_MAP, ASSET_ID_TO_KEY } from '@/components/website-builder/AssetPreviews';
 
+const UNIVERSE_THEMES = {
+  aman: {
+    name: 'Aman',
+    primary: '#0A0A0A',
+    secondary: '#C4956A',
+    background: '#F8F7F5',
+    text: '#0A0A0A',
+    accent: '#C4956A',
+    fontDisplay: 'Cormorant Garamond, serif',
+    fontBody: 'Plus Jakarta Sans, sans-serif',
+  },
+  tulum: {
+    name: 'Tulum',
+    primary: '#7B6B52',
+    secondary: '#C4956A',
+    background: '#F5ECD7',
+    text: '#3D2B1F',
+    accent: '#C4956A',
+    fontDisplay: 'Playfair Display, serif',
+    fontBody: 'Plus Jakarta Sans, sans-serif',
+  },
+  kyoto: {
+    name: 'Kyoto',
+    primary: '#2C2C2C',
+    secondary: '#8B7355',
+    background: '#F0EBE3',
+    text: '#2C2C2C',
+    accent: '#8B7355',
+    fontDisplay: 'Noto Serif JP, serif',
+    fontBody: 'Plus Jakarta Sans, sans-serif',
+  },
+  capri: {
+    name: 'Capri',
+    primary: '#1B3A6B',
+    secondary: '#7BA7C2',
+    background: '#F4E4C1',
+    text: '#1B3A6B',
+    accent: '#7BA7C2',
+    fontDisplay: 'Playfair Display, serif',
+    fontBody: 'Plus Jakarta Sans, sans-serif',
+  },
+  paris: {
+    name: 'Paris',
+    primary: '#1A1A2E',
+    secondary: '#C9A96E',
+    background: '#F5F0E8',
+    text: '#1A1A2E',
+    accent: '#C9A96E',
+    fontDisplay: 'Cormorant Garamond, serif',
+    fontBody: 'Plus Jakarta Sans, sans-serif',
+  },
+};
+
+const PLACEHOLDER_PAGES = {
+  home: {
+    sections: [
+      { type: 'hero', heading: 'Sarah & James', subheading: '20 September 2025 · Amalfi Coast, Italy', body: 'Join us as we celebrate our love' },
+      { type: 'intro', heading: "We're getting married", body: "We can't wait to share this day with the people who matter most to us. Save the date and join us for an unforgettable celebration." },
+    ],
+  },
+  'our-story': {
+    sections: [
+      { type: 'story', heading: 'How it all began', body: "We met and knew from that moment on that something special had begun. We're so excited to celebrate this next chapter with the people we love most." },
+    ],
+  },
+  celebration: {
+    sections: [
+      { type: 'event', heading: 'The ceremony', body: 'Villa Rufolo, Ravello\n3:00 PM — Ceremony\n5:00 PM — Cocktail hour\n7:00 PM — Reception dinner' },
+    ],
+  },
+  rsvp: {
+    sections: [
+      { type: 'rsvp', heading: 'Will you join us?', body: "Please let us know by 1 August 2025 whether you'll be able to attend. We look forward to celebrating with you." },
+    ],
+  },
+  travel: {
+    sections: [
+      { type: 'travel', heading: 'Getting there', body: 'The nearest airport is Naples International (NAP), approximately 60km from the venue. We recommend flying in the day before and staying overnight.' },
+    ],
+  },
+};
+
 const DEFAULT = {
   coupleNames: '',
   weddingDate: '',
@@ -180,6 +262,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 
   const theme = WEBSITE_THEMES.find(t => t.id === (details?.activeTheme || 'still')) || WEBSITE_THEMES[0];
   const typo = TYPOGRAPHY_PAIRINGS.find(t => t.id === (details?.activeTypography || 'classic')) || TYPOGRAPHY_PAIRINGS[0];
+  const universeTheme = UNIVERSE_THEMES[details?.activeUniverse] || UNIVERSE_THEMES.aman;
 
   const setDetailsAndMark = (updater) => {
     setDetails(prev => {
@@ -400,7 +483,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
               display: 'flex', flexDirection: 'column',
             }}>
               <PreviewContent
-                theme={theme} typo={typo} details={details} currentPage={currentPage}
+                theme={theme} typo={typo} universeTheme={universeTheme} details={details} currentPage={currentPage}
                 currentPageSections={currentPageSections} allPageLabels={allPageLabels} selectedSection={selectedSection}
                 onPageChange={(slug) => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }}
                 onSectionSelect={(section) => { setSelectedSection(section); setRightPanelTab('section-editor'); }}
@@ -417,6 +500,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
         <div style={{ width: 280, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
           <WBRightPanel
             details={details}
+            universeTheme={universeTheme}
             onChange={rightPanelTab === 'section-editor' ? handleSectionContentChange : updateField}
             selectedSection={selectedSection?.id || null}
             onClearSection={() => { setSelectedSection(null); setRightPanelTab('design'); }}
@@ -507,18 +591,75 @@ function ToolBtn({ children, onClick, title, bold }) {
   );
 }
 
-function PreviewContent({ theme, typo, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection, isMobile }) {
+function PlaceholderSection({ section, universeTheme, onCustomise }) {
+  const [hovered, setHovered] = useState(false);
+  const { text, accent, background, fontDisplay, fontBody } = universeTheme;
+  const muted = text + '80';
+  const divider = `1px solid ${text}14`;
+  const isHero = section.type === 'hero';
+  return (
+    <div
+      onClick={onCustomise}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ position: 'relative', cursor: 'pointer', background, borderTop: isHero ? 'none' : divider }}
+    >
+      {isHero ? (
+        <div style={{ padding: '80px 40px 64px', textAlign: 'center' }}>
+          <h1 style={{ fontFamily: fontDisplay, fontSize: 48, fontWeight: 400, color: text, margin: '0 0 16px', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+            {section.heading}
+          </h1>
+          {section.subheading && (
+            <p style={{ fontFamily: fontBody, fontSize: 13, color: accent, margin: '0 0 14px', letterSpacing: '0.05em' }}>
+              {section.subheading}
+            </p>
+          )}
+          {section.body && (
+            <p style={{ fontFamily: fontBody, fontSize: 14, color: muted, margin: 0, lineHeight: 1.6 }}>
+              {section.body}
+            </p>
+          )}
+        </div>
+      ) : (
+        <div style={{ padding: '48px 40px' }}>
+          <h2 style={{ fontFamily: fontDisplay, fontSize: 30, fontWeight: 400, color: text, margin: '0 0 16px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+            {section.heading}
+          </h2>
+          {section.body && (
+            <p style={{ fontFamily: fontBody, fontSize: 14, color: muted, margin: 0, lineHeight: 1.75, maxWidth: 560, whiteSpace: 'pre-line' }}>
+              {section.body}
+            </p>
+          )}
+        </div>
+      )}
+      {hovered && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'rgba(255,255,255,0.92)', padding: '7px 16px', borderRadius: 999, fontSize: 11, fontWeight: 600, color: '#0A0A0A', border: '1px solid rgba(0,0,0,0.08)', backdropFilter: 'blur(4px)' }}>
+            Click to customise
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PreviewContent({ theme, typo, universeTheme, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection, isMobile }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const placeholderData = PLACEHOLDER_PAGES[currentPage];
+  const showPlaceholders = currentPageSections.length === 0 && !!placeholderData;
+  const addBtnBorder = showPlaceholders ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
+  const addBtnColor = showPlaceholders ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
+
   return (
     <>
       {/* Nav bar inside preview */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
-        <div style={{ background: theme.darkBg || '#0A0A0A', padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: theme.darkText || '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <div style={{ background: universeTheme.primary, padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: '#FFFFFF', fontFamily: universeTheme.fontBody }}>
             {details.coupleNames || 'Your Names'}
           </span>
           {isMobile ? (
-            <button onClick={() => setMobileMenuOpen(v => !v)} style={{ background: 'none', border: 'none', color: theme.darkText || '#FFFFFF', cursor: 'pointer', padding: 8, display: 'flex', alignItems: 'center' }}>
+            <button onClick={() => setMobileMenuOpen(v => !v)} style={{ background: 'none', border: 'none', color: '#FFFFFF', cursor: 'pointer', padding: 8, display: 'flex', alignItems: 'center' }}>
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           ) : (
@@ -526,7 +667,7 @@ function PreviewContent({ theme, typo, details, currentPage, currentPageSections
               {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
                 const label = allPageLabels[slug] || slug;
                 return (
-                  <span key={slug} onClick={() => onPageChange(slug)} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: theme.darkText || '#FFFFFF', opacity: currentPage === slug ? 1 : 0.4, cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? `1px solid ${theme.darkText || '#fff'}` : '1px solid transparent' }}>
+                  <span key={slug} onClick={() => onPageChange(slug)} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: '#FFFFFF', opacity: currentPage === slug ? 1 : 0.4, cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? '1px solid #FFFFFF' : '1px solid transparent', fontFamily: universeTheme.fontBody }}>
                     {label}
                   </span>
                 );
@@ -535,11 +676,11 @@ function PreviewContent({ theme, typo, details, currentPage, currentPageSections
           )}
         </div>
         {isMobile && mobileMenuOpen && (
-          <div style={{ position: 'absolute', top: 48, left: 0, right: 0, background: theme.darkBg || '#0A0A0A', zIndex: 20, padding: '8px 0 16px' }}>
+          <div style={{ position: 'absolute', top: 48, left: 0, right: 0, background: universeTheme.primary, zIndex: 20, padding: '8px 0 16px' }}>
             {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
               const label = allPageLabels[slug] || slug;
               return (
-                <div key={slug} onClick={() => { onPageChange(slug); setMobileMenuOpen(false); }} style={{ padding: '12px 24px', color: theme.darkText || '#FFFFFF', fontSize: 14, cursor: 'pointer', opacity: currentPage === slug ? 1 : 0.6 }}>
+                <div key={slug} onClick={() => { onPageChange(slug); setMobileMenuOpen(false); }} style={{ padding: '12px 24px', color: '#FFFFFF', fontSize: 14, cursor: 'pointer', opacity: currentPage === slug ? 1 : 0.6, fontFamily: universeTheme.fontBody }}>
                   {label}
                 </div>
               );
@@ -549,16 +690,27 @@ function PreviewContent({ theme, typo, details, currentPage, currentPageSections
       </div>
 
       {/* Sections */}
-      <div style={{ flex: 1, overflowY: 'auto', background: theme.lightBg || '#F8F7F5' }}>
+      <div style={{ flex: 1, overflowY: 'auto', background: universeTheme.background }}>
         {currentPageSections.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28 }}>+</div>
-            <p style={{ fontSize: 18, fontWeight: 600, color: '#0A0A0A', marginBottom: 8 }}>No sections yet</p>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', marginBottom: 24 }}>Add your first section to start building this page</p>
-            <button onClick={() => onAddSection(0)} style={{ padding: '12px 24px', background: '#0A0A0A', color: '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
-              + Add first section
-            </button>
-          </div>
+          showPlaceholders ? (
+            placeholderData.sections.map((section, i) => (
+              <PlaceholderSection
+                key={i}
+                section={section}
+                universeTheme={universeTheme}
+                onCustomise={() => onAddSection(0)}
+              />
+            ))
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28 }}>+</div>
+              <p style={{ fontSize: 18, fontWeight: 600, color: universeTheme.text, marginBottom: 8, fontFamily: universeTheme.fontBody }}>No sections yet</p>
+              <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', marginBottom: 24, fontFamily: universeTheme.fontBody }}>Add your first section to start building this page</p>
+              <button onClick={() => onAddSection(0)} style={{ padding: '12px 24px', background: universeTheme.primary, color: '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
+                + Add first section
+              </button>
+            </div>
+          )
         ) : (
           <>
             {currentPageSections.map((section, index) => (
@@ -585,9 +737,9 @@ function PreviewContent({ theme, typo, details, currentPage, currentPageSections
         <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}>
           <button
             onClick={() => onAddSection(currentPageSections.length)}
-            style={{ width: '100%', maxWidth: 500, height: 48, border: '2px dashed rgba(255,255,255,0.15)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'all 0.15s' }}
+            style={{ width: '100%', maxWidth: 500, height: 48, border: `2px dashed ${addBtnBorder}`, background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: addBtnColor, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'all 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = addBtnBorder; e.currentTarget.style.color = addBtnColor; }}
           >
             + Add section
           </button>
