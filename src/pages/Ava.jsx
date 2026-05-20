@@ -227,13 +227,19 @@ export default function AvaPage() {
           <p style={{ fontSize: "clamp(18px, 2.5vw, 24px)", fontWeight: 400, color: "rgba(255,255,255,0.75)", margin: "0 0 16px", lineHeight: 1.5, fontFamily: "Plus Jakarta Sans, sans-serif", textAlign: "center" }}>
             Your AI wedding planner. Always thinking one step ahead.
           </p>
-          <p style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.5)", maxWidth: 520, margin: "0 auto", lineHeight: 1.7, fontFamily: "Plus Jakarta Sans, sans-serif", textAlign: "center" }}>
-            Ava takes the guesswork out of planning — using intelligence to personalise your journey, give smart suggestions, and help you stay calm, clear, and totally in control.
-          </p>
         </div>
         <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 20 }}>
           <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.15em", color: "rgba(255,255,255,0.5)", fontFamily: "Plus Jakarta Sans, sans-serif", margin: 0 }}>Scroll</p>
           <div style={{ width: 1, height: 48, background: "linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)", transformOrigin: "top", animation: "heroScrollLine 2s ease-in-out infinite" }} />
+        </div>
+      </section>
+
+      {/* ── STATEMENT BANNER ─────────────────────────────────── */}
+      <section style={{ background: "#FFFFFF", padding: "80px clamp(24px, 6vw, 80px)", textAlign: "center" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <p style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2, color: "#0A0A0A", fontFamily: "Plus Jakarta Sans, sans-serif", margin: 0 }}>
+            Ava takes the guesswork out of planning — using intelligence to personalise your journey, give smart suggestions, and help you stay calm, clear, and totally in control.
+          </p>
         </div>
       </section>
 
