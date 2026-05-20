@@ -288,13 +288,13 @@ export default function AvaPage() {
         reversed={false} />
       
       <FeatureSplit
-        bgColor="#F5F5F5"
+        bgColor="#0A0A0A"
         label="BUDGET INTELLIGENCE"
         labelColor="#803D81"
         headline="Budget smarter, not harder."
         body="Ava tracks every dollar, benchmarks against real wedding costs, and proactively alerts you before you overspend — not after. It's like having a financial advisor who only thinks about your wedding."
         bullets={["Real-time spend vs budget alerts", "Category reallocation suggestions", "Vendor quote benchmarking", "Payment reminder automation", "Cost-saving tips tailored to your style"]}
-        photo="https://static.wixstatic.com/media/d2df22_fee007053b1a4dc79c9d19096f6bf3ca~mv2.png"
+        photo="https://res.cloudinary.com/dsr84xknv/image/upload/v1779185605/DTS_Fall_Dinner_Kristine_Isabedra_Photos_ID2915_pqoldr.jpg"
         reversed={true} />
       
       <FeatureSplit
