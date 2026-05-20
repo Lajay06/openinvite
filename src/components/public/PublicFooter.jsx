@@ -11,10 +11,10 @@ export default function PublicFooter() {
           {/* Logo col */}
           <div>
             <Link to="/">
-              <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" alt="openinvite" style={{ height: "20px", width: "auto", display: "block" }} />
+              <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" alt="openinvite" style={{ height: "20px", width: "auto", display: "block", filter: "brightness(0)" }} />
             </Link>
             <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: 12, lineHeight: 1.7 }}>
-              Wedding planning, beautifully designed.
+              You should enjoy yourself.
             </p>
           </div>
 
