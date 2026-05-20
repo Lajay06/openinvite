@@ -175,7 +175,7 @@ const DEFAULT = {
   websiteEnabled: true,
   websitePassword: '',
   activeTheme: 'still',
-  activeTypography: 'classic',
+  activeTypography: null,
   pageTransition: 'fade',
   scrollAnimation: 'subtle',
   heroEffect: 'static',
@@ -333,7 +333,9 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
   }, [details, currentPage]);
 
   const theme = WEBSITE_THEMES.find(t => t.id === (details?.activeTheme || 'still')) || WEBSITE_THEMES[0];
-  const typo = TYPOGRAPHY_PAIRINGS.find(t => t.id === (details?.activeTypography || 'classic')) || TYPOGRAPHY_PAIRINGS[0];
+  const typo = details?.activeTypography
+    ? (TYPOGRAPHY_PAIRINGS.find(t => t.id === details.activeTypography) || null)
+    : null;
   const universeTheme = UNIVERSE_THEMES[details?.activeUniverse] || UNIVERSE_THEMES.aman;
 
   const setDetailsAndMark = (updater) => {
@@ -632,7 +634,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 }
 
 // Section wrapper with hover toolbar
-function SectionWrap({ section, index, isSelected, onSelect, onMoveUp, onMoveDown, onDelete, onInsertAbove, theme, typo, masterData, isMobile }) {
+function SectionWrap({ section, index, isSelected, onSelect, onMoveUp, onMoveDown, onDelete, onInsertAbove, theme, typo, universeTheme, masterData, isMobile }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
@@ -641,7 +643,7 @@ function SectionWrap({ section, index, isSelected, onSelect, onMoveUp, onMoveDow
       onMouseLeave={() => setHovered(false)}
       onClick={onSelect}
     >
-      <WBSectionRenderer section={section} theme={theme} typo={typo} masterData={masterData} isMobile={isMobile} />
+      <WBSectionRenderer section={section} theme={theme} typo={typo} universeTheme={universeTheme} masterData={masterData} isMobile={isMobile} />
       {(hovered || isSelected) && (
         <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 30, display: 'flex', gap: 4, background: isSelected ? '#E03553' : '#2563EB', borderRadius: 4, padding: '4px 8px' }}>
           <ToolBtn onClick={e => { e.stopPropagation(); onMoveUp(); }} title="Move up">↑</ToolBtn>
@@ -715,8 +717,52 @@ function PlaceholderSection({ section, universeTheme, onCustomise }) {
   );
 }
 
+// Map of font names to Google Fonts URLs
+const GFONT_URLS = {
+  'Cormorant Garamond': 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap',
+  'Playfair Display': 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&display=swap',
+  'Noto Serif JP': 'https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400&display=swap',
+  'DM Serif Display': 'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital,wght@0,400;1,400&display=swap',
+  'DM Sans': 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400&display=swap',
+  'Libre Baskerville': 'https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&display=swap',
+  'Lato': 'https://fonts.googleapis.com/css2?family=Lato:wght@300;400&display=swap',
+  'Josefin Sans': 'https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400&display=swap',
+  'EB Garamond': 'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,300;0,400;1,300&display=swap',
+  'Montserrat': 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap',
+  'Lora': 'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;1,400&display=swap',
+  'Source Sans Pro': 'https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400&display=swap',
+  'Cinzel': 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&display=swap',
+  'Raleway': 'https://fonts.googleapis.com/css2?family=Raleway:wght@300;400&display=swap',
+};
+
 function PreviewContent({ theme, typo, universeTheme, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection, isMobile }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Inject Google Fonts for the active universe and typography pairing
+  useEffect(() => {
+    const needed = new Set();
+
+    // Universe display font
+    const univName = universeTheme?.fontDisplay?.replace(/['"]/g, '').split(',')[0].trim();
+    if (univName && GFONT_URLS[univName]) needed.add(GFONT_URLS[univName]);
+
+    // Typography pairing fonts (when user has explicitly selected one)
+    if (typo?.headingFont && GFONT_URLS[typo.headingFont]) needed.add(GFONT_URLS[typo.headingFont]);
+    if (typo?.bodyFont && GFONT_URLS[typo.bodyFont]) needed.add(GFONT_URLS[typo.bodyFont]);
+
+    // Remove previously injected font links
+    document.head.querySelectorAll('link[data-wf-font]').forEach(el => el.remove());
+
+    // Inject fresh links
+    needed.forEach(href => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.setAttribute('data-wf-font', '1');
+      document.head.appendChild(link);
+    });
+  }, [universeTheme?.fontDisplay, typo?.id]);
+
   const placeholderData = PLACEHOLDER_PAGES[currentPage];
   const showPlaceholders = currentPageSections.length === 0 && !!placeholderData;
   // Detect dark universe backgrounds (e.g. Tokyo) so button/empty-state colours stay readable
@@ -802,6 +848,7 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
                 onInsertAbove={() => onInsertAbove(index)}
                 theme={theme}
                 typo={typo}
+                universeTheme={universeTheme}
                 masterData={details}
                 isMobile={isMobile}
               />

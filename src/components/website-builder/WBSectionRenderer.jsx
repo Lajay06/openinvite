@@ -53,15 +53,16 @@ function SectionEntrance({ children, sectionId }) {
 
 // Renders a single section based on section.type
 // masterData: full WeddingDetails record for auto-populated fields
-export default function WBSectionRenderer({ section, theme, typo, masterData, isMobile = false }) {
+export default function WBSectionRenderer({ section, theme, typo, universeTheme, masterData, isMobile = false }) {
   const c = section.content || {};
-  const darkBg = theme?.darkBg || '#0A0A0A';
-  const lightBg = theme?.lightBg || '#F8F7F5';
-  const lightText = theme?.lightText || '#0A0A0A';
+  const darkBg = theme?.darkBg || universeTheme?.background || '#0A0A0A';
+  const lightBg = theme?.lightBg || universeTheme?.background || '#F8F7F5';
+  const lightText = theme?.lightText || universeTheme?.text || '#0A0A0A';
   const darkText = theme?.darkText || '#FFFFFF';
-  const accent = theme?.accent || '#888888';
-  const hf = typo?.headingFont || 'Plus Jakarta Sans';
-  const bf = typo?.bodyFont || 'Plus Jakarta Sans';
+  const accent = theme?.accent || universeTheme?.accent || '#888888';
+  // typo explicitly overrides universe fonts; universe fonts override system defaults
+  const hf = typo?.headingFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
+  const bf = typo?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
 
   // Style overrides from section.style
   const sStyle = section.style || {};
