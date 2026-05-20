@@ -245,8 +245,8 @@ export default function AvaPage() {
 
       {/* ── CAROUSEL ─────────────────────────────────────────── */}
       <section ref={carouselRef} style={{ background: "#0A0A0A", padding: "80px 0 0" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 clamp(24px,5vw,80px)" }}>
-          <h2 style={{ fontSize: "clamp(32px,4vw,56px)", fontWeight: 700, color: "#fff", margin: "0 0 48px", letterSpacing: "-0.02em", opacity: carouselInView ? 1 : 0, transform: carouselInView ? "none" : "translateY(20px)", transition: "opacity 0.6s ease, transform 0.6s ease" }}>See what Ava can do.</h2>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 clamp(24px,5vw,80px)", textAlign: "center" }}>
+          <h2 style={{ fontSize: "clamp(32px,4vw,56px)", fontWeight: 700, color: "#fff", margin: "0 0 48px", letterSpacing: "-0.02em", opacity: carouselInView ? 1 : 0, transform: carouselInView ? "none" : "translateY(20px)", transition: "opacity 0.6s ease, transform 0.6s ease", textAlign: "center" }}>See what Ava can do.</h2>
         </div>
         <AvaCarousel />
       </section>
