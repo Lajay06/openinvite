@@ -56,7 +56,7 @@ export default function FullBleedPhotoCTA({ onCTA }) {
         style={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(to right, rgba(0,0,0,0.88) 50%, rgba(0,0,0,0.2) 100%)",
+          background: "linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0) 100%)",
           zIndex: 2,
           pointerEvents: "none"
         }} />
@@ -74,41 +74,20 @@ export default function FullBleedPhotoCTA({ onCTA }) {
           transition: prefersReduced() ? "none" : `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`
         }}>
         
-        <p
-          style={{
-            fontSize: 11,
-            color: "#DDF762",
-            textTransform: "uppercase",
-            letterSpacing: "0.3em",
-            marginBottom: 20
-          }}>
-          
-          Ready?
-        </p>
         <h2
           style={{
-            fontSize: "clamp(36px, 5vw, 72px)",
+            fontSize: "clamp(32px, 4vw, 56px)",
             fontWeight: 700,
             letterSpacing: "-0.03em",
             color: "#FFFFFF",
             hyphens: "none",
-            marginBottom: 20,
-            lineHeight: 1.05
+            marginBottom: 36,
+            lineHeight: 1.05,
+            whiteSpace: "nowrap"
           }}>
-          
           Your wedding deserves this.
         </h2>
-        <p
-          style={{
-            fontSize: 18,
-            color: "#AAAAAA",
-            marginBottom: 36,
-            lineHeight: 1.5
-          }}>
-          
-          Join thousands of couples planning the perfect day with Openinvite.
-        </p>
-        <ApplePillButton onClick={onCTA}>See pricing +</ApplePillButton>
+        <ApplePillButton onClick={onCTA}>See pricing</ApplePillButton>
       </div>
     </section>);
 
