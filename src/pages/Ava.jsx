@@ -298,13 +298,13 @@ export default function AvaPage() {
         reversed={true} />
       
       <FeatureSplit
-        bgColor="#0A1930"
+        bgColor="#FFFFFF"
         label="VOW WRITING"
         labelColor="#E03553"
         headline="The right words, finally."
         body="Writing vows is one of the hardest parts of planning. Ava makes it easier — not by giving you a template, but by asking the right questions and helping you craft something that genuinely sounds like you."
         bullets={["Guided vow prompts based on your story", "Tone selector: funny / heartfelt / poetic / traditional", "Draft and refine in real-time", "Word count and timing guidance", "Private — only you can see it"]}
-        photo="https://static.wixstatic.com/media/d2df22_0ce2b5c5327644f9a89bccf2f3890c92~mv2.png"
+        photo="https://res.cloudinary.com/dsr84xknv/image/upload/v1779233659/DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj.jpg"
         reversed={false} />
       
 
