@@ -174,14 +174,13 @@ function FeatureSplit({ bg, label, labelColor, headline, body, bullets, photo, r
       <div style={{ flex: 1, padding: "80px clamp(32px,5vw,80px)", display: "flex", flexDirection: "column", justifyContent: "center", opacity: inView ? 1 : 0, transform: inView ? "none" : `translateX(${reversed ? 40 : -40}px)`, transition: "opacity 0.7s ease, transform 0.7s ease" }}>
         <h2 style={{ fontSize: "clamp(28px,3.5vw,48px)", fontWeight: 700, color: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "#fff" : "#0A0A0A", margin: "0 0 20px", letterSpacing: "-0.02em", lineHeight: 1.1 }}>{headline}</h2>
         <p style={{ fontSize: 16, color: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "#CCCCCC" : "#444444", lineHeight: 1.7, marginBottom: 28, maxWidth: 440 }}>{body}</p>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
           {bullets.map((b, i) =>
-          <li key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "#FFFFFF" : "#0A0A0A" }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: labelColor, flexShrink: 0 }} />
+          <div key={i} style={{ padding: "12px 0", borderBottom: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)", fontSize: 14, color: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "#FFFFFF" : "#0A0A0A" }}>
               {b}
-            </li>
+            </div>
           )}
-        </ul>
+        </div>
       </div>
       <div style={{ flex: 1, backgroundImage: `url(${photo})`, backgroundSize: "cover", backgroundPosition: "center", minHeight: 400 }} />
     </div>);
@@ -279,13 +278,13 @@ export default function AvaPage() {
 
       {/* ── FEATURE SPLITS ───────────────────────────────────── */}
       <FeatureSplit
-        bgColor="#0A0A0A"
+        bgColor="#FFFFFF"
         label="WEBSITE BUILDER"
         labelColor="#DDF762"
         headline="Your website, written by Ava."
         body="Tell Ava about your love story, your venue, your vibe. Ava writes your welcome message, populates every page, and creates a beautiful wedding website — ready in under 60 seconds."
         bullets={["Couple names, date and venue auto-populated", "Love story written from your answers", "FAQ generated from your details", "Travel info and hotel suggestions", "Personalised welcome message"]}
-        photo="https://static.wixstatic.com/media/d2df22_27f711cb3e3048548347bc0ff7b5550e~mv2.png"
+        photo="https://res.cloudinary.com/dsr84xknv/image/upload/v1779241785/aditya-gautama-putra-k0tGYZ6Xbhg-unsplash_z5r24i.jpg"
         reversed={false} />
       
       <FeatureSplit
