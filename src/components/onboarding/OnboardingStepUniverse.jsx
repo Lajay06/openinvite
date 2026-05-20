@@ -4,14 +4,14 @@ import AmanUniverseView from '@/components/studio/AmanUniverseView';
 
 const UNIVERSES = [
   { id: 'aman', name: 'AMAN', tagline: 'Quiet Luxury', number: '01', photo: 'https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg', available: true },
-  { id: 'tulum', name: 'TULUM', tagline: 'Desert Bloom', number: '02', photo: 'https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg', available: false },
-  { id: 'kyoto', name: 'KYOTO', tagline: 'Zen & Ceremony', number: '03', photo: 'https://static.wixstatic.com/media/d2df22_40822e26660c4112aef53ff2526c0345~mv2.jpg', available: false },
-  { id: 'capri', name: 'CAPRI', tagline: 'Italian Coast', number: '04', photo: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg', available: false },
-  { id: 'marrakech', name: 'MARRAKECH', tagline: 'Spice & Gold', number: '05', photo: 'https://static.wixstatic.com/media/d2df22_5ea2e70835a14465be546237fd1dd55a~mv2.jpg', available: false },
-  { id: 'brooklyn', name: 'BROOKLYN', tagline: 'Industrial Edge', number: '06', photo: 'https://static.wixstatic.com/media/d2df22_f0eef5788fdd4876a0a300e43228f919~mv2.jpg', available: false },
-  { id: 'bali', name: 'BALI', tagline: 'Sacred Garden', number: '07', photo: 'https://static.wixstatic.com/media/d2df22_e30eff6d03424dd6baf63143722b2a3d~mv2.jpg', available: false },
-  { id: 'paris', name: 'PARIS', tagline: 'Haussmann Romance', number: '08', photo: 'https://static.wixstatic.com/media/d2df22_6aab4aa83a3b40eabd571d355ed75c7c~mv2.jpg', available: false },
-  { id: 'cape-town', name: 'CAPE TOWN', tagline: 'Wild & Free', number: '09', photo: 'https://static.wixstatic.com/media/d2df22_2bbfee1f5b034379a76f063c2f97f653~mv2.jpg', available: false },
+  { id: 'tulum', name: 'TULUM', tagline: 'Desert Bloom', number: '02', photo: 'https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg', available: true },
+  { id: 'kyoto', name: 'KYOTO', tagline: 'Zen & Ceremony', number: '03', photo: 'https://static.wixstatic.com/media/d2df22_40822e26660c4112aef53ff2526c0345~mv2.jpg', available: true },
+  { id: 'capri', name: 'CAPRI', tagline: 'Italian Coast', number: '04', photo: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg', available: true },
+  { id: 'marrakech', name: 'MARRAKECH', tagline: 'Spice & Gold', number: '05', photo: 'https://static.wixstatic.com/media/d2df22_5ea2e70835a14465be546237fd1dd55a~mv2.jpg', available: true },
+  { id: 'brooklyn', name: 'BROOKLYN', tagline: 'Industrial Edge', number: '06', photo: 'https://static.wixstatic.com/media/d2df22_f0eef5788fdd4876a0a300e43228f919~mv2.jpg', available: true },
+  { id: 'bali', name: 'BALI', tagline: 'Sacred Garden', number: '07', photo: 'https://static.wixstatic.com/media/d2df22_e30eff6d03424dd6baf63143722b2a3d~mv2.jpg', available: true },
+  { id: 'paris', name: 'PARIS', tagline: 'Haussmann Romance', number: '08', photo: 'https://static.wixstatic.com/media/d2df22_6aab4aa83a3b40eabd571d355ed75c7c~mv2.jpg', available: true },
+  { id: 'cape-town', name: 'CAPE TOWN', tagline: 'Wild & Free', number: '09', photo: 'https://static.wixstatic.com/media/d2df22_2bbfee1f5b034379a76f063c2f97f653~mv2.jpg', available: true },
 ];
 
 function ComingSoonOverlay({ universe, onBack }) {
@@ -101,29 +101,23 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
             return (
               <div
                 key={u.id}
-                onClick={() => setPreviewUniverse(u)}
+                onClick={() => u.id === 'aman' ? setPreviewUniverse(u) : setSelectedUniverse(u.id)}
                 style={{
                   width: 220, flexShrink: 0, height: 280,
                   position: 'relative', overflow: 'hidden',
                   cursor: 'pointer',
                   border: isSelected ? '1px solid rgba(255,255,255,0.6)' : '1px solid transparent',
                   transition: 'border 0.2s ease',
-                  opacity: u.available ? 1 : 0.45,
+                  opacity: 1,
                   background: '#111',
                 }}
               >
                 <img
                   src={u.photo}
                   alt={u.name}
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: u.available ? 0.45 : 0.2 }}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.45 }}
                 />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0A0A0A 0%, rgba(10,10,10,0.6) 50%, transparent 100%)' }} />
-
-                {/* Coming soon badge */}
-                {!u.available && (
-                  <div style={{ position: 'absolute', top: 12, right: 12, padding: '3px 8px', border: '1px solid rgba(255,255,255,0.2)' }}>
-                  </div>
-                )}
 
                 {/* Selected badge */}
                 {isSelected && (
@@ -212,12 +206,6 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
               onSelect={handleSelectFromOverlay}
             />
           </motion.div>
-        )}
-        {previewUniverse && previewUniverse.id !== 'aman' && (
-          <ComingSoonOverlay
-            universe={previewUniverse}
-            onBack={() => setPreviewUniverse(null)}
-          />
         )}
       </AnimatePresence>
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Lock } from 'lucide-react';
 
 const UNIVERSES = [
   {
@@ -10,15 +9,15 @@ const UNIVERSES = [
     accent: '#FFFFFF',
     available: true,
   },
-  { id: 'tulum', name: 'TULUM', tagline: 'Organic Luxury', bg: '#C4A882', accent: '#3D2B1F', available: false },
-  { id: 'kyoto', name: 'KYOTO', tagline: 'Japanese Minimalism', bg: '#F5F0EB', accent: '#2D2926', available: false },
-  { id: 'capri', name: 'CAPRI', tagline: 'Mediterranean Summer', bg: '#1A6EBD', accent: '#FFE566', available: false },
-  { id: 'marrakech', name: 'MARRAKECH', tagline: 'Desert Opulence', bg: '#8B3A1A', accent: '#F0C060', available: false },
-  { id: 'brooklyn', name: 'BROOKLYN', tagline: 'Urban Industrial', bg: '#1C1C1C', accent: '#E5E5E5', available: false },
-  { id: 'bali', name: 'BALI', tagline: 'Tropical Spirit', bg: '#2D5A27', accent: '#F5E6CC', available: false },
-  { id: 'paris', name: 'PARIS', tagline: 'French Romance', bg: '#F9F4EE', accent: '#8B6347', available: false },
-  { id: 'capetown', name: 'CAPE TOWN', tagline: 'Safari Chic', bg: '#C4A882', accent: '#5C3D2E', available: false },
-  { id: 'mykonos', name: 'MYKONOS', tagline: 'Aegean Blue', bg: '#1B4F8A', accent: '#FFFFFF', available: false },
+  { id: 'tulum', name: 'TULUM', tagline: 'Organic Luxury', bg: '#C4A882', accent: '#3D2B1F', available: true },
+  { id: 'kyoto', name: 'KYOTO', tagline: 'Japanese Minimalism', bg: '#F5F0EB', accent: '#2D2926', available: true },
+  { id: 'capri', name: 'CAPRI', tagline: 'Mediterranean Summer', bg: '#1A6EBD', accent: '#FFE566', available: true },
+  { id: 'marrakech', name: 'MARRAKECH', tagline: 'Desert Opulence', bg: '#8B3A1A', accent: '#F0C060', available: true },
+  { id: 'brooklyn', name: 'BROOKLYN', tagline: 'Urban Industrial', bg: '#1C1C1C', accent: '#E5E5E5', available: true },
+  { id: 'bali', name: 'BALI', tagline: 'Tropical Spirit', bg: '#2D5A27', accent: '#F5E6CC', available: true },
+  { id: 'paris', name: 'PARIS', tagline: 'French Romance', bg: '#F9F4EE', accent: '#8B6347', available: true },
+  { id: 'capetown', name: 'CAPE TOWN', tagline: 'Safari Chic', bg: '#C4A882', accent: '#5C3D2E', available: true },
+  { id: 'mykonos', name: 'MYKONOS', tagline: 'Aegean Blue', bg: '#1B4F8A', accent: '#FFFFFF', available: true },
 ];
 
 // Mini preview of the AMAN save-the-date
@@ -55,43 +54,29 @@ export default function UniverseSelector({ selectedUniverse, onSelect }) {
         return (
           <div
             key={u.id}
-            onClick={() => u.available && onSelect(u.id)}
+            onClick={() => onSelect(u.id)}
             style={{
               flexShrink: 0,
               width: 200,
               height: 140,
               border: isSelected ? '2px solid #E03553' : '2px solid #EEEEEE',
-              cursor: u.available ? 'pointer' : 'default',
+              cursor: 'pointer',
               position: 'relative',
               overflow: 'hidden',
               transition: 'border-color 0.2s ease',
               background: u.bg,
             }}
           >
-            {u.available ? (
-              u.id === 'aman' ? <AmanMiniPreview /> : null
+            {u.id === 'aman' ? (
+              <AmanMiniPreview />
             ) : (
               <div style={{
-                position: 'absolute', inset: 0,
-                background: u.bg,
+                position: 'absolute', inset: 0, background: u.bg,
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                filter: 'blur(2px) grayscale(0.5)'
               }}>
                 <p style={{ color: u.accent, fontSize: 14, fontWeight: 700, letterSpacing: '0.1em' }}>{u.name}</p>
-              </div>
-            )}
-
-            {!u.available && (
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: 'rgba(0,0,0,0.55)',
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-                gap: 4
-              }}>
-                <Lock size={14} color="rgba(255,255,255,0.6)" />
-                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 8, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Coming Soon</p>
+                <p style={{ color: u.accent, fontSize: 9, opacity: 0.7, letterSpacing: '0.06em', marginTop: 4 }}>{u.tagline}</p>
               </div>
             )}
 

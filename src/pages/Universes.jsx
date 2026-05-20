@@ -20,7 +20,7 @@ const UNIVERSE_DATA = [
     description: 'Sun-bleached romance. Warm earth tones and organic texture that feel alive under open sky.',
     palette: [{ color: '#C4956A', label: 'Terracotta' }, { color: '#F5ECD7', label: 'Sand' }, { color: '#7B6B52', label: 'Earth' }, { color: '#FFFFFF', label: 'Pure' }],
     image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246462/alex-bertha-Jyg7xHRmXiU-unsplash_ypu0wy.jpg',
-    available: false,
+    available: true,
   },
   {
     id: 'kyoto',
@@ -29,7 +29,7 @@ const UNIVERSE_DATA = [
     description: 'Ancient ritual meets modern refinement. Stillness as a design principle.',
     palette: [{ color: '#2C2C2C', label: 'Charcoal' }, { color: '#F0EBE3', label: 'Paper' }, { color: '#8B7355', label: 'Bamboo' }, { color: '#E8D5C4', label: 'Blush' }],
     image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246462/anne-laure-p-PbemriYGLoQ-unsplash_rgyetw.jpg',
-    available: false,
+    available: true,
   },
   {
     id: 'capri',
@@ -38,7 +38,7 @@ const UNIVERSE_DATA = [
     description: 'La dolce vita. Deep blues, warm stone and effortless elegance.',
     palette: [{ color: '#1B3A6B', label: 'Cobalt' }, { color: '#F4E4C1', label: 'Stone' }, { color: '#7BA7C2', label: 'Sea' }, { color: '#FFFFFF', label: 'Pure' }],
     image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246455/nicolo-salinetti-FiGEvsSG4vU-unsplash_ai9pim.jpg',
-    available: false,
+    available: true,
   },
   {
     id: 'paris',
@@ -47,7 +47,7 @@ const UNIVERSE_DATA = [
     description: 'Grand and timeless. The language of French elegance.',
     palette: [{ color: '#1A1A2E', label: 'Midnight' }, { color: '#F5F0E8', label: 'Cream' }, { color: '#C9A96E', label: 'Gold' }, { color: '#8B4B6B', label: 'Rose' }],
     image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246459/alex-boyd-HhFi1gKYosc-unsplash_prtm0n.jpg',
-    available: false,
+    available: true,
   },
 ];
 
@@ -496,30 +496,28 @@ const Universes = () => {
                   display: 'inline-block', marginTop: 24, fontFamily: 'Plus Jakarta Sans, sans-serif',
                   alignSelf: 'flex-start',
                 }}>
-                  {UNIVERSE_DATA[activeIndex].available ? 'Available now' : 'Coming soon'}
+                  Available now
                 </div>
-                {UNIVERSE_DATA[activeIndex].available && (
-                  <button
-                    type="button"
-                    onClick={() => navigate('/studio/universe/aman')}
-                    style={{
-                      marginTop: 16, padding: '14px 40px', background: 'transparent',
-                      color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)',
-                      fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                      fontFamily: 'Plus Jakarta Sans, sans-serif', letterSpacing: '0.02em',
-                      alignSelf: 'flex-start',
-                    }}
-                  >
-                    Explore AMAN →
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => navigate('/studio/universe')}
+                  style={{
+                    marginTop: 16, padding: '14px 40px', background: 'transparent',
+                    color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)',
+                    fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    fontFamily: 'Plus Jakarta Sans, sans-serif', letterSpacing: '0.02em',
+                    alignSelf: 'flex-start',
+                  }}
+                >
+                  Explore {UNIVERSE_DATA[activeIndex].name} →
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* SECTION 5: COMING SOON */}
+      {/* SECTION 5: MORE UNIVERSES */}
       <section id="coming-soon-section" data-animate style={{
         background: '#F5F5F3',
         padding: '100px 80px',
@@ -533,7 +531,7 @@ const Universes = () => {
           marginBottom: 16,
           fontFamily: 'Plus Jakarta Sans',
         }}>
-          COMING SOON
+          Available now
         </p>
         <h2 style={{
           fontFamily: 'Plus Jakarta Sans, sans-serif',
@@ -553,7 +551,7 @@ const Universes = () => {
           maxWidth: 600,
           fontFamily: 'Plus Jakarta Sans',
         }}>
-          Each universe is a new aesthetic lens. A different way of seeing your wedding. New universes arrive every season.
+          Each universe is a complete aesthetic lens — a different way of seeing your wedding. All universes are available now.
         </p>
 
         <div style={{
@@ -582,7 +580,7 @@ const Universes = () => {
                 padding: '3px 8px',
                 fontFamily: 'Plus Jakarta Sans',
               }}>
-                Soon
+                Available now
               </div>
 
               <h3 style={{
