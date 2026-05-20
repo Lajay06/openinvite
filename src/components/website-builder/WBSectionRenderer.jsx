@@ -201,16 +201,16 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
             <div style={{ textAlign: textAlign || 'center', paddingRight: 32 }}>
               <p style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 16 }}>Ceremony</p>
               <p style={{ fontFamily: hf, fontWeight: 300, fontSize: 28, color: sStyle.textColor || lightText, marginBottom: 8 }}>{c.ceremony?.time || md.mainCeremony?.startTime || '—'}</p>
-              <p style={{ fontSize: 14, color: '#555', marginBottom: 4 }}>{ceremonyVenue}</p>
-              <p style={{ fontSize: 12, color: '#888' }}>{ceremonyAddress}</p>
-              {c.ceremony?.dressCode && <p style={{ fontSize: 11, color: '#888', marginTop: 8, fontStyle: 'italic' }}>Dress code: {c.ceremony.dressCode}</p>}
+              <p style={{ fontFamily: bf, fontSize: 14, color: '#555', marginBottom: 4 }}>{ceremonyVenue}</p>
+              <p style={{ fontFamily: bf, fontSize: 12, color: '#888' }}>{ceremonyAddress}</p>
+              {c.ceremony?.dressCode && <p style={{ fontFamily: bf, fontSize: 11, color: '#888', marginTop: 8, fontStyle: 'italic' }}>Dress code: {c.ceremony.dressCode}</p>}
             </div>
             <div style={{ background: '#E0E0DC' }} />
             <div style={{ textAlign: textAlign || 'center', paddingLeft: 32 }}>
               <p style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 16 }}>Reception</p>
               <p style={{ fontFamily: hf, fontWeight: 300, fontSize: 28, color: sStyle.textColor || lightText, marginBottom: 8 }}>{c.reception?.time || md.reception?.startTime || '—'}</p>
-              <p style={{ fontSize: 14, color: '#555', marginBottom: 4 }}>{receptionVenue}</p>
-              <p style={{ fontSize: 12, color: '#888' }}>{receptionAddress}</p>
+              <p style={{ fontFamily: bf, fontSize: 14, color: '#555', marginBottom: 4 }}>{receptionVenue}</p>
+              <p style={{ fontFamily: bf, fontSize: 12, color: '#888' }}>{receptionAddress}</p>
             </div>
           </div>
         </div>
@@ -227,12 +227,12 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
               <div key={i} style={{ display: 'flex', gap: 20, paddingBottom: 20, marginBottom: 20, borderBottom: '1px solid #EEE' }}>
                 <span style={{ fontSize: 13, color: accent, fontWeight: 600, minWidth: 70, flexShrink: 0 }}>{ev.time}</span>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: sStyle.textColor || lightText, margin: 0 }}>{ev.title}</p>
-                  {ev.description && <p style={{ fontSize: 13, color: '#888', margin: '4px 0 0' }}>{ev.description}</p>}
+                  <p style={{ fontFamily: hf, fontSize: 14, fontWeight: 600, color: sStyle.textColor || lightText, margin: 0 }}>{ev.title}</p>
+                  {ev.description && <p style={{ fontFamily: bf, fontSize: 13, color: '#888', margin: '4px 0 0' }}>{ev.description}</p>}
                 </div>
               </div>
             ))}
-            {(!c.events || c.events.length === 0) && <p style={{ textAlign: 'center', color: '#888', fontSize: 13 }}>Add events to your timeline</p>}
+            {(!c.events || c.events.length === 0) && <p style={{ fontFamily: bf, textAlign: 'center', color: '#888', fontSize: 13 }}>Add events to your timeline</p>}
           </div>
         </div>
       );
@@ -271,7 +271,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
               <button style={{ flex: 1, padding: '12px', border: '1px solid #CCC', background: 'transparent', fontSize: 12, fontWeight: 600, cursor: 'default', fontFamily: 'inherit' }}>Joyfully Accepts</button>
               <button style={{ flex: 1, padding: '12px', border: '1px solid #CCC', background: 'transparent', fontSize: 12, color: '#888', cursor: 'default', fontFamily: 'inherit' }}>Regretfully Declines</button>
             </div>
-            {c.deadline && <p style={{ fontSize: 12, color: '#888', textAlign: 'center' }}>Please RSVP by {c.deadline}</p>}
+            {c.deadline && <p style={{ fontFamily: bf, fontSize: 12, color: '#888', textAlign: 'center' }}>Please RSVP by {c.deadline}</p>}
           </div>
         </div>
       );
@@ -288,8 +288,8 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
           }
           {(c.hotels || []).map((hotel, i) => (
             <div key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.1)', padding: '16px 0', maxWidth: maxW || 540, margin: '0 auto' }}>
-              <p style={{ fontSize: 15, fontWeight: 600, color: sStyle.textColor || darkText, margin: '0 0 4px' }}>{hotel.name}</p>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{hotel.address}</p>
+              <p style={{ fontFamily: hf, fontSize: 15, fontWeight: 600, color: sStyle.textColor || darkText, margin: '0 0 4px' }}>{hotel.name}</p>
+              <p style={{ fontFamily: bf, fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{hotel.address}</p>
             </div>
           ))}
         </div>
@@ -304,8 +304,8 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
           <div style={{ maxWidth: maxW || 580, margin: '0 auto' }}>
             {(c.items || []).map((item, i) => (
               <div key={i} style={{ borderBottom: '1px solid #E0E0DC', padding: '18px 0' }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: sStyle.textColor || lightText, marginBottom: 6 }}>{item.question}</p>
-                <p style={{ fontSize: 13, color: '#666', lineHeight: 1.6 }}>{item.answer}</p>
+                <p style={{ fontFamily: hf, fontSize: 14, fontWeight: 600, color: sStyle.textColor || lightText, marginBottom: 6 }}>{item.question}</p>
+                <p style={{ fontFamily: bf, fontSize: 13, color: '#666', lineHeight: 1.6 }}>{item.answer}</p>
               </div>
             ))}
             {(!c.items || c.items.length === 0) && <p style={{ textAlign: 'center', color: '#888', fontSize: 13 }}>Add FAQ items</p>}
@@ -319,7 +319,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
       return (
         <div style={{ background: bg, padding: `${padY || 60}px 40px`, textAlign: textAlign || 'center' }}>
           <p style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 16 }}>Registry</p>
-          {c.message && <p style={{ fontSize: 14, color: '#555', maxWidth: maxW || 480, margin: '0 auto 32px', lineHeight: 1.6 }}>{c.message}</p>}
+          {c.message && <p style={{ fontFamily: bf, fontSize: 14, color: '#555', maxWidth: maxW || 480, margin: '0 auto 32px', lineHeight: 1.6 }}>{c.message}</p>}
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             {(c.links || []).map((link, i) => (
               <div key={i} style={{ background: darkBg, padding: '16px 28px', borderRadius: 4 }}>
@@ -347,7 +347,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
           </div>
           <div style={{ padding: '32px 40px', textAlign: textAlign || 'center' }}>
             <p style={{ fontFamily: hf, fontWeight: hw, fontSize: 24, color: sStyle.textColor || lightText, marginBottom: 8 }}>{c.venue || 'Venue Name'}</p>
-            {c.address && <p style={{ fontSize: 13, color: '#888' }}>{c.address}</p>}
+            {c.address && <p style={{ fontFamily: bf, fontSize: 13, color: '#888' }}>{c.address}</p>}
           </div>
         </div>
       );
@@ -427,7 +427,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
                   }
                 </div>
                 <p style={{ fontFamily: hf, fontWeight: 600, fontSize: 18, color: sStyle.textColor || lightText, margin: '0 0 8px' }}>{p?.name || 'Partner Name'}</p>
-                {p?.bio && <p style={{ fontSize: 13, color: '#666', lineHeight: 1.5 }}>{p.bio}</p>}
+                {p?.bio && <p style={{ fontFamily: bf, fontSize: 13, color: '#666', lineHeight: 1.5 }}>{p.bio}</p>}
               </div>
             ))}
           </div>
@@ -489,7 +489,7 @@ export default function WBSectionRenderer({ section, theme, typo, universeTheme,
         <div style={{ background: bg, padding: `${padY || 48}px 40px`, textAlign: textAlign || 'center' }}>
           <p style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 16 }}>Getting There</p>
           <p style={{ fontFamily: hf, fontWeight: hw, fontSize: 20, color: sStyle.textColor || lightText, marginBottom: 8 }}>{c.venue || 'Venue'}</p>
-          {c.address && <p style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>{c.address}</p>}
+          {c.address && <p style={{ fontFamily: bf, fontSize: 13, color: '#888', marginBottom: 16 }}>{c.address}</p>}
           <div style={{ height: 200, background: '#E8E8E8', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <p style={{ fontSize: 13, color: '#888' }}>Map preview</p>
           </div>

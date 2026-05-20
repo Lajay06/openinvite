@@ -442,6 +442,11 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
         </button>
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'none' }}>
           <span style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF', letterSpacing: '0.01em' }}>Website builder</span>
+          {typo && (
+            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 999 }}>
+              {typo.name} · {typo.fontDisplay.replace(/['"]/g, '').split(',')[0]}
+            </span>
+          )}
           {saveStatus === 'saving' && (
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Saving...</span>
           )}
@@ -752,7 +757,7 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
       document.head.appendChild(link);
     });
     console.log('[fonts] preloaded', needed.size, 'font URLs');
-  }, [universeTheme?.fontDisplay]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [universeTheme?.fontDisplay, typo?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const placeholderData = PLACEHOLDER_PAGES[currentPage];
   const showPlaceholders = currentPageSections.length === 0 && !!placeholderData;
