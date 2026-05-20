@@ -35,11 +35,11 @@ function lerp01(val, min, max) {
 
 export default function FeatureInvitations({ onCTA }) {
   const scrollContainerRef = useRef(null);
-  const rowRefs = useRef([]);
+  const featuresOuterRef = useRef(null);
   const [progress, setProgress] = useState(0);
-  const [visible, setVisible] = useState(FEATURES.map(() => false));
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  // Scroll progress via getBoundingClientRect
+  // Scroll progress for the image section
   useEffect(() => {
     let rafId = null;
     const handleScroll = () => {
@@ -47,11 +47,18 @@ export default function FeatureInvitations({ onCTA }) {
       rafId = requestAnimationFrame(() => {
         rafId = null;
         const el = scrollContainerRef.current;
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        const scrollRange = el.offsetHeight - window.innerHeight;
-        const scrolled = -rect.top;
-        setProgress(Math.max(0, Math.min(1, scrolled / scrollRange)));
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const scrollRange = el.offsetHeight - window.innerHeight;
+          const scrolled = -rect.top;
+          setProgress(Math.max(0, Math.min(1, scrolled / scrollRange)));
+        }
+        const fo = featuresOuterRef.current;
+        if (fo) {
+          const rect = fo.getBoundingClientRect();
+          const p = Math.max(0, -rect.top / (rect.height - window.innerHeight));
+          setActiveIndex(Math.min(3, Math.floor(p * 4)));
+        }
       });
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -62,28 +69,9 @@ export default function FeatureInvitations({ onCTA }) {
     };
   }, []);
 
-  // IntersectionObserver for feature row colour reveal
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        setVisible((prev) => {
-          const next = [...prev];
-          entries.forEach((entry) => {
-            const idx = rowRefs.current.indexOf(entry.target);
-            if (idx !== -1) next[idx] = entry.isIntersecting;
-          });
-          return next;
-        });
-      },
-      { threshold: 0.3 }
-    );
-    rowRefs.current.forEach((el) => { if (el) observer.observe(el); });
-    return () => observer.disconnect();
-  }, []);
-
   // Derived values
-  const overlayOpacity = lerp01(progress, 0.7, 1.0);         // black fade: starts at 70% of scroll
-  const textOpacity    = 1 - lerp01(progress, 0.6, 0.85);   // text out: stays visible until 60%, fades 60–85%
+  const overlayOpacity = lerp01(progress, 0.7, 1.0);
+  const textOpacity    = 1 - lerp01(progress, 0.6, 0.85);
 
   return (
     <section style={{ position: 'relative', background: '#0A0A0A' }}>
@@ -162,48 +150,55 @@ export default function FeatureInvitations({ onCTA }) {
         </div>
       </div>
 
-      {/* ── Features — revealed after sticky unpins ── */}
-      <div style={{ background: '#0A0A0A', padding: '120px clamp(24px, 6vw, 80px)' }}>
-        {FEATURES.map((f, i) => (
-          <div
-            key={i}
-            ref={(el) => { rowRefs.current[i] = el; }}
-            style={{
-              borderTop: '1px solid rgba(255,255,255,0.1)',
-              padding: '48px 0',
-              display: 'grid',
-              gridTemplateColumns: '40% 60%',
-              gap: 40,
-              alignItems: 'start',
-            }}
-          >
-            <h3 style={{
-              fontSize: 'clamp(24px, 3vw, 36px)',
-              fontWeight: 600,
-              color: visible[i] ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
-              fontFamily: PJS,
-              margin: 0,
-              lineHeight: 1.2,
-              transition: 'color 0.6s cubic-bezier(0.16,1,0.3,1)',
-            }}>
-              {f.heading}
-            </h3>
-            <p style={{
-              fontSize: 16,
-              color: visible[i] ? '#AAAAAA' : 'rgba(255,255,255,0.1)',
-              lineHeight: 1.8,
-              fontFamily: PJS,
-              margin: 0,
-              transition: 'color 0.6s cubic-bezier(0.16,1,0.3,1)',
-            }}>
-              {f.description}
-            </p>
+      {/* ── Features — scroll-driven sticky highlight ── */}
+      <div ref={featuresOuterRef} style={{ height: 'calc(4 * 200px + 100vh)', background: '#0A0A0A' }}>
+        <div style={{ position: 'sticky', top: 0, height: '100vh', display: 'flex', alignItems: 'center' }}>
+          <div style={{ width: '100%', padding: '0 clamp(24px, 6vw, 80px)' }}>
+            {FEATURES.map((f, i) => {
+              const active = i === activeIndex;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    borderTop: '1px solid rgba(255,255,255,0.08)',
+                    padding: '40px 0',
+                    display: 'grid',
+                    gridTemplateColumns: '40% 60%',
+                    gap: 40,
+                    alignItems: 'start',
+                  }}
+                >
+                  <h3 style={{
+                    fontSize: 'clamp(24px, 3vw, 36px)',
+                    fontWeight: 600,
+                    color: active ? '#FFFFFF' : 'rgba(255,255,255,0.12)',
+                    fontFamily: PJS,
+                    margin: 0,
+                    lineHeight: 1.2,
+                    transition: 'color 0.5s ease',
+                  }}>
+                    {f.heading}
+                  </h3>
+                  <p style={{
+                    fontSize: 16,
+                    color: active ? '#AAAAAA' : 'rgba(255,255,255,0.08)',
+                    lineHeight: 1.8,
+                    fontFamily: PJS,
+                    margin: 0,
+                    transition: 'color 0.5s ease',
+                  }}>
+                    {f.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
-        ))}
-
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 48 }}>
-          <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
         </div>
+      </div>
+
+      {/* ── CTA after sticky unpins ── */}
+      <div style={{ background: '#0A0A0A', padding: '80px clamp(24px, 6vw, 80px)', display: 'flex', justifyContent: 'center' }}>
+        <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
       </div>
 
     </section>
