@@ -243,23 +243,6 @@ export default function AvaPage() {
         </div>
       </section>
 
-      {/* ── STATS ────────────────────────────────────────────── */}
-      <div style={{ background: "#0A0A0A", borderTop: "1px solid #1A1A1A", borderBottom: "1px solid #1A1A1A" }}>
-        <div ref={statsRef} style={{ display: "flex", flexWrap: "wrap", maxWidth: 1200, margin: "0 auto" }}>
-          {STATS.map((s, i) =>
-          <StatCell key={i} stat={s} index={i} inView={statsInView} />
-          )}
-        </div>
-      </div>
-
-      {/* ── CAROUSEL ─────────────────────────────────────────── */}
-      <section ref={carouselRef} style={{ background: "#0A0A0A", padding: "80px 0 0" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 clamp(24px,5vw,80px)" }}>
-          <h2 style={{ fontSize: "clamp(32px,4vw,56px)", fontWeight: 700, color: "#fff", margin: "0 0 48px", letterSpacing: "-0.02em", opacity: carouselInView ? 1 : 0, transform: carouselInView ? "none" : "translateY(20px)", transition: "opacity 0.6s ease, transform 0.6s ease" }}>See what Ava can do.</h2>
-        </div>
-        <AvaCarousel />
-      </section>
-
       {/* ── HOW IT WORKS ─────────────────────────────────────── */}
       <section style={{ background: "#F5F5F5", padding: "120px clamp(24px,5vw,80px)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
