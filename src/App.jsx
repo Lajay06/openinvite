@@ -48,6 +48,16 @@ import WeddingParty from './pages/WeddingParty';
 import WeddingFavours from './pages/WeddingFavours';
 import EventDetails from './pages/EventDetails';
 import StudioAman from './pages/StudioAman';
+import StudioTulum from './pages/StudioTulum';
+import StudioKyoto from './pages/StudioKyoto';
+import StudioCapri from './pages/StudioCapri';
+import StudioTokyo from './pages/StudioTokyo';
+import StudioMarrakech from './pages/StudioMarrakech';
+import StudioParis from './pages/StudioParis';
+import StudioAmalfi from './pages/StudioAmalfi';
+import StudioSedona from './pages/StudioSedona';
+import StudioAspen from './pages/StudioAspen';
+import StudioSantorini from './pages/StudioSantorini';
 import StudioShare from './pages/StudioShare';
 import AvaStudio from './pages/AvaStudio';
 import AvaStudioWebsite from './pages/AvaStudioWebsite';
@@ -201,6 +211,16 @@ const AuthenticatedApp = () => {
       <Route path="/wedding-favours" element={<LayoutWrapper currentPageName="WeddingFavours"><WeddingFavours /></LayoutWrapper>} />
       <Route path="/event-details" element={<LayoutWrapper currentPageName="EventDetails"><EventDetails /></LayoutWrapper>} />
       <Route path="/studio/universe/aman" element={<StudioAman />} />
+      <Route path="/studio/universe/tulum" element={<StudioTulum />} />
+      <Route path="/studio/universe/kyoto" element={<StudioKyoto />} />
+      <Route path="/studio/universe/capri" element={<StudioCapri />} />
+      <Route path="/studio/universe/tokyo" element={<StudioTokyo />} />
+      <Route path="/studio/universe/marrakech" element={<StudioMarrakech />} />
+      <Route path="/studio/universe/paris" element={<StudioParis />} />
+      <Route path="/studio/universe/amalfi" element={<StudioAmalfi />} />
+      <Route path="/studio/universe/sedona" element={<StudioSedona />} />
+      <Route path="/studio/universe/aspen" element={<StudioAspen />} />
+      <Route path="/studio/universe/santorini" element={<StudioSantorini />} />
       <Route path="/studio/share" element={<StudioShare />} />
       <Route path="/studio/ava" element={<AvaStudio />} />
       <Route path="/studio/ava/website" element={<AvaStudioWebsite />} />

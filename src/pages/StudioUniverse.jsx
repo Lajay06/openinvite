@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Lock } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 const UNIVERSES = [
-  { id: 'aman', name: 'AMAN', tagline: 'Quiet Luxury', description: 'Stripped back. Only what matters.', style: ['Luxury', 'Minimal'], mood: ['Dark', 'Monochrome'], status: 'active', available: true, number: '01', photo: 'https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg', accentColor: '#C4956A' },
-  { id: 'tulum', name: 'TULUM', tagline: 'Desert Bloom', description: 'Sun-bleached romance. Bohemian soul.', style: ['Bohemian', 'Romantic'], mood: ['Warm', 'Earthy'], status: 'coming-soon', available: false, number: '02', photo: 'https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg', accentColor: '#D4AA70' },
-  { id: 'kyoto', name: 'KYOTO', tagline: 'Zen & Ceremony', description: 'Ancient ritual. Modern refinement.', style: ['Minimal', 'Cultural'], mood: ['Cool', 'Monochrome'], status: 'coming-soon', available: false, number: '03', photo: 'https://static.wixstatic.com/media/d2df22_40822e26660c4112aef53ff2526c0345~mv2.jpg', accentColor: '#8B9FD4' },
-  { id: 'capri', name: 'CAPRI', tagline: 'Italian Coast', description: 'La dolce vita. Forever yours.', style: ['Luxury', 'Romantic'], mood: ['Light', 'Warm'], status: 'coming-soon', available: false, number: '04', photo: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg', accentColor: '#5A9E8A' },
-  { id: 'marrakech', name: 'MARRAKECH', tagline: 'Spice & Gold', description: 'Sensory richness. Cultural depth.', style: ['Cultural', 'Bohemian'], mood: ['Warm', 'Earthy'], status: 'coming-soon', available: false, number: '05', photo: 'https://static.wixstatic.com/media/d2df22_5ea2e70835a14465be546237fd1dd55a~mv2.jpg', accentColor: '#D4AA70' },
-  { id: 'brooklyn', name: 'BROOKLYN', tagline: 'Industrial Edge', description: 'Raw beauty. Considered cool.', style: ['Modern', 'Minimal'], mood: ['Dark', 'Cool'], status: 'coming-soon', available: false, number: '06', photo: 'https://static.wixstatic.com/media/d2df22_f0eef5788fdd4876a0a300e43228f919~mv2.jpg', accentColor: '#888888' },
-  { id: 'bali', name: 'BALI', tagline: 'Sacred Garden', description: 'Lush. Spiritual. Effortlessly beautiful.', style: ['Bohemian', 'Tropical'], mood: ['Warm', 'Earthy'], status: 'coming-soon', available: false, number: '07', photo: 'https://static.wixstatic.com/media/d2df22_e30eff6d03424dd6baf63143722b2a3d~mv2.jpg', accentColor: '#7A9E7E' },
-  { id: 'paris', name: 'PARIS', tagline: 'Haussmann Romance', description: 'Grand. Timeless. Uncompromisingly elegant.', style: ['Luxury', 'Romantic'], mood: ['Light', 'Warm'], status: 'coming-soon', available: false, number: '08', photo: 'https://static.wixstatic.com/media/d2df22_6aab4aa83a3b40eabd571d355ed75c7c~mv2.jpg', accentColor: '#C4768A' },
-  { id: 'cape-town', name: 'CAPE TOWN', tagline: 'Wild & Free', description: 'Mountain meets ocean. Bold and alive.', style: ['Modern', 'Rustic'], mood: ['Cool', 'Earthy'], status: 'coming-soon', available: false, number: '09', photo: 'https://static.wixstatic.com/media/d2df22_2bbfee1f5b034379a76f063c2f97f653~mv2.jpg', accentColor: '#6B7FA3' },
+  { id: 'aman', name: 'AMAN', tagline: 'Quiet luxury', description: 'Stripped back. Only what matters.', style: ['Luxury', 'Minimal'], mood: ['Dark', 'Monochrome'], available: true, number: '01', photo: 'https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg', accentColor: '#C4956A' },
+  { id: 'tulum', name: 'TULUM', tagline: 'Barefoot luxury', description: 'Sun-bleached romance. Bohemian soul.', style: ['Bohemian', 'Romantic'], mood: ['Warm', 'Earthy'], available: true, number: '02', photo: 'https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg', accentColor: '#D4845A' },
+  { id: 'kyoto', name: 'KYOTO', tagline: 'Zen & ceremony', description: 'Ancient ritual. Modern refinement.', style: ['Minimal', 'Cultural'], mood: ['Cool', 'Monochrome'], available: true, number: '03', photo: 'https://static.wixstatic.com/media/d2df22_40822e26660c4112aef53ff2526c0345~mv2.jpg', accentColor: '#6B6B5A' },
+  { id: 'capri', name: 'CAPRI', tagline: 'Italian coast', description: 'La dolce vita. Forever yours.', style: ['Luxury', 'Romantic'], mood: ['Light', 'Warm'], available: true, number: '04', photo: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg', accentColor: '#E8C547' },
+  { id: 'tokyo', name: 'TOKYO', tagline: 'Editorial nightlife', description: 'Precision becomes desire.', style: ['Modern', 'Minimal'], mood: ['Dark', 'Monochrome'], available: true, number: '05', photo: 'https://static.wixstatic.com/media/d2df22_f0eef5788fdd4876a0a300e43228f919~mv2.jpg', accentColor: '#B8FF00' },
+  { id: 'marrakech', name: 'MARRAKECH', tagline: 'Spice & gold', description: 'Sensory richness. Cultural depth.', style: ['Cultural', 'Bohemian'], mood: ['Warm', 'Earthy'], available: true, number: '06', photo: 'https://static.wixstatic.com/media/d2df22_5ea2e70835a14465be546237fd1dd55a~mv2.jpg', accentColor: '#C9A96E' },
+  { id: 'paris', name: 'PARIS', tagline: 'Haussmann romance', description: 'Grand. Timeless. Uncompromisingly elegant.', style: ['Luxury', 'Romantic'], mood: ['Light', 'Warm'], available: true, number: '07', photo: 'https://static.wixstatic.com/media/d2df22_6aab4aa83a3b40eabd571d355ed75c7c~mv2.jpg', accentColor: '#C9A96E' },
+  { id: 'amalfi', name: 'AMALFI', tagline: 'Sun-drenched coast', description: 'Where cliffs meet the sea.', style: ['Luxury', 'Romantic'], mood: ['Light', 'Warm'], available: true, number: '08', photo: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg', accentColor: '#E8A040' },
+  { id: 'sedona', name: 'SEDONA', tagline: 'Red rock ritual', description: 'Grounded in something ancient.', style: ['Bohemian', 'Rustic'], mood: ['Warm', 'Earthy'], available: true, number: '09', photo: 'https://static.wixstatic.com/media/d2df22_2bbfee1f5b034379a76f063c2f97f653~mv2.jpg', accentColor: '#C4783A' },
+  { id: 'aspen', name: 'ASPEN', tagline: 'Black tie winter', description: 'The mountain holds its breath.', style: ['Luxury', 'Minimal'], mood: ['Dark', 'Cool'], available: true, number: '10', photo: 'https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg', accentColor: '#2D5A27' },
+  { id: 'santorini', name: 'SANTORINI', tagline: 'Aegean sculptural', description: 'Whitewashed walls. Infinite horizon.', style: ['Luxury', 'Minimal'], mood: ['Cool', 'Monochrome'], available: true, number: '11', photo: 'https://static.wixstatic.com/media/d2df22_2bbfee1f5b034379a76f063c2f97f653~mv2.jpg', accentColor: '#4A90D9' },
 ];
 
 const STYLE_FILTERS = ['All', 'Luxury', 'Minimal', 'Romantic', 'Bohemian', 'Modern', 'Rustic', 'Tropical', 'Cultural'];
@@ -20,13 +22,13 @@ const MOOD_FILTERS = ['All', 'Dark', 'Light', 'Warm', 'Cool', 'Earthy', 'Monochr
 
 function UniverseCard({ universe, isActive }) {
   const navigate = useNavigate();
-  const handleClick = () => { if (universe.available) navigate('/studio/universe/aman'); };
+  const handleClick = () => navigate(`/studio/universe/${universe.id}`);
   return (
-    <div onClick={handleClick} style={{ background: '#0A0A0A', position: 'relative', overflow: 'hidden', cursor: universe.available ? 'pointer' : 'default', aspectRatio: '4/5', transition: 'transform 0.4s ease' }}
-      onMouseEnter={e => universe.available && (e.currentTarget.style.transform = 'scale(1.01)')}
-      onMouseLeave={e => universe.available && (e.currentTarget.style.transform = 'scale(1)')}
+    <div onClick={handleClick} style={{ background: '#0A0A0A', position: 'relative', overflow: 'hidden', cursor: 'pointer', aspectRatio: '4/5', transition: 'transform 0.4s ease' }}
+      onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.01)')}
+      onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
     >
-      <img src={universe.photo} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: universe.available ? 0.35 : 0.15, transition: 'opacity 0.4s ease' }} />
+      <img src={universe.photo} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, transition: 'opacity 0.4s ease' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0A0A0A 0%, rgba(10,10,10,0.5) 50%, transparent 100%)' }} />
       <div style={{ position: 'absolute', top: 24, left: 28 }}>
         <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 13, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.2em' }}>{universe.number}</span>
@@ -34,38 +36,27 @@ function UniverseCard({ universe, isActive }) {
       <div style={{ position: 'absolute', top: 20, right: 20 }}>
         {isActive ? (
           <div style={{ border: '1px solid #DDF762', padding: '3px 10px' }}>
-            <span style={{ fontSize: 9, color: '#DDF762', letterSpacing: '0.25em', textTransform: 'uppercase', fontWeight: 700 }}>SELECTED</span>
-          </div>
-        ) : universe.available ? (
-          <div style={{ border: '1px solid rgba(255,255,255,0.3)', padding: '3px 10px' }}>
-            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.25em', textTransform: 'uppercase', fontWeight: 700 }}>AVAILABLE</span>
+            <span style={{ fontSize: 9, color: '#DDF762', letterSpacing: '0.25em', fontWeight: 700 }}>Selected</span>
           </div>
         ) : (
-          <div style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '3px 10px' }}>
-            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.25em', textTransform: 'uppercase', fontWeight: 700 }}>COMING SOON</span>
+          <div style={{ border: '1px solid rgba(255,255,255,0.3)', padding: '3px 10px' }}>
+            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.25em', fontWeight: 700 }}>Available</span>
           </div>
         )}
       </div>
-      {!universe.available && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Lock size={20} color="rgba(255,255,255,0.2)" />
-        </div>
-      )}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '32px 28px' }}>
         <div style={{ width: 32, height: 1, background: universe.accentColor, marginBottom: 20, opacity: 0.7 }} />
-        <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(36px, 4vw, 52px)', color: '#FFFFFF', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 6px', lineHeight: 1 }}>
+        <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(36px, 4vw, 52px)', color: '#FFFFFF', letterSpacing: '0.15em', margin: '0 0 6px', lineHeight: 1 }}>
           {universe.name}
         </h2>
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.2em', textTransform: 'uppercase', margin: '0 0 12px', fontStyle: 'italic', fontFamily: 'Cormorant Garamond, serif' }}>{universe.tagline}</p>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.2em', margin: '0 0 12px', fontStyle: 'italic', fontFamily: 'Cormorant Garamond, serif' }}>{universe.tagline}</p>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 24px', lineHeight: 1.5 }}>{universe.description}</p>
-        {universe.available && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}>
-              {isActive ? 'View Universe' : 'Explore Universe'}
-            </span>
-            <span style={{ color: universe.accentColor, fontSize: 14 }}>→</span>
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.15em', fontWeight: 600 }}>
+            {isActive ? 'View universe' : 'Explore universe'}
+          </span>
+          <span style={{ color: universe.accentColor, fontSize: 14 }}>→</span>
+        </div>
       </div>
     </div>
   );
