@@ -896,11 +896,6 @@ a[style*="border-radius:100px"] {
   }
 }
 
-/* ── NUCLEAR: Force white on all user area page content ────── */
-.page-content > div,
-.page-content > div > div {
-  background-color: #FFFFFF !important;
-}
 
 /* ── Root & body white override ─────────────────────────────── */
 body {
