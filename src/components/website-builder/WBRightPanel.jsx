@@ -106,11 +106,15 @@ function DesignTab({ details, onChange }) {
       </div>
       </div>{/* end theme collapsible */}
       <Divider />
-      <SLabel onClick={() => setTypoOpen(o => !o)} isOpen={typoOpen}>Typography</SLabel>
+      <SLabel onClick={() => setTypoOpen(o => !o)} isOpen={typoOpen}>
+        {details.activeTypography
+          ? `Typography · ${TYPOGRAPHY_PAIRINGS.find(t => t.id === details.activeTypography)?.name || ''}`
+          : 'Typography'}
+      </SLabel>
       <div style={{ overflow: 'hidden', maxHeight: typoOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8, marginBottom: 8 }}>
         {TYPOGRAPHY_PAIRINGS.map(t => {
-          const sel = (details.activeTypography || 'classic') === t.id;
+          const sel = details.activeTypography === t.id;
           return (
             <div key={t.id} onClick={() => onChange('activeTypography', t.id)} style={{ border: sel ? '2px solid #FFFFFF' : '1px solid rgba(255,255,255,0.08)', padding: 12, cursor: 'pointer', position: 'relative', background: '#2C2C2E', transition: 'border-color 0.15s' }}>
               {sel && <span style={{ position: 'absolute', top: 6, right: 6, fontSize: 8, background: '#fff', color: '#0A0A0A', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</span>}

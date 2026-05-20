@@ -665,9 +665,11 @@ function ToolBtn({ children, onClick, title, bold }) {
   );
 }
 
-function PlaceholderSection({ section, universeTheme, onCustomise }) {
+function PlaceholderSection({ section, universeTheme, effectiveHf, effectiveBf, onCustomise }) {
   const [hovered, setHovered] = useState(false);
-  const { text, accent, background, fontDisplay, fontBody } = universeTheme;
+  const { text, accent, background } = universeTheme;
+  const hf = effectiveHf || universeTheme.fontDisplay;
+  const bf = effectiveBf || universeTheme.fontBody;
   const muted = text + '80';
   const divider = `1px solid ${text}14`;
   const isHero = section.type === 'hero';
@@ -680,27 +682,27 @@ function PlaceholderSection({ section, universeTheme, onCustomise }) {
     >
       {isHero ? (
         <div style={{ padding: '80px 40px 64px', textAlign: 'center' }}>
-          <h1 style={{ fontFamily: fontDisplay, fontSize: 48, fontWeight: 400, color: text, margin: '0 0 16px', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+          <h1 style={{ fontFamily: hf, fontSize: 48, fontWeight: 400, color: text, margin: '0 0 16px', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
             {section.heading}
           </h1>
           {section.subheading && (
-            <p style={{ fontFamily: fontBody, fontSize: 13, color: accent, margin: '0 0 14px', letterSpacing: '0.05em' }}>
+            <p style={{ fontFamily: bf, fontSize: 13, color: accent, margin: '0 0 14px', letterSpacing: '0.05em' }}>
               {section.subheading}
             </p>
           )}
           {section.body && (
-            <p style={{ fontFamily: fontBody, fontSize: 14, color: muted, margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontFamily: bf, fontSize: 14, color: muted, margin: 0, lineHeight: 1.6 }}>
               {section.body}
             </p>
           )}
         </div>
       ) : (
         <div style={{ padding: '48px 40px' }}>
-          <h2 style={{ fontFamily: fontDisplay, fontSize: 30, fontWeight: 400, color: text, margin: '0 0 16px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+          <h2 style={{ fontFamily: hf, fontSize: 30, fontWeight: 400, color: text, margin: '0 0 16px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
             {section.heading}
           </h2>
           {section.body && (
-            <p style={{ fontFamily: fontBody, fontSize: 14, color: muted, margin: 0, lineHeight: 1.75, maxWidth: 560, whiteSpace: 'pre-line' }}>
+            <p style={{ fontFamily: bf, fontSize: 14, color: muted, margin: 0, lineHeight: 1.75, maxWidth: 560, whiteSpace: 'pre-line' }}>
               {section.body}
             </p>
           )}
@@ -733,6 +735,9 @@ const GFONT_URLS = {
   'Source Sans Pro': 'https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400&display=swap',
   'Cinzel': 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&display=swap',
   'Raleway': 'https://fonts.googleapis.com/css2?family=Raleway:wght@300;400&display=swap',
+  'Dancing Script': 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500&display=swap',
+  'Great Vibes': 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap',
+  'Bodoni Moda': 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&display=swap',
 };
 
 function PreviewContent({ theme, typo, universeTheme, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection, isMobile }) {
@@ -771,13 +776,16 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
   const bgIsDark = (bgR * 299 + parseInt(bgHex.slice(3, 5), 16) * 587 + parseInt(bgHex.slice(5, 7), 16) * 114) / 1000 < 128;
   const addBtnBorder = (showPlaceholders && !bgIsDark) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
   const addBtnColor = (showPlaceholders && !bgIsDark) ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
+  // Typography overrides universe fonts; universe fonts override system defaults
+  const effectiveHf = typo?.headingFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
+  const effectiveBf = typo?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
 
   return (
     <>
       {/* Nav bar inside preview */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
         <div style={{ background: universeTheme.primary, padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: '#FFFFFF', fontFamily: universeTheme.fontBody }}>
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: '#FFFFFF', fontFamily: effectiveBf }}>
             {details.coupleNames || 'Your Names'}
           </span>
           {isMobile ? (
@@ -789,7 +797,7 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
               {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
                 const label = allPageLabels[slug] || slug;
                 return (
-                  <span key={slug} onClick={() => onPageChange(slug)} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: '#FFFFFF', opacity: currentPage === slug ? 1 : 0.4, cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? '1px solid #FFFFFF' : '1px solid transparent', fontFamily: universeTheme.fontBody }}>
+                  <span key={slug} onClick={() => onPageChange(slug)} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: '#FFFFFF', opacity: currentPage === slug ? 1 : 0.4, cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? '1px solid #FFFFFF' : '1px solid transparent', fontFamily: effectiveBf }}>
                     {label}
                   </span>
                 );
@@ -802,7 +810,7 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
             {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
               const label = allPageLabels[slug] || slug;
               return (
-                <div key={slug} onClick={() => { onPageChange(slug); setMobileMenuOpen(false); }} style={{ padding: '12px 24px', color: '#FFFFFF', fontSize: 14, cursor: 'pointer', opacity: currentPage === slug ? 1 : 0.6, fontFamily: universeTheme.fontBody }}>
+                <div key={slug} onClick={() => { onPageChange(slug); setMobileMenuOpen(false); }} style={{ padding: '12px 24px', color: '#FFFFFF', fontSize: 14, cursor: 'pointer', opacity: currentPage === slug ? 1 : 0.6, fontFamily: effectiveBf }}>
                   {label}
                 </div>
               );
@@ -820,14 +828,16 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
                 key={i}
                 section={section}
                 universeTheme={universeTheme}
+                effectiveHf={effectiveHf}
+                effectiveBf={effectiveBf}
                 onCustomise={() => onAddSection(0)}
               />
             ))
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
               <div style={{ width: 64, height: 64, borderRadius: '50%', background: bgIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28, color: universeTheme.text }}>+</div>
-              <p style={{ fontSize: 18, fontWeight: 600, color: universeTheme.text, marginBottom: 8, fontFamily: universeTheme.fontBody }}>No sections yet</p>
-              <p style={{ fontSize: 14, color: bgIsDark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.4)', marginBottom: 24, fontFamily: universeTheme.fontBody }}>Add your first section to start building this page</p>
+              <p style={{ fontSize: 18, fontWeight: 600, color: universeTheme.text, marginBottom: 8, fontFamily: effectiveBf }}>No sections yet</p>
+              <p style={{ fontSize: 14, color: bgIsDark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.4)', marginBottom: 24, fontFamily: effectiveBf }}>Add your first section to start building this page</p>
               <button onClick={() => onAddSection(0)} style={{ padding: '12px 24px', background: universeTheme.primary, color: bgIsDark ? universeTheme.background : '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
                 + Add first section
               </button>
