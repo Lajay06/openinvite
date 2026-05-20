@@ -168,7 +168,7 @@ export default function ScrollMorphSection() {
   // Phase opacity calculations using linear interpolation
   const headlineOpacity = 1 - lerp01(scrolled, 0, 500);
   const endTextOpacity = lerp01(scrolled, 3000, 3500);
-  const continueOpacity = lerp01(scrolled, 2800, 3200);
+  const continueOpacity = lerp01(scrolled, 3500, 3900);
   const cardsVisible = scrolled > 300;
 
   return (
@@ -193,7 +193,7 @@ export default function ScrollMorphSection() {
       `}</style>
 
       {/* OUTER: tall container — 4000px for scroll room */}
-      <div ref={containerRef} style={{ position: 'relative', height: '4000px' }}>
+      <div ref={containerRef} style={{ position: 'relative', height: '5000px' }}>
 
         {/* INNER: sticky — pins to viewport */}
         <div
