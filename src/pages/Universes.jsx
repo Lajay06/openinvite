@@ -10,7 +10,7 @@ const UNIVERSE_DATA = [
     tagline: 'Quiet Luxury',
     description: 'Inspired by the world\'s most considered resort collection. Every element stripped back to what matters. The AMAN universe speaks quietly — and says more for it.',
     palette: [{ color: '#0A0A0A', label: 'Obsidian' }, { color: '#F8F7F5', label: 'Linen' }, { color: '#C4956A', label: 'Sand' }, { color: '#FFFFFF', label: 'Pure' }],
-    image: 'https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg',
+    image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246464/manuel-moreno-DGa0LQ0yDPc-unsplash_nbgivs.jpg',
     available: true,
   },
   {
@@ -19,7 +19,7 @@ const UNIVERSE_DATA = [
     tagline: 'Desert Bloom',
     description: 'Sun-bleached romance. Warm earth tones and organic texture that feel alive under open sky.',
     palette: [{ color: '#C4956A', label: 'Terracotta' }, { color: '#F5ECD7', label: 'Sand' }, { color: '#7B6B52', label: 'Earth' }, { color: '#FFFFFF', label: 'Pure' }],
-    image: 'https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg',
+    image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246462/alex-bertha-Jyg7xHRmXiU-unsplash_ypu0wy.jpg',
     available: false,
   },
   {
@@ -28,7 +28,7 @@ const UNIVERSE_DATA = [
     tagline: 'Zen and Ceremony',
     description: 'Ancient ritual meets modern refinement. Stillness as a design principle.',
     palette: [{ color: '#2C2C2C', label: 'Charcoal' }, { color: '#F0EBE3', label: 'Paper' }, { color: '#8B7355', label: 'Bamboo' }, { color: '#E8D5C4', label: 'Blush' }],
-    image: 'https://static.wixstatic.com/media/d2df22_40822e26660c4112aef53ff2526c0345~mv2.jpg',
+    image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246462/anne-laure-p-PbemriYGLoQ-unsplash_rgyetw.jpg',
     available: false,
   },
   {
@@ -37,7 +37,7 @@ const UNIVERSE_DATA = [
     tagline: 'Italian Coast',
     description: 'La dolce vita. Deep blues, warm stone and effortless elegance.',
     palette: [{ color: '#1B3A6B', label: 'Cobalt' }, { color: '#F4E4C1', label: 'Stone' }, { color: '#7BA7C2', label: 'Sea' }, { color: '#FFFFFF', label: 'Pure' }],
-    image: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg',
+    image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246455/nicolo-salinetti-FiGEvsSG4vU-unsplash_ai9pim.jpg',
     available: false,
   },
   {
@@ -46,7 +46,7 @@ const UNIVERSE_DATA = [
     tagline: 'Haussmann Romance',
     description: 'Grand and timeless. The language of French elegance.',
     palette: [{ color: '#1A1A2E', label: 'Midnight' }, { color: '#F5F0E8', label: 'Cream' }, { color: '#C9A96E', label: 'Gold' }, { color: '#8B4B6B', label: 'Rose' }],
-    image: 'https://static.wixstatic.com/media/d2df22_5ea2e70835a14465be546237fd1dd55a~mv2.jpg',
+    image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246459/alex-boyd-HhFi1gKYosc-unsplash_prtm0n.jpg',
     available: false,
   },
 ];
