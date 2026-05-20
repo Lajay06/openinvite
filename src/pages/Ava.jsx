@@ -37,11 +37,11 @@ function useCountUp(target, inView, duration = 1400) {
 
 // ── Ava features ──────────────────────────────────────────────
 const avaFeatures = [
-{ value: "autofill", label: "Auto-Fill Website", description: "Ava reads your planning details and builds your entire wedding website in seconds — venue, story, FAQ, travel, all populated beautifully.", detail: "Just answer a few questions during setup and Ava writes your welcome message, love story, event details and FAQ automatically. One click, fully personalised.", icon: "✦", color: "#E03553", bg: "https://static.wixstatic.com/media/d2df22_01bfbe691447412ead754d6a68265550~mv2.png" },
-{ value: "budget", label: "Smart Budget Tips", description: "Ava monitors your spending patterns and proactively suggests where you can save — without compromising what matters most.", detail: "When your florals go over budget, Ava suggests reallocation options. When a vendor quote comes in high, Ava benchmarks it against typical costs for your area.", icon: "◈", color: "#803D81", bg: "https://static.wixstatic.com/media/d2df22_12c342a69ac04a869c480fba75216f95~mv2.png" },
-{ value: "checklist", label: "Personalised Checklist", description: "Ava generates a custom wedding checklist based on your date, venue, style and priorities — not a generic template.", detail: "A beach elopement 3 months away needs different tasks than a 200-person ballroom wedding 12 months out. Ava knows the difference and plans accordingly.", icon: "⬡", color: "#6B2CAE", bg: "https://static.wixstatic.com/media/d2df22_b296e421602b425dbe03c0e84759bd0e~mv2.png" },
-{ value: "guests", label: "Guest Intelligence", description: "Ava analyses your guest list to surface insights — dietary clusters, seating conflicts, RSVP patterns — and makes smart suggestions.", detail: "Ava spots that 40% of your guests are vegetarian before you finalise the menu, or flags that two guests who should not be seated near each other are assigned to adjacent tables.", icon: "◇", color: "#DDF762", bg: "https://static.wixstatic.com/media/d2df22_459971d2a6144234b240734bda16b62e~mv2.png" },
-{ value: "vows", label: "Vow Writing Assistant", description: "Stuck on your vows? Ava helps you find the right words — prompting, suggesting, and refining until they feel completely yours.", detail: "Tell Ava your story, your partner's qualities, and the tone you want (funny, heartfelt, poetic). Ava drafts something real — not a template, a starting point that sounds like you.", icon: "✧", color: "#C2E5F3", bg: "https://static.wixstatic.com/media/d2df22_4ce5e46da6cb40fb9e8ba609b1dd9c7e~mv2.png" }];
+{ value: "autofill", label: "Auto-Fill Website", description: "Ava reads your planning details and builds your entire wedding website in seconds — venue, story, FAQ, travel, all populated beautifully.", detail: "Just answer a few questions during setup and Ava writes your welcome message, love story, event details and FAQ automatically. One click, fully personalised.", icon: "✦", color: "#E03553", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779218328/DTS_PLAYER_TWO_JELLY_LUISE_Photos_ID13458_a53qq3.jpg" },
+{ value: "budget", label: "Smart Budget Tips", description: "Ava monitors your spending patterns and proactively suggests where you can save — without compromising what matters most.", detail: "When your florals go over budget, Ava suggests reallocation options. When a vendor quote comes in high, Ava benchmarks it against typical costs for your area.", icon: "◈", color: "#803D81", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185629/DTS_Lonely_Commute_Mark_Forbes_Photos_ID2358_kxs0yg.jpg" },
+{ value: "checklist", label: "Personalised Checklist", description: "Ava generates a custom wedding checklist based on your date, venue, style and priorities — not a generic template.", detail: "A beach elopement 3 months away needs different tasks than a 200-person ballroom wedding 12 months out. Ava knows the difference and plans accordingly.", icon: "⬡", color: "#6B2CAE", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185618/kiet-trinh-L5gTFp1iGHE-unsplash_sdmikk.jpg" },
+{ value: "guests", label: "Guest Intelligence", description: "Ava analyses your guest list to surface insights — dietary clusters, seating conflicts, RSVP patterns — and makes smart suggestions.", detail: "Ava spots that 40% of your guests are vegetarian before you finalise the menu, or flags that two guests who should not be seated near each other are assigned to adjacent tables.", icon: "◇", color: "#DDF762", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185602/DTS_Remote_Studio_Tino_Renato_Photos_ID3722_pldzvf.jpg" },
+{ value: "vows", label: "Vow Writing Assistant", description: "Stuck on your vows? Ava helps you find the right words — prompting, suggesting, and refining until they feel completely yours.", detail: "Tell Ava your story, your partner's qualities, and the tone you want (funny, heartfelt, poetic). Ava drafts something real — not a template, a starting point that sounds like you.", icon: "✧", color: "#C2E5F3", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185622/alok-verma-ARLh7m5S4VA-unsplash_eslg13.jpg" }];
 
 
 const SLIDE_DURATION = 6000;
@@ -113,14 +113,14 @@ function AvaCarousel() {
           key={f.value}
           onClick={() => goTo(i)}
           style={{
-            flex: 1, padding: "24px 20px", borderRight: i < 4 ? "1px solid #1A1A1A" : "none",
+            flex: 1, padding: "28px 20px", borderRight: i < 4 ? "1px solid #1A1A1A" : "none",
             background: "none", border: "none", borderRight: i < 4 ? "1px solid #1A1A1A" : "none",
             cursor: "pointer", textAlign: "left", position: "relative", overflow: "hidden",
-            opacity: i === active ? 1 : 0.4, transition: "opacity 0.3s ease"
+            opacity: i === active ? 1 : 0.4, transition: "opacity 0.3s ease", minHeight: 100
           }}>
-          
+
             <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", margin: "0 0 6px", fontFamily: "inherit" }}>{f.label}</p>
-            <p style={{ fontSize: 12, color: "#CCCCCC", margin: 0, fontFamily: "inherit", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{f.description}</p>
+            <p style={{ fontSize: 12, color: "#CCCCCC", margin: 0, fontFamily: "inherit", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{f.description}</p>
             <div style={{ position: "absolute", bottom: 0, left: 0, height: 3, background: f.color, width: i === active ? `${progress * 100}%` : "0%", transition: i === active ? "none" : "width 0.2s ease" }} />
           </button>
         )}
