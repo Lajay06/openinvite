@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster"
+import ScrollToTop from "@/components/ScrollToTop"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import VisualEditAgent from '@/lib/VisualEditAgent'
@@ -220,6 +221,7 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
+          <ScrollToTop />
           <NavigationTracker />
           <AuthenticatedApp />
         </Router>
