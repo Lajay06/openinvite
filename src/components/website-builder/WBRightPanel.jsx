@@ -12,8 +12,21 @@ import {
 import MediaLibraryModal from './MediaLibraryModal';
 
 // ── Extra primitives used only here ───────────────────────────
-function SLabel({ children }) {
-  return <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.4)', margin: '0 0 10px' }}>{children}</p>;
+function SLabel({ children, onClick, isOpen }) {
+  const collapsible = typeof isOpen === 'boolean';
+  return (
+    <p
+      onClick={onClick}
+      style={{
+        fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.4)',
+        margin: '0 0 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        cursor: collapsible ? 'pointer' : 'default', userSelect: 'none',
+      }}
+    >
+      <span>{children}</span>
+      {collapsible && <span style={{ fontSize: 10 }}>{isOpen ? '▼' : '▶'}</span>}
+    </p>
+  );
 }
 function UTextarea({ label, value, onChange, rows = 3, placeholder = '' }) {
   return (
@@ -63,9 +76,12 @@ function ChipInput({ label, items = [], onAdd, onRemove }) {
 
 // ── DESIGN TAB ────────────────────────────────────────────────
 function DesignTab({ details, onChange }) {
+  const [themeOpen, setThemeOpen] = useState(true);
+  const [typoOpen, setTypoOpen] = useState(false);
   return (
     <div>
-      <SLabel>Theme</SLabel>
+      <SLabel onClick={() => setThemeOpen(o => !o)} isOpen={themeOpen}>Theme</SLabel>
+      <div style={{ overflow: 'hidden', maxHeight: themeOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 8 }}>
         {WEBSITE_THEMES.map(t => {
           const sel = (details.activeTheme || 'still') === t.id;
@@ -88,8 +104,10 @@ function DesignTab({ details, onChange }) {
           );
         })}
       </div>
+      </div>{/* end theme collapsible */}
       <Divider />
-      <SLabel>Typography</SLabel>
+      <SLabel onClick={() => setTypoOpen(o => !o)} isOpen={typoOpen}>Typography</SLabel>
+      <div style={{ overflow: 'hidden', maxHeight: typoOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8, marginBottom: 8 }}>
         {TYPOGRAPHY_PAIRINGS.map(t => {
           const sel = (details.activeTypography || 'classic') === t.id;
@@ -104,6 +122,7 @@ function DesignTab({ details, onChange }) {
           );
         })}
       </div>
+      </div>{/* end typography collapsible */}
       <Divider />
       <SLabel>Animations</SLabel>
       <div style={{ marginBottom: 10 }}>

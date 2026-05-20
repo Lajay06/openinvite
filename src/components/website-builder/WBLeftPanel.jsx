@@ -51,13 +51,23 @@ function Toggle({ enabled, onToggle }) {
   );
 }
 
-function SLabel({ children }) {
+function SLabel({ children, onClick, isOpen }) {
+  const collapsible = typeof isOpen === 'boolean';
   return (
-    <p style={{
-      fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
-      color: 'rgba(255,255,255,0.4)', margin: 0,
-      padding: '12px 16px 6px', fontFamily: PJS,
-    }}>{children}</p>
+    <p
+      onClick={onClick}
+      style={{
+        fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
+        color: 'rgba(255,255,255,0.4)', margin: 0,
+        padding: '12px 16px 6px', fontFamily: PJS,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        cursor: collapsible ? 'pointer' : 'default',
+        userSelect: 'none',
+      }}
+    >
+      <span>{children}</span>
+      {collapsible && <span style={{ fontSize: 10, marginRight: 2 }}>{isOpen ? '▼' : '▶'}</span>}
+    </p>
   );
 }
 
@@ -71,6 +81,9 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
   const [hoveredPage, setHoveredPage] = useState(null);
   const [hoveredAsset, setHoveredAsset] = useState(null);
   const [hoverNewPage, setHoverNewPage] = useState(false);
+  const [pagesOpen, setPagesOpen] = useState(true);
+  const [designOpen, setDesignOpen] = useState(true);
+  const [assetsOpen, setAssetsOpen] = useState(false);
 
   const enabledPages = details.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'];
   const customPages = details.customPages || [];
@@ -110,8 +123,9 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
     }}>
 
       {/* ── Pages ── */}
-      <SLabel>Pages</SLabel>
+      <SLabel onClick={() => setPagesOpen(o => !o)} isOpen={pagesOpen}>Pages</SLabel>
 
+      <div style={{ overflow: 'hidden', maxHeight: pagesOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
       <div>
         {WEDDING_PAGES.map(({ slug, label, icon }) => {
           const active = currentPage === slug;
@@ -211,10 +225,12 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
         <Plus size={12} />
         <span style={{ fontSize: 12, fontWeight: 500 }}>New page</span>
       </div>
+      </div>{/* end pages collapsible */}
 
       {/* ── Design ── */}
       <Divider />
-      <SLabel>Design</SLabel>
+      <SLabel onClick={() => setDesignOpen(o => !o)} isOpen={designOpen}>Design</SLabel>
+      <div style={{ overflow: 'hidden', maxHeight: designOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
       <div style={{ padding: '0 16px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <div style={{ display: 'flex', width: 20, height: 20, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,0.15)' }}>
@@ -242,10 +258,12 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
           >Change →</span>
         </div>
       </div>
+      </div>{/* end design collapsible */}
 
       {/* ── Assets ── */}
       <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 0 0' }} />
-      <SLabel>Assets</SLabel>
+      <SLabel onClick={() => setAssetsOpen(o => !o)} isOpen={assetsOpen}>Assets</SLabel>
+      <div style={{ overflow: 'hidden', maxHeight: assetsOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
       {ASSETS.map(({ id, name, icon: Icon }) => {
         const active = selectedAsset === id;
         const hovered = hoveredAsset === id;
@@ -275,6 +293,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
           </div>
         );
       })}
+      </div>{/* end assets collapsible */}
 
       {/* Spacer pushes Ava button to bottom */}
       <div style={{ flex: 1, minHeight: 12 }} />
