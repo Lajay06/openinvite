@@ -49,7 +49,7 @@ const ULTRA_EXTRAS = [
 const FAQS = [
   {
     q: "Is this really a one-time payment?",
-    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is $149 total. Ultra is $249 total.",
+    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is $99 total. Ultra is $199 total.",
   },
   {
     q: "What's included in the 24 months?",
@@ -87,7 +87,7 @@ const TABLE_ROWS = [
   { feature: "Collaborate",      starter: false,      pro: true,       ultra: true },
   { feature: "Support",          starter: "Email",    pro: "Priority", ultra: "Priority" },
   { feature: "Access duration",  starter: "14 days",  pro: "24 mo",    ultra: "24 mo" },
-  { feature: "Price",            starter: "Free",     pro: "$149",     ultra: "$249" },
+  { feature: "Price",            starter: "Free",     pro: "$99",      ultra: "$199" },
 ];
 
 function CheckIcon({ color = "#0A0A0A" }) {
@@ -145,8 +145,8 @@ export default function Pricing() {
           {/* STARTER */}
           <div style={{
             flex: "0 1 320px", minWidth: 260,
-            border: "1px solid rgba(10,10,10,0.1)",
-            background: "#FFFFFF", padding: "36px 32px",
+            border: "1px solid #E5E5E5",
+            background: "#FAFAF9", padding: "36px 32px",
             display: "flex", flexDirection: "column",
           }}>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
@@ -165,7 +165,7 @@ export default function Pricing() {
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
               {STARTER_FEATURES.map((f, i) => (
                 <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
-                  <CheckIcon color="rgba(10,10,10,0.3)" />
+                  <CheckIcon color="#E03553" />
                   {f}
                 </li>
               ))}
@@ -192,36 +192,36 @@ export default function Pricing() {
             {/* Badge above card */}
             <div style={{
               position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
-              background: "linear-gradient(135deg, #ec4899, #9333ea)",
+              background: "#E03553",
               padding: "4px 14px", borderRadius: 999, fontSize: 11, fontWeight: 600,
-              color: "#FFFFFF", letterSpacing: "0.04em", whiteSpace: "nowrap", fontFamily: PJS,
+              color: "#FFFFFF", whiteSpace: "nowrap", fontFamily: PJS,
               zIndex: 1,
             }}>
               Most popular
             </div>
 
             <div style={{
-              border: "2px solid #0A0A0A", background: "#0A0A0A",
+              border: "1px solid #E5E5E5", background: "#FAFAF9",
               padding: "40px 32px 36px",
               display: "flex", flexDirection: "column", height: "100%",
             }}>
-              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)", marginBottom: 16, fontFamily: PJS }}>
+              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
                 Pro
               </p>
               <div style={{ marginBottom: 4 }}>
-                <span style={{ fontSize: 48, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$149</span>
+                <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$99</span>
               </div>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16, fontFamily: PJS }}>
+              <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
                 One-time payment
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.7)", marginBottom: 24, fontFamily: PJS }}>
+              <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 24, fontFamily: PJS }}>
                 Your complete wedding command centre. Everything you need from first plan to final dance.
               </p>
-              <div style={{ height: 1, background: "rgba(255,255,255,0.1)", marginBottom: 24 }} />
+              <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 24 }} />
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
                 {PRO_FEATURES.map((f, i) => (
-                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "rgba(255,255,255,0.9)", fontFamily: PJS }}>
-                    <CheckIcon color="#ec4899" />
+                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
+                    <CheckIcon color="#E03553" />
                     {f}
                   </li>
                 ))}
@@ -231,15 +231,14 @@ export default function Pricing() {
                 style={{
                   width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 600,
                   fontFamily: PJS, cursor: "pointer", border: "none",
-                  background: "linear-gradient(135deg, #ec4899, #9333ea)",
-                  color: "#FFFFFF", transition: "opacity 0.15s",
+                  background: "#E03553", color: "#FFFFFF", transition: "opacity 0.15s",
                 }}
                 onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
                 onMouseLeave={e => e.currentTarget.style.opacity = "1"}
               >
-                Get Pro — $149
+                Get Pro — $99
               </button>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
+              <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
                 24-month access · one-time payment
               </p>
             </div>
@@ -248,15 +247,15 @@ export default function Pricing() {
           {/* ULTRA */}
           <div style={{
             flex: "0 1 320px", minWidth: 260,
-            border: "1px solid rgba(10,10,10,0.1)",
-            background: "#FFFFFF", padding: "36px 32px",
+            border: "1px solid #E5E5E5",
+            background: "#FAFAF9", padding: "36px 32px",
             display: "flex", flexDirection: "column",
           }}>
             {/* Tag */}
             <div style={{ marginBottom: 16 }}>
               <span style={{
                 display: "inline-block", padding: "3px 10px", borderRadius: 999,
-                background: "rgba(147,51,234,0.08)", color: "#9333ea",
+                background: "#DDF762", color: "#0A0A0A",
                 fontSize: 11, fontWeight: 600, fontFamily: PJS,
               }}>
                 Pro + Invitations
@@ -266,7 +265,7 @@ export default function Pricing() {
               Ultra
             </p>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$249</span>
+              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$199</span>
             </div>
             <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
               One-time payment
@@ -281,7 +280,7 @@ export default function Pricing() {
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
               {ULTRA_EXTRAS.map((f, i) => (
                 <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
-                  <CheckIcon color="#9333ea" />
+                  <CheckIcon color="#E03553" />
                   {f}
                 </li>
               ))}
@@ -297,7 +296,7 @@ export default function Pricing() {
               onMouseEnter={e => e.currentTarget.style.background = "#F3F3F3"}
               onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}
             >
-              Get Ultra — $249
+              Get Ultra — $199
             </button>
             <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
               24-month access · one-time payment
@@ -426,7 +425,7 @@ export default function Pricing() {
             onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
             onMouseLeave={e => e.currentTarget.style.opacity = "1"}
           >
-            Get Pro — $149
+            Get Pro — $99
           </button>
         </div>
       </section>
