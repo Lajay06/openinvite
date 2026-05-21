@@ -116,38 +116,26 @@ export default function Pricing() {
       <PublicNav />
 
       {/* ── HERO ── */}
-      <section style={{ background: "#0A0A0A", padding: "100px 24px 80px", textAlign: "center" }}>
-        <p style={{
-          fontSize: 11, fontWeight: 600, letterSpacing: "0.1em",
-          color: "#E03553", marginBottom: 20, fontFamily: PJS,
-        }}>
-          Simple, honest pricing
-        </p>
-        <h1 style={{
-          fontSize: "clamp(36px, 5vw, 54px)", fontWeight: 800, letterSpacing: "-0.03em",
-          color: "#FFFFFF", lineHeight: 1.1, maxWidth: 640, margin: "0 auto 20px",
-          fontFamily: PJS,
-        }}>
-          Pay once.<br />Plan your entire wedding.
-        </h1>
-        <p style={{
-          fontSize: 17, lineHeight: 1.65, color: "rgba(255,255,255,0.6)",
-          maxWidth: 480, margin: "0 auto 40px", fontFamily: PJS,
-        }}>
-          No monthly fees. No subscriptions.<br />
-          One payment covers your full wedding journey.
-        </p>
-
-        {/* Trust badges */}
-        <div style={{
-          display: "flex", justifyContent: "center", alignItems: "center",
-          flexWrap: "wrap", gap: "8px 32px",
-        }}>
-          {["🔒 Secure checkout", "✓ 24-month access", "↩ 14-day money back"].map(badge => (
-            <span key={badge} style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: PJS }}>
-              {badge}
-            </span>
-          ))}
+      <section style={{ position: "relative", minHeight: "100vh", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+        <style>{`@keyframes heroScrollLine { 0%,100% { opacity: 1; transform: scaleY(1); } 50% { opacity: 0.3; transform: scaleY(0.4); } }`}</style>
+        <img
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg"
+          alt=""
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 1 }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 2 }} />
+        <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 40px", maxWidth: 900, margin: "0 auto" }}>
+          <h1 style={{ fontSize: "clamp(64px, 10vw, 120px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.0, color: "#FFFFFF", margin: "0 0 24px", fontFamily: PJS }}>
+            Pay once.<br />Plan your entire wedding.
+          </h1>
+          <p style={{ fontSize: "clamp(18px, 2.5vw, 24px)", fontWeight: 400, color: "rgba(255,255,255,0.75)", margin: "0 0 16px", lineHeight: 1.5, fontFamily: PJS, textAlign: "center" }}>
+            No monthly fees. No subscriptions.<br />
+            One payment covers your full wedding journey.
+          </p>
+        </div>
+        <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 20 }}>
+          <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.15em", color: "rgba(255,255,255,0.5)", fontFamily: PJS, margin: 0 }}>Scroll</p>
+          <div style={{ width: 1, height: 48, background: "linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)", transformOrigin: "top", animation: "heroScrollLine 2s ease-in-out infinite" }} />
         </div>
       </section>
 
