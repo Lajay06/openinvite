@@ -117,6 +117,7 @@ export default function EventDetailsPage() {
           setRecordId(created.id);
         }
         setSaveStatus('saved');
+        window.dispatchEvent(new CustomEvent('weddingDetailsSaved'));
         setTimeout(() => setSaveStatus('idle'), 2000);
       } catch {
         setSaveStatus('idle');

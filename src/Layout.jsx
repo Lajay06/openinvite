@@ -44,43 +44,53 @@ function getStoredUser() {
 }
 
 // ── Full-width top navigation bar ────────────────────────────────────────────
-function TopBar({ weddingName, unreadCount }) {
+function TopBar({ weddingDetails, unreadCount }) {
   const navigate = useNavigate();
   const [weather, setWeather] = useState(null);
 
-  // Couple info from localStorage
-  const storedUserRaw = getStoredUser();
-  const coupleName = storedUserRaw?.couple_name || localStorage.getItem('oi_couple_name') || weddingName || '';
-  const dateStr = localStorage.getItem('oi_wedding_date') || '';
-  const weddingCity = localStorage.getItem('oi_wedding_city') || '';
+  // Derive couple name from entity fields
+  const couple1 = weddingDetails?.couple1Name || '';
+  const couple2 = weddingDetails?.couple2Name || '';
+  const coupleName = couple1 && couple2 ? `${couple1} & ${couple2}` : couple1 || couple2 || '';
+
+  // Derive date + countdown from entity
+  const dateStr = weddingDetails?.weddingDate || '';
   const daysToGo = dateStr ? Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24)) : null;
   const formattedDate = dateStr
     ? new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     : '';
 
+  // Venue city for weather (ceremony venue preferred)
+  const venueCity = weddingDetails?.mainCeremony?.city || '';
+
   // User info
-  const storedUser = storedUserRaw;
+  const storedUser = getStoredUser();
   const initials = coupleName
     ? coupleName.split(/\s*[&+,]\s*/).map(n => n.trim()[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
     : (storedUser.email || 'U').slice(0, 2).toUpperCase();
 
-  // Weather (cached)
+  // Weather via venue city geocoding (hidden when no city saved)
   useEffect(() => {
+    if (!venueCity) { setWeather(null); return; }
+    const cacheKey = `oi_weather_${venueCity}`;
     try {
-      const cached = JSON.parse(localStorage.getItem('oi_weather') || 'null');
+      const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
       if (cached && Date.now() - cached.ts < 30 * 60 * 1000) { setWeather(cached.data); return; }
     } catch {}
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+    (async () => {
       try {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current_weather=true`);
-        const d = await res.json();
-        const w = { temp: Math.round(d.current_weather.temperature), code: d.current_weather.weathercode };
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(venueCity)}&count=1&language=en&format=json`);
+        const geoData = await geoRes.json();
+        const loc = geoData.results?.[0];
+        if (!loc) { setWeather(null); return; }
+        const wxRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current_weather=true`);
+        const wxData = await wxRes.json();
+        const w = { temp: Math.round(wxData.current_weather.temperature), code: wxData.current_weather.weathercode };
         setWeather(w);
-        localStorage.setItem('oi_weather', JSON.stringify({ data: w, ts: Date.now() }));
-      } catch {}
-    }, () => {});
-  }, []);
+        localStorage.setItem(cacheKey, JSON.stringify({ data: w, ts: Date.now() }));
+      } catch { setWeather(null); }
+    })();
+  }, [venueCity]);
 
   const handleLogout = () => {
     localStorage.removeItem('oi_auth');
@@ -128,8 +138,8 @@ function TopBar({ weddingName, unreadCount }) {
           <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS, whiteSpace: 'nowrap' }}>{daysToGo} days</span></>
         )}
         {/* City */}
-        {weddingCity && (
-          <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS, whiteSpace: 'nowrap' }}>{weddingCity}</span></>
+        {venueCity && (
+          <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS, whiteSpace: 'nowrap' }}>{venueCity}</span></>
         )}
         {/* Temperature */}
         {weather && (
@@ -225,6 +235,7 @@ export default function Layout({ children, currentPageName }) {
   const [user, setUser] = React.useState(null);
   const [unreadMessagesCount, setUnreadMessagesCount] = React.useState(0);
   const [weddingName, setWeddingName] = React.useState('');
+  const [weddingDetails, setWeddingDetails] = React.useState(null);
   const [userSettings, setUserSettings] = React.useState({ full_name: '', language: 'en', currency: 'USD' });
   const [savingSettings, setSavingSettings] = React.useState(false);
 
@@ -234,26 +245,36 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('openAva', handler);
   }, []);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      setUserSettings({
+        full_name: currentUser.full_name || '',
+        language: currentUser.language || 'en',
+        currency: currentUser.currency || 'USD',
+      });
       try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        setUserSettings({
-          full_name: currentUser.full_name || '',
-          language: currentUser.language || 'en',
-          currency: currentUser.currency || 'USD',
-        });
-        try {
-          const messages = await GuestMessage.list();
-          setUnreadMessagesCount(messages.filter(m => !m.read).length);
-        } catch {}
+        const messages = await GuestMessage.list();
+        setUnreadMessagesCount(messages.filter(m => !m.read).length);
+      } catch {}
+      try {
         const invitations = await Invitation.list();
         if (invitations.length > 0) setWeddingName(invitations[0].couple_names);
       } catch {}
-    };
-    fetchData();
-  }, [location.pathname]);
+      try {
+        const rows = await base44.entities.WeddingDetails.list();
+        setWeddingDetails(rows[0] || null);
+      } catch {}
+    } catch {}
+  }, []);
+
+  React.useEffect(() => { fetchData(); }, [fetchData, location.pathname]);
+
+  React.useEffect(() => {
+    window.addEventListener('weddingDetailsSaved', fetchData);
+    return () => window.removeEventListener('weddingDetailsSaved', fetchData);
+  }, [fetchData]);
 
   const handleSaveSettings = async () => {
     setSavingSettings(true);
@@ -292,7 +313,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* ── Full-width top nav bar (desktop only) ─────────── */}
       <TopBar
-        weddingName={weddingName}
+        weddingDetails={weddingDetails}
         unreadCount={unreadMessagesCount}
       />
 
