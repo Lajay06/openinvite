@@ -11,9 +11,9 @@ export default function PublicFooter() {
           {/* Logo col */}
           <div>
             <Link to="/">
-              <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" alt="openinvite" style={{ height: "20px", width: "auto", display: "block", filter: "brightness(0)" }} />
+              <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" alt="openinvite" style={{ height: "48px", width: "auto", display: "block", filter: "brightness(0)" }} />
             </Link>
-            <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: 12, lineHeight: 1.7 }}>
+            <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: 15, fontWeight: 600, lineHeight: 1.7 }}>
               You should enjoy yourself.
             </p>
           </div>
