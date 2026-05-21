@@ -236,7 +236,7 @@ export default function AvaPage() {
       <section style={{ background: "#FFFFFF", padding: "80px clamp(24px, 6vw, 80px)", textAlign: "center" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <p style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2, color: "#0A0A0A", fontFamily: "Plus Jakarta Sans, sans-serif", margin: 0 }}>
-            Ava takes the guesswork out of planning — using intelligence to personalise your journey, give smart suggestions, and help you stay calm, clear, and totally in control.
+            Ava takes the guesswork out of planning by using intelligence to personalise your journey, give smart suggestions, and help you stay calm, clear, and totally in control.
           </p>
         </div>
       </section>
