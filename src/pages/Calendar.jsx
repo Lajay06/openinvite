@@ -244,14 +244,10 @@ export default function CalendarPage() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      {/* Ava button + toolbar row */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <AvaButton label="Ask Ava to plan your wedding calendar" onClick={() => setAvaOpen(true)} />
-      </div>
-
-      <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button onClick={exportToICalendar} disabled={events.length === 0}
             className="btn-editorial-secondary"
             style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: events.length === 0 ? 0.5 : 1 }}>
@@ -261,6 +257,9 @@ export default function CalendarPage() {
             <Plus size={12} />Add event
           </button>
         </div>
+      </div>
+
+      <div style={{ padding: '0 32px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
         {/* Add Event Form */}
         {showEventForm && (
