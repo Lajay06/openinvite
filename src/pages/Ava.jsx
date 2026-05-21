@@ -262,7 +262,7 @@ export default function AvaPage() {
       {/* ── HOW IT WORKS ─────────────────────────────────────── */}
       <section style={{ background: '#0A0A0A', padding: '120px clamp(24px, 5vw, 80px)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: 700, color: '#E03553', margin: '0 0 64px', letterSpacing: '-0.02em', fontFamily: 'Plus Jakarta Sans, sans-serif', textAlign: 'center', width: '100%' }}>
+          <h2 style={{ fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: 700, color: '#DDF762', margin: '0 0 64px', letterSpacing: '-0.02em', fontFamily: 'Plus Jakarta Sans, sans-serif', textAlign: 'center', width: '100%' }}>
             Ava learns. Ava plans. Ava delivers.
           </h2>
           <div ref={howRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, background: 'rgba(255,255,255,0.08)' }}>
