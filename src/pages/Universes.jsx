@@ -199,121 +199,54 @@ const Universes = () => {
         </div>
       </section>
 
-      {/* SECTION 2: WHAT IS A UNIVERSE */}
-      <section id="concept-section" data-animate style={{
+      {/* SECTION 2: THE CONCEPT */}
+      <section style={{
         background: '#F5F5F3',
-        padding: '120px 80px',
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 60,
-        alignItems: 'center',
-      }} className={animationClass('concept-section')}>
-        <div style={{ className: animationClass('concept-left') }}>
+        padding: '128px clamp(24px, 8vw, 120px)',
+      }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <p style={{
-            fontSize: 10,
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 12,
             fontWeight: 600,
-            color: '#555555',
-            letterSpacing: '0.2em',
-            marginBottom: 20,
-            fontFamily: 'Plus Jakarta Sans',
+            color: 'rgba(10,10,10,0.4)',
+            letterSpacing: '0.15em',
+            marginBottom: 24,
           }}>
-            THE CONCEPT
+            The concept
           </p>
           <h2 style={{
-            fontFamily: 'Plus Jakarta Sans, sans-serif',
-            fontWeight: 700,
-            fontSize: 'clamp(32px, 5vw, 56px)',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontWeight: 800,
+            fontSize: 'clamp(36px, 6vw, 60px)',
             color: '#0A0A0A',
-            letterSpacing: '-0.01em',
-            lineHeight: 1.15,
-            marginBottom: 24,
+            letterSpacing: '-0.02em',
+            lineHeight: 1.05,
+            marginBottom: 32,
           }}>
             One aesthetic. Every piece.
           </h2>
-          <p style={{
-            fontSize: 14,
-            fontWeight: 400,
-            color: '#444444',
-            lineHeight: 1.7,
-            marginBottom: 20,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            A Universe is a complete visual system for your wedding. The moment you choose one, it defines the typography, colour palette, layout logic and mood across all 10 pieces in your Guest Suite — from your Save the Date to your Thank You Notes.
-          </p>
-          <p style={{
-            fontSize: 14,
-            fontWeight: 400,
-            color: '#444444',
-            lineHeight: 1.7,
-            marginBottom: 32,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Each universe is designed around a place, a feeling, a way of seeing. Not a template. A perspective.
-          </p>
-          <div style={{ width: 48, height: 1, background: '#E03553' }} />
-        </div>
-
-        <div style={{
-          background: '#0A0A0A',
-          padding: 48,
-          position: 'relative',
-        }}>
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: 'url(https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: 0.2,
-            pointerEvents: 'none',
-          }} />
-          <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ maxWidth: 672 }}>
             <p style={{
-              fontSize: 10,
-              fontWeight: 600,
-              color: 'rgba(255,255,255,0.35)',
-              letterSpacing: '0.25em',
-              marginBottom: 24,
-              fontFamily: 'Plus Jakarta Sans',
-            }}>
-              01 / AMAN
-            </p>
-            <h3 style={{
-              fontFamily: 'Plus Jakarta Sans, sans-serif',
-              fontWeight: 600,
-              fontSize: 'clamp(24px, 3vw, 40px)',
-              color: '#FFFFFF',
-              letterSpacing: '0.05em',
-              margin: 0,
-              lineHeight: 1,
-              marginBottom: 12,
-            }}>
-              AMAN
-            </h3>
-            <p style={{
-              fontFamily: 'Plus Jakarta Sans, sans-serif',
-              fontWeight: 400,
-              fontStyle: 'italic',
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontSize: 18,
-              color: 'rgba(255,255,255,0.5)',
-              margin: '0 0 24px',
+              color: '#555555',
+              lineHeight: 1.7,
+              marginBottom: 20,
             }}>
-              Quiet Luxury
+              A Universe is a complete visual system for your wedding. The moment you choose one, it defines the typography, colour palette, layout logic and mood across all 10 pieces in your Guest Suite — from your Save the Date to your Thank You Notes.
             </p>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-              {['#0A0A0A', '#F8F7F5', '#C4956A', '#FFFFFF'].map((color, i) => (
-                <div key={i} style={{ width: 32, height: 32, background: color, border: `1px solid ${color === '#FFFFFF' ? '#444' : 'transparent'}` }} />
-              ))}
-            </div>
             <p style={{
-              fontSize: 11,
-              color: 'rgba(255,255,255,0.3)',
-              margin: 0,
-              fontFamily: 'Plus Jakarta Sans',
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 18,
+              color: '#555555',
+              lineHeight: 1.7,
+              marginBottom: 32,
             }}>
-              Cormorant Garamond · Plus Jakarta Sans
+              Each universe is designed around a place, a feeling, a way of seeing. Not a template. A perspective.
             </p>
           </div>
+          <div style={{ width: 48, height: 2, background: '#E03553' }} />
         </div>
       </section>
 
