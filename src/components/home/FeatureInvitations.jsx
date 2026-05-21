@@ -70,14 +70,14 @@ export default function FeatureInvitations({ onCTA }) {
   }, []);
 
   // Derived values
-  const overlayOpacity = lerp01(progress, 0.7, 1.0);
-  const textOpacity    = 1 - lerp01(progress, 0.6, 0.85);
+  const overlayOpacity = lerp01(progress, 0.5, 0.9);   // fully opaque well before unpin
+  const textOpacity    = 1 - lerp01(progress, 0.4, 0.7);
 
   return (
     <section style={{ position: 'relative', background: '#0A0A0A' }}>
 
       {/* ── 300vh scroll driver ── */}
-      <div ref={scrollContainerRef} style={{ position: 'relative', height: '250vh' }}>
+      <div ref={scrollContainerRef} style={{ position: 'relative', height: '180vh' }}>
 
         {/* Sticky viewport */}
         <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
@@ -151,7 +151,7 @@ export default function FeatureInvitations({ onCTA }) {
       </div>
 
       {/* ── Features — scroll-driven sticky highlight ── */}
-      <div ref={featuresOuterRef} style={{ height: 'calc(4 * 200px + 100vh)', background: '#0A0A0A' }}>
+      <div ref={featuresOuterRef} style={{ height: 'calc(4 * 200px + 100vh)', background: '#0A0A0A', marginTop: 0 }}>
         <div style={{ position: 'sticky', top: 0, height: '100vh', display: 'flex', alignItems: 'center' }}>
           <div style={{ width: '100%', padding: '0 clamp(24px, 6vw, 80px)' }}>
             {FEATURES.map((f, i) => {
