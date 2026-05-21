@@ -4,7 +4,7 @@ import ApplePillButton from '@/components/motion/ApplePillButton';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const IMAGE_SRC =
-  'https://res.cloudinary.com/dsr84xknv/image/upload/v1779185605/DTS_AURA_Fanette_Guilloud_Photos_ID12974_tfs9wg.jpg';
+  'https://res.cloudinary.com/dsr84xknv/image/upload/v1779218329/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID3470_knfncz.jpg';
 
 const FEATURES = [
   {
