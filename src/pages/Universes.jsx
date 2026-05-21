@@ -53,7 +53,6 @@ const UNIVERSE_DATA = [
 
 const Universes = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
   const [scrollAnimations, setScrollAnimations] = useState({});
   const observerRef = useRef(null);
   const universeContainerRef = useRef(null);
@@ -123,17 +122,6 @@ const Universes = () => {
     { name: 'Welcome Signage', description: 'Large format print-ready signage for your venue entrance.' },
     { name: 'Guest Tags', description: 'Name tags, six per A4 sheet. Print and cut.' },
     { name: 'Thank You Notes', description: 'Personalised post-wedding cards, ready to send.' },
-  ];
-
-  const comingSoon = [
-    { name: 'TULUM', tagline: 'Desert Bloom', description: 'Sun-bleached romance. Warm earth tones and organic texture.' },
-    { name: 'KYOTO', tagline: 'Zen and Ceremony', description: 'Ancient ritual meets modern refinement. Stillness as a design principle.' },
-    { name: 'CAPRI', tagline: 'Italian Coast', description: 'La dolce vita. Deep blues, warm stone and effortless elegance.' },
-    { name: 'MARRAKECH', tagline: 'Spice and Gold', description: 'Rich pattern, warm light and cultural depth.' },
-    { name: 'BROOKLYN', tagline: 'Industrial Edge', description: 'Raw and considered. Dark type, exposed texture, confident simplicity.' },
-    { name: 'BALI', tagline: 'Sacred Garden', description: 'Lush, spiritual and unhurried. Nature as the backdrop.' },
-    { name: 'PARIS', tagline: 'Haussmann Romance', description: 'Grand and timeless. The language of French elegance.' },
-    { name: 'CAPE TOWN', tagline: 'Wild and Open', description: 'Mountain meets ocean. Bold, alive and beautifully untamed.' },
   ];
 
   const editorFeatures = [
@@ -449,149 +437,6 @@ const Universes = () => {
           </div>
         </div>
       </div>
-
-      {/* SECTION 5: MORE UNIVERSES */}
-      <section id="coming-soon-section" data-animate style={{
-        background: '#F5F5F3',
-        padding: '100px 80px',
-        className: animationClass('coming-soon-section'),
-      }}>
-        <p style={{
-          fontSize: 10,
-          fontWeight: 600,
-          color: '#555555',
-          letterSpacing: '0.2em',
-          marginBottom: 16,
-          fontFamily: 'Plus Jakarta Sans',
-        }}>
-          Available now
-        </p>
-        <h2 style={{
-          fontFamily: 'Plus Jakarta Sans, sans-serif',
-          fontWeight: 700,
-          fontSize: 'clamp(32px, 5vw, 56px)',
-          color: '#0A0A0A',
-          letterSpacing: '-0.01em',
-          margin: '0 0 12px',
-        }}>
-          Eight more worlds to explore.
-        </h2>
-        <p style={{
-          fontSize: 14,
-          fontWeight: 400,
-          color: '#444444',
-          marginBottom: 60,
-          maxWidth: 600,
-          fontFamily: 'Plus Jakarta Sans',
-        }}>
-          Each universe is a complete aesthetic lens — a different way of seeing your wedding. All universes are available now.
-        </p>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: 20,
-          marginBottom: 60,
-        }}>
-          {comingSoon.map((universe, i) => (
-            <div key={i} style={{
-              border: '1px solid #E8E8E5',
-              padding: 32,
-              background: '#FFFFFF',
-              position: 'relative',
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                position: 'absolute',
-                top: 20,
-                right: 20,
-                fontSize: 9,
-                fontWeight: 600,
-                color: '#AAAAAA',
-                letterSpacing: '0.2em',
-                border: '1px solid #E8E8E5',
-                padding: '3px 8px',
-                fontFamily: 'Plus Jakarta Sans',
-              }}>
-                Available now
-              </div>
-
-              <h3 style={{
-                fontFamily: 'Plus Jakarta Sans, sans-serif',
-                fontWeight: 600,
-                fontSize: 28,
-                color: '#0A0A0A',
-                letterSpacing: '0.05em',
-                margin: '0 0 6px',
-                lineHeight: 1,
-              }}>
-                {universe.name}
-              </h3>
-              <p style={{
-                fontFamily: 'Plus Jakarta Sans, sans-serif',
-                fontStyle: 'italic',
-                fontWeight: 400,
-                fontSize: 15,
-                color: '#555555',
-                margin: '0 0 20px',
-              }}>
-                {universe.tagline}
-              </p>
-              <p style={{
-                fontSize: 14,
-                color: '#444444',
-                lineHeight: 1.6,
-                margin: 0,
-                fontFamily: 'Plus Jakarta Sans',
-              }}>
-                {universe.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Email capture */}
-        <div style={{ textAlign: 'center', marginTop: 64 }}>
-          <p style={{
-            fontSize: 14,
-            color: '#444444',
-            marginBottom: 20,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Get notified when new universes arrive.
-          </p>
-          <div style={{ display: 'flex', gap: 0, maxWidth: 400, margin: '0 auto' }}>
-            <input
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={{
-                flex: 1,
-                padding: '14px 20px',
-                border: '1px solid #DDDDDD',
-                borderRight: 'none',
-                fontSize: 14,
-                outline: 'none',
-                fontFamily: 'Plus Jakarta Sans',
-                background: '#FFFFFF',
-              }}
-            />
-            <button style={{
-              padding: '14px 24px',
-              background: '#0A0A0A',
-              color: '#FFFFFF',
-              border: '1px solid #0A0A0A',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'Plus Jakarta Sans',
-            }}>
-              Notify me
-            </button>
-          </div>
-        </div>
-      </section>
 
       {/* SECTION 6: EDITOR EXPERIENCE */}
       <section data-animate style={{
