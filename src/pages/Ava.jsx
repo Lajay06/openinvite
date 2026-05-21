@@ -4,16 +4,19 @@ import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 
 // ── Scroll animation hook ─────────────────────────────────────
-function useInView(threshold = 0.15) {
+function useInView(threshold = 0.15, once = true) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new IntersectionObserver(([e]) => {if (e.isIntersecting) {setInView(true);observer.disconnect();}}, { threshold });
+    const observer = new IntersectionObserver(([e]) => {
+      setInView(e.isIntersecting);
+      if (e.isIntersecting && once) observer.disconnect();
+    }, { threshold });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [threshold]);
+  }, [threshold, once]);
   return [ref, inView];
 }
 
@@ -38,7 +41,7 @@ function useCountUp(target, inView, duration = 1400) {
 // ── Ava features ──────────────────────────────────────────────
 const avaFeatures = [
 { value: "autofill", label: "Auto-Fill Website", description: "Ava reads your planning details and builds your entire wedding website in seconds — venue, story, FAQ, travel, all populated beautifully.", detail: "Just answer a few questions during setup and Ava writes your welcome message, love story, event details and FAQ automatically. One click, fully personalised.", icon: "✦", color: "#E03553", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779218328/DTS_PLAYER_TWO_JELLY_LUISE_Photos_ID13458_a53qq3.jpg", bgPosition: "center center" },
-{ value: "budget", label: "Smart Budget Tips", description: "Ava monitors your spending patterns and proactively suggests where you can save — without compromising what matters most.", detail: "When your florals go over budget, Ava suggests reallocation options. When a vendor quote comes in high, Ava benchmarks it against typical costs for your area.", icon: "◈", color: "#803D81", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185629/DTS_Lonely_Commute_Mark_Forbes_Photos_ID2358_kxs0yg.jpg", bgPosition: "center center" },
+{ value: "budget", label: "Smart Budget Tips", description: "Ava monitors your spending patterns and proactively suggests where you can save — without compromising what matters most.", detail: "When your florals go over budget, Ava suggests reallocation options. When a vendor quote comes in high, Ava benchmarks it against typical costs for your area.", icon: "◈", color: "#803D81", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185602/DTS_Remote_Studio_Tino_Renato_Photos_ID3726_vgcgmv.jpg", bgPosition: "center center" },
 { value: "checklist", label: "Personalised Checklist", description: "Ava generates a custom wedding checklist based on your date, venue, style and priorities — not a generic template.", detail: "A beach elopement 3 months away needs different tasks than a 200-person ballroom wedding 12 months out. Ava knows the difference and plans accordingly.", icon: "⬡", color: "#6B2CAE", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779240971/kiet-trinh-L5gTFp1iGHE-unsplash_lpjp5z.jpg", bgPosition: "center center" },
 { value: "guests", label: "Guest Intelligence", description: "Ava analyses your guest list to surface insights — dietary clusters, seating conflicts, RSVP patterns — and makes smart suggestions.", detail: "Ava spots that 40% of your guests are vegetarian before you finalise the menu, or flags that two guests who should not be seated near each other are assigned to adjacent tables.", icon: "◇", color: "#DDF762", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779240973/DTS_Remote_Studio_Tino_Renato_Photos_ID3722_copy_qbcgts.jpg", bgPosition: "center center" },
 { value: "vows", label: "Vow Writing Assistant", description: "Stuck on your vows? Ava helps you find the right words — prompting, suggesting, and refining until they feel completely yours.", detail: "Tell Ava your story, your partner's qualities, and the tone you want (funny, heartfelt, poetic). Ava drafts something real — not a template, a starting point that sounds like you.", icon: "✧", color: "#C2E5F3", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185622/alok-verma-ARLh7m5S4VA-unsplash_eslg13.jpg", bgPosition: "center center" }];
@@ -47,7 +50,7 @@ const avaFeatures = [
 const SLIDE_DURATION = 6000;
 
 // ── Carousel ──────────────────────────────────────────────────
-function AvaCarousel() {
+function AvaCarousel({ inView }) {
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
   const rafRef = useRef(null);
@@ -72,9 +75,16 @@ function AvaCarousel() {
   }, []);
 
   useEffect(() => {
-    rafRef.current = requestAnimationFrame(runLoop);
+    if (inView) {
+      setActive(0);
+      setProgress(0);
+      startRef.current = null;
+      rafRef.current = requestAnimationFrame(runLoop);
+    } else {
+      cancelAnimationFrame(rafRef.current);
+    }
     return () => cancelAnimationFrame(rafRef.current);
-  }, [runLoop]);
+  }, [inView, runLoop]);
 
   const goTo = (i) => {
     cancelAnimationFrame(rafRef.current);
@@ -193,7 +203,7 @@ export default function AvaPage() {
   const [howRef, howInView] = useInView(0.1);
   const [tableRef, tableInView] = useInView(0.1);
   const [quoteRef, quoteInView] = useInView(0.2);
-  const [carouselRef, carouselInView] = useInView(0.1);
+  const [carouselRef, carouselInView] = useInView(0.1, false);
 
   return (
     <div style={{ background: "#0A0A0A", fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif" }}>
@@ -246,7 +256,7 @@ export default function AvaPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 clamp(24px,5vw,80px)", textAlign: "center" }}>
           <h2 style={{ fontSize: "clamp(32px,4vw,56px)", fontWeight: 700, color: "#fff", margin: "0 0 48px", letterSpacing: "-0.02em", opacity: carouselInView ? 1 : 0, transform: carouselInView ? "none" : "translateY(20px)", transition: "opacity 0.6s ease, transform 0.6s ease", textAlign: "center" }}>See what Ava can do.</h2>
         </div>
-        <AvaCarousel />
+        <AvaCarousel inView={carouselInView} />
       </section>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────── */}
