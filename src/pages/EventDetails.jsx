@@ -225,26 +225,6 @@ export default function EventDetailsPage() {
             </div>
             <UInput label="Exact guest count" type="number" value={r.guestCount} onChange={e => update({ guestCount: e.target.value })} placeholder="e.g. 120" />
 
-            <div style={divider} />
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>Wedding style</p>
-            {STYLE_GROUPS.map(group => (
-              <div key={group.label} style={{ marginBottom: 20 }}>
-                <div style={{ ...labelStyle, marginBottom: 10 }}>{group.label}</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {group.options.map(opt => {
-                    const sel = styles.includes(opt);
-                    return (
-                      <button key={opt} onClick={() => toggleStyle(opt)} style={{
-                        padding: '7px 14px', borderRadius: 999, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: PJS,
-                        border: sel ? 'none' : '1px solid rgba(10,10,10,0.15)',
-                        background: sel ? 'linear-gradient(135deg,#E03553,#803D81)' : 'transparent',
-                        color: sel ? '#FFFFFF' : 'rgba(10,10,10,0.6)', transition: 'all 0.15s',
-                      }}>{opt}</button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
           </>
         )}
 
