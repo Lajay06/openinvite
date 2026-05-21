@@ -449,38 +449,6 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
         </div>
       )}
 
-      {/* ── SECTION 4: Footer bar ── */}
-      {phase === 'ready' && briefing && (
-        <div style={{
-          background: '#0A0A0A',
-          padding: '24px 40px',
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 40,
-        }}>
-          {briefing.emotionalNote && (
-            <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(255,255,255,0.45)', fontStyle: 'italic', maxWidth: 500, margin: 0, lineHeight: 1.6, flex: 1 }}>
-              {briefing.emotionalNote}
-            </p>
-          )}
-          {briefing.forgottenDetail && (
-            <div style={{ maxWidth: 320, textAlign: 'right', flexShrink: 0 }}>
-              <p style={{ fontFamily: PJS, fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.25)', margin: '0 0 4px' }}>
-                Often forgotten
-              </p>
-              <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.6 }}>
-                {briefing.forgottenDetail}
-              </p>
-            </div>
-          )}
-          <button
-            onClick={handleRefresh}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 10, color: 'rgba(255,255,255,0.2)', padding: 0, alignSelf: 'flex-end', flexShrink: 0 }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; }}
-          >
-            Refresh
-          </button>
-        </div>
-      )}
     </div>
   );
 }

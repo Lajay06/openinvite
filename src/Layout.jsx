@@ -123,28 +123,6 @@ function TopBar({ weddingDetails, unreadCount }) {
           onClick={() => navigate('/Dashboard')}
           style={{ height: 18, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', cursor: 'pointer', flexShrink: 0 }}
         />
-        {/* Divider */}
-        <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
-        {/* Couple name */}
-        <span style={{ fontSize: 14, fontWeight: 500, color: '#FFFFFF', fontFamily: PJS, whiteSpace: 'nowrap' }}>
-          {coupleName || 'Your wedding'}
-        </span>
-        {/* Date */}
-        {formattedDate && (
-          <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS, whiteSpace: 'nowrap' }}>{formattedDate}</span></>
-        )}
-        {/* Countdown */}
-        {daysToGo !== null && daysToGo > 0 && (
-          <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS, whiteSpace: 'nowrap' }}>{daysToGo} days</span></>
-        )}
-        {/* City */}
-        {venueCity && (
-          <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS, whiteSpace: 'nowrap' }}>{venueCity}</span></>
-        )}
-        {/* Temperature */}
-        {weather && (
-          <>{pinkDot}<span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: PJS }}>{weather.temp}°C</span></>
-        )}
       </div>
 
       {/* Center: search pill */}
