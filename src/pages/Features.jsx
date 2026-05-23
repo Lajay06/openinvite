@@ -17,12 +17,12 @@ import FeatureBudget from "@/components/home/FeatureBudget";
 
 const FEATURE_ZOOM_IMAGES = [
 { src: "https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg", alt: "Wedding planning" },
-{ src: "https://static.wixstatic.com/media/d2df22_40822e26660c4112aef53ff2526c0345~mv2.jpg", alt: "Guest management" },
-{ src: "https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg", alt: "Budget tracking" },
-{ src: "https://static.wixstatic.com/media/d2df22_5ea2e70835a14465be546237fd1dd55a~mv2.jpg", alt: "Timeline planning" },
-{ src: "https://static.wixstatic.com/media/d2df22_f0eef5788fdd4876a0a300e43228f919~mv2.jpg", alt: "Playlists" },
-{ src: "https://static.wixstatic.com/media/d2df22_e30eff6d03424dd6baf63143722b2a3d~mv2.jpg", alt: "Invitations" },
-{ src: "https://static.wixstatic.com/media/d2df22_6aab4aa83a3b40eabd571d355ed75c7c~mv2.jpg", alt: "Registry" }];
+{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185610/justin-follis-A7Um4oi-UYU-unsplash_bbjjam.jpg", alt: "Wedding moment" },
+{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185610/jeffrey-clayton-KFtKSReIoRs-unsplash_qhubdf.jpg", alt: "Wedding moment" },
+{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779241859/rio-syhputra-a7vmvXei7fE-unsplash_vojinz.jpg", alt: "Wedding moment" },
+{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779218325/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6784_fveq2c.jpg", alt: "Wedding moment" },
+{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185631/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0.jpg", alt: "Wedding moment" },
+{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185626/DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa.jpg", alt: "Wedding moment" }];
 
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
