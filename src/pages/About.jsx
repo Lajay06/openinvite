@@ -309,7 +309,6 @@ function CTASection({ onCTA }) {
         <h2 style={{ fontSize: "clamp(40px, 6vw, 80px)", fontWeight: 700, color: "#FFFFFF", marginBottom: 16, hyphens: "none" }}>
           Ready to start planning?
         </h2>
-        <p style={{ fontSize: 16, color: "#AAAAAA", marginBottom: 40, lineHeight: 1.7 }}>Join thousands of couples planning their perfect day.</p>
         <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
           <ApplePillButton onClick={onCTA}>Start for free +</ApplePillButton>
           <Link to="/Pricing" style={{ textDecoration: "none" }}>

@@ -360,7 +360,6 @@ function FinalCTASection({ onCTA }) {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(32px, 6vw, 80px)", transform: visible ? "scale(1)" : "scale(0.92)", opacity: visible ? 1 : 0, transition: prefersReduced() ? "none" : `transform 0.9s ${EASE}, opacity 0.7s ${EASE}` }}>
         <AnimDivider />
         <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginTop: 32, marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Ready to start planning?</h2>
-        <p style={{ color: "#AAAAAA", fontSize: 16, marginBottom: 40, lineHeight: 1.7 }}>Join thousands of couples planning their perfect day.</p>
         <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
       </div>
     </section>);
