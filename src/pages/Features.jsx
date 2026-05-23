@@ -271,9 +271,9 @@ function AvaSection({ essentials }) {
   const [ref, curtainUp] = useScrollReveal(0.2);
   return (
     <section ref={ref} style={{
-      position: "relative", padding: "120px 0 80px",
+      position: "relative", padding: "80px 0",
       backgroundImage: `url(${PHOTOS.photoO})`,
-      backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed"
+      backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "scroll"
     }}>
       <div style={{ position: "absolute", inset: 0, background: "rgba(10,10,10,0.88)", zIndex: 1 }} />
       {/* Curtain reveal */}

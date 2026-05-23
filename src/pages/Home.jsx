@@ -64,7 +64,7 @@ export default function Home() {
       <TestimonialsSection />
 
       {/* 8. AVA GRADIENT BANNER + SPOTLIGHT */}
-      <div className="min-h-[280px] md:min-h-[360px]" style={{
+      <div className="min-h-[140px] md:min-h-[180px]" style={{
         background: "linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: "40px 24px",
