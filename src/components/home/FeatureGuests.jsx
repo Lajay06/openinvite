@@ -35,7 +35,11 @@ export default function FeatureGuests({ children }) {
   useEffect(() => {
     if (prefersReduced() || !bodyRef.current) return;
     const obs = new IntersectionObserver(
-      ([e]) => {if (e.isIntersecting) {bodyRef.current.classList.add("visible");obs.disconnect();}},
+      ([e]) => {
+        if (!bodyRef.current) return;
+        if (e.isIntersecting) bodyRef.current.classList.add("visible");
+        else bodyRef.current.classList.remove("visible");
+      },
       { threshold: 0.2 }
     );
     obs.observe(bodyRef.current);
@@ -53,9 +57,11 @@ export default function FeatureGuests({ children }) {
         if (e.isIntersecting) {
           setContentIn(true);
           [0, 1, 2, 3].forEach((i) => {
-            setTimeout(() => setTilesIn((prev) => {const n = [...prev];n[i] = true;return n;}), i * 150);
+            setTimeout(() => setTilesIn((prev) => { const n = [...prev]; n[i] = true; return n; }), i * 150);
           });
-          obs.disconnect();
+        } else {
+          setContentIn(false);
+          setTilesIn([false, false, false, false]);
         }
       },
       { threshold: 0.2 }

@@ -28,7 +28,8 @@ export default function FeaturePlaylists() {
       ([e]) => {
         if (e.isIntersecting) {
           setTimeout(() => setTextIn(true), 200);
-          obs.disconnect();
+        } else {
+          setTextIn(false);
         }
       },
       { threshold: 0.2 }

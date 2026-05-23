@@ -36,7 +36,11 @@ export default function FeatureTimeline() {
   useEffect(() => {
     if (prefersReduced() || !bodyRef.current) return;
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { bodyRef.current.classList.add("visible"); obs.disconnect(); } },
+      ([e]) => {
+        if (!bodyRef.current) return;
+        if (e.isIntersecting) bodyRef.current.classList.add("visible");
+        else bodyRef.current.classList.remove("visible");
+      },
       { threshold: 0.2 }
     );
     obs.observe(bodyRef.current);
@@ -46,7 +50,7 @@ export default function FeatureTimeline() {
   useEffect(() => {
     if (prefersReduced()) return;
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setContentIn(true); obs.disconnect(); } },
+      ([e]) => { setContentIn(e.isIntersecting); },
       { threshold: 0.2 }
     );
     if (sectionRef.current) obs.observe(sectionRef.current);
