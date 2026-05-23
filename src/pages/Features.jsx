@@ -34,7 +34,7 @@ function useScrollReveal(threshold = 0.2) {
   const [visible, setVisible] = useState(prefersReduced());
   useEffect(() => {
     if (prefersReduced()) return;
-    const obs = new IntersectionObserver(([e]) => {if (e.isIntersecting) {setVisible(true);obs.disconnect();}}, { threshold });
+    const obs = new IntersectionObserver(([e]) => { setVisible(e.isIntersecting); }, { threshold });
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);

@@ -64,12 +64,12 @@ export default function Home() {
       <TestimonialsSection />
 
       {/* 8. AVA GRADIENT BANNER + SPOTLIGHT */}
-      <div style={{
-        height: 96,
-        background: "linear-gradient(90deg, #f5d020 0%, #f5a623 25%, #e8a598 50%, #c490d1 75%, #9333ea 100%)",
+      <div className="min-h-[280px] md:min-h-[360px]" style={{
+        background: "linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)",
         display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "40px 24px",
       }}>
-        <span style={{ fontSize: 36, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <span style={{ fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
           AI meets I Do. Say hello to Ava.
         </span>
       </div>
