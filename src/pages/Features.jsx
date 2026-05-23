@@ -268,10 +268,11 @@ function DashboardSection() {
 }
 
 function AvaSection({ essentials }) {
-  const [ref, curtainUp] = useScrollReveal(0.2);
+  const [ref, curtainUp] = useScrollReveal(0);
   return (
     <section ref={ref} style={{
-      position: "relative", padding: "80px 0",
+      position: "relative", padding: "0 0 80px",
+      overflow: "hidden",
       backgroundImage: `url(${PHOTOS.photoO})`,
       backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "scroll"
     }}>
