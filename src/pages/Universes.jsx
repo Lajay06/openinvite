@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
@@ -53,6 +53,63 @@ const UNIVERSE_DATA = [
 
 const Universes = () => {
   const navigate = useNavigate();
+  const [scrollAnimations, setScrollAnimations] = useState({});
+  const observerRef = useRef(null);
+  const universeContainerRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver((entries) => {
+      const newAnimations = { ...scrollAnimations };
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          newAnimations[entry.target.id] = true;
+        }
+      });
+      setScrollAnimations(newAnimations);
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('[data-animate]').forEach(el => {
+      observerRef.current.observe(el);
+    });
+
+    return () => observerRef.current?.disconnect();
+  }, []);
+
+  const scrollToAssets = () => {
+    document.getElementById('assets-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    let rafId = null;
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const el = universeContainerRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const scrollRange = el.offsetHeight - window.innerHeight;
+        const scrolled = -rect.top;
+        const progress = Math.max(0, Math.min(1, scrolled / scrollRange));
+        setActiveIndex(Math.min(Math.floor(progress * 5), 4));
+      });
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  const scrollToUniverse = (index) => {
+    const el = universeContainerRef.current;
+    if (!el) return;
+    const sectionTop = el.getBoundingClientRect().top + window.scrollY;
+    const scrollRange = el.offsetHeight - window.innerHeight;
+    window.scrollTo({ top: sectionTop + (index / 5) * scrollRange, behavior: 'smooth' });
+  };
 
   const assets = [
     { name: 'Save the Date', description: 'Your first announcement. Set the tone before anything else.' },
@@ -84,6 +141,8 @@ const Universes = () => {
       body: 'Export any asset as a print-ready PDF or high-resolution PNG. Share digitally or hand to your printer.',
     },
   ];
+
+  const animationClass = (id) => scrollAnimations[id] ? 'anim-visible' : 'anim-fade-up';
 
   return (
     <div style={{ background: '#FFFFFF' }}>
@@ -119,6 +178,11 @@ const Universes = () => {
           }}>
             Every invitation, menu, seating chart and digital asset — designed around a single aesthetic vision. Choose your universe and everything follows.
           </p>
+        </div>
+        {/* Scroll indicator */}
+        <div style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, zIndex: 20 }}>
+          <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.5)', fontFamily: 'Plus Jakarta Sans, sans-serif', margin: 0 }}>Scroll</p>
+          <div style={{ width: 1, height: 48, background: 'linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)' }} />
         </div>
       </section>
 
@@ -174,7 +238,7 @@ const Universes = () => {
       </section>
 
       {/* SECTION 3: THE 10 ASSETS */}
-      <section id="assets-section" style={{
+      <section id="assets-section" data-animate style={{
         background: '#0A0A0A',
         padding: '100px 80px',
       }}>
@@ -264,67 +328,116 @@ const Universes = () => {
       </section>
 
       {/* SECTION 4: UNIVERSE SHOWCASE */}
-      {UNIVERSE_DATA.map((u) => (
-        <div key={u.id} style={{ position: 'relative', minHeight: '80vh', overflow: 'hidden', display: 'flex', background: '#0A0A0A' }}>
-          <img
-            src={u.image}
-            alt=""
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', zIndex: 1 }}
-          />
+      <div ref={universeContainerRef} style={{ position: 'relative', height: '600vh' }}>
+        <style>{`@keyframes universeFadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
+        <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', background: '#0A0A0A' }}>
+          {/* Crossfading background images */}
+          {UNIVERSE_DATA.map((u, i) => (
+            <img
+              key={u.id}
+              src={u.image}
+              alt=""
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%',
+                objectFit: 'cover', objectPosition: 'center', zIndex: 1,
+                opacity: i === activeIndex ? 1 : 0,
+                transition: 'opacity 0.8s ease',
+              }}
+            />
+          ))}
+          {/* Dark overlay */}
           <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.75))' }} />
-          <div style={{ position: 'relative', zIndex: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', minHeight: '80vh' }}>
-            {/* Left: universe name */}
+          {/* Content grid */}
+          <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', height: '100%' }}>
+            {/* Left column: universe name list */}
             <div style={{ padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <h2 style={{
-                fontFamily: 'Plus Jakarta Sans, sans-serif',
-                fontWeight: 700,
-                fontSize: 'clamp(32px, 4vw, 52px)',
-                color: '#FFFFFF',
-                letterSpacing: '0.05em',
-                lineHeight: 1.1,
-                margin: 0,
-              }}>
-                {u.name}
-              </h2>
-            </div>
-            {/* Right: details */}
-            <div style={{ padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-              <p style={{ fontStyle: 'italic', fontSize: 18, color: 'rgba(255,255,255,0.5)', margin: '0 0 16px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-                {u.tagline}
-              </p>
-              <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, maxWidth: 440, margin: '0 0 32px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-                {u.description}
-              </p>
-              <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
-                {u.palette.map((swatch, si) => (
-                  <div key={si} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ width: 48, height: 48, background: swatch.color, border: swatch.color === '#FFFFFF' ? '1px solid #444' : 'none' }} />
-                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Plus Jakarta Sans, sans-serif', textAlign: 'center', margin: '6px 0 0' }}>
-                      {swatch.label}
-                    </p>
-                  </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {UNIVERSE_DATA.map((u, i) => (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => scrollToUniverse(i)}
+                    style={{
+                      background: 'none', border: 'none', padding: 0, textAlign: 'left',
+                      cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
+                      fontSize: i === activeIndex ? 'clamp(32px, 4vw, 52px)' : 'clamp(20px, 2.5vw, 32px)',
+                      fontWeight: i === activeIndex ? 700 : 400,
+                      color: i === activeIndex ? '#FFFFFF' : 'rgba(255,255,255,0.2)',
+                      letterSpacing: '0.05em',
+                      transition: 'all 0.4s ease',
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {u.name}
+                  </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => navigate('/studio/universe')}
-                style={{
-                  padding: '14px 40px', background: 'transparent',
-                  color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)',
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  fontFamily: 'Plus Jakarta Sans, sans-serif', letterSpacing: '0.02em',
+              <p style={{
+                fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em',
+                margin: '40px 0 0', fontFamily: 'Plus Jakarta Sans, sans-serif',
+              }}>
+                {String(activeIndex + 1).padStart(2, '0')} / 05
+              </p>
+            </div>
+            {/* Right column: universe detail */}
+            <div style={{ padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}>
+              {/* Large ghost name */}
+              <div style={{
+                position: 'absolute', top: 40, right: 80,
+                fontSize: 'clamp(64px, 10vw, 140px)', fontWeight: 700, letterSpacing: '0.08em',
+                color: 'rgba(255,255,255,0.06)', lineHeight: 1,
+                pointerEvents: 'none', userSelect: 'none',
+                fontFamily: 'Plus Jakarta Sans, sans-serif',
+              }}>
+                {UNIVERSE_DATA[activeIndex].name}
+              </div>
+              {/* Fading content */}
+              <div key={activeIndex} style={{ display: 'flex', flexDirection: 'column', animation: 'universeFadeIn 0.4s ease' }}>
+                <p style={{ fontStyle: 'italic', fontSize: 18, color: 'rgba(255,255,255,0.5)', margin: '0 0 16px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                  {UNIVERSE_DATA[activeIndex].tagline}
+                </p>
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, maxWidth: 440, margin: '0 0 32px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                  {UNIVERSE_DATA[activeIndex].description}
+                </p>
+                <div style={{ display: 'flex', gap: 16 }}>
+                  {UNIVERSE_DATA[activeIndex].palette.map((swatch, i) => (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div style={{ width: 48, height: 48, background: swatch.color, border: swatch.color === '#FFFFFF' ? '1px solid #444' : 'none' }} />
+                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Plus Jakarta Sans, sans-serif', textAlign: 'center', margin: '6px 0 0' }}>
+                        {swatch.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div style={{
+                  border: '1px solid rgba(255,255,255,0.2)', padding: '4px 14px',
+                  fontSize: 10, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.2em',
+                  display: 'inline-block', marginTop: 24, fontFamily: 'Plus Jakarta Sans, sans-serif',
                   alignSelf: 'flex-start',
-                }}
-              >
-                Explore {u.name} →
-              </button>
+                }}>
+                  Available now
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/studio/universe')}
+                  style={{
+                    marginTop: 16, padding: '14px 40px', background: 'transparent',
+                    color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)',
+                    fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    fontFamily: 'Plus Jakarta Sans, sans-serif', letterSpacing: '0.02em',
+                    alignSelf: 'flex-start',
+                  }}
+                >
+                  Explore {UNIVERSE_DATA[activeIndex].name} →
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      ))}
+      </div>
 
       {/* SECTION 6: EDITOR EXPERIENCE */}
-      <section style={{
+      <section data-animate style={{
         background: '#0A0A0A',
         padding: '100px 80px',
       }}>
@@ -394,7 +507,7 @@ const Universes = () => {
       </section>
 
       {/* SECTION 7: AVA IN THE STUDIO */}
-      <section style={{
+      <section data-animate style={{
         background: '#F5F5F3',
         padding: '100px 80px',
         display: 'grid',
