@@ -87,7 +87,7 @@ export default function Features() {
           <h1 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif", margin: "0 0 24px" }}>
             Everything you needed. Plus a few things you didn't expect.
           </h1>
-          <ApplePillButton onClick={handleCTA} light={false}>Get started +</ApplePillButton>
+          <ApplePillButton onClick={handleCTA} light={false}>Get started</ApplePillButton>
         </div>
       </section>
 
@@ -361,7 +361,7 @@ function FinalCTASection({ onCTA }) {
         <AnimDivider />
         <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginTop: 32, marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Ready to start planning?</h2>
         <p style={{ color: "#AAAAAA", fontSize: 16, marginBottom: 40, lineHeight: 1.7 }}>Join thousands of couples planning their perfect day.</p>
-        <ApplePillButton onClick={onCTA}>Get started +</ApplePillButton>
+        <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
       </div>
     </section>);
 
