@@ -2,8 +2,6 @@
  * Full-bleed photo CTA — cinematic dark section before pricing
  */
 import React, { useRef, useState, useEffect } from "react";
-import ApplePillButton from "@/components/motion/ApplePillButton";
-
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
 typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -87,7 +85,6 @@ export default function FullBleedPhotoCTA({ onCTA }) {
           }}>
           Your wedding deserves this.
         </h2>
-        <ApplePillButton onClick={onCTA}>See pricing</ApplePillButton>
       </div>
     </section>);
 

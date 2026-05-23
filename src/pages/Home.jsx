@@ -75,18 +75,44 @@ export default function Home() {
       </div>
       <AvaSpotlightSection />
 
-      {/* 9. FULL BLEED PHOTO CTA */}
-      <FullBleedPhotoCTA onCTA={handleCTA} />
-
       {/* 10. PRICING */}
       <div id="section-pricing">
         <PricingSection onCTA={handleCTA} />
       </div>
 
+      {/* 9. FULL BLEED PHOTO CTA */}
+      <FullBleedPhotoCTA onCTA={handleCTA} />
+
       {/* 12. FOOTER */}
       <PublicFooter />
     </div>);
 
+}
+
+// ── See Pricing ghost button ─────────────────────────────────────
+function SeePricingButton() {
+  const [hovered, setHovered] = React.useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => { window.location.href = '/Pricing'; }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        padding: "12px 24px", borderRadius: 999,
+        border: "1px solid #FFFFFF",
+        background: hovered ? "#FFFFFF" : "transparent",
+        color: hovered ? "#0A0A0A" : "#FFFFFF",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontSize: "clamp(13px, 1.2vw, 15px)", fontWeight: 600,
+        cursor: "pointer",
+        transition: "background 0.2s ease, color 0.2s ease",
+      }}
+    >
+      See pricing
+    </button>
+  );
 }
 
 // ── Pricing ───────────────────────────────────────────────────────
@@ -147,8 +173,9 @@ function PricingSection({ onCTA }) {
       }}>
         Unlock the full experience. One-time payment, lifetime access. Everything you need. Nothing you don't.
       </p>
-      <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)", transition: reduced ? "none" : `opacity 0.6s ${EASE} 0.1s, transform 0.6s ${EASE} 0.1s` }}>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)", transition: reduced ? "none" : `opacity 0.6s ${EASE} 0.1s, transform 0.6s ${EASE} 0.1s` }}>
         <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
+        <SeePricingButton />
       </div>
     </section>
   );
