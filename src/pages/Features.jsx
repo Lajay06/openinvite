@@ -281,9 +281,7 @@ function AvaSection({ essentials }) {
       <div style={{ position: "absolute", inset: 0, background: "#0A0A0A", zIndex: 10, transform: curtainUp ? "translateY(-100%)" : "translateY(0)", transition: `transform 0.9s ${EASE}`, pointerEvents: "none" }} />
       <div style={{ position: "relative", zIndex: 3 }}>
         <div style={{ textAlign: "center", marginBottom: 48, padding: "0 clamp(24px, 4vw, 64px)", opacity: curtainUp ? 1 : 0, transition: `opacity 0.8s ${EASE} 0.15s` }}>
-          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#DDF762", marginBottom: 16 }}>Meet Ava</p>
           <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginBottom: 12, overflow: "visible", hyphens: "none" }}>The Essentials</h2>
-          <p style={{ color: "#DDF762", fontSize: 20 }}>AI meets 'I do'.</p>
         </div>
         <HorizontalCardShelf cards={essentials} />
       </div>
