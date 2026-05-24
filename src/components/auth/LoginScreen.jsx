@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 
@@ -94,18 +94,24 @@ const GoogleIcon = () => (
 );
 
 export default function LoginScreen() {
-  const [mode, setMode] = useState('login'); // 'login' | 'signup'
+  const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'verify'
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resetMsg, setResetMsg] = useState("");
+  // OTP verify state
+  const [digits, setDigits] = useState(['', '', '', '', '', '']);
+  const [resendMsg, setResendMsg] = useState("");
+  const digitRefs = useRef([]);
+  const otpCode = digits.join('');
 
   const switchMode = (next) => {
     setMode(next);
     setError("");
     setResetMsg("");
+    setResendMsg("");
   };
 
   // SDK method is resetPasswordRequest, not sendPasswordResetEmail
@@ -162,13 +168,9 @@ export default function LoginScreen() {
     }
   };
 
-  // Signup — two-step: register the account, then ensure a session token is
-  // written to localStorage before navigating. The base44 register endpoint
-  // may or may not return an access_token depending on app configuration
-  // (some apps require email verification). If no token is returned we
-  // immediately call loginViaEmailPassword which always returns one, so
-  // AuthContext.checkAppState() finds base44_access_token on the next load
-  // and doesn't bounce the user back to the login screen.
+  // Signup — register the account. If the API returns a token immediately,
+  // persist it and route to onboarding. If it requires email verification
+  // (no token returned), switch to the OTP verify step inline.
   const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
@@ -178,29 +180,94 @@ export default function LoginScreen() {
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
     setLoading(true);
     try {
-      // Step 1 — create the account
       const regResponse = await base44.auth.register({ email, password, full_name: fullName });
       const { access_token: regToken } = regResponse || {};
 
       if (regToken) {
-        // Register returned a session token directly — persist it
+        // No verification step — token returned directly, go straight to onboarding
         base44.auth.setToken(regToken);
+        window.location.href = '/onboarding';
       } else {
-        // No token returned from register (email verification required, or app
-        // config doesn't issue one on register). Log in immediately so
-        // base44_access_token is present in localStorage before we navigate.
-        // loginViaEmailPassword calls setToken() internally.
-        await base44.auth.loginViaEmailPassword(email, password);
+        // Email verification required — show OTP step
+        setLoading(false);
+        setDigits(['', '', '', '', '', '']);
+        setResendMsg('');
+        setMode('verify');
       }
-
-      // Step 2 — route to onboarding (full reload so AuthContext re-initialises
-      // with the freshly-stored token)
-      window.location.href = '/onboarding';
     } catch (err) {
-      // Show the server error inline — do not silently refresh
       setError(err?.message || 'Could not create account. Please try again.');
       setLoading(false);
     }
+  };
+
+  // Verify OTP — submit the 6-digit code the user received by email
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    setError("");
+    setResendMsg("");
+    if (otpCode.length < 6 || digits.some(d => d === '')) {
+      setError("Please enter all 6 digits.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const verifyResponse = await base44.auth.verifyOtp({ email, otpCode });
+      const { access_token } = verifyResponse || {};
+
+      if (access_token) {
+        base44.auth.setToken(access_token);
+      } else {
+        // Token not in verify response — log in now that email is verified
+        await base44.auth.loginViaEmailPassword(email, password);
+      }
+      window.location.href = '/onboarding';
+    } catch (err) {
+      setError(err?.message || 'Invalid or expired code. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  // Resend OTP — fires base44.auth.resendOtp and shows confirmation
+  const handleResend = async () => {
+    setError("");
+    setResendMsg("");
+    try {
+      await base44.auth.resendOtp(email);
+      setResendMsg("Code resent. Check your inbox.");
+      setDigits(['', '', '', '', '', '']);
+      setTimeout(() => digitRefs.current[0]?.focus(), 50);
+    } catch (err) {
+      setError(err?.message || 'Could not resend code. Please try again.');
+    }
+  };
+
+  // OTP digit helpers
+  const handleDigitChange = (idx, val) => {
+    if (!/^\d*$/.test(val)) return; // digits only
+    const next = [...digits];
+    next[idx] = val.slice(-1); // keep only the last typed digit
+    setDigits(next);
+    setError("");
+    if (val && idx < 5) setTimeout(() => digitRefs.current[idx + 1]?.focus(), 0);
+  };
+
+  const handleDigitKeyDown = (idx, e) => {
+    if (e.key === 'Backspace' && !digits[idx] && idx > 0) {
+      digitRefs.current[idx - 1]?.focus();
+    }
+    if (e.key === 'ArrowLeft' && idx > 0) digitRefs.current[idx - 1]?.focus();
+    if (e.key === 'ArrowRight' && idx < 5) digitRefs.current[idx + 1]?.focus();
+  };
+
+  const handleDigitPaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pasted) return;
+    const next = Array(6).fill('');
+    pasted.split('').forEach((ch, i) => { next[i] = ch; });
+    setDigits(next);
+    setError("");
+    setTimeout(() => digitRefs.current[Math.min(pasted.length, 5)]?.focus(), 0);
   };
 
   const focusRed = (e) => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; };
@@ -226,7 +293,124 @@ export default function LoginScreen() {
         >
           <motion.div style={{ width: "100%", maxWidth: 320 }} variants={stagger} initial="hidden" animate="visible">
 
-            {mode === 'login' ? (
+            {mode === 'verify' ? (
+              <>
+                {/* Verify heading */}
+                <motion.div variants={item} style={{ marginBottom: 28 }}>
+                  <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Check your email.
+                  </h1>
+                  <p style={{ fontSize: 14, color: "rgba(10,10,10,0.5)", fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.5 }}>
+                    We sent a 6-digit code to <strong style={{ color: "#0A0A0A", fontWeight: 600 }}>{email}</strong>. Enter it below to verify your account.
+                  </p>
+                </motion.div>
+
+                {/* OTP form */}
+                <form onSubmit={handleVerify}>
+                  <motion.div variants={item} style={{ marginBottom: 28 }}>
+                    {/* 6-digit boxes */}
+                    <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                      {digits.map((digit, idx) => (
+                        <input
+                          key={idx}
+                          ref={el => digitRefs.current[idx] = el}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={digit}
+                          onChange={e => handleDigitChange(idx, e.target.value)}
+                          onKeyDown={e => handleDigitKeyDown(idx, e)}
+                          onPaste={idx === 0 ? handleDigitPaste : undefined}
+                          disabled={loading}
+                          style={{
+                            width: 44,
+                            height: 52,
+                            textAlign: "center",
+                            fontSize: 28,
+                            fontWeight: 700,
+                            color: "#0A0A0A",
+                            border: "none",
+                            borderBottom: digit ? "2px solid #E03553" : "2px solid rgba(10,10,10,0.18)",
+                            background: "transparent",
+                            outline: "none",
+                            borderRadius: 0,
+                            caretColor: "#E03553",
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            transition: "border-color 0.15s ease",
+                          }}
+                          onFocus={e => { e.target.style.borderBottomColor = "#E03553"; }}
+                          onBlur={e => { e.target.style.borderBottomColor = digits[idx] ? "#E03553" : "rgba(10,10,10,0.18)"; }}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{ fontSize: 12, color: "#E03553", marginBottom: 12, textAlign: "center", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {error}
+                    </motion.p>
+                  )}
+
+                  {resendMsg && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{ fontSize: 12, color: "#444444", marginBottom: 12, textAlign: "center", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {resendMsg}
+                    </motion.p>
+                  )}
+
+                  <motion.div variants={item} style={{ marginBottom: 16 }}>
+                    <button
+                      type="submit"
+                      disabled={loading || otpCode.length < 6}
+                      style={{
+                        width: "100%",
+                        padding: 13,
+                        background: (loading || otpCode.length < 6) ? "rgba(224,53,83,0.5)" : "#E03553",
+                        border: "none",
+                        borderRadius: 999,
+                        color: "#FFFFFF",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: (loading || otpCode.length < 6) ? "not-allowed" : "pointer",
+                        boxSizing: "border-box",
+                        transition: "background 0.2s ease",
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      }}
+                    >
+                      {loading ? "Verifying…" : "Verify"}
+                    </button>
+                  </motion.div>
+                </form>
+
+                <motion.p variants={item} style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.4)", lineHeight: 1.6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Didn't receive a code?{" "}
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    style={{ color: "#E03553", background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  >
+                    Resend code
+                  </button>
+                </motion.p>
+
+                <motion.p variants={item} style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.4)", marginTop: 12, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <button
+                    type="button"
+                    onClick={() => switchMode('signup')}
+                    style={{ color: "rgba(10,10,10,0.4)", background: "none", border: "none", cursor: "pointer", fontSize: 12, padding: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  >
+                    ← Back to sign up
+                  </button>
+                </motion.p>
+              </>
+            ) : mode === 'login' ? (
               <>
                 {/* Login heading */}
                 <motion.div variants={item} style={{ marginBottom: 28 }}>
