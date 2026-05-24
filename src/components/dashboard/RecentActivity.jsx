@@ -25,7 +25,7 @@ function timeAgo(d) {
 export default function RecentActivity({ guests, budget }) {
   const activities = useMemo(() => {
     const ga = guests.filter(g => g.rsvp_date).map(g => ({
-      desc: `${g.name} — ${g.rsvp_status === 'attending' ? 'attending' : g.rsvp_status === 'declined' ? 'declined' : 'responded'}`,
+      desc: g.name,
       date: g.rsvp_date,
       type: g.rsvp_status,
     }));
@@ -46,18 +46,18 @@ export default function RecentActivity({ guests, budget }) {
         {activities.length > 0 ? activities.map((a, i) => {
           const pill = getPill(a.type);
           return (
-            <div key={i} style={{ padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.05)' }}>
-              <p style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>{a.desc}</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginLeft: 16 }}>
+            <div key={i} style={{ padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid rgba(10,10,10,0.05)' }}>
+              <p style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, margin: 0, minWidth: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.desc}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <span style={{
                   background: pill.bg, color: pill.color,
                   border: pill.border, borderRadius: 999,
-                  fontSize: 11, fontWeight: 600, fontFamily: PJS,
-                  padding: '3px 10px', whiteSpace: 'nowrap',
+                  fontSize: 12, fontWeight: 600, fontFamily: PJS,
+                  padding: '4px 12px', whiteSpace: 'nowrap',
                 }}>
                   {pill.label}
                 </span>
-                <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
                   {timeAgo(a.date)}
                 </span>
               </div>
