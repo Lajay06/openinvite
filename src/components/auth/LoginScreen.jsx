@@ -141,18 +141,20 @@ export default function LoginScreen() {
     }
   };
 
-  // FIX 3: Email/password sign in — loginViaEmailPassword is correct.
-  // The SDK calls setToken() internally which persists base44_access_token.
+  // Login — e.preventDefault() stops the browser from doing a native form
+  // POST which would reload the page. loginViaEmailPassword calls setToken()
+  // internally, so base44_access_token is written to localStorage before
+  // the full-page redirect, allowing AuthContext.checkAppState() to find
+  // a valid token on the next load.
   const handleEmailSubmit = async (e) => {
-    e?.preventDefault();
+    e.preventDefault();
     setError("");
     if (!email.trim()) { setError("Please enter your email address."); return; }
     if (!password.trim()) { setError("Please enter your password."); return; }
     setLoading(true);
     try {
-      const { access_token, user } = await base44.auth.loginViaEmailPassword(email, password);
-      localStorage.setItem('oi_auth', '1');
-      localStorage.setItem('oi_user', JSON.stringify(user || { email }));
+      await base44.auth.loginViaEmailPassword(email, password);
+      // loginViaEmailPassword calls setToken() internally — token is now in localStorage.
       window.location.href = '/Dashboard';
     } catch (err) {
       setError(err?.message || 'Invalid email or password. Please try again.');
@@ -160,9 +162,15 @@ export default function LoginScreen() {
     }
   };
 
-  // FIX 2: Signup using base44.auth.register()
+  // Signup — two-step: register the account, then ensure a session token is
+  // written to localStorage before navigating. The base44 register endpoint
+  // may or may not return an access_token depending on app configuration
+  // (some apps require email verification). If no token is returned we
+  // immediately call loginViaEmailPassword which always returns one, so
+  // AuthContext.checkAppState() finds base44_access_token on the next load
+  // and doesn't bounce the user back to the login screen.
   const handleSignup = async (e) => {
-    e?.preventDefault();
+    e.preventDefault();
     setError("");
     if (!fullName.trim()) { setError("Please enter your full name."); return; }
     if (!email.trim()) { setError("Please enter your email address."); return; }
@@ -170,13 +178,26 @@ export default function LoginScreen() {
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
     setLoading(true);
     try {
-      const response = await base44.auth.register({ email, password, full_name: fullName });
-      const { access_token, user } = response || {};
-      if (access_token) base44.auth.setToken(access_token);
-      localStorage.setItem('oi_auth', '1');
-      localStorage.setItem('oi_user', JSON.stringify(user || { email, full_name: fullName }));
-      window.location.href = '/Onboarding';
+      // Step 1 — create the account
+      const regResponse = await base44.auth.register({ email, password, full_name: fullName });
+      const { access_token: regToken } = regResponse || {};
+
+      if (regToken) {
+        // Register returned a session token directly — persist it
+        base44.auth.setToken(regToken);
+      } else {
+        // No token returned from register (email verification required, or app
+        // config doesn't issue one on register). Log in immediately so
+        // base44_access_token is present in localStorage before we navigate.
+        // loginViaEmailPassword calls setToken() internally.
+        await base44.auth.loginViaEmailPassword(email, password);
+      }
+
+      // Step 2 — route to onboarding (full reload so AuthContext re-initialises
+      // with the freshly-stored token)
+      window.location.href = '/onboarding';
     } catch (err) {
+      // Show the server error inline — do not silently refresh
       setError(err?.message || 'Could not create account. Please try again.');
       setLoading(false);
     }
