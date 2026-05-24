@@ -43,7 +43,7 @@ function Pill({ label, active, onClick }) {
     <button onClick={onClick}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
-        fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '4px 10px', borderRadius: 999,
+        fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, padding: '6px 12px', borderRadius: 999,
         border: active ? '1px solid #0A0A0A' : '1px solid rgba(10,10,10,0.15)',
         background: active ? '#0A0A0A' : hov ? 'rgba(10,10,10,0.04)' : 'transparent',
         color: active ? '#FFFFFF' : '#444444', cursor: 'pointer', transition: 'all 0.13s', whiteSpace: 'nowrap',
@@ -388,8 +388,7 @@ export default function SeatingPage() {
 
           <button
             onClick={() => setShowAIGenerator(true)}
-            className="btn-primary"
-            style={{ fontSize: 12 }}
+            style={{ background: '#E03553', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '8px 16px', fontSize: 14, fontWeight: 500, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}
           >
             Auto-allocate seats
           </button>

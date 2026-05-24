@@ -88,10 +88,10 @@ export default function VenueAssetLibrary({ onAddTable, onAddAsset, onImportLayo
       <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(10,10,10,0.06)', padding: '12px 16px', flexShrink: 0 }}>
         <label
           style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            width: '100%', padding: '7px 0', borderRadius: 999,
-            border: '1px solid rgba(10,10,10,0.15)',
-            fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#444444',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            padding: '8px 16px', borderRadius: 999,
+            border: '1px solid #E5E5E5', background: '#FFFFFF',
+            fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 500, color: '#0A0A0A',
             cursor: uploadingImage ? 'not-allowed' : 'pointer',
             opacity: uploadingImage ? 0.5 : 1,
             transition: 'background 0.12s',
