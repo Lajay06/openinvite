@@ -338,6 +338,27 @@ export default function ChecklistPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Checklist" subtitle="Track every task from first steps to big day" />
 
+      {/* Stat strip */}
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        {[
+          { label: 'Overall progress', value: overallProgress, suffix: '%' },
+          { label: 'Essentials done', value: essentialsDone },
+          { label: 'Nice-to-haves done', value: niceDone },
+        ].map((s, i, arr) => (
+          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+            <p style={labelStyle}>{s.label}</p>
+            <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '8px 0 0' }}>
+              <CountUp to={s.value} suffix={s.suffix || ''} />
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava to review your checklist" onClick={() => setAvaOpen(true)} />
+      </div>
+
       {/* Tab bar */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)', padding: '0 32px' }}>
         {TABS.map(tab => (
@@ -358,29 +379,8 @@ export default function ChecklistPage() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
-        <AvaButton label="Ask Ava to review your checklist" onClick={() => setAvaOpen(true)} />
-      </div>
-
       {activeTab === 'my-checklist' && (
         <>
-          {/* Stat strip */}
-          <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-            {[
-              { label: 'Overall progress', value: overallProgress, suffix: '%' },
-              { label: 'Essentials done', value: essentialsDone },
-              { label: 'Nice-to-haves done', value: niceDone },
-            ].map((s, i, arr) => (
-              <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
-                <p style={labelStyle}>{s.label}</p>
-                <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '8px 0 0' }}>
-                  <CountUp to={s.value} suffix={s.suffix || ''} />
-                </p>
-              </div>
-            ))}
-          </div>
-
           {/* Overall progress bar */}
           <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>

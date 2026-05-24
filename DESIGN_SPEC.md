@@ -107,6 +107,18 @@
 - Icon size: 14px
 - Design studio is a regular NavItem (Sparkles icon), not a special red pill
 
+## Dashboard page layout order
+
+Every dashboard page must follow this exact top-to-bottom order — no exceptions:
+
+1. `DashboardPageHeader` — title + subtitle
+2. Stat cards row — full-width flex strip with `borderBottom: '1px solid rgba(10,10,10,0.08)'`, each cell `flex: 1, padding: '24px 32px', minHeight: 80`
+3. Ava CTA button — `AvaButton` inside `div` with `padding: '16px 32px'`
+4. Tabs row (if the page has tabs) — `display: flex, borderBottom, padding: '0 32px'`
+5. Page content / data — everything else (lists, grids, detail views)
+
+This order must be preserved even when stat card values depend on tab-specific data — compute them from the full dataset and render them before the tabs.
+
 ## Rules
 - No text-transform: uppercase anywhere
 - No box-shadow on cards
