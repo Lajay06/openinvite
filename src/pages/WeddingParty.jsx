@@ -4,6 +4,7 @@ import { Lightbulb, Loader2, X, FileText, Check, Plus, Users, Crown, Trash2 } fr
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 import { base44 } from "@/api/base44Client";
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -183,31 +184,32 @@ export default function WeddingPartyPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Wedding party" subtitle="Manage your wedding party members and their details" />
 
+      {/* Stat strip */}
+      <div style={{ display: 'flex', borderTop: '1px solid rgba(10,10,10,0.08)', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        {[
+          { label: 'Total members', value: totalMembers },
+          { label: 'Bridesmaids', value: (data.bridesmaids || []).length },
+          { label: 'Groomsmen', value: (data.groomsmen || []).length },
+        ].map((stat, i, arr) => (
+          <div key={stat.label} style={{ flex: 1, padding: '20px 24px', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+            <div style={labelStyle}>{stat.label}</div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: '#0A0A0A', marginTop: 4, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{stat.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px' }}>
+        <AvaButton label="Ask Ava about your wedding party" onClick={() => setShowAva(true)} />
+      </div>
+
       <div style={{ padding: '32px 32px 48px' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <button onClick={() => setShowAva(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 999, background: '#0A1930', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            <Lightbulb size={14} style={{ color: '#DDF762' }} />Ask Ava
-          </button>
+        {/* Save status */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
             {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
             {saveStatus === 'saved' && <><Check size={12} />Saved</>}
           </div>
-        </div>
-
-        {/* Stat strip */}
-        <div style={{ display: 'flex', borderTop: '1px solid rgba(10,10,10,0.08)', borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 32 }}>
-          {[
-            { label: 'Total members', value: totalMembers },
-            { label: 'Bridesmaids', value: (data.bridesmaids || []).length },
-            { label: 'Groomsmen', value: (data.groomsmen || []).length },
-          ].map((stat, i, arr) => (
-            <div key={stat.label} style={{ flex: 1, padding: '20px 24px', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
-              <div style={labelStyle}>{stat.label}</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: '#0A0A0A', marginTop: 4, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{stat.value}</div>
-            </div>
-          ))}
         </div>
 
         {/* Key roles */}
