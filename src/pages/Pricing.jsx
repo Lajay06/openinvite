@@ -146,7 +146,7 @@ export default function Pricing() {
           <div style={{
             flex: "0 1 320px", minWidth: 260,
             border: "1px solid #E5E5E5",
-            background: "#FAFAF9", padding: "36px 32px",
+            background: "#FAFAF9", padding: 32,
             display: "flex", flexDirection: "column",
           }}>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
@@ -187,24 +187,13 @@ export default function Pricing() {
             </p>
           </div>
 
-          {/* PRO (featured) */}
-          <div style={{ flex: "0 1 360px", minWidth: 280, paddingTop: 24, position: "relative" }}>
-            {/* Badge above card */}
-            <div style={{
-              position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
-              background: "#E03553",
-              padding: "4px 14px", borderRadius: 999, fontSize: 11, fontWeight: 600,
-              color: "#FFFFFF", whiteSpace: "nowrap", fontFamily: PJS,
-              zIndex: 1,
-            }}>
-              Most popular
-            </div>
-
-            <div style={{
-              border: "1px solid #E5E5E5", background: "#FAFAF9",
-              padding: "40px 32px 36px",
-              display: "flex", flexDirection: "column", height: "100%",
-            }}>
+          {/* PRO */}
+          <div style={{
+            flex: "0 1 360px", minWidth: 280,
+            border: "1px solid #E5E5E5",
+            background: "#FAFAF9", padding: 32,
+            display: "flex", flexDirection: "column",
+          }}>
               <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
                 Pro
               </p>
@@ -241,26 +230,15 @@ export default function Pricing() {
               <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
                 24-month access · one-time payment
               </p>
-            </div>
           </div>
 
           {/* ULTRA */}
           <div style={{
             flex: "0 1 320px", minWidth: 260,
             border: "1px solid #E5E5E5",
-            background: "#FAFAF9", padding: "36px 32px",
+            background: "#FAFAF9", padding: 32,
             display: "flex", flexDirection: "column",
           }}>
-            {/* Tag */}
-            <div style={{ marginBottom: 16 }}>
-              <span style={{
-                display: "inline-block", padding: "3px 10px", borderRadius: 999,
-                background: "#DDF762", color: "#0A0A0A",
-                fontSize: 11, fontWeight: 600, fontFamily: PJS,
-              }}>
-                Pro + Invitations
-              </span>
-            </div>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
               Ultra
             </p>
