@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { X, Loader2, Bell, Search, Sparkles } from "lucide-react";
+import { useCurrency } from '@/contexts/CurrencyContext';
+import CurrencyModal from './components/layout/CurrencyModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -47,6 +49,8 @@ function getStoredUser() {
 function TopBar({ weddingDetails, unreadCount }) {
   const navigate = useNavigate();
   const [weather, setWeather] = useState(null);
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+  const { currencyCode } = useCurrency();
 
   // Derive couple name from entity fields
   const couple1 = weddingDetails?.couple1Name || '';
@@ -204,6 +208,9 @@ function TopBar({ weddingDetails, unreadCount }) {
             <DropdownMenuItem onClick={() => navigate('/Collaborate')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
               Collaborate
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowCurrencyModal(true)} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+              Currency · {currencyCode}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer', color: '#E03553' }}>
               Log out
@@ -211,6 +218,7 @@ function TopBar({ weddingDetails, unreadCount }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      {showCurrencyModal && <CurrencyModal onClose={() => setShowCurrencyModal(false)} />}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
 import About from './pages/About';
@@ -240,13 +241,15 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <ScrollToTop />
-          <NavigationTracker />
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-        <VisualEditAgent />
+        <CurrencyProvider>
+          <Router>
+            <ScrollToTop />
+            <NavigationTracker />
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+          <VisualEditAgent />
+        </CurrencyProvider>
       </QueryClientProvider>
     </AuthProvider>
   )

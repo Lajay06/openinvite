@@ -13,6 +13,7 @@ import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 const Budget = base44.entities.Budget;
 
 function CountUp({ to, duration = 1200, format }) {
@@ -53,7 +54,6 @@ const statValueStyle = {
   fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A',
   fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0,
 };
-const fmtCurrency = v => `$${v.toLocaleString()}`;
 
 const CATEGORIES = [
   "all", "venue", "catering", "photography", "flowers", "music",
@@ -82,7 +82,7 @@ function loadBudgetPlan() {
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-function BudgetPlanner() {
+function BudgetPlanner({ symbol = '$' }) {
   const [plan, setPlan] = useState(() => loadBudgetPlan());
   const [saved, setSaved] = useState(false);
 
@@ -117,7 +117,7 @@ function BudgetPlanner() {
       {/* Total budget input */}
       <div style={{ marginBottom: 24, maxWidth: 320 }}>
         <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Total wedding budget ($)
+          Total wedding budget ({symbol})
         </label>
         <input
           type="number"
@@ -139,7 +139,7 @@ function BudgetPlanner() {
             </label>
             <input
               type="number"
-              placeholder="$0"
+              placeholder={`${symbol}0`}
               value={plan.categories[cat.key] || ''}
               onChange={e => setCat(cat.key, e.target.value)}
               style={inputStyle}
@@ -154,10 +154,10 @@ function BudgetPlanner() {
       {total > 0 && (
         <div style={{ marginTop: 20, display: 'flex', gap: 24, borderTop: '1px solid rgba(10,10,10,0.08)', paddingTop: 16 }}>
           <span style={{ fontSize: 13, color: '#444444', fontFamily: PJS }}>
-            Allocated: <strong style={{ color: '#0A0A0A' }}>${allocated.toLocaleString()}</strong>
+            Allocated: <strong style={{ color: '#0A0A0A' }}>{symbol}{allocated.toLocaleString()}</strong>
           </span>
           <span style={{ fontSize: 13, color: remaining < 0 ? '#E03553' : '#444444', fontFamily: PJS }}>
-            Remaining: <strong>${remaining.toLocaleString()}</strong>
+            Remaining: <strong>{symbol}{remaining.toLocaleString()}</strong>
           </span>
         </div>
       )}
@@ -166,6 +166,7 @@ function BudgetPlanner() {
 }
 
 export default function BudgetPage() {
+  const { formatCurrency, symbol, currencyCode } = useCurrency();
   const [budgetItems, setBudgetItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -254,9 +255,9 @@ export default function BudgetPage() {
   };
 
   const STAT_CARDS = [
-    { label: 'Total budget',  value: stats.totalBudgeted,           format: fmtCurrency },
-    { label: 'Total spent',   value: stats.totalSpent,               format: fmtCurrency },
-    { label: 'Remaining',     value: Math.abs(stats.remaining),      format: fmtCurrency },
+    { label: 'Total budget',  value: stats.totalBudgeted,           format: formatCurrency },
+    { label: 'Total spent',   value: stats.totalSpent,               format: formatCurrency },
+    { label: 'Remaining',     value: Math.abs(stats.remaining),      format: formatCurrency },
     { label: 'Budget used',   value: Math.round(stats.percentageUsed), format: v => `${v}%` },
   ];
 
@@ -311,7 +312,7 @@ export default function BudgetPage() {
           </TabsList>
 
           <TabsContent value="overview" className="mt-8">
-            <BudgetPlanner />
+            <BudgetPlanner symbol={symbol} />
             <BudgetChart budgetItems={budgetItems} />
           </TabsContent>
 
@@ -369,7 +370,7 @@ export default function BudgetPage() {
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Budget advisor"
-        systemPrompt="You are Ava, a wedding budget advisor. Help couples allocate budget, find savings, and track spending across all wedding categories."
+        systemPrompt={`You are Ava, a wedding budget advisor. The couple is tracking their budget in ${currencyCode} (${symbol}). Help couples allocate budget, find savings, and track spending across all wedding categories. When giving budget estimates or comparisons, use ${currencyCode}.`}
         quickActions={["What's a typical wedding budget breakdown?", "Where can I save money?", "Am I spending too much on vendors?", "Help me negotiate with vendors"]}
       />
     </div>
