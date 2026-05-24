@@ -181,16 +181,10 @@ export default function Guests() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      {/* Ava + toolbar row */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to help manage your guest list" onClick={() => setAvaOpen(true)} />
-      </div>
-
-      {/* Content */}
-      <div style={{ padding: '32px 32px 48px' }}>
-
-        {/* Page toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
             onClick={() => setShowImport(true)}
             className="btn-editorial-secondary"
@@ -209,6 +203,10 @@ export default function Guests() {
             + Add guest
           </button>
         </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: '32px 32px 48px' }}>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full justify-start">
