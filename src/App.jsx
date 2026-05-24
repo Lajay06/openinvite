@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
+import DevReset from './pages/DevReset';
 import About from './pages/About';
 import Ava from './pages/Ava';
 import Pricing from './pages/Pricing';
@@ -230,6 +231,7 @@ const AuthenticatedApp = () => {
       <Route path="/studio/ava/assets/:step" element={<AvaStudioAssets />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/help" element={<LayoutWrapper currentPageName="Help"><Help /></LayoutWrapper>} />
+      <Route path="/dev-reset" element={<DevReset />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
