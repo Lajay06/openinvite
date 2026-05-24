@@ -5,6 +5,7 @@ import WeddingOurStoryPage from '@/components/guest-website/pages/WeddingOurStor
 import WeddingCelebrationPage from '@/components/guest-website/pages/WeddingCelebrationPage';
 import WeddingRSVPPage from '@/components/guest-website/pages/WeddingRSVPPage';
 import WeddingTravelPage from '@/components/guest-website/pages/WeddingTravelPage';
+import WeddingAccommodationPage from '@/components/guest-website/pages/WeddingAccommodationPage';
 import WeddingRegistryPage from '@/components/guest-website/pages/WeddingRegistryPage';
 import WeddingMusicPage from '@/components/guest-website/pages/WeddingMusicPage';
 import WeddingPhotosPage from '@/components/guest-website/pages/WeddingPhotosPage';
@@ -16,6 +17,7 @@ const PAGE_COMPONENTS = {
   celebration: WeddingCelebrationPage,
   rsvp: WeddingRSVPPage,
   travel: WeddingTravelPage,
+  accommodation: WeddingAccommodationPage,
   registry: WeddingRegistryPage,
   music: WeddingMusicPage,
   photos: WeddingPhotosPage,

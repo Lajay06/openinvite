@@ -7,6 +7,7 @@ const PAGE_OPTIONS = [
   { id: 'celebration', label: 'Celebration' },
   { id: 'rsvp', label: 'RSVP' },
   { id: 'travel', label: 'Travel' },
+  { id: 'accommodation', label: 'Accommodation' },
   { id: 'registry', label: 'Registry' },
   { id: 'music', label: 'Music' },
   { id: 'photos', label: 'Photos' },
@@ -383,6 +384,230 @@ function TravelContent({ details, onChange }) {
     </>
   );
 }
+function AccommodationContent({ details, onChange }) {
+  const a = details.accommodationContent || {};
+  const upA = (k, v) => onChange('accommodationContent', { ...a, [k]: v });
+
+  const venueName = details.mainCeremony?.venueName || details.reception?.venueName || '';
+  const venueAddress = details.mainCeremony?.address || details.reception?.address || '';
+  const venueDisplay = venueName || venueAddress;
+  const guestCount = details.guestCount || '';
+
+  // Booking / Airbnb city derived from venue address
+  const venueCity = venueAddress
+    ? (venueAddress.split(',').slice(1).join(',').trim() || venueAddress)
+    : venueName;
+  const bookingUrl = venueCity
+    ? `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(venueCity)}`
+    : 'https://www.booking.com';
+  const airbnbUrl = venueCity
+    ? `https://www.airbnb.com/s/${encodeURIComponent(venueCity)}`
+    : 'https://www.airbnb.com';
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newOption, setNewOption] = useState({ type: 'Hotel', name: '', description: '', bookingLink: '', priceRange: '' });
+  const [showAlternative, setShowAlternative] = useState(!!(a.alternativeNotes || a.showAlternative));
+
+  const customOptions = a.customOptions || [];
+  const roomBlocks = a.roomBlocks || [];
+
+  const handleAddOption = () => {
+    if (!newOption.name.trim()) return;
+    upA('customOptions', [...customOptions, { ...newOption, id: Date.now() }]);
+    setNewOption({ type: 'Hotel', name: '', description: '', bookingLink: '', priceRange: '' });
+    setShowAddForm(false);
+  };
+
+  const handleAvaClick = () => {
+    const venue = venueDisplay || 'my venue';
+    const guests = guestCount ? ` with approximately ${guestCount} guests` : '';
+    const prompt = `Based on my wedding venue at ${venue}${guests}, suggest the best accommodation options for my guests including hotels, Airbnb and any alternatives.`;
+    window.dispatchEvent(new CustomEvent('openAva', { detail: { prompt } }));
+  };
+
+  const card = { border: '1px solid #E5E5E5', padding: 24, marginBottom: 16 };
+  const heading = { fontSize: 18, fontWeight: 600, color: '#0A0A0A', margin: '20px 0 8px', fontFamily: 'inherit' };
+  const body = { fontSize: 14, color: '#555555', margin: '0 0 10px', lineHeight: 1.55 };
+  const lnk = { fontSize: 14, color: '#E03553', textDecoration: 'underline' };
+
+  return (
+    <>
+      {/* Ava recommendations block */}
+      <div style={{ background: '#F5F4F0', border: '1px solid #E5E5E5', padding: 24, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+          <Sparkles size={15} style={{ color: '#9333ea', flexShrink: 0, marginTop: 1 }} />
+          <p style={{ fontSize: 13, color: '#0A0A0A', margin: 0, lineHeight: 1.55 }}>
+            Let Ava suggest the best accommodation options for your guests based on your venue location and wedding size.
+          </p>
+        </div>
+        <button
+          onClick={handleAvaClick}
+          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 999, background: 'linear-gradient(135deg, #ec4899, #9333ea)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#FFFFFF', fontFamily: 'inherit' }}
+        >
+          <Sparkles size={12} />Ask Ava for accommodation recommendations
+        </button>
+      </div>
+
+      {/* Recommended hotels */}
+      <p style={heading}>Recommended hotels</p>
+      <div style={card}>
+        {venueDisplay ? (
+          <div style={{ marginBottom: 12 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: 'inherit' }}>{venueName || venueDisplay}</p>
+            {venueAddress && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0 }}>{venueAddress}</p>}
+          </div>
+        ) : (
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 12px' }}>
+            No venue set — add your venue in Event details to get smart suggestions.
+          </p>
+        )}
+        <p style={body}>Browse and link guests to hotels near your venue:</p>
+        <a href={bookingUrl} target="_blank" rel="noopener noreferrer" style={{ ...lnk, display: 'inline-block', marginBottom: 16 }}>
+          {venueCity
+            ? `View options on Booking.com near ${venueCity.split(',')[0].trim()}`
+            : 'View options on Booking.com'}
+        </a>
+        <FTextarea
+          label="Hotel notes (optional)"
+          value={a.hotelNotes}
+          onChange={v => upA('hotelNotes', v)}
+          rows={2}
+          placeholder={venueDisplay ? `e.g. The Grand Hotel (5 min from ${venueName || 'the venue'}) is our top pick — luxury rooms from $220/night.` : 'e.g. The Grand Hotel nearby offers luxury rooms from $220/night.'}
+        />
+      </div>
+
+      {/* Nearby Airbnb */}
+      <p style={heading}>Nearby Airbnb</p>
+      <div style={card}>
+        <p style={body}>Short-term rentals are a great option for guests who prefer a home-like stay or are travelling in groups.</p>
+        <a href={airbnbUrl} target="_blank" rel="noopener noreferrer" style={{ ...lnk, display: 'inline-block', marginBottom: 16 }}>
+          {venueCity
+            ? `Search Airbnb near ${venueCity.split(',')[0].trim()}`
+            : 'Search on Airbnb'}
+        </a>
+        <FTextarea
+          label="Airbnb notes (optional)"
+          value={a.airbnbNotes}
+          onChange={v => upA('airbnbNotes', v)}
+          rows={2}
+          placeholder="e.g. Several lovely houses available within walking distance — great for groups of 4–8 guests."
+        />
+      </div>
+
+      {/* Room blocks */}
+      <p style={heading}>Room blocks</p>
+      <div style={card}>
+        <p style={body}>If you've negotiated a group rate at a hotel, add the details here so guests can book at the discounted rate.</p>
+        {roomBlocks.map((block, i) => (
+          <div key={block.id || i} style={{ border: '1px solid #EEEEEE', padding: 12, marginBottom: 10, position: 'relative' }}>
+            <button
+              onClick={() => upA('roomBlocks', roomBlocks.filter((_, j) => j !== i))}
+              style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#CCC' }}
+            >
+              <X size={12} />
+            </button>
+            <FInput label="Hotel name" value={block.hotelName} onChange={v => { const arr = [...roomBlocks]; arr[i] = { ...arr[i], hotelName: v }; upA('roomBlocks', arr); }} placeholder="e.g. The Grand Hotel" />
+            <FInput label="Address" value={block.address} onChange={v => { const arr = [...roomBlocks]; arr[i] = { ...arr[i], address: v }; upA('roomBlocks', arr); }} placeholder="123 Main St, City" />
+            <FInput label="Discount code" value={block.discountCode} onChange={v => { const arr = [...roomBlocks]; arr[i] = { ...arr[i], discountCode: v }; upA('roomBlocks', arr); }} placeholder="e.g. SMITHWEDDING2026" />
+            <FInput label="Booking link" value={block.bookingLink} onChange={v => { const arr = [...roomBlocks]; arr[i] = { ...arr[i], bookingLink: v }; upA('roomBlocks', arr); }} placeholder="https://..." />
+            <FInput label="Booking deadline" value={block.deadline} onChange={v => { const arr = [...roomBlocks]; arr[i] = { ...arr[i], deadline: v }; upA('roomBlocks', arr); }} type="date" />
+          </div>
+        ))}
+        <AddBtn onClick={() => upA('roomBlocks', [...roomBlocks, { id: Date.now(), hotelName: '', address: '', discountCode: '', bookingLink: '', deadline: '' }])}>
+          + Add room block
+        </AddBtn>
+      </div>
+
+      {/* Camping / alternative stays */}
+      <p style={heading}>Camping &amp; alternative stays</p>
+      {showAlternative ? (
+        <div style={card}>
+          <FTextarea
+            label="Alternative accommodation notes"
+            value={a.alternativeNotes}
+            onChange={v => { upA('alternativeNotes', v); upA('showAlternative', true); }}
+            rows={3}
+            placeholder="e.g. Camping is available at Riverside Reserve, 5 min from the venue. BYO tent and bedding."
+          />
+          <button
+            onClick={() => { setShowAlternative(false); upA('showAlternative', false); upA('alternativeNotes', ''); }}
+            style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+          >
+            Remove section
+          </button>
+        </div>
+      ) : (
+        <div style={{ marginBottom: 16 }}>
+          <AddBtn onClick={() => { setShowAlternative(true); upA('showAlternative', true); }}>
+            + Add alternative accommodation
+          </AddBtn>
+        </div>
+      )}
+
+      {/* Custom accommodation options */}
+      {customOptions.length > 0 && (
+        <>
+          <p style={heading}>Custom options</p>
+          {customOptions.map((opt, i) => (
+            <div key={opt.id || i} style={{ ...card, position: 'relative' }}>
+              <button
+                onClick={() => upA('customOptions', customOptions.filter((_, j) => j !== i))}
+                style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', color: '#CCC' }}
+              >
+                <X size={12} />
+              </button>
+              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontWeight: 600, letterSpacing: '0.04em' }}>{opt.type}</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: '0 0 6px', fontFamily: 'inherit' }}>{opt.name}</p>
+              {opt.description && <p style={{ ...body, marginBottom: 6 }}>{opt.description}</p>}
+              {opt.priceRange && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.5)', margin: '0 0 6px' }}>{opt.priceRange}</p>}
+              {opt.bookingLink && <a href={opt.bookingLink} target="_blank" rel="noopener noreferrer" style={lnk}>{opt.bookingLink}</a>}
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Add accommodation option */}
+      {showAddForm ? (
+        <div style={card}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: 'inherit' }}>New accommodation option</p>
+          <div style={{ marginBottom: 16 }}>
+            <FLabel>Type</FLabel>
+            <select
+              value={newOption.type}
+              onChange={e => setNewOption(prev => ({ ...prev, type: e.target.value }))}
+              style={{ width: '100%', border: 'none', borderBottom: '1px solid #DDDDDD', padding: '7px 0', fontSize: 14, color: '#0A0A0A', outline: 'none', background: 'transparent', cursor: 'pointer', appearance: 'none' }}
+            >
+              {['Hotel', 'Airbnb', 'Motel', 'Camping', 'B&B', 'Other'].map(tp => (
+                <option key={tp} value={tp}>{tp}</option>
+              ))}
+            </select>
+          </div>
+          <FInput label="Name" value={newOption.name} onChange={v => setNewOption(prev => ({ ...prev, name: v }))} placeholder="e.g. Riverside Retreat B&B" />
+          <FTextarea label="Description" value={newOption.description} onChange={v => setNewOption(prev => ({ ...prev, description: v }))} rows={2} placeholder="e.g. A cosy B&B 10 min from the venue, perfect for couples." />
+          <FInput label="Price range (optional)" value={newOption.priceRange} onChange={v => setNewOption(prev => ({ ...prev, priceRange: v }))} placeholder="e.g. From $150/night" />
+          <FInput label="Booking link (optional)" value={newOption.bookingLink} onChange={v => setNewOption(prev => ({ ...prev, bookingLink: v }))} placeholder="https://..." />
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            <button
+              onClick={handleAddOption}
+              disabled={!newOption.name.trim()}
+              style={{ padding: '6px 14px', borderRadius: 999, background: newOption.name.trim() ? '#0A0A0A' : 'rgba(10,10,10,0.1)', color: newOption.name.trim() ? '#FFFFFF' : 'rgba(10,10,10,0.3)', border: 'none', cursor: newOption.name.trim() ? 'pointer' : 'default', fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}
+            >
+              Save
+            </button>
+            <button
+              onClick={() => { setShowAddForm(false); setNewOption({ type: 'Hotel', name: '', description: '', bookingLink: '', priceRange: '' }); }}
+              style={{ padding: '6px 14px', borderRadius: 999, background: 'transparent', color: '#0A0A0A', border: '1px solid rgba(10,10,10,0.2)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <AddBtn onClick={() => setShowAddForm(true)}>+ Add accommodation option</AddBtn>
+      )}
+    </>
+  );
+}
 function RegistryContent({ details, onChange }) {
   const r = details.registryContent || {};
   const upR = (k, v) => onChange('registryContent', { ...r, [k]: v });
@@ -436,6 +661,7 @@ const PAGE_CONTENT = {
   'celebration': CelebrationContent,
   'rsvp': RSVPContent,
   'travel': TravelContent,
+  'accommodation': AccommodationContent,
   'registry': RegistryContent,
   'music': MusicContent,
   'faq': FAQContent,
