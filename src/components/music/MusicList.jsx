@@ -31,24 +31,24 @@ const CATEGORY_LABELS = {
 export default function MusicList({ items, groupByCategory, onEdit, onDelete, onToggleApproval }) {
   if (items.length === 0) {
     return (
-      <div style={{ background: '#0A0A0A', padding: '64px 24px', textAlign: 'center' }}>
-        <Music size={28} style={{ color: '#E03553', margin: '0 auto 12px' }} />
-        <p style={{ fontSize: 13, color: '#555555', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No songs yet. Add your first song above.</p>
+      <div style={{ background: '#F5F4F0', padding: '64px 24px', textAlign: 'center' }}>
+        <Music size={28} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px', display: 'block' }} />
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No songs yet. Add your first song above.</p>
       </div>
     );
   }
 
   if (!groupByCategory) {
     return (
-      <div style={{ background: '#0A0A0A' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '8px 16px', borderBottom: '1px solid #1A1A1A' }}>
-          <span style={{ width: 24 }} />
-          <span style={{ width: 40, flexShrink: 0 }} />
-          <span style={{ flex: 1, ...labelStyle, color: 'rgba(255,255,255,0.3)' }}>Title</span>
-          <span style={{ width: 112, ...labelStyle, color: 'rgba(255,255,255,0.3)' }}>Category</span>
-          <span style={{ width: 40, ...labelStyle, color: 'rgba(255,255,255,0.3)', textAlign: 'right' }}>Time</span>
-          <span style={{ width: 112, flexShrink: 0 }} />
-          <span style={{ width: 6, flexShrink: 0 }} />
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 16px', borderBottom: '1px solid rgba(10,10,10,0.06)', background: '#FAFAFA' }}>
+          <span style={{ width: 14, flexShrink: 0 }} />
+          <span style={{ width: 20, flexShrink: 0 }} />
+          <span style={{ width: 48, flexShrink: 0 }} />
+          <span style={{ flex: 1, ...labelStyle }}>Title</span>
+          <span style={{ width: 100, ...labelStyle }}>Category</span>
+          <span style={{ width: 36, ...labelStyle, textAlign: 'right' }}>Time</span>
+          <span style={{ width: 120, flexShrink: 0 }} />
         </div>
         {items.map((item, i) => (
           <MusicTrackRow key={item.id} item={item} index={i} onEdit={onEdit} onDelete={onDelete} onToggleApproval={onToggleApproval} />
@@ -69,10 +69,10 @@ export default function MusicList({ items, groupByCategory, onEdit, onDelete, on
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {Object.entries(grouped).map(([cat, catItems]) => (
-        <div key={cat} style={{ background: '#0A0A0A' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid #1A1A1A', borderLeft: `3px solid ${MUSIC_CAT_COLOURS[cat] || 'rgba(10,10,10,0.4)'}` }}>
-            <span style={{ ...labelStyle, color: MUSIC_CAT_COLOURS[cat] || 'rgba(255,255,255,0.3)' }}>{CATEGORY_LABELS[cat] || cat}</span>
-            <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{catItems.length} song{catItems.length !== 1 ? 's' : ''}</span>
+        <div key={cat}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid rgba(10,10,10,0.06)', borderLeft: `3px solid ${MUSIC_CAT_COLOURS[cat] || 'rgba(10,10,10,0.2)'}`, background: '#FAFAFA' }}>
+            <span style={{ ...labelStyle, color: MUSIC_CAT_COLOURS[cat] || 'rgba(10,10,10,0.4)' }}>{CATEGORY_LABELS[cat] || cat}</span>
+            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{catItems.length} song{catItems.length !== 1 ? 's' : ''}</span>
           </div>
           {catItems.map((item, i) => (
             <MusicTrackRow key={item.id} item={item} index={i} onEdit={onEdit} onDelete={onDelete} onToggleApproval={onToggleApproval} />

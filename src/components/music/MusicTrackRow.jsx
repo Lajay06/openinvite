@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { Play, Pause, Check, Clock, Trash2, Edit2 } from 'lucide-react';
+import { Play, Pause, Check, Clock, Trash2, Edit2, GripVertical } from 'lucide-react';
+
+const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const CATEGORY_LABELS = {
   ceremony: 'Ceremony',
@@ -28,63 +30,74 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
   };
 
   return (
-    <div className="group" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '10px 16px', borderBottom: '1px solid #111', cursor: 'default' }}
-      onMouseEnter={e => e.currentTarget.style.background = '#0D0D0D'}
-      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+    <div
+      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(10,10,10,0.06)', background: 'transparent', transition: 'background 0.1s', cursor: 'default' }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.02)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+    >
+      {/* Drag handle */}
+      <span style={{ color: 'rgba(10,10,10,0.2)', flexShrink: 0, cursor: 'grab', display: 'flex' }}>
+        <GripVertical size={14} />
+      </span>
 
-      <span style={{ width: 24, textAlign: 'center', fontSize: 11, color: '#333333', flexShrink: 0 }}>{index + 1}</span>
+      {/* Index */}
+      <span style={{ width: 20, textAlign: 'center', fontSize: 11, color: 'rgba(10,10,10,0.3)', flexShrink: 0, fontFamily: PJS }}>{index + 1}</span>
 
-      <div style={{ width: 40, height: 40, flexShrink: 0, background: '#1A1A1A', overflow: 'hidden' }}>
+      {/* Artwork */}
+      <div style={{ width: 48, height: 48, flexShrink: 0, background: 'rgba(10,10,10,0.06)', overflow: 'hidden', borderRadius: 4 }}>
         {item.image_url
           ? <img src={item.image_url} alt={item.album || item.song_title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#333"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 14a4 4 0 110-8 4 4 0 010 8zm0-6a2 2 0 100 4 2 2 0 000-4z"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(10,10,10,0.2)"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 14a4 4 0 110-8 4 4 0 010 8zm0-6a2 2 0 100 4 2 2 0 000-4z" /></svg>
             </div>
         }
       </div>
 
+      {/* Title + artist */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.song_title}</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.song_title}</span>
           {item.guest_suggestion && (
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(128,61,129,0.15)', color: '#803D81', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(128,61,129,0.1)', color: '#803D81', fontFamily: PJS, flexShrink: 0 }}>
               Guest request
             </span>
           )}
         </div>
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <p style={{ fontSize: 11, color: '#999999', fontFamily: PJS, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {item.artist}{item.album ? ` · ${item.album}` : ''}
         </p>
       </div>
 
-      <span style={{ fontSize: 11, color: '#444444', flexShrink: 0, width: 112, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      {/* Category */}
+      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', flexShrink: 0, width: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: PJS }}>
         {CATEGORY_LABELS[item.category] || item.category}
       </span>
 
-      <span style={{ fontSize: 11, color: '#444444', flexShrink: 0, width: 40, textAlign: 'right', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{item.duration || '—'}</span>
+      {/* Duration */}
+      <span style={{ fontSize: 11, color: '#999999', flexShrink: 0, width: 36, textAlign: 'right', fontFamily: PJS }}>{item.duration || '—'}</span>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0, width: 112, justifyContent: 'flex-end', opacity: 0, transition: 'opacity 0.15s' }}
-        className="group-hover-actions">
-        <button onClick={handlePlay} disabled={!item.preview_url}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: item.preview_url ? 'pointer' : 'not-allowed', color: playing ? '#E03553' : 'rgba(255,255,255,0.4)', opacity: item.preview_url ? 1 : 0.2 }}>
-          {playing ? <Pause size={13} /> : <Play size={13} />}
-        </button>
+      {/* Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+        {item.preview_url && (
+          <button onClick={handlePlay}
+            style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: playing ? '#E03553' : 'rgba(10,10,10,0.35)' }}>
+            {playing ? <Pause size={13} /> : <Play size={13} />}
+          </button>
+        )}
         <button onClick={() => onToggleApproval(item)}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: item.approved ? '#6b7700' : 'rgba(255,255,255,0.4)' }}
+          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: item.approved ? '#6b7700' : 'rgba(10,10,10,0.3)' }}
           title={item.approved ? 'Approved' : 'Mark as approved'}>
           {item.approved ? <Check size={13} /> : <Clock size={13} />}
         </button>
         <button onClick={() => onEdit(item)}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}>
+          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)' }}>
           <Edit2 size={12} />
         </button>
         <button onClick={() => onDelete(item.id)}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}>
+          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)' }}>
           <Trash2 size={12} />
         </button>
       </div>
-
-      <div style={{ width: 6, height: 6, flexShrink: 0, background: item.approved ? '#6b7700' : '#333333', borderRadius: '50%' }} />
     </div>
   );
 }

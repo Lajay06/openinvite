@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Music2, Plus, Sparkles, Share2, Settings, X, Check, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SpotifySearch from '../components/music/SpotifySearch';
+import SpotifyModal from '../components/music/SpotifyModal';
 import MusicSuggestionsModal from '../components/music/MusicSuggestionsModal';
 import SharePlaylist from '../components/music/SharePlaylist';
 import MusicList from '../components/music/MusicList';
@@ -12,6 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+
+const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -71,6 +74,9 @@ export default function MusicPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [editingTrack, setEditingTrack] = useState(null);
   const [avaOpen, setAvaOpen] = useState(false);
+  const [showSpotifyModal, setShowSpotifyModal] = useState(false);
+  const [addingPlaylist, setAddingPlaylist] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState('');
 
   const { data: details } = useQuery({
     queryKey: ['musicDetails'],
@@ -130,6 +136,17 @@ export default function MusicPage() {
     setPlaylistTracks(prev => prev.map(t => t.id === track.id ? { ...t, approved: !t.approved } : t));
   };
 
+  const handleAddPlaylist = () => {
+    const name = newPlaylistName.trim();
+    if (!name) return;
+    const current = details?.music?.playlists || DEFAULT_PLAYLISTS;
+    const newPl = { id: `custom-${Date.now()}`, name, trackCount: 0, enabled: true };
+    updateMutation.mutate({ music: { ...(details?.music || {}), playlists: [...current, newPl] } });
+    setNewPlaylistName('');
+    setAddingPlaylist(false);
+    setActivePlaylist(newPl);
+  };
+
   const filteredRequests = (songRequests || []).filter(r => r.status === requestFilter);
 
   const playlistStats = {
@@ -159,43 +176,66 @@ export default function MusicPage() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      {/* Ava + toolbar row */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to curate your playlist" onClick={() => setAvaOpen(true)} />
-      </div>
-
-      {/* Toolbar */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ flex: 1 }} />
-        <button onClick={() => setShowShare(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Share2 size={12} />Share playlist
-        </button>
-        <button onClick={() => setShowSettings(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Settings size={12} />Settings
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={() => setShowShare(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Share2 size={12} />Share playlist
+          </button>
+          <button onClick={() => setShowSettings(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Settings size={12} />Settings
+          </button>
+        </div>
       </div>
 
       {/* Three-panel layout */}
       <div style={{ display: 'flex', height: 680, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {/* Left: Playlists */}
-        <div style={{ width: 220, borderRight: '1px solid rgba(10,10,10,0.08)', overflowY: 'auto', flexShrink: 0 }}>
-          <div style={{ padding: '14px 16px 8px', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
+        <div style={{ width: 220, borderRight: '1px solid rgba(10,10,10,0.08)', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '14px 16px 8px', borderBottom: '1px solid rgba(10,10,10,0.06)', flexShrink: 0 }}>
             <span style={labelStyle}>Your playlists</span>
           </div>
-          {playlists.map(pl => (
-            <div key={pl.id} onClick={() => setActivePlaylist(pl)}
-              style={{ padding: '11px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, borderLeft: `3px solid ${activePlaylist?.id === pl.id ? '#E03553' : 'transparent'}`, background: activePlaylist?.id === pl.id ? 'rgba(224,53,83,0.05)' : 'transparent' }}>
-              <div style={{ width: 32, height: 32, background: '#0A1930', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Music2 size={14} style={{ color: '#DDF762' }} />
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {playlists.map(pl => (
+              <div key={pl.id} onClick={() => setActivePlaylist(pl)}
+                style={{ padding: '11px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, borderLeft: `3px solid ${activePlaylist?.id === pl.id ? '#E03553' : 'transparent'}`, background: activePlaylist?.id === pl.id ? 'rgba(224,53,83,0.05)' : 'transparent' }}>
+                <div style={{ width: 32, height: 32, background: '#F5F4F0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Music2 size={14} style={{ color: '#0A0A0A' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pl.name}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+                    {playlistTracks.filter(t => t.category === pl.id).length} songs
+                  </p>
+                </div>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pl.name}</p>
-                <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
-                  {playlistTracks.filter(t => t.category === pl.id).length} songs
-                </p>
+            ))}
+          </div>
+          {/* Add playlist */}
+          <div style={{ borderTop: '1px solid rgba(10,10,10,0.06)', padding: '10px 16px', flexShrink: 0 }}>
+            {addingPlaylist ? (
+              <div>
+                <input
+                  autoFocus
+                  value={newPlaylistName}
+                  onChange={e => setNewPlaylistName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleAddPlaylist(); if (e.key === 'Escape') { setAddingPlaylist(false); setNewPlaylistName(''); } }}
+                  placeholder="Playlist name…"
+                  style={{ width: '100%', border: 'none', borderBottom: '1px solid #E03553', background: 'none', fontSize: 13, fontFamily: PJS, padding: '4px 0', outline: 'none', color: '#0A0A0A', boxSizing: 'border-box' }}
+                />
+                <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                  <button onClick={handleAddPlaylist} className="btn-primary" style={{ fontSize: 11, flex: 1 }}>Add</button>
+                  <button onClick={() => { setAddingPlaylist(false); setNewPlaylistName(''); }} className="btn-editorial-secondary" style={{ fontSize: 11, flex: 1 }}>Cancel</button>
+                </div>
               </div>
-            </div>
-          ))}
+            ) : (
+              <button onClick={() => setAddingPlaylist(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: '2px 0', width: '100%' }}>
+                <Plus size={11} />Add playlist
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Center: Search + Tracks */}
@@ -213,6 +253,14 @@ export default function MusicPage() {
                 className={showSearch ? 'btn-primary' : 'btn-editorial-secondary'}
                 style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <Plus size={12} />Search & add
+              </button>
+              <button
+                onClick={() => setShowSpotifyModal(true)}
+                style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 999, border: '1px solid #1DB954', color: '#1DB954', background: '#FFFFFF', cursor: 'pointer', fontFamily: PJS, fontWeight: 600, transition: 'background 0.12s, color 0.12s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#1DB954'; e.currentTarget.style.color = '#FFFFFF'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#1DB954'; }}
+              >
+                Connect Spotify
               </button>
               <button onClick={() => { setShowAddForm(v => !v); setShowSearch(false); setEditingTrack(null); }}
                 className="btn-editorial-secondary"
@@ -262,8 +310,8 @@ export default function MusicPage() {
             <div style={{ display: 'flex', gap: 4 }}>
               {['pending', 'approved', 'declined'].map(status => (
                 <button key={status} onClick={() => setRequestFilter(status)}
-                  style={{ flex: 1, padding: '5px 0', border: `1.5px solid ${requestFilter === status ? '#0A0A0A' : 'rgba(10,10,10,0.12)'}`, background: requestFilter === status ? '#0A0A0A' : 'transparent', color: requestFilter === status ? '#FFFFFF' : '#444444', fontSize: 11, fontWeight: 700, cursor: 'pointer', borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif", textTransform: 'capitalize' }}>
-                  {status}{status === 'pending' && pendingCount > 0 ? ` (${pendingCount})` : ''}
+                  style={{ padding: '4px 12px', border: `1px solid ${requestFilter === status ? '#0A0A0A' : '#E5E5E5'}`, background: requestFilter === status ? '#0A0A0A' : 'transparent', color: requestFilter === status ? '#FFFFFF' : '#0A0A0A', fontSize: 14, fontWeight: 500, cursor: 'pointer', borderRadius: 999, fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}{status === 'pending' && pendingCount > 0 ? ` (${pendingCount})` : ''}
                 </button>
               ))}
             </div>
@@ -300,6 +348,13 @@ export default function MusicPage() {
         <MusicSuggestionsModal isOpen={showSuggestions} onClose={() => setShowSuggestions(false)} onAddSuggestion={(s) => { handleAddTrack({ ...s, approved: true, guest_suggestion: false }); }} />
       )}
       {showShare && <SharePlaylist onClose={() => setShowShare(false)} playlistStats={playlistStats} />}
+      {showSpotifyModal && (
+        <SpotifyModal
+          playlistId={activePlaylist?.id}
+          onAdd={(track) => handleAddTrack({ ...track, category: activePlaylist?.id || 'general' })}
+          onClose={() => setShowSpotifyModal(false)}
+        />
+      )}
 
       {/* Settings modal */}
       {showSettings && (
