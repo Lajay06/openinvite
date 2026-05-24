@@ -123,7 +123,7 @@ export default function Pricing() {
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", zIndex: 1 }}
         />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%)", zIndex: 2 }} />
-        <div style={{ position: "relative", zIndex: 10, textAlign: "center", maxWidth: 800, margin: "0 auto", padding: "0 40px" }}>
+        <div style={{ position: "relative", zIndex: 10, textAlign: "center", maxWidth: 1024, margin: "0 auto", padding: "0 40px" }}>
           <h1 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", fontFamily: PJS, margin: "0 0 24px" }}>
             Pay once.<br />Plan your entire wedding.
           </h1>
