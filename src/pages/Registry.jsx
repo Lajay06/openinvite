@@ -162,26 +162,23 @@ export default function RegistryPage() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      {/* Ava + actions bar */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to suggest registry items" onClick={() => setAvaOpen(true)} />
-      </div>
-
-      {/* Toolbar */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <div style={{ flex: 1 }} />
-        <button onClick={() => setShowShareModal(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Share2 size={12} />Share
-        </button>
-        <button onClick={() => { setEditingStoreItem(null); setShowStoreForm(true); }} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Plus size={12} />Add platform
-        </button>
-        <button onClick={() => { setEditingProduct(null); setShowProductForm(true); }} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Plus size={12} />Add product
-        </button>
-        <button onClick={() => { setEditingCustomGift(null); setShowCustomForm(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Plus size={12} />Add cash fund
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <button onClick={() => setShowShareModal(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Share2 size={12} />Share
+          </button>
+          <button onClick={() => { setEditingStoreItem(null); setShowStoreForm(true); }} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={12} />Add platform
+          </button>
+          <button onClick={() => { setEditingProduct(null); setShowProductForm(true); }} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={12} />Add product
+          </button>
+          <button onClick={() => { setEditingCustomGift(null); setShowCustomForm(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={12} />Add cash fund
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}

@@ -107,17 +107,31 @@
 - Icon size: 14px
 - Design studio is a regular NavItem (Sparkles icon), not a special red pill
 
-## Dashboard page layout order
+## Canonical dashboard page layout
+
+Reference implementation: `src/pages/Budget.jsx`.
 
 Every dashboard page must follow this exact top-to-bottom order — no exceptions:
 
 1. `DashboardPageHeader` — title + subtitle
-2. Stat cards row — full-width flex strip with `borderBottom: '1px solid rgba(10,10,10,0.08)'`, each cell `flex: 1, padding: '24px 32px', minHeight: 80`
-3. Ava CTA button — `AvaButton` inside `div` with `padding: '16px 32px'`
-4. Tabs row (if the page has tabs) — `display: flex, borderBottom, padding: '0 32px'`
-5. Page content / data — everything else (lists, grids, detail views)
-
-This order must be preserved even when stat card values depend on tab-specific data — compute them from the full dataset and render them before the tabs.
+2. **Stat cards row** (if the page has stats) — full-width flex strip:
+   `borderBottom: '1px solid rgba(10,10,10,0.08)'`
+   Each cell: `flex: 1, padding: '24px 32px', minHeight: 80`
+   Compute stats from the full dataset so the strip renders before any tabs.
+3. **Ava + actions bar** — single `justify-between` flex row, always present:
+   ```jsx
+   <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center',
+     justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+     <AvaButton label="Ask Ava to …" onClick={…} />
+     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+       {/* action buttons */}
+     </div>
+   </div>
+   ```
+   If there are no action buttons on the page, the row still renders with just `AvaButton`
+   and still carries `borderBottom`.
+4. **Tabs row** (if the page has tabs) — `display: flex, borderBottom: '1px solid rgba(10,10,10,0.08)', padding: '0 32px'`
+5. **Content area** — all data/lists/grids inside `div` with `padding: '32px 32px 48px'`
 
 ## Rules
 - No text-transform: uppercase anywhere

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { InvokeLLM } from "@/integrations/Core";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lightbulb, Loader2, X, Search, FileText, Check, Plus, Gift, Package, Trash2 } from "lucide-react";
+import { Sparkles, Loader2, X, Search, FileText, Check, Plus, Gift, Package, Trash2 } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -201,19 +201,19 @@ export default function WeddingFavoursPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Wedding favours" subtitle="Plan your wedding favours and gifts for guests" />
 
-      <div style={{ padding: '32px 32px 48px' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <button onClick={() => setShowAva(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 999, background: '#0A1930', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            <Lightbulb size={14} style={{ color: '#DDF762' }} />Ask Ava
-          </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
-            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
-            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
-          </div>
+      {/* Ava + actions bar */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <button onClick={() => setShowAva(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 999, background: 'linear-gradient(135deg, #ec4899, #9333ea)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <Sparkles size={13} />Ask Ava
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+          {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+          {saveStatus === 'saved' && <><Check size={12} />Saved</>}
         </div>
+      </div>
 
+      <div style={{ padding: '32px 32px 48px' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Overview */}
           <DetailsSection title="Overview" icon={Gift}>

@@ -246,7 +246,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Ava button + toolbar row */}
-      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to plan your wedding calendar" onClick={() => setAvaOpen(true)} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button onClick={exportToICalendar} disabled={events.length === 0}

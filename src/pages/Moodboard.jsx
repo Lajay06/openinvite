@@ -152,21 +152,18 @@ export default function MoodboardPage() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      {/* Ava + actions bar */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to find inspiration" onClick={() => setAvaOpen(true)} />
-      </div>
-
-      {/* Toolbar */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ flex: 1 }} />
-        <button onClick={() => fileInputRef.current?.click()} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Upload size={12} />Upload
-        </button>
-        <button onClick={() => setShowAddModal(true)} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Plus size={12} />Add inspiration
-        </button>
-        <input ref={fileInputRef} type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files && handleFileUpload(e.target.files)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={() => fileInputRef.current?.click()} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Upload size={12} />Upload
+          </button>
+          <button onClick={() => setShowAddModal(true)} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={12} />Add inspiration
+          </button>
+          <input ref={fileInputRef} type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files && handleFileUpload(e.target.files)} />
+        </div>
       </div>
 
       <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 20 }}>

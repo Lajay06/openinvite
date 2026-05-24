@@ -355,7 +355,7 @@ export default function ChecklistPage() {
       </div>
 
       {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to review your checklist" onClick={() => setAvaOpen(true)} />
       </div>
 

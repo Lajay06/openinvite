@@ -125,21 +125,18 @@ export default function VowsSpeechesPage() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      {/* Ava + actions bar */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to help write your vows" onClick={() => setAvaOpen(true)} />
-      </div>
-
-      {/* Toolbar */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button onClick={() => { setAiType(activeTab === 'vows' ? 'vow' : 'speech'); setShowAI(true); }}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
-          <Sparkles size={12} style={{ color: '#DDF762' }} />Write with AI
-        </button>
-        <div style={{ flex: 1 }} />
-        <button onClick={() => { setSelectedItem(null); setIsEditing(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Plus size={12} />Write new
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={() => { setAiType(activeTab === 'vows' ? 'vow' : 'speech'); setShowAI(true); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
+            <Sparkles size={12} style={{ color: '#DDF762' }} />Write with AI
+          </button>
+          <button onClick={() => { setSelectedItem(null); setIsEditing(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={12} />Write new
+          </button>
+        </div>
       </div>
 
       {loading ? (

@@ -169,7 +169,7 @@ export default function MessagesPage() {
       </div>
 
       {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to draft a message" onClick={() => setAvaOpen(true)} />
       </div>
 

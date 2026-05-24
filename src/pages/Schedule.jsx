@@ -189,28 +189,24 @@ export default function SchedulePage() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      {/* Ava + actions bar */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to build your wedding timeline" onClick={() => setAvaOpen(true)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            onClick={exportSchedule}
+            disabled={scheduleItems.length === 0}
+            className="btn-editorial-secondary"
+            style={{ opacity: scheduleItems.length === 0 ? 0.4 : 1 }}
+          >
+            Export CSV
+          </button>
+          <button onClick={handleAddEvent} className="btn-primary">+ Add event</button>
+        </div>
       </div>
 
       {/* Content */}
       <div style={{ padding: '32px 32px 48px' }}>
-
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button
-              onClick={exportSchedule}
-              disabled={scheduleItems.length === 0}
-              className="btn-editorial-secondary"
-              style={{ opacity: scheduleItems.length === 0 ? 0.4 : 1 }}
-            >
-              Export CSV
-            </button>
-            <button onClick={handleAddEvent} className="btn-primary">+ Add event</button>
-          </div>
-        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full justify-start">
