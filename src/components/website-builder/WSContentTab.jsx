@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, X, ChevronDown } from 'lucide-react';
+import { Plus, X, ChevronDown, Sparkles } from 'lucide-react';
 
 const PAGE_OPTIONS = [
   { id: 'home', label: 'Home' },
@@ -180,22 +180,206 @@ function RSVPContent({ details, onChange }) {
 function TravelContent({ details, onChange }) {
   const t = details.travelContent || {};
   const upT = (k, v) => onChange('travelContent', { ...t, [k]: v });
-  const hotels = t.accommodations || [];
+
+  const venueName = details.mainCeremony?.venueName || details.reception?.venueName || '';
+  const venueAddress = details.mainCeremony?.address || details.reception?.address || '';
+  const venueDisplay = venueName || venueAddress;
+  const bookingQuery = venueAddress
+    ? venueAddress.split(',').slice(1).join(',').trim() || venueAddress
+    : venueName;
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newOption, setNewOption] = useState({ type: 'Car', title: '', description: '', link: '' });
+  const transportOptions = t.transportOptions || [];
+
+  const handleAddOption = () => {
+    if (!newOption.title.trim()) return;
+    upT('transportOptions', [...transportOptions, { ...newOption, id: Date.now() }]);
+    setNewOption({ type: 'Car', title: '', description: '', link: '' });
+    setShowAddForm(false);
+  };
+
+  const handleAvaClick = () => {
+    const venue = venueDisplay || 'my venue';
+    const prompt = `Based on my wedding venue at ${venue}, suggest the best travel and transport options for my guests including flights, rideshare, public transport and accommodation.`;
+    window.dispatchEvent(new CustomEvent('openAva', { detail: { prompt } }));
+  };
+
+  const card = { border: '1px solid #E5E5E5', padding: 24, marginBottom: 16 };
+  const heading = { fontSize: 18, fontWeight: 600, color: '#0A0A0A', margin: '20px 0 8px', fontFamily: 'inherit' };
+  const body = { fontSize: 14, color: '#555555', margin: '0 0 10px', lineHeight: 1.55 };
+  const lnk = { fontSize: 14, color: '#E03553', textDecoration: 'underline' };
+
   return (
     <>
-      <FTextarea label="Getting There Notes" value={t.gettingThereNotes} onChange={v => upT('gettingThereNotes', v)} rows={3} />
-      <FInput label="Parking Info" value={t.parkingInfo} onChange={v => upT('parkingInfo', v)} />
-      <FInput label="Transport / Shuttle Info" value={t.transportInfo} onChange={v => upT('transportInfo', v)} />
-      <SectionHead>Hotels</SectionHead>
-      {hotels.map((h, i) => (
-        <div key={i} style={{ border: '1px solid #EEEEEE', padding: 12, marginBottom: 8, position: 'relative' }}>
-          <button onClick={() => upT('accommodations', hotels.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#CCC' }}><X size={12} /></button>
-          <FInput label="Hotel Name" value={h.name} onChange={v => { const a = [...hotels]; a[i] = { ...a[i], name: v }; upT('accommodations', a); }} />
-          <FInput label="Address" value={h.address} onChange={v => { const a = [...hotels]; a[i] = { ...a[i], address: v }; upT('accommodations', a); }} />
-          <FInput label="Booking URL" value={h.url} onChange={v => { const a = [...hotels]; a[i] = { ...a[i], url: v }; upT('accommodations', a); }} />
+      {/* Ava recommendations block */}
+      <div style={{ background: '#F5F4F0', border: '1px solid #E5E5E5', padding: 24, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
+          <Sparkles size={15} style={{ color: '#9333ea', flexShrink: 0, marginTop: 1 }} />
+          <p style={{ fontSize: 13, color: '#0A0A0A', margin: 0, lineHeight: 1.55 }}>
+            Let Ava suggest the best travel options for your guests based on your venue and guest locations.
+          </p>
         </div>
-      ))}
-      <AddBtn onClick={() => upT('accommodations', [...hotels, { name: '', address: '', url: '' }])}>Add Hotel</AddBtn>
+        <button
+          onClick={handleAvaClick}
+          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 999, background: 'linear-gradient(135deg, #ec4899, #9333ea)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#FFFFFF', fontFamily: 'inherit' }}
+        >
+          <Sparkles size={12} />Ask Ava for travel recommendations
+        </button>
+      </div>
+
+      {/* Getting here */}
+      <p style={heading}>Getting here</p>
+      <div style={card}>
+        {venueDisplay ? (
+          <div style={{ marginBottom: 12 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: 'inherit' }}>{venueName || venueDisplay}</p>
+            {venueAddress && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0 }}>{venueAddress}</p>}
+          </div>
+        ) : (
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 12px' }}>
+            No venue set — add your venue in Event details to get smart suggestions.
+          </p>
+        )}
+        <FTextarea
+          label="Airport / arrival notes"
+          value={t.gettingThereNotes}
+          onChange={v => upT('gettingThereNotes', v)}
+          rows={3}
+          placeholder={venueDisplay ? `e.g. The nearest major airport is approx. 45 min from ${venueName || 'the venue'}.` : 'e.g. The nearest major airport is a 45-minute drive from the venue.'}
+        />
+      </div>
+
+      {/* Rideshare */}
+      <p style={heading}>Rideshare</p>
+      <div style={card}>
+        <p style={body}>Uber and Lyft are available in most areas. Book a ride directly:</p>
+        <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+          <a href="https://www.uber.com" target="_blank" rel="noopener noreferrer" style={lnk}>Get a ride on Uber</a>
+          <a href="https://www.lyft.com" target="_blank" rel="noopener noreferrer" style={lnk}>Get a ride on Lyft</a>
+        </div>
+        <FTextarea
+          label="Additional rideshare notes (optional)"
+          value={t.rideshareNotes}
+          onChange={v => upT('rideshareNotes', v)}
+          rows={2}
+          placeholder="e.g. Drop-off is at the main entrance on Oak Street. Rideshare pickups on the left."
+        />
+      </div>
+
+      {/* Public transport */}
+      <p style={heading}>Public transport</p>
+      <div style={card}>
+        <FTextarea
+          label="Train / bus options"
+          value={t.transportInfo}
+          onChange={v => upT('transportInfo', v)}
+          rows={3}
+          placeholder={venueDisplay ? `e.g. Take the Northern Line to the nearest station, then a 10-min taxi to ${venueName || 'the venue'}.` : 'e.g. Take the Northern Line to the nearest station, then a short taxi ride.'}
+        />
+      </div>
+
+      {/* Parking */}
+      <p style={heading}>Parking</p>
+      <div style={card}>
+        <FTextarea
+          label="Parking details"
+          value={t.parkingInfo}
+          onChange={v => upT('parkingInfo', v)}
+          rows={2}
+          placeholder="e.g. Free on-site parking available. Overflow parking on Church Lane."
+        />
+      </div>
+
+      {/* Accommodation nearby */}
+      <p style={heading}>Accommodation nearby</p>
+      <div style={card}>
+        <p style={body}>Browse hotels and guesthouses near the venue:</p>
+        <a
+          href={bookingQuery ? `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(bookingQuery)}` : 'https://www.booking.com'}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ ...lnk, display: 'inline-block', marginBottom: 16 }}
+        >
+          {bookingQuery
+            ? `Search accommodation near ${bookingQuery.split(',')[0].trim()} on Booking.com`
+            : 'Search accommodation on Booking.com'}
+        </a>
+        {(t.accommodations || []).map((hotel, i) => (
+          <div key={i} style={{ border: '1px solid #EEEEEE', padding: 12, marginBottom: 8, position: 'relative' }}>
+            <button
+              onClick={() => upT('accommodations', (t.accommodations || []).filter((_, j) => j !== i))}
+              style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#CCC' }}
+            >
+              <X size={12} />
+            </button>
+            <FInput label="Hotel Name" value={hotel.name} onChange={v => { const a = [...(t.accommodations || [])]; a[i] = { ...a[i], name: v }; upT('accommodations', a); }} />
+            <FInput label="Address" value={hotel.address} onChange={v => { const a = [...(t.accommodations || [])]; a[i] = { ...a[i], address: v }; upT('accommodations', a); }} />
+            <FInput label="Booking URL" value={hotel.url} onChange={v => { const a = [...(t.accommodations || [])]; a[i] = { ...a[i], url: v }; upT('accommodations', a); }} />
+          </div>
+        ))}
+        <AddBtn onClick={() => upT('accommodations', [...(t.accommodations || []), { name: '', address: '', url: '' }])}>Add specific hotel</AddBtn>
+      </div>
+
+      {/* Custom transport options */}
+      {transportOptions.length > 0 && (
+        <>
+          <p style={heading}>Additional options</p>
+          {transportOptions.map((opt, i) => (
+            <div key={opt.id || i} style={{ ...card, position: 'relative' }}>
+              <button
+                onClick={() => upT('transportOptions', transportOptions.filter((_, j) => j !== i))}
+                style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', color: '#CCC' }}
+              >
+                <X size={12} />
+              </button>
+              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontWeight: 600, letterSpacing: '0.04em' }}>{opt.type}</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: '0 0 6px', fontFamily: 'inherit' }}>{opt.title}</p>
+              {opt.description && <p style={{ ...body, marginBottom: 6 }}>{opt.description}</p>}
+              {opt.link && <a href={opt.link} target="_blank" rel="noopener noreferrer" style={lnk}>{opt.link}</a>}
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Add transport option */}
+      {showAddForm ? (
+        <div style={card}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: 'inherit' }}>New transport option</p>
+          <div style={{ marginBottom: 16 }}>
+            <FLabel>Type</FLabel>
+            <select
+              value={newOption.type}
+              onChange={e => setNewOption(prev => ({ ...prev, type: e.target.value }))}
+              style={{ width: '100%', border: 'none', borderBottom: '1px solid #DDDDDD', padding: '7px 0', fontSize: 14, color: '#0A0A0A', outline: 'none', background: 'transparent', cursor: 'pointer', appearance: 'none' }}
+            >
+              {['Flight', 'Train', 'Bus', 'Rideshare', 'Car', 'Ferry', 'Other'].map(tp => (
+                <option key={tp} value={tp}>{tp}</option>
+              ))}
+            </select>
+          </div>
+          <FInput label="Title" value={newOption.title} onChange={v => setNewOption(prev => ({ ...prev, title: v }))} placeholder="e.g. Direct train from London Euston" />
+          <FTextarea label="Description" value={newOption.description} onChange={v => setNewOption(prev => ({ ...prev, description: v }))} rows={2} placeholder="e.g. Takes about 2 hours, runs every 30 min." />
+          <FInput label="Link (optional)" value={newOption.link} onChange={v => setNewOption(prev => ({ ...prev, link: v }))} placeholder="https://..." />
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            <button
+              onClick={handleAddOption}
+              disabled={!newOption.title.trim()}
+              style={{ padding: '6px 14px', borderRadius: 999, background: newOption.title.trim() ? '#0A0A0A' : 'rgba(10,10,10,0.1)', color: newOption.title.trim() ? '#FFFFFF' : 'rgba(10,10,10,0.3)', border: 'none', cursor: newOption.title.trim() ? 'pointer' : 'default', fontSize: 12, fontWeight: 600, fontFamily: 'inherit' }}
+            >
+              Save
+            </button>
+            <button
+              onClick={() => { setShowAddForm(false); setNewOption({ type: 'Car', title: '', description: '', link: '' }); }}
+              style={{ padding: '6px 14px', borderRadius: 999, background: 'transparent', color: '#0A0A0A', border: '1px solid rgba(10,10,10,0.2)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <AddBtn onClick={() => setShowAddForm(true)}>+ Add transport option</AddBtn>
+      )}
     </>
   );
 }

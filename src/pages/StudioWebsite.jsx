@@ -190,7 +190,7 @@ const DEFAULT = {
   mainCeremony: { venueName: '', address: '', startTime: '', endTime: '', dressCode: '', notes: '' },
   reception: { venueName: '', address: '', startTime: '', endTime: '', notes: '' },
   rsvpContent: { rsvpDeadline: '', mealOptions: [], enablePlusOnes: true, enableDietaryField: true, enableSongRequest: false, enableMessage: true, closingMessage: '' },
-  travelContent: { gettingThereNotes: '', parkingInfo: '', transportInfo: '', accommodations: [] },
+  travelContent: { gettingThereNotes: '', parkingInfo: '', transportInfo: '', rideshareNotes: '', accommodations: [], transportOptions: [] },
   registryContent: { registryLinks: [], registryMessage: '', noGiftsPlease: false },
   musicContent: { spotifyPlaylistUrl: '', enableGuestRequests: false, customMessage: '' },
   qna: [],
