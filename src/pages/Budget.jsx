@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Sparkles, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import toast from 'react-hot-toast';
 
 import BudgetForm from "../components/budget/BudgetForm";
@@ -278,47 +278,29 @@ export default function BudgetPage() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      {/* Toolbar row: Ava button left, actions right */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava for budget advice" onClick={() => setAvaOpen(true)} />
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={exportBudget}
+            disabled={budgetItems.length === 0}
+            className="btn-editorial-secondary"
+            style={{ opacity: budgetItems.length === 0 ? 0.4 : 1 }}
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={() => { setEditingItem(null); setShowForm(true); }}
+            className="btn-primary"
+          >
+            + Add expense
+          </button>
+        </div>
       </div>
 
       {/* Content */}
       <div style={{ padding: '32px 32px 48px' }}>
-
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
-          <button
-            onClick={() => setActiveTab('forecasting')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px',
-              borderRadius: 999, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', cursor: 'pointer',
-              fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif",
-              transition: 'transform 0.2s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-          >
-            <Sparkles size={14} />
-            Ask Ava — budget analysis
-          </button>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button
-              onClick={exportBudget}
-              disabled={budgetItems.length === 0}
-              className="btn-editorial-secondary"
-              style={{ opacity: budgetItems.length === 0 ? 0.4 : 1 }}
-            >
-              Export CSV
-            </button>
-            <button
-              onClick={() => { setEditingItem(null); setShowForm(true); }}
-              className="btn-primary"
-            >
-              + Add expense
-            </button>
-          </div>
-        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full justify-start">
