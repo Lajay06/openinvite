@@ -15,6 +15,7 @@ const labelStyle = {
   fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
+  margin: 0, marginBottom: 10,
 };
 
 function CountUp({ to, duration = 1200 }) {
@@ -140,11 +141,11 @@ export default function MoodboardPage() {
       <DashboardPageHeader title="Moodboard" subtitle="Collect and organise inspiration images for your wedding vision" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {stats.map((s, i) => (
           <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
-            <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '8px 0 0' }}>
+            <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 }}>
               <CountUp to={s.value} />
             </p>
           </div>
