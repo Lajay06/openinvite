@@ -99,7 +99,7 @@ export default function GuestList({ guests, onEdit, onDelete, loading }) {
           <TableBody>
             {loading ? <SkeletonRows /> : guests.map((guest) => (
               <TableRow key={guest.id}>
-                <TableCell>
+                <TableCell className="align-middle">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <Avatar className="w-8 h-8" style={{ flexShrink: 0 }}>
                       <AvatarImage src={getProfilePicture(guest)} alt={guest.name} />
@@ -115,7 +115,7 @@ export default function GuestList({ guests, onEdit, onDelete, loading }) {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-middle">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {guest.email && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, ...contactTextStyle }}>
@@ -129,24 +129,24 @@ export default function GuestList({ guests, onEdit, onDelete, loading }) {
                     )}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-middle">
                   {guest.category && (
                     <BadgePill style={CATEGORY_STYLES[guest.category] || CATEGORY_STYLES.family}>
                       {guest.category.replace(/_/g, ' ')}
                     </BadgePill>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-middle">
                   <BadgePill style={RSVP_STYLES[guest.rsvp_status] || RSVP_STYLES.pending}>
                     {guest.rsvp_status || 'pending'}
                   </BadgePill>
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-middle">
                   <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     {guest.table_assignment || '—'}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-middle">
                   {guest.plus_one ? (
                     <div>
                       <span style={{ fontSize: 12, fontWeight: 700, color: '#0A1930', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Yes</span>
@@ -158,7 +158,7 @@ export default function GuestList({ guests, onEdit, onDelete, loading }) {
                     <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No</span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-middle">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">

@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 
 import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
+import ImportGuestModal from "../components/guests/ImportGuestModal";
 import RSVPManagement from "../components/guests/RSVPManagement";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
@@ -67,6 +68,7 @@ export default function Guests() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   useEffect(() => { loadGuests(); }, []);
 
@@ -190,6 +192,12 @@ export default function Guests() {
         {/* Page toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, paddingBottom: 20, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
           <button
+            onClick={() => setShowImport(true)}
+            className="btn-editorial-secondary"
+          >
+            Import CSV
+          </button>
+          <button
             onClick={exportGuestList}
             disabled={guests.length === 0}
             className="btn-editorial-secondary"
@@ -262,6 +270,13 @@ export default function Guests() {
         systemPrompt="You are Ava, helping manage a wedding guest list. Help with RSVPs, dietary requirements, plus ones, and seating considerations."
         quickActions={["How should I handle plus ones?", "Draft an RSVP reminder message", "What dietary options should I offer?", "Help me organise my guest groups"]}
       />
+
+      {showImport && (
+        <ImportGuestModal
+          onClose={() => setShowImport(false)}
+          onImported={loadGuests}
+        />
+      )}
     </div>
   );
 }
