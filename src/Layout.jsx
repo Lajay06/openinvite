@@ -123,6 +123,18 @@ function TopBar({ weddingDetails, unreadCount }) {
           onClick={() => navigate('/Dashboard')}
           style={{ height: 18, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', cursor: 'pointer', flexShrink: 0 }}
         />
+        {coupleName && (
+          <>
+            <span style={{ color: 'rgba(255,255,255,0.18)', fontFamily: PJS, flexShrink: 0 }}>|</span>
+            <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.65)', fontFamily: PJS, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 340 }}>
+              {daysToGo !== null
+                ? daysToGo > 0
+                  ? `${coupleName} · ${daysToGo} days to go`
+                  : 'Your wedding day has arrived!'
+                : coupleName}
+            </span>
+          </>
+        )}
       </div>
 
       {/* Center: search pill */}
