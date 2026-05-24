@@ -23,7 +23,6 @@ const NAV_SECTIONS = [
       { icon: Calendar,        label: "Calendar",    url: createPageUrl("Calendar") },
       { icon: CheckSquare,     label: "Checklist",       url: createPageUrl("Checklist") },
       { icon: ListTodo,        label: "To do list",      url: createPageUrl("TodoList") },
-      { icon: Lightbulb,       label: "Considerations",  url: createPageUrl("Considerations") },
     ],
   },
   {
@@ -77,8 +76,9 @@ const NAV_SECTIONS = [
   {
     label: "Extras",
     items: [
-      { icon: Plane, label: "Honeymoon",         url: "/honeymoon" },
-      { icon: Phone, label: "Emergency contact", url: "/emergency-contact" },
+      { icon: Plane,     label: "Honeymoon",         url: "/honeymoon" },
+      { icon: Phone,     label: "Emergency contact", url: "/emergency-contact" },
+      { icon: Lightbulb, label: "Considerations",    url: createPageUrl("Considerations") },
     ],
   },
 ];
