@@ -125,8 +125,8 @@ export default function ImportGuestModal({ onClose, onImported }) {
   const validCount = rows ? rows.filter(r => !r._error).length : 0;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 660, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: 0, padding: 32, position: 'relative' }}>
+    <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.55)', padding: 24 }}>
+      <div style={{ width: '100%', maxWidth: 660, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: 0, padding: 32 }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
