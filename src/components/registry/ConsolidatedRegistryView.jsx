@@ -27,20 +27,20 @@ export default function ConsolidatedRegistryView({ storeItems, products, customG
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
       {/* Summary bar */}
-      <div style={{ background: '#0A1930', padding: '24px 32px', display: 'flex', alignItems: 'flex-end', gap: 32 }}>
+      <div style={{ background: '#F5F4F0', border: '1px solid #E5E5E5', padding: '24px 32px', display: 'flex', alignItems: 'flex-end', gap: 32 }}>
         {[
           { label: 'Platforms', value: storeItems.length },
           { label: 'Products', value: products.length },
           { label: 'Completion', value: `${completionRate}%` },
         ].map((s, i, arr) => (
-          <div key={i} style={{ paddingRight: i < arr.length - 1 ? 32 : 0, borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.12)' : 'none' }}>
-            <p style={{ ...labelStyle, color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>{s.label}</p>
-            <p style={{ fontSize: 28, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</p>
+          <div key={i} style={{ paddingRight: i < arr.length - 1 ? 32 : 0, borderRight: i < arr.length - 1 ? '1px solid #E5E5E5' : 'none' }}>
+            <p style={{ ...labelStyle, color: '#999999', marginBottom: 6 }}>{s.label}</p>
+            <p style={{ fontSize: 28, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</p>
           </div>
         ))}
         <div style={{ flex: 1, paddingBottom: 6 }}>
-          <div style={{ height: 3, background: 'rgba(255,255,255,0.15)' }}>
-            <div style={{ height: '100%', width: `${completionRate}%`, background: '#DDF762', transition: 'width 0.5s' }} />
+          <div style={{ height: 3, background: '#E5E5E5' }}>
+            <div style={{ height: '100%', width: `${completionRate}%`, background: '#E03553', transition: 'width 0.5s' }} />
           </div>
         </div>
       </div>
