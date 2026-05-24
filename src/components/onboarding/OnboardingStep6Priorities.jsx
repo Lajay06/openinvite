@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Wallet, Mail, Music2, Store, Sparkles } from 'lucide-react';
-
 const FEATURES = [
-  { id: 'guests', icon: Users, label: 'Guest Management', desc: 'Track RSVPs and seating' },
-  { id: 'budget', icon: Wallet, label: 'Budget Tracking', desc: 'Stay on top of spending' },
-  { id: 'invites', icon: Mail, label: 'Invitations', desc: 'Design and send invites' },
-  { id: 'music', icon: Music2, label: 'Music', desc: 'Curate your soundtrack' },
-  { id: 'vendors', icon: Store, label: 'Vendors', desc: 'Manage suppliers' },
-  { id: 'all', icon: Sparkles, label: 'All of it', desc: 'I want the full experience' }
+  { id: 'guests', label: 'Guest management', desc: 'Track RSVPs and seating' },
+  { id: 'budget', label: 'Budget tracking', desc: 'Stay on top of spending' },
+  { id: 'invites', label: 'Invitations', desc: 'Design and send invites' },
+  { id: 'music', label: 'Music', desc: 'Curate your soundtrack' },
+  { id: 'vendors', label: 'Vendors', desc: 'Manage suppliers' },
+  { id: 'all', label: 'All of it', desc: 'I want the full experience' },
 ];
 
 export default function OnboardingStep6Priorities({ onNext, data }) {
@@ -62,7 +60,6 @@ export default function OnboardingStep6Priorities({ onNext, data }) {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12"
       >
         {FEATURES.map((feature, i) => {
-          const Icon = feature.icon;
           const isSelected = selected.includes(feature.id);
           return (
             <motion.button
@@ -81,10 +78,7 @@ export default function OnboardingStep6Priorities({ onNext, data }) {
                 borderRadius: 0,
               }}
             >
-              <div style={{ marginBottom: 12, color: isSelected ? '#E03553' : 'rgba(255,255,255,0.4)' }}>
-                <Icon size={20} strokeWidth={1.5} />
-              </div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: isSelected ? '#FFFFFF' : 'rgba(255,255,255,0.7)', marginBottom: 4, fontFamily: 'Plus Jakarta Sans, sans-serif', margin: '0 0 4px' }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: isSelected ? '#FFFFFF' : 'rgba(255,255,255,0.7)', margin: '0 0 4px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
                 {feature.label}
               </p>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: 1.5, margin: 0 }}>

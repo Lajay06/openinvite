@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -14,24 +13,6 @@ export default function OnboardingStep7Ava({ onNext, data, theme }) {
 
   return (
     <div className="w-full max-w-3xl text-center">
-      <motion.div
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-12"
-      >
-        <div className="w-24 h-24 mx-auto mb-8 relative">
-          <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="absolute inset-0 rounded-full bg-gradient-to-r from-[#E03553] to-[#803D81] opacity-20 blur-2xl"
-          />
-          <div className="absolute inset-0 rounded-full flex items-center justify-center">
-            <Sparkles className="w-10 h-10 text-[#E03553]" />
-          </div>
-        </div>
-      </motion.div>
-
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

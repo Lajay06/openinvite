@@ -72,7 +72,7 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
           animate={{ opacity: 1, y: 0 }}
           style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 12, paddingLeft: 4 }}
         >
-          <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #E03553, #803D81)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#FFF', flexShrink: 0, marginTop: 2 }}>✦</div>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #E03553, #803D81)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#FFF', flexShrink: 0, marginTop: 2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>A</div>
           <div>
             <p style={{ fontSize: 16, color: textPrimary, lineHeight: 1.6, margin: 0, maxWidth: 560 }}>
               "Now let's choose the aesthetic for your entire wedding — your invitations, website, and every piece of design will follow this style."

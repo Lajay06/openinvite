@@ -32,26 +32,6 @@ export default function OnboardingCompletion({ onDone, data, theme }) {
 
   return (
     <div className="w-full max-w-2xl text-center">
-      {/* Animated gradient orb */}
-      <motion.div
-        initial={{ scale: 0, rotate: 0 }}
-        animate={{ scale: 1, rotate: 360 }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-        className="w-20 h-20 mx-auto mb-12 relative"
-      >
-        <motion.div
-          animate={{ scale: [1, 1.15, 1] }}
-          transition={{ duration: 2.5, repeat: Infinity }}
-          className="absolute inset-0 rounded-full bg-gradient-to-r from-[#E03553] to-[#803D81] opacity-20 blur-xl"
-        />
-        <div
-          className="absolute inset-0 rounded-full flex items-center justify-center text-3xl"
-          style={{ fontFamily: PJS, fontWeight: 800, color: textPrimary }}
-        >
-          ✦
-        </div>
-      </motion.div>
-
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

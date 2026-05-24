@@ -23,7 +23,7 @@ export default function OnboardingStep1Names({ onNext, theme }) {
   const sentenceStyle = {
     fontSize: 32, fontWeight: 400,
     color: labelColor, fontFamily: PJS,
-    whiteSpace: 'nowrap', margin: 0,
+    margin: 0, flexShrink: 0,
   };
 
   const inputStyle = (value, focused) => ({
@@ -32,7 +32,9 @@ export default function OnboardingStep1Names({ onNext, theme }) {
     borderBottom: (value || focused)
       ? '2px solid #ec4899'
       : `1px solid ${inputBorderDefault}`,
-    width: 220,
+    minWidth: 200,
+    maxWidth: 300,
+    width: '100%',
     fontSize: 32,
     fontWeight: 700,
     color: inputColor,
@@ -40,6 +42,7 @@ export default function OnboardingStep1Names({ onNext, theme }) {
     padding: '4px 8px',
     outline: 'none',
     textAlign: 'left',
+    flex: '1 1 200px',
   });
 
   return (
@@ -49,7 +52,7 @@ export default function OnboardingStep1Names({ onNext, theme }) {
       `}</style>
 
       {/* Line 1 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', flexWrap: 'wrap' }}>
         <span style={sentenceStyle}>Hi, my name is</span>
         <input
           type="text"
@@ -65,7 +68,7 @@ export default function OnboardingStep1Names({ onNext, theme }) {
       </div>
 
       {/* Line 2 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', flexWrap: 'wrap' }}>
         <span style={sentenceStyle}>and my partner's name is</span>
         <input
           type="text"

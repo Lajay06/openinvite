@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Users2, UsersRound } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const CARDS = [
-  { id: 'intimate',     label: 'Intimate',     range: 'Under 50', icon: Users },
-  { id: 'celebration',  label: 'Celebration',  range: '50 – 150', icon: Users2 },
-  { id: 'grand',        label: 'Grand',        range: '150+',     icon: UsersRound },
+  { id: 'intimate',     label: 'Intimate',     range: 'Under 50' },
+  { id: 'celebration',  label: 'Celebration',  range: '50 – 150' },
+  { id: 'grand',        label: 'Grand',        range: '150+' },
 ];
 
 export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
@@ -48,7 +47,6 @@ export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
         className="grid grid-cols-3 gap-4 mb-12"
       >
         {CARDS.map((card, i) => {
-          const Icon = card.icon;
           const isSelected = selected === card.id;
           return (
             <motion.button
@@ -58,7 +56,7 @@ export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
               transition={{ delay: 0.15 + i * 0.1 }}
               onClick={() => setSelected(card.id)}
               style={{
-                padding: 24,
+                padding: '28px 24px',
                 border: isSelected ? '2px solid transparent' : `2px solid ${cardBorder}`,
                 background: isSelected
                   ? 'linear-gradient(135deg, #E03553, #803D81)'
@@ -67,16 +65,10 @@ export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
                 transition: 'all 0.2s ease',
               }}
             >
-              <Icon
-                style={{
-                  width: 32, height: 32, marginBottom: 12, display: 'block', margin: '0 auto 12px',
-                  color: isSelected ? '#FFFFFF' : textMuted,
-                }}
-              />
-              <div style={{ fontWeight: 600, color: '#FFFFFF', fontFamily: PJS, fontSize: 15 }}>
+              <div style={{ fontWeight: 700, color: isSelected ? '#FFFFFF' : textPrimary, fontFamily: PJS, fontSize: 16, marginBottom: 6 }}>
                 {card.label}
               </div>
-              <div style={{ fontSize: 12, color: isSelected ? 'rgba(255,255,255,0.8)' : textMuted, fontFamily: PJS }}>
+              <div style={{ fontSize: 13, color: isSelected ? 'rgba(255,255,255,0.8)' : textMuted, fontFamily: PJS }}>
                 {card.range}
               </div>
             </motion.button>

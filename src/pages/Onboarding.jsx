@@ -216,10 +216,15 @@ export default function Onboarding() {
 
   const stepProps = { theme, setTheme };
 
+  // Fork step always renders on a light background
+  const isForkStep = currentStep === 'fork';
+  const pageBg = isForkStep ? '#F5F4F0' : (isDark ? '#0A0A0A' : '#FAFAFA');
+  const pageIsLight = isForkStep || !isDark;
+
   return (
     <div style={{
       minHeight: '100vh',
-      background: isDark ? '#0A0A0A' : '#FAFAFA',
+      background: pageBg,
       overflow: 'hidden',
       transition: 'background 0.3s ease',
     }}>
@@ -228,7 +233,7 @@ export default function Onboarding() {
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         height: 2, zIndex: 100,
-        background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+        background: pageIsLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)',
       }}>
         <motion.div
           style={{
@@ -252,7 +257,7 @@ export default function Onboarding() {
           alt="openinvite"
           style={{
             height: 20, width: 'auto', display: 'block',
-            filter: isDark ? 'brightness(0) invert(1)' : 'brightness(0)',
+            filter: pageIsLight ? 'brightness(0)' : 'brightness(0) invert(1)',
           }}
         />
 
@@ -260,7 +265,7 @@ export default function Onboarding() {
         {showStepCounter && (
           <span style={{
             fontSize: 11, fontFamily: PJS,
-            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+            color: pageIsLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)',
           }}>
             Step {stepNum} of {DISPLAY_STEP_COUNT}
           </span>
@@ -273,7 +278,7 @@ export default function Onboarding() {
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 13, fontFamily: PJS, padding: 0,
-              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+              color: pageIsLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)',
               textAlign: 'left',
             }}
           >
@@ -290,17 +295,17 @@ export default function Onboarding() {
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '6px 14px', borderRadius: 999,
           fontSize: 12, fontFamily: PJS, cursor: 'pointer',
-          background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
-          color: isDark ? '#FFFFFF' : '#0A0A0A',
-          border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.12)',
+          background: pageIsLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.1)',
+          color: pageIsLight ? '#0A0A0A' : '#FFFFFF',
+          border: pageIsLight ? '1px solid rgba(0,0,0,0.12)' : '1px solid rgba(255,255,255,0.2)',
           transition: 'all 0.2s ease',
         }}
       >
-        {isDark
-          ? <Moon size={14} />
-          : <Sun size={14} />
+        {pageIsLight
+          ? <Sun size={14} />
+          : <Moon size={14} />
         }
-        {isDark ? 'Dark' : 'Light'}
+        {isDark && !isForkStep ? 'Dark' : 'Light'}
       </button>
 
       {/* Steps container */}
