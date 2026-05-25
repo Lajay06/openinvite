@@ -49,6 +49,7 @@ import LiveStreaming from './pages/LiveStreaming';
 import WeddingParty from './pages/WeddingParty';
 import WeddingFavours from './pages/WeddingFavours';
 import EventDetails from './pages/EventDetails';
+import PaymentSuccess from './pages/PaymentSuccess';
 import StudioAman from './pages/StudioAman';
 import StudioTulum from './pages/StudioTulum';
 import StudioKyoto from './pages/StudioKyoto';
@@ -212,6 +213,7 @@ const AuthenticatedApp = () => {
       <Route path="/wedding-party" element={<LayoutWrapper currentPageName="WeddingParty"><WeddingParty /></LayoutWrapper>} />
       <Route path="/wedding-favours" element={<LayoutWrapper currentPageName="WeddingFavours"><WeddingFavours /></LayoutWrapper>} />
       <Route path="/event-details" element={<LayoutWrapper currentPageName="EventDetails"><EventDetails /></LayoutWrapper>} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
       <Route path="/studio/universe/aman" element={<StudioAman />} />
       <Route path="/studio/universe/tulum" element={<StudioTulum />} />
       <Route path="/studio/universe/kyoto" element={<StudioKyoto />} />

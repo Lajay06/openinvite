@@ -72,7 +72,8 @@
       "Bash(grep -v \"^$\\\\|browserslist\\\\|caniuse\\\\|baseline\\\\|VITE_BASE44\")",
       "Bash(awk -F'base44\\\\.entities\\\\.' '{print $2}')",
       "Bash(awk -F'[^a-zA-Z]' '{print $1}')",
-      "Bash(echo \"BUILD_EXIT:$?\")"
+      "Bash(echo \"BUILD_EXIT:$?\")",
+      "Bash(npm list *)"
     ]
   }
 }

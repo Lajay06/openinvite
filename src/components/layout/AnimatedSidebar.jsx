@@ -139,7 +139,7 @@ function NavItem({ icon: Icon, label, url, onClick, isActive }) {
 
 // ── Desktop sidebar ───────────────────────────────────────────────────────────
 
-export function AnimatedSidebar({ weddingName, onOpenTips }) {
+export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -153,7 +153,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips }) {
       style={{
         position: "fixed",
         left: 0,
-        top: 48,
+        top: topOffset,
         bottom: 0,
         width: 200,
         zIndex: 40,

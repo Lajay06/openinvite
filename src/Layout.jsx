@@ -292,6 +292,22 @@ export default function Layout({ children, currentPageName }) {
     setSavingSettings(false);
   };
 
+  // Trial banner: show only when user is on trial (no paid plan) and trial hasn't expired
+  const trialBanner = React.useMemo(() => {
+    if (!user) return null;
+    const plan = user.plan;
+    if (plan === 'pro' || plan === 'ultra') return null; // paid — no banner
+
+    const trialStart = user.trialStartedAt ? new Date(user.trialStartedAt) : null;
+    const trialStartFallback = user.created_date ? new Date(user.created_date) : new Date();
+    const start = trialStart || trialStartFallback;
+    const trialEnd = new Date(start.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const daysLeft = Math.max(0, Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)));
+
+    if (daysLeft === 0) return { expired: true, daysLeft: 0 };
+    return { expired: false, daysLeft };
+  }, [user]);
+
   if (noLayoutPages.includes(currentPageName)) return <>{children}</>;
 
   return (
@@ -315,6 +331,47 @@ export default function Layout({ children, currentPageName }) {
         unreadCount={unreadMessagesCount}
       />
 
+      {/* ── Trial banner (desktop only, below top bar) ───────── */}
+      {trialBanner && (
+        <div
+          className="hidden lg:flex"
+          style={{
+            position: 'fixed',
+            top: TOP_BAR_H,
+            left: 0,
+            right: 0,
+            height: 36,
+            zIndex: 49,
+            background: trialBanner.expired ? '#E03553' : 'rgba(10,10,10,0.93)',
+            backdropFilter: 'blur(8px)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 12,
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+          }}
+        >
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontFamily: PJS }}>
+            {trialBanner.expired
+              ? 'Your free trial has ended.'
+              : `14-day free trial — ${trialBanner.daysLeft} day${trialBanner.daysLeft !== 1 ? 's' : ''} remaining.`}
+          </span>
+          <a
+            href="/pricing"
+            style={{
+              fontSize: 12, fontWeight: 700, color: '#FFFFFF',
+              fontFamily: PJS, textDecoration: 'none',
+              background: '#E03553', borderRadius: 999,
+              padding: '3px 12px', lineHeight: 1.6,
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+          >
+            Upgrade
+          </a>
+        </div>
+      )}
+
       {/* ── Desktop: fixed sidebar (below top bar) ──────────── */}
       <div className="hidden lg:block">
         <AnimatedSidebar
@@ -322,6 +379,7 @@ export default function Layout({ children, currentPageName }) {
           onAccountSettings={() => setShowAccountSettings(true)}
           onCollaborate={() => setShowCollaborateModal(true)}
           onOpenTips={() => setShowTipsModal(true)}
+          topOffset={TOP_BAR_H + (trialBanner ? 36 : 0)}
         />
       </div>
 
@@ -483,10 +541,10 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* ── Main content ─────────────────────────────────── */}
-      {/* Desktop: right of sidebar, below top bar + sub-header */}
+      {/* Desktop: right of sidebar, below top bar (+ trial banner if active) */}
       <div
         className="hidden lg:block page-content"
-        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: TOP_BAR_H }}
+        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: TOP_BAR_H + (trialBanner ? 36 : 0) }}
       >
         {children}
       </div>

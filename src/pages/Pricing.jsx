@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
+import { base44 } from "@/api/base44Client";
+import { Loader2 } from "lucide-react";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -104,12 +106,42 @@ function CellValue({ val }) {
   return <span style={{ fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>{val}</span>;
 }
 
+async function startCheckout(plan, setLoadingPlan) {
+  setLoadingPlan(plan);
+  try {
+    let userEmail = '';
+    let userId = '';
+    try {
+      const me = await base44.auth.me();
+      userEmail = me?.email || '';
+      userId = me?.id || '';
+    } catch {}
+
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan, userEmail, userId }),
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      console.error('Checkout error:', data.error);
+    }
+  } catch (err) {
+    console.error('Checkout fetch error:', err);
+  } finally {
+    setLoadingPlan(null);
+  }
+}
+
 export default function Pricing() {
   const navigate = useNavigate();
+  const [loadingPlan, setLoadingPlan] = useState(null);
 
   const goFree  = () => navigate("/onboarding");
-  const goPro   = () => navigate("/onboarding?plan=pro");
-  const goUltra = () => navigate("/onboarding?plan=ultra");
+  const goPro   = () => startCheckout('pro', setLoadingPlan);
+  const goUltra = () => startCheckout('ultra', setLoadingPlan);
 
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100vh", fontFamily: PJS }}>
@@ -217,15 +249,18 @@ export default function Pricing() {
               </ul>
               <button
                 onClick={goPro}
+                disabled={loadingPlan === 'pro'}
                 style={{
                   width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 600,
-                  fontFamily: PJS, cursor: "pointer", border: "none",
+                  fontFamily: PJS, cursor: loadingPlan === 'pro' ? "default" : "pointer", border: "none",
                   background: "#E03553", color: "#FFFFFF", transition: "opacity 0.15s",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  opacity: loadingPlan === 'pro' ? 0.7 : 1,
                 }}
-                onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
-                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.88"; }}
+                onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
               >
-                Get Pro — $99
+                {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $99"}
               </button>
               <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
                 24-month access · one-time payment
@@ -265,16 +300,19 @@ export default function Pricing() {
             </ul>
             <button
               onClick={goUltra}
+              disabled={loadingPlan === 'ultra'}
               style={{
                 width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 600,
-                fontFamily: PJS, cursor: "pointer",
+                fontFamily: PJS, cursor: loadingPlan === 'ultra' ? "default" : "pointer",
                 background: "#FFFFFF", border: "1.5px solid #0A0A0A", color: "#0A0A0A",
                 transition: "background 0.15s",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                opacity: loadingPlan === 'ultra' ? 0.7 : 1,
               }}
-              onMouseEnter={e => e.currentTarget.style.background = "#F3F3F3"}
-              onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}
+              onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.background = "#F3F3F3"; }}
+              onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.background = "#FFFFFF"; }}
             >
-              Get Ultra — $199
+              {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra — $199"}
             </button>
             <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
               24-month access · one-time payment
@@ -395,20 +433,24 @@ export default function Pricing() {
           </button>
           <button
             onClick={goPro}
+            disabled={loadingPlan === 'pro'}
             style={{
               padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 600,
-              fontFamily: PJS, cursor: "pointer", border: "none",
+              fontFamily: PJS, cursor: loadingPlan === 'pro' ? "default" : "pointer", border: "none",
               background: "#FFFFFF", color: "#0A0A0A", transition: "opacity 0.15s",
+              display: "flex", alignItems: "center", gap: 8,
+              opacity: loadingPlan === 'pro' ? 0.7 : 1,
             }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.85"; }}
+            onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
           >
-            Get Pro — $99
+            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $99"}
           </button>
         </div>
       </section>
 
       <PublicFooter />
+      <style>{`@keyframes oi-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
