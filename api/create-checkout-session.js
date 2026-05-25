@@ -1,17 +1,12 @@
 const Stripe = require('stripe');
 
-const PLANS = {
-  pro: {
-    name: 'Openinvite Pro',
-    description: 'Complete wedding planning — 24-month access',
-    amount: 9900, // $99.00 AUD in cents
-  },
-  ultra: {
-    name: 'Openinvite Ultra',
-    description: 'Full planning suite + invitation design — 24-month access',
-    amount: 19900, // $199.00 AUD in cents
-  },
+// Price IDs come from env vars; hardcoded values are the fallback safety net.
+const PRICE_IDS = {
+  pro:   process.env.VITE_STRIPE_PRO_PRICE_ID   || 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
+  ultra: process.env.VITE_STRIPE_ULTRA_PRICE_ID || 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
 };
+
+const VALID_PLANS = new Set(Object.keys(PRICE_IDS));
 
 module.exports = async function handler(req, res) {
   // CORS headers
@@ -37,11 +32,11 @@ module.exports = async function handler(req, res) {
   try {
     const { plan, userEmail, userId } = req.body || {};
 
-    if (!plan || !PLANS[plan]) {
+    if (!plan || !VALID_PLANS.has(plan)) {
       return res.status(400).json({ error: 'Invalid plan. Must be "pro" or "ultra".' });
     }
 
-    const planConfig = PLANS[plan];
+    const priceId = PRICE_IDS[plan];
     const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || 'https://openinvite.com.au';
 
     const session = await stripe.checkout.sessions.create({
@@ -49,14 +44,7 @@ module.exports = async function handler(req, res) {
       payment_method_types: ['card'],
       line_items: [
         {
-          price_data: {
-            currency: 'aud',
-            unit_amount: planConfig.amount,
-            product_data: {
-              name: planConfig.name,
-              description: planConfig.description,
-            },
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
