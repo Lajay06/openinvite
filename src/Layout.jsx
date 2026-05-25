@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { X, Loader2, Bell, Search, Sparkles } from "lucide-react";
 import { track, reset as analyticsReset } from '@/lib/analytics';
+import { resetSession as crispReset } from '@/lib/crisp';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import CurrencyModal from './components/layout/CurrencyModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -100,6 +101,7 @@ function TopBar({ weddingDetails, unreadCount }) {
   const handleLogout = () => {
     track('user_logged_out');
     analyticsReset();
+    crispReset();
     localStorage.removeItem('oi_auth');
     localStorage.removeItem('oi_user');
     localStorage.removeItem('base44_access_token');

@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react'
 import { Toaster } from "@/components/ui/toaster"
 import ScrollToTop from "@/components/ScrollToTop"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -11,6 +12,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
+import { show as crispShow, hide as crispHide } from '@/lib/crisp';
 import DevReset from './pages/DevReset';
 import About from './pages/About';
 import Ava from './pages/Ava';
@@ -81,6 +83,15 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 const AuthenticatedApp = () => {
   const location = useLocation();
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+
+  // Hide Crisp on /pricing to keep that page clean; show it everywhere else
+  useEffect(() => {
+    if (location.pathname === '/Pricing' || location.pathname === '/pricing') {
+      crispHide();
+    } else {
+      crispShow();
+    }
+  }, [location.pathname]);
 
   // /login — public; redirect to /Dashboard if already authenticated
   if (location.pathname === '/login') {
