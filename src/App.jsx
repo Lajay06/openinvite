@@ -69,6 +69,8 @@ import AvaStudioWebsite from './pages/AvaStudioWebsite';
 import AvaStudioAssets from './pages/AvaStudioAssets';
 import Help from './pages/Help';
 import Account from './pages/Account';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import StudioGuestSuite from './pages/StudioGuestSuite';
 import ExperienceGuide from './pages/ExperienceGuide';
 import Features from './pages/Features';
@@ -246,6 +248,8 @@ const AuthenticatedApp = () => {
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/help" element={<LayoutWrapper currentPageName="Help"><Help /></LayoutWrapper>} />
       <Route path="/account" element={<LayoutWrapper currentPageName="Account"><Account /></LayoutWrapper>} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dev-reset" element={<DevReset />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
