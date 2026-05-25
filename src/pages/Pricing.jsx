@@ -106,8 +106,15 @@ function CellValue({ val }) {
   return <span style={{ fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>{val}</span>;
 }
 
+// Price IDs: prefer env vars (set at build time via VITE_ prefix), fall back to hardcoded
+const PRICE_IDS = {
+  pro:   import.meta.env.VITE_STRIPE_PRO_PRICE_ID   || 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
+  ultra: import.meta.env.VITE_STRIPE_ULTRA_PRICE_ID || 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
+};
+
 async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
-  console.log('[Checkout] Button clicked — plan:', plan);
+  const priceId = PRICE_IDS[plan];
+  console.log('[Checkout] Button clicked — plan:', plan, '| priceId:', priceId);
   setLoadingPlan(plan);
   setCheckoutError(null);
 
@@ -123,14 +130,14 @@ async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
       console.warn('[Checkout] Could not resolve user — continuing as guest:', authErr);
     }
 
-    console.log('[Checkout] POSTing to /api/create-checkout-session with plan:', plan);
+    console.log('[Checkout] POSTing to /api/create-checkout-session');
 
     let res;
     try {
       res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, userEmail, userId }),
+        body: JSON.stringify({ priceId, userEmail, userId }),
       });
     } catch (networkErr) {
       console.error('[Checkout] Network error — is the API reachable?', networkErr);
@@ -140,7 +147,7 @@ async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
 
     console.log('[Checkout] Response status:', res.status, res.ok);
 
-    // Safely parse the response — it may be HTML (e.g. Vite 404) rather than JSON
+    // Safely parse — response may be HTML (Vite dev 404) rather than JSON
     const contentType = res.headers.get('content-type') || '';
     let data;
     if (contentType.includes('application/json')) {
@@ -148,15 +155,11 @@ async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
     } else {
       const text = await res.text();
       console.error('[Checkout] Non-JSON response received:', text.slice(0, 300));
-      if (!res.ok) {
-        setCheckoutError(
-          res.status === 404
-            ? 'Checkout API not found (404). This works when deployed to Vercel — run `vercel dev` locally to test.'
-            : `Server error ${res.status}. Please try again.`
-        );
-      } else {
-        setCheckoutError('Unexpected server response. Please try again.');
-      }
+      setCheckoutError(
+        res.status === 404
+          ? 'Checkout API not found. This works on Vercel — run `vercel dev` to test locally.'
+          : `Server error ${res.status}. Please try again.`
+      );
       return;
     }
 
@@ -167,7 +170,7 @@ async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
       window.location.href = data.url;
     } else {
       const msg = data.error || 'Checkout session could not be created.';
-      console.error('[Checkout] API returned error:', msg);
+      console.error('[Checkout] API returned error:', msg, '| type:', data.type, '| code:', data.code);
       setCheckoutError(msg);
     }
   } catch (err) {
