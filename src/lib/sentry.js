@@ -24,6 +24,7 @@ if (dsn) {
     // Session Replay: 10% of sessions, 100% when an error occurs
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
+    sendDefaultPii: false,
     // Don't send errors in local dev even if DSN is somehow present
     enabled: import.meta.env.PROD,
   });

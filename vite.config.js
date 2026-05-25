@@ -14,14 +14,13 @@ export default defineConfig({
       hmrNotifier: true
     }),
     react(),
-    // Sentry: uploads source maps to Sentry after each production build.
-    // Only active when SENTRY_AUTH_TOKEN is set (safe to omit in local dev).
-    // TODO: fill in your org and project slugs from sentry.io → Settings → General
+    // Sentry: uploads source maps after each production build so errors
+    // show real file/line numbers instead of minified stack traces.
+    // Disabled automatically when SENTRY_AUTH_TOKEN is not set.
     sentryVitePlugin({
-      org: 'TODO_YOUR_SENTRY_ORG',       // e.g. 'openinvite'
-      project: 'TODO_YOUR_SENTRY_PROJECT', // e.g. 'openinvite-web'
-      authToken: process.env.SENTRY_AUTH_TOKEN, // set in Vercel env vars
-      // Only upload source maps when the auth token is present
+      org: 'openinvite',
+      project: 'openinvite',
+      authToken: process.env.SENTRY_AUTH_TOKEN,
       disable: !process.env.SENTRY_AUTH_TOKEN,
       telemetry: false,
     }),
