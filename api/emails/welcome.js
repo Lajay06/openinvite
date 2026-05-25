@@ -44,7 +44,7 @@ export function welcomeEmail({ name, email }) {
               <table cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:#0A0A0A;border-radius:999px;">
-                    <a href="https://openinvite-pearl.vercel.app/Dashboard"
+                    <a href="https://openinvite.com.au/Dashboard"
                        style="display:inline-block;padding:13px 28px;font-size:14px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:'Plus Jakarta Sans',Helvetica,Arial,sans-serif;">
                       Go to your dashboard
                     </a>

@@ -19,8 +19,8 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.VITE_APP_URL || 'https://openinvite-pearl.vercel.app'}/dashboard?checkout=success`,
-      cancel_url: `${process.env.VITE_APP_URL || 'https://openinvite-pearl.vercel.app'}/pricing?checkout=cancelled`,
+      success_url: `${process.env.VITE_APP_URL || 'https://openinvite.com.au'}/dashboard?checkout=success`,
+      cancel_url: `${process.env.VITE_APP_URL || 'https://openinvite.com.au'}/pricing?checkout=cancelled`,
     });
 
     return res.status(200).json({ url: session.url });
