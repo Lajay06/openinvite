@@ -10,22 +10,19 @@ const labelStyle = {
   color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6,
 };
 
-// Row: flex items-start gap-3 mb-3
 const row = {
   display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12,
 };
 
-// Icon: text-[#E03553] w-4 h-4 flex-shrink-0 mt-0.5
 const iconStyle = { color: '#E03553', width: 16, height: 16, flexShrink: 0, marginTop: 2 };
 
-// Link style
 const linkStyle = {
   fontSize: 14, color: '#E03553', textDecoration: 'underline',
   fontFamily: PJS, lineHeight: 1.5, background: 'none', border: 'none',
   cursor: 'pointer', padding: 0,
 };
 
-// Shared with LocationPicker — script loads only once (checked by ID)
+// Shared with LocationPicker — only one script tag is ever injected (checked by ID)
 function loadGoogleMapsScript() {
   if (window.google?.maps?.places) return;
   if (document.getElementById('gm-script')) return;
@@ -38,32 +35,27 @@ function loadGoogleMapsScript() {
   document.head.appendChild(script);
 }
 
-// Extract today's hours from opening_hours.weekday_text
-// weekday_text is Mon–Sun (index 0=Mon … 6=Sun); getDay() is 0=Sun…6=Sat
+// Extract today's opening hours string from the Places weekday_text array.
+// weekday_text is Mon–Sun indexed (0 = Monday). getDay() returns 0 = Sunday.
 function getTodayHours(openingHours) {
   const texts = openingHours?.weekday_text;
   if (!texts?.length) return '';
-  const day = new Date().getDay(); // 0=Sun
-  const idx = day === 0 ? 6 : day - 1; // convert to Mon-based index
-  const text = texts[idx] || '';
-  // Strip the day name prefix ("Monday: 9:00 AM – 5:00 PM" → "9:00 AM – 5:00 PM")
-  return text.replace(/^[^:]+:\s*/, '');
+  const dow = new Date().getDay(); // 0=Sun
+  const idx = dow === 0 ? 6 : dow - 1; // convert to Mon-based
+  return (texts[idx] || '').replace(/^[^:]+:\s*/, ''); // strip "Monday: " prefix
 }
 
-// Build photo URL from place.photos[0]
-// Tries photo_reference first (internal data), then getUrl() from the JS SDK
+// Get the best available photo URL from a PlacePhoto array.
+// Tries accessing the underlying photo_reference first, then falls back to getUrl().
 function getPhotoUrl(photos) {
   if (!photos?.length) return '';
   const photo = photos[0];
   try {
-    // photo_reference is present in the underlying API data even if not in the public typedefs
     const ref = photo['photo_reference'] || photo.photo_reference;
     if (ref) {
       return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${encodeURIComponent(ref)}&key=${GOOGLE_MAPS_API_KEY}`;
     }
-    // Fall back to getUrl() — returns the same CDN URL internally
-    const url = photo.getUrl({ maxWidth: 800 });
-    return url || '';
+    return photo.getUrl({ maxWidth: 800 }) || '';
   } catch {
     return '';
   }
@@ -77,12 +69,14 @@ export default function VenueSearch({
   placeholder = 'Search for a venue…',
   venueDetails = {},
 }) {
-  const [searchTerm, setSearchTerm]         = useState('');
-  const [results, setResults]               = useState([]);
-  const [isSearching, setIsSearching]       = useState(false);
-  const [showResults, setShowResults]       = useState(false);
-  const [focused, setFocused]               = useState(false);
+  const [searchTerm, setSearchTerm]           = useState('');
+  const [results, setResults]                 = useState([]);
+  const [isSearching, setIsSearching]         = useState(false);
+  const [showResults, setShowResults]         = useState(false);
+  const [focused, setFocused]                 = useState(false);
   const [fetchingDetails, setFetchingDetails] = useState(false);
+  const [searchError, setSearchError]         = useState('');
+
   const containerRef = useRef(null);
   const sessionToken = useRef(null);
   const debounceRef  = useRef(null);
@@ -100,11 +94,12 @@ export default function VenueSearch({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Debounced search
+  // Debounced search — triggers after 400ms of no typing
   useEffect(() => {
     if (!searchTerm || searchTerm.length < 2) {
       setResults([]);
       setShowResults(false);
+      setSearchError('');
       return;
     }
     clearTimeout(debounceRef.current);
@@ -112,39 +107,13 @@ export default function VenueSearch({
     return () => clearTimeout(debounceRef.current);
   }, [searchTerm]);
 
-  // ── Google Places autocomplete ─────────────────────────────────────────────
-  const runGoogleSearch = (query) => {
-    setIsSearching(true);
-    if (!sessionToken.current) {
-      sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
-    }
-    const svc = new window.google.maps.places.AutocompleteService();
-    svc.getPlacePredictions(
-      { input: query, sessionToken: sessionToken.current, types: ['establishment'] },
-      (predictions, status) => {
-        setIsSearching(false);
-        const OK = window.google.maps.places.PlacesServiceStatus.OK;
-        if (status === OK && predictions?.length) {
-          setResults(predictions.map(p => ({
-            placeId: p.place_id,
-            name:    p.structured_formatting?.main_text      || p.description,
-            address: p.structured_formatting?.secondary_text || '',
-          })));
-          setShowResults(true);
-        } else {
-          setResults([]);
-          runLLMFallback(query);
-        }
-      }
-    );
-  };
-
-  // ── LLM fallback ──────────────────────────────────────────────────────────
-  const runLLMFallback = async (query) => {
-    setIsSearching(true);
+  // ── LLM search (primary, always reliable) ────────────────────────────────
+  // Returns the results array so callers can chain.
+  const runLLMSearch = async (query) => {
+    console.log('[VenueSearch] Running LLM search for:', query);
     try {
       const res = await InvokeLLM({
-        prompt: `Find up to 5 real wedding venues or event locations matching: "${query}". Return JSON with a "venues" array. Each: name, address (full), city, country, phone, website (full URL).`,
+        prompt: `Find up to 5 real wedding venues or event locations matching: "${query}". Return JSON with a "venues" array. Each item needs: name, address (full street address), city, country, phone (if known), website (full URL if known).`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
@@ -173,82 +142,183 @@ export default function VenueSearch({
         website: v.website || '',
         isLLM:   true,
       }));
-      setResults(venues);
-      if (venues.length) setShowResults(true);
+      console.log('[VenueSearch] LLM returned', venues.length, 'venues');
+      return venues;
     } catch (err) {
-      console.error('VenueSearch LLM fallback:', err);
-      setResults([]);
-    }
-    setIsSearching(false);
-  };
-
-  const runSearch = (query) => {
-    if (window.google?.maps?.places) {
-      runGoogleSearch(query);
-    } else {
-      setTimeout(() => {
-        if (window.google?.maps?.places) runGoogleSearch(query);
-        else runLLMFallback(query);
-      }, 700);
+      console.error('[VenueSearch] LLM search error:', err);
+      return [];
     }
   };
 
-  // ── Resolve full place details from Google ─────────────────────────────────
+  // ── Google Places autocomplete (enhancement, with timeout guard) ──────────
+  const runGoogleSearch = (query) => {
+    return new Promise((resolve) => {
+      let settled = false;
+
+      // Safety net: if callback never fires within 4 s, resolve with empty
+      const timer = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          console.warn('[VenueSearch] Google Places timed out for query:', query);
+          resolve([]);
+        }
+      }, 4000);
+
+      try {
+        if (!sessionToken.current) {
+          sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
+        }
+        const svc = new window.google.maps.places.AutocompleteService();
+        svc.getPlacePredictions(
+          { input: query, sessionToken: sessionToken.current, types: ['establishment'] },
+          (predictions, status) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+
+            const OK = window.google.maps.places.PlacesServiceStatus.OK;
+            console.log('[VenueSearch] Google Places status:', status, '| count:', predictions?.length ?? 0);
+
+            if (status === OK && predictions?.length) {
+              resolve(predictions.map(p => ({
+                placeId: p.place_id,
+                name:    p.structured_formatting?.main_text      || p.description,
+                address: p.structured_formatting?.secondary_text || '',
+              })));
+            } else {
+              resolve([]);
+            }
+          }
+        );
+      } catch (err) {
+        console.error('[VenueSearch] Google Places error:', err);
+        clearTimeout(timer);
+        if (!settled) { settled = true; resolve([]); }
+      }
+    });
+  };
+
+  // ── Main search orchestrator ──────────────────────────────────────────────
+  // Always sets isSearching(true) immediately, always clears it when done.
+  const runSearch = async (query) => {
+    setIsSearching(true);
+    setSearchError('');
+
+    try {
+      // Prefer Google Places (has placeId for rich details); fall back to LLM
+      let venues = [];
+
+      if (window.google?.maps?.places) {
+        venues = await runGoogleSearch(query);
+        console.log('[VenueSearch] Using Google results:', venues.length);
+      }
+
+      if (!venues.length) {
+        venues = await runLLMSearch(query);
+        console.log('[VenueSearch] Using LLM results:', venues.length);
+      }
+
+      setResults(venues);
+      setShowResults(venues.length > 0);
+
+      if (!venues.length) {
+        setSearchError('No results found. Try a different search.');
+        setShowResults(true); // show the error state in the dropdown
+      }
+    } catch (err) {
+      console.error('[VenueSearch] runSearch error:', err);
+      setSearchError('Search unavailable. Please try again.');
+      setShowResults(true);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // ── Resolve full place details via Google Places API ──────────────────────
+  // Has a 5 s timeout guard so fetchingDetails never gets permanently stuck.
   const resolveGoogleDetails = (placeId, fallbackName, fallbackAddress) => {
     setFetchingDetails(true);
-    const dummyDiv = document.createElement('div');
-    const svc = new window.google.maps.places.PlacesService(dummyDiv);
-    svc.getDetails(
-      {
-        placeId,
-        fields: [
-          'name', 'formatted_address', 'formatted_phone_number',
-          'website', 'photos', 'rating', 'url', 'place_id',
-          'opening_hours', 'types',
-        ],
-        sessionToken: sessionToken.current,
-      },
-      (place, status) => {
-        sessionToken.current = null;
-        setFetchingDetails(false);
-        setSearchTerm('');
-        setShowResults(false);
+    let settled = false;
 
-        const OK = window.google.maps.places.PlacesServiceStatus.OK;
-        if (status === OK && place) {
-          const photoUrl = getPhotoUrl(place.photos);
-          const todayHours = getTodayHours(place.opening_hours);
-          // Parking: check if 'parking' appears in the place types
-          const hasParking = place.types?.some(t => t.includes('parking')) ?? false;
+    const fallbackAndFinish = () => {
+      onVenueSelect({
+        venueName: fallbackName, address: fallbackAddress,
+        phone: '', website: '', mapsUrl: '',
+        photoUrl: '', rating: null,
+        openingHoursToday: '', parkingInfo: '',
+      });
+      setSearchTerm('');
+      setShowResults(false);
+      setFetchingDetails(false);
+    };
 
-          onVenueSelect({
-            venueName:        place.name                   || fallbackName,
-            address:          place.formatted_address      || fallbackAddress,
-            phone:            place.formatted_phone_number || '',
-            website:          place.website                || '',
-            mapsUrl:          place.url                    || '',
-            photoUrl,
-            rating:           place.rating ?? null,
-            openingHoursToday: todayHours,
-            parkingInfo:      hasParking ? 'Parking available on site' : '',
-          });
-        } else {
-          onVenueSelect({
-            venueName: fallbackName, address: fallbackAddress,
-            phone: '', website: '', mapsUrl: '',
-            photoUrl: '', rating: null,
-            openingHoursToday: '', parkingInfo: '',
-          });
-        }
+    // 5-second timeout guard
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        console.warn('[VenueSearch] getDetails timed out for placeId:', placeId);
+        fallbackAndFinish();
       }
-    );
+    }, 5000);
+
+    try {
+      const dummyDiv = document.createElement('div');
+      const svc = new window.google.maps.places.PlacesService(dummyDiv);
+      svc.getDetails(
+        {
+          placeId,
+          fields: [
+            'name', 'formatted_address', 'formatted_phone_number',
+            'website', 'photos', 'rating', 'url', 'place_id',
+            'opening_hours', 'types',
+          ],
+          sessionToken: sessionToken.current,
+        },
+        (place, status) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          sessionToken.current = null;
+          setFetchingDetails(false);
+          setSearchTerm('');
+          setShowResults(false);
+
+          const OK = window.google.maps.places.PlacesServiceStatus.OK;
+          console.log('[VenueSearch] getDetails status:', status, '| name:', place?.name);
+
+          if (status === OK && place) {
+            const photoUrl        = getPhotoUrl(place.photos);
+            const todayHours      = getTodayHours(place.opening_hours);
+            const hasParking      = place.types?.some(t => t.includes('parking')) ?? false;
+
+            onVenueSelect({
+              venueName:         place.name                   || fallbackName,
+              address:           place.formatted_address      || fallbackAddress,
+              phone:             place.formatted_phone_number || '',
+              website:           place.website                || '',
+              mapsUrl:           place.url                    || '',
+              photoUrl,
+              rating:            place.rating ?? null,
+              openingHoursToday: todayHours,
+              parkingInfo:       hasParking ? 'Parking available on site' : '',
+            });
+          } else {
+            fallbackAndFinish();
+          }
+        }
+      );
+    } catch (err) {
+      console.error('[VenueSearch] getDetails error:', err);
+      clearTimeout(timer);
+      if (!settled) { settled = true; fallbackAndFinish(); }
+    }
   };
 
   const handleSelect = (venue) => {
     if (venue.placeId && window.google?.maps?.places) {
       resolveGoogleDetails(venue.placeId, venue.name, venue.address);
     } else {
-      // LLM result — no photo, no hours
+      // LLM result — use data directly, no photo
       onVenueSelect({
         venueName:         venue.name    || '',
         address:           venue.address || '',
@@ -273,13 +343,9 @@ export default function VenueSearch({
     });
   };
 
-  // ── Rich venue card ────────────────────────────────────────────────────────
+  // ── Rich venue card (selected state) ──────────────────────────────────────
   if (venueName) {
-    const {
-      phone, website, photoUrl, mapsUrl,
-      rating, openingHoursToday, parkingInfo,
-    } = venueDetails;
-
+    const { phone, website, photoUrl, mapsUrl, rating, openingHoursToday, parkingInfo } = venueDetails;
     const mapsHref = mapsUrl
       || `https://maps.google.com/?q=${encodeURIComponent((venueName || '') + ' ' + (address || ''))}`;
 
@@ -287,10 +353,9 @@ export default function VenueSearch({
       <div style={{ marginBottom: 24, maxWidth: 672 }}>
         {label && <div style={labelStyle}>{label}</div>}
 
-        {/* Card */}
         <div style={{ border: '1px solid #E5E5E5', overflow: 'hidden' }}>
 
-          {/* Photo — only if a real URL was obtained */}
+          {/* Photo — only rendered when a real URL exists */}
           {photoUrl && (
             <img
               src={photoUrl}
@@ -300,100 +365,68 @@ export default function VenueSearch({
             />
           )}
 
-          {/* Card body */}
           <div style={{ padding: 24 }}>
-
-            {/* Venue name */}
             <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
               {venueName}
             </p>
 
-            {/* Address */}
             {address && (
               <div style={row}>
                 <MapPin style={iconStyle} />
-                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS, lineHeight: 1.5 }}>
-                  {address}
-                </span>
+                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS, lineHeight: 1.5 }}>{address}</span>
               </div>
             )}
 
-            {/* Phone */}
             {phone && (
               <div style={row}>
                 <Phone style={iconStyle} />
-                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>
-                  {phone}
-                </span>
+                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>{phone}</span>
               </div>
             )}
 
-            {/* Today's hours */}
             {openingHoursToday && (
               <div style={row}>
                 <Clock style={iconStyle} />
-                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>
-                  {openingHoursToday}
-                </span>
+                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>{openingHoursToday}</span>
               </div>
             )}
 
-            {/* Rating */}
             {rating != null && (
               <div style={row}>
                 <Star style={iconStyle} />
-                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>
-                  {rating} / 5
-                </span>
+                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>{rating} / 5</span>
               </div>
             )}
 
-            {/* Parking */}
             {parkingInfo && (
               <div style={row}>
                 <Car style={iconStyle} />
-                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>
-                  {parkingInfo}
-                </span>
+                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>{parkingInfo}</span>
               </div>
             )}
 
-            {/* Website */}
             {website && (
               <div style={row}>
                 <ExternalLink style={iconStyle} />
-                <a
-                  href={website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={linkStyle}
+                <a href={website} target="_blank" rel="noopener noreferrer" style={linkStyle}
                   onMouseEnter={e => e.currentTarget.style.textDecoration = 'none'}
-                  onMouseLeave={e => e.currentTarget.style.textDecoration = 'underline'}
-                >
+                  onMouseLeave={e => e.currentTarget.style.textDecoration = 'underline'}>
                   Visit website
                 </a>
               </div>
             )}
 
-            {/* Google Maps */}
             <div style={row}>
               <MapPin style={iconStyle} />
-              <a
-                href={mapsHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={linkStyle}
+              <a href={mapsHref} target="_blank" rel="noopener noreferrer" style={linkStyle}
                 onMouseEnter={e => e.currentTarget.style.textDecoration = 'none'}
-                onMouseLeave={e => e.currentTarget.style.textDecoration = 'underline'}
-              >
+                onMouseLeave={e => e.currentTarget.style.textDecoration = 'underline'}>
                 View on Google Maps
               </a>
             </div>
-
           </div>
         </div>
 
-        {/* Change venue — below card, not overlaid */}
         <button
           onClick={handleClear}
           style={{
@@ -410,7 +443,7 @@ export default function VenueSearch({
     );
   }
 
-  // ── Fetching details state ─────────────────────────────────────────────────
+  // ── Fetching details loading state ─────────────────────────────────────────
   if (fetchingDetails) {
     return (
       <div style={{ marginBottom: 24, maxWidth: 672 }}>
@@ -436,7 +469,7 @@ export default function VenueSearch({
         <input
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          onFocus={() => { setFocused(true); if (results.length) setShowResults(true); }}
+          onFocus={() => { setFocused(true); if (results.length || searchError) setShowResults(true); }}
           onBlur={() => setFocused(false)}
           placeholder={placeholder}
           style={{
@@ -458,51 +491,46 @@ export default function VenueSearch({
         )}
       </div>
 
-      {/* Results dropdown */}
-      {showResults && results.length > 0 && (
+      {/* Dropdown — results or error/empty state */}
+      {showResults && !isSearching && (
         <div style={{
           position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 4,
           background: '#FFFFFF', border: '1px solid #E5E5E5',
           zIndex: 50, maxHeight: 280, overflowY: 'auto',
         }}>
-          {results.map((venue, i) => (
-            <div
-              key={i}
-              onMouseDown={() => handleSelect(venue)}
-              style={{
-                padding: '12px 16px',
-                display: 'flex', alignItems: 'flex-start', gap: 12,
-                borderBottom: i < results.length - 1 ? '1px solid #F5F4F0' : 'none',
-                cursor: 'pointer', background: '#FFFFFF', fontFamily: PJS,
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#F5F4F0'}
-              onMouseLeave={e => e.currentTarget.style.background = '#FFFFFF'}
-            >
-              <MapPin size={14} style={{ color: '#E03553', marginTop: 2, flexShrink: 0 }} />
-              <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {venue.name}
-                </p>
-                <p style={{ fontSize: 12, color: '#999', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {venue.address}
-                </p>
+          {results.length > 0 ? (
+            results.map((venue, i) => (
+              <div
+                key={i}
+                onMouseDown={() => handleSelect(venue)}
+                style={{
+                  padding: '12px 16px',
+                  display: 'flex', alignItems: 'flex-start', gap: 12,
+                  borderBottom: i < results.length - 1 ? '1px solid #F5F4F0' : 'none',
+                  cursor: 'pointer', background: '#FFFFFF', fontFamily: PJS,
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#F5F4F0'}
+                onMouseLeave={e => e.currentTarget.style.background = '#FFFFFF'}
+              >
+                <MapPin size={14} style={{ color: '#E03553', marginTop: 2, flexShrink: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {venue.name}
+                  </p>
+                  <p style={{ fontSize: 12, color: '#999', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {venue.address}
+                  </p>
+                </div>
               </div>
+            ))
+          ) : (
+            <div style={{ padding: '16px', textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>
+                {searchError || 'No results found. Try a different search.'}
+              </p>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {showResults && searchTerm.length >= 2 && results.length === 0 && !isSearching && (
-        <div style={{
-          position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 4,
-          background: '#FFFFFF', border: '1px solid #E5E5E5', zIndex: 50,
-          padding: '16px', textAlign: 'center',
-        }}>
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>
-            No venues found
-          </p>
+          )}
         </div>
       )}
 
