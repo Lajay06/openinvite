@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { X, Loader2, Bell, Search, Sparkles } from "lucide-react";
+import { track, reset as analyticsReset } from '@/lib/analytics';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import CurrencyModal from './components/layout/CurrencyModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -97,6 +98,8 @@ function TopBar({ weddingDetails, unreadCount }) {
   }, [venueCity]);
 
   const handleLogout = () => {
+    track('user_logged_out');
+    analyticsReset();
     localStorage.removeItem('oi_auth');
     localStorage.removeItem('oi_user');
     localStorage.removeItem('base44_access_token');

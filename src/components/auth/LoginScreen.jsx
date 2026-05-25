@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { ImageSlider } from "@/components/ui/ImageSlider";
+import { track, identify } from "@/lib/analytics";
 
 const SLIDER_IMAGES = [
   "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg",
@@ -93,7 +94,9 @@ export default function LoginScreen() {
     if (!password.trim()) { setError("Please enter your password."); return; }
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
+      const me = await base44.auth.loginViaEmailPassword(email, password);
+      track('user_logged_in', { method: 'email' });
+      if (me?.id) identify(me.id, { email: me.email, name: me.full_name });
       window.location.href = "/Dashboard";
     } catch (err) {
       setError(err?.message || "Invalid email or password. Please try again.");
@@ -114,6 +117,7 @@ export default function LoginScreen() {
       const { access_token: tok } = res || {};
       if (tok) {
         base44.auth.setToken(tok);
+        track('user_signed_up', { method: 'email' });
         window.location.href = "/onboarding";
       } else {
         setLoading(false);
@@ -142,6 +146,7 @@ export default function LoginScreen() {
       } else {
         await base44.auth.loginViaEmailPassword(email, password);
       }
+      track('user_signed_up', { method: 'email_otp' });
       window.location.href = "/onboarding";
     } catch (err) {
       setError(err?.message || "Invalid or expired code. Please try again.");

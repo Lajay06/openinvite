@@ -4,6 +4,7 @@ import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import { base44 } from "@/api/base44Client";
 import { Loader2 } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -187,8 +188,8 @@ export default function Pricing() {
   const [checkoutError, setCheckoutError] = useState(null);
 
   const goFree  = () => navigate("/onboarding");
-  const goPro   = () => startCheckout('pro', setLoadingPlan, setCheckoutError);
-  const goUltra = () => startCheckout('ultra', setLoadingPlan, setCheckoutError);
+  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: 99  }); startCheckout('pro',   setLoadingPlan, setCheckoutError); };
+  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: 199 }); startCheckout('ultra', setLoadingPlan, setCheckoutError); };
 
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100vh", fontFamily: PJS }}>

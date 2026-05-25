@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { X } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
+import { track, identify } from "@/lib/analytics";
 
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
@@ -110,9 +111,23 @@ export default function Dashboard() {
 
   useEffect(() => { init(); }, []);
 
+  // Track purchase_completed when Stripe redirects back with ?checkout=success
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('checkout') === 'success') {
+      const plan = params.get('plan') || 'pro';
+      const amount = plan === 'ultra' ? 199 : 99;
+      track('purchase_completed', { plan, amount, currency: 'AUD' });
+      // Clean up the query string so a refresh doesn't re-fire the event
+      const clean = window.location.pathname;
+      window.history.replaceState({}, '', clean);
+    }
+  }, []);
+
   const init = async () => {
     try {
       const currentUser = await base44.auth.me();
+      if (currentUser?.id) identify(currentUser.id, { email: currentUser.email, name: currentUser.full_name });
       if (currentUser && !currentUser.onboarding_completed) setShowWelcomeBanner(true);
       const tipsShown = localStorage.getItem('openinvite_tips_shown');
       if (!tipsShown) setShowTipsModal(true);
