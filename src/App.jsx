@@ -1,3 +1,4 @@
+import { Sentry } from '@/lib/sentry'
 import { Toaster } from "@/components/ui/toaster"
 import ScrollToTop from "@/components/ScrollToTop"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -240,22 +241,68 @@ const AuthenticatedApp = () => {
 };
 
 
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+function ErrorFallback() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#FFFFFF',
+      fontFamily: PJS,
+      padding: 24,
+      textAlign: 'center',
+    }}>
+      <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', marginBottom: 12 }}>
+        Openinvite
+      </p>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0A0A0A', letterSpacing: '-0.02em', margin: '0 0 12px' }}>
+        Something went wrong.
+      </h1>
+      <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '0 0 32px', lineHeight: 1.6 }}>
+        An unexpected error occurred. Please refresh the page to continue.
+      </p>
+      <button
+        onClick={() => window.location.reload()}
+        style={{
+          background: '#0A0A0A',
+          color: '#FFFFFF',
+          border: 'none',
+          borderRadius: 999,
+          padding: '12px 28px',
+          fontSize: 13,
+          fontWeight: 600,
+          cursor: 'pointer',
+          fontFamily: PJS,
+        }}
+      >
+        Refresh page
+      </button>
+    </div>
+  );
+}
+
 function App() {
 
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <CurrencyProvider>
-          <Router>
-            <ScrollToTop />
-            <NavigationTracker />
-            <AuthenticatedApp />
-          </Router>
-          <Toaster />
-          <VisualEditAgent />
-        </CurrencyProvider>
-      </QueryClientProvider>
-    </AuthProvider>
+    <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
+      <AuthProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <CurrencyProvider>
+            <Router>
+              <ScrollToTop />
+              <NavigationTracker />
+              <AuthenticatedApp />
+            </Router>
+            <Toaster />
+            <VisualEditAgent />
+          </CurrencyProvider>
+        </QueryClientProvider>
+      </AuthProvider>
+    </Sentry.ErrorBoundary>
   )
 }
 

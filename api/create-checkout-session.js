@@ -25,7 +25,14 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ url: session.url });
   } catch (err) {
-    console.error('[checkout] Stripe error:', err.message);
+    // Log full error detail — visible in Vercel function logs
+    console.error('[checkout] Stripe error:', {
+      message: err.message,
+      type: err.type,          // e.g. 'StripeInvalidRequestError'
+      code: err.code,          // e.g. 'resource_missing'
+      statusCode: err.statusCode,
+      priceId: req.body?.priceId,
+    });
     return res.status(500).json({ error: err.message });
   }
 }
