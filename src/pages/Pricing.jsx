@@ -106,8 +106,11 @@ function CellValue({ val }) {
   return <span style={{ fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>{val}</span>;
 }
 
-async function startCheckout(plan, setLoadingPlan) {
+async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
+  console.log('[Checkout] Button clicked — plan:', plan);
   setLoadingPlan(plan);
+  setCheckoutError(null);
+
   try {
     let userEmail = '';
     let userId = '';
@@ -115,21 +118,61 @@ async function startCheckout(plan, setLoadingPlan) {
       const me = await base44.auth.me();
       userEmail = me?.email || '';
       userId = me?.id || '';
-    } catch {}
+      console.log('[Checkout] User resolved:', userEmail || '(no email)');
+    } catch (authErr) {
+      console.warn('[Checkout] Could not resolve user — continuing as guest:', authErr);
+    }
 
-    const res = await fetch('/api/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan, userEmail, userId }),
-    });
-    const data = await res.json();
+    console.log('[Checkout] POSTing to /api/create-checkout-session with plan:', plan);
+
+    let res;
+    try {
+      res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan, userEmail, userId }),
+      });
+    } catch (networkErr) {
+      console.error('[Checkout] Network error — is the API reachable?', networkErr);
+      setCheckoutError('Network error — could not reach the checkout server. Please try again.');
+      return;
+    }
+
+    console.log('[Checkout] Response status:', res.status, res.ok);
+
+    // Safely parse the response — it may be HTML (e.g. Vite 404) rather than JSON
+    const contentType = res.headers.get('content-type') || '';
+    let data;
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      console.error('[Checkout] Non-JSON response received:', text.slice(0, 300));
+      if (!res.ok) {
+        setCheckoutError(
+          res.status === 404
+            ? 'Checkout API not found (404). This works when deployed to Vercel — run `vercel dev` locally to test.'
+            : `Server error ${res.status}. Please try again.`
+        );
+      } else {
+        setCheckoutError('Unexpected server response. Please try again.');
+      }
+      return;
+    }
+
+    console.log('[Checkout] Response data:', data);
+
     if (data.url) {
+      console.log('[Checkout] Redirecting to Stripe:', data.url);
       window.location.href = data.url;
     } else {
-      console.error('Checkout error:', data.error);
+      const msg = data.error || 'Checkout session could not be created.';
+      console.error('[Checkout] API returned error:', msg);
+      setCheckoutError(msg);
     }
   } catch (err) {
-    console.error('Checkout fetch error:', err);
+    console.error('[Checkout] Unexpected error:', err);
+    setCheckoutError('Something went wrong. Please try again.');
   } finally {
     setLoadingPlan(null);
   }
@@ -138,10 +181,11 @@ async function startCheckout(plan, setLoadingPlan) {
 export default function Pricing() {
   const navigate = useNavigate();
   const [loadingPlan, setLoadingPlan] = useState(null);
+  const [checkoutError, setCheckoutError] = useState(null);
 
   const goFree  = () => navigate("/onboarding");
-  const goPro   = () => startCheckout('pro', setLoadingPlan);
-  const goUltra = () => startCheckout('ultra', setLoadingPlan);
+  const goPro   = () => startCheckout('pro', setLoadingPlan, setCheckoutError);
+  const goUltra = () => startCheckout('ultra', setLoadingPlan, setCheckoutError);
 
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100vh", fontFamily: PJS }}>
@@ -320,6 +364,27 @@ export default function Pricing() {
           </div>
 
         </div>
+
+        {/* ── Checkout error banner ── */}
+        {checkoutError && (
+          <div style={{
+            maxWidth: 720, margin: "0 auto", marginTop: 24,
+            background: "#FEF2F2", border: "1px solid #FECACA",
+            padding: "14px 20px",
+            display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16,
+          }}>
+            <p style={{ fontSize: 13, color: "#991B1B", margin: 0, lineHeight: 1.5, fontFamily: PJS, flex: 1 }}>
+              {checkoutError}
+            </p>
+            <button
+              onClick={() => setCheckoutError(null)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#991B1B", fontSize: 16, lineHeight: 1, padding: 0, flexShrink: 0 }}
+              aria-label="Dismiss"
+            >
+              ×
+            </button>
+          </div>
+        )}
       </section>
 
       {/* ── AFTER 24 MONTHS ── */}
