@@ -338,9 +338,9 @@ export default function SeatingPage() {
       <DashboardPageHeader title="Seating" subtitle="Design your venue layout and assign guests to tables" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {STAT_CARDS.map((s, i) => (
-          <div key={s.label} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
             <p style={statLabel}>{s.label}</p>
             {loading
               ? <div style={{ width: 48, height: 28, background: 'rgba(10,10,10,0.06)' }} />

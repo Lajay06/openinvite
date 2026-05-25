@@ -160,14 +160,14 @@ export default function MusicPage() {
       <DashboardPageHeader title="Music" subtitle="Plan playlists, add songs and manage guest song requests" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {[
           { label: 'Playlists', value: playlists.length },
           { label: 'Total songs', value: playlistTracks.length },
           { label: 'Song requests', value: songRequests?.length || 0 },
           { label: 'Pending approval', value: pendingCount, last: true },
         ].map((s, i) => (
-          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.08)' }}>
+          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.08)' }}>
             <p style={labelStyle}>{s.label}</p>
             <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 }}>
               <CountUp to={s.value} />
@@ -177,9 +177,9 @@ export default function MusicPage() {
       </div>
 
       {/* Ava + toolbar row */}
-      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to curate your playlist" onClick={() => setAvaOpen(true)} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="flex flex-wrap items-center gap-[10px]">
           <button onClick={() => setShowShare(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
             <Share2 size={12} />Share playlist
           </button>
@@ -189,8 +189,9 @@ export default function MusicPage() {
         </div>
       </div>
 
-      {/* Three-panel layout */}
-      <div style={{ display: 'flex', height: 680, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      {/* Three-panel layout — horizontally scrollable on mobile */}
+      <div className="overflow-x-auto" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ display: 'flex', height: 680, minWidth: 700 }}>
         {/* Left: Playlists */}
         <div style={{ width: 220, borderRight: '1px solid rgba(10,10,10,0.08)', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: '14px 16px 8px', borderBottom: '1px solid rgba(10,10,10,0.06)', flexShrink: 0 }}>
@@ -342,6 +343,7 @@ export default function MusicPage() {
           </div>
         </div>
       </div>
+      </div>{/* end overflow-x-auto wrapper */}
 
       {/* Modals */}
       {showSuggestions && (

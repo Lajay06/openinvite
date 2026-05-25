@@ -114,9 +114,9 @@ export default function VowsSpeechesPage() {
       <DashboardPageHeader title="Vows & speeches" subtitle="Write, store and polish your vows and wedding-day speeches" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {stats.map((s, i) => (
-          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 }}>
               <CountUp to={s.value} />
@@ -126,9 +126,9 @@ export default function VowsSpeechesPage() {
       </div>
 
       {/* Ava + actions bar */}
-      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to help write your vows" onClick={() => setAvaOpen(true)} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="flex flex-wrap items-center gap-[10px]">
           <button onClick={() => { setAiType(activeTab === 'vows' ? 'vow' : 'speech'); setShowAI(true); }}
             style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
             <Sparkles size={12} style={{ color: '#DDF762' }} />Write with AI
@@ -145,7 +145,7 @@ export default function VowsSpeechesPage() {
           <span style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Loading…</span>
         </div>
       ) : (
-        <div style={{ display: 'flex', height: 'calc(100vh - 260px)', minHeight: 500 }}>
+        <div className="overflow-x-auto" style={{ display: 'flex', height: 'calc(100vh - 260px)', minHeight: 500 }}>
           {/* Left panel — list */}
           <div style={{ width: 280, borderRight: '1px solid rgba(10,10,10,0.08)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
             {/* Tab bar */}

@@ -811,7 +811,7 @@ export default function Help() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px, 100%), 1fr))', gap: 20 }}>
           {filteredCategories.map((cat, ci) => {
             const Icon = ICON_MAP[cat.icon];
             return (

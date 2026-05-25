@@ -4,16 +4,16 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 export default function DashboardPageHeader({ title, subtitle, actions }) {
   return (
-    <div style={{
-      background: '#FFFFFF',
-      borderBottom: '1px solid rgba(10,10,10,0.08)',
-      padding: '10px 32px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 16,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, minWidth: 0 }}>
+    <div
+      className="flex items-center justify-between gap-4 px-4 md:px-8"
+      style={{
+        background: '#FFFFFF',
+        borderBottom: '1px solid rgba(10,10,10,0.08)',
+        paddingTop: 10,
+        paddingBottom: 10,
+      }}
+    >
+      <div className="flex items-baseline gap-3 min-w-0">
         <h1 style={{ fontSize: 18, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
           {title}
         </h1>

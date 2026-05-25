@@ -152,14 +152,14 @@ export default function MessagesPage() {
       <DashboardPageHeader title="Messages" subtitle="Read and reply to messages from your guests" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {[
           { label: 'Total', value: stats.total },
           { label: 'Unread', value: stats.unread },
           { label: 'Replied', value: stats.replied },
           { label: 'Unreplied', value: stats.unreplied },
         ].map((s, i, arr) => (
-          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 }}>
               <CountUp to={s.value} />

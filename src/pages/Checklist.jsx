@@ -339,13 +339,13 @@ export default function ChecklistPage() {
       <DashboardPageHeader title="Checklist" subtitle="Track every task from first steps to big day" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {[
           { label: 'Overall progress', value: overallProgress, suffix: '%' },
           { label: 'Essentials done', value: essentialsDone },
           { label: 'Nice-to-haves done', value: niceDone },
         ].map((s, i, arr) => (
-          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
             <p style={{ ...labelStyle, margin: 0, marginBottom: 10 }}>{s.label}</p>
             <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, lineHeight: 1, margin: 0 }}>
               <CountUp to={s.value} suffix={s.suffix || ''} />

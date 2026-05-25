@@ -202,7 +202,7 @@ export default function WeddingFavoursPage() {
       <DashboardPageHeader title="Wedding favours" subtitle="Plan your wedding favours and gifts for guests" />
 
       {/* Ava + actions bar */}
-      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <button onClick={() => setShowAva(true)}
           style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 999, background: 'linear-gradient(135deg, #ec4899, #9333ea)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           <Sparkles size={13} />Ask Ava

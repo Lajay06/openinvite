@@ -267,9 +267,9 @@ export default function BudgetPage() {
       <DashboardPageHeader title="Budget" subtitle="Plan, track and forecast your wedding spending" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {STAT_CARDS.map((s, i) => (
-          <div key={s.label} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none', borderRadius: 0, boxShadow: 'none' }}>
+          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none', borderRadius: 0, boxShadow: 'none' }}>
             <p style={statLabelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 80, height: 32, background: 'rgba(10,10,10,0.06)' }} />
@@ -280,9 +280,9 @@ export default function BudgetPage() {
       </div>
 
       {/* Toolbar row: Ava button left, actions right */}
-      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava for budget advice" onClick={() => setAvaOpen(true)} />
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="flex flex-wrap gap-[10px]">
           <button
             onClick={exportBudget}
             disabled={budgetItems.length === 0}

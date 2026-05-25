@@ -190,14 +190,14 @@ export default function PhotographyPage() {
       <DashboardPageHeader title="Photography & videography" subtitle="Plan your photography, videography, and visual storytelling" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {[
           { label: 'Total', value: stats.total },
           { label: 'Photographers', value: stats.photographersCount },
           { label: 'Videographers', value: stats.videographersCount },
           { label: 'Booked', value: stats.bookedCount },
         ].map((stat, i, arr) => (
-          <div key={stat.label} style={{ flex: 1, padding: '24px 32px', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : undefined }}>
+          <div key={stat.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : undefined }}>
             <div style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               <CountUp to={stat.value} />
             </div>

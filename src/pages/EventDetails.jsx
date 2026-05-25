@@ -148,9 +148,9 @@ export default function EventDetailsPage() {
       <DashboardPageHeader title="Event details" subtitle="Manage your wedding event information" />
 
       {/* Ava + actions bar */}
-      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to help plan your event details" />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="flex flex-wrap items-center gap-[10px]">
           {saveStatus === 'saving' && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
               <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Saving…

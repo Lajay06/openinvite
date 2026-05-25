@@ -148,10 +148,10 @@ export default function VendorsPage() {
       <DashboardPageHeader title="My vendors" subtitle="Research, track and manage all your wedding service providers" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', width: '100%', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {STAT_CARDS.map((s, i) => (
-          <div key={s.label} style={{
-            flex: 1, padding: '20px 32px',
+          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{
+            padding: '20px 32px',
             borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none',
           }}>
             <p style={statLabelStyle}>{s.label}</p>
@@ -164,7 +164,7 @@ export default function VendorsPage() {
       </div>
 
       {/* Ava + Add vendor — same row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 32px' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4">
         <AvaButton label="Ask Ava to find the perfect vendors" onClick={() => setAvaOpen(true)} />
         <button
           onClick={() => { setEditingVendor(null); setShowForm(true); }}

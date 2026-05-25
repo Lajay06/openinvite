@@ -167,12 +167,8 @@ export default function Dashboard() {
 
       <DashboardPageHeader title="Overall" subtitle="Your wedding planning at a glance" />
 
-      {/* Stat cards — full-width horizontal, equal columns */}
-      <div style={{
-        display: 'flex',
-        width: '100%',
-        borderBottom: '1px solid rgba(10,10,10,0.08)',
-      }}>
+      {/* Stat cards — 2-col on mobile, 4-col on desktop */}
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         {STAT_CARDS.map((s, i) => (
           <StatCard
             key={i}
@@ -206,17 +202,17 @@ export default function Dashboard() {
         <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', marginBottom: 0 }} />
       </div>
 
-      {/* Two-column layout: main content left | grey right panel */}
-      <div style={{ display: 'flex', alignItems: 'stretch', minHeight: 'calc(100vh - 300px)' }}>
+      {/* Two-column layout: stacks on mobile, side-by-side on desktop */}
+      <div className="flex flex-col lg:flex-row lg:items-stretch" style={{ minHeight: 'calc(100vh - 300px)' }}>
 
         {/* Left: charts */}
-        <div style={{ flex: '2 1 0', padding: '32px 32px 48px', display: 'flex', flexDirection: 'column', gap: 32, minWidth: 0 }}>
+        <div className="flex flex-col gap-8 min-w-0 lg:flex-[2_1_0]" style={{ padding: '32px 32px 48px' }}>
           <RSVPChart guests={guests} />
           <BudgetSummary budget={budget} stats={stats} />
         </div>
 
         {/* Right: grey panel */}
-        <div style={{ flex: '1 1 0', background: '#F7F7F7', borderLeft: '1px solid rgba(10,10,10,0.08)', padding: '32px 24px 48px', display: 'flex', flexDirection: 'column', gap: 32, minWidth: 0 }}>
+        <div className="flex flex-col gap-8 min-w-0 border-t border-[rgba(10,10,10,0.08)] lg:border-t-0 lg:border-l lg:flex-[1_1_0]" style={{ background: '#F7F7F7', padding: '32px 24px 48px' }}>
           <UpcomingTasks schedule={schedule} />
           <RecentActivity guests={guests} budget={budget} />
         </div>
@@ -247,15 +243,14 @@ function StatCard({ label, value, suffix, url, isLast, loading }) {
   return (
     <Link
       to={createPageUrl(url)}
+      className="grow shrink basis-1/2 min-w-0 lg:flex-1 block"
       style={{
-        flex: 1,
         padding: '24px 32px',
         minHeight: 80,
         borderRight: !isLast ? '1px solid rgba(10,10,10,0.08)' : 'none',
         borderRadius: 0,
         boxShadow: 'none',
         textDecoration: 'none',
-        display: 'block',
         background: hovered ? 'rgba(10,10,10,0.02)' : 'transparent',
         transition: 'background 0.15s',
       }}
