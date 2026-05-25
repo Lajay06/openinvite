@@ -207,6 +207,9 @@ function TopBar({ weddingDetails, unreadCount }) {
               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/account')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+              Account &amp; billing
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate('/AccountSettings')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
               Account settings
             </DropdownMenuItem>

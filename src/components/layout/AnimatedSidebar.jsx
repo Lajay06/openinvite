@@ -9,7 +9,7 @@ import {
   Store, ShoppingBag,
   Clock, Heart, Radio, UtensilsCrossed,
   Plane, Hotel, Car, Phone,
-  Settings, UserPlus, LogOut, HelpCircle, Lightbulb,
+  Settings, UserPlus, LogOut, HelpCircle, Lightbulb, CreditCard,
   Sparkles,
   BarChart2,
 } from "lucide-react";
@@ -222,6 +222,25 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
           </div>
         )}
 
+        {/* Account & billing */}
+        <div
+          onClick={() => navigate("/account")}
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "7px 12px", cursor: "pointer",
+            borderLeft: isActive("/account") ? "2px solid #E03553" : "2px solid transparent",
+            background: isActive("/account") ? "rgba(224,53,83,0.08)" : "transparent",
+            transition: "background 0.15s ease",
+          }}
+          onMouseEnter={e => { if (!isActive("/account")) e.currentTarget.style.background = "rgba(10,10,10,0.04)"; }}
+          onMouseLeave={e => { if (!isActive("/account")) e.currentTarget.style.background = "transparent"; }}
+        >
+          <CreditCard size={14} strokeWidth={1.8} style={{ color: isActive("/account") ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: isActive("/account") ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Account & billing
+          </span>
+        </div>
+
         {/* Help Centre */}
         <div
           onClick={() => navigate("/help")}
@@ -401,8 +420,9 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
         <div style={{ height: 1, background: "rgba(10,10,10,0.08)", margin: "0 16px" }} />
         {/* Account settings + Collaborate */}
         {[
-          { icon: Settings, label: "Account settings", action: () => { onClose?.(); navigate("/AccountSettings"); } },
-          { icon: UserPlus, label: "Collaborate",       action: () => { onClose?.(); navigate("/Collaborate"); } },
+          { icon: CreditCard, label: "Account & billing", action: () => { onClose?.(); navigate("/account"); } },
+          { icon: Settings,   label: "Account settings",  action: () => { onClose?.(); navigate("/AccountSettings"); } },
+          { icon: UserPlus,   label: "Collaborate",        action: () => { onClose?.(); navigate("/Collaborate"); } },
         ].map((item, i) => (
           <div
             key={i}

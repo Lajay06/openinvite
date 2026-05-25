@@ -1,0 +1,314 @@
+import React, { useState } from 'react';
+import { Loader2, Check, CreditCard, Crown } from 'lucide-react';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
+import { useAuth } from '@/lib/AuthContext';
+import { base44 } from '@/api/base44Client';
+
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+const PLAN_FEATURES = {
+  free: [
+    'Guest list management',
+    'Budget tracker',
+    'Checklist & to-do list',
+    'Moodboard',
+    'Basic vendor directory',
+  ],
+  pro: [
+    'Everything in Free',
+    'Unlimited guests',
+    'Design studio & templates',
+    'Ava AI assistant (unlimited)',
+    'Guest website builder',
+    'Advanced seating planner',
+    'Music & playlist manager',
+    'Document storage',
+    'Priority support',
+  ],
+  ultra: [
+    'Everything in Pro',
+    'White-glove onboarding',
+    'Custom domain for guest website',
+    'Dedicated account manager',
+    'Multiple weddings / events',
+    'API access',
+  ],
+};
+
+const PRICE_IDS = {
+  pro: 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
+  ultra: 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
+};
+
+const PLAN_LABELS = { free: 'Free trial', pro: 'Pro', ultra: 'Ultra' };
+const PLAN_PRICES = { pro: '$99', ultra: '$199' };
+
+export default function AccountPage() {
+  const { user } = useAuth();
+  const [name, setName] = useState(user?.full_name || '');
+  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('idle');
+  const [checkoutLoading, setCheckoutLoading] = useState(null);
+
+  const plan = user?.plan || 'free';
+  const planLabel = PLAN_LABELS[plan] || 'Free trial';
+
+  const initials = (user?.full_name || user?.email || 'U')
+    .split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
+
+  const planActivatedAt = user?.planActivatedAt
+    ? new Date(user.planActivatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+
+  const handleSaveName = async () => {
+    if (!name.trim()) return;
+    setSaving(true);
+    setSaveStatus('saving');
+    try {
+      await base44.auth.updateMe({ full_name: name.trim() });
+      try {
+        const stored = JSON.parse(localStorage.getItem('oi_user') || '{}');
+        localStorage.setItem('oi_user', JSON.stringify({ ...stored, full_name: name.trim() }));
+      } catch {}
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch {
+      setSaveStatus('idle');
+    }
+    setSaving(false);
+  };
+
+  const handleCheckout = async (planKey) => {
+    setCheckoutLoading(planKey);
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceId: PRICE_IDS[planKey],
+          email: user?.email || '',
+          successUrl: window.location.origin + '/payment-success?plan=' + planKey,
+          cancelUrl: window.location.href,
+        }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {}
+    setCheckoutLoading(null);
+  };
+
+  const labelStyle = {
+    fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
+    color: 'rgba(10,10,10,0.4)', fontFamily: PJS, display: 'block', marginBottom: 6,
+  };
+
+  const sectionTitleStyle = {
+    fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS,
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
+      <DashboardPageHeader title="Account & billing" subtitle="Manage your profile and subscription" />
+
+      {/* Ava + actions bar */}
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <AvaButton label="Ask Ava about your account or plan" />
+        <div className="flex flex-wrap items-center gap-[10px]">
+          {saveStatus === 'saving' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Saving…
+            </span>
+          )}
+          {saveStatus === 'saved' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#22C55E', fontWeight: 600, fontFamily: PJS }}>
+              <Check size={13} /> Saved
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div style={{ padding: '32px 32px 48px', maxWidth: 720 }}>
+
+        {/* ── Profile ─────────────────────────────────────── */}
+        <p style={sectionTitleStyle}>Profile</p>
+
+        {/* Avatar + name/email */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #ec4899, #9333ea)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontSize: 18, fontWeight: 700, fontFamily: PJS, flexShrink: 0,
+          }}>
+            {initials}
+          </div>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>
+              {user?.full_name || 'Your account'}
+            </p>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>
+              {user?.email || ''}
+            </p>
+          </div>
+        </div>
+
+        {/* Name field */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Full name</label>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSaveName()}
+              placeholder="Your full name"
+              className="input-editorial"
+              style={{ flex: 1 }}
+            />
+            <button
+              onClick={handleSaveName}
+              disabled={saving || !name.trim()}
+              style={{
+                background: '#0A0A0A', color: '#FFFFFF',
+                border: 'none', cursor: saving || !name.trim() ? 'not-allowed' : 'pointer',
+                fontSize: 12, fontWeight: 700, fontFamily: PJS,
+                padding: '7px 16px', borderRadius: 999, flexShrink: 0,
+                opacity: saving || !name.trim() ? 0.4 : 1,
+                transition: 'opacity 0.15s',
+                marginBottom: 1,
+              }}
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+
+        {/* Email field (read-only) */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Email address</label>
+          <input
+            type="email"
+            value={user?.email || ''}
+            readOnly
+            className="input-editorial"
+            style={{ color: 'rgba(10,10,10,0.35)', cursor: 'not-allowed' }}
+          />
+          <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '6px 0 0', fontFamily: PJS }}>
+            Contact support to change your email address.
+          </p>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', margin: '32px 0' }} />
+
+        {/* ── Plan & billing ───────────────────────────────── */}
+        <p style={sectionTitleStyle}>Plan & billing</p>
+
+        {/* Current plan badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', fontFamily: PJS,
+            color: plan === 'free' ? 'rgba(10,10,10,0.55)' : '#FFFFFF',
+            background: plan === 'ultra'
+              ? 'linear-gradient(135deg, #7c3aed, #4f46e5)'
+              : plan === 'pro'
+                ? '#0A0A0A'
+                : 'rgba(10,10,10,0.08)',
+            padding: '4px 12px', borderRadius: 999,
+          }}>
+            {planLabel}
+          </span>
+          {planActivatedAt && (
+            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              Active since {planActivatedAt}
+            </span>
+          )}
+        </div>
+
+        {/* Upgrade cards (free only) */}
+        {plan === 'free' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ marginBottom: 28 }}>
+            {(['pro', 'ultra']).map(pk => (
+              <div key={pk} style={{ border: '1px solid rgba(10,10,10,0.1)', padding: '20px', background: '#FAFAFA' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
+                  {pk === 'ultra' && <Crown size={13} style={{ color: '#7c3aed', flexShrink: 0 }} />}
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>
+                    {PLAN_LABELS[pk]}
+                  </p>
+                </div>
+                <p style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
+                  {PLAN_PRICES[pk]}
+                  <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.4)' }}> /month</span>
+                </p>
+                <button
+                  onClick={() => handleCheckout(pk)}
+                  disabled={!!checkoutLoading}
+                  style={{
+                    width: '100%', padding: '9px 0',
+                    background: pk === 'ultra' ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : '#0A0A0A',
+                    color: '#FFFFFF', border: 'none',
+                    cursor: checkoutLoading ? 'not-allowed' : 'pointer',
+                    fontSize: 12, fontWeight: 700, fontFamily: PJS, borderRadius: 999,
+                    opacity: checkoutLoading && checkoutLoading !== pk ? 0.5 : 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    transition: 'opacity 0.15s',
+                  }}
+                >
+                  {checkoutLoading === pk && (
+                    <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} />
+                  )}
+                  Upgrade to {PLAN_LABELS[pk]}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Manage billing (paid plans) */}
+        {(plan === 'pro' || plan === 'ultra') && (
+          <div style={{ marginBottom: 28 }}>
+            <a
+              href="mailto:lajay@openinvite.com.au?subject=Billing inquiry"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '9px 20px', borderRadius: 999,
+                background: '#0A0A0A', color: '#FFFFFF',
+                fontSize: 12, fontWeight: 700, fontFamily: PJS,
+                textDecoration: 'none', transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.8'; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+            >
+              <CreditCard size={13} />
+              Manage billing
+            </a>
+          </div>
+        )}
+
+        {/* Features list */}
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', margin: '0 0 12px', fontFamily: PJS }}>
+            {plan === 'free' ? "What's included in your free trial" : `What's included in ${planLabel}`}
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {(PLAN_FEATURES[plan] || PLAN_FEATURES.free).map((feature, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Check
+                  size={13}
+                  style={{
+                    color: plan === 'ultra' ? '#7c3aed' : plan === 'pro' ? '#E03553' : 'rgba(10,10,10,0.35)',
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}

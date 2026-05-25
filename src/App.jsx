@@ -68,6 +68,7 @@ import AvaStudio from './pages/AvaStudio';
 import AvaStudioWebsite from './pages/AvaStudioWebsite';
 import AvaStudioAssets from './pages/AvaStudioAssets';
 import Help from './pages/Help';
+import Account from './pages/Account';
 import StudioGuestSuite from './pages/StudioGuestSuite';
 import ExperienceGuide from './pages/ExperienceGuide';
 import Features from './pages/Features';
@@ -244,6 +245,7 @@ const AuthenticatedApp = () => {
       <Route path="/studio/ava/assets/:step" element={<AvaStudioAssets />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/help" element={<LayoutWrapper currentPageName="Help"><Help /></LayoutWrapper>} />
+      <Route path="/account" element={<LayoutWrapper currentPageName="Account"><Account /></LayoutWrapper>} />
       <Route path="/dev-reset" element={<DevReset />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
