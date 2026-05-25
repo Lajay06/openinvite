@@ -147,49 +147,43 @@ export default function EventDetailsPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
       <DashboardPageHeader title="Event details" subtitle="Manage your wedding event information" />
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px 0' }}>
+      {/* Ava + actions bar */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to help plan your event details" />
-      </div>
-
-      {/* Tab bar */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', background: '#FFFFFF', overflowX: 'auto', marginTop: 16 }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex' }}>
-            {TABS.map(t => (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                style={{
-                  padding: '12px 14px', border: 'none', background: 'none', cursor: 'pointer',
-                  fontSize: 13, fontWeight: 600,
-                  color: tab === t.key ? '#0A0A0A' : 'rgba(10,10,10,0.4)',
-                  borderBottom: tab === t.key ? '2px solid #0A0A0A' : '2px solid transparent',
-                  fontFamily: PJS,
-                  transition: 'color 0.15s',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <div style={{ flexShrink: 0, paddingLeft: 16 }}>
-            {saveStatus === 'saving' && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
-                <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Saving…
-              </span>
-            )}
-            {saveStatus === 'saved' && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#22C55E', fontWeight: 600, fontFamily: PJS }}>
-                <Check size={13} /> Saved
-              </span>
-            )}
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {saveStatus === 'saving' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Saving…
+            </span>
+          )}
+          {saveStatus === 'saved' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#22C55E', fontWeight: 600, fontFamily: PJS }}>
+              <Check size={13} /> Saved
+            </span>
+          )}
         </div>
       </div>
 
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 32px 80px' }}>
+      {/* Tab bar */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px', overflowX: 'auto' }}>
+        {TABS.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            style={{
+              padding: '12px 14px', border: 'none', background: 'none', cursor: 'pointer',
+              fontSize: 13, fontWeight: 600,
+              color: tab === t.key ? '#0A0A0A' : 'rgba(10,10,10,0.4)',
+              borderBottom: tab === t.key ? '2px solid #0A0A0A' : '2px solid transparent',
+              fontFamily: PJS, transition: 'color 0.15s', whiteSpace: 'nowrap',
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: '32px 32px 48px' }}>
 
         {/* ── Details tab ─────────────────────────────────────── */}
         {tab === 'details' && (
@@ -253,7 +247,18 @@ export default function EventDetailsPage() {
               label="Ceremony venue"
               venueName={mc.venueName || ''}
               address={mc.address || ''}
-              onVenueSelect={v => updateNested('mainCeremony', { venueName: v.venueName || '', address: v.address || '' })}
+              venueDetails={mc}
+              onVenueSelect={v => updateNested('mainCeremony', {
+                venueName:   v.venueName   || '',
+                address:     v.address     || '',
+                phone:       v.phone       || '',
+                website:     v.website     || '',
+                mapsUrl:     v.mapsUrl     || '',
+                photoUrl:    v.photoUrl    || '',
+                rating:      v.rating      ?? null,
+                // Auto-populate parking if field is currently empty
+                ...(v.venueName && !mc.parkingInfo && v.parkingInfo ? { parkingInfo: v.parkingInfo } : {}),
+              })}
               placeholder="Search for ceremony venue…"
             />
             <UInput label="Ceremony time" type="time" value={mc.startTime} onChange={e => updateNested('mainCeremony', { startTime: e.target.value })} />
@@ -267,7 +272,18 @@ export default function EventDetailsPage() {
               label="Reception venue"
               venueName={rc.venueName || ''}
               address={rc.address || ''}
-              onVenueSelect={v => updateNested('reception', { venueName: v.venueName || '', address: v.address || '' })}
+              venueDetails={rc}
+              onVenueSelect={v => updateNested('reception', {
+                venueName:   v.venueName   || '',
+                address:     v.address     || '',
+                phone:       v.phone       || '',
+                website:     v.website     || '',
+                mapsUrl:     v.mapsUrl     || '',
+                photoUrl:    v.photoUrl    || '',
+                rating:      v.rating      ?? null,
+                // Auto-populate parking if field is currently empty
+                ...(v.venueName && !rc.parkingInfo && v.parkingInfo ? { parkingInfo: v.parkingInfo } : {}),
+              })}
               placeholder="Search for reception venue…"
             />
             <UInput label="Reception time" type="time" value={rc.startTime} onChange={e => updateNested('reception', { startTime: e.target.value })} />

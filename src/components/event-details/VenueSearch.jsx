@@ -1,315 +1,287 @@
-import React, { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Search, Edit, Loader2, Navigation, Globe } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { MapPin, ExternalLink, Phone, Loader2 } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
-import toast from 'react-hot-toast';
 
-export default function VenueSearch({ 
-  label, 
-  venueName, 
-  address, 
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+const labelStyle = {
+  fontSize: 11, fontWeight: 600, letterSpacing: '0.06em',
+  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6,
+};
+
+export default function VenueSearch({
+  label,
+  venueName,
+  address,
   onVenueSelect,
-  placeholder = "Search for a venue..."
+  placeholder = 'Search for a venue…',
+  venueDetails = {},
 }) {
-  const [isManual, setIsManual] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [results, setResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [userLocation, setUserLocation] = useState(null);
-  const [locationLoading, setLocationLoading] = useState(false);
-  const [selectedRegion, setSelectedRegion] = useState("worldwide");
+  const [focused, setFocused] = useState(false);
+  const containerRef = useRef(null);
 
+  // Close dropdown on outside click
   useEffect(() => {
-    if (venueName && address) {
-      setIsManual(true);
-    }
+    const handler = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const getUserLocation = () => {
-    setLocationLoading(true);
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-          setLocationLoading(false);
-          toast.success("Location detected!");
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          toast.error("Could not get your location");
-          setLocationLoading(false);
-        }
-      );
-    } else {
-      toast.error("Geolocation not supported");
-      setLocationLoading(false);
-    }
-  };
-
-  const searchVenues = async (query) => {
-    if (!query || query.length < 3) {
-      setSearchResults([]);
+  // Debounced search
+  useEffect(() => {
+    if (!searchTerm || searchTerm.length < 3) {
+      setResults([]);
+      setShowResults(false);
       return;
     }
+    const timer = setTimeout(() => runSearch(searchTerm), 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
+  const runSearch = async (query) => {
     setIsSearching(true);
     try {
-      let locationContext = "";
-      
-      if (userLocation) {
-        locationContext = ` near coordinates ${userLocation.lat}, ${userLocation.lng}`;
-      } else if (selectedRegion !== "worldwide") {
-        locationContext = ` in ${selectedRegion}`;
-      }
-
       const response = await InvokeLLM({
-        prompt: `Search for wedding venues or event locations matching: "${query}"${locationContext}. Return up to 5 real venues with their full details. Format as JSON array with fields: name, address, city, phone (if available), website (if available).`,
+        prompt: `Search for wedding venues or event locations matching: "${query}". Return up to 5 real venues as JSON. For each venue include: name, address (full street address), city, country, phone, website (full URL), maps_url (google maps link), photo_url (a real publicly accessible photo URL of this venue if available, otherwise empty string), rating (numeric out of 5 if known, otherwise null), parking_info (brief parking description near this venue if known, otherwise empty string).`,
         add_context_from_internet: true,
         response_json_schema: {
-          type: "object",
+          type: 'object',
           properties: {
             venues: {
-              type: "array",
+              type: 'array',
               items: {
-                type: "object",
+                type: 'object',
                 properties: {
-                  name: { type: "string" },
-                  address: { type: "string" },
-                  city: { type: "string" },
-                  phone: { type: "string" },
-                  website: { type: "string" }
-                }
-              }
-            }
-          }
-        }
+                  name:         { type: 'string' },
+                  address:      { type: 'string' },
+                  city:         { type: 'string' },
+                  country:      { type: 'string' },
+                  phone:        { type: 'string' },
+                  website:      { type: 'string' },
+                  maps_url:     { type: 'string' },
+                  photo_url:    { type: 'string' },
+                  rating:       { type: 'number' },
+                  parking_info: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
       });
-
-      setSearchResults(response?.venues || []);
+      setResults(response?.venues || []);
       setShowResults(true);
-    } catch (error) {
-      console.error("Error searching venues:", error);
-      toast.error("Failed to search venues");
-      setSearchResults([]);
+    } catch (err) {
+      console.error('VenueSearch error:', err);
+      setResults([]);
     }
     setIsSearching(false);
   };
 
-  useEffect(() => {
-    if (!isManual && searchTerm) {
-      const timer = setTimeout(() => {
-        searchVenues(searchTerm);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [searchTerm, isManual, userLocation, selectedRegion]);
-
-  const handleSelectVenue = (venue) => {
+  const handleSelect = (venue) => {
     onVenueSelect({
-      venueName: venue.name,
-      address: venue.address,
-      city: venue.city,
-      phone: venue.phone,
-      website: venue.website
+      venueName:   venue.name        || '',
+      address:     venue.address     || '',
+      city:        venue.city        || '',
+      country:     venue.country     || '',
+      phone:       venue.phone       || '',
+      website:     venue.website     || '',
+      mapsUrl:     venue.maps_url    || '',
+      photoUrl:    venue.photo_url   || '',
+      rating:      venue.rating      ?? null,
+      parkingInfo: venue.parking_info || '',
     });
-    setSearchTerm("");
+    setSearchTerm('');
     setShowResults(false);
-    setIsManual(true);
   };
 
-  const handleManualEntry = () => {
-    setIsManual(true);
-    setShowResults(false);
-    setSearchTerm("");
+  const handleClear = () => {
+    onVenueSelect({
+      venueName: '', address: '', city: '', country: '',
+      phone: '', website: '', mapsUrl: '', photoUrl: '', rating: null, parkingInfo: '',
+    });
   };
 
-  const handleClearAndSearch = () => {
-    setIsManual(false);
-    onVenueSelect({ venueName: "", address: "", city: "", phone: "", website: "" });
-  };
+  // ── Rich venue card (selected state) ──────────────────────────────────────
+  if (venueName) {
+    const { phone, website, photoUrl, mapsUrl } = venueDetails;
+    const mapsHref = mapsUrl
+      || `https://maps.google.com/?q=${encodeURIComponent((venueName || '') + ' ' + (address || ''))}`;
 
-  if (isManual && venueName) {
     return (
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 flex items-center justify-between">
-          <span>{label}</span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleClearAndSearch}
-            className="text-xs text-gray-500 hover:text-gray-700"
+      <div style={{ marginBottom: 20 }}>
+        {label && <div style={labelStyle}>{label}</div>}
+        <div style={{ border: '1px solid #E5E5E5', overflow: 'hidden', position: 'relative' }}>
+
+          {/* Photo or placeholder */}
+          {photoUrl ? (
+            <img
+              src={photoUrl}
+              alt={venueName}
+              style={{ width: '100%', height: 192, objectFit: 'cover', display: 'block' }}
+              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+            />
+          ) : null}
+          <div style={{
+            width: '100%', height: 192,
+            background: '#F0F0EE',
+            display: photoUrl ? 'none' : 'flex',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <MapPin size={32} style={{ color: 'rgba(10,10,10,0.15)' }} />
+          </div>
+
+          {/* Change venue */}
+          <button
+            onClick={handleClear}
+            style={{
+              position: 'absolute', top: 12, right: 12,
+              background: 'rgba(255,255,255,0.92)', border: 'none', cursor: 'pointer',
+              fontSize: 12, fontFamily: PJS, color: 'rgba(10,10,10,0.55)',
+              padding: '4px 12px', borderRadius: 999,
+              transition: 'color 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.55)'}
           >
-            <Search className="w-3 h-3 mr-1" />
-            Search Again
-          </Button>
-        </label>
-        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-start gap-2">
-            <MapPin className="w-4 h-4 text-green-600 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">{venueName}</p>
-              {address && <p className="text-sm text-gray-600">{address}</p>}
+            Change venue
+          </button>
+
+          {/* Card body */}
+          <div style={{ padding: '20px 24px' }}>
+            <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', fontFamily: PJS }}>
+              {venueName}
+            </p>
+
+            {address && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 8 }}>
+                <MapPin size={13} style={{ color: '#E03553', marginTop: 2, flexShrink: 0 }} />
+                <p style={{ fontSize: 13, color: '#555', margin: 0, fontFamily: PJS, lineHeight: 1.5 }}>
+                  {address}
+                </p>
+              </div>
+            )}
+
+            {phone && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <Phone size={13} style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0 }} />
+                <p style={{ fontSize: 13, color: '#555', margin: 0, fontFamily: PJS }}>{phone}</p>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 20, marginTop: 12, flexWrap: 'wrap' }}>
+              {website && (
+                <a
+                  href={website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#E03553', textDecoration: 'underline', fontFamily: PJS }}
+                >
+                  <ExternalLink size={12} /> Visit website
+                </a>
+              )}
+              <a
+                href={mapsHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#555', fontFamily: PJS }}
+              >
+                <MapPin size={12} /> View on Google Maps
+              </a>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleClearAndSearch}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
           </div>
         </div>
       </div>
     );
   }
 
+  // ── Search state ───────────────────────────────────────────────────────────
   return (
-    <div className="space-y-2 relative">
-      <label className="text-sm font-medium text-gray-700 flex items-center justify-between">
-        <span>{label}</span>
-        {!isManual && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleManualEntry}
-            className="text-xs text-gray-500 hover:text-gray-700"
-          >
-            <Edit className="w-3 h-3 mr-1" />
-            Add Manually
-          </Button>
+    <div ref={containerRef} style={{ marginBottom: 20, position: 'relative' }}>
+      {label && <div style={labelStyle}>{label}</div>}
+
+      <div style={{ position: 'relative' }}>
+        <input
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          onFocus={() => { setFocused(true); if (results.length) setShowResults(true); }}
+          onBlur={() => setFocused(false)}
+          placeholder={placeholder}
+          style={{
+            width: '100%', border: 'none',
+            borderBottom: `${focused ? 2 : 1}px solid ${focused ? '#E03553' : 'rgba(10,10,10,0.18)'}`,
+            background: 'transparent', padding: '6px 28px 6px 0',
+            fontSize: 14, fontWeight: 500, color: '#0A0A0A', outline: 'none',
+            fontFamily: PJS, boxSizing: 'border-box', transition: 'border-color 0.2s',
+          }}
+        />
+        {isSearching && (
+          <Loader2
+            size={14}
+            style={{
+              position: 'absolute', right: 4, top: '50%', marginTop: -7,
+              color: 'rgba(10,10,10,0.35)', animation: 'oi-spin 0.8s linear infinite',
+            }}
+          />
         )}
-      </label>
-      
-      {isManual ? (
-        <div className="space-y-3">
-          <Input
-            placeholder="Venue name"
-            value={venueName || ""}
-            onChange={(e) => onVenueSelect({ venueName: e.target.value, address })}
-            className="border-gray-300"
-          />
-          <Input
-            placeholder="Full address"
-            value={address || ""}
-            onChange={(e) => onVenueSelect({ venueName, address: e.target.value })}
-            className="border-gray-300"
-          />
-        </div>
-      ) : (
-        <>
-          {/* Location and Region Controls */}
-          <div className="flex gap-2 mb-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={getUserLocation}
-              disabled={locationLoading}
-              className="flex-1 border-gray-300"
+      </div>
+
+      {/* Results dropdown */}
+      {showResults && results.length > 0 && (
+        <div style={{
+          position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 4,
+          background: '#FFFFFF', border: '1px solid #E5E5E5',
+          zIndex: 50, maxHeight: 280, overflowY: 'auto',
+        }}>
+          {results.map((venue, i) => (
+            <div
+              key={i}
+              onClick={() => handleSelect(venue)}
+              style={{
+                padding: '12px 16px',
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                borderBottom: i < results.length - 1 ? '1px solid #F5F4F0' : 'none',
+                cursor: 'pointer', background: '#FFFFFF', fontFamily: PJS,
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#F5F4F0'}
+              onMouseLeave={e => e.currentTarget.style.background = '#FFFFFF'}
             >
-              {locationLoading ? (
-                <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-              ) : (
-                <Navigation className="w-3 h-3 mr-2" />
-              )}
-              {userLocation ? "Using My Location" : "Use My Location"}
-            </Button>
-
-            <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-              <SelectTrigger className="flex-1 h-9 text-sm border-gray-300">
-                <Globe className="w-3 h-3 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="worldwide">Worldwide</SelectItem>
-                <SelectItem value="United States">United States</SelectItem>
-                <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                <SelectItem value="Canada">Canada</SelectItem>
-                <SelectItem value="Australia">Australia</SelectItem>
-                <SelectItem value="Europe">Europe</SelectItem>
-                <SelectItem value="Asia">Asia</SelectItem>
-                <SelectItem value="Caribbean">Caribbean</SelectItem>
-                <SelectItem value="Mexico">Mexico</SelectItem>
-                <SelectItem value="South America">South America</SelectItem>
-                <SelectItem value="Africa">Africa</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder={placeholder}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onFocus={() => searchTerm && setShowResults(true)}
-              className="pl-10 border-gray-300"
-            />
-            {isSearching && (
-              <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-gray-400" />
-            )}
-          </div>
-
-          {showResults && searchResults.length > 0 && (
-            <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
-              {searchResults.map((venue, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => handleSelectVenue(venue)}
-                  className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors"
-                >
-                  <div className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 text-gray-400 mt-1" />
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">{venue.name}</p>
-                      <p className="text-sm text-gray-600">{venue.address}</p>
-                      <div className="flex gap-2 mt-1">
-                        {venue.city && (
-                          <Badge variant="outline" className="text-xs">
-                            {venue.city}
-                          </Badge>
-                        )}
-                        {venue.website && (
-                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                            Website
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              ))}
+              <MapPin size={14} style={{ color: '#E03553', marginTop: 2, flexShrink: 0 }} />
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px' }}>
+                  {venue.name}
+                </p>
+                <p style={{ fontSize: 12, color: '#999', margin: 0 }}>
+                  {venue.address}{venue.city ? `, ${venue.city}` : ''}{venue.country ? `, ${venue.country}` : ''}
+                </p>
+              </div>
             </div>
-          )}
-
-          {showResults && searchTerm && searchResults.length === 0 && !isSearching && (
-            <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 p-4 text-center">
-              <p className="text-sm text-gray-500 mb-2">No venues found</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleManualEntry}
-                className="text-xs"
-              >
-                Add Manually Instead
-              </Button>
-            </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
+
+      {/* No results */}
+      {showResults && searchTerm.length >= 3 && results.length === 0 && !isSearching && (
+        <div style={{
+          position: 'absolute', left: 0, right: 0, top: '100%', marginTop: 4,
+          background: '#FFFFFF', border: '1px solid #E5E5E5', zIndex: 50,
+          padding: '16px', textAlign: 'center',
+        }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>
+            No venues found
+          </p>
+        </div>
+      )}
+
+      <style>{`@keyframes oi-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
