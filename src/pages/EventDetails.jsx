@@ -249,13 +249,14 @@ export default function EventDetailsPage() {
               address={mc.address || ''}
               venueDetails={mc}
               onVenueSelect={v => updateNested('mainCeremony', {
-                venueName:   v.venueName   || '',
-                address:     v.address     || '',
-                phone:       v.phone       || '',
-                website:     v.website     || '',
-                mapsUrl:     v.mapsUrl     || '',
-                photoUrl:    v.photoUrl    || '',
-                rating:      v.rating      ?? null,
+                venueName:         v.venueName         || '',
+                address:           v.address           || '',
+                phone:             v.phone             || '',
+                website:           v.website           || '',
+                mapsUrl:           v.mapsUrl           || '',
+                photoUrl:          v.photoUrl          || '',
+                rating:            v.rating            ?? null,
+                openingHoursToday: v.openingHoursToday || '',
                 // Auto-populate parking if field is currently empty
                 ...(v.venueName && !mc.parkingInfo && v.parkingInfo ? { parkingInfo: v.parkingInfo } : {}),
               })}
@@ -274,13 +275,14 @@ export default function EventDetailsPage() {
               address={rc.address || ''}
               venueDetails={rc}
               onVenueSelect={v => updateNested('reception', {
-                venueName:   v.venueName   || '',
-                address:     v.address     || '',
-                phone:       v.phone       || '',
-                website:     v.website     || '',
-                mapsUrl:     v.mapsUrl     || '',
-                photoUrl:    v.photoUrl    || '',
-                rating:      v.rating      ?? null,
+                venueName:         v.venueName         || '',
+                address:           v.address           || '',
+                phone:             v.phone             || '',
+                website:           v.website           || '',
+                mapsUrl:           v.mapsUrl           || '',
+                photoUrl:          v.photoUrl          || '',
+                rating:            v.rating            ?? null,
+                openingHoursToday: v.openingHoursToday || '',
                 // Auto-populate parking if field is currently empty
                 ...(v.venueName && !rc.parkingInfo && v.parkingInfo ? { parkingInfo: v.parkingInfo } : {}),
               })}

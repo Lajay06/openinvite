@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, ExternalLink, Phone, Loader2 } from 'lucide-react';
+import { MapPin, ExternalLink, Phone, Loader2, Clock, Star, Car } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY';
-const FALLBACK_PHOTO = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
@@ -11,7 +10,22 @@ const labelStyle = {
   color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6,
 };
 
-// Shared with LocationPicker — script only loads once (checked by ID)
+// Row: flex items-start gap-3 mb-3
+const row = {
+  display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12,
+};
+
+// Icon: text-[#E03553] w-4 h-4 flex-shrink-0 mt-0.5
+const iconStyle = { color: '#E03553', width: 16, height: 16, flexShrink: 0, marginTop: 2 };
+
+// Link style
+const linkStyle = {
+  fontSize: 14, color: '#E03553', textDecoration: 'underline',
+  fontFamily: PJS, lineHeight: 1.5, background: 'none', border: 'none',
+  cursor: 'pointer', padding: 0,
+};
+
+// Shared with LocationPicker — script loads only once (checked by ID)
 function loadGoogleMapsScript() {
   if (window.google?.maps?.places) return;
   if (document.getElementById('gm-script')) return;
@@ -24,6 +38,37 @@ function loadGoogleMapsScript() {
   document.head.appendChild(script);
 }
 
+// Extract today's hours from opening_hours.weekday_text
+// weekday_text is Mon–Sun (index 0=Mon … 6=Sun); getDay() is 0=Sun…6=Sat
+function getTodayHours(openingHours) {
+  const texts = openingHours?.weekday_text;
+  if (!texts?.length) return '';
+  const day = new Date().getDay(); // 0=Sun
+  const idx = day === 0 ? 6 : day - 1; // convert to Mon-based index
+  const text = texts[idx] || '';
+  // Strip the day name prefix ("Monday: 9:00 AM – 5:00 PM" → "9:00 AM – 5:00 PM")
+  return text.replace(/^[^:]+:\s*/, '');
+}
+
+// Build photo URL from place.photos[0]
+// Tries photo_reference first (internal data), then getUrl() from the JS SDK
+function getPhotoUrl(photos) {
+  if (!photos?.length) return '';
+  const photo = photos[0];
+  try {
+    // photo_reference is present in the underlying API data even if not in the public typedefs
+    const ref = photo['photo_reference'] || photo.photo_reference;
+    if (ref) {
+      return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${encodeURIComponent(ref)}&key=${GOOGLE_MAPS_API_KEY}`;
+    }
+    // Fall back to getUrl() — returns the same CDN URL internally
+    const url = photo.getUrl({ maxWidth: 800 });
+    return url || '';
+  } catch {
+    return '';
+  }
+}
+
 export default function VenueSearch({
   label,
   venueName,
@@ -32,19 +77,19 @@ export default function VenueSearch({
   placeholder = 'Search for a venue…',
   venueDetails = {},
 }) {
-  const [searchTerm, setSearchTerm]       = useState('');
-  const [results, setResults]             = useState([]);
-  const [isSearching, setIsSearching]     = useState(false);
-  const [showResults, setShowResults]     = useState(false);
-  const [focused, setFocused]             = useState(false);
+  const [searchTerm, setSearchTerm]         = useState('');
+  const [results, setResults]               = useState([]);
+  const [isSearching, setIsSearching]       = useState(false);
+  const [showResults, setShowResults]       = useState(false);
+  const [focused, setFocused]               = useState(false);
   const [fetchingDetails, setFetchingDetails] = useState(false);
-  const containerRef  = useRef(null);
-  const sessionToken  = useRef(null);
-  const debounceRef   = useRef(null);
+  const containerRef = useRef(null);
+  const sessionToken = useRef(null);
+  const debounceRef  = useRef(null);
 
   useEffect(() => { loadGoogleMapsScript(); }, []);
 
-  // Close on outside click
+  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -55,7 +100,7 @@ export default function VenueSearch({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Debounced search trigger
+  // Debounced search
   useEffect(() => {
     if (!searchTerm || searchTerm.length < 2) {
       setResults([]);
@@ -67,7 +112,7 @@ export default function VenueSearch({
     return () => clearTimeout(debounceRef.current);
   }, [searchTerm]);
 
-  // ── Google Places autocomplete ────────────────────────────────────────────
+  // ── Google Places autocomplete ─────────────────────────────────────────────
   const runGoogleSearch = (query) => {
     setIsSearching(true);
     if (!sessionToken.current) {
@@ -78,8 +123,8 @@ export default function VenueSearch({
       { input: query, sessionToken: sessionToken.current, types: ['establishment'] },
       (predictions, status) => {
         setIsSearching(false);
-        const ok = window.google.maps.places.PlacesServiceStatus.OK;
-        if (status === ok && predictions?.length) {
+        const OK = window.google.maps.places.PlacesServiceStatus.OK;
+        if (status === OK && predictions?.length) {
           setResults(predictions.map(p => ({
             placeId: p.place_id,
             name:    p.structured_formatting?.main_text      || p.description,
@@ -94,12 +139,12 @@ export default function VenueSearch({
     );
   };
 
-  // ── LLM fallback (when Google Maps not loaded yet) ────────────────────────
+  // ── LLM fallback ──────────────────────────────────────────────────────────
   const runLLMFallback = async (query) => {
     setIsSearching(true);
     try {
       const res = await InvokeLLM({
-        prompt: `Find up to 5 real wedding venues or event locations matching: "${query}". Return JSON with a "venues" array. Each item: name, address (full), city, country, phone, website (full URL).`,
+        prompt: `Find up to 5 real wedding venues or event locations matching: "${query}". Return JSON with a "venues" array. Each: name, address (full), city, country, phone, website (full URL).`,
         add_context_from_internet: true,
         response_json_schema: {
           type: 'object',
@@ -141,7 +186,6 @@ export default function VenueSearch({
     if (window.google?.maps?.places) {
       runGoogleSearch(query);
     } else {
-      // Give the async script a moment to load, then fall back
       setTimeout(() => {
         if (window.google?.maps?.places) runGoogleSearch(query);
         else runLLMFallback(query);
@@ -149,7 +193,7 @@ export default function VenueSearch({
     }
   };
 
-  // ── Fetch full place details (photos, phone, website, maps URL) ───────────
+  // ── Resolve full place details from Google ─────────────────────────────────
   const resolveGoogleDetails = (placeId, fallbackName, fallbackAddress) => {
     setFetchingDetails(true);
     const dummyDiv = document.createElement('div');
@@ -157,7 +201,11 @@ export default function VenueSearch({
     svc.getDetails(
       {
         placeId,
-        fields: ['name', 'formatted_address', 'formatted_phone_number', 'website', 'photos', 'rating', 'url', 'place_id'],
+        fields: [
+          'name', 'formatted_address', 'formatted_phone_number',
+          'website', 'photos', 'rating', 'url', 'place_id',
+          'opening_hours', 'types',
+        ],
         sessionToken: sessionToken.current,
       },
       (place, status) => {
@@ -166,29 +214,30 @@ export default function VenueSearch({
         setSearchTerm('');
         setShowResults(false);
 
-        const ok = window.google.maps.places.PlacesServiceStatus.OK;
-        let photoUrl = FALLBACK_PHOTO;
+        const OK = window.google.maps.places.PlacesServiceStatus.OK;
+        if (status === OK && place) {
+          const photoUrl = getPhotoUrl(place.photos);
+          const todayHours = getTodayHours(place.opening_hours);
+          // Parking: check if 'parking' appears in the place types
+          const hasParking = place.types?.some(t => t.includes('parking')) ?? false;
 
-        if (status === ok && place) {
-          if (place.photos?.length) {
-            try { photoUrl = place.photos[0].getUrl({ maxWidth: 800 }); }
-            catch { photoUrl = FALLBACK_PHOTO; }
-          }
           onVenueSelect({
-            venueName: place.name                   || fallbackName,
-            address:   place.formatted_address      || fallbackAddress,
-            phone:     place.formatted_phone_number || '',
-            website:   place.website                || '',
-            mapsUrl:   place.url                    || '',
+            venueName:        place.name                   || fallbackName,
+            address:          place.formatted_address      || fallbackAddress,
+            phone:            place.formatted_phone_number || '',
+            website:          place.website                || '',
+            mapsUrl:          place.url                    || '',
             photoUrl,
-            rating:    place.rating ?? null,
-            parkingInfo: '',
+            rating:           place.rating ?? null,
+            openingHoursToday: todayHours,
+            parkingInfo:      hasParking ? 'Parking available on site' : '',
           });
         } else {
           onVenueSelect({
             venueName: fallbackName, address: fallbackAddress,
             phone: '', website: '', mapsUrl: '',
-            photoUrl: FALLBACK_PHOTO, rating: null, parkingInfo: '',
+            photoUrl: '', rating: null,
+            openingHoursToday: '', parkingInfo: '',
           });
         }
       }
@@ -199,16 +248,17 @@ export default function VenueSearch({
     if (venue.placeId && window.google?.maps?.places) {
       resolveGoogleDetails(venue.placeId, venue.name, venue.address);
     } else {
-      // LLM result — no real photo available, use fallback
+      // LLM result — no photo, no hours
       onVenueSelect({
-        venueName:   venue.name    || '',
-        address:     venue.address || '',
-        phone:       venue.phone   || '',
-        website:     venue.website || '',
-        mapsUrl:     '',
-        photoUrl:    FALLBACK_PHOTO,
-        rating:      null,
-        parkingInfo: '',
+        venueName:         venue.name    || '',
+        address:           venue.address || '',
+        phone:             venue.phone   || '',
+        website:           venue.website || '',
+        mapsUrl:           '',
+        photoUrl:          '',
+        rating:            null,
+        openingHoursToday: '',
+        parkingInfo:       '',
       });
       setSearchTerm('');
       setShowResults(false);
@@ -218,114 +268,157 @@ export default function VenueSearch({
   const handleClear = () => {
     onVenueSelect({
       venueName: '', address: '', phone: '', website: '',
-      mapsUrl: '', photoUrl: '', rating: null, parkingInfo: '',
+      mapsUrl: '', photoUrl: '', rating: null,
+      openingHoursToday: '', parkingInfo: '',
     });
   };
 
-  // ── Rich venue card (selected state) ──────────────────────────────────────
+  // ── Rich venue card ────────────────────────────────────────────────────────
   if (venueName) {
-    const { phone, website, photoUrl, mapsUrl } = venueDetails;
-    const displayPhoto = photoUrl || FALLBACK_PHOTO;
+    const {
+      phone, website, photoUrl, mapsUrl,
+      rating, openingHoursToday, parkingInfo,
+    } = venueDetails;
+
     const mapsHref = mapsUrl
       || `https://maps.google.com/?q=${encodeURIComponent((venueName || '') + ' ' + (address || ''))}`;
 
     return (
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 24, maxWidth: 672 }}>
         {label && <div style={labelStyle}>{label}</div>}
 
-        <div style={{ border: '1px solid #E5E5E5', overflow: 'hidden', position: 'relative' }}>
+        {/* Card */}
+        <div style={{ border: '1px solid #E5E5E5', overflow: 'hidden' }}>
 
-          {/* Venue photo — always visible (real or fallback) */}
-          <img
-            src={displayPhoto}
-            alt={venueName}
-            style={{ width: '100%', height: 224, objectFit: 'cover', display: 'block' }}
-            onError={e => { e.target.src = FALLBACK_PHOTO; }}
-          />
-
-          {/* Change venue pill — floats top-right over photo */}
-          <button
-            onClick={handleClear}
-            style={{
-              position: 'absolute', top: 12, right: 12,
-              background: 'rgba(255,255,255,0.95)',
-              border: '1px solid #E5E5E5',
-              borderRadius: 999,
-              cursor: 'pointer',
-              fontSize: 13, fontFamily: PJS, color: '#999',
-              padding: '4px 12px',
-              transition: 'color 0.15s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
-            onMouseLeave={e => e.currentTarget.style.color = '#999'}
-          >
-            Change venue
-          </button>
+          {/* Photo — only if a real URL was obtained */}
+          {photoUrl && (
+            <img
+              src={photoUrl}
+              alt={venueName}
+              style={{ width: '100%', height: 224, objectFit: 'cover', display: 'block' }}
+              onError={e => { e.target.style.display = 'none'; }}
+            />
+          )}
 
           {/* Card body */}
           <div style={{ padding: 24 }}>
-            {/* Name */}
-            <p style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', margin: '0 0 12px', fontFamily: PJS }}>
+
+            {/* Venue name */}
+            <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
               {venueName}
             </p>
 
             {/* Address */}
             {address && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
-                <MapPin size={16} style={{ color: '#E03553', marginTop: 1, flexShrink: 0 }} />
-                <p style={{ fontSize: 14, color: '#555', margin: 0, fontFamily: PJS, lineHeight: 1.5 }}>
+              <div style={row}>
+                <MapPin style={iconStyle} />
+                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS, lineHeight: 1.5 }}>
                   {address}
-                </p>
+                </span>
               </div>
             )}
 
             {/* Phone */}
             {phone && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <Phone size={16} style={{ color: '#E03553', flexShrink: 0 }} />
-                <p style={{ fontSize: 14, color: '#555', margin: 0, fontFamily: PJS }}>{phone}</p>
+              <div style={row}>
+                <Phone style={iconStyle} />
+                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>
+                  {phone}
+                </span>
               </div>
             )}
 
-            {/* Divider + links */}
-            <div style={{ borderTop: '1px solid #F5F4F0', marginTop: 16, paddingTop: 16, display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-              {website && (
+            {/* Today's hours */}
+            {openingHoursToday && (
+              <div style={row}>
+                <Clock style={iconStyle} />
+                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>
+                  {openingHoursToday}
+                </span>
+              </div>
+            )}
+
+            {/* Rating */}
+            {rating != null && (
+              <div style={row}>
+                <Star style={iconStyle} />
+                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>
+                  {rating} / 5
+                </span>
+              </div>
+            )}
+
+            {/* Parking */}
+            {parkingInfo && (
+              <div style={row}>
+                <Car style={iconStyle} />
+                <span style={{ fontSize: 14, color: '#555', fontFamily: PJS }}>
+                  {parkingInfo}
+                </span>
+              </div>
+            )}
+
+            {/* Website */}
+            {website && (
+              <div style={row}>
+                <ExternalLink style={iconStyle} />
                 <a
                   href={website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: '#E03553', textDecoration: 'underline', fontFamily: PJS }}
+                  style={linkStyle}
                   onMouseEnter={e => e.currentTarget.style.textDecoration = 'none'}
                   onMouseLeave={e => e.currentTarget.style.textDecoration = 'underline'}
                 >
-                  <ExternalLink size={14} style={{ flexShrink: 0 }} />
                   Visit website
                 </a>
-              )}
+              </div>
+            )}
+
+            {/* Google Maps */}
+            <div style={row}>
+              <MapPin style={iconStyle} />
               <a
                 href={mapsHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: '#E03553', textDecoration: 'underline', fontFamily: PJS }}
+                style={linkStyle}
                 onMouseEnter={e => e.currentTarget.style.textDecoration = 'none'}
                 onMouseLeave={e => e.currentTarget.style.textDecoration = 'underline'}
               >
-                <MapPin size={14} style={{ flexShrink: 0 }} />
                 View on Google Maps
               </a>
             </div>
+
           </div>
         </div>
+
+        {/* Change venue — below card, not overlaid */}
+        <button
+          onClick={handleClear}
+          style={{
+            marginTop: 10, background: 'none', border: 'none', padding: 0,
+            cursor: 'pointer', fontSize: 13, fontFamily: PJS, color: '#999',
+            display: 'inline-block', transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
+          onMouseLeave={e => e.currentTarget.style.color = '#999'}
+        >
+          Change venue
+        </button>
       </div>
     );
   }
 
-  // ── Fetching details loading state ─────────────────────────────────────────
+  // ── Fetching details state ─────────────────────────────────────────────────
   if (fetchingDetails) {
     return (
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 24, maxWidth: 672 }}>
         {label && <div style={labelStyle}>{label}</div>}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 0', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, fontSize: 13 }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '14px 0', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, fontSize: 13,
+        }}>
           <Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite', flexShrink: 0 }} />
           Loading venue details…
         </div>
@@ -336,7 +429,7 @@ export default function VenueSearch({
 
   // ── Search input + dropdown ────────────────────────────────────────────────
   return (
-    <div ref={containerRef} style={{ marginBottom: 24, position: 'relative' }}>
+    <div ref={containerRef} style={{ marginBottom: 24, position: 'relative', maxWidth: 672 }}>
       {label && <div style={labelStyle}>{label}</div>}
 
       <div style={{ position: 'relative' }}>
