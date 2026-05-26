@@ -16,6 +16,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'priceId is required' });
     }
 
+    const plan = priceId === process.env.VITE_STRIPE_PRO_PRICE_ID ? 'pro' : 'ultra';
+    console.log('[checkout] resolved plan:', plan, '| priceId:', priceId);
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       currency: 'aud',
@@ -25,6 +28,7 @@ export default async function handler(req, res) {
         'klarna',
       ],
       line_items: [{ price: priceId, quantity: 1 }],
+      metadata: { plan },
       success_url: `${process.env.VITE_APP_URL || 'https://openinvite.com.au'}/dashboard?checkout=success`,
       cancel_url: `${process.env.VITE_APP_URL || 'https://openinvite.com.au'}/pricing?checkout=cancelled`,
     });
