@@ -52,7 +52,7 @@ const ULTRA_EXTRAS = [
 const FAQS = [
   {
     q: "Is this really a one-time payment?",
-    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is $99 total. Ultra is $199 total.",
+    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is $79 AUD total. Ultra is $149 AUD total.",
   },
   {
     q: "What's included in the 24 months?",
@@ -60,7 +60,7 @@ const FAQS = [
   },
   {
     q: "Can I upgrade from Pro to Ultra later?",
-    a: "Yes — you can upgrade at any time and pay only the difference ($100).",
+    a: "Yes — you can upgrade at any time and pay only the difference ($70).",
   },
   {
     q: "What if I want a refund?",
@@ -90,7 +90,7 @@ const TABLE_ROWS = [
   { feature: "Collaborate",      starter: false,      pro: true,       ultra: true },
   { feature: "Support",          starter: "Email",    pro: "Priority", ultra: "Priority" },
   { feature: "Access duration",  starter: "14 days",  pro: "24 mo",    ultra: "24 mo" },
-  { feature: "Price",            starter: "Free",     pro: "$99",      ultra: "$199" },
+  { feature: "Price",            starter: "Free",     pro: "$79",      ultra: "$149" },
 ];
 
 function CheckIcon({ color = "#0A0A0A" }) {
@@ -188,8 +188,8 @@ export default function Pricing() {
   const [checkoutError, setCheckoutError] = useState(null);
 
   const goFree  = () => navigate("/onboarding");
-  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: 99  }); startCheckout('pro',   setLoadingPlan, setCheckoutError); };
-  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: 199 }); startCheckout('ultra', setLoadingPlan, setCheckoutError); };
+  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: 79  }); startCheckout('pro',   setLoadingPlan, setCheckoutError); };
+  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: 149 }); startCheckout('ultra', setLoadingPlan, setCheckoutError); };
 
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100vh", fontFamily: PJS }}>
@@ -278,10 +278,10 @@ export default function Pricing() {
                 Pro
               </p>
               <div style={{ marginBottom: 4 }}>
-                <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$99</span>
+                <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$79</span>
               </div>
               <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
-                One-time payment
+                24-month access · one-time payment
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 24, fontFamily: PJS }}>
                 Your complete wedding command centre. Everything you need from first plan to final dance.
@@ -308,7 +308,7 @@ export default function Pricing() {
                 onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.88"; }}
                 onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
               >
-                {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $99"}
+                {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $79"}
               </button>
               <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
                 24-month access · one-time payment
@@ -326,10 +326,10 @@ export default function Pricing() {
               Ultra
             </p>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$199</span>
+              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$149</span>
             </div>
             <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
-              One-time payment
+              24-month access · one-time payment
             </p>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 24, fontFamily: PJS }}>
               Everything in Pro, plus a stunning invitation suite to match your wedding vision.
@@ -360,7 +360,7 @@ export default function Pricing() {
               onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.background = "#F3F3F3"; }}
               onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.background = "#FFFFFF"; }}
             >
-              {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra — $199"}
+              {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra — $149"}
             </button>
             <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
               24-month access · one-time payment
@@ -368,6 +368,11 @@ export default function Pricing() {
           </div>
 
         </div>
+
+        {/* AUD note */}
+        <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.35)", marginTop: 24, fontFamily: PJS }}>
+          Prices in AUD · Approx. US$50 / US$95
+        </p>
 
         {/* ── Checkout error banner ── */}
         {checkoutError && (
@@ -513,7 +518,7 @@ export default function Pricing() {
             onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.85"; }}
             onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
           >
-            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $99"}
+            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $79"}
           </button>
         </div>
       </section>

@@ -157,7 +157,7 @@ function PricingSection({ onCTA }) {
           transform: reduced ? "scale(1)" : spring ? "scale(1)" : visible ? "scale(1.2)" : "scale(0)",
           transition: reduced ? "none" : spring ? `transform 0.5s ${EASE}` : `transform 0.4s ease`,
         }}>
-          $99
+          $79
         </span>
       </div>
       <p style={{

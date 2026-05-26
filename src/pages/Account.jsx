@@ -42,7 +42,7 @@ const PRICE_IDS = {
 };
 
 const PLAN_LABELS = { free: 'Free trial', pro: 'Pro', ultra: 'Ultra' };
-const PLAN_PRICES = { pro: '$99', ultra: '$199' };
+const PLAN_PRICES = { pro: '$79', ultra: '$149' };
 
 export default function AccountPage() {
   const { user } = useAuth();

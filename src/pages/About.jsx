@@ -280,7 +280,7 @@ function StatsSection() {
   const stats = [
     { display: "10,000+", label: "Couples planning", num: 10000 },
     { display: "37", label: "Planning tools", num: 37 },
-    { display: "$99", label: "One-time forever", num: 99 },
+    { display: "$79", label: "One-time forever", num: 79 },
     { display: "∞", label: "Memories made", num: null },
   ];
 

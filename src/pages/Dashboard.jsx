@@ -116,7 +116,7 @@ export default function Dashboard() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('checkout') === 'success') {
       const plan = params.get('plan') || 'pro';
-      const amount = plan === 'ultra' ? 199 : 99;
+      const amount = plan === 'ultra' ? 149 : 79;
       track('purchase_completed', { plan, amount, currency: 'AUD' });
       // Clean up the query string so a refresh doesn't re-fire the event
       const clean = window.location.pathname;

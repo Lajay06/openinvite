@@ -6,7 +6,7 @@
 export function purchaseConfirmationEmail({ plan, email, name }) {
   const firstName = name ? name.split(' ')[0] : 'there';
   const planLabel = plan === 'ultra' ? 'Ultra' : 'Pro';
-  const planPrice = plan === 'ultra' ? '$199' : '$99';
+  const planPrice = plan === 'ultra' ? '$149' : '$79';
   const planExtras = plan === 'ultra'
     ? 'Full planning suite + invitation design, save the dates, thank you cards, and a complete guest portal with digital invitations.'
     : 'Complete wedding planning — guest management, budget tracking, vendor tools, seating planner, wedding website, Ava AI, and more.';
