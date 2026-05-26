@@ -104,11 +104,21 @@ export default function PublicNav() {
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <button
               onClick={handleLogin}
-              style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", padding: 0, transition: "color 0.2s ease" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#ffffff"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.75)"}
+              aria-label="Log in"
+              style={{
+                width: 36, height: 36, borderRadius: "50%",
+                background: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "rgba(255,255,255,0.8)",
+                flexShrink: 0,
+                transition: "background 0.15s ease, color 0.15s ease",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; e.currentTarget.style.color = "#ffffff"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.8)"; }}
             >
-              Log in
+              <UserIcon />
             </button>
             <a
               href="/signup"
@@ -178,11 +188,21 @@ export default function PublicNav() {
           <div className="hidden md:flex items-center gap-4">
             <button
               onClick={handleLogin}
-              style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", padding: 0, transition: "color 0.2s ease" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#ffffff"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.75)"}
+              aria-label="Log in"
+              style={{
+                width: 36, height: 36, borderRadius: "50%",
+                background: "rgba(255,255,255,0.1)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "rgba(255,255,255,0.8)",
+                flexShrink: 0,
+                transition: "background 0.15s ease, color 0.15s ease",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; e.currentTarget.style.color = "#ffffff"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.8)"; }}
             >
-              Log in
+              <UserIcon />
             </button>
             <a
               href="/signup"
