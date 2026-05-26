@@ -280,12 +280,10 @@ export default function Onboarding() {
         {showBack && (
           <button
             onClick={goBack}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 13, fontFamily: PJS, padding: 0,
-              color: pageIsLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)',
-              textAlign: 'left',
-            }}
+            className={`border-none cursor-pointer text-[13px] text-left bg-transparent rounded-full px-2 py-1 transition-colors duration-150 hover:bg-black hover:text-white active:bg-neutral-900 ${
+              pageIsLight ? 'text-[rgba(0,0,0,0.4)]' : 'text-[rgba(255,255,255,0.4)]'
+            }`}
+            style={{ fontFamily: PJS }}
           >
             ← Back
           </button>

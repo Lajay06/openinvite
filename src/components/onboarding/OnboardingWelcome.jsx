@@ -32,12 +32,8 @@ export default function OnboardingWelcome({ onNext, theme }) {
       <div style={{ marginTop: 40 }}>
         <button
           onClick={() => onNext({})}
-          style={{
-            background: '#E03553',
-            color: '#FFFFFF', borderRadius: 999,
-            padding: '14px 36px', fontSize: 15, fontWeight: 600,
-            border: 'none', cursor: 'pointer', fontFamily: PJS,
-          }}
+          className="rounded-full text-white font-semibold bg-[#E03553] hover:bg-black hover:text-white active:bg-neutral-900 transition-colors duration-150 border-none cursor-pointer"
+          style={{ padding: '14px 36px', fontSize: 15, fontFamily: PJS }}
         >
           Get started
         </button>

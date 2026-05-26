@@ -49,6 +49,12 @@ export default function OnboardingStep5WeddingType({ onNext, data, theme }) {
     <div className="w-full max-w-4xl text-center">
       <style>{`
         .s5-other::placeholder { color: ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'}; }
+        .s5-pill:not(.s5-active):hover {
+          background: #0A0A0A !important;
+          color: #FFFFFF !important;
+          border-color: #0A0A0A !important;
+        }
+        .s5-pill:not(.s5-active):active { background: #111111 !important; }
       `}</style>
 
       <motion.h1
@@ -101,6 +107,7 @@ export default function OnboardingStep5WeddingType({ onNext, data, theme }) {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.25 + gi * 0.1 + pi * 0.02 }}
                       onClick={() => toggle(pill)}
+                      className={`s5-pill${isActive ? ' s5-active' : ''}`}
                       style={{
                         padding: '8px 16px',
                         borderRadius: 999,
@@ -109,9 +116,9 @@ export default function OnboardingStep5WeddingType({ onNext, data, theme }) {
                         fontFamily: PJS,
                         cursor: 'pointer',
                         transition: 'all 0.15s',
-                        background: isActive ? 'linear-gradient(135deg, #E03553, #803D81)' : 'transparent',
+                        background: isActive ? '#0A0A0A' : 'transparent',
                         color: isActive ? '#FFFFFF' : textMuted,
-                        border: isActive ? 'none' : `1px solid ${pillBorder}`,
+                        border: `1px solid ${isActive ? '#0A0A0A' : pillBorder}`,
                       }}
                     >
                       {pill}
@@ -125,6 +132,7 @@ export default function OnboardingStep5WeddingType({ onNext, data, theme }) {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.25 + gi * 0.1 + group.pills.length * 0.02 }}
                   onClick={() => toggle(otherKey(group.key))}
+                  className={`s5-pill${isOtherSelected ? ' s5-active' : ''}`}
                   style={{
                     padding: '8px 16px',
                     borderRadius: 999,
@@ -133,9 +141,9 @@ export default function OnboardingStep5WeddingType({ onNext, data, theme }) {
                     fontFamily: PJS,
                     cursor: 'pointer',
                     transition: 'all 0.15s',
-                    background: isOtherSelected ? 'linear-gradient(135deg, #E03553, #803D81)' : 'transparent',
+                    background: isOtherSelected ? '#0A0A0A' : 'transparent',
                     color: isOtherSelected ? '#FFFFFF' : textMuted,
-                    border: isOtherSelected ? 'none' : `1px solid ${pillBorder}`,
+                    border: `1px solid ${isOtherSelected ? '#0A0A0A' : pillBorder}`,
                   }}
                 >
                   Other
@@ -179,7 +187,7 @@ export default function OnboardingStep5WeddingType({ onNext, data, theme }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={handleSubmit}
-          className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+          className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:bg-none hover:bg-black hover:text-white active:bg-neutral-900 transition-colors duration-150"
         >
           Continue →
         </motion.button>

@@ -45,7 +45,7 @@ export default function OnboardingStep7Ava({ onNext, data, theme }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
         onClick={() => onNext({})}
-        className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+        className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:bg-none hover:bg-black hover:text-white active:bg-neutral-900 transition-colors duration-150"
       >
         Got it, let's go →
       </motion.button>

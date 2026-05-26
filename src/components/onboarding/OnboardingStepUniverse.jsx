@@ -49,6 +49,7 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
   const [selectedUniverse, setSelectedUniverse] = useState(data.activeUniverse || null);
   const [websiteMode, setWebsiteMode] = useState(data.websiteMode || 'dark');
   const [previewUniverse, setPreviewUniverse] = useState(null);
+  const [continueHovered, setContinueHovered] = useState(false);
   const isDark = theme !== 'light';
   const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
   const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
@@ -176,14 +177,20 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
           <button
             onClick={handleContinue}
             disabled={!selectedUniverse}
+            onMouseEnter={() => selectedUniverse && setContinueHovered(true)}
+            onMouseLeave={() => setContinueHovered(false)}
             style={{
               padding: '14px 48px',
-              background: selectedUniverse ? 'linear-gradient(135deg, #E03553, #803D81)' : 'transparent',
+              background: !selectedUniverse
+                ? 'transparent'
+                : continueHovered
+                  ? '#0A0A0A'
+                  : 'linear-gradient(135deg, #E03553, #803D81)',
               border: selectedUniverse ? 'none' : '1px solid rgba(255,255,255,0.25)',
               color: selectedUniverse ? '#FFFFFF' : 'rgba(255,255,255,0.35)',
               cursor: selectedUniverse ? 'pointer' : 'default',
               fontFamily: 'Plus Jakarta Sans, sans-serif',
-              transition: 'all 0.3s ease',
+              transition: 'background 0.15s ease',
             }}
           >
             Continue →

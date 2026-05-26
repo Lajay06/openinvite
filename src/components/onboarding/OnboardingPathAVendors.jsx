@@ -58,10 +58,10 @@ export default function OnboardingPathAVendors({ onNext, data }) {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.25 + i * 0.05 }}
             onClick={() => toggle(type)}
-            className={`p-4 rounded-none border-2 transition-all text-sm font-medium ${
+            className={`p-4 rounded-none border-2 transition-colors duration-150 text-sm font-medium ${
               selected.includes(type)
-                ? 'bg-gradient-to-r from-[#E03553] to-[#803D81] border-transparent text-white'
-                : 'bg-transparent border-[#333] text-[#888888] hover:border-[#555]'
+                ? 'bg-black border-black text-white'
+                : 'bg-transparent border-[#333] text-[#888888] hover:bg-black hover:border-black hover:text-white active:bg-neutral-900'
             }`}
           >
             <input
@@ -116,7 +116,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
       >
         <button
           onClick={handleSubmit}
-          className="px-8 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+          className="px-8 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-gradient-to-r from-[#E03553] to-[#803D81] hover:bg-none hover:bg-black hover:text-white active:bg-neutral-900 transition-colors duration-150"
         >
           Continue →
         </button>

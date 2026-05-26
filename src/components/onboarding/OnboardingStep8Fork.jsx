@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 export default function OnboardingStep8Fork({ onPathA, onPathB, data, theme }) {
+  const [hoveredCard, setHoveredCard] = useState(null); // 'a' | 'b' | null
+
+  const cardStyle = (cardKey) => ({
+    textAlign: 'left',
+    padding: 32,
+    background: hoveredCard === cardKey ? '#0A0A0A' : '#FFFFFF',
+    border: `1px solid ${hoveredCard === cardKey ? '#0A0A0A' : '#E5E5E5'}`,
+    cursor: 'pointer',
+    transition: 'background 0.15s ease, border-color 0.15s ease',
+  });
+
+  const textDark = (cardKey) => hoveredCard === cardKey ? '#FFFFFF' : '#0A0A0A';
+  const textMid = (cardKey) => hoveredCard === cardKey ? 'rgba(255,255,255,0.75)' : '#555555';
+  const textFaint = (cardKey) => hoveredCard === cardKey ? 'rgba(255,255,255,0.45)' : 'rgba(10,10,10,0.35)';
+  const textMuted = (cardKey) => hoveredCard === cardKey ? 'rgba(255,255,255,0.5)' : 'rgba(10,10,10,0.5)';
+  const accentColor = (cardKey) => hoveredCard === cardKey ? 'rgba(255,255,255,0.6)' : '#E03553';
+
   return (
     <div
       className="w-full max-w-5xl text-center"
@@ -40,37 +57,32 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data, theme }) {
       >
         {/* Card A — Tell us more */}
         <motion.button
-          whileHover={{ borderColor: '#E03553' }}
           onClick={onPathA}
-          style={{
-            textAlign: 'left',
-            padding: 32,
-            background: '#FFFFFF',
-            border: '1px solid #E5E5E5',
-            cursor: 'pointer',
-            transition: 'border-color 0.2s ease',
-          }}
+          onHoverStart={() => setHoveredCard('a')}
+          onHoverEnd={() => setHoveredCard(null)}
+          style={cardStyle('a')}
         >
-          <h3 style={{ color: '#0A0A0A', fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>Tell us more</h3>
-          <p style={{ color: '#555555', fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
+          <h3 style={{ color: textDark('a'), fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>Tell us more</h3>
+          <p style={{ color: textMid('a'), fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
             Upload your guest list, add vendors, set your budget, and give Ava everything she needs to hit the ground running.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
             {['Upload guest list (CSV or manual)', 'Add cultural/religious details', 'Set your budget', 'Add known vendors', 'Upload inspiration photos'].map(item => (
-              <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(10,10,10,0.5)', fontSize: 14, fontFamily: PJS }}>
-                <span style={{ color: '#E03553', fontWeight: 700, fontSize: 14, lineHeight: 1 }}>—</span> {item}
+              <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, color: textMuted('a'), fontSize: 14, fontFamily: PJS }}>
+                <span style={{ color: accentColor('a'), fontWeight: 700, fontSize: 14, lineHeight: 1 }}>—</span> {item}
               </div>
             ))}
           </div>
           <div style={{
             display: 'inline-block',
-            background: '#E03553',
-            color: '#FFFFFF',
+            background: hoveredCard === 'a' ? '#FFFFFF' : '#E03553',
+            color: hoveredCard === 'a' ? '#0A0A0A' : '#FFFFFF',
             borderRadius: 999,
             padding: '10px 24px',
             fontSize: 14,
             fontWeight: 600,
             fontFamily: PJS,
+            transition: 'background 0.15s ease, color 0.15s ease',
           }}>
             Let's do it
           </div>
@@ -78,34 +90,29 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data, theme }) {
 
         {/* Card B — Get started now */}
         <motion.button
-          whileHover={{ borderColor: '#0A0A0A' }}
           onClick={onPathB}
-          style={{
-            textAlign: 'left',
-            padding: 32,
-            background: '#FFFFFF',
-            border: '1px solid #E5E5E5',
-            cursor: 'pointer',
-            transition: 'border-color 0.2s ease',
-          }}
+          onHoverStart={() => setHoveredCard('b')}
+          onHoverEnd={() => setHoveredCard(null)}
+          style={cardStyle('b')}
         >
-          <h3 style={{ color: '#0A0A0A', fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>Get started now</h3>
-          <p style={{ color: '#555555', fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
+          <h3 style={{ color: textDark('b'), fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>Get started now</h3>
+          <p style={{ color: textMid('b'), fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
             Jump straight into your dashboard. Ava will guide you through the key details as you go — no overwhelm.
           </p>
-          <p style={{ color: 'rgba(10,10,10,0.35)', fontSize: 13, marginBottom: 24, fontFamily: PJS }}>
+          <p style={{ color: textFaint('b'), fontSize: 13, marginBottom: 24, fontFamily: PJS }}>
             You can always add more later.
           </p>
           <div style={{
             display: 'inline-block',
-            background: '#FFFFFF',
-            color: '#0A0A0A',
+            background: hoveredCard === 'b' ? '#FFFFFF' : '#FFFFFF',
+            color: hoveredCard === 'b' ? '#0A0A0A' : '#0A0A0A',
             borderRadius: 999,
-            border: '1px solid #0A0A0A',
+            border: `1px solid ${hoveredCard === 'b' ? 'rgba(255,255,255,0.4)' : '#0A0A0A'}`,
             padding: '10px 24px',
             fontSize: 14,
             fontWeight: 600,
             fontFamily: PJS,
+            transition: 'border-color 0.15s ease',
           }}>
             Let's go
           </div>

@@ -62,7 +62,7 @@ export default function OnboardingStep2Date({ onNext, data, theme }) {
         {date && (
           <button
             onClick={handleSubmit}
-            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:bg-none hover:bg-black hover:text-white active:bg-neutral-900 transition-colors duration-150"
           >
             Continue →
           </button>

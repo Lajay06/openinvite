@@ -11,6 +11,7 @@ const CARDS = [
 
 export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
   const [selected, setSelected] = useState('');
+  const [hoveredCard, setHoveredCard] = useState('');
   const [customCount, setCustomCount] = useState('');
   const isDark = theme !== 'light';
   const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
@@ -48,6 +49,8 @@ export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
       >
         {CARDS.map((card, i) => {
           const isSelected = selected === card.id;
+          const isHovered = hoveredCard === card.id;
+          const isActive = isSelected || isHovered;
           return (
             <motion.button
               key={card.id}
@@ -55,20 +58,20 @@ export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 + i * 0.1 }}
               onClick={() => setSelected(card.id)}
+              onMouseEnter={() => setHoveredCard(card.id)}
+              onMouseLeave={() => setHoveredCard('')}
               style={{
                 padding: '28px 24px',
-                border: isSelected ? '2px solid transparent' : `2px solid ${cardBorder}`,
-                background: isSelected
-                  ? 'linear-gradient(135deg, #E03553, #803D81)'
-                  : cardBg,
+                border: isActive ? '2px solid #0A0A0A' : `2px solid ${cardBorder}`,
+                background: isActive ? '#0A0A0A' : cardBg,
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.15s ease',
               }}
             >
-              <div style={{ fontWeight: 700, color: isSelected ? '#FFFFFF' : textPrimary, fontFamily: PJS, fontSize: 16, marginBottom: 6 }}>
+              <div style={{ fontWeight: 700, color: isActive ? '#FFFFFF' : textPrimary, fontFamily: PJS, fontSize: 16, marginBottom: 6 }}>
                 {card.label}
               </div>
-              <div style={{ fontSize: 13, color: isSelected ? 'rgba(255,255,255,0.8)' : textMuted, fontFamily: PJS }}>
+              <div style={{ fontSize: 13, color: isActive ? 'rgba(255,255,255,0.7)' : textMuted, fontFamily: PJS }}>
                 {card.range}
               </div>
             </motion.button>
@@ -111,7 +114,7 @@ export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={handleSubmit}
-          className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+          className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:bg-none hover:bg-black hover:text-white active:bg-neutral-900 transition-colors duration-150"
         >
           Continue →
         </motion.button>

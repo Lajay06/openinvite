@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import LocationPicker from '@/components/shared/LocationPicker';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 export default function OnboardingStep3Location({ onNext, data, theme }) {
-  const [venue, setVenue] = useState(data?.venue || '');
+  // Normalise stored venue — it may be a plain string or an object from the old LocationPicker
+  const initialVenue =
+    typeof data?.venue === 'object'
+      ? data?.venue?.name || ''
+      : data?.venue || '';
+
+  const [venue, setVenue] = useState(initialVenue);
   const [location, setLocation] = useState(data?.location || '');
   const isDark = theme !== 'light';
   const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
   const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
   const skipColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+  const inputBorder = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
 
   const handleSubmit = () => {
     onNext({ venue, location });
@@ -18,8 +24,35 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
 
   const canContinue = venue.trim() || location.trim();
 
+  const inputStyle = {
+    width: '100%',
+    background: 'transparent',
+    border: 'none',
+    borderBottom: `1px solid ${inputBorder}`,
+    padding: '6px 0',
+    fontSize: 15,
+    color: textPrimary,
+    fontFamily: PJS,
+    outline: 'none',
+  };
+
+  const labelStyle = {
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '0.06em',
+    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+    fontFamily: PJS,
+    display: 'block',
+    marginBottom: 8,
+  };
+
   return (
     <div className="w-full max-w-2xl text-center">
+      <style>{`
+        .s3-input::placeholder { color: ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}; }
+        .s3-input:focus { border-bottom-color: #E03553 !important; border-bottom-width: 2px !important; }
+      `}</style>
+
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -41,22 +74,33 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="space-y-4 mb-12 max-w-md mx-auto text-left"
+        className="space-y-6 mb-12 max-w-md mx-auto text-left"
       >
-        <LocationPicker
-          value={venue}
-          onChange={setVenue}
-          placeholder="Venue name (e.g. The Grand Ballroom)"
-          dark={isDark}
-          types={['establishment']}
-        />
-        <LocationPicker
-          value={location}
-          onChange={setLocation}
-          placeholder="City or location (e.g. Sydney, Australia)"
-          dark={isDark}
-          types={['geocode']}
-        />
+        <div>
+          <label style={labelStyle}>Venue name</label>
+          <input
+            type="text"
+            value={venue}
+            onChange={e => setVenue(e.target.value)}
+            placeholder="e.g. The Grand Ballroom"
+            className="s3-input"
+            style={inputStyle}
+            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+          />
+        </div>
+
+        <div>
+          <label style={labelStyle}>City or location</label>
+          <input
+            type="text"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            placeholder="e.g. Sydney, Australia"
+            className="s3-input"
+            style={inputStyle}
+            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+          />
+        </div>
       </motion.div>
 
       <motion.div
@@ -68,7 +112,7 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
         {canContinue && (
           <button
             onClick={handleSubmit}
-            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:brightness-110 transition-all"
+            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:bg-none hover:bg-black hover:text-white active:bg-neutral-900 transition-colors duration-150"
           >
             Continue →
           </button>
