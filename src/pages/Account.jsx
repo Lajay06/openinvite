@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, Check, CreditCard, Crown } from 'lucide-react';
+import { Loader2, Check, CreditCard, Crown, Receipt } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import { useAuth } from '@/lib/AuthContext';
@@ -50,6 +50,7 @@ export default function AccountPage() {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [checkoutLoading, setCheckoutLoading] = useState(null);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   const plan = user?.plan || 'free';
   const planLabel = PLAN_LABELS[plan] || 'Free trial';
@@ -77,6 +78,20 @@ export default function AccountPage() {
       setSaveStatus('idle');
     }
     setSaving(false);
+  };
+
+  const handlePortal = async () => {
+    setPortalLoading(true);
+    try {
+      const res = await fetch('/api/create-portal-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId: user?.stripeCustomerId }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {}
+    setPortalLoading(false);
   };
 
   const handleCheckout = async (planKey) => {
@@ -267,7 +282,7 @@ export default function AccountPage() {
 
         {/* Manage billing (paid plans) */}
         {(plan === 'pro' || plan === 'ultra') && (
-          <div style={{ marginBottom: 28 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 28 }}>
             <a
               href="mailto:lajay@openinvite.com.au?subject=Billing inquiry"
               style={{
@@ -283,6 +298,32 @@ export default function AccountPage() {
               <CreditCard size={13} />
               Manage billing
             </a>
+
+            {user?.stripeCustomerId && (
+              <button
+                onClick={handlePortal}
+                disabled={portalLoading}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                  padding: '9px 20px', borderRadius: 999,
+                  background: 'rgba(10,10,10,0.06)',
+                  border: '1px solid rgba(10,10,10,0.12)',
+                  color: '#0A0A0A',
+                  fontSize: 12, fontWeight: 700, fontFamily: PJS,
+                  cursor: portalLoading ? 'not-allowed' : 'pointer',
+                  opacity: portalLoading ? 0.6 : 1,
+                  transition: 'opacity 0.15s',
+                }}
+                onMouseEnter={e => { if (!portalLoading) e.currentTarget.style.opacity = '0.7'; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = portalLoading ? '0.6' : '1'; }}
+              >
+                {portalLoading
+                  ? <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} />
+                  : <Receipt size={13} />
+                }
+                View receipts & billing
+              </button>
+            )}
           </div>
         )}
 
