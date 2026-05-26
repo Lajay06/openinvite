@@ -107,6 +107,11 @@ export default function Onboarding() {
     const checkAuth = async () => {
       try {
         const currentUser = await base44.auth.me();
+        // If already onboarded, skip straight to dashboard
+        if (currentUser?.onboardingCompleted) {
+          navigate('/Dashboard', { replace: true });
+          return;
+        }
         setUser(currentUser);
       } catch (err) {
         navigate('/');

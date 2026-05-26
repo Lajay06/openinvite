@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -25,9 +26,34 @@ export default function OnboardingCompletion({ onDone, data, theme }) {
         setCompletedItems(prev => [...prev, item.id]);
       }, (i + 1) * 600);
     });
+
+    const buttonDelay = CHECKLIST_ITEMS.length * 600 + 300;
+    setTimeout(() => setShowButton(true), buttonDelay);
+
+    // Confetti burst when the checklist finishes
     setTimeout(() => {
-      setShowButton(true);
-    }, CHECKLIST_ITEMS.length * 600 + 300);
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.55 },
+        colors: ['#E03553', '#ec4899', '#9333ea', '#DDF762', '#FFFFFF'],
+      });
+      // Second smaller burst 400ms later
+      setTimeout(() => {
+        confetti({
+          particleCount: 60,
+          spread: 100,
+          origin: { x: 0.2, y: 0.6 },
+          colors: ['#E03553', '#ec4899', '#9333ea'],
+        });
+        confetti({
+          particleCount: 60,
+          spread: 100,
+          origin: { x: 0.8, y: 0.6 },
+          colors: ['#DDF762', '#FFFFFF', '#9333ea'],
+        });
+      }, 400);
+    }, buttonDelay - 200);
   }, []);
 
   return (
