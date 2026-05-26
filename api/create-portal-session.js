@@ -1,8 +1,12 @@
 import Stripe from 'stripe';
+import { applyCors } from './_lib/security.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
+  // ── CORS ────────────────────────────────────────────────────────────────────
+  if (applyCors(req, res)) return; // handled OPTIONS preflight
+
   console.log('[portal] invoked, key present:', !!process.env.STRIPE_SECRET_KEY);
 
   if (req.method !== 'POST') {
@@ -10,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { customerId } = req.body;
+    const { customerId } = req.body || {};
 
     if (!customerId) {
       return res.status(400).json({ error: 'customerId is required' });

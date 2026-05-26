@@ -41,6 +41,13 @@
  */
 
 import { Resend } from 'resend';
+import {
+  applyCors,
+  checkRateLimit,
+  getClientIp,
+  isValidEmail,
+  sanitizeString,
+} from './_lib/security.js';
 import { welcomeEmail } from './emails/welcome.js';
 import { purchaseConfirmationEmail } from './emails/purchase-confirmation.js';
 import { onboardingDay1Email } from './emails/onboarding-day1.js';
@@ -80,10 +87,23 @@ const TEMPLATES = {
 };
 
 export default async function handler(req, res) {
+  // ── CORS ────────────────────────────────────────────────────────────────────
+  if (applyCors(req, res)) return; // handled OPTIONS preflight
+
   console.log('[send-email] invoked, key present:', !!process.env.RESEND_API_KEY);
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // ── Rate limiting: 5 requests/min per IP ──────────────────────────────────
+  const ip = getClientIp(req);
+  const { limited, remaining } = checkRateLimit(ip, 'email', 5);
+  res.setHeader('X-RateLimit-Limit', '5');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    console.warn('[send-email] Rate limited:', ip);
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
   }
 
   try {
@@ -96,6 +116,18 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: '"template" (or "type") and "to" are required' });
     }
 
+    // ── Validate email address ─────────────────────────────────────────────
+    if (!isValidEmail(to)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    // ── Sanitize user-supplied data fields ────────────────────────────────
+    const safeData = {
+      ...data,
+      name: sanitizeString(data?.name),
+      plan: sanitizeString(data?.plan),
+    };
+
     const tmpl = TEMPLATES[templateKey];
     if (!tmpl) {
       return res.status(400).json({
@@ -103,8 +135,8 @@ export default async function handler(req, res) {
       });
     }
 
-    const subject = tmpl.subject({ data });
-    const html = tmpl.html({ to, data });
+    const subject = tmpl.subject({ data: safeData });
+    const html = tmpl.html({ to, data: safeData });
 
     const result = await resend.emails.send({ from: FROM, to, subject, html });
 
