@@ -18,6 +18,12 @@ export default async function handler(req, res) {
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      currency: 'aud',
+      payment_method_types: [
+        'card',
+        'afterpay_clearpay',
+        'klarna',
+      ],
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${process.env.VITE_APP_URL || 'https://openinvite.com.au'}/dashboard?checkout=success`,
       cancel_url: `${process.env.VITE_APP_URL || 'https://openinvite.com.au'}/pricing?checkout=cancelled`,
