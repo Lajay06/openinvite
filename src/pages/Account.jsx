@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Loader2, Check, CreditCard, Crown, Receipt } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
@@ -44,7 +45,10 @@ const PRICE_IDS = {
 const PLAN_LABELS = { free: 'Free trial', pro: 'Pro', ultra: 'Ultra' };
 const PLAN_PRICES = { pro: '$79', ultra: '$149' };
 
+const ADMIN_EMAIL = 'lajay@openinvite.com.au';
+
 export default function AccountPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [name, setName] = useState(user?.full_name || '');
   const [saving, setSaving] = useState(false);
@@ -347,6 +351,22 @@ export default function AccountPage() {
             ))}
           </div>
         </div>
+
+        {/* Hidden admin link — only visible to admin */}
+        {user?.email === ADMIN_EMAIL && (
+          <div style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.06)' }}>
+            <button
+              onClick={() => navigate('/admin')}
+              style={{
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                fontSize: 11, color: 'rgba(10,10,10,0.3)', fontFamily: PJS,
+                textDecoration: 'underline', textDecorationColor: 'rgba(10,10,10,0.2)',
+              }}
+            >
+              Admin dashboard →
+            </button>
+          </div>
+        )}
 
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
