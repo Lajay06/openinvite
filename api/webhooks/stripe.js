@@ -25,7 +25,7 @@ import { purchaseConfirmationEmail } from '../emails/purchase-confirmation.js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM = 'Openinvite <lajay@openinvite.com.au>';
+const FROM = 'Openinvite <hello@openinvite.com.au>';
 
 // Reads the raw request body as a Buffer. Vercel may have already consumed
 // the stream for JSON bodies — getRawBody returns '' in that case and we

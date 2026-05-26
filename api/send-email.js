@@ -20,7 +20,7 @@ import { purchaseConfirmationEmail } from './emails/purchase-confirmation.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM = 'Openinvite <lajay@openinvite.com.au>';
+const FROM = 'Openinvite <hello@openinvite.com.au>';
 
 const TEMPLATES = {
   welcome: {
