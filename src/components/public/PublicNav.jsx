@@ -101,15 +101,24 @@ export default function PublicNav() {
 
           <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.15)" }} />
 
-          <button
-            onClick={handleLogin}
-            title="Log in"
-            style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", padding: 0, transition: "color 0.2s ease" }}
-            onMouseEnter={e => e.currentTarget.style.color = "#E03553"}
-            onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.8)"}
-          >
-            <UserIcon />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <button
+              onClick={handleLogin}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", padding: 0, transition: "color 0.2s ease" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#ffffff"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.75)"}
+            >
+              Log in
+            </button>
+            <a
+              href="/signup"
+              style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none", transition: "opacity 0.2s ease", display: "inline-block" }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              Get started
+            </a>
+          </div>
         </nav>
 
         {/* Mobile full bar — always shown on mobile */}
@@ -127,9 +136,14 @@ export default function PublicNav() {
               {NAV_LINKS.map((link) => (
                 <Link key={link.to} to={link.to} onClick={() => setOpen(false)} className="block text-[#888888] hover:text-white text-sm transition-colors">{link.label}</Link>
               ))}
-              <button onClick={handleLogin} className="flex items-center gap-2 text-white text-sm font-semibold">
-                <UserIcon /> Log in
-              </button>
+              <div className="flex items-center gap-3 pt-2">
+                <button onClick={handleLogin} className="text-white text-sm font-semibold" style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  Log in
+                </button>
+                <a href="/signup" style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "8px 18px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none" }}>
+                  Get started
+                </a>
+              </div>
             </div>
           )}
         </nav>
@@ -161,16 +175,23 @@ export default function PublicNav() {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-4">
             <button
               onClick={handleLogin}
-              title="Log in"
-              style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", transition: "color 0.2s ease" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#E03553"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.8)"}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", padding: 0, transition: "color 0.2s ease" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#ffffff"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,255,255,0.75)"}
             >
-              <UserIcon />
+              Log in
             </button>
+            <a
+              href="/signup"
+              style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "7px 16px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none", transition: "opacity 0.2s ease", display: "inline-block" }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              Get started
+            </a>
           </div>
 
           <button className="md:hidden text-white" onClick={() => setOpen(!open)}>

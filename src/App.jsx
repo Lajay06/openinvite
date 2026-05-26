@@ -74,6 +74,28 @@ import ResetPassword from './pages/ResetPassword';
 import StudioGuestSuite from './pages/StudioGuestSuite';
 import ExperienceGuide from './pages/ExperienceGuide';
 import Features from './pages/Features';
+import Home from './pages/Home';
+
+// ── Public paths — bypass auth check entirely ─────────────────────────────────
+const PUBLIC_PATH_SET = new Set([
+  '/',
+  '/About', '/about',
+  '/Contact', '/contact',
+  '/Pricing', '/pricing',
+  '/Features', '/features',
+  '/ava',
+  '/scroll-morph',
+  '/universes',
+  '/forgot-password',
+  '/reset-password',
+  '/privacy-policy',
+  '/terms-of-service',
+  '/cookie-policy',
+  '/data-deletion',
+  '/refund-policy',
+]);
+const isPublicPath = (pathname) =>
+  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/');
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -87,13 +109,11 @@ const AuthenticatedApp = () => {
   const location = useLocation();
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Hide Crisp on /pricing to keep that page clean; show it everywhere else
+  // Hide Crisp on public marketing pages; show inside the app
   useEffect(() => {
-    if (location.pathname === '/Pricing' || location.pathname === '/pricing') {
-      crispHide();
-    } else {
-      crispShow();
-    }
+    const p = location.pathname;
+    const hide = p === '/' || p === '/signup' || p === '/Pricing' || p === '/pricing';
+    hide ? crispHide() : crispShow();
   }, [location.pathname]);
 
   // /login — public; redirect to /Dashboard if already authenticated
@@ -101,9 +121,47 @@ const AuthenticatedApp = () => {
     const alreadyAuthed = localStorage.getItem('oi_auth') === '1';
     return alreadyAuthed ? <Navigate to="/Dashboard" replace /> : <LoginScreen />;
   }
+  // /signup — public; redirect to /Dashboard if already authenticated
+  if (location.pathname === '/signup') {
+    const alreadyAuthed = localStorage.getItem('oi_auth') === '1';
+    return alreadyAuthed ? <Navigate to="/Dashboard" replace /> : <LoginScreen initialMode="signup" />;
+  }
   // Lowercase /dashboard → canonical /Dashboard
   if (location.pathname === '/dashboard') {
     return <Navigate to="/Dashboard" replace />;
+  }
+
+  // ── Public pages — no auth check, render immediately ─────────────────────────
+  if (isPublicPath(location.pathname)) {
+    return (
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/About" element={<About />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/Contact" element={<Contact />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/Pricing" element={<Pricing />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/Features" element={<Features />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/ava" element={<Ava />} />
+        <Route path="/scroll-morph" element={<ScrollMorph />} />
+        <Route path="/universes" element={<Universes />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/data-deletion" element={<DataDeletion />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
+        <Route path="/w/:weddingSlug/transport" element={<GuestTransport />} />
+        <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
+        <Route path="/w/:weddingSlug/experience" element={<ExperienceGuide />} />
+        <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
+        <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
+      </Routes>
+    );
   }
 
   // Show loading spinner while checking app public settings or auth

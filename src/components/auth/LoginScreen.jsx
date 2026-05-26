@@ -54,8 +54,8 @@ const fadeUp = {
   visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 120, damping: 16 } },
 };
 
-export default function LoginScreen() {
-  const [mode, setMode] = useState("login"); // 'login' | 'signup' | 'verify'
+export default function LoginScreen({ initialMode = "login" }) {
+  const [mode, setMode] = useState(initialMode); // 'login' | 'signup' | 'verify'
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");

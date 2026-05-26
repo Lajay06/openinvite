@@ -18,7 +18,7 @@ import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
 
 export default function Home() {
   const handleCTA = () => {
-    window.location.href = '/login';
+    window.location.href = '/signup';
   };
 
   const SECTION_LABELS = [
