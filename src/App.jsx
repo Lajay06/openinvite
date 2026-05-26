@@ -8,6 +8,8 @@ import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
+import NotFound from './pages/NotFound';
+import Unauthorized from './pages/Unauthorized';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -309,7 +311,8 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dev-reset" element={<DevReset />} />
-      <Route path="*" element={<PageNotFound />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
