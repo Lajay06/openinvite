@@ -13,6 +13,12 @@
       ]
     }
   ],
+  "crons": [
+    {
+      "path": "/api/cron/send-onboarding-emails",
+      "schedule": "0 9 * * *"
+    }
+  ],
   "env": {
     "BASE44_LEGACY_SDK_IMPORTS": "true",
     "VITE_BASE44_APP_ID": "68731d183f075e406eda2236"
