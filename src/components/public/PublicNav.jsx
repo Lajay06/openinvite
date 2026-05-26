@@ -106,17 +106,13 @@ export default function PublicNav() {
               onClick={handleLogin}
               aria-label="Log in"
               style={{
-                width: 36, height: 36, borderRadius: "50%",
-                background: "rgba(255,255,255,0.1)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                cursor: "pointer",
+                background: "none", border: "none", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: "rgba(255,255,255,0.8)",
-                flexShrink: 0,
-                transition: "background 0.15s ease, color 0.15s ease",
+                color: "rgba(255,255,255,0.75)", padding: 0,
+                transition: "color 0.2s ease",
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; e.currentTarget.style.color = "#ffffff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.8)"; }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#ffffff"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.75)"; }}
             >
               <UserIcon />
             </button>
@@ -190,17 +186,13 @@ export default function PublicNav() {
               onClick={handleLogin}
               aria-label="Log in"
               style={{
-                width: 36, height: 36, borderRadius: "50%",
-                background: "rgba(255,255,255,0.1)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                cursor: "pointer",
+                background: "none", border: "none", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: "rgba(255,255,255,0.8)",
-                flexShrink: 0,
-                transition: "background 0.15s ease, color 0.15s ease",
+                color: "rgba(255,255,255,0.75)", padding: 0,
+                transition: "color 0.2s ease",
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; e.currentTarget.style.color = "#ffffff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.8)"; }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#ffffff"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.75)"; }}
             >
               <UserIcon />
             </button>
