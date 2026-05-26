@@ -1,9 +1,16 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { base44 } from "@/api/base44Client";
 import { ImageSlider } from "@/components/ui/ImageSlider";
 import { track, identify } from "@/lib/analytics";
 import { identifyUser as crispIdentify } from "@/lib/crisp";
+
+// Cloudflare Turnstile site key.
+// Falls back to Cloudflare's public "always pass" test key so the site works
+// without env vars in development.
+const TURNSTILE_SITE_KEY =
+  import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
 
 const SLIDER_IMAGES = [
   "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg",
@@ -184,6 +191,12 @@ export default function LoginScreen({ initialMode = "login" }) {
   const digitRefs = useRef([]);
   const otpCode = digits.join("");
 
+  // ── Turnstile (invisible CAPTCHA) ────────────────────────────────────────
+  // The widget renders invisibly inside the signup form. We execute() it on
+  // submit; onSuccess fires with the token and we proceed to doSignup().
+  const turnstileRef  = useRef(null);
+  const pendingSignup = useRef(false); // true while waiting for Turnstile callback
+
   const switchMode = (next) => {
     setMode(next);
     setError("");
@@ -209,23 +222,58 @@ export default function LoginScreen({ initialMode = "login" }) {
     }
   };
 
-  const handleSignup = async (e) => {
+  // ── Step 1: form submit — validate fields, then execute Turnstile ─────────
+  const handleSignup = (e) => {
     e.preventDefault();
     setError("");
     if (!fullName.trim())    { setError("Please enter your full name."); return; }
     if (!email.trim())       { setError("Please enter your email address."); return; }
     if (!password.trim())    { setError("Please enter a password."); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
+
+    // Mark that we're waiting for the Turnstile callback, then trigger it.
+    // The button is already disabled while loading.
     setLoading(true);
+    pendingSignup.current = true;
+    turnstileRef.current?.execute();
+    // Flow continues in onTurnstileSuccess → doSignup
+  };
+
+  // ── Step 2: Turnstile resolved — run server-side checks, then register ────
+  const doSignup = async (tsToken) => {
+    // Pre-registration gate: Turnstile + disposable email + rate limit
+    try {
+      const verifyRes = await fetch("/api/verify-signup", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ email, turnstileToken: tsToken }),
+      });
+      const verifyJson = await verifyRes.json();
+
+      if (!verifyRes.ok) {
+        setError(verifyJson.error || "Signup verification failed. Please try again.");
+        setLoading(false);
+        turnstileRef.current?.reset();
+        return;
+      }
+    } catch {
+      setError("Network error. Please check your connection and try again.");
+      setLoading(false);
+      turnstileRef.current?.reset();
+      return;
+    }
+
+    // All server checks passed — create the Base44 account
     try {
       const res = await base44.auth.register({ email, password, full_name: fullName });
       const { access_token: tok } = res || {};
       if (tok) {
         base44.auth.setToken(tok);
-        track('user_signed_up', { method: 'email' });
+        track("user_signed_up", { method: "email" });
         crispIdentify(email, fullName);
         window.location.href = "/onboarding";
       } else {
+        // OTP email sent — show verify screen
         setLoading(false);
         setDigits(["", "", "", "", "", ""]);
         setResendMsg("");
@@ -234,7 +282,30 @@ export default function LoginScreen({ initialMode = "login" }) {
     } catch (err) {
       setError(err?.message || "Could not create account. Please try again.");
       setLoading(false);
+      turnstileRef.current?.reset();
     }
+  };
+
+  // ── Turnstile callbacks ────────────────────────────────────────────────────
+  const onTurnstileSuccess = (token) => {
+    if (pendingSignup.current) {
+      pendingSignup.current = false;
+      doSignup(token);
+    }
+  };
+
+  const onTurnstileError = () => {
+    if (pendingSignup.current) {
+      pendingSignup.current = false;
+      setError("Security check failed. Please refresh the page and try again.");
+      setLoading(false);
+    }
+  };
+
+  const onTurnstileExpire = () => {
+    // Token expired before we used it — reset silently so a fresh one is
+    // generated next time the user submits.
+    turnstileRef.current?.reset();
   };
 
   const handleVerify = async (e) => {
@@ -576,6 +647,22 @@ export default function LoginScreen({ initialMode = "login" }) {
                     {error}
                   </motion.p>
                 )}
+
+                {/*
+                  Invisible Turnstile — renders as a 0×0 element.
+                  execution="execute" means it only runs when we call
+                  turnstileRef.current.execute() — i.e. on form submit.
+                  The widget is mounted here (inside signup mode) so it
+                  loads its script only when needed.
+                */}
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={TURNSTILE_SITE_KEY}
+                  onSuccess={onTurnstileSuccess}
+                  onError={onTurnstileError}
+                  onExpire={onTurnstileExpire}
+                  options={{ appearance: "invisible", execution: "execute" }}
+                />
 
                 <PrimaryBtn disabled={loading}>
                   {loading ? "Creating account…" : "Create account"}

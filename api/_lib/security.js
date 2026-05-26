@@ -89,6 +89,7 @@ function gcRateLimitStore() {
  * Rate limit buckets:
  *   'checkout'  — 10 req/min  (create-checkout-session)
  *   'email'     — 5 req/min   (send-email)
+ *   'signup'    — 5 req/hour  (verify-signup)
  *
  * @param {string} ip
  * @param {string} bucket
