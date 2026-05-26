@@ -104,7 +104,7 @@ export default function VenueAssetLibrary({ onAddTable, onAddAsset, onImportLayo
           <input
             type="file"
             style={{ display: 'none' }}
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp,image/gif"
             onChange={onImportLayout}
             disabled={uploadingImage}
           />

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Palette, Upload, Loader2, Eye, Plus, Trash2, X } from "lucide-react";
 import toast from 'react-hot-toast';
+import { validateUploadFile } from '@/lib/uploadValidation';
 import { Textarea } from "@/components/ui/textarea";
 
 export default function WebsiteCustomizationPage() {
@@ -87,6 +88,14 @@ export default function WebsiteCustomizationPage() {
   const handleHeroUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validate type and size before uploading
+    const validationError = validateUploadFile(file, 'image');
+    if (validationError) {
+      toast.error(validationError);
+      e.target.value = '';
+      return;
+    }
 
     setUploading(true);
     const toastId = toast.loading('Uploading image...');
@@ -268,7 +277,7 @@ export default function WebsiteCustomizationPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Hero Image</h3>
                   <Input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
                     onChange={handleHeroUpload}
                     disabled={uploading}
                   />

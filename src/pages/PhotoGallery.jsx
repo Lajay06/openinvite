@@ -18,6 +18,7 @@ import {
   Camera
 } from "lucide-react";
 import toast from 'react-hot-toast';
+import { validateUploadFile } from '@/lib/uploadValidation';
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 
 export default function PhotoGalleryPage() {
@@ -67,6 +68,14 @@ export default function PhotoGalleryPage() {
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validate type and size before uploading
+    const validationError = validateUploadFile(file, 'image');
+    if (validationError) {
+      toast.error(validationError);
+      e.target.value = '';
+      return;
+    }
 
     setUploading(true);
     const toastId = toast.loading('Uploading photo...');

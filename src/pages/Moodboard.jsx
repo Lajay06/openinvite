@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MoodboardItem } from '@/entities/MoodboardItem';
 import { UploadFile } from '@/integrations/Core';
+import { validateUploadFile } from '@/lib/uploadValidation';
 import { Plus, Search, Upload, Image as ImageIcon, Sparkles, Loader2 } from 'lucide-react';
 import MoodboardGrid from '../components/moodboard/MoodboardGrid';
 import AddItemModal from '../components/moodboard/AddItemModal';
@@ -52,6 +53,7 @@ export default function MoodboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -79,18 +81,28 @@ export default function MoodboardPage() {
   };
 
   const handleFileUpload = async (files) => {
-    const toastId = toast.loading(`Uploading ${files.length} file${files.length > 1 ? 's' : ''}…`);
+    const fileArray = Array.from(files);
+
+    // Validate every file before uploading any
+    for (const file of fileArray) {
+      const err = validateUploadFile(file, 'image');
+      if (err) { toast.error(`${file.name}: ${err}`); return; }
+    }
+
+    setUploading(true);
+    const toastId = toast.loading(`Uploading ${fileArray.length} file${fileArray.length > 1 ? 's' : ''}…`);
     try {
-      const uploads = await Promise.all(Array.from(files).map(async (file) => {
+      const uploads = await Promise.all(fileArray.map(async (file) => {
         const { file_url } = await UploadFile({ file });
         return { title: file.name.split('.')[0], image_url: file_url, category: 'other', board_name: activeBoard, tags: [] };
       }));
       await Promise.all(uploads.map(item => MoodboardItem.create(item)));
-      toast.success(`${files.length} image${files.length > 1 ? 's' : ''} added`, { id: toastId });
+      toast.success(`${fileArray.length} image${fileArray.length > 1 ? 's' : ''} added`, { id: toastId });
       loadItems();
     } catch (e) {
       toast.error('Upload failed', { id: toastId });
     }
+    setUploading(false);
   };
 
   const handleDeleteItem = async (itemId) => {
@@ -136,7 +148,7 @@ export default function MoodboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}
       onDragOver={e => e.preventDefault()}
-      onDrop={e => { e.preventDefault(); e.dataTransfer.files.length && handleFileUpload(e.dataTransfer.files); }}>
+      onDrop={e => { e.preventDefault(); if (!uploading && e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files); }}>
 
       <DashboardPageHeader title="Moodboard" subtitle="Collect and organise inspiration images for your wedding vision" />
 
@@ -156,13 +168,26 @@ export default function MoodboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to find inspiration" onClick={() => setAvaOpen(true)} />
         <div className="flex flex-wrap items-center gap-[10px]">
-          <button onClick={() => fileInputRef.current?.click()} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Upload size={12} />Upload
+          <button
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            className="btn-editorial-secondary"
+            disabled={uploading}
+            style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: uploading ? 0.6 : 1, cursor: uploading ? 'default' : 'pointer' }}
+          >
+            {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+            {uploading ? 'Uploading…' : 'Upload'}
           </button>
           <button onClick={() => setShowAddModal(true)} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
             <Plus size={12} />Add inspiration
           </button>
-          <input ref={fileInputRef} type="file" multiple accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files && handleFileUpload(e.target.files)} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            style={{ display: 'none' }}
+            onChange={e => { if (e.target.files) { handleFileUpload(e.target.files); e.target.value = ''; } }}
+          />
         </div>
       </div>
 

@@ -6,6 +6,7 @@ const VenueAsset = base44.entities.VenueAsset;
 import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
+import { validateUploadFile } from '@/lib/uploadValidation';
 
 import VisualTable from '../components/seating/VisualTable';
 import VisualAsset from '../components/seating/VisualAsset';
@@ -199,6 +200,15 @@ export default function SeatingPage() {
   const handleImportLayout = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validate type and size before uploading
+    const validationError = validateUploadFile(file, 'image');
+    if (validationError) {
+      toast.error(validationError);
+      e.target.value = '';
+      return;
+    }
+
     setUploadingImage(true);
     try {
       const uploadFn = base44?.integrations?.Core?.UploadFile;

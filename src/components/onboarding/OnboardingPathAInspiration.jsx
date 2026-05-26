@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { validateUploadFile } from '@/lib/uploadValidation';
 
 export default function OnboardingPathAInspiration({ onNext, data }) {
   const [images, setImages] = useState([]);
@@ -14,6 +15,12 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
       return;
     }
 
+    // Validate every file before uploading any
+    for (const file of files) {
+      const err = validateUploadFile(file, 'image');
+      if (err) { alert(err); e.target.value = ''; return; }
+    }
+
     setUploading(true);
     try {
       for (const file of files) {
@@ -22,8 +29,10 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
       }
     } catch (err) {
       console.error('Upload error:', err);
+      alert('Upload failed — please try again.');
     }
     setUploading(false);
+    e.target.value = '';
   };
 
   const removeImage = (url) => {
@@ -72,7 +81,7 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
             <input
               type="file"
               multiple
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={handleImageUpload}
               disabled={uploading || images.length >= 6}
               className="hidden"

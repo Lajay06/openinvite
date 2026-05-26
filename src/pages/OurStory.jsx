@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Trash2, Image as ImageIcon, Sparkles, Loader2, GripVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { validateUploadFile } from '@/lib/uploadValidation';
 import AIWeddingAssistant from '../components/shared/AIWeddingAssistant';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
@@ -21,6 +22,7 @@ export default function OurStoryPage() {
     image_url: '',
     order: 0
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [generatingStory, setGeneratingStory] = useState(false);
 
   useEffect(() => {
@@ -120,6 +122,15 @@ export default function OurStoryPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate type and size before uploading
+    const validationError = validateUploadFile(file, 'image');
+    if (validationError) {
+      toast.error(validationError);
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingImage(true);
     const toastId = toast.loading('Uploading image...');
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
@@ -129,6 +140,7 @@ export default function OurStoryPage() {
       console.error('Error uploading image:', error);
       toast.error('Failed to upload image', { id: toastId });
     }
+    setUploadingImage(false);
   };
 
   const onDragEnd = async (result) => {
@@ -266,16 +278,19 @@ export default function OurStoryPage() {
                       </Button>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
+                    <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg ${uploadingImage ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-gray-50'}`}>
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <ImageIcon className="w-8 h-8 mb-2 text-gray-400" />
-                        <p className="text-sm text-gray-500">Click to upload photo</p>
+                        {uploadingImage
+                          ? <Loader2 className="w-8 h-8 mb-2 text-gray-400 animate-spin" />
+                          : <ImageIcon className="w-8 h-8 mb-2 text-gray-400" />}
+                        <p className="text-sm text-gray-500">{uploadingImage ? 'Uploading…' : 'Click to upload photo'}</p>
                       </div>
                       <input
                         type="file"
                         className="hidden"
-                        accept="image/*"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
                         onChange={handleUploadImage}
+                        disabled={uploadingImage}
                       />
                     </label>
                   )}

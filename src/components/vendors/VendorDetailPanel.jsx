@@ -6,6 +6,7 @@ import {
   CheckCircle2, Circle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { validateUploadFile } from '@/lib/uploadValidation';
 
 const VendorLog = base44.entities.VendorLog;
 const VendorTask = base44.entities.VendorTask;
@@ -56,12 +57,26 @@ export default function VendorDetailPanel({ vendor, onClose }) {
   const handleUploadDoc = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validate type and size before uploading
+    const validationError = validateUploadFile(file, 'document');
+    if (validationError) {
+      toast.error(validationError);
+      e.target.value = '';
+      return;
+    }
+
     setUploadingDoc(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setLogForm(f => ({ ...f, document_url: file_url, document_name: file.name, type: 'document' }));
-    setShowLogForm(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setLogForm(f => ({ ...f, document_url: file_url, document_name: file.name, type: 'document' }));
+      setShowLogForm(true);
+      toast.success('File uploaded');
+    } catch (err) {
+      console.error('Error uploading document:', err);
+      toast.error('Failed to upload file');
+    }
     setUploadingDoc(false);
-    toast.success('File uploaded');
   };
 
   const submitLog = async () => {
@@ -256,7 +271,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                 }}>
                   <Upload size={12} />
                   {uploadingDoc ? 'Uploading…' : 'Upload document'}
-                  <input type="file" style={{ display: 'none' }} onChange={handleUploadDoc} accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                  <input type="file" style={{ display: 'none' }} onChange={handleUploadDoc} disabled={uploadingDoc} accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png" />
                 </label>
               </div>
 

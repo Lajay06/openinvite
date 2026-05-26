@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
+import { validateUploadFile } from '@/lib/uploadValidation';
 
 const STOCK_GRADIENTS = [
   'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
@@ -28,14 +29,22 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
   const fileInputRef = useRef(null);
 
   const uploadFiles = useCallback(async (files) => {
+    const fileArray = Array.from(files);
+
+    // Validate every file before uploading any
+    for (const file of fileArray) {
+      const err = validateUploadFile(file, 'image_or_video');
+      if (err) { toast.error(`${file.name}: ${err}`); return; }
+    }
+
     setUploading(true);
-    for (const file of Array.from(files)) {
+    for (const file of fileArray) {
       try {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
         const fileType = file.type.startsWith('video/') ? 'video' : 'photo';
         onUploaded({ url: file_url, name: file.name, type: fileType });
       } catch {
-        toast.error('Upload failed');
+        toast.error(`Failed to upload ${file.name}`);
       }
     }
     setUploading(false);
@@ -103,10 +112,10 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,video/*"
+            accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
             multiple
             style={{ display: 'none' }}
-            onChange={e => uploadFiles(e.target.files)}
+            onChange={e => { uploadFiles(e.target.files); e.target.value = ''; }}
           />
         </div>
 
