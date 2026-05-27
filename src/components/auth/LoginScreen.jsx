@@ -144,7 +144,7 @@ function SocialSignIn() {
               borderRadius: 999, cursor: "pointer",
               fontFamily: PJS, fontSize: 13, fontWeight: 600,
               transition: "opacity 0.15s ease",
-              whiteSpace: "nowrap", overflow: "hidden",
+              whiteSpace: "nowrap",
               boxSizing: "border-box", width: "100%",
             }}
             onMouseEnter={e => { e.currentTarget.style.opacity = "0.82"; }}
@@ -485,9 +485,13 @@ export default function LoginScreen({ initialMode = "login" }) {
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
 
-      {/* LEFT — photo slider (hidden on mobile) */}
+      {/* LEFT — static photo (hidden on mobile) */}
       <div className="hidden md:block" style={{ width: "50%", flexShrink: 0, height: "100vh" }}>
-        <ImageSlider images={SLIDER_IMAGES} />
+        <img
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779185606/DTS_Weirdly_Ever_After_Agust%C3%ADn_Far%C3%ADas_Photos_ID8960_nspx4l.jpg"
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
       </div>
 
       {/* RIGHT — form panel */}
