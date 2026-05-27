@@ -14,47 +14,7 @@ export default function HeroSection({ wedding }) {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const getVideoEmbed = () => {
-    const url = wedding.heroVideoUrl || wedding.heroVideoFile;
-    if (!url) return null;
-
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
-      const videoId = url.split('v=')[1] || url.split('/').pop();
-      return (
-        <iframe
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&controls=0&modestbranding=1`}
-          allow="autoplay; muted"
-          frameBorder="0"
-        />
-      );
-    }
-
-    if (url.includes('vimeo.com')) {
-      const videoId = url.split('/').pop();
-      return (
-        <iframe
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-          src={`https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1&loop=1&title=0&byline=0&portrait=0`}
-          allow="autoplay; muted"
-          frameBorder="0"
-        />
-      );
-    }
-
-    // Direct mp4 file
-    return (
-      <video
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-        autoPlay
-        muted
-        loop
-        playsInline
-      >
-        <source src={url} type="video/mp4" />
-      </video>
-    );
-  };
+  const FALLBACK_IMAGE = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779185606/DTS_Weirdly_Ever_After_Agust%C3%ADn_Far%C3%ADas_Photos_ID8960_nspx4l.jpg';
 
   return (
     <div style={{
@@ -65,20 +25,20 @@ export default function HeroSection({ wedding }) {
       alignItems: 'center',
       justifyContent: 'center',
     }}>
-      {/* Background video/image */}
-      {getVideoEmbed() || (
-        <div style={{
+      {/* Background image */}
+      <img
+        src={wedding.coverPhoto || FALLBACK_IMAGE}
+        alt=""
+        style={{
           position: 'absolute',
           top: 0,
           left: 0,
           width: '100%',
           height: '100%',
-          backgroundImage: wedding.coverPhoto ? `url(${wedding.coverPhoto})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          background: !wedding.coverPhoto ? '#0A0A0A' : undefined,
-        }} />
-      )}
+          objectFit: 'cover',
+          objectPosition: 'center',
+        }}
+      />
 
       {/* Overlay gradient */}
       <div style={{
