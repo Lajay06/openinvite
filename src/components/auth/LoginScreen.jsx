@@ -25,7 +25,7 @@ const SLIDER_IMAGES = [
   "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg",
   "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185610/justin-follis-A7Um4oi-UYU-unsplash_bbjjam.jpg",
   "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185631/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0.jpg",
-  "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185626/DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185606/DTS_Weirdly_Ever_After_Agust%C3%ADn_Far%C3%ADas_Photos_ID8960_nspx4l.jpg",
   "https://res.cloudinary.com/dsr84xknv/image/upload/v1779241859/rio-syhputra-a7vmvXei7fE-unsplash_vojinz.jpg",
 ];
 
@@ -485,21 +485,9 @@ export default function LoginScreen({ initialMode = "login" }) {
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
 
-      {/* LEFT — static photo + quote overlay (hidden on mobile) */}
-      <div className="hidden md:block" style={{ position: "relative", width: "50%", flexShrink: 0, height: "100vh", overflow: "hidden", background: "#000" }}>
-        <img
-          src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779185606/DTS_Weirdly_Ever_After_Agust%C3%ADn_Far%C3%ADas_Photos_ID8960_nspx4l.jpg"
-          alt=""
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
-        <div style={{ position: "absolute", bottom: 64, left: 24, right: 24, zIndex: 10 }}>
-          <p style={{ color: "#fff", fontSize: 18, fontWeight: 600, lineHeight: 1.4, fontFamily: PJS }}>
-            "Planning a wedding should feel as exciting as the day itself."
-          </p>
-          <div style={{ marginTop: 12 }}>
-            <img src="/logo-white.png" alt="Openinvite" style={{ height: 20 }} />
-          </div>
-        </div>
+      {/* LEFT — photo carousel (hidden on mobile) */}
+      <div className="hidden md:block" style={{ width: "50%", flexShrink: 0, height: "100vh" }}>
+        <ImageSlider images={SLIDER_IMAGES} />
       </div>
 
       {/* RIGHT — form panel */}
