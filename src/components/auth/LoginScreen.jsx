@@ -12,6 +12,15 @@ import { identifyUser as crispIdentify } from "@/lib/crisp";
 const TURNSTILE_SITE_KEY =
   import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
 
+// Debug: log which key is active at module load time so it shows in DevTools
+// immediately when the auth page is opened.
+console.log(
+  "[signup] TURNSTILE_SITE_KEY:",
+  import.meta.env.VITE_TURNSTILE_SITE_KEY
+    ? "custom key (" + import.meta.env.VITE_TURNSTILE_SITE_KEY.slice(0, 8) + "…)"
+    : "⚠️  VITE_TURNSTILE_SITE_KEY not set — using Cloudflare test key (always-pass)"
+);
+
 const SLIDER_IMAGES = [
   "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg",
   "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185610/justin-follis-A7Um4oi-UYU-unsplash_bbjjam.jpg",
@@ -192,10 +201,19 @@ export default function LoginScreen({ initialMode = "login" }) {
   const otpCode = digits.join("");
 
   // ── Turnstile (invisible CAPTCHA) ────────────────────────────────────────
-  // The widget renders invisibly inside the signup form. We execute() it on
-  // submit; onSuccess fires with the token and we proceed to doSignup().
-  const turnstileRef  = useRef(null);
-  const pendingSignup = useRef(false); // true while waiting for Turnstile callback
+  // execution="render" → widget auto-runs on mount and calls onSuccess with a
+  // pre-generated token. We store it in tsTokenRef (a ref, NOT state) so
+  // handleSignup can read it synchronously on submit — using state here caused
+  // a race condition where React's async batching meant the token wasn't yet
+  // visible to handleSignup even though onSuccess had already fired.
+  //
+  // pendingSignup is only set when the user submits before the token arrives
+  // (e.g. very slow Cloudflare load). A hard 8-second timeout prevents an
+  // indefinite hang in that case.
+  const turnstileRef   = useRef(null);
+  const pendingSignup  = useRef(false); // true while waiting for a late token
+  const tsTimeoutRef   = useRef(null);  // handle for the 8-second hang-guard
+  const tsTokenRef     = useRef("");    // pre-generated Turnstile token (ref = sync read)
 
   const switchMode = (next) => {
     setMode(next);
@@ -222,33 +240,69 @@ export default function LoginScreen({ initialMode = "login" }) {
     }
   };
 
-  // ── Step 1: form submit — validate fields, then execute Turnstile ─────────
+  // ── Step 1: form submit — validate fields, then proceed with Turnstile ──────
   const handleSignup = (e) => {
     e.preventDefault();
     setError("");
+    const tok = tsTokenRef.current;
+    console.log("[signup] Form submitted — tsTokenRef available:", !!tok);
+
     if (!fullName.trim())    { setError("Please enter your full name."); return; }
     if (!email.trim())       { setError("Please enter your email address."); return; }
     if (!password.trim())    { setError("Please enter a password."); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
 
-    // Mark that we're waiting for the Turnstile callback, then trigger it.
-    // The button is already disabled while loading.
     setLoading(true);
-    pendingSignup.current = true;
-    turnstileRef.current?.execute();
-    // Flow continues in onTurnstileSuccess → doSignup
+
+    if (tok) {
+      // Happy path: Turnstile already resolved before the user hit submit.
+      // Consume the token synchronously (ref read, no async batching) and
+      // reset the widget so a fresh token is ready on any subsequent attempt.
+      console.log("[signup] ✅ Pre-generated token available — proceeding immediately");
+      tsTokenRef.current = "";
+      turnstileRef.current?.reset();
+      doSignup(tok);
+    } else {
+      // Turnstile hasn't resolved yet (very slow Cloudflare load).
+      // Set the pending flag and wait — onTurnstileSuccess will call doSignup.
+      // Hard 8-second timeout prevents the form hanging forever.
+      console.log("[signup] ⏳ Token not yet available — waiting for Turnstile...");
+      pendingSignup.current = true;
+      tsTimeoutRef.current = setTimeout(() => {
+        if (pendingSignup.current) {
+          pendingSignup.current = false;
+          console.error("[signup] ❌ Turnstile timed out after 8 s");
+          setError("Security check timed out. Please refresh the page and try again.");
+          setLoading(false);
+        }
+      }, 8_000);
+    }
+    // Flow continues in onTurnstileSuccess → doSignup (if token was pending)
   };
 
   // ── Step 2: Turnstile resolved — run server-side checks, then register ────
-  const doSignup = async (tsToken) => {
-    // Pre-registration gate: Turnstile + disposable email + rate limit
+  const doSignup = async (tok) => {
+    console.log("[signup] doSignup() called — calling /api/verify-signup");
+
+    // Pre-registration gate: Turnstile + disposable email + rate limit.
+    // AbortController gives a hard 12-second deadline so a crashed/hung
+    // Vercel function can never leave the form stuck in loading state forever.
+    const controller = new AbortController();
+    const abortTimer = setTimeout(() => {
+      console.error("[signup] /api/verify-signup — aborting after 12 s (no response)");
+      controller.abort();
+    }, 12_000);
+
     try {
       const verifyRes = await fetch("/api/verify-signup", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ email, turnstileToken: tsToken }),
+        body:    JSON.stringify({ email, turnstileToken: tok }),
+        signal:  controller.signal,
       });
+      clearTimeout(abortTimer);
       const verifyJson = await verifyRes.json();
+      console.log("[signup] /api/verify-signup →", verifyRes.status, verifyJson);
 
       if (!verifyRes.ok) {
         setError(verifyJson.error || "Signup verification failed. Please try again.");
@@ -256,30 +310,41 @@ export default function LoginScreen({ initialMode = "login" }) {
         turnstileRef.current?.reset();
         return;
       }
-    } catch {
-      setError("Network error. Please check your connection and try again.");
+    } catch (err) {
+      clearTimeout(abortTimer);
+      if (err.name === "AbortError") {
+        console.error("[signup] /api/verify-signup timed out — function may have crashed");
+        setError("Request timed out. Please refresh and try again.");
+      } else {
+        console.error("[signup] /api/verify-signup network error:", err?.message);
+        setError("Network error. Please check your connection and try again.");
+      }
       setLoading(false);
       turnstileRef.current?.reset();
       return;
     }
 
     // All server checks passed — create the Base44 account
+    console.log("[signup] Pre-registration checks passed — calling base44.auth.register()");
     try {
       const res = await base44.auth.register({ email, password, full_name: fullName });
-      const { access_token: tok } = res || {};
-      if (tok) {
-        base44.auth.setToken(tok);
+      const { access_token } = res || {};
+      if (access_token) {
+        console.log("[signup] ✅ Registration complete — redirecting to /onboarding");
+        base44.auth.setToken(access_token);
         track("user_signed_up", { method: "email" });
         crispIdentify(email, fullName);
         window.location.href = "/onboarding";
       } else {
         // OTP email sent — show verify screen
+        console.log("[signup] OTP sent — switching to verify screen");
         setLoading(false);
         setDigits(["", "", "", "", "", ""]);
         setResendMsg("");
         setMode("verify");
       }
     } catch (err) {
+      console.error("[signup] base44.auth.register() error:", err?.message);
       setError(err?.message || "Could not create account. Please try again.");
       setLoading(false);
       turnstileRef.current?.reset();
@@ -288,13 +353,32 @@ export default function LoginScreen({ initialMode = "login" }) {
 
   // ── Turnstile callbacks ────────────────────────────────────────────────────
   const onTurnstileSuccess = (token) => {
+    console.log("[signup] ✅ Turnstile onSuccess fired");
+    // Clear the hang-guard timeout (it's only set when the user submitted before
+    // the token was ready).
+    if (tsTimeoutRef.current) {
+      clearTimeout(tsTimeoutRef.current);
+      tsTimeoutRef.current = null;
+    }
     if (pendingSignup.current) {
+      // User already clicked submit while we were waiting — proceed immediately.
+      console.log("[signup] Pending submit found — proceeding with new token");
       pendingSignup.current = false;
       doSignup(token);
+    } else {
+      // Normal path: cache the token synchronously in a ref so handleSignup
+      // can read it instantly on submit without async batching delays.
+      tsTokenRef.current = token;
     }
   };
 
   const onTurnstileError = () => {
+    console.error("[signup] ❌ Turnstile onError fired");
+    tsTokenRef.current = "";
+    if (tsTimeoutRef.current) {
+      clearTimeout(tsTimeoutRef.current);
+      tsTimeoutRef.current = null;
+    }
     if (pendingSignup.current) {
       pendingSignup.current = false;
       setError("Security check failed. Please refresh the page and try again.");
@@ -303,8 +387,10 @@ export default function LoginScreen({ initialMode = "login" }) {
   };
 
   const onTurnstileExpire = () => {
-    // Token expired before we used it — reset silently so a fresh one is
-    // generated next time the user submits.
+    // Token expired (5-min TTL) before the user submitted.
+    // Reset to get a fresh token automatically.
+    console.log("[signup] Turnstile token expired — resetting for fresh token");
+    tsTokenRef.current = "";
     turnstileRef.current?.reset();
   };
 
@@ -650,10 +736,12 @@ export default function LoginScreen({ initialMode = "login" }) {
 
                 {/*
                   Invisible Turnstile — renders as a 0×0 element.
-                  execution="execute" means it only runs when we call
-                  turnstileRef.current.execute() — i.e. on form submit.
-                  The widget is mounted here (inside signup mode) so it
-                  loads its script only when needed.
+                  execution="render" → widget auto-runs on mount and calls
+                  onSuccess with a pre-generated token. On form submit the
+                  token is already in tsToken state, so there is zero wait.
+                  (execution="execute" was removed because if the Cloudflare
+                  script hadn't fully initialised, execute() was a silent
+                  no-op and the form hung indefinitely.)
                 */}
                 <Turnstile
                   ref={turnstileRef}
@@ -661,7 +749,7 @@ export default function LoginScreen({ initialMode = "login" }) {
                   onSuccess={onTurnstileSuccess}
                   onError={onTurnstileError}
                   onExpire={onTurnstileExpire}
-                  options={{ appearance: "invisible", execution: "execute" }}
+                  options={{ appearance: "execute", execution: "render" }}
                 />
 
                 <PrimaryBtn disabled={loading}>
