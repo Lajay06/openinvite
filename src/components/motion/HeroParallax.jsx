@@ -192,7 +192,7 @@ function ScrollCue() {
         transition: "opacity 0.8s ease",
       }}
     >
-      <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>Scroll</span>
+      <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(255,255,255,0.4)" }}>Scroll</span>
       <div style={{ width: 1, height: 40, background: "#222", overflow: "hidden" }}>
         <div style={{
           width: "100%",

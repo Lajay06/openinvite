@@ -113,10 +113,11 @@ function ScrollCue() {
       style={{
         position: "absolute",
         bottom: 40,
-        left: "clamp(32px, 6vw, 80px)",
+        left: "50%",
+        transform: "translateX(-50%)",
         display: "flex",
         flexDirection: "column",
-        alignItems: "flex-start",
+        alignItems: "center",
         gap: 8,
         zIndex: 20,
         opacity: visible ? 1 : 0,
@@ -124,7 +125,7 @@ function ScrollCue() {
         pointerEvents: "none",
       }}
     >
-      <span style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#888" }}>Scroll</span>
+      <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(255,255,255,0.4)" }}>Scroll</span>
       <div style={{ width: 1, height: 40, background: "#333", overflow: "hidden" }}>
         <div style={{
           width: "100%",

@@ -110,27 +110,28 @@ export default function HeroSection({ wedding }) {
           bottom: '40px',
           left: '50%',
           transform: 'translateX(-50%)',
-          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 8,
           zIndex: 10,
-          animation: 'fadeInUp 1s cubic-bezier(0.25, 0.1, 0.25, 1) forwards',
+          pointerEvents: 'none',
         }}>
-          <p style={{
-            fontSize: '10px',
-            fontWeight: 600,
-            letterSpacing: '0.3em',
-            color: 'rgba(255, 255, 255, 0.5)',
-            textTransform: 'uppercase',
-            margin: '0 0 12px',
-          }}>
-            SCROLL
-          </p>
-          <div style={{
-            width: '1px',
-            height: '24px',
-            background: 'rgba(255, 255, 255, 0.5)',
-            margin: '0 auto',
-            animation: 'scrollCue 2s ease-in-out infinite',
-          }} />
+          <span style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 9,
+            letterSpacing: '0.2em',
+            color: 'rgba(255, 255, 255, 0.4)',
+          }}>Scroll</span>
+          <div style={{ width: 1, height: 40, background: '#333', overflow: 'hidden' }}>
+            <div style={{
+              width: '100%',
+              height: '50%',
+              background: 'linear-gradient(to bottom, #E03553, #803D81)',
+              animation: 'scrollBar 1.6s cubic-bezier(0.16,1,0.3,1) infinite',
+            }} />
+          </div>
+          <style>{`@keyframes scrollBar { 0%{transform:translateY(-100%)} 100%{transform:translateY(220%)} }`}</style>
         </div>
       )}
     </div>
