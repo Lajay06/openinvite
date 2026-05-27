@@ -154,7 +154,7 @@ function SocialSignIn() {
             {/* On mobile (1 col, full width): "Continue with Google"
                 On desktop (2 col, narrow): "Google" */}
             <span>
-              <span className="hidden sm:inline">Continue with </span>
+              <span className="sm:hidden">Continue with </span>
               {label}
             </span>
           </button>
