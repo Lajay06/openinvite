@@ -5,6 +5,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import ApplePillButton from "@/components/motion/ApplePillButton";
+import ScrollCue from "@/components/motion/ScrollCue";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReducedMotion = () =>
@@ -97,44 +98,7 @@ export default function HeroCollage({ onCTA }) {
         </button>
       </div>
 
-      <ScrollCue />
+      <ScrollCue delay={2200} />
     </section>
-  );
-}
-
-function ScrollCue() {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 2200);
-    return () => clearTimeout(t);
-  }, []);
-  return (
-    <div
-      style={{
-        position: "absolute",
-        bottom: 40,
-        left: "50%",
-        transform: "translateX(-50%)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 8,
-        zIndex: 20,
-        opacity: visible ? 1 : 0,
-        transition: "opacity 0.8s ease",
-        pointerEvents: "none",
-      }}
-    >
-      <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, letterSpacing: "0.2em", color: "rgba(255,255,255,0.4)" }}>Scroll</span>
-      <div style={{ width: 1, height: 40, background: "#333", overflow: "hidden" }}>
-        <div style={{
-          width: "100%",
-          height: "50%",
-          background: "linear-gradient(to bottom, #E03553, #803D81)",
-          animation: "scrollCue 1.6s cubic-bezier(0.16,1,0.3,1) infinite",
-        }} />
-      </div>
-      <style>{`@keyframes scrollCue { 0%{transform:translateY(-100%)} 100%{transform:translateY(220%)} }`}</style>
-    </div>
   );
 }

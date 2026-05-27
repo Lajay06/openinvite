@@ -14,6 +14,7 @@ import FeatureTimeline from "@/components/home/FeatureTimeline";
 import FeaturePlaylists from "@/components/home/FeaturePlaylists";
 import FeatureGuests from "@/components/home/FeatureGuests";
 import FeatureBudget from "@/components/home/FeatureBudget";
+import ScrollCue from "@/components/motion/ScrollCue";
 
 const FEATURE_ZOOM_IMAGES = [
 { src: "https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg", alt: "Wedding planning" },
@@ -89,6 +90,7 @@ export default function Features() {
           </h1>
           <ApplePillButton onClick={handleCTA} light={false}>Get started</ApplePillButton>
         </div>
+        <ScrollCue />
       </section>
 
       {/* ── S2: ZOOM PARALLAX ────────────────────────────── */}

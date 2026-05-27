@@ -1,12 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import ScrollCue from '@/components/motion/ScrollCue';
 
 export default function HeroSection({ wedding }) {
-  const [showScroll, setShowScroll] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowScroll(true), 3000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -104,36 +99,7 @@ export default function HeroSection({ wedding }) {
       </div>
 
       {/* Scroll indicator */}
-      {showScroll && (
-        <div style={{
-          position: 'absolute',
-          bottom: '40px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 8,
-          zIndex: 10,
-          pointerEvents: 'none',
-        }}>
-          <span style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontSize: 9,
-            letterSpacing: '0.2em',
-            color: 'rgba(255, 255, 255, 0.4)',
-          }}>Scroll</span>
-          <div style={{ width: 1, height: 40, background: '#333', overflow: 'hidden' }}>
-            <div style={{
-              width: '100%',
-              height: '50%',
-              background: 'linear-gradient(to bottom, #E03553, #803D81)',
-              animation: 'scrollBar 1.6s cubic-bezier(0.16,1,0.3,1) infinite',
-            }} />
-          </div>
-          <style>{`@keyframes scrollBar { 0%{transform:translateY(-100%)} 100%{transform:translateY(220%)} }`}</style>
-        </div>
-      )}
+      <ScrollCue delay={3000} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
+import ScrollCue from '@/components/motion/ScrollCue';
 
 const UNIVERSE_DATA = [
   {
@@ -179,11 +180,7 @@ const Universes = () => {
             Every invitation, menu, seating chart and digital asset — designed around a single aesthetic vision. Choose your universe and everything follows.
           </p>
         </div>
-        {/* Scroll indicator */}
-        <div style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, zIndex: 20 }}>
-          <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.5)', fontFamily: 'Plus Jakarta Sans, sans-serif', margin: 0 }}>Scroll</p>
-          <div style={{ width: 1, height: 48, background: 'linear-gradient(to bottom, rgba(255,255,255,0.5), transparent)' }} />
-        </div>
+        <ScrollCue />
       </section>
 
       {/* SECTION 2: THE CONCEPT */}
