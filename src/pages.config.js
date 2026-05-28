@@ -98,6 +98,7 @@ import QandA from './pages/QandA';
 import Polls from './pages/Polls';
 import Beauty from './pages/Beauty';
 import DailyUpdate from './pages/DailyUpdate';
+import Invites from './pages/Invites';
 import __Layout from './Layout.jsx';
 
 
@@ -153,6 +154,7 @@ export const PAGES = {
     "Polls": Polls,
     "Beauty": Beauty,
     "DailyUpdate": DailyUpdate,
+    "Invites": Invites,
 }
 
 export const pagesConfig = {

@@ -99,18 +99,18 @@ function Avatar({ name, size = 36 }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function SendInvitesModal({ guests, onClose, onSent }) {
+export default function SendInvitesModal({ guests, onClose, onSent, defaultFilter = 'not_invited', defaultIsReminder = false }) {
   const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(1);
   const [wedding, setWedding] = useState(null);
 
   // Step 1
-  const [filter, setFilter] = useState('not_invited');
+  const [filter, setFilter] = useState(defaultFilter);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(new Set());
 
   // Step 2
-  const [isReminder, setIsReminder] = useState(false);
+  const [isReminder, setIsReminder] = useState(defaultIsReminder);
   const [subject, setSubject] = useState('');
   const [messageBody, setMessageBody] = useState('');
 

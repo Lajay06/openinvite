@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Calendar, CheckSquare, ListTodo,
   Users, UserCheck, LayoutGrid, MessageCircle,
@@ -10,7 +11,7 @@ import {
   Clock, Heart, Radio, UtensilsCrossed,
   Plane, Hotel, Car, Phone,
   Settings, UserPlus, LogOut, HelpCircle, Lightbulb, CreditCard,
-  Sparkles,
+  Sparkles, Mail,
   BarChart2,
 } from "lucide-react";
 
@@ -21,7 +22,8 @@ const NAV_SECTIONS = [
       { icon: Sparkles,        label: "Daily update", url: createPageUrl("DailyUpdate") },
       { icon: LayoutDashboard, label: "Overall",      url: createPageUrl("Dashboard") },
       { icon: Calendar,        label: "Calendar",    url: createPageUrl("Calendar") },
-      { icon: CheckSquare,     label: "Checklist",       url: createPageUrl("Checklist") },
+      { icon: Mail,            label: "Invites",     url: createPageUrl("Invites"), ultraBadge: true },
+      { icon: CheckSquare,     label: "Checklist",   url: createPageUrl("Checklist") },
       { icon: ListTodo,        label: "To do list",      url: createPageUrl("TodoList") },
     ],
   },
@@ -98,7 +100,7 @@ const sectionLabelStyle = {
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
-function NavItem({ icon: Icon, label, url, onClick, isActive }) {
+function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge }) {
   return (
     <div
       onClick={onClick}
@@ -125,6 +127,7 @@ function NavItem({ icon: Icon, label, url, onClick, isActive }) {
           fontSize: 12,
           fontWeight: 600,
           color: isActive ? "#E03553" : "#0A0A0A",
+          flex: 1,
           overflow: "hidden",
           whiteSpace: "nowrap",
           textOverflow: "ellipsis",
@@ -133,6 +136,16 @@ function NavItem({ icon: Icon, label, url, onClick, isActive }) {
       >
         {label}
       </span>
+      {showBadge && (
+        <span style={{
+          fontSize: 8, fontWeight: 800, letterSpacing: "0.06em",
+          background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
+          color: "#FFFFFF", padding: "2px 5px", borderRadius: 3, flexShrink: 0,
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+        }}>
+          ULTRA
+        </span>
+      )}
     </div>
   );
 }
@@ -142,6 +155,8 @@ function NavItem({ icon: Icon, label, url, onClick, isActive }) {
 export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const isUltra = (user?.plan || 'free') === 'ultra';
 
   const isActive = (url) => {
     const path = url.split("?")[0];
@@ -194,6 +209,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
                 url={item.url}
                 isActive={isActive(item.url)}
                 onClick={() => navigate(item.url.split("?")[0])}
+                showBadge={item.ultraBadge && !isUltra}
               />
             ))}
           </div>
@@ -286,6 +302,8 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
 export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, onCollaborate }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const isUltraMobile = (user?.plan || 'free') === 'ultra';
 
   const storedUser = (() => { try { return JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch { return {}; } })();
   const initials = (storedUser.full_name || storedUser.email || 'U')
@@ -383,9 +401,19 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
                   }}
                 >
                   <item.icon size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif", flex: 1 }}>
                     {item.label}
                   </span>
+                  {item.ultraBadge && !isUltraMobile && (
+                    <span style={{
+                      fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
+                      background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
+                      color: "#FFFFFF", padding: "2px 6px", borderRadius: 3, flexShrink: 0,
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    }}>
+                      ULTRA
+                    </span>
+                  )}
                 </div>
               );
             })}
