@@ -10,30 +10,35 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const PLAN_FEATURES = {
   free: [
-    'Guest list management',
-    'Budget tracker',
-    'Checklist & to-do list',
-    'Moodboard',
-    'Basic vendor directory',
+    '14-day full access to every feature',
+    'Unlimited guests, budget, seating & vendors',
+    'Wedding website builder & premium themes',
+    'Digital invitations via email & WhatsApp',
+    'Online RSVP pages',
+    'Ava AI — unlimited conversations',
+    'Priority support',
   ],
   pro: [
-    'Everything in Free',
-    'Unlimited guests',
-    'Design studio & templates',
-    'Ava AI assistant (unlimited)',
-    'Guest website builder',
-    'Advanced seating planner',
-    'Music & playlist manager',
-    'Document storage',
+    'Unlimited guests & full RSVP management',
+    'Complete budget suite',
+    'Ava AI — unlimited & context-aware',
+    'Full vendor management & marketplace',
+    'Seating planner',
+    'Schedule & day-of timeline',
+    'Photography, styling & moodboard tools',
+    'Music planner & registry management',
+    'Vows & speeches writer',
     'Priority support',
+    '24-month access',
   ],
   ultra: [
     'Everything in Pro',
-    'White-glove onboarding',
-    'Custom domain for guest website',
-    'Dedicated account manager',
-    'Multiple weddings / events',
-    'API access',
+    'Wedding website builder',
+    'Premium themes (11 universe styles)',
+    'Digital invitations via email & WhatsApp',
+    'Online RSVP pages for guests',
+    'Guest suite — accommodation, transport & experience guide',
+    'Save the dates & thank you cards',
   ],
 };
 
@@ -43,6 +48,7 @@ const PRICE_IDS = {
 };
 
 const PLAN_LABELS = { free: 'Free trial', pro: 'Pro', ultra: 'Ultra' };
+const NO_UPSELLS = 'No upsells, ever. Pay once, plan your entire wedding.';
 const PLAN_PRICES = { pro: '$79', ultra: '$149' };
 
 const ADMIN_EMAIL = 'lajay@openinvite.com.au';
@@ -230,7 +236,7 @@ export default function AccountPage() {
             fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', fontFamily: PJS,
             color: plan === 'free' ? 'rgba(10,10,10,0.55)' : '#FFFFFF',
             background: plan === 'ultra'
-              ? 'linear-gradient(135deg, #7c3aed, #4f46e5)'
+              ? 'linear-gradient(135deg, #FBBF24, #F59E0B)'
               : plan === 'pro'
                 ? '#0A0A0A'
                 : 'rgba(10,10,10,0.08)',
@@ -245,43 +251,89 @@ export default function AccountPage() {
           )}
         </div>
 
-        {/* Upgrade cards (free only) */}
+        {/* Upgrade cards (free trial users see both Pro and Ultra) */}
         {plan === 'free' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ marginBottom: 28 }}>
-            {(['pro', 'ultra']).map(pk => (
-              <div key={pk} style={{ border: '1px solid rgba(10,10,10,0.1)', padding: '20px', background: '#FAFAFA' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
-                  {pk === 'ultra' && <Crown size={13} style={{ color: '#7c3aed', flexShrink: 0 }} />}
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>
-                    {PLAN_LABELS[pk]}
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ marginBottom: 12 }}>
+              {(['pro', 'ultra']).map(pk => (
+                <div key={pk} style={{ border: '1px solid rgba(10,10,10,0.1)', padding: '20px', background: '#FAFAFA' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
+                    {pk === 'ultra' && <Crown size={13} style={{ color: '#F59E0B', flexShrink: 0 }} />}
+                    <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>
+                      {PLAN_LABELS[pk]}
+                    </p>
+                  </div>
+                  <p style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
+                    {PLAN_PRICES[pk]}
+                    <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.4)' }}> one-time</span>
                   </p>
+                  <button
+                    onClick={() => handleCheckout(pk)}
+                    disabled={!!checkoutLoading}
+                    style={{
+                      width: '100%', padding: '9px 0',
+                      background: pk === 'ultra' ? 'linear-gradient(135deg, #FBBF24, #F59E0B)' : '#0A0A0A',
+                      color: '#FFFFFF', border: 'none',
+                      cursor: checkoutLoading ? 'not-allowed' : 'pointer',
+                      fontSize: 12, fontWeight: 700, fontFamily: PJS, borderRadius: 999,
+                      opacity: checkoutLoading && checkoutLoading !== pk ? 0.5 : 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      transition: 'opacity 0.15s',
+                    }}
+                  >
+                    {checkoutLoading === pk && (
+                      <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} />
+                    )}
+                    Upgrade to {PLAN_LABELS[pk]}
+                  </button>
                 </div>
-                <p style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
-                  {PLAN_PRICES[pk]}
-                  <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.4)' }}> /month</span>
-                </p>
-                <button
-                  onClick={() => handleCheckout(pk)}
-                  disabled={!!checkoutLoading}
-                  style={{
-                    width: '100%', padding: '9px 0',
-                    background: pk === 'ultra' ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : '#0A0A0A',
-                    color: '#FFFFFF', border: 'none',
-                    cursor: checkoutLoading ? 'not-allowed' : 'pointer',
-                    fontSize: 12, fontWeight: 700, fontFamily: PJS, borderRadius: 999,
-                    opacity: checkoutLoading && checkoutLoading !== pk ? 0.5 : 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    transition: 'opacity 0.15s',
-                  }}
-                >
-                  {checkoutLoading === pk && (
-                    <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} />
-                  )}
-                  Upgrade to {PLAN_LABELS[pk]}
-                </button>
+              ))}
+            </div>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', margin: '0 0 28px', fontFamily: PJS }}>{NO_UPSELLS}</p>
+          </>
+        )}
+
+        {/* Upgrade to Ultra (Pro users) */}
+        {plan === 'pro' && (
+          <>
+            <div style={{ border: '1px solid rgba(10,10,10,0.1)', padding: '20px', background: '#FAFAFA', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
+                <Crown size={13} style={{ color: '#F59E0B', flexShrink: 0 }} />
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>Ultra</p>
               </div>
-            ))}
-          </div>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', margin: '0 0 6px', fontFamily: PJS, lineHeight: 1.5 }}>
+                Add the digital suite: wedding website, invitations, online RSVP, and premium themes.
+              </p>
+              <p style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
+                $149 <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.4)' }}>one-time</span>
+              </p>
+              <button
+                onClick={() => handleCheckout('ultra')}
+                disabled={!!checkoutLoading}
+                style={{
+                  width: '100%', padding: '9px 0',
+                  background: 'linear-gradient(135deg, #FBBF24, #F59E0B)',
+                  color: '#FFFFFF', border: 'none',
+                  cursor: checkoutLoading ? 'not-allowed' : 'pointer',
+                  fontSize: 12, fontWeight: 700, fontFamily: PJS, borderRadius: 999,
+                  opacity: checkoutLoading ? 0.5 : 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  transition: 'opacity 0.15s',
+                }}
+              >
+                {checkoutLoading === 'ultra' && <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} />}
+                Upgrade to Ultra
+              </button>
+            </div>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', margin: '0 0 28px', fontFamily: PJS }}>{NO_UPSELLS}</p>
+          </>
+        )}
+
+        {/* On best plan (Ultra users) */}
+        {plan === 'ultra' && (
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.45)', margin: '0 0 28px', fontFamily: PJS }}>
+            You're on our best plan. {NO_UPSELLS}
+          </p>
         )}
 
         {/* Manage billing (paid plans) */}

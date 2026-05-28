@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Crown } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import toast from 'react-hot-toast';
+
+const PREMIUM_IDS = new Set(['tokyo', 'marrakech', 'paris', 'amalfi', 'sedona', 'aspen', 'santorini']);
 
 const UNIVERSES = [
   { id: 'aman', name: 'AMAN', tagline: 'Quiet luxury', description: 'Stripped back. Only what matters.', style: ['Luxury', 'Minimal'], mood: ['Dark', 'Monochrome'], available: true, number: '01', photo: 'https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg', accentColor: '#C4956A' },
@@ -20,11 +24,19 @@ const UNIVERSES = [
 const STYLE_FILTERS = ['All', 'Luxury', 'Minimal', 'Romantic', 'Bohemian', 'Modern', 'Rustic', 'Tropical', 'Cultural'];
 const MOOD_FILTERS = ['All', 'Dark', 'Light', 'Warm', 'Cool', 'Earthy', 'Monochrome'];
 
-function UniverseCard({ universe, isActive }) {
+function UniverseCard({ universe, isActive, isPremium, canAccessUltra }) {
   const navigate = useNavigate();
-  const handleClick = () => navigate(`/studio/universe/${universe.id}`);
+  const locked = isPremium && !canAccessUltra;
+  const handleClick = () => {
+    if (locked) {
+      toast.error('Premium themes require Ultra. Upgrade at Account & billing.');
+      navigate('/account');
+      return;
+    }
+    navigate(`/studio/universe/${universe.id}`);
+  };
   return (
-    <div onClick={handleClick} style={{ background: '#0A0A0A', position: 'relative', overflow: 'hidden', cursor: 'pointer', aspectRatio: '4/5', transition: 'transform 0.4s ease' }}
+    <div onClick={handleClick} style={{ background: '#0A0A0A', position: 'relative', overflow: 'hidden', cursor: 'pointer', aspectRatio: '4/5', transition: 'transform 0.4s ease', opacity: locked ? 0.65 : 1 }}
       onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.01)')}
       onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
     >
@@ -33,14 +45,20 @@ function UniverseCard({ universe, isActive }) {
       <div style={{ position: 'absolute', top: 24, left: 28 }}>
         <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 13, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.2em' }}>{universe.number}</span>
       </div>
-      <div style={{ position: 'absolute', top: 20, right: 20 }}>
+      <div style={{ position: 'absolute', top: 20, right: 20, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+        {isPremium && (
+          <div style={{ background: 'linear-gradient(135deg, #FBBF24, #F59E0B)', padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Crown size={8} color="#FFFFFF" />
+            <span style={{ fontSize: 8, color: '#FFFFFF', letterSpacing: '0.2em', fontWeight: 800, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>ULTRA</span>
+          </div>
+        )}
         {isActive ? (
           <div style={{ border: '1px solid #DDF762', padding: '3px 10px' }}>
             <span style={{ fontSize: 9, color: '#DDF762', letterSpacing: '0.25em', fontWeight: 700 }}>Selected</span>
           </div>
         ) : (
           <div style={{ border: '1px solid rgba(255,255,255,0.3)', padding: '3px 10px' }}>
-            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.25em', fontWeight: 700 }}>Available</span>
+            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.25em', fontWeight: 700 }}>{locked ? 'Locked' : 'Available'}</span>
           </div>
         )}
       </div>
@@ -53,7 +71,7 @@ function UniverseCard({ universe, isActive }) {
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 24px', lineHeight: 1.5 }}>{universe.description}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.15em', fontWeight: 600 }}>
-            {isActive ? 'View universe' : 'Explore universe'}
+            {locked ? 'Upgrade to unlock' : isActive ? 'View universe' : 'Explore universe'}
           </span>
           <span style={{ color: universe.accentColor, fontSize: 14 }}>→</span>
         </div>
@@ -64,6 +82,9 @@ function UniverseCard({ universe, isActive }) {
 
 export default function StudioUniverse() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const _plan = user?.plan || 'free';
+  const canAccessUltra = _plan === 'ultra' || _plan === 'free';
   const [styleFilter, setStyleFilter] = useState('All');
   const [moodFilter, setMoodFilter] = useState('All');
   const [activeUniverse, setActiveUniverse] = useState(null);
@@ -157,7 +178,12 @@ export default function StudioUniverse() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'rgba(255,255,255,0.06)', padding: '1px' }}>
           {filteredUniverses.map(u => (
             <div key={u.id} style={{ background: '#0A0A0A' }}>
-              <UniverseCard universe={u} isActive={activeUniverse === u.id} />
+              <UniverseCard
+                universe={u}
+                isActive={activeUniverse === u.id}
+                isPremium={PREMIUM_IDS.has(u.id)}
+                canAccessUltra={canAccessUltra}
+              />
             </div>
           ))}
         </div>

@@ -8,45 +8,27 @@ import { track } from "@/lib/analytics";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const STARTER_FEATURES = [
-  "Up to 20 guests",
-  "Guest list and RSVPs",
-  "Basic budget tracker",
-  "Wedding checklist",
-  "1 vendor slot",
-  "Ava AI (10 conversations)",
-  "Basic wedding website preview",
-];
-
 const PRO_FEATURES = [
-  "Unlimited guests",
-  "Full guest management and RSVPs",
+  "Unlimited guests & full RSVP management",
   "Complete budget suite",
-  "Ava AI — unlimited and context-aware",
-  "Full vendor management",
-  "Vendor marketplace access",
+  "Ava AI — unlimited & context-aware",
+  "Full vendor management & marketplace",
   "Seating planner",
-  "Wedding website (preview only)",
-  "Schedule and day-of timeline",
-  "Photography and styling tools",
-  "Moodboard and inspiration boards",
-  "Music playlist planner",
-  "Registry management",
-  "Vows and speeches writer",
-  "Collaborate with wedding party",
-  "24-month access",
+  "Schedule & day-of timeline",
+  "Photography, styling & moodboard tools",
+  "Music planner & registry management",
+  "Vows & speeches writer",
   "Priority support",
+  "24-month access",
 ];
 
 const ULTRA_EXTRAS = [
-  "Full invitation design suite",
-  "Custom invitation templates",
-  "Digital and printable invitations",
-  "RSVP tracking via invitations",
-  "Save the dates",
-  "Thank you cards",
-  "Envelope addressing",
-  "Guest portal with invitations",
+  "Wedding website builder",
+  "Premium themes (11 universe styles)",
+  "Digital invitations via email & WhatsApp",
+  "Online RSVP pages for guests",
+  "Guest suite — accommodation, transport & experience guide",
+  "Save the dates & thank you cards",
 ];
 
 const FAQS = [
@@ -55,8 +37,12 @@ const FAQS = [
     a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is $79 AUD total. Ultra is $149 AUD total.",
   },
   {
-    q: "What's included in the 24 months?",
-    a: "Full access to everything in your plan from the day you purchase. Most couples plan 12–18 months ahead — 24 months gives you plenty of room.",
+    q: "What's included in the 14-day free trial?",
+    a: "Full access to every feature, including all Ultra features. No credit card required. At the end of 14 days, choose Pro or Ultra to keep your data and access.",
+  },
+  {
+    q: "What's the difference between Pro and Ultra?",
+    a: "Pro includes everything you need to plan your wedding: guests, budget, vendors, seating, timeline, and more. Ultra adds the digital suite: wedding website, invitations, online RSVP, and premium themes.",
   },
   {
     q: "Can I upgrade from Pro to Ultra later?",
@@ -72,25 +58,26 @@ const FAQS = [
   },
   {
     q: "What happens to my data after 24 months?",
-    a: "Your data stays safe in archive mode. Add a $49 archive plan to keep permanent access to your wedding story.",
+    a: "Your wedding is done — congratulations. After 24 months, your account moves to archive mode. Add an archive plan for $49 to keep permanent access to your wedding story.",
   },
 ];
 
 const TABLE_ROWS = [
-  { feature: "Guests",           starter: "20",       pro: "∞",        ultra: "∞" },
-  { feature: "Ava AI",           starter: "10 msgs",  pro: "∞",        ultra: "∞" },
-  { feature: "Budget tracker",   starter: "Basic",    pro: "Full",     ultra: "Full" },
-  { feature: "Vendor tools",     starter: "1",        pro: "∞",        ultra: "∞" },
-  { feature: "Seating planner",  starter: false,      pro: true,       ultra: true },
-  { feature: "Wedding website",  starter: "Preview",  pro: true,       ultra: true },
-  { feature: "Invitations",      starter: false,      pro: false,      ultra: true },
-  { feature: "Save the dates",   starter: false,      pro: false,      ultra: true },
-  { feature: "Thank you cards",  starter: false,      pro: false,      ultra: true },
-  { feature: "Guest portal",     starter: false,      pro: true,       ultra: true },
-  { feature: "Collaborate",      starter: false,      pro: true,       ultra: true },
-  { feature: "Support",          starter: "Email",    pro: "Priority", ultra: "Priority" },
-  { feature: "Access duration",  starter: "14 days",  pro: "24 mo",    ultra: "24 mo" },
-  { feature: "Price",            starter: "Free",     pro: "$79",      ultra: "$149" },
+  { feature: "Access duration",        trial: "14 days",  pro: "24 months",  ultra: "24 months" },
+  { feature: "Guests",                  trial: "∞",         pro: "∞",          ultra: "∞" },
+  { feature: "Ava AI",                  trial: "∞",         pro: "∞",          ultra: "∞" },
+  { feature: "Budget tracker",          trial: "Full",      pro: "Full",       ultra: "Full" },
+  { feature: "Vendor tools",            trial: "∞",         pro: "∞",          ultra: "∞" },
+  { feature: "Seating planner",         trial: true,        pro: true,         ultra: true },
+  { feature: "Schedule & timeline",     trial: true,        pro: true,         ultra: true },
+  { feature: "Music & registry",        trial: true,        pro: true,         ultra: true },
+  { feature: "Wedding website",         trial: true,        pro: false,        ultra: true },
+  { feature: "Digital invitations",     trial: true,        pro: false,        ultra: true },
+  { feature: "Online RSVP",            trial: true,        pro: false,        ultra: true },
+  { feature: "Premium themes",          trial: true,        pro: false,        ultra: true },
+  { feature: "Guest suite",             trial: true,        pro: false,        ultra: true },
+  { feature: "Support",                 trial: "Priority",  pro: "Priority",   ultra: "Priority" },
+  { feature: "Price",                   trial: "Free",      pro: "$79",        ultra: "$149" },
 ];
 
 function CheckIcon({ color = "#0A0A0A" }) {
@@ -216,34 +203,61 @@ export default function Pricing() {
 
       {/* ── PRICING CARDS ── */}
       <section style={{ background: "#FFFFFF", padding: "80px 24px" }}>
+
+        {/* Free trial banner */}
+        <div style={{ maxWidth: 700, margin: "0 auto 56px", textAlign: "center", padding: "36px 40px", background: "#F7F7F5", border: "1px solid rgba(10,10,10,0.08)" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(10,10,10,0.4)", margin: "0 0 10px", fontFamily: PJS }}>
+            Free trial
+          </p>
+          <h3 style={{ fontSize: 22, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.01em", lineHeight: 1.2, margin: "0 0 8px", fontFamily: PJS }}>
+            Try everything free for 14 days
+          </h3>
+          <p style={{ fontSize: 14, color: "rgba(10,10,10,0.5)", margin: "0 0 24px", fontFamily: PJS }}>
+            Full Ultra access. No credit card required.
+          </p>
+          <button
+            onClick={goFree}
+            style={{
+              padding: "12px 36px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+              fontFamily: PJS, cursor: "pointer", border: "none",
+              background: "#0A0A0A", color: "#FFFFFF", transition: "opacity 0.15s",
+              display: "inline-flex", alignItems: "center",
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            Start free — no card needed
+          </button>
+        </div>
+
         <div style={{
-          maxWidth: 1100, margin: "0 auto",
+          maxWidth: 860, margin: "0 auto",
           display: "flex", gap: 20, alignItems: "stretch",
           flexWrap: "wrap", justifyContent: "center",
         }}>
 
-          {/* STARTER */}
+          {/* PRO */}
           <div style={{
-            flex: "0 1 320px", minWidth: 260,
+            flex: "0 1 400px", minWidth: 300,
             border: "1px solid #E5E5E5",
             background: "#FAFAF9", padding: 32,
             display: "flex", flexDirection: "column",
           }}>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
-              Starter
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 14, fontFamily: PJS }}>
+              Pro
             </p>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$0</span>
+              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$79</span>
             </div>
             <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
-              Free for 14 days
+              24-month access · one-time payment
             </p>
-            <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 24, fontFamily: PJS }}>
-              Try everything free for 14 days. No credit card required.
+            <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 20, fontFamily: PJS }}>
+              Your complete wedding planning command centre. Everything from first plan to final dance.
             </p>
-            <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 24 }} />
+            <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 20 }} />
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-              {STARTER_FEATURES.map((f, i) => (
+              {PRO_FEATURES.map((f, i) => (
                 <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
                   <CheckIcon color="#E03553" />
                   {f}
@@ -251,91 +265,46 @@ export default function Pricing() {
               ))}
             </ul>
             <button
-              onClick={goFree}
+              onClick={goPro}
+              disabled={loadingPlan === 'pro'}
               style={{
-                width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 600,
-                fontFamily: PJS, cursor: "pointer", border: "none",
-                background: "#0A0A0A", color: "#FFFFFF", transition: "opacity 0.15s",
+                width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
+                fontFamily: PJS, cursor: loadingPlan === 'pro' ? "default" : "pointer", border: "none",
+                background: "#E03553", color: "#FFFFFF", transition: "opacity 0.15s",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                opacity: loadingPlan === 'pro' ? 0.7 : 1,
               }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+              onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.88"; }}
+              onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
             >
-              Start free — no card needed
+              {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $79"}
             </button>
-            <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
-              14 days · then choose a plan
-            </p>
-          </div>
-
-          {/* PRO */}
-          <div style={{
-            flex: "0 1 360px", minWidth: 280,
-            border: "1px solid #E5E5E5",
-            background: "#FAFAF9", padding: 32,
-            display: "flex", flexDirection: "column",
-          }}>
-              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
-                Pro
-              </p>
-              <div style={{ marginBottom: 4 }}>
-                <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$79</span>
-              </div>
-              <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
-                24-month access · one-time payment
-              </p>
-              <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 24, fontFamily: PJS }}>
-                Your complete wedding command centre. Everything you need from first plan to final dance.
-              </p>
-              <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 24 }} />
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-                {PRO_FEATURES.map((f, i) => (
-                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
-                    <CheckIcon color="#E03553" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button
-                onClick={goPro}
-                disabled={loadingPlan === 'pro'}
-                style={{
-                  width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 600,
-                  fontFamily: PJS, cursor: loadingPlan === 'pro' ? "default" : "pointer", border: "none",
-                  background: "#E03553", color: "#FFFFFF", transition: "opacity 0.15s",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  opacity: loadingPlan === 'pro' ? 0.7 : 1,
-                }}
-                onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.88"; }}
-                onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
-              >
-                {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $79"}
-              </button>
-              <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
-                24-month access · one-time payment
-              </p>
           </div>
 
           {/* ULTRA */}
           <div style={{
-            flex: "0 1 320px", minWidth: 260,
+            flex: "0 1 400px", minWidth: 300,
             border: "1px solid #E5E5E5",
             background: "#FAFAF9", padding: 32,
             display: "flex", flexDirection: "column",
           }}>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
-              Ultra
-            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+                <path d="M7 1L9 5.5L14 6.5L10.5 9.5L11.5 14L7 11.5L2.5 14L3.5 9.5L0 6.5L5 5.5Z" fill="#F59E0B" />
+              </svg>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", margin: 0, fontFamily: PJS }}>Ultra</p>
+            </div>
             <div style={{ marginBottom: 4 }}>
               <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$149</span>
             </div>
             <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
               24-month access · one-time payment
             </p>
-            <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 24, fontFamily: PJS }}>
-              Everything in Pro, plus a stunning invitation suite to match your wedding vision.
+            <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 20, fontFamily: PJS }}>
+              Everything in Pro, plus the full digital wedding suite — website, invitations, and RSVP.
             </p>
-            <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 24 }} />
-            <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.4)", marginBottom: 12, letterSpacing: "0.04em", fontFamily: PJS }}>
+            <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 14 }} />
+            <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(10,10,10,0.4)", marginBottom: 12, letterSpacing: "0.04em", fontFamily: PJS }}>
               Everything in Pro, plus:
             </p>
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
@@ -350,27 +319,26 @@ export default function Pricing() {
               onClick={goUltra}
               disabled={loadingPlan === 'ultra'}
               style={{
-                width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 600,
+                width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
                 fontFamily: PJS, cursor: loadingPlan === 'ultra' ? "default" : "pointer",
-                background: "#FFFFFF", border: "1.5px solid #0A0A0A", color: "#0A0A0A",
-                transition: "background 0.15s",
+                background: "linear-gradient(135deg, #FBBF24, #F59E0B)", color: "#FFFFFF", border: "none",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                opacity: loadingPlan === 'ultra' ? 0.7 : 1,
+                opacity: loadingPlan === 'ultra' ? 0.7 : 1, transition: "opacity 0.15s",
               }}
-              onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.background = "#F3F3F3"; }}
-              onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.background = "#FFFFFF"; }}
+              onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "0.88"; }}
+              onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "1"; }}
             >
               {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra — $149"}
             </button>
-            <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", textAlign: "center", marginTop: 10, fontFamily: PJS }}>
-              24-month access · one-time payment
-            </p>
           </div>
 
         </div>
 
-        {/* AUD note */}
-        <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.35)", marginTop: 24, fontFamily: PJS }}>
+        {/* No upsells + AUD note */}
+        <p style={{ textAlign: "center", fontSize: 13, color: "rgba(10,10,10,0.4)", marginTop: 28, fontFamily: PJS }}>
+          No upsells, ever. Pay once, plan your entire wedding.
+        </p>
+        <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.3)", marginTop: 6, fontFamily: PJS }}>
           Prices in AUD · Approx. US$50 / US$95
         </p>
 
@@ -428,7 +396,7 @@ export default function Pricing() {
               <thead>
                 <tr>
                   <th style={{ textAlign: "left", fontSize: 12, fontWeight: 600, color: "rgba(10,10,10,0.4)", padding: "0 0 20px", width: "40%" }} />
-                  {["Starter", "Pro", "Ultra"].map(label => (
+                  {["Free trial", "Pro", "Ultra"].map(label => (
                     <th key={label} style={{
                       textAlign: "center", fontSize: 13, fontWeight: 700,
                       color: "#0A0A0A", padding: "0 16px 20px",
@@ -444,7 +412,7 @@ export default function Pricing() {
                     <td style={{ padding: "14px 0", fontSize: 13, color: "rgba(10,10,10,0.7)", fontFamily: PJS }}>
                       {row.feature}
                     </td>
-                    {[row.starter, row.pro, row.ultra].map((val, j) => (
+                    {[row.trial, row.pro, row.ultra].map((val, j) => (
                       <td key={j} style={{ padding: "14px 16px", textAlign: "center" }}>
                         <CellValue val={val} />
                       </td>
@@ -495,12 +463,11 @@ export default function Pricing() {
           <button
             onClick={goFree}
             style={{
-              padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 600,
-              fontFamily: PJS, cursor: "pointer", border: "none",
-              background: "linear-gradient(135deg, #ec4899, #9333ea)",
-              color: "#FFFFFF", transition: "opacity 0.15s",
+              padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
+              fontFamily: PJS, cursor: "pointer", border: "1px solid rgba(255,255,255,0.3)",
+              background: "rgba(255,255,255,0.1)", color: "#FFFFFF", transition: "opacity 0.15s",
             }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
             onMouseLeave={e => e.currentTarget.style.opacity = "1"}
           >
             Start free trial
@@ -509,9 +476,9 @@ export default function Pricing() {
             onClick={goPro}
             disabled={loadingPlan === 'pro'}
             style={{
-              padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 600,
+              padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
               fontFamily: PJS, cursor: loadingPlan === 'pro' ? "default" : "pointer", border: "none",
-              background: "#FFFFFF", color: "#0A0A0A", transition: "opacity 0.15s",
+              background: "#E03553", color: "#FFFFFF", transition: "opacity 0.15s",
               display: "flex", alignItems: "center", gap: 8,
               opacity: loadingPlan === 'pro' ? 0.7 : 1,
             }}
@@ -519,6 +486,21 @@ export default function Pricing() {
             onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
           >
             {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $79"}
+          </button>
+          <button
+            onClick={goUltra}
+            disabled={loadingPlan === 'ultra'}
+            style={{
+              padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
+              fontFamily: PJS, cursor: loadingPlan === 'ultra' ? "default" : "pointer", border: "none",
+              background: "linear-gradient(135deg, #FBBF24, #F59E0B)", color: "#FFFFFF", transition: "opacity 0.15s",
+              display: "flex", alignItems: "center", gap: 8,
+              opacity: loadingPlan === 'ultra' ? 0.7 : 1,
+            }}
+            onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "0.85"; }}
+            onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "1"; }}
+          >
+            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra — $149"}
           </button>
         </div>
       </section>

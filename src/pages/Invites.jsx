@@ -142,7 +142,7 @@ const FILTER_TABS = [
 export default function Invites() {
   const { user } = useAuth();
   const plan = user?.plan || 'free';
-  const isUltra = plan === 'ultra';
+  const canAccess = plan === 'ultra' || plan === 'free';
 
   const [guests, setGuests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -153,7 +153,7 @@ export default function Invites() {
   const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
-    if (!isUltra) return;
+    if (!canAccess) return;
     loadGuests();
   }, [isUltra]);
 
@@ -201,7 +201,7 @@ export default function Invites() {
     setShowDrawer(true);
   };
 
-  if (!isUltra) return <UltraGate />;
+  if (!canAccess) return <UltraGate />;
 
   const statLabelStyle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: 0, marginBottom: 8, ...F };
   const statValueStyle = { fontSize: 'clamp(22px,2.5vw,32px)', fontWeight: 700, color: '#0A0A0A', lineHeight: 1, margin: 0, ...F };

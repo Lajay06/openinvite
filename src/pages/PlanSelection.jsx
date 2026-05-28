@@ -1,114 +1,198 @@
-import React, { useState, useEffect } from 'react';
-import { User } from '@/entities/User';
-import { createPageUrl } from '@/utils';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Sparkles, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import { Loader2, Check, Crown } from 'lucide-react';
+import { track } from '@/lib/analytics';
 
-export default function PlanSelectionPage() {
-    const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(null);
+const PJS = "'Plus Jakarta Sans', sans-serif";
 
-    useEffect(() => {
-        const checkUser = async () => {
-            try {
-                const currentUser = await User.me();
-                setUser(currentUser);
-                setLoading(false);
-            } catch (error) {
-                // Should be handled by login redirect, but as a fallback
-                window.location.href = createPageUrl('Home');
-            }
-        };
-        checkUser();
-    }, []);
+const PRICE_IDS = {
+  pro:   import.meta.env.VITE_STRIPE_PRO_PRICE_ID   || 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
+  ultra: import.meta.env.VITE_STRIPE_ULTRA_PRICE_ID || 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
+};
 
-    const handleSelectPlan = async (plan) => {
-        setLoading(true);
-        try {
-            await User.updateMyUserData({ plan });
-            window.location.href = createPageUrl('Onboarding');
-        } catch (error) {
-            console.error("Error selecting plan:", error);
-            setLoading(false);
-        }
-    };
+const PRO_FEATURES = [
+  'Unlimited guests & full RSVP management',
+  'Complete budget suite',
+  'Ava AI — unlimited & context-aware',
+  'Full vendor management & marketplace',
+  'Seating planner',
+  'Schedule & day-of timeline',
+  'Photography, styling & moodboard tools',
+  'Music planner & registry management',
+  'Vows & speeches writer',
+  'Priority support',
+  '24-month access',
+];
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <Loader2 className="w-12 h-12 animate-spin text-sage-500" />
-            </div>
-        );
-    }
+const ULTRA_EXTRAS = [
+  'Wedding website builder',
+  'Premium themes (11 universe styles)',
+  'Digital invitations via email & WhatsApp',
+  'Online RSVP pages for guests',
+  'Guest suite — accommodation & experience guide',
+  'Save the dates & thank you cards',
+];
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-sage-50 via-white to-champagne-50 p-8">
-            <div className="max-w-4xl mx-auto text-center">
-                <motion.h1 
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-5xl font-bold text-gray-800 mb-4"
-                >
-                    Choose Your Planning Style
-                </motion.h1>
-                <motion.p 
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
-                    className="text-xl text-gray-600 mb-12"
-                >
-                    Start with the essentials or unlock our full suite of smart tools.
-                </motion.p>
+function CheckIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
+      <path d="M2.5 7L5.5 10L11.5 4" stroke="#E03553" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
-                <div className="grid md:grid-cols-2 gap-8">
-                    <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0, transition: { delay: 0.4 } }}>
-                        <Card className="text-left h-full flex flex-col">
-                            <CardHeader>
-                                <CardTitle className="text-2xl">Free</CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex-grow space-y-4">
-                                <p className="text-4xl font-bold">$0</p>
-                                <ul className="space-y-2 text-gray-600">
-                                    <li className="flex gap-2"><Check className="w-5 h-5 text-green-500" /> Core Planning Tools</li>
-                                    <li className="flex gap-2"><Check className="w-5 h-5 text-green-500" /> Guest List Management</li>
-                                    <li className="flex gap-2"><Check className="w-5 h-5 text-green-500" /> Budget Tracking</li>
-                                </ul>
-                            </CardContent>
-                            <div className="p-6 pt-0">
-                                <Button onClick={() => handleSelectPlan('free')} className="w-full h-12 text-lg" variant="outline">
-                                    Continue with Free
-                                </Button>
-                            </div>
-                        </Card>
-                    </motion.div>
+async function startCheckout(plan, setLoadingPlan) {
+  const priceId = PRICE_IDS[plan];
+  setLoadingPlan(plan);
+  try {
+    let userEmail = '';
+    let userId = '';
+    try {
+      const me = await base44.auth.me();
+      userEmail = me?.email || '';
+      userId = me?.id || '';
+    } catch {}
 
-                    <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0, transition: { delay: 0.6 } }}>
-                        <Card className="text-left h-full flex flex-col border-2 border-sage-500 shadow-xl">
-                             <CardHeader>
-                                <CardTitle className="text-2xl flex items-center gap-2">
-                                    Premium <Sparkles className="w-5 h-5 text-purple-500" />
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex-grow space-y-4">
-                                <p className="text-4xl font-bold">$199 <span className="text-lg font-normal text-gray-500">/ one-time</span></p>
-                                <ul className="space-y-2 text-gray-600">
-                                    <li className="flex gap-2"><Check className="w-5 h-5 text-green-500" /> Everything in Free, plus:</li>
-                                    <li className="flex gap-2 font-semibold"><Sparkles className="w-5 h-5 text-purple-500" /> AI Wedding Assistant</li>
-                                    <li className="flex gap-2"><Check className="w-5 h-5 text-green-500" /> Advanced Vendor Search</li>
-                                    <li className="flex gap-2"><Check className="w-5 h-5 text-green-500" /> Smart Suggestions</li>
-                                    <li className="flex gap-2"><Check className="w-5 h-5 text-green-500" /> Custom Guest Portal</li>
-                                </ul>
-                            </CardContent>
-                            <div className="p-6 pt-0">
-                                <Button onClick={() => handleSelectPlan('premium')} className="w-full h-12 text-lg bg-sage-500 hover:bg-sage-600 text-white">
-                                    Choose Premium
-                                </Button>
-                            </div>
-                        </Card>
-                    </motion.div>
-                </div>
-            </div>
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceId, userEmail, userId }),
+    });
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) { setLoadingPlan(null); return; }
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+  } catch {}
+  setLoadingPlan(null);
+}
+
+export default function PlanSelection() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const plan = user?.plan || 'free';
+  const [loadingPlan, setLoadingPlan] = useState(null);
+
+  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: 79  }); startCheckout('pro',   setLoadingPlan); };
+  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: 149 }); startCheckout('ultra', setLoadingPlan); };
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 24px' }}>
+
+      {/* Header */}
+      <div style={{ textAlign: 'center', maxWidth: 560, marginBottom: 56 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(10,10,10,0.4)', margin: '0 0 12px', fontFamily: PJS }}>
+          YOUR 14-DAY TRIAL IS ENDING
+        </p>
+        <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', lineHeight: 1.15, margin: '0 0 14px', fontFamily: PJS }}>
+          Choose your plan
+        </h1>
+        <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.5)', lineHeight: 1.65, margin: 0, fontFamily: PJS }}>
+          Pay once. No monthly fees. No subscriptions. No upsells, ever.
+        </p>
+      </div>
+
+      {/* Plan cards */}
+      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center', width: '100%', maxWidth: 760, marginBottom: 32 }}>
+
+        {/* Pro */}
+        <div style={{ flex: '0 1 340px', minWidth: 280, border: '1px solid #E5E5E5', background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 14px', fontFamily: PJS }}>Pro</p>
+          <div style={{ marginBottom: 4 }}>
+            <span style={{ fontSize: 44, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$79</span>
+          </div>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 20px', fontFamily: PJS }}>24-month access · one-time payment</p>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: '0 0 20px', fontFamily: PJS }}>
+            Your complete wedding planning command centre.
+          </p>
+          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 20 }} />
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 9, flex: 1 }}>
+            {PRO_FEATURES.map((f, i) => (
+              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
+                <CheckIcon />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={goPro}
+            disabled={!!loadingPlan}
+            style={{
+              width: '100%', padding: '13px 0', borderRadius: 999, fontSize: 13, fontWeight: 700,
+              fontFamily: PJS, background: '#E03553', color: '#FFFFFF', border: 'none',
+              cursor: loadingPlan ? 'default' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              opacity: loadingPlan && loadingPlan !== 'pro' ? 0.5 : 1,
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={e => { if (!loadingPlan) e.currentTarget.style.opacity = '0.88'; }}
+            onMouseLeave={e => { if (!loadingPlan) e.currentTarget.style.opacity = '1'; }}
+          >
+            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : 'Get Pro — $79'}
+          </button>
         </div>
-    );
+
+        {/* Ultra */}
+        <div style={{ flex: '0 1 340px', minWidth: 280, border: '1px solid #E5E5E5', background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <Crown size={13} style={{ color: '#F59E0B', flexShrink: 0 }} />
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>Ultra</p>
+          </div>
+          <div style={{ marginBottom: 4 }}>
+            <span style={{ fontSize: 44, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$149</span>
+          </div>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 20px', fontFamily: PJS }}>24-month access · one-time payment</p>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: '0 0 20px', fontFamily: PJS }}>
+            Everything in Pro, plus the full digital wedding suite.
+          </p>
+          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 12 }} />
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.4)', letterSpacing: '0.04em', margin: '0 0 12px', fontFamily: PJS }}>
+            Everything in Pro, plus:
+          </p>
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 9, flex: 1 }}>
+            {ULTRA_EXTRAS.map((f, i) => (
+              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
+                <CheckIcon />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={goUltra}
+            disabled={!!loadingPlan}
+            style={{
+              width: '100%', padding: '13px 0', borderRadius: 999, fontSize: 13, fontWeight: 700,
+              fontFamily: PJS, background: 'linear-gradient(135deg, #FBBF24, #F59E0B)', color: '#FFFFFF', border: 'none',
+              cursor: loadingPlan ? 'default' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              opacity: loadingPlan && loadingPlan !== 'ultra' ? 0.5 : 1,
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={e => { if (!loadingPlan) e.currentTarget.style.opacity = '0.88'; }}
+            onMouseLeave={e => { if (!loadingPlan) e.currentTarget.style.opacity = '1'; }}
+          >
+            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : 'Get Ultra — $149'}
+          </button>
+        </div>
+
+      </div>
+
+      {/* Free trial continue */}
+      {plan === 'free' && (
+        <button
+          onClick={() => navigate('/Dashboard')}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textDecoration: 'underline', textDecorationColor: 'rgba(10,10,10,0.2)' }}
+        >
+          Continue with free trial
+        </button>
+      )}
+
+      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.3)', margin: '20px 0 0', fontFamily: PJS }}>
+        Prices in AUD · 14-day money-back guarantee · No recurring fees
+      </p>
+
+      <style>{`@keyframes oi-spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 }

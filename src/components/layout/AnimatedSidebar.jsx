@@ -156,7 +156,8 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const isUltra = (user?.plan || 'free') === 'ultra';
+  const _plan = user?.plan || 'free';
+  const canAccessUltra = _plan === 'ultra' || _plan === 'free';
 
   const isActive = (url) => {
     const path = url.split("?")[0];
@@ -209,7 +210,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
                 url={item.url}
                 isActive={isActive(item.url)}
                 onClick={() => navigate(item.url.split("?")[0])}
-                showBadge={item.ultraBadge && !isUltra}
+                showBadge={item.ultraBadge && !canAccessUltra}
               />
             ))}
           </div>
@@ -303,7 +304,8 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const isUltraMobile = (user?.plan || 'free') === 'ultra';
+  const _planM = user?.plan || 'free';
+  const canAccessUltraMobile = _planM === 'ultra' || _planM === 'free';
 
   const storedUser = (() => { try { return JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch { return {}; } })();
   const initials = (storedUser.full_name || storedUser.email || 'U')
@@ -404,7 +406,7 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
                   <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif", flex: 1 }}>
                     {item.label}
                   </span>
-                  {item.ultraBadge && !isUltraMobile && (
+                  {item.ultraBadge && !canAccessUltraMobile && (
                     <span style={{
                       fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
                       background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
