@@ -74,7 +74,7 @@ function CourseBuilder({ label, items, onUpdate }) {
   );
 }
 
-function Section({ title, children, defaultOpen = true }) {
+function Section({ title, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div style={{ borderBottom: '1px solid #F0F0F0', marginBottom: 0 }}>

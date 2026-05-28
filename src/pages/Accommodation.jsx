@@ -5,6 +5,7 @@ import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
+import AvaButton from '@/components/shared/AvaButton';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
@@ -292,10 +293,7 @@ export default function AccommodationPage() {
       <div style={{ padding: '32px 32px 48px' }}>
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <button onClick={() => setShowAva(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 999, background: '#0A1930', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            <Lightbulb size={14} style={{ color: '#DDF762' }} />Ask Ava
-          </button>
+          <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
             {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
             {saveStatus === 'saved' && <><Check size={12} />Saved</>}

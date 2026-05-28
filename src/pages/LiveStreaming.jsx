@@ -4,6 +4,7 @@ import { InvokeLLM } from "@/integrations/Core";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Video, Plus, Trash2, Loader2, Radio, Copy, X, Lightbulb, Edit2 } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -251,10 +252,7 @@ export default function LiveStreamingPage() {
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => setShowAva(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 999, background: '#0A1930', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              <Lightbulb size={14} style={{ color: '#DDF762' }} />Ask Ava
-            </button>
+            <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
           </div>
           <button onClick={() => { setEditingStream(null); setShowForm(true); }} className="btn-primary"
             style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>

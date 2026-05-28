@@ -7,7 +7,7 @@ const labelStyle = {
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
-export default function DetailsSection({ title, icon: Icon, children, sectionKey, onSave, isSaving, defaultOpen = true }) {
+export default function DetailsSection({ title, icon: Icon, children, sectionKey, onSave, isSaving, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
 
   return (

@@ -119,7 +119,7 @@ export default function StudioContentTab({ wedding, onChange }) {
 
   return (
     <div>
-      <Accordion title="Hero" defaultOpen>
+      <Accordion title="Hero">
         <Input label="Hero Video URL" value={W.heroVideoUrl} onChange={v => onChange('heroVideoUrl', v)} placeholder="YouTube or Vimeo URL" />
         <Input label="Cover Photo URL" value={W.coverPhoto} onChange={v => onChange('coverPhoto', v)} placeholder="https://..." />
         <Input label="Couple Names" value={W.coupleNames} onChange={v => onChange('coupleNames', v)} placeholder="Sarah & James" />
