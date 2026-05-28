@@ -44,10 +44,7 @@ function loadChecklist() {
     const saved = localStorage.getItem('oi_checklist');
     if (saved) return JSON.parse(saved);
   } catch {}
-  return {
-    essentials: ESSENTIALS_DEFAULT.map(t => ({ title: t, done: false })),
-    niceToHave: NICE_TO_HAVE_DEFAULT.map(t => ({ title: t, done: false })),
-  };
+  return { essentials: [], niceToHave: [] };
 }
 
 function CountUp({ to, suffix = '' }) {
@@ -381,30 +378,53 @@ export default function ChecklistPage() {
 
       {activeTab === 'my-checklist' && (
         <>
-          {/* Overall progress bar */}
-          <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={labelStyle}>Overall completion</span>
-              <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
-                {totalDone} of {allItems.length} completed
-              </span>
+          {allItems.length === 0 ? (
+            <div style={{ padding: '64px 32px', textAlign: 'center' }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, marginBottom: 8 }}>
+                Your checklist is empty
+              </p>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, maxWidth: 360, margin: '0 auto 24px' }}>
+                Switch to the Planning overview tab to track your key wedding milestones.
+              </p>
+              <button
+                onClick={() => setActiveTab('overview')}
+                style={{
+                  background: '#0A0A0A', color: '#FFFFFF', border: 'none', cursor: 'pointer',
+                  fontSize: 12, fontWeight: 600, fontFamily: PJS,
+                  padding: '10px 24px', borderRadius: 999,
+                }}
+              >
+                View planning overview
+              </button>
             </div>
-            <ProgressBar value={overallProgress} />
-          </div>
+          ) : (
+            <>
+              {/* Overall progress bar */}
+              <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={labelStyle}>Overall completion</span>
+                  <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
+                    {totalDone} of {allItems.length} completed
+                  </span>
+                </div>
+                <ProgressBar value={overallProgress} />
+              </div>
 
-          {/* Two-column checklist */}
-          <div style={{ padding: '32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
-            <ChecklistSection
-              title="Essentials"
-              items={lists.essentials}
-              onToggle={toggleEssential}
-            />
-            <ChecklistSection
-              title="Nice to have"
-              items={lists.niceToHave}
-              onToggle={toggleNice}
-            />
-          </div>
+              {/* Two-column checklist */}
+              <div style={{ padding: '32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
+                <ChecklistSection
+                  title="Essentials"
+                  items={lists.essentials}
+                  onToggle={toggleEssential}
+                />
+                <ChecklistSection
+                  title="Nice to have"
+                  items={lists.niceToHave}
+                  onToggle={toggleNice}
+                />
+              </div>
+            </>
+          )}
         </>
       )}
 
