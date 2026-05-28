@@ -32,6 +32,7 @@ import Universes from './pages/Universes';
 import Onboarding from './pages/Onboarding';
 import LoginScreen from './components/auth/LoginScreen';
 import MultiPageWeddingWebsite from './components/guest-website/MultiPageWeddingWebsite';
+import RSVPPage from './components/rsvp/RSVPPage';
 import UniverseStudio from './pages/UniverseStudio';
 import StudioHub from './pages/StudioHub';
 import StudioWebsite from './pages/StudioWebsite';
@@ -98,7 +99,7 @@ const PUBLIC_PATH_SET = new Set([
   '/refund-policy',
 ]);
 const isPublicPath = (pathname) =>
-  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/');
+  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/');
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -163,6 +164,7 @@ const AuthenticatedApp = () => {
         <Route path="/w/:weddingSlug/experience" element={<ExperienceGuide />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
         <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
+        <Route path="/rsvp/:token" element={<RSVPPage />} />
       </Routes>
     );
   }

@@ -10,6 +10,7 @@ import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
 import ImportGuestModal from "../components/guests/ImportGuestModal";
 import BulkAddGuestModal from "../components/guests/BulkAddGuestModal";
+import SendInvitesModal from "../components/guests/SendInvitesModal";
 import RSVPManagement from "../components/guests/RSVPManagement";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
@@ -71,6 +72,7 @@ export default function Guests() {
   const [avaOpen, setAvaOpen] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
+  const [showSendInvites, setShowSendInvites] = useState(false);
 
   useEffect(() => { loadGuests(); }, []);
 
@@ -204,6 +206,9 @@ export default function Guests() {
           <button onClick={() => setShowBulkAdd(true)} className="btn-editorial-secondary">
             Bulk add
           </button>
+          <button onClick={() => setShowSendInvites(true)} className="btn-editorial-secondary">
+            Send invites
+          </button>
           <button onClick={() => { setEditingGuest(null); setShowForm(true); setActiveTab('list'); }} className="btn-primary">
             + Add guest
           </button>
@@ -285,6 +290,14 @@ export default function Guests() {
         <BulkAddGuestModal
           onClose={() => setShowBulkAdd(false)}
           onImported={loadGuests}
+        />
+      )}
+
+      {showSendInvites && (
+        <SendInvitesModal
+          guests={guests}
+          onClose={() => setShowSendInvites(false)}
+          onSent={loadGuests}
         />
       )}
     </div>
