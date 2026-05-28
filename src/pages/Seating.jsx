@@ -44,7 +44,7 @@ function Pill({ label, active, onClick }) {
     <button onClick={onClick}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
-        fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, padding: '6px 12px', borderRadius: 999,
+        fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
         border: active ? '1px solid #0A0A0A' : '1px solid rgba(10,10,10,0.15)',
         background: active ? '#0A0A0A' : hov ? 'rgba(10,10,10,0.04)' : 'transparent',
         color: active ? '#FFFFFF' : '#444444', cursor: 'pointer', transition: 'all 0.13s', whiteSpace: 'nowrap',
@@ -391,8 +391,10 @@ export default function SeatingPage() {
             </button>
             <button
               onClick={() => setZoom(1)}
+              style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'transparent', border: 'none', cursor: 'pointer', padding: '0 4px', color: '#444444' }}
             >
-              <RotateCcw size={10} />Reset
+              <RotateCcw size={10} />
+              <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Reset</span>
             </button>
           </div>
 
