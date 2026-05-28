@@ -12,7 +12,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
   const [formData, setFormData] = useState(guest || {
     name: "", email: "", phone: "", category: "family",
     tags: [], table_assignment: "", dietary_restrictions: "",
-    rsvp_status: "pending", plus_one: false, plus_one_name: "", notes: "",
+    rsvp_status: "pending", plus_one: false, plus_one_name: "", plus_one_dietary: "", notes: "",
   });
   const [tagInput, setTagInput] = useState("");
 
@@ -168,10 +168,16 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
           </div>
 
           {formData.plus_one && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <Label htmlFor="plus_one_name">Plus one name</Label>
-              <Input id="plus_one_name" value={formData.plus_one_name} onChange={e => set('plus_one_name', e.target.value)} placeholder="Plus one's name" />
-            </div>
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Label htmlFor="plus_one_name">Plus one name</Label>
+                <Input id="plus_one_name" value={formData.plus_one_name} onChange={e => set('plus_one_name', e.target.value)} placeholder="Plus one's name" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Label htmlFor="plus_one_dietary">Plus one dietary restrictions</Label>
+                <Input id="plus_one_dietary" value={formData.plus_one_dietary} onChange={e => set('plus_one_dietary', e.target.value)} placeholder="Any dietary requirements for plus one" />
+              </div>
+            </>
           )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
