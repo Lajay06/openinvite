@@ -22,7 +22,7 @@ const NAV_SECTIONS = [
       { icon: Sparkles,        label: "Daily update", url: createPageUrl("DailyUpdate") },
       { icon: LayoutDashboard, label: "Overall",      url: createPageUrl("Dashboard") },
       { icon: Calendar,        label: "Calendar",    url: createPageUrl("Calendar") },
-      { icon: Mail,            label: "Invites",     url: createPageUrl("Invites"), ultraBadge: true },
+      { icon: Mail,            label: "Invites",     url: createPageUrl("Invites") },
       { icon: CheckSquare,     label: "Checklist",   url: createPageUrl("Checklist") },
       { icon: ListTodo,        label: "To do list",      url: createPageUrl("TodoList") },
     ],

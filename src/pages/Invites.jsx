@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Crown, Mail, Copy, RefreshCw, Check, Loader2, Send } from 'lucide-react';
+import { Mail, Copy, RefreshCw, Check, Loader2, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import SendInvitesModal from '@/components/guests/SendInvitesModal';
@@ -52,84 +52,6 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// ── Ultra gate ────────────────────────────────────────────────────────────────
-function UltraGate() {
-  const navigate = useNavigate();
-  return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF', position: 'relative', overflow: 'hidden' }}>
-      <DashboardPageHeader title="Invites" subtitle="Send and manage your wedding invitations" />
-
-      {/* Blurred demo background */}
-      <div style={{ filter: 'blur(5px)', opacity: 0.3, pointerEvents: 'none', userSelect: 'none', padding: '0 32px' }}>
-        {/* Fake stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', borderBottom: '1px solid rgba(10,10,10,0.08)', borderTop: '1px solid rgba(10,10,10,0.08)', marginTop: 0 }}>
-          {['Total invited', 'RSVPd yes', 'RSVPd no', 'Awaiting'].map((l, i) => (
-            <div key={i} style={{ padding: '20px 24px', borderRight: i < 3 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
-              <div style={{ width: 40, height: 32, background: 'rgba(10,10,10,0.08)', borderRadius: 4, marginBottom: 8 }} />
-              <div style={{ width: 60, height: 10, background: 'rgba(10,10,10,0.08)', borderRadius: 2 }} />
-            </div>
-          ))}
-        </div>
-        {/* Fake table */}
-        <div style={{ marginTop: 24 }}>
-          {[1,2,3,4,5].map(i => (
-            <div key={i} style={{ display: 'flex', gap: 16, padding: '12px 0', borderBottom: '1px solid rgba(10,10,10,0.06)', alignItems: 'center' }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(10,10,10,0.08)', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}><div style={{ width: `${60 + i * 15}px`, height: 12, background: 'rgba(10,10,10,0.08)', borderRadius: 2 }} /></div>
-              <div style={{ width: 50, height: 20, background: 'rgba(10,10,10,0.06)', borderRadius: 999 }} />
-              <div style={{ width: 70, height: 12, background: 'rgba(10,10,10,0.06)', borderRadius: 2 }} />
-              <div style={{ width: 60, height: 20, background: 'rgba(10,10,10,0.06)', borderRadius: 999 }} />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Upgrade overlay */}
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
-        <div style={{
-          background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.1)',
-          padding: '48px 40px', maxWidth: 460, width: '100%', textAlign: 'center',
-          boxShadow: '0 20px 60px rgba(10,10,10,0.12)',
-        }}>
-          {/* Crown icon with gold gradient bg */}
-          <div style={{
-            width: 60, height: 60, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #FBBF24, #F59E0B)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 20px',
-          }}>
-            <Crown size={28} color="#FFFFFF" strokeWidth={1.8} />
-          </div>
-
-          <p style={{ fontSize: 11, fontWeight: 800, color: '#F59E0B', letterSpacing: '0.12em', margin: '0 0 10px', ...F }}>ULTRA FEATURE</p>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', margin: '0 0 12px', letterSpacing: '-0.02em', lineHeight: 1.2, ...F }}>
-            Invites is an Ultra feature
-          </h2>
-          <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.55)', lineHeight: 1.7, margin: '0 0 32px', ...F }}>
-            Send beautiful personalised invitations via email and WhatsApp, track opens, and manage RSVPs — all in one place.
-          </p>
-
-          <button
-            onClick={() => navigate('/account')}
-            style={{
-              width: '100%', padding: '14px 24px', border: 'none', borderRadius: 999,
-              background: 'linear-gradient(135deg, #FBBF24, #F59E0B)',
-              color: '#FFFFFF', fontSize: 15, fontWeight: 800, cursor: 'pointer', ...F,
-              letterSpacing: '0.01em', marginBottom: 16,
-            }}
-          >
-            Upgrade to Ultra
-          </button>
-
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', margin: 0, ...F }}>
-            Already on Ultra? Make sure you're signed in with the right account.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Main Invites page ─────────────────────────────────────────────────────────
 const FILTER_TABS = [
   { val: 'all',          label: 'All' },
@@ -140,9 +62,10 @@ const FILTER_TABS = [
 ];
 
 export default function Invites() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const plan = user?.plan || 'free';
-  const canAccess = plan === 'ultra' || plan === 'free';
+  const isPro = plan === 'pro';
 
   const [guests, setGuests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -153,9 +76,8 @@ export default function Invites() {
   const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
-    if (!canAccess) return;
     loadGuests();
-  }, [isUltra]);
+  }, []);
 
   const loadGuests = async () => {
     try {
@@ -201,8 +123,6 @@ export default function Invites() {
     setShowDrawer(true);
   };
 
-  if (!canAccess) return <UltraGate />;
-
   const statLabelStyle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: 0, marginBottom: 8, ...F };
   const statValueStyle = { fontSize: 'clamp(22px,2.5vw,32px)', fontWeight: 700, color: '#0A0A0A', lineHeight: 1, margin: 0, ...F };
 
@@ -213,6 +133,8 @@ export default function Invites() {
     { label: 'Awaiting reply',  value: stats.awaiting },
   ];
 
+  const upgradeTooltip = 'Upgrade to Ultra to send invitations';
+
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader
@@ -220,17 +142,55 @@ export default function Invites() {
         subtitle="Send and manage your wedding invitations"
         actions={
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => openSend('pending', true)} className="btn-editorial-secondary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <RefreshCw size={13} />
-              Send reminders
-            </button>
-            <button onClick={() => openSend('not_invited', false)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Send size={13} />
-              Send invitations
-            </button>
+            <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>
+              <button
+                onClick={isPro ? undefined : () => openSend('pending', true)}
+                disabled={isPro}
+                className="btn-editorial-secondary"
+                style={{ display: 'flex', alignItems: 'center', gap: 6, ...(isPro ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
+              >
+                <RefreshCw size={13} />
+                Send reminders
+              </button>
+            </span>
+            <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>
+              <button
+                onClick={isPro ? undefined : () => openSend('not_invited', false)}
+                disabled={isPro}
+                className="btn-primary"
+                style={{ display: 'flex', alignItems: 'center', gap: 6, ...(isPro ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
+              >
+                <Send size={13} />
+                Send invitations
+              </button>
+            </span>
           </div>
         }
       />
+
+      {/* Pro upgrade banner */}
+      {isPro && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+          background: '#FFFBEB', borderBottom: '1px solid rgba(245,158,11,0.25)',
+          padding: '10px 32px',
+        }}>
+          <p style={{ fontSize: 13, color: '#92400E', margin: 0, lineHeight: 1.5, ...F }}>
+            ✨ Invites is an Ultra feature — upgrade to send beautiful digital invitations via email and WhatsApp
+          </p>
+          <button
+            onClick={() => navigate('/account')}
+            style={{
+              fontSize: 12, fontWeight: 700, color: '#FFFFFF', flexShrink: 0,
+              background: 'linear-gradient(135deg, #FBBF24, #F59E0B)',
+              border: 'none', borderRadius: 999, padding: '6px 16px',
+              cursor: 'pointer', ...F,
+            }}
+          >
+            Upgrade
+          </button>
+        </div>
+      )}
 
       {/* Stats bar */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -249,7 +209,7 @@ export default function Invites() {
       <div style={{ padding: '24px 32px 48px' }}>
 
         {/* Filter tabs */}
-        <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 20 }}>
+        <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 20, opacity: isPro ? 0.4 : 1, pointerEvents: isPro ? 'none' : undefined }}>
           {FILTER_TABS.map(tab => (
             <button
               key={tab.val}
@@ -331,12 +291,9 @@ export default function Invites() {
                 <ChannelBadge channel={g.invite_channel} />
 
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: 4 }}>
+                <div style={{ display: 'flex', gap: 4, opacity: isPro ? 0.3 : 1, pointerEvents: isPro ? 'none' : undefined }}>
                   <button
-                    onClick={() => {
-                      // Open drawer with this guest's filter implied
-                      openSend('all', !!g.invite_sent_at);
-                    }}
+                    onClick={() => openSend('all', !!g.invite_sent_at)}
                     title={g.invite_sent_at ? 'Resend' : 'Send invite'}
                     style={{ padding: '5px 7px', background: 'none', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                   >
