@@ -316,20 +316,18 @@ export default function CalendarPage() {
         )}
 
         {/* Calendar Navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, paddingBottom: 16, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '16px 0', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
           <button
             onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-            className="btn-editorial-secondary"
-            style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            style={{ width: 32, height: 32, padding: 0, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999, background: 'rgba(10,10,10,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <ChevronLeft size={16} />
           </button>
-          <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", minWidth: 220, textAlign: 'center' }}>
+          <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", minWidth: 220, textAlign: 'center', lineHeight: 1 }}>
             {MONTH_NAMES[currentMonth.getMonth()]} {currentMonth.getFullYear()}
           </span>
           <button
             onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-            className="btn-editorial-secondary"
-            style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            style={{ width: 32, height: 32, padding: 0, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999, background: 'rgba(10,10,10,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <ChevronRight size={16} />
           </button>
         </div>
