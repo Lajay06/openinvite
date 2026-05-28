@@ -546,6 +546,11 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     background: rgba(10,10,10,0.04);
   }
 
+  /* Radix UI tab triggers — inactive state */
+  [role="tab"][data-state="inactive"] {
+    color: #444444;
+  }
+
   /* Tab bar — inline underline tabs */
   .ds-tab {
     padding: 10px 0;

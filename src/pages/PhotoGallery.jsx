@@ -353,7 +353,7 @@ export default function PhotoGalleryPage() {
               <TabsTrigger 
                 key={cat.value}
                 value={cat.value} 
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-gray-900 rounded-none pb-2 px-3 text-sm whitespace-nowrap"
+                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#E03553] data-[state=active]:text-[#E03553] rounded-none pb-2 px-3 whitespace-nowrap"
               >
                 {cat.label} {cat.value !== 'all' && `(${stats.byCategory[cat.value] || 0})`}
               </TabsTrigger>

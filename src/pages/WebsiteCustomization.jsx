@@ -199,10 +199,10 @@ export default function WebsiteCustomizationPage() {
 
         <Tabs defaultValue="theme" className="w-full">
           <TabsList className="bg-transparent border-b border-gray-200 h-10 rounded-none px-0 w-full justify-start">
-            <TabsTrigger value="theme" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-gray-900 rounded-none pb-2 px-3 text-sm">
+            <TabsTrigger value="theme" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#E03553] data-[state=active]:text-[#E03553] rounded-none pb-2 px-3">
               Theme & Colors
             </TabsTrigger>
-            <TabsTrigger value="pages" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-gray-900 rounded-none pb-2 px-3 text-sm">
+            <TabsTrigger value="pages" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#E03553] data-[state=active]:text-[#E03553] rounded-none pb-2 px-3">
               Custom Event Pages
             </TabsTrigger>
           </TabsList>
