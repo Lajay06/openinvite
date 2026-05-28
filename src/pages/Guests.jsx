@@ -11,6 +11,7 @@ import GuestList from "../components/guests/GuestList";
 import ImportGuestModal from "../components/guests/ImportGuestModal";
 import BulkAddGuestModal from "../components/guests/BulkAddGuestModal";
 import RSVPManagement from "../components/guests/RSVPManagement";
+import InvitationsTab from "../components/guests/InvitationsTab";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
@@ -217,6 +218,7 @@ export default function Guests() {
           <TabsList className="w-full justify-start">
             <TabsTrigger value="list">Guest list</TabsTrigger>
             <TabsTrigger value="rsvp">RSVP management</TabsTrigger>
+            <TabsTrigger value="invitations">Invitations</TabsTrigger>
             <TabsTrigger value="emails">Email templates</TabsTrigger>
             <TabsTrigger value="considerations">Considerations</TabsTrigger>
           </TabsList>
@@ -254,6 +256,10 @@ export default function Guests() {
 
           <TabsContent value="rsvp" className="mt-8">
             <RSVPManagement guests={guests} />
+          </TabsContent>
+
+          <TabsContent value="invitations" className="mt-8">
+            <InvitationsTab guests={guests} loadGuests={loadGuests} loading={loading} />
           </TabsContent>
 
           <TabsContent value="emails" className="mt-8">
