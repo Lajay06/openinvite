@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
 import ImportGuestModal from "../components/guests/ImportGuestModal";
+import BulkAddGuestModal from "../components/guests/BulkAddGuestModal";
 import RSVPManagement from "../components/guests/RSVPManagement";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
@@ -69,6 +70,7 @@ export default function Guests() {
   const [saving, setSaving] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showBulkAdd, setShowBulkAdd] = useState(false);
 
   useEffect(() => { loadGuests(); }, []);
 
@@ -199,6 +201,9 @@ export default function Guests() {
           >
             Export CSV
           </button>
+          <button onClick={() => setShowBulkAdd(true)} className="btn-editorial-secondary">
+            Bulk add
+          </button>
           <button onClick={() => { setEditingGuest(null); setShowForm(true); setActiveTab('list'); }} className="btn-primary">
             + Add guest
           </button>
@@ -272,6 +277,13 @@ export default function Guests() {
       {showImport && (
         <ImportGuestModal
           onClose={() => setShowImport(false)}
+          onImported={loadGuests}
+        />
+      )}
+
+      {showBulkAdd && (
+        <BulkAddGuestModal
+          onClose={() => setShowBulkAdd(false)}
           onImported={loadGuests}
         />
       )}
