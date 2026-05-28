@@ -29,19 +29,6 @@ const textareaStyle = {
   resize: 'vertical', minHeight: 72,
 };
 
-const DEFAULT_MILESTONES = [
-  { id: 'm1', timeframe: '12 months before', treatment: 'Start consistent skincare routine', notes: '', done: false },
-  { id: 'm2', timeframe: '9 months before', treatment: 'First facial and skin consultation', notes: '', done: false },
-  { id: 'm3', timeframe: '6 months before', treatment: 'Consider treatments (laser, peels)', notes: '', done: false },
-  { id: 'm4', timeframe: '3 months before', treatment: 'Final skin treatments (nothing new)', notes: '', done: false },
-  { id: 'm5', timeframe: '6 weeks before', treatment: 'Teeth whitening if desired', notes: '', done: false },
-  { id: 'm6', timeframe: '4 weeks before', treatment: 'Hair treatments and conditioning', notes: '', done: false },
-  { id: 'm7', timeframe: '2 weeks before', treatment: 'Eyebrow shaping and tinting', notes: '', done: false },
-  { id: 'm8', timeframe: '1 week before', treatment: 'Nails, spray tan trial', notes: '', done: false },
-  { id: 'm9', timeframe: '3 days before', treatment: 'Final spray tan', notes: '', done: false },
-  { id: 'm10', timeframe: 'Night before', treatment: 'Gentle face mask, early night', notes: '', done: false },
-  { id: 'm11', timeframe: 'Morning of', treatment: 'Gentle cleanse, moisturise, SPF', notes: '', done: false },
-];
 
 function CountUp({ to, duration = 1200, format }) {
   const [value, setValue] = useState(0);
@@ -117,9 +104,7 @@ export default function BeautyPage() {
       ]);
       const r = rows[0] || {};
       const bd = r.beauty || {};
-      if (!bd.skincareTimeline || bd.skincareTimeline.length === 0) {
-        bd.skincareTimeline = DEFAULT_MILESTONES;
-      }
+      if (!bd.skincareTimeline) bd.skincareTimeline = [];
       if (!bd.gettingReadyPeople) bd.gettingReadyPeople = [];
       if (!bd.trials) bd.trials = [];
       setBeautyData(bd);
@@ -191,7 +176,7 @@ export default function BeautyPage() {
     persist(next);
   };
 
-  const skincareTimeline = beautyData.skincareTimeline || DEFAULT_MILESTONES;
+  const skincareTimeline = beautyData.skincareTimeline || [];
 
   const updateMilestone = (id, field, val) => {
     const next = { ...beautyData, skincareTimeline: skincareTimeline.map(m => m.id === id ? { ...m, [field]: val } : m) };
@@ -487,12 +472,21 @@ export default function BeautyPage() {
               </button>
             </div>
 
+            {skincareTimeline.length === 0 && (
+              <div style={{ padding: '48px 0', textAlign: 'center' }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>No milestones yet</p>
+                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add your first milestone above to start planning your skincare countdown.</p>
+              </div>
+            )}
+
             {/* Header */}
-            <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 60px', gap: 16, padding: '0 0 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 4 }}>
-              {['Timeframe', 'Treatment', 'Notes', 'Done'].map(h => (
-                <span key={h} style={labelStyle}>{h}</span>
-              ))}
-            </div>
+            {skincareTimeline.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 60px', gap: 16, padding: '0 0 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 4 }}>
+                {['Timeframe', 'Treatment', 'Notes', 'Done'].map(h => (
+                  <span key={h} style={labelStyle}>{h}</span>
+                ))}
+              </div>
+            )}
 
             {skincareTimeline.map(m => (
               <div key={m.id} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 60px', gap: 16, alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(10,10,10,0.05)' }}>

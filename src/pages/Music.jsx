@@ -23,13 +23,6 @@ const labelStyle = {
   margin: 0, marginBottom: 10,
 };
 
-const DEFAULT_PLAYLISTS = [
-  { id: 'ceremony',   name: 'Ceremony',      trackCount: 0, enabled: true },
-  { id: 'cocktail',   name: 'Cocktail hour',  trackCount: 0, enabled: true },
-  { id: 'reception',  name: 'Reception',      trackCount: 0, enabled: true },
-  { id: 'dance',      name: 'Dance floor',    trackCount: 0, enabled: true },
-  { id: 'requests',   name: 'Guest requests', trackCount: 0, enabled: true },
-];
 
 function CountUp({ to, duration = 1200, suffix = '' }) {
   const [value, setValue] = useState(0);
@@ -98,9 +91,6 @@ export default function MusicPage() {
   });
 
   useEffect(() => {
-    if (!details?.music?.playlists || details.music.playlists.length === 0) {
-      updateMutation.mutate({ music: { ...details?.music, playlists: DEFAULT_PLAYLISTS } });
-    }
     if (!activePlaylist && details?.music?.playlists?.length) {
       setActivePlaylist(details.music.playlists[0]);
     }
@@ -139,7 +129,7 @@ export default function MusicPage() {
   const handleAddPlaylist = () => {
     const name = newPlaylistName.trim();
     if (!name) return;
-    const current = details?.music?.playlists || DEFAULT_PLAYLISTS;
+    const current = details?.music?.playlists || [];
     const newPl = { id: `custom-${Date.now()}`, name, trackCount: 0, enabled: true };
     updateMutation.mutate({ music: { ...(details?.music || {}), playlists: [...current, newPl] } });
     setNewPlaylistName('');
@@ -198,6 +188,13 @@ export default function MusicPage() {
             <span style={labelStyle}>Your playlists</span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
+            {playlists.length === 0 && (
+              <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+                  No playlists yet. Create your first one below.
+                </p>
+              </div>
+            )}
             {playlists.map(pl => (
               <div key={pl.id} onClick={() => setActivePlaylist(pl)}
                 style={{ padding: '11px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, borderLeft: `3px solid ${activePlaylist?.id === pl.id ? '#E03553' : 'transparent'}`, background: activePlaylist?.id === pl.id ? 'rgba(224,53,83,0.05)' : 'transparent' }}>
