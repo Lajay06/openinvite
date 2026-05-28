@@ -136,29 +136,6 @@ export default function StudioHub() {
             })}
           </div>
 
-          {/* Coming soon cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 48 }}>
-            {[
-              { icon: Camera, title: 'Photo Gallery', desc: 'Manage and curate your wedding photos.' },
-            ].map((card, i) => {
-              const Icon = card.icon;
-              return (
-                <div key={i} style={{ height: 100, display: 'flex', alignItems: 'center', padding: '0 24px', border: '1px solid #EEEEEE', background: '#FAFAFA', cursor: 'default', gap: 16 }}>
-                  <div style={{ width: 44, height: 44, background: '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: 8 }}>
-                    <Icon size={24} color="#888888" strokeWidth={1.5} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 3px' }}>{card.title}</p>
-                    <p style={{ fontSize: 13, color: '#888888', margin: 0 }}>{card.desc}</p>
-                  </div>
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', padding: '3px 8px', color: '#FFFFFF', background: '#AAAAAA', textTransform: 'uppercase', borderRadius: 4 }}>
-                    COMING SOON
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
           {/* Stats row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderTop: '1px solid #EEEEEE', borderLeft: '1px solid #EEEEEE' }}>
             {[
