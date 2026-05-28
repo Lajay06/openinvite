@@ -164,7 +164,8 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
         {Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => (
           <span key={key} style={{
             display: 'inline-flex', alignItems: 'center', gap: 5,
-            padding: '3px 9px', borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 12, fontWeight: 600,
+            padding: '4px 10px', borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif",
             background: cfg.bg, color: cfg.text,
           }}>
             {cfg.label}
