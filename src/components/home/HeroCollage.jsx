@@ -1,10 +1,7 @@
 /**
- * HeroCollage — full-bleed single photo hero.
- * Static two-line headline, centred, no rotating words.
+ * HeroCollage — full-bleed single photo hero, fully static.
  */
-import React, { useEffect, useState, useRef } from "react";
-import { useScrollEngine } from "@/hooks/useScrollEngine";
-import ApplePillButton from "@/components/motion/ApplePillButton";
+import React, { useEffect, useState } from "react";
 import ScrollCue from "@/components/motion/ScrollCue";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -22,23 +19,12 @@ const HEADLINE_STYLE = {
 
 export default function HeroCollage({ onCTA }) {
   const [visible, setVisible] = useState(prefersReducedMotion());
-  const contentRef = useRef(null);
 
   useEffect(() => {
     if (prefersReducedMotion()) return;
     const t = setTimeout(() => setVisible(true), 200);
     return () => clearTimeout(t);
   }, []);
-
-  useScrollEngine((scrollY) => {
-    if (!contentRef.current) return;
-    const vh = window.innerHeight;
-    const progress = scrollY / vh;
-    const translateY = progress * -100;
-    const opacity = 1 - progress * 2;
-    contentRef.current.style.transform = `translateX(-50%) translateY(calc(-50% + ${translateY}px))`;
-    contentRef.current.style.opacity = String(Math.max(0, opacity));
-  });
 
   return (
     <section
@@ -52,13 +38,10 @@ export default function HeroCollage({ onCTA }) {
         backgroundImage: `url(https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg)`,
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundAttachment: "fixed",
+        backgroundAttachment: "scroll",
         backgroundColor: "#1a0008",
       }}
     >
-      {/* Aurora layer */}
-      <div className="aurora-layer" />
-
       {/* Dark overlay */}
       <div
         style={{
@@ -72,7 +55,6 @@ export default function HeroCollage({ onCTA }) {
 
       {/* Centred text content */}
       <div
-        ref={contentRef}
         style={{
           position: "absolute",
           zIndex: 10,
@@ -83,7 +65,6 @@ export default function HeroCollage({ onCTA }) {
           width: "100%",
           maxWidth: 900,
           padding: "0 24px",
-          willChange: "transform, opacity",
           opacity: visible ? 1 : 0,
           filter: visible ? "blur(0px)" : "blur(8px)",
           transition: `opacity 0.9s ${EASE}, filter 0.9s ${EASE}`,
