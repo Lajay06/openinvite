@@ -3,14 +3,13 @@ import { base44 } from "@/api/base44Client";
 const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search } from "lucide-react";
+import { Search, Mail } from "lucide-react";
 import toast from 'react-hot-toast';
 
 import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
 import ImportGuestModal from "../components/guests/ImportGuestModal";
 import BulkAddGuestModal from "../components/guests/BulkAddGuestModal";
-import RSVPManagement from "../components/guests/RSVPManagement";
 import InvitationsTab from "../components/guests/InvitationsTab";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
@@ -217,8 +216,18 @@ export default function Guests() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full justify-start">
             <TabsTrigger value="list">Guest list</TabsTrigger>
-            <TabsTrigger value="rsvp">RSVP management</TabsTrigger>
-            <TabsTrigger value="invitations">Invitations</TabsTrigger>
+            <TabsTrigger value="invitations">
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                background: 'rgba(224,53,83,0.1)', color: '#E03553',
+                padding: '2px 8px', borderRadius: 999,
+                fontSize: 12, fontWeight: 700,
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}>
+                <Mail size={11} strokeWidth={2} />
+                Invitations
+              </span>
+            </TabsTrigger>
             <TabsTrigger value="emails">Email templates</TabsTrigger>
             <TabsTrigger value="considerations">Considerations</TabsTrigger>
           </TabsList>
@@ -252,10 +261,6 @@ export default function Guests() {
             )}
 
             <GuestList guests={filteredGuests} onEdit={handleEdit} onDelete={handleDelete} loading={loading} />
-          </TabsContent>
-
-          <TabsContent value="rsvp" className="mt-8">
-            <RSVPManagement guests={guests} />
           </TabsContent>
 
           <TabsContent value="invitations" className="mt-8">
