@@ -1045,10 +1045,10 @@ body {
 }
 /* ── Filter pill — standard filter/tab pill ─────────────────── */
 .filter-pill {
-  font-size: 12px;
-  padding: 4px 12px;
+  font-size: 11px;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-weight: 500;
+  font-weight: 600;
   border: 1px solid rgba(10,10,10,0.15);
   background: transparent;
   color: rgba(10,10,10,0.6);

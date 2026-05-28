@@ -44,7 +44,7 @@ function FilterPill({ active, onClick, children }) {
       border: active ? '1.5px solid #0A0A0A' : '1px solid rgba(10,10,10,0.15)',
       background: active ? '#0A0A0A' : 'transparent',
       color: active ? '#FFFFFF' : '#444444',
-      borderRadius: 999, padding: '5px 14px', fontSize: 12, fontWeight: 600,
+      borderRadius: 999, padding: '3px 8px', fontSize: 11, fontWeight: 600,
       fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer',
     }}>
       {children}
