@@ -7,7 +7,9 @@
  *   {
  *     type: 'invite' | 'reminder',
  *     guests: [{ email: string, name: string, rsvpUrl: string }],
- *     wedding: { coupleName: string, weddingDate: string, venue: string }
+ *     wedding: { coupleName: string, weddingDate: string, venue: string },
+ *     customSubject?: string,   // merge tags: [Guest name], [Wedding date], [Couple names]
+ *     customBody?: string,      // merge tags: [Guest name], [Wedding date], [Couple names], [RSVP link]
  *   }
  */
 
@@ -25,6 +27,15 @@ import { weddingReminderEmail } from './emails/wedding-reminder.js';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = 'Openinvite <hello@openinvite.com.au>';
 
+function replaceMergeTags(str, guestName, coupleName, dateStr, rsvpUrl) {
+  const firstName = guestName ? guestName.split(' ')[0] : 'Guest';
+  return str
+    .replace(/\[Guest name\]/gi, firstName)
+    .replace(/\[Wedding date\]/gi, dateStr || '')
+    .replace(/\[Couple names\]/gi, coupleName || '')
+    .replace(/\[RSVP link\]/gi, rsvpUrl || '');
+}
+
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
 
@@ -41,7 +52,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { type = 'invite', guests = [], wedding = {} } = req.body || {};
+    const { type = 'invite', guests = [], wedding = {}, customSubject, customBody } = req.body || {};
 
     if (!Array.isArray(guests) || guests.length === 0) {
       return res.status(400).json({ error: 'guests array is required and must not be empty' });
@@ -53,11 +64,11 @@ export default async function handler(req, res) {
     const coupleName = sanitizeString(wedding.coupleName) || '';
     const weddingDate = sanitizeString(wedding.weddingDate) || '';
     const venue = sanitizeString(wedding.venue) || '';
-
     const isReminder = type === 'reminder';
-    const subject = isReminder
-      ? `Reminder: RSVP to ${coupleName || 'the wedding'}`
-      : `You're invited — ${coupleName || 'a wedding'}`;
+
+    const dateStr = weddingDate
+      ? new Date(weddingDate).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+      : '';
 
     const validGuests = guests.filter(g => g.email && isValidEmail(g.email) && g.rsvpUrl);
 
@@ -65,12 +76,25 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No guests with valid email addresses and RSVP links' });
     }
 
+    const defaultSubject = isReminder
+      ? `Reminder: RSVP to ${coupleName || 'the wedding'}`
+      : `You're invited — ${coupleName || 'a wedding'}`;
+
     const batch = validGuests.map(g => {
       const guestName = sanitizeString(g.name) || '';
       const rsvpUrl = g.rsvpUrl;
+
+      const subject = customSubject
+        ? replaceMergeTags(sanitizeString(customSubject), guestName, coupleName, dateStr, rsvpUrl)
+        : defaultSubject;
+
+      const processedBody = customBody
+        ? replaceMergeTags(sanitizeString(customBody), guestName, coupleName, dateStr, rsvpUrl)
+        : null;
+
       const html = isReminder
-        ? weddingReminderEmail({ guestName, coupleName, weddingDate, rsvpUrl })
-        : weddingInviteEmail({ guestName, coupleName, weddingDate, venue, rsvpUrl });
+        ? weddingReminderEmail({ guestName, coupleName, weddingDate, rsvpUrl, customBody: processedBody })
+        : weddingInviteEmail({ guestName, coupleName, weddingDate, venue, rsvpUrl, customBody: processedBody });
 
       return { from: FROM, to: g.email, subject, html };
     });

@@ -1,12 +1,16 @@
 /**
  * Wedding invitation email template.
- * @param {{ guestName: string, coupleName: string, weddingDate: string, venue: string, rsvpUrl: string }} opts
+ * @param {{ guestName: string, coupleName: string, weddingDate: string, venue: string, rsvpUrl: string, customBody?: string }} opts
  */
-export function weddingInviteEmail({ guestName, coupleName, weddingDate, venue, rsvpUrl }) {
+export function weddingInviteEmail({ guestName, coupleName, weddingDate, venue, rsvpUrl, customBody }) {
   const firstName = guestName ? guestName.split(' ')[0] : 'there';
   const dateStr = weddingDate
     ? new Date(weddingDate).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     : '';
+
+  const bodyHtml = customBody
+    ? customBody.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br />')
+    : `Dear ${firstName},<br /><br />We would love to have you join us to celebrate our wedding. Please let us know if you'll be able to make it.`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -38,11 +42,8 @@ export function weddingInviteEmail({ guestName, coupleName, weddingDate, venue, 
               ${dateStr ? `<p style="margin:0 0 4px;font-size:15px;color:rgba(10,10,10,0.55);">${dateStr}</p>` : ''}
               ${venue ? `<p style="margin:0 0 28px;font-size:15px;color:rgba(10,10,10,0.55);">${venue}</p>` : '<div style="margin-bottom:28px;"></div>'}
 
-              <p style="margin:0 0 12px;font-size:15px;line-height:1.7;color:rgba(10,10,10,0.75);">
-                Dear ${firstName},
-              </p>
               <p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:rgba(10,10,10,0.65);">
-                We would love to have you join us to celebrate our wedding. Please let us know if you'll be able to make it.
+                ${bodyHtml}
               </p>
 
               <!-- CTA -->

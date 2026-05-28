@@ -1,12 +1,16 @@
 /**
  * RSVP reminder email template.
- * @param {{ guestName: string, coupleName: string, weddingDate: string, rsvpUrl: string }} opts
+ * @param {{ guestName: string, coupleName: string, weddingDate: string, rsvpUrl: string, customBody?: string }} opts
  */
-export function weddingReminderEmail({ guestName, coupleName, weddingDate, rsvpUrl }) {
+export function weddingReminderEmail({ guestName, coupleName, weddingDate, rsvpUrl, customBody }) {
   const firstName = guestName ? guestName.split(' ')[0] : 'there';
   const dateStr = weddingDate
     ? new Date(weddingDate).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     : '';
+
+  const bodyHtml = customBody
+    ? customBody.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br />')
+    : `Hi ${firstName},<br /><br />Just a friendly nudge — ${coupleName || 'the couple'} would love to hear from you. ${dateStr ? `The wedding is on ${dateStr}` : 'The big day is coming up'} and they're finalising numbers.<br /><br />It only takes a minute to RSVP.`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -36,14 +40,8 @@ export function weddingReminderEmail({ guestName, coupleName, weddingDate, rsvpU
                 Have you got a moment to RSVP?
               </h1>
 
-              <p style="margin:0 0 12px;font-size:15px;line-height:1.7;color:rgba(10,10,10,0.75);">
-                Hi ${firstName},
-              </p>
-              <p style="margin:0 0 8px;font-size:15px;line-height:1.7;color:rgba(10,10,10,0.65);">
-                Just a friendly nudge — ${coupleName || 'the couple'} would love to hear from you. ${dateStr ? `The wedding is on ${dateStr}` : 'The big day is coming up'} and they're finalising numbers.
-              </p>
               <p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:rgba(10,10,10,0.65);">
-                It only takes a minute to RSVP.
+                ${bodyHtml}
               </p>
 
               <!-- CTA -->
