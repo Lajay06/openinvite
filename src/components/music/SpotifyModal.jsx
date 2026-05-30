@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Search, Loader2, Plus, Music2 } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -21,14 +21,16 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [addedIds, setAddedIds] = useState(new Set());
+  const debounceRef = useRef(null);
 
-  const search = async () => {
-    if (!query.trim()) return;
+  const search = async (q) => {
+    const sq = (q ?? query).trim();
+    if (!sq) return;
     setLoading(true);
     setResults([]);
     setError('');
     try {
-      const body = { q: query.trim() };
+      const body = { q: sq };
       if (spotifyConnection?.accessToken) {
         body.accessToken  = spotifyConnection.accessToken;
         body.refreshToken = spotifyConnection.refreshToken;
@@ -68,13 +70,25 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
     setLoading(false);
   };
 
+  const handleQueryChange = (e) => {
+    const val = e.target.value;
+    setQuery(val);
+    clearTimeout(debounceRef.current);
+    if (val.trim().length >= 2) {
+      debounceRef.current = setTimeout(() => search(val), 300);
+    } else {
+      setResults([]);
+      setError('');
+    }
+  };
+
   const handleAdd = (track) => {
     onAdd({
       song_title:  track.name,
       artist:      track.artists,
       album:       track.album,
       duration:    fmt(track.duration_ms),
-      image_url:   track.artwork_url,
+      image_url:   track.artwork_url_small || track.artwork_url || '',
       preview_url: track.preview_url || '',
       category:    playlistId || 'general',
       approved:    true,
@@ -113,18 +127,21 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
         <div style={{ padding: '16px 24px', flexShrink: 0, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
           <div style={{ display: 'flex', gap: 8 }}>
             <div style={{ position: 'relative', flex: 1 }}>
-              <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+              {loading
+                ? <Loader2 size={13} className="animate-spin" style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                : <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+              }
               <input
                 autoFocus
                 placeholder="Search by song title or artist…"
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={handleQueryChange}
                 onKeyDown={e => e.key === 'Enter' && search()}
                 style={{ width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', background: 'none', paddingLeft: 20, paddingBottom: 8, fontSize: 14, fontFamily: PJS, outline: 'none', color: '#0A0A0A', boxSizing: 'border-box' }}
               />
             </div>
-            <button onClick={search} disabled={loading || !query.trim()} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, opacity: !query.trim() ? 0.5 : 1 }}>
-              {loading ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+            <button onClick={() => search()} disabled={loading || !query.trim()} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, opacity: !query.trim() ? 0.5 : 1 }}>
+              <Search size={12} />
               Search
             </button>
           </div>

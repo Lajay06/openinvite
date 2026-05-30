@@ -71,6 +71,8 @@ export default function MusicPage() {
   const [addingPlaylist, setAddingPlaylist] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [pendingSpotifyData, setPendingSpotifyData] = useState(null);
+  const [spotifyDropdownOpen, setSpotifyDropdownOpen] = useState(false);
+  const spotifyPillRef = useRef(null);
 
   const { data: details, isSuccess: detailsLoaded } = useQuery({
     queryKey: ['musicDetails'],
@@ -140,6 +142,17 @@ export default function MusicPage() {
     toast.success(`Spotify connected — ${pendingSpotifyData.name}`);
     setPendingSpotifyData(null);
   }, [pendingSpotifyData, detailsLoaded]);
+
+  useEffect(() => {
+    if (!spotifyDropdownOpen) return;
+    const handler = (e) => {
+      if (spotifyPillRef.current && !spotifyPillRef.current.contains(e.target)) {
+        setSpotifyDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [spotifyDropdownOpen]);
 
   const updateMusic = (field, value) =>
     updateMutation.mutate({ music: { ...(details?.music || {}), [field]: value } });
@@ -328,13 +341,35 @@ export default function MusicPage() {
                 <Plus size={12} />Search & add
               </button>
               {isSpotifyConnected ? (
-                <button
-                  onClick={() => setShowSpotifyModal(true)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(29,185,84,0.08)', border: '1px solid rgba(29,185,84,0.25)', borderRadius: 999, padding: '5px 11px', cursor: 'pointer', fontSize: 12, fontFamily: PJS, fontWeight: 600, color: '#1DB954' }}
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.412.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.33.366.225.48.706.257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.837.327 1.282-.264.444-.838.59-1.284.327z"/></svg>
-                  {spotifyConnection.displayName}
-                </button>
+                <div style={{ position: 'relative' }} ref={spotifyPillRef}>
+                  <button
+                    onClick={() => setSpotifyDropdownOpen(v => !v)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(29,185,84,0.08)', border: '1px solid rgba(29,185,84,0.25)', borderRadius: 999, padding: '5px 11px', cursor: 'pointer', fontSize: 12, fontFamily: PJS, fontWeight: 600, color: '#1DB954' }}
+                  >
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#1DB954', flexShrink: 0 }} />
+                    Connected · {spotifyConnection.displayName}
+                  </button>
+                  {spotifyDropdownOpen && (
+                    <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)', zIndex: 200, minWidth: 160 }}>
+                      <button
+                        onClick={() => setShowSpotifyModal(true)}
+                        style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', cursor: 'pointer' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(10,10,10,0.04)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                      >
+                        Search Spotify
+                      </button>
+                      <button
+                        onClick={() => { setSpotifyDropdownOpen(false); handleDisconnectSpotify(); }}
+                        style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#E03553', cursor: 'pointer' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(224,53,83,0.04)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                      >
+                        Disconnect Spotify
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <button
                   onClick={handleConnectSpotify}

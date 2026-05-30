@@ -120,7 +120,8 @@ export default async function handler(req, res) {
       album:        t.album.name,
       duration_ms:  t.duration_ms,
       preview_url:  t.preview_url || null,
-      artwork_url:  t.album.images?.[1]?.url || t.album.images?.[0]?.url || '',
+      artwork_url:       t.album.images?.[1]?.url || t.album.images?.[0]?.url || '',
+      artwork_url_small: t.album.images?.[2]?.url || t.album.images?.[1]?.url || '',
     }));
 
     const response = { tracks };

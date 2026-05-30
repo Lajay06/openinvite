@@ -23,9 +23,11 @@ export default function SpotifySearch({ onAdd, onClose }) {
   const [error, setError] = useState('');
   const [playingId, setPlayingId] = useState(null);
   const audioRef = useRef(null);
+  const debounceRef = useRef(null);
 
-  const search = async () => {
-    if (!query.trim()) return;
+  const search = async (q) => {
+    const sq = (q ?? query).trim();
+    if (!sq) return;
     setLoading(true);
     setResults([]);
     setError('');
@@ -33,7 +35,7 @@ export default function SpotifySearch({ onAdd, onClose }) {
       const res = await fetch('/api/spotify-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: query.trim() }),
+        body: JSON.stringify({ q: sq }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Search failed');
@@ -42,6 +44,18 @@ export default function SpotifySearch({ onAdd, onClose }) {
       setError(e.message || 'Search failed. Check your connection and try again.');
     }
     setLoading(false);
+  };
+
+  const handleQueryChange = (e) => {
+    const val = e.target.value;
+    setQuery(val);
+    clearTimeout(debounceRef.current);
+    if (val.trim().length >= 2) {
+      debounceRef.current = setTimeout(() => search(val), 300);
+    } else {
+      setResults([]);
+      setError('');
+    }
   };
 
   const handlePlay = (track, index) => {
@@ -65,7 +79,7 @@ export default function SpotifySearch({ onAdd, onClose }) {
       album:            track.album,
       duration:         fmt(track.duration_ms),
       preview_url:      track.preview_url || '',
-      image_url:        track.artwork_url || '',
+      image_url:        track.artwork_url_small || track.artwork_url || '',
       approved:         true,
       guest_suggestion: false,
     });
@@ -88,18 +102,26 @@ export default function SpotifySearch({ onAdd, onClose }) {
         {/* Search bar */}
         <div style={{ display: 'flex', gap: 8 }}>
           <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
+            {loading
+              ? <Loader2 size={14} className="animate-spin" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
+              : <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
+            }
             <input
               autoFocus
               style={{ width: '100%', background: '#111111', border: '1px solid #333333', color: '#FFFFFF', fontSize: 13, fontFamily: PJS, padding: '8px 8px 8px 32px', outline: 'none', boxSizing: 'border-box' }}
               placeholder="Search by song title or artist…"
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={handleQueryChange}
               onKeyDown={e => e.key === 'Enter' && search()}
             />
           </div>
-          <button onClick={search} disabled={loading || !query.trim()} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, opacity: !query.trim() ? 0.5 : 1 }}>
-            {loading ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+          <button
+            onClick={() => search()}
+            disabled={loading || !query.trim()}
+            className="btn-primary"
+            style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, opacity: !query.trim() ? 0.5 : 1 }}
+          >
+            <Search size={12} />
             Search
           </button>
         </div>
@@ -140,7 +162,7 @@ export default function SpotifySearch({ onAdd, onClose }) {
           </div>
         )}
 
-        {!loading && results.length === 0 && query && !error && (
+        {!loading && results.length === 0 && query.trim().length >= 2 && !error && (
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', fontFamily: PJS, textAlign: 'center', padding: '24px 0' }}>No results. Try a different search.</p>
         )}
       </div>
