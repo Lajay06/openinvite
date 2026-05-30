@@ -83,20 +83,34 @@ function GuestChip({ name, onRemove }) {
 }
 
 /* ── Guest search dropdown ── */
-function GuestSearch({ value, guests, onSelect, onClear, placeholder = 'Search guest list or type a name…' }) {
+function GuestSearch({ value, guests, onSelect, onClear, placeholder = 'Type a name or @ to search…' }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
+
+  // Strip leading @ before filtering so "@ava" finds "Ava"
+  const searchTerm = query.startsWith('@') ? query.slice(1) : query;
 
   const filtered = useMemo(() => {
-    const q = query.toLowerCase().trim();
+    const q = searchTerm.toLowerCase().trim();
     if (!q) return guests.slice(0, 7);
     return guests.filter(g => g.name?.toLowerCase().includes(q)).slice(0, 7);
-  }, [query, guests]);
+  }, [searchTerm, guests]);
 
-  const customName = query.trim();
+  const customName = query.startsWith('@') ? null : query.trim(); // no custom when using @ mode
   const showCustom = customName && !filtered.some(
     g => g.name?.toLowerCase() === customName.toLowerCase()
   );
+
+  // When @ is typed, immediately open the guest dropdown
+  const handleChange = (e) => {
+    const val = e.target.value;
+    setQuery(val);
+    setOpen(true);
+  };
+
+  // Show the hint tooltip only when the field is focused and empty (no text, no chip)
+  const showHint = focused && query === '' && !value?.name;
 
   if (value?.name) {
     return <GuestChip name={value.name} onRemove={onClear} />;
@@ -106,13 +120,26 @@ function GuestSearch({ value, guests, onSelect, onClear, placeholder = 'Search g
     <div style={{ position: 'relative', flex: 1 }}>
       <input
         value={query}
-        onChange={e => { setQuery(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 160)}
+        onChange={handleChange}
+        onFocus={() => { setFocused(true); setOpen(true); }}
+        onBlur={() => { setFocused(false); setTimeout(() => setOpen(false), 160); }}
         placeholder={placeholder}
         style={{ ...inputStyle, fontSize: 13 }}
       />
-      {open && (
+      {/* @ hint tooltip */}
+      {showHint && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 4px)', left: 0,
+          background: 'rgba(10,10,10,0.75)', color: '#FFFFFF',
+          fontSize: 11, fontFamily: PJS, fontWeight: 500,
+          padding: '4px 9px', borderRadius: 5,
+          pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: 400,
+          letterSpacing: '0.01em',
+        }}>
+          Type @ to search your guest list
+        </div>
+      )}
+      {open && !showHint && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 3px)', left: 0, right: 0,
           background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)',
@@ -121,7 +148,7 @@ function GuestSearch({ value, guests, onSelect, onClear, placeholder = 'Search g
         }}>
           {filtered.length === 0 && !showCustom && (
             <div style={{ padding: '10px 14px', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
-              {query ? 'No matching guests' : 'Search your guest list or type a name…'}
+              {searchTerm ? 'No matching guests' : 'Start typing a name…'}
             </div>
           )}
           {filtered.map(g => (
