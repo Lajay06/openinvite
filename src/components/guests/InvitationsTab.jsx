@@ -21,9 +21,9 @@ function WhatsAppIcon({ size = 14, color = '#25D366' }) {
 
 // ── Status badges ─────────────────────────────────────────────────────────────
 const BADGE_BASE = {
-  fontSize: 11, fontWeight: 700, borderRadius: 999,
-  padding: '3px 10px', minWidth: 72,
-  display: 'inline-block', textAlign: 'center', ...F,
+  fontSize: 10, fontWeight: 700, borderRadius: 999,
+  padding: '3px 9px', letterSpacing: '0.08em',
+  display: 'inline-block', whiteSpace: 'nowrap', ...F,
 };
 
 function InviteStatusBadge({ guest }) {
@@ -33,10 +33,17 @@ function InviteStatusBadge({ guest }) {
   return <span style={{ ...BADGE_BASE, color: 'rgba(10,10,10,0.4)', background: 'rgba(10,10,10,0.06)' }}>Not sent</span>;
 }
 
+// RSVP pill colours match GuestList exactly
+const RSVP_STYLES = {
+  attending: { background: '#DDF762', color: '#0A1930' },
+  declined:  { background: '#E03553', color: '#FFFFFF' },
+  pending:   { background: 'rgba(10,10,10,0.07)', color: '#444444' },
+  maybe:     { background: '#803D81', color: '#FFFFFF' },
+};
+
 function RSVPStatusBadge({ status }) {
-  if (status === 'attending') return <span style={{ ...BADGE_BASE, color: '#16A34A', background: '#DCFCE7' }}>Attending</span>;
-  if (status === 'declined')  return <span style={{ ...BADGE_BASE, color: '#DC2626', background: '#FEE2E2' }}>Declined</span>;
-  return <span style={{ ...BADGE_BASE, color: '#F59E0B', background: '#FEF3C7' }}>Pending</span>;
+  const style = RSVP_STYLES[status] || RSVP_STYLES.pending;
+  return <span style={{ ...BADGE_BASE, ...style }}>{status || 'pending'}</span>;
 }
 
 // ── Channel icon pair ─────────────────────────────────────────────────────────
@@ -60,31 +67,77 @@ function WAChannelIcon({ channel }) {
   );
 }
 
-// ── Dietary icon ─────────────────────────────────────────────────────────────
-function DietaryIcon({ restrictions }) {
-  if (!restrictions || !restrictions.trim()) {
-    return <span style={{ color: 'rgba(10,10,10,0.25)', fontSize: 13, ...F }}>—</span>;
-  }
-  const lower = restrictions.toLowerCase();
-  let icon = '⚠️';
-  if (lower.includes('vegan') || lower.includes('vegetarian')) icon = '🌱';
-  else if (lower.includes('gluten')) icon = '🌾';
-  else if (lower.includes('dairy') || lower.includes('lactose')) icon = '🥛';
+// ── Dietary pill badges (matches GuestList) ───────────────────────────────────
+const DIETARY_COLOURS = {
+  'Vegetarian':        { background: '#D1FAE5', color: '#065F46' },
+  'Vegan':             { background: '#A7F3D0', color: '#064E3B' },
+  'Gluten free':       { background: '#FEF3C7', color: '#92400E' },
+  'Dairy free':        { background: '#DBEAFE', color: '#1E40AF' },
+  'Halal':             { background: '#EDE9FE', color: '#5B21B6' },
+  'Kosher':            { background: '#EDE9FE', color: '#5B21B6' },
+  'Nut allergy':       { background: '#FFEDD5', color: '#9A3412' },
+  'Shellfish allergy': { background: '#FFEDD5', color: '#9A3412' },
+  'Other':             { background: 'rgba(10,10,10,0.06)', color: '#444444' },
+};
+
+const dietaryPillStyle = {
+  display: 'inline-block', fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
+  padding: '2px 7px', borderRadius: 999, whiteSpace: 'nowrap', lineHeight: 1.4,
+};
+
+function parseDietaryList(str) {
+  if (!str || !str.trim()) return [];
+  return str.split(',').map(s => {
+    const t = s.trim();
+    return t.startsWith('Other: ') ? 'Other' : t;
+  }).filter(t => t && t !== 'None');
+}
+
+function DietaryCell({ value }) {
+  const items = parseDietaryList(value);
+  if (items.length === 0) return <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.25)', ...F }}>—</span>;
+  const first = items[0];
+  const rest = items.length - 1;
+  const colours = DIETARY_COLOURS[first] || DIETARY_COLOURS['Other'];
   return (
-    <span title={restrictions} style={{ fontSize: 15, cursor: 'default', lineHeight: 1 }}>{icon}</span>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }} title={items.join(', ')}>
+      <span style={{ ...dietaryPillStyle, ...colours }}>{first}</span>
+      {rest > 0 && <span style={{ ...dietaryPillStyle, background: 'rgba(10,10,10,0.06)', color: '#444444' }}>+{rest}</span>}
+    </span>
   );
 }
 
-// ── Guest avatar ─────────────────────────────────────────────────────────────
-function GuestAvatar({ name, size = 30 }) {
-  const COLORS = ['#FDE8EC', '#E8F4FD', '#E8FDE8', '#FDF4E8', '#F4E8FD'];
-  const ci = name ? name.charCodeAt(0) % COLORS.length : 0;
-  const initials = name
-    ? name.trim().split(/\s+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase()
-    : '?';
+// ── Guest avatar (matches GuestList) ─────────────────────────────────────────
+const AVATAR_COLOURS = [
+  '#E8B4B8', '#B4C8E8', '#B4E8C8', '#D4B4E8',
+  '#E8D4B4', '#B4E8E8', '#E8C8B4', '#C8E8B4',
+];
+
+function nameColour(name) {
+  const str = name || '';
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  return AVATAR_COLOURS[h % AVATAR_COLOURS.length];
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+function GuestAvatar({ name }) {
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: COLORS[ci], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.36, fontWeight: 700, color: '#0A0A0A', flexShrink: 0, ...F }}>
-      {initials}
+    <div style={{
+      width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+      background: nameColour(name),
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1 }}>
+        {getInitials(name)}
+      </span>
     </div>
   );
 }
@@ -96,7 +149,7 @@ function fmt(iso) {
 
 // ── Grid layout ───────────────────────────────────────────────────────────────
 // Guest | Invite | Sent | RSVP | RSVPd on | ✉ | WA | Diet | Actions
-const GRID = 'minmax(180px,1fr) 82px 100px 88px 100px 32px 32px 46px 80px';
+const GRID = 'minmax(200px,1fr) 82px 100px 88px 100px 32px 32px 110px 80px';
 
 const FILTER_TABS = [
   { val: 'all',       label: 'All' },
@@ -288,24 +341,25 @@ export default function InvitationsTab({ guests, loadGuests, loading }) {
                 key={g.id}
                 style={{
                   display: 'grid', gridTemplateColumns: GRID,
-                  gap: 8, padding: '10px 12px', borderBottom: '1px solid rgba(10,10,10,0.04)',
+                  gap: 8, padding: '12px 12px', borderBottom: '1px solid rgba(10,10,10,0.04)',
                   alignItems: 'center', transition: 'background 0.1s',
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = '#FAFAFA'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                {/* Guest: name · email · phone on one line */}
+                {/* Guest: name bold, email + phone on second line */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                   <GuestAvatar name={g.name} />
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...F }}>
-                    {g.name}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...F }}>
+                      {g.name}
+                    </p>
                     {(g.email || g.phone) && (
-                      <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.45)' }}>
-                        {g.email ? ` · ${g.email}` : ''}
-                        {g.phone ? ` · ${g.phone}` : ''}
-                      </span>
+                      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...F }}>
+                        {[g.email, g.phone].filter(Boolean).join(' · ')}
+                      </p>
                     )}
-                  </p>
+                  </div>
                 </div>
 
                 {/* Invite status */}
@@ -327,8 +381,8 @@ export default function InvitationsTab({ guests, loadGuests, loading }) {
                 <WAChannelIcon channel={g.invite_channel} />
 
                 {/* Dietary */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <DietaryIcon restrictions={g.dietary_restrictions} />
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <DietaryCell value={g.dietary_restrictions} />
                 </div>
 
                 {/* Actions */}
