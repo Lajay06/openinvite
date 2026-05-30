@@ -203,7 +203,7 @@ export default function WeddingPartyPage() {
         <AvaButton label="Ask Ava about your wedding party" onClick={() => setShowAva(true)} />
       </div>
 
-      <div style={{ padding: '32px 32px 48px' }}>
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
         {/* Save status */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>

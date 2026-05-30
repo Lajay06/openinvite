@@ -213,7 +213,7 @@ export default function WeddingFavoursPage() {
         </div>
       </div>
 
-      <div style={{ padding: '32px 32px 48px' }}>
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Overview */}
           <DetailsSection title="Overview" icon={Gift}>

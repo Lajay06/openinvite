@@ -183,7 +183,7 @@ export default function EventDetailsPage() {
         ))}
       </div>
 
-      <div style={{ padding: '32px 32px 48px' }}>
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
 
         {/* ── Details tab ─────────────────────────────────────── */}
         {tab === 'details' && (

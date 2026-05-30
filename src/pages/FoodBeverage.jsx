@@ -133,7 +133,7 @@ export default function FoodBeveragePage() {
         <AvaButton label="Ask Ava to plan your menu" onClick={() => setAvaOpen(true)} />
       </div>
 
-      <div style={{ padding: '32px 32px 48px' }}>
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
         <Tabs defaultValue="details">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="details">Food & beverage details</TabsTrigger>

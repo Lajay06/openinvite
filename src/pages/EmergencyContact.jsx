@@ -172,7 +172,7 @@ export default function EmergencyContactPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Emergency contacts" subtitle="Key contacts and vendor numbers for the wedding day" />
 
-      <div style={{ padding: '32px 32px 48px' }}>
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
           <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />

@@ -182,7 +182,7 @@ export default function CeremonyDetailsPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Ceremony details" subtitle="Plan your celebrant, legal requirements, and ceremony order" />
 
-      <div style={{ padding: '32px 32px 48px' }}>
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
           <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
