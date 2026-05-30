@@ -191,7 +191,7 @@ function HoverDiv({ onClick, pointer, children, title }) {
 }
 
 /* ─── Main component ─────────────────────────────────────────────────────── */
-export default function GuestList({ guests, onEdit, onDelete, onUpdate, loading }) {
+export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRoles = {}, loading }) {
   const [editCell, setEditCell] = useState(null); // { id, field }
   const [editValue, setEditValue] = useState('');
 
@@ -331,6 +331,11 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, loading 
                               {guest.name}
                             </span>
                             <DietaryPills value={guest.dietary_restrictions} />
+                            {guestRoles[guest.id] && (
+                              <span style={{ ...dietaryPillStyle, background: '#0A1930', color: '#DDF762' }}>
+                                {guestRoles[guest.id]}
+                              </span>
+                            )}
                           </span>
                         )}
                       </div>

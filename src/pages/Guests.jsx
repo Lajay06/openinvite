@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 const Guest = base44.entities.Guest;
+const WeddingDetails = base44.entities.WeddingDetails;
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Mail } from "lucide-react";
@@ -71,8 +72,14 @@ export default function Guests() {
   const [avaOpen, setAvaOpen] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
+  const [weddingParty, setWeddingParty] = useState({});
 
   useEffect(() => { loadGuests(); }, []);
+  useEffect(() => {
+    WeddingDetails.list().then(rows => {
+      setWeddingParty((rows[0] || {}).weddingParty || {});
+    }).catch(() => {});
+  }, []);
 
   const loadGuests = async () => {
     try {
@@ -162,6 +169,23 @@ export default function Guests() {
     URL.revokeObjectURL(url);
     toast.success('Guest list exported');
   };
+
+  const guestRoles = useMemo(() => {
+    const map = {};
+    const wp = weddingParty;
+    const asMember = (v) => (!v ? null : typeof v === 'string' ? { name: v, guestId: null } : v);
+    const add = (m, role) => { if (m?.guestId) map[m.guestId] = role; };
+    add(asMember(wp.maidOfHonour), 'Maid of honour');
+    add(asMember(wp.bestMan), 'Best man');
+    (wp.bridesmaids || []).forEach(m => add(m, 'Bridesmaid'));
+    (wp.groomsmen   || []).forEach(m => add(m, 'Groomsman'));
+    (wp.flowerGirls || []).forEach(m => add(m, 'Flower girl'));
+    (wp.ringBearers || []).forEach(m => add(m, 'Ring bearer'));
+    (wp.readers     || []).forEach(m => add(m, 'Reader'));
+    (wp.ushers      || []).forEach(m => add(m, 'Usher'));
+    (wp.other       || []).forEach(m => add(m, 'Wedding party'));
+    return map;
+  }, [weddingParty]);
 
   const FILTERS = [
     { val: 'all',      label: `All (${stats.total})` },
@@ -275,7 +299,7 @@ export default function Guests() {
               />
             )}
 
-            <GuestList guests={filteredGuests} onEdit={handleEdit} onDelete={handleDelete} onUpdate={handleInlineUpdate} loading={loading} />
+            <GuestList guests={filteredGuests} onEdit={handleEdit} onDelete={handleDelete} onUpdate={handleInlineUpdate} guestRoles={guestRoles} loading={loading} />
           </TabsContent>
 
           <TabsContent value="invitations" className="mt-8">
