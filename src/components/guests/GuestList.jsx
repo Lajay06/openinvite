@@ -87,14 +87,15 @@ function parseDietaryList(str) {
   }).filter(t => t && t !== 'None');
 }
 
-function DietaryPills({ value }) {
+function DietaryCell({ value }) {
   const items = parseDietaryList(value);
-  if (items.length === 0) return null;
+  if (items.length === 0) return <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>;
   const first = items[0];
   const rest  = items.length - 1;
   const colours = DIETARY_COLOURS[first] || DIETARY_COLOURS['Other'];
+  const tooltip = items.join(', ');
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }} title={tooltip}>
       <span style={{ ...dietaryPillStyle, ...colours }}>{first}</span>
       {rest > 0 && (
         <span style={{ ...dietaryPillStyle, background: 'rgba(10,10,10,0.06)', color: '#444444' }}>+{rest}</span>
@@ -161,6 +162,7 @@ const SkeletonRows = () => (
           </div>
         </TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 140, height: 12 }} /></TableCell>
+        <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 50, height: 14 }} /></TableCell>
@@ -303,6 +305,7 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRol
               <TableHead>Guest</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Category</TableHead>
+              <TableHead>Dietary</TableHead>
               <TableHead>RSVP</TableHead>
               <TableHead>Table</TableHead>
               <TableHead>+1</TableHead>
@@ -330,7 +333,6 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRol
                             <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
                               {guest.name}
                             </span>
-                            <DietaryPills value={guest.dietary_restrictions} />
                             {guestRoles[guest.id] && (
                               <span style={{ ...dietaryPillStyle, background: '#0A1930', color: '#DDF762' }}>
                                 {guestRoles[guest.id]}
@@ -377,6 +379,11 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRol
                         <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
                       )
                     )}
+                  </TableCell>
+
+                  {/* ── Dietary ── */}
+                  <TableCell className="align-middle">
+                    <DietaryCell value={guest.dietary_restrictions} />
                   </TableCell>
 
                   {/* ── RSVP ── */}
@@ -446,7 +453,7 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRol
                       </div>
                     </TableCell>
                     {/* Remaining 6 columns empty */}
-                    <TableCell colSpan={6} />
+                    <TableCell colSpan={7} />
                   </TableRow>
                 );
               }
