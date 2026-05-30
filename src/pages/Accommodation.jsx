@@ -233,6 +233,13 @@ export default function AccommodationPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Accommodation" subtitle="Recommend places to stay for your out-of-town guests" />
 
+      {/* Guest Suite visibility banner */}
+      <div style={{ padding: '8px 32px', background: 'rgba(10,10,10,0.02)', borderBottom: '1px solid rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS }}>
+          ✨ This information is visible to guests in your Guest Suite
+        </span>
+      </div>
+
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <AvaButton label="Ask Ava about guest accommodation" onClick={() => setAvaOpen(true)} />

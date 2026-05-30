@@ -70,6 +70,8 @@ import GuestRSVP from './pages/GuestRSVP';
 import GuestSuite from './pages/GuestSuite';
 import GuestSuiteQandA from './pages/GuestSuiteQandA';
 import GuestSuiteSchedule from './pages/GuestSuiteSchedule';
+import GuestSuiteAccommodation from './pages/GuestSuiteAccommodation';
+import GuestSuiteTransport from './pages/GuestSuiteTransport';
 import Guests from './pages/Guests';
 import Home from './pages/Home';
 import Invitations from './pages/Invitations';
@@ -127,6 +129,8 @@ export const PAGES = {
     "GuestSuite": GuestSuite,
     "GuestSuiteQandA": GuestSuiteQandA,
     "GuestSuiteSchedule": GuestSuiteSchedule,
+    "GuestSuiteAccommodation": GuestSuiteAccommodation,
+    "GuestSuiteTransport": GuestSuiteTransport,
     "Guests": Guests,
     "Home": Home,
     "Invitations": Invitations,
