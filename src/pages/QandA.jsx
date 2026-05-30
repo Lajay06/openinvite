@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
 
@@ -43,6 +43,53 @@ function UInput({ label, value, onChange, placeholder = '', multiline = false })
           onBlur={() => setFocused(false)}
           style={shared}
         />
+      )}
+    </div>
+  );
+}
+
+function QnaAccordionItem({ item, id, onDelete }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderBottom: '1px solid rgba(10,10,10,0.07)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button
+          onClick={() => setOpen(v => !v)}
+          style={{
+            flex: 1, background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '14px 0', textAlign: 'left',
+          }}
+        >
+          <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, lineHeight: 1.4 }}>
+            {item.question}
+          </span>
+          <span style={{ flexShrink: 0, color: 'rgba(10,10,10,0.35)', display: 'flex' }}>
+            {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </span>
+        </button>
+        <button
+          onClick={() => onDelete(id)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 4, flexShrink: 0, transition: 'color 0.15s' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#E03553'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.25)'; }}
+          title="Delete"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+      {open && (
+        <div style={{ paddingBottom: 16, paddingRight: 32 }}>
+          {item.answer ? (
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, lineHeight: 1.7 }}>
+              {item.answer}
+            </p>
+          ) : (
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.3)', margin: 0, fontFamily: PJS, fontStyle: 'italic' }}>
+              No answer added yet.
+            </p>
+          )}
+        </div>
       )}
     </div>
   );
@@ -107,6 +154,13 @@ export default function QandA() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
       <DashboardPageHeader title="Q&A" subtitle="Add questions and answers for your guests" />
 
+      {/* Guest Suite visibility banner */}
+      <div style={{ padding: '8px 32px', background: 'rgba(10,10,10,0.02)', borderBottom: '1px solid rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS }}>
+          ✨ This Q&A is visible to guests in your Guest Suite
+        </span>
+      </div>
+
       <div style={{ padding: '16px 32px 0' }}>
         <AvaButton label="Ask Ava to suggest FAQ questions" />
       </div>
@@ -145,51 +199,18 @@ export default function QandA() {
           </button>
         </div>
 
-        {/* Q&A list */}
+        {/* Q&A list — accordion */}
         {qna.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
             <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
-              No questions yet. Add your first FAQ for guests.
+              No questions yet. Add your first FAQ for guests above.
             </p>
           </div>
         ) : (
           <div>
             {qna.map((item, i) => {
               const id = item.id ?? i;
-              return (
-                <div
-                  key={id}
-                  style={{
-                    display: 'flex', alignItems: 'flex-start', gap: 16,
-                    padding: '16px 0',
-                    borderBottom: i < qna.length - 1 ? '1px solid rgba(10,10,10,0.06)' : 'none',
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: '0 0 6px', fontFamily: PJS }}>
-                      {item.question}
-                    </p>
-                    {item.answer && (
-                      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, lineHeight: 1.6 }}>
-                        {item.answer}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => handleDelete(id)}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'rgba(10,10,10,0.25)', padding: 4, flexShrink: 0,
-                      transition: 'color 0.15s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.color = '#E03553'; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.25)'; }}
-                    title="Delete"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              );
+              return <QnaAccordionItem key={id} item={item} id={id} onDelete={handleDelete} />;
             })}
           </div>
         )}

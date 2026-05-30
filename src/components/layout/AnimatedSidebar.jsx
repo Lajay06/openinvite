@@ -79,9 +79,9 @@ const NAV_SECTIONS = [
     label: "Guest Suite",
     guestSuite: true,
     items: [
-      { icon: Globe,      label: "Overview",              url: createPageUrl("GuestSuite") },
-      { icon: Clock,      label: "Schedule",      url: createPageUrl("Schedule") },
-      { icon: HelpCircle, label: "Q&A",           url: createPageUrl("QandA") },
+      { icon: Globe,      label: "Overview",  url: createPageUrl("GuestSuite") },
+      { icon: Clock,      label: "Schedule",  url: createPageUrl("GuestSuiteSchedule") },
+      { icon: HelpCircle, label: "Q&A",       url: createPageUrl("GuestSuiteQandA") },
       { icon: Gift,       label: "Registry",      url: createPageUrl("Registry") },
       { icon: Hotel,      label: "Accommodation", url: "/accommodation" },
       { icon: Car,        label: "Transport",     url: "/transport" },

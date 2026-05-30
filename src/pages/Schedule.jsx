@@ -189,6 +189,13 @@ export default function SchedulePage() {
         ))}
       </div>
 
+      {/* Guest Suite visibility banner */}
+      <div style={{ padding: '8px 32px', background: 'rgba(10,10,10,0.02)', borderBottom: '1px solid rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          ✨ This schedule is visible to guests in your Guest Suite
+        </span>
+      </div>
+
       {/* Ava + actions bar */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to build your wedding timeline" onClick={() => setAvaOpen(true)} />
