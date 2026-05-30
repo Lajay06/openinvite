@@ -70,8 +70,9 @@ export default function MusicPage() {
   const [showSpotifyModal, setShowSpotifyModal] = useState(false);
   const [addingPlaylist, setAddingPlaylist] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
+  const [pendingSpotifyData, setPendingSpotifyData] = useState(null);
 
-  const { data: details } = useQuery({
+  const { data: details, isSuccess: detailsLoaded } = useQuery({
     queryKey: ['musicDetails'],
     queryFn: async () => { const r = await base44.entities.WeddingDetails.list(); return r[0] || null; },
   });
@@ -96,8 +97,82 @@ export default function MusicPage() {
     }
   }, [details]);
 
+  // ── Detect Spotify OAuth callback ─────────────────────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('spotify');
+    const err = params.get('spotify_error');
+
+    if (err) {
+      toast.error('Could not connect to Spotify. Please try again.');
+      const url = new URL(window.location.href);
+      url.searchParams.delete('spotify_error');
+      window.history.replaceState({}, '', url.toString());
+      return;
+    }
+    if (!raw) return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete('spotify');
+    window.history.replaceState({}, '', url.toString());
+
+    try {
+      const data = JSON.parse(atob(decodeURIComponent(raw)));
+      setPendingSpotifyData(data);
+    } catch { /* malformed payload */ }
+  }, []);
+
+  // ── Save pending Spotify connection once WeddingDetails have loaded ────────
+  useEffect(() => {
+    if (!pendingSpotifyData || !detailsLoaded) return;
+    updateMutation.mutate({
+      music: {
+        ...(details?.music || {}),
+        spotifyConnection: {
+          accessToken:  pendingSpotifyData.at,
+          refreshToken: pendingSpotifyData.rt,
+          expiresAt:    pendingSpotifyData.exp,
+          displayName:  pendingSpotifyData.name,
+          imageUrl:     pendingSpotifyData.img,
+        },
+      },
+    });
+    toast.success(`Spotify connected — ${pendingSpotifyData.name}`);
+    setPendingSpotifyData(null);
+  }, [pendingSpotifyData, detailsLoaded]);
+
   const updateMusic = (field, value) =>
     updateMutation.mutate({ music: { ...(details?.music || {}), [field]: value } });
+
+  // ── Spotify helpers ───────────────────────────────────────────────────────
+  const spotifyConnection  = details?.music?.spotifyConnection;
+  const isSpotifyConnected = !!(spotifyConnection?.accessToken);
+
+  const handleConnectSpotify = () => {
+    const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+    if (!clientId) {
+      toast.error('Spotify is not configured — add VITE_SPOTIFY_CLIENT_ID to your environment.');
+      return;
+    }
+    const redirectUri = `${window.location.origin}/api/spotify-callback`;
+    const scope       = 'playlist-modify-public playlist-modify-private user-read-private';
+    const state       = Math.random().toString(36).slice(2, 10);
+    sessionStorage.setItem('spotify_oauth_state', state);
+    const params = new URLSearchParams({
+      client_id:     clientId,
+      response_type: 'code',
+      redirect_uri:  redirectUri,
+      scope,
+      state,
+    });
+    window.location.href = `https://accounts.spotify.com/authorize?${params}`;
+  };
+
+  const handleDisconnectSpotify = () => {
+    if (!window.confirm('Disconnect from Spotify?')) return;
+    updateMusic('spotifyConnection', null);
+    toast.success('Disconnected from Spotify');
+  };
 
   const playlists = (details?.music?.playlists || []).filter(p => p.enabled);
   const pendingCount = (songRequests || []).filter(r => r.status === 'pending').length;
@@ -252,13 +327,24 @@ export default function MusicPage() {
                 style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <Plus size={12} />Search & add
               </button>
-              <button
-                onClick={() => setShowSpotifyModal(true)}
-                className="btn-editorial-secondary"
-                style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}
-              >
-                Connect Spotify
-              </button>
+              {isSpotifyConnected ? (
+                <button
+                  onClick={() => setShowSpotifyModal(true)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(29,185,84,0.08)', border: '1px solid rgba(29,185,84,0.25)', borderRadius: 999, padding: '5px 11px', cursor: 'pointer', fontSize: 12, fontFamily: PJS, fontWeight: 600, color: '#1DB954' }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.412.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.33.366.225.48.706.257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.837.327 1.282-.264.444-.838.59-1.284.327z"/></svg>
+                  {spotifyConnection.displayName}
+                </button>
+              ) : (
+                <button
+                  onClick={handleConnectSpotify}
+                  className="btn-editorial-secondary"
+                  style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.412.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.33.366.225.48.706.257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.837.327 1.282-.264.444-.838.59-1.284.327z"/></svg>
+                  Connect Spotify
+                </button>
+              )}
               <button onClick={() => { setShowAddForm(v => !v); setShowSearch(false); setEditingTrack(null); }}
                 className="btn-editorial-secondary"
                 style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -349,6 +435,8 @@ export default function MusicPage() {
       {showSpotifyModal && (
         <SpotifyModal
           playlistId={activePlaylist?.id}
+          spotifyConnection={spotifyConnection}
+          onUpdateConnection={conn => updateMusic('spotifyConnection', conn)}
           onAdd={(track) => handleAddTrack({ ...track, category: activePlaylist?.id || 'general' })}
           onClose={() => setShowSpotifyModal(false)}
         />
@@ -363,6 +451,18 @@ export default function MusicPage() {
               <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}><X size={16} /></button>
             </div>
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {/* Spotify connection */}
+              {isSpotifyConnected && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', marginBottom: 12, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 2px' }}>Spotify connected</p>
+                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>{spotifyConnection.displayName}</p>
+                  </div>
+                  <button onClick={handleDisconnectSpotify} style={{ fontSize: 12, color: '#E03553', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, padding: 0 }}>
+                    Disconnect
+                  </button>
+                </div>
+              )}
               <ToggleRow label="Enable guest song requests" value={details?.music?.guestRequestsEnabled} onChange={v => updateMusic('guestRequestsEnabled', v)} />
               <ToggleRow label="Require approval before adding" value={details?.music?.requestsRequireApproval} onChange={v => updateMusic('requestsRequireApproval', v)} />
               <ToggleRow label="One request per guest" value={details?.music?.limitOnePerGuest} onChange={v => updateMusic('limitOnePerGuest', v)} />

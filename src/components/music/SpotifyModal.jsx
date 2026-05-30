@@ -1,31 +1,7 @@
 import React, { useState } from 'react';
 import { X, Search, Loader2, Plus, Music2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
-
-async function getSpotifyToken() {
-  const CACHE_KEY = 'oi_spotify_token';
-  try {
-    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-    if (cached && Date.now() < cached.expires) return cached.token;
-  } catch {}
-  const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-  const clientSecret = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
-  if (!clientId || !clientSecret) throw new Error('Spotify credentials not configured. Add VITE_SPOTIFY_CLIENT_ID and VITE_SPOTIFY_CLIENT_SECRET to your .env file.');
-  const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
-    },
-    body: 'grant_type=client_credentials',
-  });
-  const data = await res.json();
-  if (!data.access_token) throw new Error('Failed to get Spotify token');
-  localStorage.setItem(CACHE_KEY, JSON.stringify({ token: data.access_token, expires: Date.now() + (data.expires_in - 60) * 1000 }));
-  return data.access_token;
-}
 
 function fmt(ms) {
   const m = Math.floor(ms / 60000);
@@ -33,7 +9,13 @@ function fmt(ms) {
   return `${m}:${s}`;
 }
 
-export default function SpotifyModal({ playlistId, onAdd, onClose }) {
+const SpotifyIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="#1DB954">
+    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.412.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.33.366.225.48.706.257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.837.327 1.282-.264.444-.838.59-1.284.327z"/>
+  </svg>
+);
+
+export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateConnection, onAdd, onClose }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -46,39 +28,56 @@ export default function SpotifyModal({ playlistId, onAdd, onClose }) {
     setResults([]);
     setError('');
     try {
-      const token = await getSpotifyToken();
-      const res = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=20`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const body = { q: query.trim() };
+      if (spotifyConnection?.accessToken) {
+        body.accessToken  = spotifyConnection.accessToken;
+        body.refreshToken = spotifyConnection.refreshToken;
+        body.expiresAt    = spotifyConnection.expiresAt;
+      }
+
+      const res  = await fetch('/api/spotify-search', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body),
+      });
       const data = await res.json();
-      setResults(data.tracks?.items || []);
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          setError('Your Spotify session has expired — please reconnect in Settings.');
+        } else {
+          throw new Error(data.error || 'Search failed');
+        }
+        setLoading(false);
+        return;
+      }
+
+      setResults(data.tracks || []);
+
+      // If the server refreshed the access token, persist the new one
+      if (data.newToken && onUpdateConnection && spotifyConnection) {
+        onUpdateConnection({
+          ...spotifyConnection,
+          accessToken: data.newToken.accessToken,
+          expiresAt:   data.newToken.expiresAt,
+        });
+      }
     } catch (e) {
-      setError(e.message || 'Search failed. Check Spotify credentials.');
+      setError(e.message || 'Search failed. Check your connection and try again.');
     }
     setLoading(false);
   };
 
-  const handleAdd = async (track) => {
-    const trackData = {
-      title: track.name,
-      artist: track.artists.map(a => a.name).join(', '),
-      album: track.album.name,
-      duration: fmt(track.duration_ms),
-      spotifyId: track.id,
-      artworkUrl: track.album.images[0]?.url || '',
-      playlistId: playlistId || 'general',
-    };
-    try { await base44.entities.MusicTrack.create(trackData); } catch {}
+  const handleAdd = (track) => {
     onAdd({
-      song_title: trackData.title,
-      artist: trackData.artist,
-      album: trackData.album,
-      duration: trackData.duration,
-      image_url: trackData.artworkUrl,
+      song_title:  track.name,
+      artist:      track.artists,
+      album:       track.album,
+      duration:    fmt(track.duration_ms),
+      image_url:   track.artwork_url,
       preview_url: track.preview_url || '',
-      category: playlistId || 'general',
-      approved: true,
+      category:    playlistId || 'general',
+      approved:    true,
       guest_suggestion: false,
     });
     setAddedIds(prev => new Set([...prev, track.id]));
@@ -96,11 +95,14 @@ export default function SpotifyModal({ playlistId, onAdd, onClose }) {
       >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#1DB954">
-              <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.412.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.33.366.225.48.706.257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.837.327 1.282-.264.444-.838.59-1.284.327z" />
-            </svg>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <SpotifyIcon />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>Search Spotify</span>
+            {spotifyConnection?.displayName && (
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                · {spotifyConnection.displayName}
+              </span>
+            )}
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', padding: 4 }}>
             <X size={16} />
@@ -126,7 +128,7 @@ export default function SpotifyModal({ playlistId, onAdd, onClose }) {
               Search
             </button>
           </div>
-          {error && <p style={{ fontSize: 12, color: '#E03553', fontFamily: PJS, marginTop: 8 }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: '#E03553', fontFamily: PJS, marginTop: 8, margin: '8px 0 0' }}>{error}</p>}
         </div>
 
         {/* Results */}
@@ -144,23 +146,22 @@ export default function SpotifyModal({ playlistId, onAdd, onClose }) {
           )}
           {results.map(track => {
             const added = addedIds.has(track.id);
-            const artwork = track.album.images[1]?.url || track.album.images[0]?.url;
             return (
               <div key={track.id}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 24px', borderBottom: '1px solid rgba(10,10,10,0.05)', background: 'transparent', transition: 'background 0.1s' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 24px', borderBottom: '1px solid rgba(10,10,10,0.05)', transition: 'background 0.1s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.02)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
               >
                 <div style={{ width: 40, height: 40, flexShrink: 0, background: 'rgba(10,10,10,0.06)', overflow: 'hidden', borderRadius: 4 }}>
-                  {artwork
-                    ? <img src={artwork} alt={track.album.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {track.artwork_url
+                    ? <img src={track.artwork_url} alt={track.album} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Music2 size={14} style={{ color: 'rgba(10,10,10,0.3)' }} /></div>
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
                   <p style={{ fontSize: 11, color: '#999999', fontFamily: PJS, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {track.artists.map(a => a.name).join(', ')}{track.album.name ? ` · ${track.album.name}` : ''}
+                    {track.artists}{track.album ? ` · ${track.album}` : ''}
                   </p>
                 </div>
                 <span style={{ fontSize: 11, color: '#999999', flexShrink: 0, fontFamily: PJS }}>{fmt(track.duration_ms)}</span>
