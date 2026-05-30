@@ -8,7 +8,7 @@ const Guest = base44.entities.Guest;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const TEMPLATE_HEADERS = [
-  'First name', 'Last name', 'Email', 'Phone',
+  'Name', 'Email', 'Phone',
   'Category', 'RSVP', 'Table', '+1', '+1 Name', 'Dietary requirements',
 ];
 
@@ -16,10 +16,8 @@ const VALID_CATEGORIES = ['family', 'friends', 'colleagues', 'partners_family', 
 const VALID_RSVP = ['attending', 'declined', 'pending', 'maybe'];
 
 function rowToGuest(row) {
-  const firstName = String(row['First name'] ?? '').trim();
-  const lastName = String(row['Last name'] ?? '').trim();
-  const name = [firstName, lastName].filter(Boolean).join(' ');
-  if (!name) throw new Error('First name or Last name is required');
+  const name = String(row['Name'] ?? '').trim();
+  if (!name) throw new Error('Name is required');
 
   const plusOneRaw = String(row['+1'] ?? '').toLowerCase().trim();
   const plusOne = plusOneRaw === 'yes' || plusOneRaw === 'true' || plusOneRaw === '1';
