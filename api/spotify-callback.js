@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const host  = req.headers['x-forwarded-host'] || req.headers.host || 'openinvite.com.au';
   const APP_URL = process.env.APP_URL || `${proto}://${host}`;
-  const REDIRECT_URI = `${APP_URL}/api/spotify-callback`;
+  const REDIRECT_URI = 'https://www.openinvite.com.au/api/spotify-callback';
 
   if (error) {
     console.warn('[spotify-callback] Spotify returned error:', error);

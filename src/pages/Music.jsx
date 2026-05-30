@@ -154,7 +154,7 @@ export default function MusicPage() {
       toast.error('Spotify is not configured — add VITE_SPOTIFY_CLIENT_ID to your environment.');
       return;
     }
-    const redirectUri = `${window.location.origin}/api/spotify-callback`;
+    const redirectUri = 'https://www.openinvite.com.au/api/spotify-callback';
     const scope       = 'playlist-modify-public playlist-modify-private user-read-private';
     const state       = Math.random().toString(36).slice(2, 10);
     sessionStorage.setItem('spotify_oauth_state', state);
