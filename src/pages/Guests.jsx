@@ -119,12 +119,24 @@ export default function Guests() {
     }
   };
 
+  const handleInlineUpdate = async (guestId, updates) => {
+    // Optimistic update so the UI feels instant
+    setGuests(prev => prev.map(g => g.id === guestId ? { ...g, ...updates } : g));
+    try {
+      await Guest.update(guestId, updates);
+    } catch (e) {
+      toast.error('Failed to update');
+      loadGuests(); // Rollback on failure
+    }
+  };
+
   const stats = React.useMemo(() => {
     const total = guests.length;
+    const plusOnes = guests.filter(g => g.plus_one).length;
     const attending = guests.filter(g => g.rsvp_status === 'attending').length;
     const declined = guests.filter(g => g.rsvp_status === 'declined').length;
     const pending = guests.filter(g => g.rsvp_status === 'pending' || !g.rsvp_status).length;
-    return { total, attending, declined, pending };
+    return { total, plusOnes, attending, declined, pending };
   }, [guests]);
 
   const filteredGuests = guests.filter(guest => {
@@ -159,7 +171,7 @@ export default function Guests() {
   ];
 
   const STAT_CARDS = [
-    { label: 'Total guests',   value: stats.total },
+    { label: 'Total guests',   value: stats.total, sub: stats.plusOnes > 0 ? `+ ${stats.plusOnes} plus one${stats.plusOnes !== 1 ? 's' : ''}` : null },
     { label: 'Attending',      value: stats.attending },
     { label: 'Declined',       value: stats.declined },
     { label: 'Awaiting reply', value: stats.pending },
@@ -179,6 +191,9 @@ export default function Guests() {
               ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
               : <p style={statValueStyle}><CountUp to={s.value} /></p>
             }
+            {s.sub && !loading && (
+              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '4px 0 0' }}>{s.sub}</p>
+            )}
           </div>
         ))}
       </div>
@@ -260,7 +275,7 @@ export default function Guests() {
               />
             )}
 
-            <GuestList guests={filteredGuests} onEdit={handleEdit} onDelete={handleDelete} loading={loading} />
+            <GuestList guests={filteredGuests} onEdit={handleEdit} onDelete={handleDelete} onUpdate={handleInlineUpdate} loading={loading} />
           </TabsContent>
 
           <TabsContent value="invitations" className="mt-8">

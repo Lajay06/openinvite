@@ -9,7 +9,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const TEMPLATE_HEADERS = [
   'Name', 'Email', 'Phone',
-  'Category', 'RSVP', 'Table', '+1', '+1 Name', 'Dietary requirements',
+  'Category', 'RSVP', 'Table', 'Plus one', 'Plus one name', 'Dietary requirements',
 ];
 
 const VALID_CATEGORIES = ['family', 'friends', 'colleagues', 'partners_family', 'partners_friends'];
@@ -19,8 +19,9 @@ function rowToGuest(row) {
   const name = String(row['Name'] ?? '').trim();
   if (!name) throw new Error('Name is required');
 
-  const plusOneRaw = String(row['+1'] ?? '').toLowerCase().trim();
-  const plusOne = plusOneRaw === 'yes' || plusOneRaw === 'true' || plusOneRaw === '1';
+  // Support both 'Plus one' (new template) and '+1' (old template)
+  const plusOneRaw = String(row['Plus one'] ?? row['+1'] ?? '').toLowerCase().trim();
+  const plusOne = ['yes', 'true', '1', 'x', 'y'].includes(plusOneRaw);
 
   const rsvpRaw = String(row['RSVP'] ?? '').toLowerCase().trim();
   const rsvpStatus = VALID_RSVP.includes(rsvpRaw) ? rsvpRaw : 'pending';
@@ -36,7 +37,7 @@ function rowToGuest(row) {
     rsvp_status: rsvpStatus,
     table_assignment: String(row['Table'] ?? '').trim() || undefined,
     plus_one: plusOne,
-    plus_one_name: String(row['+1 Name'] ?? '').trim() || undefined,
+    plus_one_name: String(row['Plus one name'] ?? row['+1 Name'] ?? '').trim() || undefined,
     dietary_restrictions: String(row['Dietary requirements'] ?? '').trim() || undefined,
   };
 }
