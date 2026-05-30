@@ -100,7 +100,7 @@ export default function SeatingPage() {
         Table.list('-created_date'),
         VenueAsset.list('-created_date'),
       ]);
-      setGuests(guestData.filter(g => g.rsvp_status === 'attending'));
+      setGuests(guestData);
       setTables(tableData.map(t => ({ ...t, assigned_guests: t.assigned_guests || [] })));
       setVenueAssets(assetData);
     } catch { toast.error('Failed to load seating data'); }
@@ -115,8 +115,12 @@ export default function SeatingPage() {
 
   const stats = useMemo(() => {
     const totalSeats = tables.reduce((s, t) => s + (t.capacity || 0), 0);
-    const pct = guests.length > 0 ? Math.round((assignedGuestIds.size / guests.length) * 100) : 0;
-    return { tables: tables.length, seats: totalSeats, guests: guests.length, assigned: assignedGuestIds.size, pct };
+    const plusOnes = guests.filter(g => g.plus_one).length;
+    const total = guests.length + plusOnes;
+    const assigned = assignedGuestIds.size;
+    const unassigned = Math.max(0, total - assigned);
+    const pct = total > 0 ? Math.round((assigned / total) * 100) : 0;
+    return { tables: tables.length, seats: totalSeats, guests: total, assigned, unassigned, pct };
   }, [tables, guests, assignedGuestIds]);
 
   /* ── Drag & drop canvas ── */
@@ -339,6 +343,7 @@ export default function SeatingPage() {
     { label: 'Total seats',value: stats.seats },
     { label: 'Guests',     value: stats.guests },
     { label: 'Assigned',   value: stats.assigned },
+    { label: 'Unassigned', value: stats.unassigned },
     { label: 'Complete',   value: stats.pct, suffix: '%' },
   ];
 
