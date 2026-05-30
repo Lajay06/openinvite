@@ -188,19 +188,19 @@ export default function EventDetailsPage() {
         {/* ── Details tab ─────────────────────────────────────── */}
         {tab === 'details' && (
           <>
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS }}>Couple</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS, textAlign: 'center' }}>Couple</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
               <UInput label="Partner 1 name" value={r.couple1Name} onChange={e => update({ couple1Name: e.target.value })} placeholder="e.g. Sophie" />
               <UInput label="Partner 2 name" value={r.couple2Name} onChange={e => update({ couple2Name: e.target.value })} placeholder="e.g. James" />
             </div>
 
             <div style={divider} />
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>The date</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS, textAlign: 'center' }}>The date</p>
             <div style={labelStyle}>Wedding date</div>
             <DatePicker value={r.weddingDate} onChange={v => update({ weddingDate: v })} placeholder="Select your wedding date" />
 
             <div style={divider} />
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>Guest count</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS, textAlign: 'center' }}>Guest count</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
               {GUEST_TYPES.map(g => {
                 const sel = r.guestType === g.id;
@@ -242,7 +242,7 @@ export default function EventDetailsPage() {
         {/* ── Venue tab ───────────────────────────────────────── */}
         {tab === 'venue' && (
           <>
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS }}>Ceremony venue</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS, textAlign: 'center' }}>Ceremony venue</p>
             <VenueSearch
               label="Ceremony venue"
               venueName={mc.venueName || ''}
@@ -268,7 +268,7 @@ export default function EventDetailsPage() {
             <UInput label="Accessibility notes" value={mc.accessibilityNotes} onChange={e => updateNested('mainCeremony', { accessibilityNotes: e.target.value })} placeholder="e.g. Wheelchair accessible entrance via side gate" />
 
             <div style={divider} />
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS }}>Reception venue</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS, textAlign: 'center' }}>Reception venue</p>
             <VenueSearch
               label="Reception venue"
               venueName={rc.venueName || ''}
