@@ -63,6 +63,11 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
   const [dietarySelected, setDietarySelected] = useState(init.selected);
   const [dietaryOther, setDietaryOther] = useState(init.other);
 
+  // Plus-one dietary pill state
+  const initPo = parseDietary((guest || {}).plus_one_dietary || '');
+  const [poDietarySelected, setPoDietarySelected] = useState(initPo.selected);
+  const [poDietaryOther, setPoDietaryOther] = useState(initPo.other);
+
   const set = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
 
   /* Tags */
@@ -98,7 +103,26 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
     set('dietary_restrictions', dietaryToString(dietarySelected, text));
   };
 
+  const togglePoDietary = (option) => {
+    let next;
+    if (option === 'None') {
+      next = [];
+    } else {
+      next = poDietarySelected.includes(option)
+        ? poDietarySelected.filter(s => s !== option)
+        : [...poDietarySelected, option];
+    }
+    setPoDietarySelected(next);
+    set('plus_one_dietary', dietaryToString(next, poDietaryOther));
+  };
+
+  const handlePoOtherText = (text) => {
+    setPoDietaryOther(text);
+    set('plus_one_dietary', dietaryToString(poDietarySelected, text));
+  };
+
   const noneActive = dietarySelected.length === 0;
+  const poNoneActive = poDietarySelected.length === 0;
 
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
@@ -290,9 +314,38 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
                 <Label htmlFor="plus_one_name">Plus one name</Label>
                 <Input id="plus_one_name" value={formData.plus_one_name} onChange={e => set('plus_one_name', e.target.value)} placeholder="Plus one's name" />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Label htmlFor="plus_one_dietary">Plus one dietary restrictions</Label>
-                <Input id="plus_one_dietary" value={formData.plus_one_dietary} onChange={e => set('plus_one_dietary', e.target.value)} placeholder="Any dietary requirements for plus one" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <Label>Plus one dietary restrictions</Label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                  {DIETARY_OPTIONS.map(option => {
+                    const active = option === 'None' ? poNoneActive : poDietarySelected.includes(option);
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => togglePoDietary(option)}
+                        style={{
+                          fontSize: 12, fontWeight: 600, padding: '5px 13px', borderRadius: 999,
+                          border: active ? 'none' : '1px solid rgba(10,10,10,0.15)',
+                          background: active ? '#E03553' : 'rgba(10,10,10,0.04)',
+                          color: active ? '#FFFFFF' : '#444444',
+                          cursor: 'pointer', fontFamily: PJS,
+                          transition: 'background 0.12s, color 0.12s, border 0.12s',
+                        }}
+                      >
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
+                {poDietarySelected.includes('Other') && (
+                  <Input
+                    value={poDietaryOther}
+                    onChange={e => handlePoOtherText(e.target.value)}
+                    placeholder="Describe the restriction…"
+                    style={{ maxWidth: 360 }}
+                  />
+                )}
               </div>
             </>
           )}

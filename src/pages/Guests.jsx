@@ -171,7 +171,7 @@ export default function Guests() {
   ];
 
   const STAT_CARDS = [
-    { label: 'Total guests',   value: stats.total, sub: stats.plusOnes > 0 ? `+ ${stats.plusOnes} plus one${stats.plusOnes !== 1 ? 's' : ''}` : null },
+    { label: 'Total guests',   value: stats.total + stats.plusOnes, sub: stats.plusOnes > 0 ? `${stats.total} guest${stats.total !== 1 ? 's' : ''} · ${stats.plusOnes} plus one${stats.plusOnes !== 1 ? 's' : ''}` : null },
     { label: 'Attending',      value: stats.attending },
     { label: 'Declined',       value: stats.declined },
     { label: 'Awaiting reply', value: stats.pending },
