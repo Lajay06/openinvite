@@ -46,13 +46,14 @@ const NAV_SECTIONS = [
   {
     label: "Creative",
     items: [
-      { icon: Palette,  label: "Styling",          url: createPageUrl("Styling") },
-      { icon: Camera,   label: "Photography",       url: createPageUrl("Photography") },
-      { icon: Sparkles, label: "Beauty",            url: createPageUrl("Beauty") },
-      { icon: Music2,   label: "Music",             url: createPageUrl("Music") },
-      { icon: Image,    label: "Moodboard",         url: createPageUrl("Moodboard") },
-      { icon: FileText, label: "Vows & speeches",   url: createPageUrl("VowsSpeeches") },
-      { icon: Package,  label: "Wedding favours",   url: "/wedding-favours" },
+      { icon: Palette,         label: "Styling",          url: createPageUrl("Styling") },
+      { icon: Camera,          label: "Photography",       url: createPageUrl("Photography") },
+      { icon: Sparkles,        label: "Beauty",            url: createPageUrl("Beauty") },
+      { icon: Music2,          label: "Music",             url: createPageUrl("Music") },
+      { icon: Image,           label: "Moodboard",         url: createPageUrl("Moodboard") },
+      { icon: FileText,        label: "Vows & speeches",   url: createPageUrl("VowsSpeeches") },
+      { icon: Package,         label: "Wedding favours",   url: "/wedding-favours" },
+      { icon: UtensilsCrossed, label: "Food & beverage",   url: createPageUrl("FoodBeverage") },
     ],
   },
   {
@@ -65,21 +66,20 @@ const NAV_SECTIONS = [
   {
     label: "Day of",
     items: [
-      { icon: Clock,           label: "Schedule",          url: createPageUrl("Schedule") },
-      { icon: Heart,           label: "Ceremony details",  url: "/ceremony-details" },
-      { icon: UtensilsCrossed, label: "Food & beverage",   url: createPageUrl("FoodBeverage") },
-      { icon: Hotel,           label: "Accommodation",     url: "/accommodation" },
-      { icon: Car,             label: "Transport",         url: "/transport" },
-      { icon: Radio,           label: "Live stream",       url: createPageUrl("LiveStreaming") },
-      { icon: HelpCircle,      label: "Q&A",               url: createPageUrl("QandA") },
+      { icon: Clock,      label: "Schedule",          url: createPageUrl("Schedule") },
+      { icon: Heart,      label: "Ceremony details",  url: "/ceremony-details" },
+      { icon: Hotel,      label: "Accommodation",     url: "/accommodation" },
+      { icon: Car,        label: "Transport",         url: "/transport" },
+      { icon: Radio,      label: "Live stream",       url: createPageUrl("LiveStreaming") },
+      { icon: HelpCircle, label: "Q&A",               url: createPageUrl("QandA") },
+      { icon: Phone,      label: "Emergency contact", url: "/emergency-contact" },
     ],
   },
   {
     label: "Extras",
     items: [
-      { icon: Plane,     label: "Honeymoon",         url: "/honeymoon" },
-      { icon: Phone,     label: "Emergency contact", url: "/emergency-contact" },
-      { icon: Lightbulb, label: "Considerations",    url: createPageUrl("Considerations") },
+      { icon: Plane,     label: "Honeymoon",      url: "/honeymoon" },
+      { icon: Lightbulb, label: "Considerations", url: createPageUrl("Considerations") },
     ],
   },
 ];
