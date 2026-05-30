@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UtensilsCrossed, Wine, Loader2, Plus, X, Search, FileText, BookOpen, Check } from "lucide-react";
+import { UtensilsCrossed, Wine, Loader2, Plus, X, FileText, BookOpen, Check } from "lucide-react";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
@@ -11,38 +10,28 @@ import AvaModal from '@/components/layout/AvaModal';
 import { base44 } from "@/api/base44Client";
 const WeddingDetails = base44.entities.WeddingDetails;
 
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontFamily: PJS,
 };
 
 const inputStyle = {
   width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)',
   background: 'none', fontSize: 14, color: '#0A0A0A',
-  fontFamily: "'Plus Jakarta Sans', sans-serif", outline: 'none', padding: '6px 0',
+  fontFamily: PJS, outline: 'none', padding: '6px 0',
   boxSizing: 'border-box',
 };
 
-function GoogleField({ label, value, onChange, placeholder }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={labelStyle}>{label}</label>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-        <input style={{ ...inputStyle, flex: 1 }} value={value || ''} onChange={onChange} placeholder={placeholder} />
-        {value && (
-          <a href={`https://www.google.com/search?q=${encodeURIComponent(value)}`} target="_blank" rel="noopener noreferrer"
-            title="Search on Google"
-            style={{ color: 'rgba(10,10,10,0.3)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingBottom: 7 }}
-            onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.3)'}>
-            <Search size={13} />
-          </a>
-        )}
-      </div>
-    </div>
-  );
-}
+const TABS = [
+  { key: 'catering',       label: 'Catering' },
+  { key: 'menu',           label: 'Menu' },
+  { key: 'bar',            label: 'Bar & drinks' },
+  { key: 'notes',          label: 'Notes' },
+  { key: 'considerations', label: 'Considerations' },
+];
 
 export default function FoodBeveragePage() {
   const [data, setData] = useState({});
@@ -50,6 +39,7 @@ export default function FoodBeveragePage() {
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
+  const [activeTab, setActiveTab] = useState('catering');
   const [avaOpen, setAvaOpen] = useState(false);
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
@@ -128,106 +118,120 @@ export default function FoodBeveragePage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Food & beverage" subtitle="Plan your wedding catering, menu, and bar" />
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      {/* Ava button + save indicator */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <AvaButton label="Ask Ava to plan your menu" onClick={() => setAvaOpen(true)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+          {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+          {saveStatus === 'saved' && <><Check size={12} />Saved</>}
+        </div>
       </div>
 
-      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
-        <Tabs defaultValue="details">
-          <TabsList className="w-full justify-start">
-            <TabsTrigger value="details">Food & beverage details</TabsTrigger>
-            <TabsTrigger value="considerations">Considerations</TabsTrigger>
-          </TabsList>
+      {/* Tab bar */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer',
+              color: activeTab === tab.key ? '#E03553' : '#444444',
+              borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-          <TabsContent value="considerations" className="mt-8" style={{ maxWidth: 860 }}>
-            <PageConsiderations pageKey="food" />
-          </TabsContent>
+      <div style={{ padding: '32px 32px 48px' }}>
 
-          <TabsContent value="details" className="mt-6">
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
-            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
-            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
+        {/* Catering tab */}
+        {activeTab === 'catering' && (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <DetailsSection title="Catering" icon={UtensilsCrossed} defaultOpen>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <SectionInput label="Caterer name" value={data.catererName} onChange={e => update({ catererName: e.target.value })} placeholder="e.g. Fine Foods Co." />
+                <SectionInput label="Contact person" value={data.contactPerson} onChange={e => update({ contactPerson: e.target.value })} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <SectionInput label="Phone" value={data.phone} onChange={e => update({ phone: e.target.value })} />
+                <SectionInput label="Email" value={data.email} onChange={e => update({ email: e.target.value })} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={labelStyle}>Service style</label>
+                <Select value={data.serviceStyle || ''} onValueChange={v => update({ serviceStyle: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select style…" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="plated">Plated</SelectItem>
+                    <SelectItem value="buffet">Buffet</SelectItem>
+                    <SelectItem value="cocktail">Cocktail</SelectItem>
+                    <SelectItem value="stations">Food stations</SelectItem>
+                    <SelectItem value="family_style">Family style</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <SectionInput label="Dietary requirements overview" isTextarea value={data.dietaryRequirements} onChange={e => update({ dietaryRequirements: e.target.value })} placeholder="Overall dietary needs for guest list…" />
+            </DetailsSection>
           </div>
-        </div>
+        )}
 
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {/* Catering */}
-          <DetailsSection title="Catering" icon={UtensilsCrossed}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <GoogleField label="Caterer name" value={data.catererName} onChange={e => update({ catererName: e.target.value })} placeholder="e.g. Fine Foods Co." />
-              <SectionInput label="Contact person" value={data.contactPerson} onChange={e => update({ contactPerson: e.target.value })} />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <SectionInput label="Phone" value={data.phone} onChange={e => update({ phone: e.target.value })} />
-              <SectionInput label="Email" value={data.email} onChange={e => update({ email: e.target.value })} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={labelStyle}>Service style</label>
-              <Select value={data.serviceStyle || ''} onValueChange={v => update({ serviceStyle: v })}>
-                <SelectTrigger><SelectValue placeholder="Select style…" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="plated">Plated</SelectItem>
-                  <SelectItem value="buffet">Buffet</SelectItem>
-                  <SelectItem value="cocktail">Cocktail</SelectItem>
-                  <SelectItem value="stations">Food stations</SelectItem>
-                  <SelectItem value="family_style">Family style</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <SectionInput label="Dietary requirements overview" isTextarea value={data.dietaryRequirements} onChange={e => update({ dietaryRequirements: e.target.value })} placeholder="Overall dietary needs for guest list…" />
-          </DetailsSection>
+        {/* Menu tab */}
+        {activeTab === 'menu' && (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <DetailsSection title="Menu" icon={BookOpen} defaultOpen>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={labelStyle}>Menu items</label>
+                {menuItems.map((item, i) => (
+                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: 10, alignItems: 'flex-end' }}>
+                    <input value={item.name || ''} onChange={e => updateMenuItem(i, 'name', e.target.value)} placeholder="Item name" style={{ ...inputStyle }} />
+                    <input value={item.description || ''} onChange={e => updateMenuItem(i, 'description', e.target.value)} placeholder="Description" style={{ ...inputStyle }} />
+                    <button onClick={() => removeMenuItem(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', display: 'flex', padding: '0 0 7px' }}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+                <button onClick={addMenuItem}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#E03553', fontWeight: 700, background: 'none', border: '1px dashed rgba(224,53,83,0.4)', borderRadius: 999, padding: '7px 14px', cursor: 'pointer', fontFamily: PJS, width: 'fit-content', marginTop: 4 }}>
+                  <Plus size={12} />Add menu item
+                </button>
+              </div>
+              <SectionInput label="Wedding cake details" isTextarea value={data.weddingCakeDetails} onChange={e => update({ weddingCakeDetails: e.target.value })} placeholder="Flavour, design, tiers, baker…" />
+            </DetailsSection>
+          </div>
+        )}
 
-          {/* Menu */}
-          <DetailsSection title="Menu" icon={BookOpen}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={labelStyle}>Menu items</label>
-              {menuItems.map((item, i) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: 10, alignItems: 'flex-end' }}>
-                  <input value={item.name || ''} onChange={e => updateMenuItem(i, 'name', e.target.value)} placeholder="Item name"
-                    style={{ ...inputStyle }} />
-                  <input value={item.description || ''} onChange={e => updateMenuItem(i, 'description', e.target.value)} placeholder="Description"
-                    style={{ ...inputStyle }} />
-                  <button onClick={() => removeMenuItem(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', display: 'flex', padding: '0 0 7px' }}>
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-              <button onClick={addMenuItem}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#E03553', fontWeight: 700, background: 'none', border: '1px dashed rgba(224,53,83,0.4)', borderRadius: 999, padding: '7px 14px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", width: 'fit-content', marginTop: 4 }}>
-                <Plus size={12} />Add menu item
-              </button>
-            </div>
-            <SectionInput label="Wedding cake details" isTextarea value={data.weddingCakeDetails} onChange={e => update({ weddingCakeDetails: e.target.value })} placeholder="Flavour, design, tiers, baker…" />
-          </DetailsSection>
+        {/* Bar tab */}
+        {activeTab === 'bar' && (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <DetailsSection title="Bar & drinks" icon={Wine} defaultOpen>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={labelStyle}>Bar type</label>
+                <Select value={data.barType || ''} onValueChange={v => update({ barType: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="full_bar">Full bar</SelectItem>
+                    <SelectItem value="beer_wine">Beer & wine only</SelectItem>
+                    <SelectItem value="dry">Dry (no alcohol)</SelectItem>
+                    <SelectItem value="byo">BYO</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <SectionInput label="Signature cocktail" value={data.signatureCocktail} onChange={e => update({ signatureCocktail: e.target.value })} placeholder="Name and description of your signature drink" />
+              <SectionInput label="Drinks & bar notes" isTextarea value={data.barNotes} onChange={e => update({ barNotes: e.target.value })} placeholder="Open bar hours, wine selection, champagne toast…" />
+            </DetailsSection>
+          </div>
+        )}
 
-          {/* Bar */}
-          <DetailsSection title="Bar & drinks" icon={Wine}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={labelStyle}>Bar type</label>
-              <Select value={data.barType || ''} onValueChange={v => update({ barType: v })}>
-                <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full_bar">Full bar</SelectItem>
-                  <SelectItem value="beer_wine">Beer & wine only</SelectItem>
-                  <SelectItem value="dry">Dry (no alcohol)</SelectItem>
-                  <SelectItem value="byo">BYO</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <SectionInput label="Signature cocktail" value={data.signatureCocktail} onChange={e => update({ signatureCocktail: e.target.value })} placeholder="Name and description of your signature drink" />
-            <SectionInput label="Drinks & bar notes" isTextarea value={data.barNotes} onChange={e => update({ barNotes: e.target.value })} placeholder="Open bar hours, wine selection, champagne toast…" />
-          </DetailsSection>
+        {/* Notes tab */}
+        {activeTab === 'notes' && (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <DetailsSection title="Notes" icon={FileText} defaultOpen>
+              <SectionInput label="Additional catering notes" isTextarea value={data.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else your caterer should know…" />
+            </DetailsSection>
+          </div>
+        )}
 
-          {/* Notes */}
-          <DetailsSection title="Notes" icon={FileText}>
-            <SectionInput label="Additional catering notes" isTextarea value={data.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else your caterer should know…" />
-          </DetailsSection>
-        </div>
-          </TabsContent>
-        </Tabs>
+        {/* Considerations tab */}
+        {activeTab === 'considerations' && (
+          <PageConsiderations pageKey="food" />
+        )}
       </div>
 
       <AvaModal
