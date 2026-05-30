@@ -9,11 +9,13 @@ import {
   Palette, Music2, Image, FileText, Camera,
   Store, ShoppingBag,
   Clock, Heart, Radio, UtensilsCrossed,
-  Plane, Hotel, Car, Phone,
+  Plane, Hotel, Car, Phone, Globe,
   Settings, UserPlus, LogOut, HelpCircle, Lightbulb, CreditCard,
   Sparkles,
   BarChart2,
 } from "lucide-react";
+
+const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const NAV_SECTIONS = [
   {
@@ -21,9 +23,9 @@ const NAV_SECTIONS = [
     items: [
       { icon: Sparkles,        label: "Daily update", url: createPageUrl("DailyUpdate") },
       { icon: LayoutDashboard, label: "Overall",      url: createPageUrl("Dashboard") },
-      { icon: Calendar,        label: "Calendar",    url: createPageUrl("Calendar") },
-      { icon: CheckSquare,     label: "Checklist",   url: createPageUrl("Checklist") },
-      { icon: ListTodo,        label: "To do list",      url: createPageUrl("TodoList") },
+      { icon: Calendar,        label: "Calendar",     url: createPageUrl("Calendar") },
+      { icon: CheckSquare,     label: "Checklist",    url: createPageUrl("Checklist") },
+      { icon: ListTodo,        label: "To do list",   url: createPageUrl("TodoList") },
     ],
   },
   {
@@ -33,7 +35,7 @@ const NAV_SECTIONS = [
       { icon: UserCheck,     label: "Wedding party", url: "/wedding-party" },
       { icon: LayoutGrid,    label: "Seating",       url: createPageUrl("Seating") },
       { icon: MessageCircle, label: "Messages",      url: createPageUrl("Messages") },
-      { icon: BarChart2,    label: "Guest polls",    url: createPageUrl("Polls") },
+      { icon: BarChart2,     label: "Guest polls",   url: createPageUrl("Polls") },
     ],
   },
   {
@@ -46,14 +48,14 @@ const NAV_SECTIONS = [
   {
     label: "Creative",
     items: [
-      { icon: Palette,         label: "Styling",          url: createPageUrl("Styling") },
-      { icon: Camera,          label: "Photography",       url: createPageUrl("Photography") },
-      { icon: Sparkles,        label: "Beauty",            url: createPageUrl("Beauty") },
-      { icon: Music2,          label: "Music",             url: createPageUrl("Music") },
-      { icon: Image,           label: "Moodboard",         url: createPageUrl("Moodboard") },
-      { icon: FileText,        label: "Vows & speeches",   url: createPageUrl("VowsSpeeches") },
-      { icon: Package,         label: "Wedding favours",   url: "/wedding-favours" },
-      { icon: UtensilsCrossed, label: "Food & beverage",   url: createPageUrl("FoodBeverage") },
+      { icon: Palette,         label: "Styling",         url: createPageUrl("Styling") },
+      { icon: Camera,          label: "Photography",      url: createPageUrl("Photography") },
+      { icon: Sparkles,        label: "Beauty",           url: createPageUrl("Beauty") },
+      { icon: Music2,          label: "Music",            url: createPageUrl("Music") },
+      { icon: Image,           label: "Moodboard",        url: createPageUrl("Moodboard") },
+      { icon: FileText,        label: "Vows & speeches",  url: createPageUrl("VowsSpeeches") },
+      { icon: Package,         label: "Wedding favours",  url: "/wedding-favours" },
+      { icon: UtensilsCrossed, label: "Food & beverage",  url: createPageUrl("FoodBeverage") },
     ],
   },
   {
@@ -66,13 +68,25 @@ const NAV_SECTIONS = [
   {
     label: "Day of",
     items: [
-      { icon: Clock,      label: "Schedule",          url: createPageUrl("Schedule") },
-      { icon: Heart,      label: "Ceremony details",  url: "/ceremony-details" },
-      { icon: Hotel,      label: "Accommodation",     url: "/accommodation" },
-      { icon: Car,        label: "Transport",         url: "/transport" },
-      { icon: Radio,      label: "Live stream",       url: createPageUrl("LiveStreaming") },
-      { icon: HelpCircle, label: "Q&A",               url: createPageUrl("QandA") },
-      { icon: Phone,      label: "Emergency contact", url: "/emergency-contact" },
+      { icon: Clock,   label: "Schedule",          url: createPageUrl("Schedule") },
+      { icon: Heart,   label: "Ceremony details",  url: "/ceremony-details" },
+      { icon: Hotel,   label: "Accommodation",     url: "/accommodation" },
+      { icon: Car,     label: "Transport",         url: "/transport" },
+      { icon: Phone,   label: "Emergency contact", url: "/emergency-contact" },
+    ],
+  },
+  {
+    label: "Guest Suite",
+    guestSuite: true,
+    items: [
+      { icon: Globe,      label: "Overview",              url: createPageUrl("GuestSuite") },
+      { icon: Clock,      label: "Schedule preview",      url: createPageUrl("Schedule") },
+      { icon: HelpCircle, label: "Q&A",                   url: createPageUrl("QandA") },
+      { icon: Gift,       label: "Registry",              url: createPageUrl("Registry") },
+      { icon: Hotel,      label: "Accommodation preview", url: "/accommodation" },
+      { icon: Car,        label: "Transport preview",     url: "/transport" },
+      { icon: Radio,      label: "Live stream",           url: createPageUrl("LiveStreaming") },
+      { icon: BarChart2,  label: "Guest polls preview",   url: createPageUrl("Polls") },
     ],
   },
   {
@@ -83,7 +97,6 @@ const NAV_SECTIONS = [
     ],
   },
 ];
-
 
 // ── Shared style helpers ──────────────────────────────────────────────────────
 
@@ -96,25 +109,49 @@ const sectionLabelStyle = {
   marginTop: 24,
   marginBottom: 2,
   display: "block",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontFamily: PJS,
 };
 
-function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge }) {
+function SectionLabel({ section }) {
+  if (section.guestSuite) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 16px", marginTop: 24, marginBottom: 2 }}>
+        <Globe size={10} style={{ color: "rgba(10,10,10,0.4)", flexShrink: 0 }} />
+        <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.4)", letterSpacing: "0.06em", fontFamily: PJS }}>
+          {section.label}
+        </span>
+        <span style={{
+          fontSize: 8, fontWeight: 800, letterSpacing: "0.06em",
+          background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
+          color: "#FFFFFF", padding: "1px 4px", borderRadius: 3, flexShrink: 0,
+          fontFamily: PJS,
+        }}>
+          ULTRA
+        </span>
+      </div>
+    );
+  }
+  return <span style={sectionLabelStyle}>{section.label}</span>;
+}
+
+function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disabled, disabledTooltip }) {
   return (
     <div
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      title={disabled ? disabledTooltip : undefined}
       style={{
         display: "flex",
         alignItems: "center",
         gap: 8,
         padding: "7px 12px",
-        cursor: "pointer",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.4 : 1,
         borderLeft: isActive ? "2px solid #E03553" : "2px solid transparent",
         background: isActive ? "rgba(224,53,83,0.08)" : "transparent",
         transition: "background 0.15s ease",
       }}
-      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "rgba(10,10,10,0.04)"; }}
-      onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+      onMouseEnter={e => { if (!isActive && !disabled) e.currentTarget.style.background = "rgba(10,10,10,0.04)"; }}
+      onMouseLeave={e => { if (!isActive && !disabled) e.currentTarget.style.background = "transparent"; }}
     >
       <Icon
         size={14}
@@ -130,7 +167,7 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge }) {
           overflow: "hidden",
           whiteSpace: "nowrap",
           textOverflow: "ellipsis",
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontFamily: PJS,
         }}
       >
         {label}
@@ -140,7 +177,7 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge }) {
           fontSize: 8, fontWeight: 800, letterSpacing: "0.06em",
           background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
           color: "#FFFFFF", padding: "2px 5px", borderRadius: 3, flexShrink: 0,
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontFamily: PJS,
         }}>
           ULTRA
         </span>
@@ -157,6 +194,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
   const { user } = useAuth();
   const _plan = user?.plan || 'free';
   const canAccessUltra = _plan === 'ultra' || _plan === 'free';
+  const isProPlan = _plan === 'pro';
 
   const isActive = (url) => {
     const path = url.split("?")[0];
@@ -198,22 +236,27 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
         />
 
         {/* Nav sections */}
-        {NAV_SECTIONS.map((section, si) => (
-          <div key={si}>
-            <span style={sectionLabelStyle}>{section.label}</span>
-            {section.items.map((item, ii) => (
-              <NavItem
-                key={ii}
-                icon={item.icon}
-                label={item.label}
-                url={item.url}
-                isActive={isActive(item.url)}
-                onClick={() => navigate(item.url.split("?")[0])}
-                showBadge={item.ultraBadge && !canAccessUltra}
-              />
-            ))}
-          </div>
-        ))}
+        {NAV_SECTIONS.map((section, si) => {
+          const guestSuiteDisabled = section.guestSuite && isProPlan;
+          return (
+            <div key={si}>
+              <SectionLabel section={section} />
+              {section.items.map((item, ii) => (
+                <NavItem
+                  key={ii}
+                  icon={item.icon}
+                  label={item.label}
+                  url={item.url}
+                  isActive={!guestSuiteDisabled && isActive(item.url)}
+                  onClick={() => navigate(item.url.split("?")[0])}
+                  showBadge={item.ultraBadge && !canAccessUltra}
+                  disabled={guestSuiteDisabled}
+                  disabledTooltip="Upgrade to Ultra to unlock your wedding website"
+                />
+              ))}
+            </div>
+          );
+        })}
       </div>
 
       {/* Bottom static actions */}
@@ -232,7 +275,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
           >
             <HelpCircle size={14} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#0A0A0A", fontFamily: PJS }}>
               Quick tips
             </span>
           </div>
@@ -252,7 +295,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
           onMouseLeave={e => { if (!isActive("/account")) e.currentTarget.style.background = "transparent"; }}
         >
           <CreditCard size={14} strokeWidth={1.8} style={{ color: isActive("/account") ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: isActive("/account") ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: isActive("/account") ? "#E03553" : "#0A0A0A", fontFamily: PJS }}>
             Account & billing
           </span>
         </div>
@@ -271,7 +314,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
           onMouseLeave={e => { if (!isActive("/help")) e.currentTarget.style.background = "transparent"; }}
         >
           <HelpCircle size={14} strokeWidth={1.8} style={{ color: isActive("/help") ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: isActive("/help") ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: isActive("/help") ? "#E03553" : "#0A0A0A", fontFamily: PJS }}>
             Help centre
           </span>
         </div>
@@ -288,7 +331,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
           onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
         >
           <LogOut size={14} strokeWidth={1.8} style={{ color: "#E03553", flexShrink: 0 }} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: "#E03553", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "#E03553", fontFamily: PJS }}>
             Leave dashboard
           </span>
         </div>
@@ -305,6 +348,7 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
   const { user } = useAuth();
   const _planM = user?.plan || 'free';
   const canAccessUltraMobile = _planM === 'ultra' || _planM === 'free';
+  const isProPlanMobile = _planM === 'pro';
 
   const storedUser = (() => { try { return JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch { return {}; } })();
   const initials = (storedUser.full_name || storedUser.email || 'U')
@@ -355,7 +399,7 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
               }}
             >
               <Sparkles size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS }}>
                 Design studio
               </span>
             </div>
@@ -377,49 +421,74 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
               }}
             >
               <FileText size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS }}>
                 Event details
               </span>
             </div>
           );
         })()}
 
-        {NAV_SECTIONS.map((section, si) => (
-          <div key={si}>
-            <span style={sectionLabelStyle}>{section.label}</span>
-            {section.items.map((item, ii) => {
-              const active = isActive(item.url);
-              return (
-                <div
-                  key={ii}
-                  onClick={() => handleNav(item.url)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    padding: "10px 16px", cursor: "pointer",
-                    borderLeft: active ? "2px solid #E03553" : "2px solid transparent",
-                    background: active ? "rgba(224,53,83,0.08)" : "transparent",
-                    transition: "background 0.15s ease",
-                  }}
-                >
-                  <item.icon size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif", flex: 1 }}>
-                    {item.label}
+        {NAV_SECTIONS.map((section, si) => {
+          const guestSuiteDisabled = section.guestSuite && isProPlanMobile;
+          return (
+            <div key={si}>
+              {/* Section label */}
+              {section.guestSuite ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 16px", marginTop: 24, marginBottom: 2 }}>
+                  <Globe size={10} style={{ color: "rgba(10,10,10,0.4)", flexShrink: 0 }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.4)", letterSpacing: "0.06em", fontFamily: PJS }}>
+                    {section.label}
                   </span>
-                  {item.ultraBadge && !canAccessUltraMobile && (
-                    <span style={{
-                      fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
-                      background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
-                      color: "#FFFFFF", padding: "2px 6px", borderRadius: 3, flexShrink: 0,
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    }}>
-                      ULTRA
-                    </span>
-                  )}
+                  <span style={{
+                    fontSize: 8, fontWeight: 800, letterSpacing: "0.06em",
+                    background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
+                    color: "#FFFFFF", padding: "1px 4px", borderRadius: 3, flexShrink: 0,
+                    fontFamily: PJS,
+                  }}>
+                    ULTRA
+                  </span>
                 </div>
-              );
-            })}
-          </div>
-        ))}
+              ) : (
+                <span style={sectionLabelStyle}>{section.label}</span>
+              )}
+
+              {section.items.map((item, ii) => {
+                const active = !guestSuiteDisabled && isActive(item.url);
+                return (
+                  <div
+                    key={ii}
+                    onClick={guestSuiteDisabled ? undefined : () => handleNav(item.url)}
+                    title={guestSuiteDisabled ? "Upgrade to Ultra to unlock your wedding website" : undefined}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      padding: "10px 16px",
+                      cursor: guestSuiteDisabled ? "not-allowed" : "pointer",
+                      opacity: guestSuiteDisabled ? 0.4 : 1,
+                      borderLeft: active ? "2px solid #E03553" : "2px solid transparent",
+                      background: active ? "rgba(224,53,83,0.08)" : "transparent",
+                      transition: "background 0.15s ease",
+                    }}
+                  >
+                    <item.icon size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
+                    <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS, flex: 1 }}>
+                      {item.label}
+                    </span>
+                    {item.ultraBadge && !canAccessUltraMobile && (
+                      <span style={{
+                        fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
+                        background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
+                        color: "#FFFFFF", padding: "2px 6px", borderRadius: 3, flexShrink: 0,
+                        fontFamily: PJS,
+                      }}>
+                        ULTRA
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
 
       {/* User + account section */}
@@ -431,16 +500,16 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
             background: "linear-gradient(135deg, #ec4899, #9333ea)",
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "#fff", fontSize: 13, fontWeight: 700, flexShrink: 0,
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: PJS,
           }}>
             {initials}
           </div>
           <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "#0A0A0A", margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#0A0A0A", margin: 0, fontFamily: PJS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {storedUser.full_name || "Your account"}
             </p>
             {storedUser.email && (
-              <p style={{ fontSize: 11, color: "rgba(10,10,10,0.4)", margin: "1px 0 0", fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              <p style={{ fontSize: 11, color: "rgba(10,10,10,0.4)", margin: "1px 0 0", fontFamily: PJS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {storedUser.email}
               </p>
             )}
@@ -461,7 +530,7 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
           >
             <item.icon size={16} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#0A0A0A", fontFamily: PJS }}>
               {item.label}
             </span>
           </div>
@@ -475,7 +544,7 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
           onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
         >
           <LogOut size={16} strokeWidth={1.8} style={{ color: "#E03553", flexShrink: 0 }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: "#E03553", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#E03553", fontFamily: PJS }}>
             Log out
           </span>
         </div>
