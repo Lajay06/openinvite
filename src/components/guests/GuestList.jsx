@@ -53,6 +53,56 @@ const BadgePill = ({ style, children }) => (
   <span style={{ ...pillBase, ...style }}>{children}</span>
 );
 
+/* ── Dietary pill colours ─────────────────────────────────────────────────── */
+const DIETARY_COLOURS = {
+  'Vegetarian':       { background: '#D1FAE5', color: '#065F46' },
+  'Vegan':            { background: '#A7F3D0', color: '#064E3B' },
+  'Gluten free':      { background: '#FEF3C7', color: '#92400E' },
+  'Dairy free':       { background: '#DBEAFE', color: '#1E40AF' },
+  'Halal':            { background: '#EDE9FE', color: '#5B21B6' },
+  'Kosher':           { background: '#EDE9FE', color: '#5B21B6' },
+  'Nut allergy':      { background: '#FFEDD5', color: '#9A3412' },
+  'Shellfish allergy':{ background: '#FFEDD5', color: '#9A3412' },
+  'Other':            { background: 'rgba(10,10,10,0.06)', color: '#444444' },
+};
+
+const dietaryPillStyle = {
+  display: 'inline-block',
+  fontFamily: PJS,
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  padding: '2px 7px',
+  borderRadius: 999,
+  whiteSpace: 'nowrap',
+  lineHeight: 1.4,
+};
+
+function parseDietaryList(str) {
+  if (!str || !str.trim()) return [];
+  return str.split(',').map(s => {
+    const t = s.trim();
+    // Normalise "Other: ..." back to "Other"
+    return t.startsWith('Other: ') ? 'Other' : t;
+  }).filter(t => t && t !== 'None');
+}
+
+function DietaryPills({ value }) {
+  const items = parseDietaryList(value);
+  if (items.length === 0) return null;
+  const first = items[0];
+  const rest  = items.length - 1;
+  const colours = DIETARY_COLOURS[first] || DIETARY_COLOURS['Other'];
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+      <span style={{ ...dietaryPillStyle, ...colours }}>{first}</span>
+      {rest > 0 && (
+        <span style={{ ...dietaryPillStyle, background: 'rgba(10,10,10,0.06)', color: '#444444' }}>+{rest}</span>
+      )}
+    </span>
+  );
+}
+
 const getProfilePicture = (guest) => {
   if (guest.profile_picture_url) return guest.profile_picture_url;
   if (guest.email) {
@@ -276,12 +326,12 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, loading 
                       </Avatar>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         {textCell(guest, 'name',
-                          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, whiteSpace: 'nowrap' }}>
-                            {guest.name}
-                          </p>
-                        )}
-                        {guest.dietary_restrictions && (
-                          <p style={{ fontSize: 11, color: '#444444', margin: 0, fontFamily: PJS }}>{guest.dietary_restrictions}</p>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                              {guest.name}
+                            </span>
+                            <DietaryPills value={guest.dietary_restrictions} />
+                          </span>
                         )}
                       </div>
                     </div>
