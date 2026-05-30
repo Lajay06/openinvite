@@ -14,14 +14,12 @@ export default function DetailsSection({ title, icon: Icon, children, sectionKey
     <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
       <button
         onClick={() => setOpen(o => !o)}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '14px 0', background: 'none', border: 'none', cursor: 'pointer' }}>
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', background: 'none', border: 'none', cursor: 'pointer' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {Icon && <Icon size={16} style={{ color: 'rgba(10,10,10,0.5)', flexShrink: 0 }} />}
           <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{title}</span>
         </div>
-        <div style={{ position: 'absolute', right: 0 }}>
-          {open ? <ChevronUp size={14} style={{ color: 'rgba(10,10,10,0.4)' }} /> : <ChevronDown size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />}
-        </div>
+        {open ? <ChevronUp size={14} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} /> : <ChevronDown size={14} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} />}
       </button>
 
       {open && (
