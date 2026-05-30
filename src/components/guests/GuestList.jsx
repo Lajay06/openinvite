@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users } from "lucide-react";
 
@@ -104,17 +103,38 @@ function DietaryCell({ value }) {
   );
 }
 
-const getProfilePicture = (guest) => {
-  if (guest.profile_picture_url) return guest.profile_picture_url;
-  if (guest.email) {
-    const hash = btoa(guest.email.toLowerCase().trim()).replace(/[^a-zA-Z0-9]/g, '');
-    return `https://www.gravatar.com/avatar/${hash}?d=identicon&s=40`;
-  }
-  return null;
-};
+const AVATAR_COLOURS = [
+  '#E8B4B8', '#B4C8E8', '#B4E8C8', '#D4B4E8',
+  '#E8D4B4', '#B4E8E8', '#E8C8B4', '#C8E8B4',
+];
 
-const getInitials = (name) =>
-  name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+function nameColour(name) {
+  const str = name || '';
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  return AVATAR_COLOURS[h % AVATAR_COLOURS.length];
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+function GuestAvatar({ name }) {
+  return (
+    <div style={{
+      width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+      background: nameColour(name),
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS, lineHeight: 1 }}>
+        {getInitials(name)}
+      </span>
+    </div>
+  );
+}
 
 const hoverCell = {
   cursor: 'text',
@@ -321,12 +341,7 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRol
                   {/* ── Guest name ── */}
                   <TableCell className="align-middle">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <Avatar className="w-8 h-8" style={{ flexShrink: 0 }}>
-                        <AvatarImage src={getProfilePicture(guest)} alt={guest.name} />
-                        <AvatarFallback style={{ background: 'rgba(10,10,10,0.06)', color: '#0A0A0A', fontSize: 11, fontWeight: 700 }}>
-                          {getInitials(guest.name)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <GuestAvatar name={guest.name} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         {textCell(guest, 'name',
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
