@@ -6,11 +6,8 @@ import { ImageSlider } from "@/components/ui/ImageSlider";
 import { track, identify } from "@/lib/analytics";
 import { identifyUser as crispIdentify } from "@/lib/crisp";
 
-// Cloudflare Turnstile site key.
-// Falls back to Cloudflare's public "always pass" test key so the site works
-// without env vars in development.
-const TURNSTILE_SITE_KEY =
-  import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
+// Cloudflare Turnstile site key — must be set via VITE_TURNSTILE_SITE_KEY env var.
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 // Debug: log which key is active at module load time so it shows in DevTools
 // immediately when the auth page is opened.
