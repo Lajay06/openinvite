@@ -254,9 +254,8 @@ export default function MusicPage() {
               </button>
               <button
                 onClick={() => setShowSpotifyModal(true)}
-                style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 999, border: '1px solid #1DB954', color: '#1DB954', background: '#FFFFFF', cursor: 'pointer', fontFamily: PJS, fontWeight: 600, transition: 'background 0.12s, color 0.12s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#1DB954'; e.currentTarget.style.color = '#FFFFFF'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.color = '#1DB954'; }}
+                className="btn-editorial-secondary"
+                style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}
               >
                 Connect Spotify
               </button>
@@ -308,7 +307,7 @@ export default function MusicPage() {
             <div style={{ display: 'flex', gap: 4 }}>
               {['pending', 'approved', 'declined'].map(status => (
                 <button key={status} onClick={() => setRequestFilter(status)}
-                  style={{ padding: '4px 12px', border: `1px solid ${requestFilter === status ? '#0A0A0A' : '#E5E5E5'}`, background: requestFilter === status ? '#0A0A0A' : 'transparent', color: requestFilter === status ? '#FFFFFF' : '#0A0A0A', fontSize: 14, fontWeight: 500, cursor: 'pointer', borderRadius: 999, fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                  style={{ padding: '3px 10px', border: 'none', background: requestFilter === status ? '#E03553' : 'rgba(10,10,10,0.06)', color: requestFilter === status ? '#FFFFFF' : 'rgba(10,10,10,0.6)', fontSize: 12, fontWeight: 600, cursor: 'pointer', borderRadius: 999, fontFamily: PJS, whiteSpace: 'nowrap', transition: 'background 0.12s, color 0.12s' }}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}{status === 'pending' && pendingCount > 0 ? ` (${pendingCount})` : ''}
                 </button>
               ))}
