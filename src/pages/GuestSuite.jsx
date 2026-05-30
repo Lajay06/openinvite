@@ -1,200 +1,231 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import { 
-  Sparkles, 
-  Globe, 
-  Mail, 
-  CheckSquare, 
-  Printer, 
-  Eye, 
-  Settings,
-  ArrowRight,
-  MapPin
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
-import AIWeddingAssistant from '../components/shared/AIWeddingAssistant';
-import { WeddingDetails } from '@/entities/WeddingDetails';
-import { Invitation } from '@/entities/Invitation';
+import { Loader2, Globe, Mail, CheckSquare, Printer, Eye, MapPin, Calendar, Clock, ArrowRight } from 'lucide-react';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 
-const FeatureCard = ({ title, description, icon: Icon, href, actionText, comingSoon }) => (
-  <Card className="flex flex-col bg-white border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-    <CardHeader>
-      <div className="flex items-center gap-4">
-        <div className="p-3 bg-pink-100 rounded-lg">
-          <Icon className="w-6 h-6 text-pink-600" />
-        </div>
-        <div>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </div>
-      </div>
-    </CardHeader>
-    <CardContent className="flex-grow flex items-end justify-between">
-      {comingSoon ? (
-        <span className="text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Coming Soon</span>
-      ) : (
-        <Link to={href}>
-          <Button variant="outline" className="border-gray-200">
-            {actionText}
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </Link>
-      )}
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-600">
-            <Eye className="w-4 h-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-600">
-            <Settings className="w-4 h-4" />
-        </Button>
-      </div>
-    </CardContent>
-  </Card>
-);
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+function fmt(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+}
+
+function daysUntil(iso) {
+  if (!iso) return null;
+  return Math.ceil((new Date(iso) - new Date()) / (1000 * 60 * 60 * 24));
+}
+
+const FEATURES = [
+  {
+    icon: Globe,
+    title: 'Wedding website',
+    desc: 'Public-facing site with your story, travel details, and more.',
+    action: 'View website',
+    href: createPageUrl('WeddingWebsite'),
+    comingSoon: false,
+  },
+  {
+    icon: Mail,
+    title: 'Digital invitations',
+    desc: 'Design and send stunning digital invites that link to your website.',
+    action: 'Manage invitations',
+    href: createPageUrl('Guests'),
+    comingSoon: false,
+  },
+  {
+    icon: CheckSquare,
+    title: 'RSVP management',
+    desc: 'Collect guest responses, meal choices, and personal messages.',
+    action: 'View RSVPs',
+    href: createPageUrl('Guests'),
+    comingSoon: false,
+  },
+  {
+    icon: Printer,
+    title: 'Print-ready designs',
+    desc: 'Generate printable versions of your invitation designs.',
+    action: 'Create printable',
+    href: null,
+    comingSoon: true,
+  },
+];
 
 export default function GuestSuite() {
-  const [venueLocation, setVenueLocation] = useState(null);
-  const [weddingDate, setWeddingDate] = useState(null);
+  const navigate = useNavigate();
+  const [wedding, setWedding] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => {
-    loadVenueData();
+    base44.entities.WeddingDetails.list()
+      .then(rows => { setWedding(rows[0] || null); })
+      .catch(e => console.error('GuestSuite: failed to load wedding details', e))
+      .finally(() => setLoading(false));
   }, []);
 
-  const loadVenueData = async () => {
-    try {
-      const weddingDetails = await WeddingDetails.list();
-      const invitations = await Invitation.list();
-
-      if (weddingDetails.length > 0 && weddingDetails[0].mainCeremony?.address) {
-        setVenueLocation(weddingDetails[0].mainCeremony.address);
-      }
-      
-      if (invitations.length > 0 && invitations[0].wedding_date) {
-        setWeddingDate(invitations[0].wedding_date);
-      }
-    } catch (error) {
-      console.error('Error loading venue data:', error);
-    }
-  };
-
-  const getGoogleMapsUrl = () => {
-    if (!venueLocation) return null;
-    const encodedAddress = encodeURIComponent(venueLocation);
-    return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddress}&zoom=15`;
-  };
-
-  const getDirectionsUrl = () => {
-    if (!venueLocation) return null;
-    const encodedAddress = encodeURIComponent(venueLocation);
-    return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
-  };
+  const couple1 = wedding?.couple1Name || '';
+  const couple2 = wedding?.couple2Name || '';
+  const coupleName = couple1 && couple2 ? `${couple1} & ${couple2}` : couple1 || couple2 || '';
+  const weddingDate = wedding?.weddingDate || '';
+  const venueName = wedding?.mainCeremony?.venueName || '';
+  const venueAddress = wedding?.mainCeremony?.address || '';
+  const days = daysUntil(weddingDate);
+  const hasDetails = coupleName || weddingDate || venueName;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="p-6 lg:p-8 space-y-8">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 lg:p-12">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <Sparkles className="w-8 h-8 text-pink-500" />
-                <Globe className="w-6 h-6 text-purple-500" />
-              </div>
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
-                Guest Suite
-              </h1>
-              <p className="text-xl text-gray-600">
-                Your all-in-one space to create your wedding website, manage invites, and delight your guests.
+    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+      <DashboardPageHeader
+        title="Guest Suite"
+        subtitle="Your wedding website and guest experience hub"
+      />
+
+      {/* Ava row */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <AvaButton label="Ask Ava about your guest experience" onClick={() => setAvaOpen(true)} />
+      </div>
+
+      {/* Wedding-at-a-glance strip */}
+      {loading ? (
+        <div style={{ padding: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Loader2 size={20} style={{ color: 'rgba(10,10,10,0.3)' }} className="animate-spin" />
+        </div>
+      ) : hasDetails ? (
+        <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+          {/* Couple names */}
+          <div className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '20px 32px', borderRight: '1px solid rgba(10,10,10,0.08)' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 6px' }}>Couple</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {coupleName || <span style={{ color: 'rgba(10,10,10,0.3)' }}>—</span>}
+            </p>
+          </div>
+
+          {/* Date */}
+          <div className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '20px 32px', borderRight: '1px solid rgba(10,10,10,0.08)' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 6px' }}>Date</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>
+              {fmt(weddingDate) || <span style={{ color: 'rgba(10,10,10,0.3)' }}>—</span>}
+            </p>
+          </div>
+
+          {/* Venue */}
+          <div className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '20px 32px', borderRight: '1px solid rgba(10,10,10,0.08)' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 6px' }}>Venue</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {venueName || <span style={{ color: 'rgba(10,10,10,0.3)' }}>—</span>}
+            </p>
+            {venueAddress && (
+              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, margin: '2px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {venueAddress}
               </p>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="border-gray-200 hover:bg-gray-50"
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                View Your Live Site
-              </Button>
-            </div>
+            )}
+          </div>
+
+          {/* Countdown */}
+          <div className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '20px 32px' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 6px' }}>Countdown</p>
+            {days !== null ? (
+              days > 0 ? (
+                <p style={{ fontSize: 20, fontWeight: 700, color: '#E03553', fontFamily: PJS, margin: 0 }}>
+                  {days} <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.5)' }}>days to go</span>
+                </p>
+              ) : days === 0 ? (
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#E03553', fontFamily: PJS, margin: 0 }}>Today! 🎉</p>
+              ) : (
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+                  {Math.abs(days)} days ago
+                </p>
+              )
+            ) : (
+              <span style={{ color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>—</span>
+            )}
           </div>
         </div>
+      ) : (
+        /* Empty state */
+        <div style={{ padding: '32px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 4px' }}>
+              Your wedding details will appear here
+            </p>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: 0 }}>
+              Fill in your couple names, wedding date, and venue so they automatically appear on your guest-facing pages.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/event-details')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0,
+              fontSize: 13, fontWeight: 700, color: '#E03553',
+              background: 'none', border: '1px solid rgba(224,53,83,0.3)', borderRadius: 999,
+              padding: '8px 16px', cursor: 'pointer', fontFamily: PJS,
+            }}
+          >
+            Complete event details <ArrowRight size={13} />
+          </button>
+        </div>
+      )}
 
-        {/* Venue Location Map */}
-        {venueLocation && (
-          <Card className="bg-white border-gray-100 shadow-sm overflow-hidden">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <MapPin className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Wedding Venue Location</CardTitle>
-                    <CardDescription className="text-sm">{venueLocation}</CardDescription>
-                  </div>
+      {/* Feature grid */}
+      <div style={{ padding: '32px 32px 48px' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 20px' }}>FEATURES</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 1, border: '1px solid rgba(10,10,10,0.08)' }}>
+          {FEATURES.map((f, i) => {
+            const Icon = f.icon;
+            return (
+              <div key={i} style={{
+                padding: '24px 24px 20px',
+                background: '#FFFFFF',
+                borderRight: (i + 1) % 2 !== 0 ? '1px solid rgba(10,10,10,0.08)' : 'none',
+                borderBottom: i < FEATURES.length - 2 ? '1px solid rgba(10,10,10,0.08)' : 'none',
+                display: 'flex', flexDirection: 'column', gap: 12,
+              }}>
+                <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon size={16} style={{ color: '#0A0A0A' }} />
                 </div>
-                <Button variant="outline" size="sm" asChild>
-                  <a href={getDirectionsUrl()} target="_blank" rel="noopener noreferrer">
-                    Get Directions
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </a>
-                </Button>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 4px' }}>{f.title}</p>
+                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: 0, lineHeight: 1.5 }}>{f.desc}</p>
+                </div>
+                <div>
+                  {f.comingSoon ? (
+                    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS, background: 'rgba(10,10,10,0.06)', padding: '3px 10px', borderRadius: 999 }}>
+                      Coming soon
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => navigate(f.href)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        fontSize: 12, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS,
+                        background: 'none', border: '1px solid rgba(10,10,10,0.18)', borderRadius: 999,
+                        padding: '6px 14px', cursor: 'pointer',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(10,10,10,0.18)'; e.currentTarget.style.color = '#0A0A0A'; }}
+                    >
+                      {f.action} <ArrowRight size={11} />
+                    </button>
+                  )}
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <iframe
-                src={getGoogleMapsUrl()}
-                width="100%"
-                height="350"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="w-full"
-              />
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Feature Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FeatureCard
-            title="Wedding Website"
-            description="Build a public-facing site with your story, travel details, and more."
-            icon={Globe}
-            actionText="View Website"
-            href={createPageUrl("WeddingWebsite")}
-            comingSoon={false}
-          />
-          <FeatureCard
-            title="Digital Invitations"
-            description="Design and send stunning digital invites that link to your website."
-            icon={Mail}
-            actionText="Manage Invites"
-            href={createPageUrl("Invitations")}
-            comingSoon={false}
-          />
-          <FeatureCard
-            title="RSVP Management"
-            description="Collect guest responses, meal choices, and personal messages in one place."
-            icon={CheckSquare}
-            actionText="View RSVPs"
-            href={createPageUrl("Guests")}
-            comingSoon={false}
-          />
-          <FeatureCard
-            title="Print-Ready Designs"
-            description="Generate printable versions of your invitation designs."
-            icon={Printer}
-            actionText="Create Printable"
-            href={createPageUrl("PrintDesigner")}
-            comingSoon={true}
-          />
+            );
+          })}
         </div>
       </div>
-      <AIWeddingAssistant />
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Guest Suite advisor"
+        systemPrompt="You are Ava, a wedding guest experience advisor. Help plan the guest website, invitations, RSVP flow, and overall guest experience."
+        quickActions={["What should go on my wedding website?", "How do I write a great RSVP message?", "Tips for making guests feel welcome", "What information do guests need before the wedding?"]}
+      />
     </div>
   );
 }

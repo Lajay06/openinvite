@@ -75,9 +75,11 @@ export default function RSVPPage() {
     setSubmitting(false);
   };
 
-  const coupleName = wedding?.coupleName || wedding?.couple_name || '';
-  const weddingDate = wedding?.weddingDate || wedding?.wedding_date || '';
-  const venue = wedding?.venueName || wedding?.venue_name || '';
+  const c1 = wedding?.couple1Name || '';
+  const c2 = wedding?.couple2Name || '';
+  const coupleName = c1 && c2 ? `${c1} & ${c2}` : c1 || c2 || '';
+  const weddingDate = wedding?.weddingDate || '';
+  const venue = wedding?.mainCeremony?.venueName || '';
 
   const dateStr = weddingDate
     ? new Date(weddingDate).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
