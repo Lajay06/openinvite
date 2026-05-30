@@ -100,7 +100,7 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Spotify credentials not available' });
   }
 
-  // ── Spotify search ────────────────────────────────────────────────────────
+  // ── Spotify search (limit 10, returns artwork_url + artwork_url_small) ────
   try {
     const spotifyRes = await fetch(
       `https://api.spotify.com/v1/search?q=${encodeURIComponent(q.trim())}&type=track&limit=10`,
