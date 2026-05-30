@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Cell, LabelList, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Cell, LabelList, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 const STATUS_COLORS = {
   Attending: '#E03553',
@@ -23,15 +23,6 @@ function getValueLabelFill(name) {
   return name === 'Pending' ? '#0A0A0A' : '#FFFFFF';
 }
 
-const CustomTooltip = ({ active, payload }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{ background: '#0A0A0A', padding: '8px 12px' }}>
-      <p style={labelStyle}>{payload[0].payload.name}</p>
-      <p style={{ fontSize: 20, fontWeight: 800, color: '#fff', fontFamily: PJS, letterSpacing: '-0.03em' }}>{payload[0].value}</p>
-    </div>
-  );
-};
 
 export default function RSVPChart({ guests }) {
   const rsvpData = React.useMemo(() => {
@@ -71,7 +62,6 @@ export default function RSVPChart({ guests }) {
                 tickLine={false}
                 allowDecimals={false}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#F5F5F5' }} />
               <Bar dataKey="value" radius={0}>
                 {rsvpData.map((entry) => (
                   <Cell key={entry.name} fill={getColor(entry.name)} />
