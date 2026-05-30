@@ -370,6 +370,13 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
       <DashboardPageHeader title="Guest polls" subtitle="Involve your guests in the planning" />
 
+      {/* Guest Suite visibility banner */}
+      <div style={{ padding: '8px 32px', background: 'rgba(10,10,10,0.02)', borderBottom: '1px solid rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS }}>
+          ✨ Poll results are visible in your Guest Suite → Guest polls
+        </span>
+      </div>
+
       <div style={{ padding: '16px 32px 0' }}>
         <AvaButton label="Ask Ava to suggest poll ideas" />
       </div>

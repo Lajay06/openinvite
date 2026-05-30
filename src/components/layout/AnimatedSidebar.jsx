@@ -82,11 +82,11 @@ const NAV_SECTIONS = [
       { icon: Globe,      label: "Overview",  url: createPageUrl("GuestSuite") },
       { icon: Clock,      label: "Schedule",  url: createPageUrl("GuestSuiteSchedule") },
       { icon: HelpCircle, label: "Q&A",       url: createPageUrl("GuestSuiteQandA") },
-      { icon: Gift,       label: "Registry",      url: createPageUrl("Registry") },
+      { icon: Gift,       label: "Registry",      url: createPageUrl("GuestSuiteRegistry") },
       { icon: Hotel,      label: "Accommodation", url: createPageUrl("GuestSuiteAccommodation") },
       { icon: Car,        label: "Transport",     url: createPageUrl("GuestSuiteTransport") },
       { icon: Radio,      label: "Live stream",   url: createPageUrl("LiveStreaming") },
-      { icon: BarChart2,  label: "Guest polls",   url: createPageUrl("Polls") },
+      { icon: BarChart2,  label: "Guest polls",   url: createPageUrl("GuestSuitePolls") },
     ],
   },
   {
