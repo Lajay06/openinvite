@@ -638,7 +638,7 @@ export default function PageConsiderations({ pageKey }) {
   const items = CONSIDERATIONS[pageKey] || [];
   if (items.length === 0) {
     return (
-      <div style={{ padding: '40px 0', textAlign: 'center' }}>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 0', textAlign: 'center' }}>
         <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
           No considerations available for this page.
         </p>
@@ -646,7 +646,7 @@ export default function PageConsiderations({ pageKey }) {
     );
   }
   return (
-    <div>
+    <div style={{ maxWidth: 760, margin: '0 auto' }}>
       {items.map(item => <AccordionItem key={item.id} item={item} />)}
     </div>
   );
