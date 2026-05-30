@@ -78,7 +78,10 @@
       "Bash(sed -n '148,175p' /Users/urijay/Downloads/openinvite/src/pages/Vendors.jsx)",
       "Bash(sed -n '145,175p' /Users/urijay/Downloads/openinvite/src/pages/Seating.jsx)",
       "Bash(vercel env *)",
-      "Bash(grep -rn \"99\\\\|199\\\\|\\\\$\" /Users/urijay/Downloads/openinvite/api/webhooks/stripe.js)"
+      "Bash(grep -rn \"99\\\\|199\\\\|\\\\$\" /Users/urijay/Downloads/openinvite/api/webhooks/stripe.js)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(echo \"Exit: $?\")",
+      "Read(//tmp/**)"
     ]
   }
 }
