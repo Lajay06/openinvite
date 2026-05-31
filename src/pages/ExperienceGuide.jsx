@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { ChevronLeft, Heart, Star, MapPin, ExternalLink } from 'lucide-react';
+import { ChevronLeft, Heart, Star, MapPin, ExternalLink, Clock } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -360,6 +360,11 @@ export default function ExperienceGuidePage() {
         <CouplePicksSection guide={guide} details={details} saved={saved} onToggle={toggleSaved} />
       )}
 
+      {/* Itinerary — only if published and itinerary has days */}
+      {guide.published && guide.itinerary?.schedule?.length > 0 && (
+        <ItinerarySection guide={guide} details={details} />
+      )}
+
       {/* Saved places */}
       <SavedSection savedPlaces={savedPlacesList} saved={saved} onToggle={toggleSaved} />
 
@@ -448,6 +453,114 @@ export default function ExperienceGuidePage() {
           Back to wedding site
         </Link>
       </div>
+    </div>
+  );
+}
+
+// ── Itinerary section (guest-facing, read-only) ────────────────────────────────
+
+const TIME_BLOCKS = ['morning', 'afternoon', 'evening'];
+
+function ItinerarySection({ guide, details }) {
+  const itinerary = guide.itinerary;
+  const coupleName = [details.couple1Name, details.couple2Name].filter(Boolean).join(' & ');
+
+  const findSavedPlace = (placeId) => {
+    for (const cat of Object.values(guide.categories || {})) {
+      const found = (cat.places || []).find(p => p.place_id === placeId);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  return (
+    <div style={{ borderBottom: '1px solid #EEEEEE' }}>
+      <div style={{ padding: '40px 24px 24px' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontFamily: PJS }}>
+          {coupleName}
+        </p>
+        <p style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>
+          {itinerary.schedule.length === 1 ? 'Suggested day plan' : `${itinerary.schedule.length}-day itinerary`}
+        </p>
+      </div>
+
+      <div style={{ padding: '0 24px 40px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {itinerary.schedule.map(day => (
+          <ItineraryDayCard key={day.day} day={day} findSavedPlace={findSavedPlace} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ItineraryDayCard({ day, findSavedPlace }) {
+  const hasActivities = TIME_BLOCKS.some(b => (day.blocks?.[b] || []).length > 0);
+  if (!hasActivities) return null;
+
+  return (
+    <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
+      {/* Day header */}
+      <div style={{ padding: '12px 18px', background: '#0A0A0A', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+          Day {day.day}
+        </span>
+        <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS }}>
+          {day.title || `Day ${day.day}`}
+        </span>
+      </div>
+
+      {/* Time blocks */}
+      {TIME_BLOCKS.map((block, bi) => {
+        const activities = day.blocks?.[block] || [];
+        if (activities.length === 0) return null;
+        return (
+          <div key={block} style={{ padding: '14px 18px', borderTop: bi > 0 ? '1px solid rgba(10,10,10,0.06)' : 'none' }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS, margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Clock size={10} /> {block.charAt(0).toUpperCase() + block.slice(1)}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {activities.map(activity => {
+                const savedPlace = activity.type === 'place' ? findSavedPlace(activity.place_id) : null;
+                const photo = savedPlace?.photo_ref ? photoUrl(savedPlace.photo_ref) : null;
+                return (
+                  <div key={activity.id || activity.place_id || activity.custom_text} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    {photo ? (
+                      <img src={photo} alt="" style={{ width: 52, height: 52, objectFit: 'cover', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <div style={{ width: 52, height: 52, background: 'rgba(10,10,10,0.04)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <MapPin size={16} color="rgba(10,10,10,0.15)" />
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: '0 0 4px', fontFamily: PJS, lineHeight: 1.3 }}>
+                        {activity.type === 'place' ? activity.place_name : activity.custom_text}
+                      </p>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                        {activity.category && (
+                          <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.5)', fontFamily: PJS }}>
+                            {activity.category}
+                          </span>
+                        )}
+                        {activity.note && (
+                          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, fontStyle: 'italic' }}>
+                            {activity.note}
+                          </span>
+                        )}
+                      </div>
+                      {savedPlace?.maps_url && (
+                        <a href={savedPlace.maps_url} target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textDecoration: 'none', marginTop: 4 }}>
+                          <ExternalLink size={10} /> View on maps
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
