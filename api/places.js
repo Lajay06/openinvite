@@ -9,14 +9,16 @@
  */
 
 const MOCK_PLACES = [
-  { place_id: 'mock_1', name: 'The Harbour Kitchen', address: '1 Circular Quay, Sydney NSW', rating: 4.6, user_ratings_total: 842, price_level: 3, photo_reference: null, maps_url: 'https://maps.google.com', types: ['restaurant'] },
-  { place_id: 'mock_2', name: 'Sunset Bar & Grill',  address: '22 Beach Rd, Sydney NSW',     rating: 4.4, user_ratings_total: 514, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com', types: ['bar'] },
-  { place_id: 'mock_3', name: 'Grand Hotel Sydney',  address: '30 Hunter St, Sydney NSW',    rating: 4.5, user_ratings_total: 1203, price_level: 4, photo_reference: null, maps_url: 'https://maps.google.com', types: ['lodging'] },
-  { place_id: 'mock_4', name: 'City Rooftop Café',   address: '5 King St, Sydney NSW',       rating: 4.7, user_ratings_total: 328, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com', types: ['cafe'] },
-  { place_id: 'mock_5', name: 'Botanical Gardens',   address: 'Mrs Macquaries Rd, Sydney NSW', rating: 4.8, user_ratings_total: 4500, price_level: 0, photo_reference: null, maps_url: 'https://maps.google.com', types: ['park'] },
-  { place_id: 'mock_6', name: 'Opera House Tours',   address: 'Bennelong Point, Sydney NSW',  rating: 4.9, user_ratings_total: 8200, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com', types: ['tourist_attraction'] },
-  { place_id: 'mock_7', name: 'Central Taxi Stand',  address: 'Central Station, Sydney NSW', rating: 4.1, user_ratings_total: 112, price_level: 1, photo_reference: null, maps_url: 'https://maps.google.com', types: ['taxi_stand'] },
-  { place_id: 'mock_8', name: 'Budget Car Rentals',  address: '80 Elizabeth St, Sydney NSW', rating: 4.0, user_ratings_total: 265, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com', types: ['car_rental'] },
+  { place_id: 'mock_1', name: 'Golden Hour Photography Studio', address: '12 Clarence St, Sydney NSW 2000', rating: 4.9, user_ratings_total: 312, price_level: 3, photo_reference: null, maps_url: 'https://maps.google.com/?q=Golden+Hour+Photography+Sydney', types: ['photographer'] },
+  { place_id: 'mock_2', name: 'Bloom & Wild Florals',           address: '88 Bourke St, Melbourne VIC 3000', rating: 4.8, user_ratings_total: 189, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com/?q=Bloom+Wild+Florals+Melbourne', types: ['florist'] },
+  { place_id: 'mock_3', name: 'Feast & Gather Catering Co.',    address: '5 Harris St, Pyrmont NSW 2009',    rating: 4.7, user_ratings_total: 456, price_level: 3, photo_reference: null, maps_url: 'https://maps.google.com/?q=Feast+Gather+Catering+Sydney', types: ['food'] },
+  { place_id: 'mock_4', name: 'The Film Couple',                address: 'Online — Australia-wide',          rating: 4.9, user_ratings_total: 134, price_level: 3, photo_reference: null, maps_url: 'https://maps.google.com/?q=The+Film+Couple+Wedding', types: ['videographer'] },
+  { place_id: 'mock_5', name: 'Sweet Layers Bakery',            address: '22 Surrey Hills, Brisbane QLD 4000', rating: 4.8, user_ratings_total: 267, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com/?q=Sweet+Layers+Bakery+Brisbane', types: ['bakery'] },
+  { place_id: 'mock_6', name: 'La Maison Wedding Venue',        address: '1 Domain Rd, South Yarra VIC 3141', rating: 4.6, user_ratings_total: 571, price_level: 4, photo_reference: null, maps_url: 'https://maps.google.com/?q=La+Maison+Venue+Melbourne', types: ['event_venue'] },
+  { place_id: 'mock_7', name: 'Radiant Bridal Beauty Bar',      address: '46 King St, Newtown NSW 2042',      rating: 4.9, user_ratings_total: 318, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com/?q=Radiant+Beauty+Bar+Sydney', types: ['beauty_salon'] },
+  { place_id: 'mock_8', name: 'DJ Max & Live Music Co.',        address: '300 Brunswick St, Fitzroy VIC 3065', rating: 4.6, user_ratings_total: 201, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com/?q=DJ+Max+Melbourne', types: ['entertainment'] },
+  { place_id: 'mock_9', name: 'Classic Car Hire Sydney',        address: '10 O\'Riordan St, Alexandria NSW 2015', rating: 4.5, user_ratings_total: 76, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com/?q=Classic+Car+Hire+Sydney', types: ['car_rental'] },
+  { place_id: 'mock_10', name: 'Heartfelt Ceremonies',          address: '15 Chapel St, Windsor VIC 3181',    rating: 4.8, user_ratings_total: 178, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com/?q=Heartfelt+Ceremonies+Melbourne', types: ['celebrant'] },
 ];
 
 const PRICE_LEVEL_MAP = {

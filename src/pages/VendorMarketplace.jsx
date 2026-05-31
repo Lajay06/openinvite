@@ -518,8 +518,7 @@ const MOCK_VENDORS = [
 
 const PRICE_ORDER = { '$': 1, '$$': 2, '$$$': 3, '$$$$': 4 };
 
-// Add VITE_GOOGLE_PLACES_KEY to your Vercel environment variables to enable real vendor search.
-// Get a key from console.cloud.google.com and enable: Places API.
+// Vendor search routes through /api/places — server-side proxy, GOOGLE_PLACES_API_KEY never exposed to browser.
 
 export default function VendorMarketplace() {
   const [search, setSearch] = useState('');
@@ -561,38 +560,52 @@ export default function VendorMarketplace() {
   const handleGetQuote = (vendor) => { setSelectedVendor(vendor); setQuoteOpen(true); };
 
   const handleSearch = async () => {
-    const key = import.meta.env.VITE_GOOGLE_PLACES_KEY;
-    if (!key) { setApiStatus('no_key'); setPlaceVendors(null); return; }
     setApiStatus('searching');
-    const queryParts = [category !== 'All' ? category : 'wedding vendor', locationQ || ''].filter(Boolean);
-    const query = `${queryParts.join(' ')} wedding`;
+    // Build a specific search query based on category + user search term
+    const CATEGORY_QUERIES = {
+      'Photography':   'wedding photographer',
+      'Videography':   'wedding videographer filmmaker',
+      'Catering':      'wedding catering caterer',
+      'Florals':       'wedding florist',
+      'Styling':       'wedding stylist event planner',
+      'Hair & makeup': 'bridal hair makeup artist',
+      'Music & DJ':    'wedding DJ band music',
+      'Entertainment': 'wedding entertainment performer',
+      'Venues':        'wedding venue function centre',
+      'Transport':     'wedding car hire chauffeur',
+      'Celebrant':     'wedding celebrant officiant',
+      'Stationery':    'wedding stationery invitations',
+      'Cake':          'wedding cake bakery',
+      'Jewellery':     'engagement ring jewellery',
+      'Other':         'wedding vendor',
+    };
+    const categoryQuery = category !== 'All' ? CATEGORY_QUERIES[category] || 'wedding vendor' : null;
+    const rawSearch = search.trim();
+    const q = rawSearch || categoryQuery || 'wedding vendor';
+    const params = new URLSearchParams({ q });
+    if (locationQ.trim()) params.set('location', locationQ.trim());
+
     try {
-      const res = await fetch(
-        `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${key}`
-      );
+      const res = await fetch(`/api/places?${params}`);
       const data = await res.json();
-      if (data.results?.length) {
-        const priceMap = ['$', '$$', '$$$', '$$$$'];
-        const mapped = data.results.map((r, i) => ({
-          id: `places_${r.place_id || i}`,
-          name: r.name,
-          category: category !== 'All' ? category : 'Other',
-          rating: r.rating || 4.0,
-          reviewCount: r.user_ratings_total || 0,
-          location: r.formatted_address || locationQ,
-          online: false,
-          priceRange: r.price_level ? priceMap[Math.min(r.price_level - 1, 3)] : '$$',
-          description: (r.types || []).map(t => t.replace(/_/g, ' ')).join(', '),
-          tags: [],
-          website: null, phone: null, email: null,
-          serviceArea: [], languages: [], certifications: [],
-          packages: [], reviews: [], depositTerms: '', cancellationPolicy: '',
-        }));
-        setPlaceVendors(mapped);
-      } else {
-        setPlaceVendors([]);
-      }
-      setApiStatus('done');
+      const priceMap = { 0: '$', 1: '$', 2: '$$', 3: '$$$', 4: '$$$$' };
+      const mapped = (data.places || []).map((p, i) => ({
+        id: `places_${p.place_id || i}`,
+        name: p.name,
+        category: category !== 'All' ? category : 'Other',
+        rating: p.rating || 4.0,
+        reviewCount: p.user_ratings_total || 0,
+        location: p.address || locationQ,
+        online: onlineOnly,
+        priceRange: p.price_level != null ? (priceMap[p.price_level] || '$$') : '$$',
+        description: p.address || '',
+        tags: [],
+        website: p.maps_url || null, phone: null, email: null,
+        serviceArea: [], languages: [], certifications: [],
+        packages: [], reviews: [], depositTerms: '', cancellationPolicy: '',
+      }));
+      setPlaceVendors(mapped);
+      setApiStatus(data.mock ? 'mock' : 'done');
     } catch {
       setApiStatus('error');
       setPlaceVendors(null);
@@ -713,20 +726,21 @@ export default function VendorMarketplace() {
 
       {/* Results */}
       <div style={{ padding: '8px 32px 48px' }}>
-        {apiStatus === 'no_key' && (
-          <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 12, fontSize: 12, color: '#92400e', fontFamily: PJS }}>
-            Add a <code style={{ fontFamily: 'monospace', background: 'rgba(0,0,0,0.06)', padding: '1px 4px' }}>VITE_GOOGLE_PLACES_KEY</code> environment variable to enable real vendor search. Showing sample data for now.
+        {apiStatus === 'mock' && placeVendors !== null && (
+          <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', marginBottom: 12, fontSize: 12, color: '#92400e', fontFamily: PJS, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Showing sample results — Google Places key not configured on server.</span>
+            <button onClick={() => { setPlaceVendors(null); setApiStatus(''); }} style={{ fontSize: 11, fontWeight: 700, color: '#92400e', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: PJS }}>Clear</button>
           </div>
         )}
         {apiStatus === 'error' && (
           <div style={{ padding: '10px 14px', background: 'rgba(224,53,83,0.06)', border: '1px solid rgba(224,53,83,0.2)', marginBottom: 12, fontSize: 12, color: '#c42d47', fontFamily: PJS }}>
-            Could not connect to Google Places (CORS or network error). Showing sample data. Consider setting up a server-side proxy.
+            Search failed — please try again.
           </div>
         )}
         {apiStatus === 'done' && placeVendors !== null && (
           <div style={{ padding: '10px 14px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', marginBottom: 12, fontSize: 12, color: '#065f46', fontFamily: PJS, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>Showing real results from Google Places.</span>
-            <button onClick={() => { setPlaceVendors(null); setApiStatus(''); }} style={{ fontSize: 11, fontWeight: 700, color: '#065f46', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: PJS }}>Back to sample data</button>
+            <span>Live results from Google Places.</span>
+            <button onClick={() => { setPlaceVendors(null); setApiStatus(''); }} style={{ fontSize: 11, fontWeight: 700, color: '#065f46', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: PJS }}>Clear results</button>
           </div>
         )}
         <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: '12px 0', marginBottom: 4 }}>
