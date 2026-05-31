@@ -88,6 +88,11 @@ export default function StudioGuestSuite() {
   const canAccess = plan === 'ultra' || plan === 'free';
   const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
 
+  // Keep activeTab in sync when the URL changes externally (e.g. back button in Website Builder)
+  useEffect(() => {
+    setActiveTab(getTabFromPath(location.pathname));
+  }, [location.pathname]);
+
   // Check for ?autofill=true param — switch to website tab and signal auto-fill
   const searchParams = new URLSearchParams(location.search);
   const triggerAutofill = searchParams.get('autofill') === 'true';
