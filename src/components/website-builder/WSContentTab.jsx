@@ -2,16 +2,14 @@ import React, { useState } from 'react';
 import { Plus, X, ChevronDown, Sparkles } from 'lucide-react';
 
 const PAGE_OPTIONS = [
-  { id: 'home', label: 'Home' },
-  { id: 'our-story', label: 'Our Story' },
+  { id: 'home',        label: 'Home' },
+  { id: 'our-story',   label: 'Our Story' },
   { id: 'celebration', label: 'Celebration' },
-  { id: 'rsvp', label: 'RSVP' },
-  { id: 'travel', label: 'Travel' },
-  { id: 'accommodation', label: 'Accommodation' },
-  { id: 'registry', label: 'Registry' },
-  { id: 'music', label: 'Music' },
-  { id: 'photos', label: 'Photos' },
-  { id: 'faq', label: 'FAQ' },
+  { id: 'rsvp',        label: 'RSVP' },
+  { id: 'registry',    label: 'Registry' },
+  { id: 'music',       label: 'Music' },
+  { id: 'photos',      label: 'Photos' },
+  { id: 'faq',         label: 'FAQ' },
 ];
 
 // ── Shared primitives ─────────────────────────────────────────
@@ -656,15 +654,13 @@ function FAQContent({ details, onChange }) {
 }
 
 const PAGE_CONTENT = {
-  'home': HomeContent,
-  'our-story': OurStoryContent,
+  'home':        HomeContent,
+  'our-story':   OurStoryContent,
   'celebration': CelebrationContent,
-  'rsvp': RSVPContent,
-  'travel': TravelContent,
-  'accommodation': AccommodationContent,
-  'registry': RegistryContent,
-  'music': MusicContent,
-  'faq': FAQContent,
+  'rsvp':        RSVPContent,
+  'registry':    RegistryContent,
+  'music':       MusicContent,
+  'faq':         FAQContent,
 };
 
 export default function WSContentTab({ details, onChange, editingPage, onPageChange }) {

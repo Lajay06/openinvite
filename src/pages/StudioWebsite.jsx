@@ -161,11 +161,6 @@ const PLACEHOLDER_PAGES = {
       { type: 'rsvp', heading: 'Will you join us?', body: "Please let us know by 1 August 2025 whether you'll be able to attend. We look forward to celebrating with you." },
     ],
   },
-  travel: {
-    sections: [
-      { type: 'travel', heading: 'Getting there', body: 'The nearest airport is Naples International (NAP), approximately 60km from the venue. We recommend flying in the day before and staying overnight.' },
-    ],
-  },
 };
 
 const DEFAULT = {
