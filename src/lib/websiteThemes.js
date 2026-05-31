@@ -411,7 +411,6 @@ export const WEDDING_PAGES = [
   { slug: 'our-story', label: 'Our Story', icon: 'BookOpen' },
   { slug: 'celebration', label: 'Celebration', icon: 'Star' },
   { slug: 'rsvp', label: 'RSVP', icon: 'Mail' },
-  { slug: 'travel', label: 'Travel', icon: 'MapPin' },
   { slug: 'registry', label: 'Registry', icon: 'Gift' },
   { slug: 'music', label: 'Music', icon: 'Music' },
   { slug: 'photos', label: 'Photos', icon: 'Camera' },

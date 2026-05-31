@@ -33,7 +33,7 @@ function PasswordGateSimple({ slug, password }) {
 
 const PAGE_LABELS = {
   'home': 'Home', 'our-story': 'Our Story', 'celebration': 'Celebration',
-  'rsvp': 'RSVP', 'travel': 'Travel', 'registry': 'Registry',
+  'rsvp': 'RSVP', 'registry': 'Registry',
   'music': 'Music', 'photos': 'Photos', 'styling': 'Styling', 'polls': 'Polls', 'faq': 'FAQ',
   'stay': 'Stay', 'transport': 'Getting here', 'experience': 'Guide',
 };
@@ -44,7 +44,6 @@ import WeddingHomePage from './pages/WeddingHomePage';
 import WeddingOurStoryPage from './pages/WeddingOurStoryPage';
 import WeddingCelebrationPage from './pages/WeddingCelebrationPage';
 import WeddingRSVPPage from './pages/WeddingRSVPPage';
-import WeddingTravelPage from './pages/WeddingTravelPage';
 import WeddingRegistryPage from './pages/WeddingRegistryPage';
 import WeddingMusicPage from './pages/WeddingMusicPage';
 import WeddingPhotosPage from './pages/WeddingPhotosPage';
@@ -60,7 +59,6 @@ const PAGE_COMPONENTS = {
   'our-story': WeddingOurStoryPage,
   'celebration': WeddingCelebrationPage,
   'rsvp': WeddingRSVPPage,
-  'travel': WeddingTravelPage,
   'registry': WeddingRegistryPage,
   'music': WeddingMusicPage,
   'photos': WeddingPhotosPage,

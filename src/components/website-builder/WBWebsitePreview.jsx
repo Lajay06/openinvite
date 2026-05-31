@@ -216,44 +216,6 @@ function RSVPPreview({ details, theme, typo, selectedSection, onSectionClick }) 
   );
 }
 
-// ── TRAVEL ────────────────────────────────────────────────────
-function TravelPreview({ details, theme, typo, selectedSection, onSectionClick }) {
-  const t = details.travelContent || {};
-  const hotels = t.accommodations || [];
-  return (
-    <PreviewSection id="travel" label="Travel" selectedSection={selectedSection} onSectionClick={onSectionClick}>
-      <div style={{ background: theme.darkBg, padding: '80px 24px' }}>
-        <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          <h1 style={{ fontFamily: typo.headingFont + ',serif', fontSize: 'clamp(2rem,5vw,3.5rem)', fontWeight: typo.headingWeight, fontStyle: typo.headingStyle || 'normal', color: theme.darkText, textAlign: 'center', marginBottom: 48 }}>Travel & Stay</h1>
-          {t.gettingThereNotes && (
-            <div style={{ marginBottom: 40 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.12em', marginBottom: 12 }}>GETTING THERE</h3>
-              <p style={{ fontFamily: typo.bodyFont, fontSize: 15, color: theme.darkText, opacity: 0.85, lineHeight: 1.7 }}>{t.gettingThereNotes}</p>
-            </div>
-          )}
-          {hotels.length > 0 && (
-            <div>
-              <h3 style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.12em', marginBottom: 16 }}>ACCOMMODATIONS</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {hotels.map((h, i) => (
-                  <div key={i} style={{ background: `${theme.lightBg}15`, border: `1px solid ${theme.accent}30`, padding: '20px 24px', borderRadius: 4 }}>
-                    <p style={{ fontFamily: typo.bodyFont, fontSize: 16, fontWeight: 700, color: theme.darkText, margin: '0 0 4px' }}>{h.name}</p>
-                    {h.address && <p style={{ fontSize: 13, color: theme.darkText, opacity: 0.7, margin: '0 0 8px' }}>{h.address}</p>}
-                    {h.url && <a href={h.url} style={{ fontSize: 12, color: theme.accent, fontWeight: 600 }}>Book Now →</a>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {!t.gettingThereNotes && hotels.length === 0 && (
-            <p style={{ textAlign: 'center', color: theme.darkText, opacity: 0.4 }}>Travel information will appear here...</p>
-          )}
-        </div>
-      </div>
-    </PreviewSection>
-  );
-}
-
 // ── REGISTRY ──────────────────────────────────────────────────
 function RegistryPreview({ details, theme, typo, selectedSection, onSectionClick }) {
   const r = details.registryContent || {};
@@ -323,6 +285,187 @@ function FAQPreview({ details, theme, typo, selectedSection, onSectionClick }) {
             </div>
           )) : (
             <p style={{ textAlign: 'center', color: theme.lightText, opacity: 0.4 }}>FAQ items will appear here...</p>
+          )}
+        </div>
+      </div>
+    </PreviewSection>
+  );
+}
+
+// ── WHERE TO STAY (Guest Suite · Accommodation) ───────────────
+function StayPreview({ details, theme, typo, selectedSection, onSectionClick }) {
+  const places = details.guestSuiteAccommodation?.places || [];
+  const accom  = details.accommodation || {};
+  return (
+    <PreviewSection id="stay" label="Stay" selectedSection={selectedSection} onSectionClick={onSectionClick}>
+      <div style={{ background: theme.lightBg, padding: '60px 24px', minHeight: 400 }}>
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          <h1 style={{ fontFamily: typo.headingFont + ',serif', fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: typo.headingWeight, fontStyle: typo.headingStyle || 'normal', color: theme.lightText, textAlign: 'center', marginBottom: 40 }}>
+            Where to stay
+          </h1>
+          {accom.coupleNote && (
+            <p style={{ fontFamily: typo.bodyFont, fontSize: 14, color: theme.lightText, opacity: 0.75, textAlign: 'center', maxWidth: 520, margin: '0 auto 36px', lineHeight: 1.7 }}>
+              {accom.coupleNote}
+            </p>
+          )}
+          {places.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+              {places.map((p, i) => (
+                <div key={p.id || i} style={{ background: theme.darkBg, borderRadius: 4, overflow: 'hidden' }}>
+                  {p.photo_url
+                    ? <img src={p.photo_url} alt={p.name} style={{ width: '100%', height: 130, objectFit: 'cover', display: 'block' }} />
+                    : <div style={{ height: 130, background: `${theme.accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 28, opacity: 0.25 }}>🏨</span></div>
+                  }
+                  <div style={{ padding: '12px 14px' }}>
+                    <p style={{ fontFamily: typo.bodyFont, fontSize: 13, fontWeight: 700, color: theme.darkText, margin: '0 0 4px' }}>{p.name}</p>
+                    {p.address && <p style={{ fontSize: 11, color: theme.darkText, opacity: 0.5, margin: 0 }}>{p.address}</p>}
+                    {p.rating && <p style={{ fontSize: 11, color: theme.accent, margin: '4px 0 0', fontWeight: 600 }}>★ {p.rating}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontFamily: typo.bodyFont, textAlign: 'center', color: theme.lightText, opacity: 0.35, fontSize: 14 }}>
+              No accommodation added yet — add places in the Guest Suite.
+            </p>
+          )}
+        </div>
+      </div>
+    </PreviewSection>
+  );
+}
+
+// ── GETTING HERE (Guest Suite · Transport) ────────────────────
+function TransportPreview({ details, theme, typo, selectedSection, onSectionClick }) {
+  const places = details.guestSuiteTransport?.places || [];
+  const notes  = details.guestSuiteTransport?.notes  || [];
+  return (
+    <PreviewSection id="transport" label="Getting here" selectedSection={selectedSection} onSectionClick={onSectionClick}>
+      <div style={{ background: theme.lightBg, padding: '60px 24px', minHeight: 400 }}>
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          <h1 style={{ fontFamily: typo.headingFont + ',serif', fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: typo.headingWeight, fontStyle: typo.headingStyle || 'normal', color: theme.lightText, textAlign: 'center', marginBottom: 40 }}>
+            Getting here
+          </h1>
+          {places.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16, marginBottom: notes.length ? 32 : 0 }}>
+              {places.map((p, i) => (
+                <div key={p.id || i} style={{ background: theme.darkBg, borderRadius: 4, overflow: 'hidden' }}>
+                  {p.photo_url
+                    ? <img src={p.photo_url} alt={p.name} style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }} />
+                    : <div style={{ height: 120, background: `${theme.accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 24, opacity: 0.25 }}>✈️</span></div>
+                  }
+                  <div style={{ padding: '12px 14px' }}>
+                    <p style={{ fontFamily: typo.bodyFont, fontSize: 13, fontWeight: 700, color: theme.darkText, margin: '0 0 4px' }}>{p.name}</p>
+                    {p.address && <p style={{ fontSize: 11, color: theme.darkText, opacity: 0.5, margin: 0 }}>{p.address}</p>}
+                    {p.note && <p style={{ fontSize: 11, color: theme.accent, margin: '4px 0 0', fontStyle: 'italic' }}>{p.note}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {notes.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {notes.map((n, i) => (
+                <div key={n.id || i} style={{ background: theme.darkBg, borderRadius: 4, padding: '14px 18px' }}>
+                  {n.title && <p style={{ fontSize: 11, fontWeight: 700, color: theme.accent, margin: '0 0 4px', letterSpacing: '0.06em' }}>{n.title}</p>}
+                  <p style={{ fontFamily: typo.bodyFont, fontSize: 13, color: theme.darkText, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{n.text}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          {places.length === 0 && notes.length === 0 && (
+            <p style={{ fontFamily: typo.bodyFont, textAlign: 'center', color: theme.lightText, opacity: 0.35, fontSize: 14 }}>
+              No transport information added yet — add locations in the Guest Suite.
+            </p>
+          )}
+        </div>
+      </div>
+    </PreviewSection>
+  );
+}
+
+// ── EXPERIENCE GUIDE (Guest Suite · Experience Guide) ─────────
+function ExperiencePreview({ details, theme, typo, selectedSection, onSectionClick }) {
+  const guide = details.experienceGuide || {};
+  const cats  = guide.categories || {};
+  const picks = guide.couplePicks || [];
+  const destination = guide.destination || details.mainCeremony?.address?.split(',').slice(-3).join(', ') || '';
+  const CATS = [
+    { key: 'mustEat', label: 'Must eat' },
+    { key: 'coffee', label: 'Coffee & bakeries' },
+    { key: 'hiddenGems', label: 'Hidden gems' },
+    { key: 'luxuryDining', label: 'Luxury dining' },
+    { key: 'nature', label: 'Beaches & nature' },
+    { key: 'nightlife', label: 'Nightlife' },
+    { key: 'thingsToDo', label: 'Things to do' },
+    { key: 'wellness', label: 'Recovery & wellness' },
+    { key: 'dayTrips', label: 'Day trips' },
+    { key: 'shopping', label: 'Shopping' },
+    { key: 'weddingWeekend', label: 'Wedding weekend essentials' },
+  ];
+  const enabledCats = CATS.filter(c => cats[c.key]?.enabled && (cats[c.key]?.places || []).length > 0);
+  const totalPlaces = enabledCats.reduce((sum, c) => sum + (cats[c.key]?.places || []).length, 0) + picks.length;
+
+  return (
+    <PreviewSection id="experience" label="Guide" selectedSection={selectedSection} onSectionClick={onSectionClick}>
+      <div style={{ background: theme.lightBg, padding: '60px 24px', minHeight: 400 }}>
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          <h1 style={{ fontFamily: typo.headingFont + ',serif', fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: typo.headingWeight, fontStyle: typo.headingStyle || 'normal', color: theme.lightText, textAlign: 'center', marginBottom: 16 }}>
+            {destination ? `Your guide to ${destination.split(',')[0].trim()}` : 'Experience guide'}
+          </h1>
+          {guide.editorialIntro && (
+            <p style={{ fontFamily: typo.bodyFont, fontSize: 14, color: theme.lightText, opacity: 0.75, textAlign: 'center', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.7 }}>
+              {guide.editorialIntro}
+            </p>
+          )}
+          {totalPlaces > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {picks.length > 0 && (
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: theme.accent, marginBottom: 14 }}>OUR FAVOURITES</p>
+                  <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
+                    {picks.slice(0, 4).map((p, i) => (
+                      <div key={p.place_id || i} style={{ flexShrink: 0, width: 160, background: theme.darkBg, borderRadius: 4, overflow: 'hidden' }}>
+                        {p.photo_ref
+                          ? <img src={`/api/places-photo?ref=${encodeURIComponent(p.photo_ref)}&maxwidth=320`} alt={p.name} style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block' }} />
+                          : <div style={{ height: 100, background: `${theme.accent}15` }} />
+                        }
+                        <div style={{ padding: '8px 10px' }}>
+                          <p style={{ fontFamily: typo.bodyFont, fontSize: 12, fontWeight: 700, color: theme.darkText, margin: 0 }}>{p.name}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {enabledCats.slice(0, 3).map(cat => (
+                <div key={cat.key}>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: theme.accent, marginBottom: 14 }}>{cat.label.toUpperCase()}</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
+                    {(cats[cat.key]?.places || []).slice(0, 3).map((p, i) => (
+                      <div key={p.place_id || i} style={{ background: theme.darkBg, borderRadius: 4, overflow: 'hidden' }}>
+                        {p.photo_ref
+                          ? <img src={`/api/places-photo?ref=${encodeURIComponent(p.photo_ref)}&maxwidth=320`} alt={p.name} style={{ width: '100%', height: 90, objectFit: 'cover', display: 'block' }} />
+                          : <div style={{ height: 90, background: `${theme.accent}15` }} />
+                        }
+                        <div style={{ padding: '8px 10px' }}>
+                          <p style={{ fontFamily: typo.bodyFont, fontSize: 12, fontWeight: 700, color: theme.darkText, margin: 0 }}>{p.name}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {enabledCats.length > 3 && (
+                <p style={{ fontFamily: typo.bodyFont, fontSize: 12, color: theme.lightText, opacity: 0.4, textAlign: 'center' }}>
+                  + {enabledCats.length - 3} more categories in the published site
+                </p>
+              )}
+            </div>
+          ) : (
+            <p style={{ fontFamily: typo.bodyFont, textAlign: 'center', color: theme.lightText, opacity: 0.35, fontSize: 14 }}>
+              No experience guide content yet — add places in the Guest Suite.
+            </p>
           )}
         </div>
       </div>
@@ -667,15 +810,17 @@ function SectionRenderer({ section, theme, typo, isSelected, onClick, isMobile =
 }
 
 const PAGE_RENDERERS = {
-  home: HomePreview,
-  'our-story': OurStoryPreview,
-  celebration: CelebrationPreview,
-  rsvp: RSVPPreview,
-  travel: TravelPreview,
-  registry: RegistryPreview,
-  music: MusicPreview,
-  photos: PhotosPreview,
-  faq: FAQPreview,
+  home:         HomePreview,
+  'our-story':  OurStoryPreview,
+  celebration:  CelebrationPreview,
+  rsvp:         RSVPPreview,
+  registry:     RegistryPreview,
+  music:        MusicPreview,
+  photos:       PhotosPreview,
+  faq:          FAQPreview,
+  stay:         StayPreview,
+  transport:    TransportPreview,
+  experience:   ExperiencePreview,
 };
 
 export default function WBWebsitePreview({ details, currentPage = 'home', onSectionClick, selectedSection, isMobile = false }) {

@@ -1,19 +1,18 @@
 import React from 'react';
-import { Home, BookOpen, Star, CheckSquare, MapPin, Gift, Music, Camera, HelpCircle, Hotel, Car, Compass } from 'lucide-react';
+import { Home, BookOpen, Star, CheckSquare, Gift, Music, Camera, HelpCircle, Hotel, Car, Compass } from 'lucide-react';
 
 const ALL_PAGES = [
-  { id: 'home', label: 'Home', Icon: Home, path: '' },
-  { id: 'our-story', label: 'Our Story', Icon: BookOpen, path: '/our-story' },
-  { id: 'celebration', label: 'Celebration', Icon: Star, path: '/celebration' },
-  { id: 'rsvp', label: 'RSVP', Icon: CheckSquare, path: '/rsvp' },
-  { id: 'travel', label: 'Travel', Icon: MapPin, path: '/travel' },
-  { id: 'registry', label: 'Registry', Icon: Gift, path: '/registry' },
-  { id: 'music', label: 'Music', Icon: Music, path: '/music' },
-  { id: 'photos', label: 'Photos', Icon: Camera, path: '/photos' },
-  { id: 'faq', label: 'FAQ', Icon: HelpCircle, path: '/faq' },
-  { id: 'stay', label: 'Where to stay', Icon: Hotel, path: '/stay', note: 'Guest Suite · Accommodation' },
-  { id: 'transport', label: 'Getting here', Icon: Car, path: '/transport', note: 'Guest Suite · Transport' },
-  { id: 'experience', label: 'Experience guide', Icon: Compass, path: '/experience', note: 'Guest Suite · Experience Guide' },
+  { id: 'home',       label: 'Home',             Icon: Home,        path: '' },
+  { id: 'our-story',  label: 'Our Story',         Icon: BookOpen,    path: '/our-story' },
+  { id: 'celebration',label: 'Celebration',       Icon: Star,        path: '/celebration' },
+  { id: 'rsvp',       label: 'RSVP',              Icon: CheckSquare, path: '/rsvp' },
+  { id: 'registry',   label: 'Registry',          Icon: Gift,        path: '/registry' },
+  { id: 'music',      label: 'Music',             Icon: Music,       path: '/music' },
+  { id: 'photos',     label: 'Photos',            Icon: Camera,      path: '/photos' },
+  { id: 'faq',        label: 'FAQ',               Icon: HelpCircle,  path: '/faq' },
+  { id: 'stay',       label: 'Where to stay',     Icon: Hotel,       path: '/stay',      note: 'Guest Suite · Accommodation' },
+  { id: 'transport',  label: 'Getting here',      Icon: Car,         path: '/transport', note: 'Guest Suite · Transport' },
+  { id: 'experience', label: 'Experience guide',  Icon: Compass,     path: '/experience',note: 'Guest Suite · Experience Guide' },
 ];
 
 export default function WSPagesTab({ details, onChange }) {
