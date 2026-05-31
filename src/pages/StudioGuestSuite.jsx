@@ -63,23 +63,20 @@ function UltraGate() {
 // Import all the builder sub-components
 import StudioWebsiteTab from '@/components/studio/guest-suite/StudioWebsiteTab';
 import StudioAssetsTab from '@/components/studio/guest-suite/StudioAssetsTab';
-import ExperienceGuideTab from '@/components/studio/guest-suite/ExperienceGuideTab';
 import PoliciesTab from '@/components/studio/guest-suite/PoliciesTab';
 import StudioShareTab from '@/components/studio/guest-suite/StudioShareTab';
 
 const TABS = [
-  { id: 'website', label: 'Website' },
-  { id: 'assets', label: 'Assets' },
-  { id: 'experience', label: 'Experience Guide' },
+  { id: 'website',  label: 'Website' },
+  { id: 'assets',   label: 'Assets' },
   { id: 'policies', label: 'Policies' },
-  { id: 'share', label: 'Share' },
+  { id: 'share',    label: 'Share' },
 ];
 
 function getTabFromPath(pathname) {
-  if (pathname.includes('/assets')) return 'assets';
-  if (pathname.includes('/experience')) return 'experience';
+  if (pathname.includes('/assets'))   return 'assets';
   if (pathname.includes('/policies')) return 'policies';
-  if (pathname.includes('/share')) return 'share';
+  if (pathname.includes('/share'))    return 'share';
   return 'website';
 }
 
@@ -106,11 +103,10 @@ export default function StudioGuestSuite() {
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
     const pathMap = {
-      website: '/studio/guest-suite',
-      assets: '/studio/guest-suite/assets',
-      experience: '/studio/guest-suite/experience',
+      website:  '/studio/guest-suite',
+      assets:   '/studio/guest-suite/assets',
       policies: '/studio/guest-suite/policies',
-      share: '/studio/guest-suite/share',
+      share:    '/studio/guest-suite/share',
     };
     navigate(pathMap[tabId], { replace: true });
   };
@@ -185,8 +181,7 @@ export default function StudioGuestSuite() {
 
       {/* TAB CONTENT */}
       <div style={{ flex: 1, overflow: 'auto' }}>
-        {activeTab === 'assets' && <StudioAssetsTab details={details} />}
-        {activeTab === 'experience' && <ExperienceGuideTab details={details} />}
+        {activeTab === 'assets'   && <StudioAssetsTab details={details} />}
         {activeTab === 'policies' && <PoliciesTab details={details} />}
         {activeTab === 'share' && <StudioShareTab details={details} />}
       </div>

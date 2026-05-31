@@ -87,7 +87,7 @@ const NAV_SECTIONS = [
       { icon: Hotel,      label: "Accommodation", url: createPageUrl("GuestSuiteAccommodation") },
       { icon: Car,        label: "Transport",     url: createPageUrl("GuestSuiteTransport") },
       { icon: Radio,      label: "Live stream",      url: createPageUrl("GuestSuiteLiveStream") },
-      { icon: MapPin,     label: "Experience guide", url: "/studio/guest-suite/experience" },
+      { icon: MapPin,     label: "Experience guide", url: createPageUrl("GuestSuiteExperience") },
       { icon: BarChart2,  label: "Guest polls",      url: createPageUrl("GuestSuitePolls") },
     ],
   },

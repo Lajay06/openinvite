@@ -268,7 +268,6 @@ const AuthenticatedApp = () => {
       <Route path="/studio/website" element={<StudioGuestSuite />} />
       <Route path="/studio/guest-suite" element={<StudioGuestSuite />} />
       <Route path="/studio/guest-suite/assets" element={<StudioGuestSuite />} />
-      <Route path="/studio/guest-suite/experience" element={<StudioGuestSuite />} />
       <Route path="/studio/guest-suite/policies" element={<StudioGuestSuite />} />
       <Route path="/studio/guest-suite/share" element={<StudioGuestSuite />} />
       <Route path="/studio/universe" element={
