@@ -5,6 +5,7 @@ import { createPageUrl } from '@/utils';
 import { Loader2, ChevronDown, ChevronUp, HelpCircle, ArrowRight } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
+
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 function QnaItem({ item }) {
@@ -102,20 +103,9 @@ export default function GuestSuiteQandA() {
             <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 8px' }}>
               No questions added yet
             </p>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: '0 0 24px', lineHeight: 1.6 }}>
-              Add frequently asked questions in your Q&A planning page and they'll appear here for guests.
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>
+              Questions added in the Q&A planning page will appear here automatically.
             </p>
-            <button
-              onClick={() => navigate(createPageUrl('QandA'))}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontSize: 13, fontWeight: 700, color: '#E03553',
-                background: 'none', border: '1px solid rgba(224,53,83,0.3)',
-                borderRadius: 999, padding: '8px 18px', cursor: 'pointer', fontFamily: PJS,
-              }}
-            >
-              Add questions in Q&A planning page <ArrowRight size={12} />
-            </button>
           </div>
         ) : (
           <div>

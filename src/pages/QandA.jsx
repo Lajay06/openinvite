@@ -161,11 +161,11 @@ export default function QandA() {
         </span>
       </div>
 
-      <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to suggest FAQ questions" />
-      </div>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 32px 80px' }}>
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 32px 80px' }}>
+        <div style={{ marginBottom: 28 }}>
+          <AvaButton label="Ask Ava to suggest FAQ questions" />
+        </div>
 
         {/* Add form */}
         <div style={{ background: 'rgba(10,10,10,0.02)', border: '1px solid rgba(10,10,10,0.06)', padding: '20px 24px', marginBottom: 40 }}>

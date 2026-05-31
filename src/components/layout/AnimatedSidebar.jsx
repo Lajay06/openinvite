@@ -81,7 +81,7 @@ const NAV_SECTIONS = [
     items: [
       { icon: Globe,      label: "Overview",  url: createPageUrl("GuestSuite") },
       { icon: Clock,      label: "Schedule",  url: createPageUrl("GuestSuiteSchedule") },
-      { icon: HelpCircle, label: "Q&A",       url: createPageUrl("GuestSuiteQandA") },
+      { icon: HelpCircle, label: "Q&A",       url: createPageUrl("QandA") },
       { icon: Gift,       label: "Registry",      url: createPageUrl("GuestSuiteRegistry") },
       { icon: Hotel,      label: "Accommodation", url: createPageUrl("GuestSuiteAccommodation") },
       { icon: Car,        label: "Transport",     url: createPageUrl("GuestSuiteTransport") },
