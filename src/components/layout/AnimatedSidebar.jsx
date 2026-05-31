@@ -13,7 +13,7 @@ import {
   Settings, UserPlus, LogOut, HelpCircle, Lightbulb, CreditCard,
   Sparkles,
   BarChart2,
-  Map,
+  MapPin,
 } from "lucide-react";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -87,7 +87,7 @@ const NAV_SECTIONS = [
       { icon: Hotel,      label: "Accommodation", url: createPageUrl("GuestSuiteAccommodation") },
       { icon: Car,        label: "Transport",     url: createPageUrl("GuestSuiteTransport") },
       { icon: Radio,      label: "Live stream",      url: createPageUrl("GuestSuiteLiveStream") },
-      { icon: Map,        label: "Experience guide", url: "/studio/guest-suite/experience" },
+      { icon: MapPin,     label: "Experience guide", url: "/studio/guest-suite/experience" },
       { icon: BarChart2,  label: "Guest polls",      url: createPageUrl("GuestSuitePolls") },
     ],
   },
