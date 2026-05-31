@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Loader2 } from 'lucide-react';
+import { Search, X, Star, MapPin, ExternalLink, Loader2 } from 'lucide-react';
 
 const VIBE_OPTIONS = [
   'Coastal luxury', 'Late-night food scene', 'Historic architecture',
@@ -26,9 +26,15 @@ const CATEGORIES = [
   { key: 'weddingWeekend', label: 'Wedding Weekend Essentials' },
 ];
 
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+function photoUrl(ref) {
+  if (!ref) return null;
+  return `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=600`;
+}
+
 export default function ExperienceGuideTab({ details }) {
   const [activeLeftTab, setActiveLeftTab] = useState('setup');
-  const [showAddGemModal, setShowAddGemModal] = useState(false);
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
@@ -56,46 +62,77 @@ export default function ExperienceGuideTab({ details }) {
     updateMutation.mutate({ editorialIntro: response });
   };
 
-  const handleSaveField = (field, value) => {
-    updateMutation.mutate({ [field]: value });
-  };
+  const handleSaveField = (field, value) => updateMutation.mutate({ [field]: value });
 
   const handleToggleVibe = (vibe) => {
-    const currentVibes = details?.experienceGuide?.vibes || [];
-    const newVibes = currentVibes.includes(vibe)
-      ? currentVibes.filter(v => v !== vibe)
-      : [...currentVibes, vibe];
-    updateMutation.mutate({ vibes: newVibes });
+    const current = details?.experienceGuide?.vibes || [];
+    const next = current.includes(vibe) ? current.filter(v => v !== vibe) : [...current, vibe];
+    updateMutation.mutate({ vibes: next });
   };
 
   const handleToggleCategory = (catKey) => {
-    const currentCats = details?.experienceGuide?.categories || {};
-    const updated = {
-      ...currentCats,
-      [catKey]: { ...currentCats[catKey], enabled: !currentCats[catKey]?.enabled },
-    };
+    const current = details?.experienceGuide?.categories || {};
+    const updated = { ...current, [catKey]: { ...current[catKey], enabled: !current[catKey]?.enabled } };
     updateMutation.mutate({ categories: updated });
   };
 
-  const destination = details?.experienceGuide?.destination || 
-    details?.mainCeremony?.address?.split(',').slice(-3).join(', ') || 
-    'Set your venue in Event Details';
+  const handleAddPlace = (place, catKey, note, isCouplePick) => {
+    const guide = details?.experienceGuide || {};
+    const categories = { ...(guide.categories || {}) };
+    const catPlaces = [...(categories[catKey]?.places || [])];
+
+    if (catPlaces.find(p => p.place_id === place.place_id)) {
+      toast.error('Already added');
+      return;
+    }
+
+    const saved = {
+      place_id: place.place_id,
+      name: place.name,
+      address: place.address,
+      rating: place.rating,
+      price_level: place.price_level,
+      photo_ref: place.photo_reference,
+      maps_url: place.maps_url,
+      note: note || '',
+      is_couple_pick: isCouplePick,
+    };
+
+    categories[catKey] = { ...(categories[catKey] || {}), places: [...catPlaces, saved] };
+
+    let couplePicks = [...(guide.couplePicks || [])];
+    if (isCouplePick && !couplePicks.find(p => p.place_id === place.place_id)) {
+      couplePicks = [...couplePicks, { ...saved, category: CATEGORIES.find(c => c.key === catKey)?.label || catKey }];
+    }
+
+    updateMutation.mutate({ categories, couplePicks });
+    toast.success(`Added to ${CATEGORIES.find(c => c.key === catKey)?.label}`);
+  };
+
+  const handleRemovePlace = (catKey, placeId) => {
+    const guide = details?.experienceGuide || {};
+    const categories = { ...(guide.categories || {}) };
+    categories[catKey] = { ...(categories[catKey] || {}), places: (categories[catKey]?.places || []).filter(p => p.place_id !== placeId) };
+    const couplePicks = (guide.couplePicks || []).filter(p => p.place_id !== placeId);
+    updateMutation.mutate({ categories, couplePicks });
+  };
+
+  const destination = details?.experienceGuide?.destination || details?.mainCeremony?.address?.split(',').slice(-3).join(', ') || 'Set your venue in Event Details';
 
   return (
     <div style={{ display: 'flex', minHeight: 'calc(100vh - 104px)' }}>
-      {/* LEFT PANEL — Editor */}
-      <div style={{ width: 340, flexShrink: 0, borderRight: '1px solid #EEEEEE', background: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
-        {/* Left panel tabs */}
+      {/* LEFT PANEL */}
+      <div style={{ width: 360, flexShrink: 0, borderRight: '1px solid #EEEEEE', background: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', borderBottom: '1px solid #EEEEEE', padding: '0 16px' }}>
-          {['setup', 'categories', 'picks', 'publish'].map(tab => (
+          {['setup', 'categories', 'places', 'publish'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveLeftTab(tab)}
               style={{
                 flex: 1, padding: '12px 0', background: 'none', border: 'none',
                 borderBottom: activeLeftTab === tab ? '2px solid #E03553' : '2px solid transparent',
-                color: activeLeftTab === tab ? '#0A0A0A' : '#888', fontSize: 12, fontWeight: 600,
-                cursor: 'pointer', fontFamily: 'Plus Jakarta Sans', textTransform: 'capitalize',
+                color: activeLeftTab === tab ? '#0A0A0A' : 'rgba(10,10,10,0.4)', fontSize: 11, fontWeight: 700,
+                cursor: 'pointer', fontFamily: PJS, letterSpacing: '0.06em', textTransform: 'capitalize',
               }}
             >
               {tab}
@@ -103,270 +140,382 @@ export default function ExperienceGuideTab({ details }) {
           ))}
         </div>
 
-        {/* Tab content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
           {activeLeftTab === 'setup' && (
-            <div>
-              {/* Destination */}
-              <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 13, color: '#0A0A0A', padding: '8px 0', borderBottom: '1px solid #EEE' }}>
-                  {destination}
-                </p>
-              </div>
-
-              {/* Hero Media */}
-              <div style={{ marginBottom: 20 }}>
-                <input
-                  type="text"
-                  value={details?.experienceGuide?.heroPhotoUrl || ''}
-                  onChange={(e) => handleSaveField('heroPhotoUrl', e.target.value)}
-                  placeholder="https://..."
-                  style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, outline: 'none', fontFamily: 'Plus Jakarta Sans' }}
-                />
-              </div>
-
-              {/* Editorial Intro */}
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <button onClick={handleGenerateIntro} style={{ fontSize: 11, color: '#E03553', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>✦ Generate</button>
-                </div>
-                <textarea
-                  value={details?.experienceGuide?.editorialIntro || ''}
-                  onChange={(e) => handleSaveField('editorialIntro', e.target.value)}
-                  rows={4}
-                  placeholder="Write an inspiring introduction to your wedding destination..."
-                  style={{ width: '100%', border: '1px solid #EEE', padding: 12, fontSize: 13, resize: 'none', outline: 'none', fontFamily: 'Plus Jakarta Sans' }}
-                />
-              </div>
-
-              {/* Vibe Tags */}
-              <div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {VIBE_OPTIONS.map(vibe => {
-                    const isActive = (details?.experienceGuide?.vibes || []).includes(vibe);
-                    return (
-                      <button
-                        key={vibe}
-                        onClick={() => handleToggleVibe(vibe)}
-                        style={{
-                          padding: '6px 12px', border: `1px solid ${isActive ? '#E03553' : '#EEE'}`,
-                          background: isActive ? 'rgba(224,53,83,0.06)' : 'transparent',
-                          color: isActive ? '#E03553' : '#888', fontSize: 11, fontWeight: 600,
-                          cursor: 'pointer', fontFamily: 'Plus Jakarta Sans', letterSpacing: '0.05em',
-                        }}
-                      >
-                        {vibe}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <SetupTab
+              details={details}
+              destination={destination}
+              onSaveField={handleSaveField}
+              onGenerateIntro={handleGenerateIntro}
+              onToggleVibe={handleToggleVibe}
+            />
           )}
-
           {activeLeftTab === 'categories' && (
-            <div>
-              {CATEGORIES.map(cat => {
-                const isEnabled = details?.experienceGuide?.categories?.[cat.key]?.enabled !== false;
-                return (
-                  <div key={cat.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F5F5F5' }}>
-                    <span style={{ fontSize: 13, color: '#0A0A0A', fontWeight: 500 }}>{cat.label}</span>
-                    <button
-                      onClick={() => handleToggleCategory(cat.key)}
-                      style={{
-                        width: 44, height: 24, borderRadius: 12, border: 'none',
-                        background: isEnabled ? '#E03553' : '#E0E0E0', cursor: 'pointer',
-                        position: 'relative', transition: 'background 0.2s',
-                      }}
-                    >
-                      <span style={{
-                        position: 'absolute', top: 2, left: isEnabled ? 22 : 2,
-                        width: 20, height: 20, borderRadius: '50%', background: '#FFFFFF',
-                        transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                      }} />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+            <CategoriesTab details={details} onToggleCategory={handleToggleCategory} />
           )}
-
-          {activeLeftTab === 'picks' && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <button
-                  onClick={() => setShowAddGemModal(true)}
-                  style={{ fontSize: 11, color: '#E03553', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
-                >
-                  + Add Custom Gem
-                </button>
-              </div>
-              
-              {/* Couple picks list */}
-              {(details?.experienceGuide?.couplePicks || []).map((pick, i) => (
-                <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: '1px solid #F5F5F5' }}>
-                  {pick.photo && <img src={pick.photo} alt="" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4 }} />}
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px' }}>{pick.name}</p>
-                    <p style={{ fontSize: 11, color: '#888', margin: 0 }}>{pick.category}</p>
-                  </div>
-                </div>
-              ))}
-              
-              {/* Custom gems list */}
-              {(details?.experienceGuide?.customGems || []).map((gem, i) => (
-                <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: '1px solid #F5F5F5' }}>
-                  {gem.photo && <img src={gem.photo} alt="" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4 }} />}
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px' }}>{gem.name}</p>
-                    <p style={{ fontSize: 11, color: '#888', margin: 0 }}>Added by {gem.addedBy || 'Couple'}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {activeLeftTab === 'places' && (
+            <PlacesTab
+              details={details}
+              destination={destination}
+              onAddPlace={handleAddPlace}
+              onRemovePlace={handleRemovePlace}
+            />
           )}
-
           {activeLeftTab === 'publish' && (
-            <div>
-              <div style={{ marginBottom: 24 }}>
-                <button
-                  onClick={() => handleSaveField('published', !details?.experienceGuide?.published)}
-                  style={{
-                    width: '100%', padding: '14px 16px', borderRadius: 4, border: 'none',
-                    background: details?.experienceGuide?.published ? '#E03553' : '#E0E0E0',
-                    color: '#FFFFFF', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                  }}
-                >
-                  {details?.experienceGuide?.published ? 'Published' : 'Hidden'}
-                </button>
-                <p style={{ fontSize: 11, color: '#888', marginTop: 12, lineHeight: 1.5 }}>
-                  When published, guests can access this from the navigation on your wedding website.
-                </p>
-              </div>
-
-              <button
-                onClick={() => toast.success('Generating descriptions...')}
-                style={{
-                  width: '100%', padding: '14px 16px', border: '1px solid #E03553',
-                  background: 'transparent', color: '#E03553', fontSize: 13, fontWeight: 700,
-                  letterSpacing: '0.1em',
-                }}
-              >
-                Generate All Descriptions
-              </button>
-            </div>
+            <PublishTab details={details} onSaveField={handleSaveField} />
           )}
         </div>
       </div>
 
       {/* RIGHT PANEL — Live Preview */}
       <div style={{ flex: 1, background: '#F5F5F5', overflow: 'auto' }}>
-        <div style={{ maxWidth: 480, margin: '40px auto', background: '#FFFFFF', borderRadius: 8, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
-          {/* Preview header */}
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <p style={{ fontSize: 11, color: '#888' }}>{details?.experienceGuide?.published ? 'Live' : 'Hidden'}</p>
-          </div>
-          
-          {/* Preview content — simplified hero */}
-          <div style={{ height: 400, background: details?.experienceGuide?.heroPhotoUrl ? `url(${details.experienceGuide.heroPhotoUrl}) center/cover` : 'linear-gradient(135deg, #0A1930, #1A0A20)', position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
-            <div style={{ position: 'absolute', bottom: 24, left: 24, right: 24 }}>
-              <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 32, color: '#FFFFFF', margin: 0 }}>{destination.split(',')[0] || 'Destination'}</h1>
-            </div>
-          </div>
-          
-          {/* Preview categories */}
-          <div style={{ padding: '24px 20px' }}>
-            <p style={{ fontSize: 11, color: '#888', marginBottom: 12 }}>Enabled Categories:</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {CATEGORIES.filter(c => details?.experienceGuide?.categories?.[c.key]?.enabled !== false).slice(0, 5).map(cat => (
-                <span key={cat.key} style={{ padding: '4px 10px', background: '#F5F5F5', fontSize: 11, color: '#555', fontWeight: 500 }}>{cat.label}</span>
-              ))}
-            </div>
-          </div>
-        </div>
+        <LivePreview details={details} destination={destination} />
       </div>
-
-      {/* Add Custom Gem Modal */}
-      {showAddGemModal && (
-        <AddCustomGemModal
-          onClose={() => setShowAddGemModal(false)}
-          onSave={(gem) => {
-            const current = details?.experienceGuide?.customGems || [];
-            updateMutation.mutate({ customGems: [...current, gem] });
-            setShowAddGemModal(false);
-          }}
-        />
-      )}
     </div>
   );
 }
 
-function AddCustomGemModal({ onClose, onSave }) {
-  const [gem, setGem] = useState({ name: '', address: '', category: '', photo: '', note: '', addedBy: 'Both' });
+// ── Setup tab ──────────────────────────────────────────────────────────────────
+
+function SetupTab({ details, destination, onSaveField, onGenerateIntro, onToggleVibe }) {
+  return (
+    <div>
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Destination</label>
+        <p style={{ fontSize: 13, color: '#0A0A0A', padding: '8px 0', borderBottom: '1px solid #EEE', margin: 0 }}>{destination}</p>
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Hero photo URL</label>
+        <input
+          type="text"
+          value={details?.experienceGuide?.heroPhotoUrl || ''}
+          onChange={(e) => onSaveField('heroPhotoUrl', e.target.value)}
+          placeholder="https://..."
+          style={inputStyle}
+        />
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <label style={labelStyle}>Editorial intro</label>
+          <button onClick={onGenerateIntro} style={{ fontSize: 11, color: '#E03553', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontFamily: PJS }}>✦ Generate</button>
+        </div>
+        <textarea
+          value={details?.experienceGuide?.editorialIntro || ''}
+          onChange={(e) => onSaveField('editorialIntro', e.target.value)}
+          rows={4}
+          placeholder="Write an inspiring introduction to your wedding destination..."
+          style={{ ...inputStyle, resize: 'none' }}
+        />
+      </div>
+
+      <div>
+        <label style={labelStyle}>Destination vibes</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+          {VIBE_OPTIONS.map(vibe => {
+            const active = (details?.experienceGuide?.vibes || []).includes(vibe);
+            return (
+              <button
+                key={vibe}
+                onClick={() => onToggleVibe(vibe)}
+                style={{
+                  padding: '6px 12px', border: `1px solid ${active ? '#E03553' : '#EEE'}`,
+                  background: active ? 'rgba(224,53,83,0.06)' : 'transparent',
+                  color: active ? '#E03553' : 'rgba(10,10,10,0.4)', fontSize: 11, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: PJS, borderRadius: 999,
+                }}
+              >
+                {vibe}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Categories tab ─────────────────────────────────────────────────────────────
+
+function CategoriesTab({ details, onToggleCategory }) {
+  return (
+    <div>
+      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', marginBottom: 16, fontFamily: PJS }}>Toggle which sections appear in your guest guide.</p>
+      {CATEGORIES.map(cat => {
+        const isEnabled = details?.experienceGuide?.categories?.[cat.key]?.enabled !== false;
+        const count = details?.experienceGuide?.categories?.[cat.key]?.places?.length || 0;
+        return (
+          <div key={cat.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #F5F5F5' }}>
+            <div>
+              <span style={{ fontSize: 13, color: '#0A0A0A', fontWeight: 500, fontFamily: PJS }}>{cat.label}</span>
+              {count > 0 && <span style={{ marginLeft: 8, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{count} places</span>}
+            </div>
+            <button
+              onClick={() => onToggleCategory(cat.key)}
+              style={{
+                width: 44, height: 24, borderRadius: 12, border: 'none',
+                background: isEnabled ? '#E03553' : '#E0E0E0', cursor: 'pointer',
+                position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+              }}
+            >
+              <span style={{
+                position: 'absolute', top: 2, left: isEnabled ? 22 : 2,
+                width: 20, height: 20, borderRadius: '50%', background: '#FFFFFF',
+                transition: 'left 0.2s',
+              }} />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Places search tab ──────────────────────────────────────────────────────────
+
+function PlacesTab({ details, destination, onAddPlace, onRemovePlace }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedCat, setSelectedCat] = useState(CATEGORIES[0].key);
+  const [note, setNote] = useState('');
+  const [isCouplePick, setIsCouplePick] = useState(false);
+  const [activeCatView, setActiveCatView] = useState(CATEGORIES[0].key);
+  const debounceRef = useRef(null);
+
+  const handleSearch = async (q) => {
+    if (!q.trim() || q.trim().length < 3) { setResults([]); return; }
+    setSearching(true);
+    try {
+      const location = destination !== 'Set your venue in Event Details' ? destination : '';
+      const res = await fetch('/api/places-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: q.trim(), location }),
+      });
+      const data = await res.json();
+      setResults(data.places || []);
+    } catch {
+      toast.error('Search failed');
+    }
+    setSearching(false);
+  };
+
+  const handleQueryChange = (e) => {
+    const v = e.target.value;
+    setQuery(v);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => handleSearch(v), 600);
+  };
+
+  const handleAdd = (place) => {
+    onAddPlace(place, selectedCat, note, isCouplePick);
+    setNote('');
+    setIsCouplePick(false);
+  };
+
+  const savedPlaces = details?.experienceGuide?.categories?.[activeCatView]?.places || [];
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-      <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 480, maxHeight: '90vh', overflow: 'auto', borderRadius: 8 }}>
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>Add Custom Gem</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: 20 }}>×</button>
+    <div>
+      {/* Search */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Search Google Places</label>
+        <div style={{ position: 'relative', marginTop: 8 }}>
+          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.3)' }} />
+          <input
+            value={query}
+            onChange={handleQueryChange}
+            placeholder="e.g. romantic restaurants, rooftop bars..."
+            style={{ ...inputStyle, paddingLeft: 36 }}
+          />
+          {searching && <Loader2 size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
         </div>
-        
-        <div style={{ padding: 24 }}>
-          <div style={{ marginBottom: 16 }}>
-            <input value={gem.name} onChange={(e) => setGem({ ...gem, name: e.target.value })} style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, fontFamily: 'Plus Jakarta Sans' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+
+      {/* Add-to config */}
+      <div style={{ marginBottom: 16, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <select
+          value={selectedCat}
+          onChange={(e) => setSelectedCat(e.target.value)}
+          style={{ flex: 1, minWidth: 140, border: '1px solid #EEE', padding: '8px 10px', fontSize: 12, fontFamily: PJS, background: '#FFF', color: '#0A0A0A' }}
+        >
+          {CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+        </select>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          <input type="checkbox" checked={isCouplePick} onChange={(e) => setIsCouplePick(e.target.checked)} />
+          Couple's pick
+        </label>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Add a note for guests... (optional)"
+          style={inputStyle}
+        />
+      </div>
+
+      {/* Results */}
+      {results.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ ...labelStyle, marginBottom: 10 }}>Results — select to add</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {results.map(place => (
+              <PlaceResultRow key={place.place_id} place={place} onAdd={() => handleAdd(place)} />
+            ))}
           </div>
-          
-          <div style={{ marginBottom: 16 }}>
-            <input value={gem.address} onChange={(e) => setGem({ ...gem, address: e.target.value })} style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, fontFamily: 'Plus Jakarta Sans' }} />
-          </div>
-          
-          <div style={{ marginBottom: 16 }}>
-            <select value={gem.category} onChange={(e) => setGem({ ...gem, category: e.target.value })} style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, fontFamily: 'Plus Jakarta Sans' }}>
-              <option value="">Select category</option>
-              {CATEGORIES.map(c => <option key={c.key} value={c.label}>{c.label}</option>)}
-            </select>
-          </div>
-          
-          <div style={{ marginBottom: 16 }}>
-            <input value={gem.photo} onChange={(e) => setGem({ ...gem, photo: e.target.value })} placeholder="https://..." style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, fontFamily: 'Plus Jakarta Sans' }} />
-          </div>
-          
-          <div style={{ marginBottom: 16 }}>
-            <textarea value={gem.note} onChange={(e) => setGem({ ...gem, note: e.target.value })} rows={3} style={{ width: '100%', border: '1px solid #EEE', padding: 10, fontSize: 13, fontFamily: 'Plus Jakarta Sans', resize: 'none' }} />
-          </div>
-          
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', gap: 12 }}>
-              {['Bride', 'Groom', 'Both'].map(who => (
-                <button
-                  key={who}
-                  onClick={() => setGem({ ...gem, addedBy: who })}
-                  style={{
-                    flex: 1, padding: '10px', border: gem.addedBy === who ? '1px solid #E03553' : '1px solid #EEE',
-                    background: gem.addedBy === who ? 'rgba(224,53,83,0.06)' : 'transparent', color: gem.addedBy === who ? '#E03553' : '#888',
-                    fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans',
-                  }}
-                >
-                  {who}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          <button
-            onClick={() => onSave(gem)}
-            disabled={!gem.name || !gem.category}
-            style={{
-              width: '100%', padding: '14px', background: '#E03553', color: '#FFFFFF', border: 'none',
-              fontSize: 13, fontWeight: 700, cursor: gem.name && gem.category ? 'pointer' : 'not-allowed',
-            }}
+        </div>
+      )}
+
+      {/* Saved places by category */}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <label style={labelStyle}>Saved places</label>
+          <select
+            value={activeCatView}
+            onChange={(e) => setActiveCatView(e.target.value)}
+            style={{ border: '1px solid #EEE', padding: '4px 8px', fontSize: 11, fontFamily: PJS, background: '#FFF', color: '#0A0A0A' }}
           >
-            Save Custom Gem
-          </button>
+            {CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+          </select>
+        </div>
+
+        {savedPlaces.length === 0 ? (
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', fontFamily: PJS, textAlign: 'center', padding: '20px 0' }}>
+            No places added to {CATEGORIES.find(c => c.key === activeCatView)?.label} yet
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {savedPlaces.map(place => (
+              <SavedPlaceRow key={place.place_id} place={place} onRemove={() => onRemovePlace(activeCatView, place.place_id)} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PlaceResultRow({ place, onAdd }) {
+  return (
+    <div style={{ display: 'flex', gap: 12, padding: '10px 12px', border: '1px solid #EEEEEE', background: '#FAFAFA', alignItems: 'flex-start' }}>
+      {place.photo_reference ? (
+        <img src={`/api/places-photo?ref=${encodeURIComponent(place.photo_reference)}&maxwidth=80`} alt="" style={{ width: 48, height: 48, objectFit: 'cover', flexShrink: 0 }} />
+      ) : (
+        <div style={{ width: 48, height: 48, background: '#EEEEEE', flexShrink: 0 }} />
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{place.name}</p>
+        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontFamily: PJS, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{place.address}</p>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {place.rating && <span style={{ fontSize: 11, color: '#0A0A0A', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 3 }}><Star size={10} fill="#E03553" color="#E03553" />{place.rating}</span>}
+          {place.price_level != null && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{'$'.repeat(place.price_level || 1)}</span>}
+        </div>
+      </div>
+      <button
+        onClick={onAdd}
+        style={{ flexShrink: 0, padding: '6px 14px', background: '#E03553', color: '#FFFFFF', border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: PJS, borderRadius: 999 }}
+      >
+        Add
+      </button>
+    </div>
+  );
+}
+
+function SavedPlaceRow({ place, onRemove }) {
+  return (
+    <div style={{ display: 'flex', gap: 10, padding: '10px 12px', border: '1px solid #EEEEEE', alignItems: 'flex-start' }}>
+      {place.photo_ref ? (
+        <img src={`/api/places-photo?ref=${encodeURIComponent(place.photo_ref)}&maxwidth=80`} alt="" style={{ width: 40, height: 40, objectFit: 'cover', flexShrink: 0 }} />
+      ) : (
+        <div style={{ width: 40, height: 40, background: '#EEEEEE', flexShrink: 0 }} />
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{place.name}</p>
+        {place.note && <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, fontStyle: 'italic' }}>"{place.note}"</p>}
+        {place.is_couple_pick && <span style={{ fontSize: 10, color: '#E03553', fontWeight: 700, fontFamily: PJS }}>★ Couple's pick</span>}
+      </div>
+      <button onClick={onRemove} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
+        <X size={14} />
+      </button>
+    </div>
+  );
+}
+
+// ── Publish tab ────────────────────────────────────────────────────────────────
+
+function PublishTab({ details, onSaveField }) {
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <button
+          onClick={() => onSaveField('published', !details?.experienceGuide?.published)}
+          style={{
+            width: '100%', padding: '14px 16px', border: 'none',
+            background: details?.experienceGuide?.published ? '#E03553' : '#E0E0E0',
+            color: '#FFFFFF', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: PJS, borderRadius: 4,
+          }}
+        >
+          {details?.experienceGuide?.published ? '● Published' : '○ Hidden — click to publish'}
+        </button>
+        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', marginTop: 12, lineHeight: 1.6, fontFamily: PJS }}>
+          When published, guests can access this from the "Guide" link in your wedding website navigation.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Live Preview ───────────────────────────────────────────────────────────────
+
+function LivePreview({ details, destination }) {
+  const guide = details?.experienceGuide || {};
+  const enabledCats = CATEGORIES.filter(c => guide.categories?.[c.key]?.enabled !== false);
+  return (
+    <div style={{ maxWidth: 440, margin: '32px auto', background: '#FFFFFF', borderRadius: 8, overflow: 'hidden' }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Guest Guide Preview</span>
+        <span style={{ fontSize: 11, color: guide.published ? '#E03553' : 'rgba(10,10,10,0.3)', fontWeight: 700, fontFamily: PJS }}>{guide.published ? 'Live' : 'Hidden'}</span>
+      </div>
+
+      <div style={{ height: 320, background: guide.heroPhotoUrl ? `url(${guide.heroPhotoUrl}) center/cover` : 'linear-gradient(135deg, #0A1930, #1A0A20)', position: 'relative' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
+        <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>
+          <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 28, color: '#FFFFFF', margin: 0, lineHeight: 1.1 }}>{destination.split(',')[0] || 'Destination'}</h1>
+          {guide.editorialIntro && <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '8px 0 0', lineHeight: 1.5 }}>{guide.editorialIntro.slice(0, 100)}{guide.editorialIntro.length > 100 ? '…' : ''}</p>}
+        </div>
+      </div>
+
+      <div style={{ padding: '16px 20px' }}>
+        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', marginBottom: 10, fontFamily: PJS }}>{enabledCats.length} sections enabled</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {enabledCats.slice(0, 6).map(cat => {
+            const count = guide.categories?.[cat.key]?.places?.length || 0;
+            return (
+              <span key={cat.key} style={{ padding: '4px 10px', background: '#F5F5F5', fontSize: 11, color: '#555', fontWeight: 500, fontFamily: PJS, borderRadius: 999 }}>
+                {cat.label}{count > 0 ? ` (${count})` : ''}
+              </span>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
+
+// ── Style helpers ──────────────────────────────────────────────────────────────
+
+const labelStyle = {
+  display: 'block', fontSize: 11, fontWeight: 700, letterSpacing: '0.07em',
+  color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif",
+};
+
+const inputStyle = {
+  width: '100%', border: '1px solid #EEEEEE', padding: '10px 12px',
+  fontSize: 13, outline: 'none', fontFamily: "'Plus Jakarta Sans', sans-serif",
+  color: '#0A0A0A', background: '#FFFFFF', boxSizing: 'border-box',
+};

@@ -13,6 +13,7 @@ import {
   Settings, UserPlus, LogOut, HelpCircle, Lightbulb, CreditCard,
   Sparkles,
   BarChart2,
+  Map,
 } from "lucide-react";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -87,6 +88,7 @@ const NAV_SECTIONS = [
       { icon: Car,        label: "Transport",     url: createPageUrl("GuestSuiteTransport") },
       { icon: Radio,      label: "Live stream",   url: createPageUrl("GuestSuiteLiveStream") },
       { icon: BarChart2,  label: "Guest polls",   url: createPageUrl("GuestSuitePolls") },
+      { icon: Map,        label: "Experience guide", url: "/studio/guest-suite/experience" },
     ],
   },
   {

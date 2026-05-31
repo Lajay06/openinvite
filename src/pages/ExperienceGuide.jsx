@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Menu, X, ChevronLeft } from 'lucide-react';
+import { Menu, X, ChevronLeft, Heart, Star, MapPin, ExternalLink } from 'lucide-react';
 
 const CATEGORIES = [
   { key: 'mustEat', label: 'Must Eat' },
@@ -17,27 +17,40 @@ const CATEGORIES = [
   { key: 'weddingWeekend', label: 'Wedding Weekend' },
 ];
 
+const LS_KEY = (slug) => `guide_saved_${slug}`;
+
+function photoUrl(ref) {
+  if (!ref) return null;
+  return `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=600`;
+}
+
 export default function ExperienceGuidePage() {
   const { weddingSlug } = useParams();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
+  const [saved, setSaved] = useState({});
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const all = await base44.entities.WeddingDetails.filter({ slug: weddingSlug });
-        if (all.length > 0) {
-          setDetails(all[0]);
-        }
-      } catch (err) {
-        console.error('Failed to fetch wedding details:', err);
-      }
-      setLoading(false);
-    };
-    fetchData();
+    const raw = localStorage.getItem(LS_KEY(weddingSlug));
+    if (raw) setSaved(JSON.parse(raw));
   }, [weddingSlug]);
+
+  useEffect(() => {
+    base44.entities.WeddingDetails.filter({ slug: weddingSlug })
+      .then(rows => rows.length > 0 && setDetails(rows[0]))
+      .catch(err => console.error('[ExperienceGuide]', err))
+      .finally(() => setLoading(false));
+  }, [weddingSlug]);
+
+  const toggleSaved = (placeId) => {
+    setSaved(prev => {
+      const next = { ...prev, [placeId]: !prev[placeId] };
+      localStorage.setItem(LS_KEY(weddingSlug), JSON.stringify(next));
+      return next;
+    });
+  };
 
   if (loading) {
     return (
@@ -50,216 +63,228 @@ export default function ExperienceGuidePage() {
 
   if (!details || !details.experienceGuide?.published) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         <div style={{ textAlign: 'center', padding: 40 }}>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0A0A0A', marginBottom: 12 }}>This guide isn't published yet</h1>
-          <p style={{ fontSize: 14, color: '#888' }}>Check back later for our wedding destination guide.</p>
-          <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', marginTop: 24, padding: '12px 24px', background: '#0A0A0A', color: '#FFFFFF', textDecoration: 'none', fontSize: 13, fontWeight: 700, fontFamily: 'Plus Jakarta Sans' }}>← Back to Wedding Site</Link>
+          <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)' }}>Check back soon for the wedding destination guide.</p>
+          <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', marginTop: 24, padding: '12px 24px', background: '#0A0A0A', color: '#FFFFFF', textDecoration: 'none', fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", borderRadius: 999 }}>← Back to wedding site</Link>
         </div>
       </div>
     );
   }
 
-  const enabledCategories = CATEGORIES.filter(c => details.experienceGuide.categories?.[c.key]?.enabled !== false);
+  const guide = details.experienceGuide;
+  const enabledCategories = CATEGORIES.filter(c => guide.categories?.[c.key]?.enabled !== false && (guide.categories?.[c.key]?.places?.length > 0));
   const city = details.mainCeremony?.address?.split(',').slice(-3, -1).join(',').trim() || 'Our Destination';
+
+  const savedPlaces = Object.entries(saved).filter(([, v]) => v).map(([k]) => {
+    for (const cat of CATEGORIES) {
+      const place = guide.categories?.[cat.key]?.places?.find(p => p.place_id === k);
+      if (place) return place;
+    }
+    return null;
+  }).filter(Boolean);
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      {/* Mobile nav bar */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 100, height: 56, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+      {/* Top nav */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 100, height: 56, background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
         <Link to={`/w/${weddingSlug}`} style={{ color: '#0A0A0A', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 600 }}>
           <ChevronLeft size={16} /> Back
         </Link>
         <p style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>
-          Guest Guide
+          Guest guide
         </p>
-        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#0A0A0A' }}>
-          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+          {savedPlaces.length > 0 && (
+            <a href="#saved" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#E03553', fontWeight: 700, textDecoration: 'none' }}>
+              <Heart size={14} fill="#E03553" /> {savedPlaces.length}
+            </a>
+          )}
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0A0A0A' }}>
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile category menu */}
       {mobileMenuOpen && (
-        <div style={{ position: 'fixed', top: 56, left: 0, right: 0, background: '#FFFFFF', borderBottom: '1px solid #EEEEEE', padding: '16px 20px', zIndex: 99 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {enabledCategories.map(cat => (
-              <a
-                key={cat.key}
-                href={`#category-${cat.key}`}
-                onClick={() => { setActiveCategory(cat.key); setMobileMenuOpen(false); }}
-                style={{ fontSize: 14, fontWeight: 600, color: activeCategory === cat.key ? '#E03553' : '#0A0A0A', textDecoration: 'none', padding: '8px 0' }}
-              >
-                {cat.label}
-              </a>
-            ))}
-          </div>
+        <div style={{ position: 'fixed', top: 56, left: 0, right: 0, background: '#FFFFFF', borderBottom: '1px solid #EEEEEE', padding: '16px 20px', zIndex: 99, maxHeight: '70vh', overflowY: 'auto' }}>
+          {enabledCategories.map(cat => (
+            <a
+              key={cat.key}
+              href={`#category-${cat.key}`}
+              onClick={() => { setActiveCategory(cat.key); setMobileMenuOpen(false); }}
+              style={{ display: 'block', fontSize: 14, fontWeight: 600, color: activeCategory === cat.key ? '#E03553' : '#0A0A0A', textDecoration: 'none', padding: '10px 0', borderBottom: '1px solid #F5F5F5' }}
+            >
+              {cat.label}
+              <span style={{ marginLeft: 8, fontSize: 11, color: 'rgba(10,10,10,0.4)' }}>{guide.categories?.[cat.key]?.places?.length || 0}</span>
+            </a>
+          ))}
         </div>
       )}
 
       {/* HERO */}
-      <ExperienceGuideHero guide={details.experienceGuide} details={details} city={city} />
-
-      {/* Sticky category nav (desktop) */}
-      <div style={{ position: 'sticky', top: 56, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #EEEEEE', overflowX: 'auto', display: 'none', '@media (min-width: 768px)': { display: 'flex' } }}>
-        <div style={{ display: 'flex', padding: '0 24px', gap: 0 }}>
-          {enabledCategories.map(cat => (
-            <button
-              key={cat.key}
-              onClick={() => { setActiveCategory(cat.key); document.getElementById(`category-${cat.key}`)?.scrollIntoView({ behavior: 'smooth' }); }}
-              style={{
-                padding: '14px 20px', background: 'transparent', border: 'none',
-                borderBottom: `2px solid ${activeCategory === cat.key ? '#0A0A0A' : 'transparent'}`,
-                fontSize: 12, fontWeight: 600, color: activeCategory === cat.key ? '#0A0A0A' : '#888',
-                cursor: 'pointer', fontFamily: 'Plus Jakarta Sans', letterSpacing: '0.05em', whiteSpace: 'nowrap',
-              }}
-            >
-              {cat.label}
-            </button>
-          ))}
+      <div style={{ position: 'relative', height: '100svh', overflow: 'hidden', background: '#0A0A0A' }}>
+        {guide.heroPhotoUrl ? (
+          <img src={guide.heroPhotoUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
+        ) : (
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #0A1930 0%, #1A0A20 100%)' }} />
+        )}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.1) 100%)' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 24px 60px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)', margin: '0 0 8px' }}>
+            {details.couple1Name} & {details.couple2Name} · Guest guide
+          </p>
+          <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(36px, 10vw, 64px)', color: '#FFFFFF', margin: '0 0 16px', lineHeight: 1.1 }}>
+            {city}
+          </h1>
+          {guide.editorialIntro && (
+            <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, maxWidth: 480, marginBottom: 24 }}>{guide.editorialIntro}</p>
+          )}
+          {guide.vibes?.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {guide.vibes.map(v => (
+                <span key={v} style={{ padding: '5px 14px', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: 11, letterSpacing: '0.1em', borderRadius: 999 }}>{v}</span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Couple's Picks */}
-      {details.experienceGuide.couplePicks?.length > 0 && (
-        <CouplePicks picks={details.experienceGuide.couplePicks} details={details} />
+      {guide.couplePicks?.length > 0 && (
+        <CouplePicks picks={guide.couplePicks} details={details} saved={saved} onToggle={toggleSaved} />
       )}
 
-      {/* Category Sections */}
-      {enabledCategories.map((cat, idx) => (
-        <div key={cat.key} id={`category-${cat.key}`} style={{ padding: '60px 0', borderTop: idx > 0 ? '1px solid #F0F0F0' : 'none' }}>
-          <div style={{ padding: '0 24px', marginBottom: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {String(idx + 1).padStart(2, '0')}
-              </p>
-              <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(28px, 6vw, 40px)', color: '#0A0A0A', margin: 0 }}>
-                {cat.label}
-              </h2>
-            </div>
+      {/* Saved places */}
+      {savedPlaces.length > 0 && (
+        <div id="saved" style={{ padding: '60px 0 40px', borderTop: '1px solid #F0F0F0' }}>
+          <div style={{ padding: '0 24px', marginBottom: 24 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px' }}>Your saves</p>
+            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 32, color: '#0A0A0A', margin: 0 }}>Saved places</h2>
           </div>
-          
-          {/* Placeholder for places — would fetch from API */}
-          <div style={{ display: 'flex', gap: 16, overflowX: 'auto', padding: '0 24px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', paddingBottom: 16 }}>
-            {[1, 2, 3, 4].map(i => (
-              <SkeletonCard key={i} />
+          <div style={{ display: 'flex', gap: 16, overflowX: 'auto', padding: '0 24px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', paddingBottom: 8 }}>
+            {savedPlaces.map(place => (
+              <PlaceCard key={place.place_id} place={place} isSaved={true} onToggle={toggleSaved} />
             ))}
           </div>
         </div>
-      ))}
+      )}
+
+      {/* Category Sections */}
+      {enabledCategories.map((cat, idx) => {
+        const places = guide.categories?.[cat.key]?.places || [];
+        return (
+          <div key={cat.key} id={`category-${cat.key}`} style={{ padding: '60px 0', borderTop: '1px solid #F0F0F0' }}>
+            <div style={{ padding: '0 24px', marginBottom: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 4px' }}>
+                  {String(idx + 1).padStart(2, '0')}
+                </p>
+                <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(28px, 6vw, 40px)', color: '#0A0A0A', margin: 0 }}>
+                  {cat.label}
+                </h2>
+              </div>
+              <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontWeight: 600 }}>{places.length} places</span>
+            </div>
+
+            <div style={{ display: 'flex', gap: 16, overflowX: 'auto', padding: '0 24px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', paddingBottom: 8 }}>
+              {places.map(place => (
+                <PlaceCard key={place.place_id} place={place} isSaved={!!saved[place.place_id]} onToggle={toggleSaved} />
+              ))}
+            </div>
+          </div>
+        );
+      })}
 
       {/* Footer */}
       <div style={{ padding: '60px 24px', background: '#0A0A0A', textAlign: 'center' }}>
-        <p style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF', margin: '0 0 16px', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF', margin: '0 0 16px', letterSpacing: '0.08em' }}>
           {details.couple1Name} & {details.couple2Name}
         </p>
-        <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', padding: '12px 24px', border: '1px solid rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 12, fontWeight: 700, fontFamily: 'Plus Jakarta Sans', letterSpacing: '0.1em' }}>
-          Back to Wedding Site
+        <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', padding: '12px 28px', border: '1px solid rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', borderRadius: 999 }}>
+          Back to wedding site
         </Link>
       </div>
     </div>
   );
 }
 
-function ExperienceGuideHero({ guide, details, city }) {
-  return (
-    <div style={{ position: 'relative', height: '100svh', overflow: 'hidden', background: '#0A0A0A' }}>
-      {/* Background */}
-      {guide?.heroPhotoUrl ? (
-        <img src={guide.heroPhotoUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.6 }} />
-      ) : (
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #0A1930 0%, #1A0A20 100%)' }} />
-      )}
-      
-      {/* Overlay */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.1) 100%)' }} />
-      
-      {/* Content */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 24px 60px' }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.5)', margin: '0 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {details?.couple1Name} & {details?.couple2Name} · Guest Guide
-        </p>
-        <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(36px, 10vw, 64px)', color: '#FFFFFF', margin: '0 0 16px', lineHeight: 1.1 }}>
-          {city}
-        </h1>
-        {guide?.editorialIntro && (
-          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 480, marginBottom: 24 }}>
-            {guide.editorialIntro}
-          </p>
-        )}
-        
-        {/* Vibe tags */}
-        {guide?.vibes?.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {guide.vibes.map(vibe => (
-              <span key={vibe} style={{ padding: '5px 12px', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)', fontSize: 11, letterSpacing: '0.1em', fontFamily: 'Plus Jakarta Sans' }}>
-                {vibe}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-      
-      {/* Scroll indicator */}
-      <div style={{ position: 'absolute', bottom: 24, right: 24, display: 'none', '@media (min-width: 768px)': { display: 'block' } }}>
-      </div>
-    </div>
-  );
-}
-
-function CouplePicks({ picks, details }) {
+function CouplePicks({ picks, details, saved, onToggle }) {
   return (
     <div style={{ padding: '60px 0 40px' }}>
       <div style={{ padding: '0 24px', marginBottom: 24 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px' }}>
           {details?.couple1Name} & {details?.couple2Name}
         </p>
         <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 32, color: '#0A0A0A', margin: 0 }}>
-          Our Favourite Places
+          Our favourite places
         </h2>
       </div>
-      
-      <div style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 24px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
+      <div style={{ display: 'flex', gap: 16, overflowX: 'auto', padding: '0 24px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', paddingBottom: 8 }}>
         {picks.map(pick => (
-          <CouplePickCard key={pick.placeId} pick={pick} />
+          <PlaceCard key={pick.place_id} place={pick} isSaved={!!saved[pick.place_id]} onToggle={onToggle} featured />
         ))}
       </div>
     </div>
   );
 }
 
-function CouplePickCard({ pick }) {
+function PlaceCard({ place, isSaved, onToggle, featured }) {
+  const photo = place.photo_ref ? photoUrl(place.photo_ref) : place.photo || null;
+
   return (
-    <div style={{ flexShrink: 0, width: 280, scrollSnapAlign: 'start' }}>
-      <div style={{ height: 200, background: '#F0F0F0', overflow: 'hidden', marginBottom: 12, position: 'relative' }}>
-        {pick.photo && <img src={pick.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-        {pick.note && (
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 16px', background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }}>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontStyle: 'italic', margin: 0, lineHeight: 1.4 }}>"{pick.note}"</p>
+    <div style={{ flexShrink: 0, width: featured ? 300 : 280, scrollSnapAlign: 'start', background: '#FFFFFF', border: '1px solid #F0F0F0', overflow: 'hidden' }}>
+      <div style={{ height: 200, background: '#F0F0F0', position: 'relative', overflow: 'hidden' }}>
+        {photo ? (
+          <img src={photo} alt={place.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #F0F0F0, #E8E8E8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <MapPin size={24} color="rgba(10,10,10,0.2)" />
           </div>
         )}
+        {place.note && (
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 14px', background: 'linear-gradient(to top, rgba(0,0,0,0.75), transparent)' }}>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)', fontStyle: 'italic', margin: 0, lineHeight: 1.4 }}>"{place.note}"</p>
+          </div>
+        )}
+        <button
+          onClick={() => onToggle(place.place_id)}
+          style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+        >
+          <Heart size={14} fill={isSaved ? '#E03553' : 'none'} color={isSaved ? '#E03553' : '#0A0A0A'} />
+        </button>
       </div>
-      <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: 'Plus Jakarta Sans' }}>{pick.name}</p>
-      <p style={{ fontSize: 12, color: '#888', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>{pick.category}</p>
-    </div>
-  );
-}
 
-function SkeletonCard() {
-  return (
-    <div style={{ flexShrink: 0, width: 300, scrollSnapAlign: 'start', background: '#FFFFFF', border: '1px solid #EEEEEE', overflow: 'hidden' }}>
-      <div style={{ height: 220, background: '#F0F0F0', position: 'relative' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #F0F0F0 25%, #F8F8F8 50%, #F0F0F0 75%)', backgroundSize: '200% 100%', animation: 'skeletonShimmer 1.2s ease-in-out infinite' }} />
-        <style>{`@keyframes skeletonShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }`}</style>
-      </div>
-      <div style={{ padding: '16px 20px 20px' }}>
-        <div style={{ height: 16, background: '#F0F0F0', borderRadius: 2, marginBottom: 12, width: '60%' }} />
-        <div style={{ height: 14, background: '#F0F0F0', borderRadius: 2, marginBottom: 8 }} />
-        <div style={{ height: 14, background: '#F0F0F0', borderRadius: 2, marginBottom: 16, width: '80%' }} />
-        <div style={{ height: 1, background: '#F0F0F0', margin: '0 0 14px' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <div style={{ height: 44, background: '#F0F0F0', borderRadius: 2 }} />
-          <div style={{ height: 44, background: '#F0F0F0', borderRadius: 2 }} />
+      <div style={{ padding: '14px 16px' }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{place.name}</p>
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 10px', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.4 }}>{place.address}</p>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          {place.rating && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <Star size={11} fill="#E03553" color="#E03553" /> {place.rating}
+            </span>
+          )}
+          {place.price_level != null && place.price_level > 0 && (
+            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              {'$'.repeat(place.price_level)}
+            </span>
+          )}
+          {place.category && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{place.category}</span>}
         </div>
+
+        {place.maps_url && (
+          <a
+            href={place.maps_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#0A0A0A', textDecoration: 'none', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          >
+            <MapPin size={12} /> Get directions
+          </a>
+        )}
       </div>
     </div>
   );
