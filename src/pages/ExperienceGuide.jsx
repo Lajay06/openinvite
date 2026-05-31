@@ -500,13 +500,18 @@ function ItineraryDayCard({ day, findSavedPlace }) {
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
       {/* Day header */}
-      <div style={{ padding: '12px 18px', background: '#0A0A0A', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+      <div style={{ padding: '18px 20px', background: '#0A0A0A' }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.4)', fontFamily: PJS, margin: '0 0 4px' }}>
           Day {day.day}
-        </span>
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS }}>
+        </p>
+        <p style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS, margin: '0 0 4px', lineHeight: 1.25 }}>
           {day.title || `Day ${day.day}`}
-        </span>
+        </p>
+        {day.summary && (
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', fontFamily: PJS, margin: 0, fontStyle: 'italic', lineHeight: 1.5 }}>
+            {day.summary}
+          </p>
+        )}
       </div>
 
       {/* Time blocks */}
@@ -514,42 +519,80 @@ function ItineraryDayCard({ day, findSavedPlace }) {
         const activities = day.blocks?.[block] || [];
         if (activities.length === 0) return null;
         return (
-          <div key={block} style={{ padding: '14px 18px', borderTop: bi > 0 ? '1px solid rgba(10,10,10,0.06)' : 'none' }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS, margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Clock size={10} /> {block.charAt(0).toUpperCase() + block.slice(1)}
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {activities.map(activity => {
+          <div key={block} style={{ borderTop: '1px solid rgba(10,10,10,0.06)' }}>
+            {/* Block label */}
+            <div style={{ padding: '12px 20px 0', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Clock size={10} color="rgba(10,10,10,0.3)" />
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>
+                {block.charAt(0).toUpperCase() + block.slice(1)}
+              </span>
+            </div>
+            {/* Activities */}
+            <div style={{ padding: '10px 0 4px' }}>
+              {activities.map((activity, ai) => {
                 const savedPlace = activity.type === 'place' ? findSavedPlace(activity.place_id) : null;
-                const photo = savedPlace?.photo_ref ? photoUrl(savedPlace.photo_ref) : null;
+                const photo = activity.photo_url || (savedPlace?.photo_ref ? photoUrl(savedPlace.photo_ref) : null);
+                const name = activity.place_name || activity.custom_text || '';
+                const mapsUrl = savedPlace?.maps_url;
+
                 return (
-                  <div key={activity.id || activity.place_id || activity.custom_text} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                    {photo ? (
-                      <img src={photo} alt="" style={{ width: 52, height: 52, objectFit: 'cover', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
-                    ) : (
-                      <div style={{ width: 52, height: 52, background: 'rgba(10,10,10,0.04)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <MapPin size={16} color="rgba(10,10,10,0.15)" />
-                      </div>
-                    )}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: '0 0 4px', fontFamily: PJS, lineHeight: 1.3 }}>
-                        {activity.type === 'place' ? activity.place_name : activity.custom_text}
+                  <div
+                    key={activity.id || `${block}-${ai}`}
+                    style={{
+                      display: 'flex', gap: 0, alignItems: 'stretch',
+                      borderBottom: ai < activities.length - 1 ? '1px solid rgba(10,10,10,0.05)' : 'none',
+                    }}
+                  >
+                    {/* Photo — landscape strip on the left */}
+                    <div style={{ width: 100, flexShrink: 0, background: '#F0F0F0', position: 'relative', overflow: 'hidden', minHeight: 90 }}>
+                      {photo ? (
+                        <img src={photo} alt={name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.parentNode.style.background = '#F0F0F0'; e.target.style.display = 'none'; }} />
+                      ) : (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <MapPin size={18} color="rgba(10,10,10,0.12)" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div style={{ flex: 1, padding: '14px 16px', minWidth: 0 }}>
+                      {/* Time + duration row */}
+                      {(activity.time || activity.duration) && (
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 5 }}>
+                          {activity.time && (
+                            <span style={{ fontSize: 11, fontWeight: 700, color: '#E03553', fontFamily: PJS }}>{activity.time}</span>
+                          )}
+                          {activity.duration && (
+                            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}>{activity.duration}</span>
+                          )}
+                        </div>
+                      )}
+
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: PJS, lineHeight: 1.3 }}>
+                        {name}
                       </p>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                        {activity.category && (
-                          <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.5)', fontFamily: PJS }}>
-                            {activity.category}
-                          </span>
-                        )}
-                        {activity.note && (
-                          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, fontStyle: 'italic' }}>
-                            {activity.note}
-                          </span>
-                        )}
-                      </div>
-                      {savedPlace?.maps_url && (
-                        <a href={savedPlace.maps_url} target="_blank" rel="noopener noreferrer"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textDecoration: 'none', marginTop: 4 }}>
+
+                      {activity.category && (
+                        <span style={{ display: 'inline-block', fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.5)', fontFamily: PJS, marginBottom: 6 }}>
+                          {activity.category}
+                        </span>
+                      )}
+
+                      {activity.description && (
+                        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: PJS, lineHeight: 1.6 }}>
+                          {activity.description}
+                        </p>
+                      )}
+
+                      {!activity.description && activity.note && (
+                        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', margin: '0 0 6px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.5 }}>
+                          {activity.note}
+                        </p>
+                      )}
+
+                      {mapsUrl && (
+                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none', marginTop: 2 }}>
                           <ExternalLink size={10} /> View on maps
                         </a>
                       )}

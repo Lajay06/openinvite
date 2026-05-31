@@ -2,10 +2,11 @@ import React, { useState, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Search, X, Star, MapPin, Loader2, Globe, Plus, Sparkles, Heart, Clock, ChevronDown } from 'lucide-react';
+import { Search, X, Star, MapPin, Loader2, Globe, Plus, Heart, Clock } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import AvaButton from '@/components/shared/AvaButton';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -576,6 +577,44 @@ function SavedPlaceCard({ place, onRemove }) {
 
 // ── Itinerary tab ──────────────────────────────────────────────────────────────
 
+async function fetchPhotoForActivity(name, destination) {
+  try {
+    const loc = destination && destination !== 'Set your venue in Event Details' ? destination : '';
+    const params = new URLSearchParams({ q: name });
+    if (loc) params.set('location', loc);
+    const res = await fetch(`/api/places?${params}`);
+    const data = await res.json();
+    const ref = data.places?.[0]?.photo_reference;
+    return ref ? `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=800` : null;
+  } catch {
+    return null;
+  }
+}
+
+async function enrichScheduleWithPhotos(schedule, allSavedPlaces, destination) {
+  return Promise.all(schedule.map(async (day) => {
+    const blocks = {};
+    for (const block of ['morning', 'afternoon', 'evening']) {
+      blocks[block] = await Promise.all((day.blocks[block] || []).map(async (act) => {
+        if (act.photo_url) return act;
+        if (act.type === 'place' && act.place_id) {
+          const sp = allSavedPlaces.find(p => p.place_id === act.place_id);
+          if (sp?.photo_ref) {
+            return { ...act, photo_url: `/api/places-photo?ref=${encodeURIComponent(sp.photo_ref)}&maxwidth=800` };
+          }
+        }
+        const name = act.place_name || act.custom_text || '';
+        if (name) {
+          const url = await fetchPhotoForActivity(name, destination);
+          if (url) return { ...act, photo_url: url };
+        }
+        return act;
+      }));
+    }
+    return { ...day, blocks };
+  }));
+}
+
 function ItineraryTab({ details, guide, destination, allSavedPlaces, onSave }) {
   const itinerary = guide.itinerary || { days: 3, schedule: [] };
   const [days, setDays] = useState(itinerary.days || 3);
@@ -589,6 +628,7 @@ function ItineraryTab({ details, guide, destination, allSavedPlaces, onSave }) {
       return {
         day: i + 1,
         title: ex.title || `Day ${i + 1}`,
+        summary: ex.summary || '',
         blocks: {
           morning:   ex.blocks?.morning   || [],
           afternoon: ex.blocks?.afternoon || [],
@@ -609,15 +649,13 @@ function ItineraryTab({ details, guide, destination, allSavedPlaces, onSave }) {
 
   const handleAddActivity = (dayIdx, block, activity) => {
     setSchedule(prev => prev.map((d, i) => i === dayIdx ? {
-      ...d,
-      blocks: { ...d.blocks, [block]: [...d.blocks[block], { ...activity, id: uid() }] },
+      ...d, blocks: { ...d.blocks, [block]: [...d.blocks[block], { ...activity, id: uid() }] },
     } : d));
   };
 
   const handleRemoveActivity = (dayIdx, block, activityId) => {
     setSchedule(prev => prev.map((d, i) => i === dayIdx ? {
-      ...d,
-      blocks: { ...d.blocks, [block]: d.blocks[block].filter(a => a.id !== activityId) },
+      ...d, blocks: { ...d.blocks, [block]: d.blocks[block].filter(a => a.id !== activityId) },
     } : d));
   };
 
@@ -628,50 +666,84 @@ function ItineraryTab({ details, guide, destination, allSavedPlaces, onSave }) {
   };
 
   const handleGenerate = async () => {
-    if (allSavedPlaces.length === 0) {
-      toast.error('Add some places first — the AI will use them to build the itinerary');
-      return;
-    }
     setGenerating(true);
     try {
       const placesSummary = allSavedPlaces.map(p => ({
         place_id: p.place_id, name: p.name, category: p.categoryLabel,
       }));
 
-      const prompt = `Create a ${days}-day itinerary for wedding guests visiting ${destination}. Use these curated places: ${JSON.stringify(placesSummary)}.
+      const dayContext = days >= 3
+        ? `Day 1 = arrival/settling in and exploring the local area. Middle days = deeper exploration, food, activities. Last day = relaxed farewell morning.`
+        : days === 1
+        ? `Single day: pack in highlights — morning coffee spot, afternoon sightseeing, evening dinner.`
+        : `Two days: Day 1 = arrival and orientation; Day 2 = deeper exploration.`;
 
-Return ONLY valid JSON, no markdown, no explanation:
-{"schedule":[{"day":1,"title":"Day 1 title","blocks":{"morning":[{"type":"place","place_id":"...","place_name":"...","category":"...","note":"short tip for guests"}],"afternoon":[...],"evening":[...]}}]}
+      const prompt = `You are planning a premium ${days}-day wedding destination itinerary for guests visiting ${destination}. ${dayContext}
+
+Curated places the couple has saved (use as many as fit naturally):
+${JSON.stringify(placesSummary)}
+
+Return ONLY valid JSON — no markdown fences, no explanation:
+{
+  "schedule": [
+    {
+      "day": 1,
+      "title": "Evocative short day title",
+      "summary": "One sentence capturing the day's mood and theme",
+      "blocks": {
+        "morning": [
+          {
+            "type": "place",
+            "place_id": "exact_place_id_from_list",
+            "place_name": "Place name",
+            "category": "Category label",
+            "time": "9:00 AM",
+            "duration": "~1.5 hrs",
+            "description": "1-2 vivid sentences: what to do, why it's special, one insider tip."
+          }
+        ],
+        "afternoon": [ ... ],
+        "evening": [ ... ]
+      }
+    }
+  ]
+}
 
 Rules:
-- Each time block should have 1-2 activities maximum
-- Balance food, activities, and relaxation
-- If no suitable saved place exists for a slot, use: {"type":"custom","custom_text":"Suggested activity","note":"optional tip"}
-- Day titles should be evocative (e.g. "Arrival & welcome drinks", "Beach morning, city evening")
-- Notes should be practical guest tips, max 1 sentence`;
+- 2-3 activities per time block, flowing logically
+- Mix food, sightseeing, experiences, and downtime
+- For saved places: use type "place" with exact place_id; omit place_id for custom
+- For custom/filler activities: use type "custom", place_name = activity title, no place_id
+- Times must flow (morning before afternoon, etc.)
+- Descriptions must be warm, specific, and helpful — like a well-travelled local friend
+- Durations where natural (e.g. "~2 hrs", "~45 min", "all evening")
+- Day titles: evocative, not generic ("Harbour mornings & harbour nights" not "Day 1: Explore")`;
 
       const response = await base44.integrations.Core.InvokeLLM({ prompt });
 
       const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('No JSON in response');
+      if (!jsonMatch) throw new Error('No JSON found');
       const parsed = JSON.parse(jsonMatch[0]);
 
-      if (parsed.schedule?.length > 0) {
-        const newSchedule = parsed.schedule.slice(0, days).map((d, i) => ({
-          day: i + 1,
-          title: d.title || `Day ${i + 1}`,
-          blocks: {
-            morning:   (d.blocks?.morning   || []).map(a => ({ ...a, id: uid() })),
-            afternoon: (d.blocks?.afternoon || []).map(a => ({ ...a, id: uid() })),
-            evening:   (d.blocks?.evening   || []).map(a => ({ ...a, id: uid() })),
-          },
-        }));
-        setSchedule(newSchedule);
-        toast.success('Itinerary generated — review and save when ready');
-      } else {
-        toast.error('Could not parse the AI response — try again');
-      }
-    } catch {
+      if (!parsed.schedule?.length) throw new Error('Empty schedule');
+
+      const rawSchedule = parsed.schedule.slice(0, days).map((d, i) => ({
+        day: i + 1,
+        title: d.title || `Day ${i + 1}`,
+        summary: d.summary || '',
+        blocks: {
+          morning:   (d.blocks?.morning   || []).map(a => ({ ...a, id: uid() })),
+          afternoon: (d.blocks?.afternoon || []).map(a => ({ ...a, id: uid() })),
+          evening:   (d.blocks?.evening   || []).map(a => ({ ...a, id: uid() })),
+        },
+      }));
+
+      toast('Fetching photos…', { icon: '🖼️', duration: 2000 });
+      const enriched = await enrichScheduleWithPhotos(rawSchedule, allSavedPlaces, destination);
+      setSchedule(enriched);
+      toast.success('Itinerary ready — review and save');
+    } catch (err) {
+      console.error('[Ava itinerary]', err);
       toast.error('Generation failed — try again');
     }
     setGenerating(false);
@@ -680,7 +752,7 @@ Rules:
   return (
     <div>
       {/* Controls row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32, flexWrap: 'wrap' }}>
         {/* Day length selector */}
         <div style={{ display: 'flex', gap: 0, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, overflow: 'hidden' }}>
           {ITINERARY_LENGTHS.map(n => (
@@ -700,21 +772,25 @@ Rules:
           ))}
         </div>
 
-        <button
-          onClick={handleGenerate}
-          disabled={generating}
-          className="btn-editorial-secondary"
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-        >
-          {generating ? <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Sparkles size={13} />}
-          {generating ? 'Generating…' : '✦ Generate with AI'}
-        </button>
+        {generating ? (
+          <button
+            disabled
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              borderRadius: 999, padding: '7px 14px',
+              background: 'linear-gradient(135deg, #ec4899, #9333ea)',
+              color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: PJS,
+              border: 'none', opacity: 0.7,
+            }}
+          >
+            <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} />
+            Ava is planning…
+          </button>
+        ) : (
+          <AvaButton label="Ask Ava to plan an itinerary" onClick={handleGenerate} />
+        )}
 
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="btn-primary"
-        >
+        <button onClick={handleSave} disabled={saving} className="btn-primary">
           {saving ? 'Saving…' : 'Save itinerary'}
         </button>
       </div>
@@ -722,18 +798,16 @@ Rules:
       {allSavedPlaces.length === 0 && (
         <div style={{ padding: '12px 16px', background: 'rgba(10,10,10,0.03)', borderRadius: 6, marginBottom: 24, border: '1px solid rgba(10,10,10,0.06)' }}>
           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: 0 }}>
-            Tip: Add places in the Places tab first — the AI will use them to build a personalised itinerary.
+            Tip: Add places in the Places tab first — Ava will use them to build a personalised itinerary.
           </p>
         </div>
       )}
 
-      {/* Day cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {schedule.map((day, dayIdx) => (
           <DayCard
             key={day.day}
             day={day}
-            dayIdx={dayIdx}
             allSavedPlaces={allSavedPlaces}
             onTitleChange={t => handleDayTitleChange(dayIdx, t)}
             onAddActivity={(block, act) => handleAddActivity(dayIdx, block, act)}
@@ -745,53 +819,52 @@ Rules:
   );
 }
 
-function DayCard({ day, dayIdx, allSavedPlaces, onTitleChange, onAddActivity, onRemoveActivity }) {
+function DayCard({ day, allSavedPlaces, onTitleChange, onAddActivity, onRemoveActivity }) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(day.title);
 
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.08)', borderRadius: 8, overflow: 'hidden' }}>
-      {/* Day header */}
-      <div style={{ padding: '14px 20px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
-          Day {day.day}
-        </span>
-        {editingTitle ? (
-          <input
-            autoFocus
-            value={titleDraft}
-            onChange={e => setTitleDraft(e.target.value)}
-            onBlur={() => { onTitleChange(titleDraft); setEditingTitle(false); }}
-            onKeyDown={e => { if (e.key === 'Enter') { onTitleChange(titleDraft); setEditingTitle(false); } }}
-            style={{ flex: 1, border: 'none', borderBottom: '1px solid #E03553', background: 'transparent', fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '2px 0' }}
-          />
-        ) : (
-          <button
-            onClick={() => setEditingTitle(true)}
-            style={{ flex: 1, background: 'none', border: 'none', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, cursor: 'text', padding: 0 }}
-          >
-            {day.title || `Day ${day.day}`}
-          </button>
+      <div style={{ padding: '14px 20px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+            Day {day.day}
+          </span>
+          {editingTitle ? (
+            <input
+              autoFocus
+              value={titleDraft}
+              onChange={e => setTitleDraft(e.target.value)}
+              onBlur={() => { onTitleChange(titleDraft); setEditingTitle(false); }}
+              onKeyDown={e => { if (e.key === 'Enter') { onTitleChange(titleDraft); setEditingTitle(false); } }}
+              style={{ flex: 1, border: 'none', borderBottom: '1px solid #E03553', background: 'transparent', fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '2px 0' }}
+            />
+          ) : (
+            <button
+              onClick={() => setEditingTitle(true)}
+              style={{ flex: 1, background: 'none', border: 'none', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, cursor: 'text', padding: 0 }}
+            >
+              {day.title || `Day ${day.day}`}
+            </button>
+          )}
+        </div>
+        {day.summary && (
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, margin: '4px 0 0', fontStyle: 'italic' }}>
+            {day.summary}
+          </p>
         )}
       </div>
 
-      {/* Time blocks */}
       <div style={{ padding: '0 20px 20px' }}>
         {TIME_BLOCKS.map((block, bi) => (
           <div key={block} style={{ paddingTop: 16, borderTop: bi > 0 ? '1px solid rgba(10,10,10,0.04)' : 'none', marginTop: bi > 0 ? 16 : 0 }}>
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS, margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Clock size={10} /> {block.charAt(0).toUpperCase() + block.slice(1)}
             </p>
-
             {day.blocks[block].map(activity => (
               <ActivityRow key={activity.id} activity={activity} onRemove={() => onRemoveActivity(block, activity.id)} />
             ))}
-
-            <AddActivityInline
-              block={block}
-              allSavedPlaces={allSavedPlaces}
-              onAdd={act => onAddActivity(block, act)}
-            />
+            <AddActivityInline block={block} allSavedPlaces={allSavedPlaces} onAdd={act => onAddActivity(block, act)} />
           </div>
         ))}
       </div>
@@ -800,22 +873,36 @@ function DayCard({ day, dayIdx, allSavedPlaces, onTitleChange, onAddActivity, on
 }
 
 function ActivityRow({ activity, onRemove }) {
+  const name = activity.place_name || activity.custom_text || '';
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
+      {/* Thumbnail */}
+      <div style={{ width: 56, height: 56, flexShrink: 0, overflow: 'hidden', borderRadius: 4, background: 'rgba(10,10,10,0.04)' }}>
+        {activity.photo_url ? (
+          <img src={activity.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { e.target.style.display = 'none'; }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <MapPin size={14} color="rgba(10,10,10,0.2)" />
+          </div>
+        )}
+      </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>
-          {activity.type === 'place' ? activity.place_name : activity.custom_text}
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          {activity.category && (
-            <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.5)', fontFamily: PJS }}>
-              {activity.category}
-            </span>
-          )}
-          {activity.note && (
-            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, fontStyle: 'italic' }}>{activity.note}</span>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2, flexWrap: 'wrap' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>{name}</p>
+          {activity.time && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{activity.time}</span>}
+          {activity.duration && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}>{activity.duration}</span>}
         </div>
+        {activity.category && (
+          <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.5)', fontFamily: PJS, display: 'inline-block', marginBottom: 4 }}>
+            {activity.category}
+          </span>
+        )}
+        {activity.description && (
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: 0, fontFamily: PJS, lineHeight: 1.5 }}>{activity.description}</p>
+        )}
+        {!activity.description && (activity.note) && (
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS, fontStyle: 'italic' }}>{activity.note}</p>
+        )}
       </div>
       <button onClick={onRemove} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 0, flexShrink: 0, marginTop: 2 }}>
         <X size={13} />
@@ -835,10 +922,11 @@ function AddActivityInline({ block, allSavedPlaces, onAdd }) {
     if (type === 'place') {
       const place = allSavedPlaces.find(p => p.place_id === selectedPlaceId);
       if (!place) { toast.error('Select a place'); return; }
-      onAdd({ type: 'place', place_id: place.place_id, place_name: place.name, category: place.categoryLabel, note });
+      onAdd({ type: 'place', place_id: place.place_id, place_name: place.name, category: place.categoryLabel, note,
+        photo_url: place.photo_ref ? `/api/places-photo?ref=${encodeURIComponent(place.photo_ref)}&maxwidth=800` : null });
     } else {
       if (!customText.trim()) { toast.error('Enter an activity'); return; }
-      onAdd({ type: 'custom', custom_text: customText.trim(), note });
+      onAdd({ type: 'custom', place_name: customText.trim(), note });
     }
     setOpen(false);
     setSelectedPlaceId('');
@@ -859,57 +947,31 @@ function AddActivityInline({ block, allSavedPlaces, onAdd }) {
 
   return (
     <div style={{ padding: '10px 12px', background: 'rgba(10,10,10,0.02)', borderRadius: 6, marginTop: 6, border: '1px solid rgba(10,10,10,0.06)' }}>
-      {/* Type toggle */}
       <div style={{ display: 'flex', gap: 0, marginBottom: 10, border: '1px solid rgba(10,10,10,0.1)', borderRadius: 4, overflow: 'hidden', width: 'fit-content' }}>
         {[['place', 'From saved places'], ['custom', 'Custom activity']].map(([val, label]) => (
-          <button
-            key={val}
-            onClick={() => setType(val)}
-            style={{
-              padding: '5px 12px', border: 'none', fontSize: 11, fontWeight: 600, fontFamily: PJS, cursor: 'pointer',
-              background: type === val ? '#0A0A0A' : '#FFFFFF',
-              color: type === val ? '#FFFFFF' : 'rgba(10,10,10,0.5)',
-              borderRight: val === 'place' ? '1px solid rgba(10,10,10,0.1)' : 'none',
-            }}
-          >
-            {label}
-          </button>
+          <button key={val} onClick={() => setType(val)} style={{
+            padding: '5px 12px', border: 'none', fontSize: 11, fontWeight: 600, fontFamily: PJS, cursor: 'pointer',
+            background: type === val ? '#0A0A0A' : '#FFFFFF', color: type === val ? '#FFFFFF' : 'rgba(10,10,10,0.5)',
+            borderRight: val === 'place' ? '1px solid rgba(10,10,10,0.1)' : 'none',
+          }}>{label}</button>
         ))}
       </div>
-
       {type === 'place' ? (
-        <select
-          value={selectedPlaceId}
-          onChange={e => setSelectedPlaceId(e.target.value)}
-          style={{ width: '100%', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 4, padding: '7px 8px', fontSize: 12, fontFamily: PJS, color: '#0A0A0A', background: '#FFF', outline: 'none', marginBottom: 8 }}
-        >
+        <select value={selectedPlaceId} onChange={e => setSelectedPlaceId(e.target.value)}
+          style={{ width: '100%', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 4, padding: '7px 8px', fontSize: 12, fontFamily: PJS, color: '#0A0A0A', background: '#FFF', outline: 'none', marginBottom: 8 }}>
           <option value="">Select a saved place…</option>
           {CATEGORIES.map(cat => {
-            const catPlaces = allSavedPlaces.filter(p => p.categoryKey === cat.key);
-            if (catPlaces.length === 0) return null;
-            return (
-              <optgroup key={cat.key} label={cat.label}>
-                {catPlaces.map(p => <option key={p.place_id} value={p.place_id}>{p.name}</option>)}
-              </optgroup>
-            );
+            const cp = allSavedPlaces.filter(p => p.categoryKey === cat.key);
+            return cp.length ? <optgroup key={cat.key} label={cat.label}>{cp.map(p => <option key={p.place_id} value={p.place_id}>{p.name}</option>)}</optgroup> : null;
           })}
         </select>
       ) : (
-        <input
-          value={customText}
-          onChange={e => setCustomText(e.target.value)}
-          placeholder="e.g. Check in to hotel, Welcome BBQ at the venue..."
-          style={{ width: '100%', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 4, padding: '7px 8px', fontSize: 12, fontFamily: PJS, color: '#0A0A0A', outline: 'none', marginBottom: 8, boxSizing: 'border-box' }}
-        />
+        <input value={customText} onChange={e => setCustomText(e.target.value)}
+          placeholder="e.g. Check in to hotel, Welcome BBQ at the venue…"
+          style={{ width: '100%', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 4, padding: '7px 8px', fontSize: 12, fontFamily: PJS, color: '#0A0A0A', outline: 'none', marginBottom: 8, boxSizing: 'border-box' }} />
       )}
-
-      <input
-        value={note}
-        onChange={e => setNote(e.target.value)}
-        placeholder="Optional tip for guests…"
-        style={{ width: '100%', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 4, padding: '7px 8px', fontSize: 12, fontFamily: PJS, color: '#0A0A0A', outline: 'none', marginBottom: 10, boxSizing: 'border-box' }}
-      />
-
+      <input value={note} onChange={e => setNote(e.target.value)} placeholder="Optional tip for guests…"
+        style={{ width: '100%', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 4, padding: '7px 8px', fontSize: 12, fontFamily: PJS, color: '#0A0A0A', outline: 'none', marginBottom: 10, boxSizing: 'border-box' }} />
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={handleAdd} className="btn-primary" style={{ fontSize: 11, padding: '5px 14px' }}>Add</button>
         <button onClick={() => setOpen(false)} className="btn-editorial-secondary" style={{ fontSize: 11, padding: '5px 14px' }}>Cancel</button>
