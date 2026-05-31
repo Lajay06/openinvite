@@ -100,9 +100,7 @@
       "Bash(chmod +x *)",
       "mcp__claude_ai_Base44__update_entities",
       "Bash(./scripts/new-feature.sh fix-guest-suite-add-place *)",
-      "Bash(./scripts/ship.sh fix: pull save\\(\\) out of state updaters on Accommodation and Transport pages *)",
-      "Bash(./scripts/ship.sh ux: co-locate confirm action with selected place on Accommodation and Transport add panels *)",
-      "Bash(./scripts/new-feature.sh add-manually-and-geolocation *)"
+      "Bash(./scripts/ship.sh fix: pull save\\(\\) out of state updaters on Accommodation and Transport pages *)"
     ]
   }
 }

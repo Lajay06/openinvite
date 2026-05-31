@@ -128,6 +128,7 @@ function AddPlaceCard({ destination, onAdd }) {
   };
 
   const handleAdd = () => {
+    console.log('[AddPlaceCard] handleAdd fired, selected:', selected?.name ?? 'null');
     if (!selected) { toast.error('Select a place first'); return; }
     onAdd({
       place_id: selected.place_id,
@@ -268,21 +269,17 @@ export default function GuestSuiteAccommodation() {
     setSaving(false);
   };
 
-  // Functional state update so concurrent adds always see the latest list
   const handleAdd = (place) => {
-    setPlaces(prev => {
-      const next = [...prev, { ...place, id: uid() }];
-      save(next);
-      return next;
-    });
+    console.log('[GuestSuiteAccommodation] handleAdd called:', place?.name, '| places before:', places.length);
+    const next = [...places, { ...place, id: uid() }];
+    setPlaces(next);
+    save(next);
   };
 
   const handleRemove = (id) => {
-    setPlaces(prev => {
-      const next = prev.filter(p => p.id !== id);
-      save(next);
-      return next;
-    });
+    const next = places.filter(p => p.id !== id);
+    setPlaces(next);
+    save(next);
   };
 
   const handleAddFromAva = async (suggestion) => {
@@ -307,11 +304,9 @@ export default function GuestSuiteAccommodation() {
         };
       }
     } catch {}
-    setPlaces(prev => {
-      const next = [...prev, enriched];
-      save(next);
-      return next;
-    });
+    const next = [...places, enriched];
+    setPlaces(next);
+    save(next);
     setAvaSuggestions(prev => prev.filter(s => s._avaId !== suggestion._avaId));
     toast.success(`${suggestion.name} added`);
   };
