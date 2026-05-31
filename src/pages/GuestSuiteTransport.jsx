@@ -1,106 +1,293 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { createPageUrl } from '@/utils';
-import { Loader2, Car, Bus, Truck, MapPin, Clock, Users, Phone, ArrowRight } from 'lucide-react';
+import { Loader2, Car, MapPin, Star, ExternalLink, ArrowRight, X, Search, Plus, Plane, Train, Bus, FileText } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import AvaButton from '@/components/shared/AvaButton';
+import { Input } from '@/components/ui/input';
+import toast from 'react-hot-toast';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const MODE_LABELS = {
-  rideshare: 'Rideshare / taxi',
-  drive:     'Drive & park',
-  public:    'Public transport',
-  shuttle:   "Couple's shuttle",
-  walk:      'Walk',
-  hire:      'Car hire',
+const TRANSPORT_TYPES = [
+  { key: 'airport',       label: 'Airport',         icon: Plane },
+  { key: 'train_station', label: 'Train station',    icon: Train },
+  { key: 'bus_station',   label: 'Bus/coach station',icon: Bus },
+  { key: 'car_rental',    label: 'Car rental',       icon: Car },
+  { key: 'ferry',         label: 'Ferry terminal',   icon: MapPin },
+  { key: 'other',         label: 'Other',            icon: MapPin },
+];
+
+const sectionLabel = {
+  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8, display: 'block',
 };
 
-const ROUTE_LABELS = {
-  train:  'Train',
-  bus:    'Bus',
-  tram:   'Tram',
-  metro:  'Metro',
-  ferry:  'Ferry',
-};
+function photoProxy(ref, w = 600) {
+  if (!ref) return null;
+  return `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=${w}`;
+}
 
-const SHUTTLE_TYPE_LABELS = {
-  coach:    'Coach',
-  shuttle:  'Shuttle bus',
-  minibus:  'Minibus',
-  transfer: 'Transfer',
-  limo:     'Limousine',
-};
+function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
 
-function SectionHeading({ icon: Icon, label }) {
+function TransportIcon({ type, size = 18 }) {
+  const cfg = TRANSPORT_TYPES.find(t => t.key === type);
+  const Icon = cfg?.icon || MapPin;
+  return <Icon size={size} color="rgba(10,10,10,0.45)" strokeWidth={1.8} />;
+}
+
+// ── Place card ────────────────────────────────────────────────────────────────
+
+function TransportPlaceCard({ place, onRemove }) {
+  const [hovered, setHovered] = useState(false);
+  const typeLabel = TRANSPORT_TYPES.find(t => t.key === place.type)?.label || 'Transport';
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-      <Icon size={15} strokeWidth={1.8} style={{ color: '#0A0A0A', flexShrink: 0 }} />
-      <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.01em' }}>
-        {label}
-      </span>
+    <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden', background: '#FFFFFF', position: 'relative' }}
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <div style={{ height: 140, background: '#F5F5F5', position: 'relative', overflow: 'hidden' }}>
+        {place.photo_url ? (
+          <img src={place.photo_url} alt={place.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { e.target.style.display = 'none'; }} />
+        ) : (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <TransportIcon type={place.type} size={28} />
+          </div>
+        )}
+        <span style={{ position: 'absolute', bottom: 8, left: 10, fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: 'rgba(0,0,0,0.6)', color: '#FFF', fontFamily: PJS }}>
+          {typeLabel}
+        </span>
+        {hovered && onRemove && (
+          <button onClick={onRemove} style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <X size={13} color="#FFF" />
+          </button>
+        )}
+      </div>
+      <div style={{ padding: '12px 14px' }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: PJS }}>{place.name}</p>
+        {place.address && <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', fontFamily: PJS }}>{place.address}</p>}
+        {place.note && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 6px', fontFamily: PJS, fontStyle: 'italic' }}>"{place.note}"</p>}
+        {place.maps_url && (
+          <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
+            <ExternalLink size={10} /> View on maps
+          </a>
+        )}
+      </div>
     </div>
   );
 }
 
-function InfoRow({ label, value }) {
-  if (!value) return null;
+// ── Note card ─────────────────────────────────────────────────────────────────
+
+function NoteCard({ note, onRemove, onEdit }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(note);
+
   return (
-    <div style={{ display: 'flex', gap: 12, padding: '6px 0', borderBottom: '1px solid rgba(10,10,10,0.05)' }}>
-      <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, minWidth: 120, flexShrink: 0 }}>
-        {label}
-      </span>
-      <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS, flex: 1, lineHeight: 1.5 }}>
-        {value}
-      </span>
+    <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '14px 16px', background: '#FFFFFF', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      <FileText size={14} color="rgba(10,10,10,0.35)" style={{ flexShrink: 0, marginTop: 2 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {editing ? (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <textarea value={draft.text} onChange={e => setDraft({ ...draft, text: e.target.value })} rows={2}
+              style={{ flex: 1, border: '1px solid rgba(10,10,10,0.15)', borderRadius: 4, padding: '6px 8px', fontSize: 13, fontFamily: PJS, resize: 'vertical', outline: 'none' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <button onClick={() => { onEdit(draft); setEditing(false); }} className="btn-primary" style={{ fontSize: 11, padding: '4px 10px' }}>Save</button>
+              <button onClick={() => { setDraft(note); setEditing(false); }} className="btn-editorial-secondary" style={{ fontSize: 11, padding: '4px 10px' }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {note.title && <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: '0 0 3px', letterSpacing: '0.05em' }}>{note.title}</p>}
+            <p style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>{note.text}</p>
+          </>
+        )}
+      </div>
+      {!editing && (
+        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+          <button onClick={() => setEditing(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: 0 }}>Edit</button>
+          <button onClick={onRemove} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 0 }}><X size={13} /></button>
+        </div>
+      )}
     </div>
   );
 }
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function GuestSuiteTransport() {
   const navigate = useNavigate();
-  const [transport, setTransport] = useState(null);
+  const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [avaSuggestions, setAvaSuggestions] = useState([]);
+  const [avaLoading, setAvaLoading] = useState(false);
+
+  // Place search state
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [placeType, setPlaceType] = useState('airport');
+  const [placeNote, setPlaceNote] = useState('');
+  const debounceRef = useRef(null);
+
+  // Note add state
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteText, setNoteText] = useState('');
 
   useEffect(() => {
     base44.entities.WeddingDetails.list()
-      .then(rows => { setTransport(rows[0]?.transport || null); })
+      .then(rows => setDetails(rows[0] || null))
       .catch(e => console.error('GuestSuiteTransport load error', e))
       .finally(() => setLoading(false));
   }, []);
 
-  const parking = transport?.parking || {};
-  const pt = transport?.publicTransport || {};
-  const rs = transport?.rideshare || {};
-  const shuttles = transport?.shuttles || [];
+  const savedPlaces = details?.guestSuiteTransport?.places || [];
+  const savedNotes  = details?.guestSuiteTransport?.notes  || [];
+  const destination = details?.mainCeremony?.address || '';
 
-  const hasParking = parking.venueParking || parking.streetParking || (parking.nearbyCarParks?.length > 0);
-  const hasPublicTransport = pt.generalNotes || (pt.routes?.length > 0);
-  const hasRideshare = rs.pickupLocation || rs.dropoffLocation || rs.lateNightNote;
-  const hasShuttles = shuttles.length > 0;
-  const hasAnyContent = transport?.coupleNote || transport?.recommendedMode || hasParking || hasPublicTransport || hasRideshare || hasShuttles || transport?.freeTextNotes;
+  const saveData = async (places, notes) => {
+    if (!details?.id) return;
+    setSaving(true);
+    try {
+      await base44.entities.WeddingDetails.update(details.id, {
+        guestSuiteTransport: { ...(details.guestSuiteTransport || {}), places, notes },
+      });
+      setDetails(prev => ({ ...prev, guestSuiteTransport: { ...(prev.guestSuiteTransport || {}), places, notes } }));
+      toast.success('Saved');
+    } catch { toast.error('Failed to save'); }
+    setSaving(false);
+  };
+
+  // Place search
+  const searchPlaces = async (q) => {
+    if (!q.trim() || q.trim().length < 2) { setResults([]); setShowDropdown(false); return; }
+    setSearching(true);
+    try {
+      const res = await fetch('/api/places-search', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: q.trim(), location: destination || '' }),
+      });
+      const data = await res.json();
+      setResults(data.places || []);
+      setShowDropdown(true);
+    } catch { toast.error('Search failed'); }
+    setSearching(false);
+  };
+
+  const handleQueryChange = e => {
+    const v = e.target.value;
+    setQuery(v);
+    setSelectedPlace(null);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => searchPlaces(v), 400);
+  };
+
+  const handleSelectPlace = (place) => {
+    setSelectedPlace(place);
+    setQuery(place.name);
+    setShowDropdown(false);
+    setResults([]);
+  };
+
+  const handleAddPlace = () => {
+    if (!selectedPlace) { toast.error('Select a place first'); return; }
+    const next = [...savedPlaces, {
+      id: uid(), place_id: selectedPlace.place_id, name: selectedPlace.name,
+      address: selectedPlace.address, type: placeType,
+      photo_url: selectedPlace.photo_reference ? photoProxy(selectedPlace.photo_reference) : null,
+      maps_url: selectedPlace.maps_url, note: placeNote.trim(),
+    }];
+    saveData(next, savedNotes);
+    setSelectedPlace(null); setQuery(''); setPlaceNote('');
+  };
+
+  const handleRemovePlace = (id) => saveData(savedPlaces.filter(p => p.id !== id), savedNotes);
+
+  const handleAddNote = () => {
+    if (!noteText.trim()) { toast.error('Enter a note'); return; }
+    const next = [...savedNotes, { id: uid(), title: noteTitle.trim(), text: noteText.trim() }];
+    saveData(savedPlaces, next);
+    setNoteTitle(''); setNoteText('');
+  };
+
+  const handleRemoveNote = (id) => saveData(savedPlaces, savedNotes.filter(n => n.id !== id));
+  const handleEditNote  = (id, updated) => saveData(savedPlaces, savedNotes.map(n => n.id === id ? { ...n, ...updated } : n));
+
+  const handleAvaRecommend = async () => {
+    if (!destination) { toast.error('Add your venue address in Event Details first'); return; }
+    setAvaLoading(true);
+    try {
+      const prompt = `Give transport advice for wedding guests getting to and around ${destination}. Cover: nearest airport(s), how to get from airport to venue area, public transport, rideshare/taxi tips, parking, and any wedding-day transport note.
+
+Return ONLY valid JSON, no markdown:
+{"suggestions":[
+  {"type":"airport","name":"Exact airport name","description":"1-2 sentences: distance, transport options to venue area","isPlace":true},
+  {"type":"rideshare","name":"Rideshare & taxi","description":"Rideshare availability, estimated fare, pickup tips","isPlace":false},
+  {"type":"public_transport","name":"Public transport","description":"Best public transport routes to the venue area","isPlace":false},
+  {"type":"parking","name":"Parking","description":"Venue parking availability and nearby options","isPlace":false},
+  {"type":"tip","name":"Wedding day shuttle","description":"Recommend couples arrange a shuttle if venue is remote","isPlace":false}
+]}
+
+Type options: "airport", "train_station", "rideshare", "public_transport", "parking", "tip"
+isPlace: true only for actual places (airports, stations) that can be found on Google Maps`;
+
+      const response = await base44.integrations.Core.InvokeLLM({ prompt });
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No JSON');
+      const parsed = JSON.parse(jsonMatch[0]);
+      const suggestions = (parsed.suggestions || []).map((s, i) => ({ ...s, _avaId: `ava-${i}-${Date.now()}` }));
+      setAvaSuggestions(suggestions);
+    } catch { toast.error('Ava couldn\'t generate suggestions — try again'); }
+    setAvaLoading(false);
+  };
+
+  const handleAddAvaPlace = async (suggestion) => {
+    const loc = destination || '';
+    let place = {
+      id: uid(), name: suggestion.name, type: suggestion.type === 'airport' ? 'airport' : suggestion.type === 'train_station' ? 'train_station' : 'other',
+      note: suggestion.description || '', photo_url: null, maps_url: null, address: '',
+    };
+    try {
+      const res = await fetch('/api/places-search', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: suggestion.name, location: loc }),
+      });
+      const data = await res.json();
+      const top = data.places?.[0];
+      if (top) {
+        place = { ...place, place_id: top.place_id, address: top.address, photo_url: top.photo_reference ? photoProxy(top.photo_reference) : null, maps_url: top.maps_url };
+      }
+    } catch {}
+    saveData([...savedPlaces, place], savedNotes);
+    setAvaSuggestions(prev => prev.filter(s => s._avaId !== suggestion._avaId));
+    toast.success(`${suggestion.name} added`);
+  };
+
+  const handleAddAvaNote = (suggestion) => {
+    const next = [...savedNotes, { id: uid(), title: suggestion.name, text: suggestion.description }];
+    saveData(savedPlaces, next);
+    setAvaSuggestions(prev => prev.filter(s => s._avaId !== suggestion._avaId));
+    toast.success('Note added');
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader
         title="Transport"
-        subtitle="Getting to and from the wedding venue"
+        subtitle="Getting to and around the venue"
+        actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Saving…</span> : null}
       />
 
       {/* Connected banner */}
-      <div style={{
-        padding: '10px 32px', background: 'rgba(224,53,83,0.04)',
-        borderBottom: '1px solid rgba(224,53,83,0.12)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
-      }}>
+      <div style={{ padding: '10px 32px', background: 'rgba(224,53,83,0.04)', borderBottom: '1px solid rgba(224,53,83,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 12, color: '#E03553', fontFamily: PJS, fontWeight: 600 }}>
-          ✨ This is pulled from your Transport planning page and is visible to guests
+          ✨ You can also manage transport details via your Transport planning page
         </span>
-        <button
-          onClick={() => navigate('/transport')}
-          style={{ fontSize: 12, fontWeight: 700, color: '#E03553', background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}
-        >
-          Edit in Transport <ArrowRight size={11} />
+        <button onClick={() => navigate('/transport')}
+          style={{ fontSize: 12, fontWeight: 700, color: '#E03553', background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          Open planning page <ArrowRight size={11} />
         </button>
       </div>
 
@@ -109,181 +296,202 @@ export default function GuestSuiteTransport() {
           <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
             <Loader2 size={20} className="animate-spin" style={{ color: 'rgba(10,10,10,0.3)' }} />
           </div>
-        ) : !hasAnyContent ? (
-          /* Empty state */
-          <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-            <div style={{ width: 48, height: 48, background: 'rgba(10,10,10,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <Car size={22} style={{ color: 'rgba(10,10,10,0.25)' }} />
-            </div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 8px' }}>
-              No transport information added yet
-            </p>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: '0 0 24px', lineHeight: 1.6 }}>
-              Add transport details in Day of → Transport and they'll appear here for guests.
-            </p>
-            <button
-              onClick={() => navigate('/transport')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: '#E03553', background: 'none', border: '1px solid rgba(224,53,83,0.3)', borderRadius: 999, padding: '8px 18px', cursor: 'pointer', fontFamily: PJS }}
-            >
-              Add in Transport planning page <ArrowRight size={12} />
-            </button>
-          </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+          <>
+            {/* Ava button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
+              {avaLoading ? (
+                <button disabled style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '7px 14px', background: 'linear-gradient(135deg, #ec4899, #9333ea)', color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: PJS, border: 'none', opacity: 0.7 }}>
+                  <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Ava is thinking…
+                </button>
+              ) : (
+                <AvaButton label="Ask Ava for transport recommendations" onClick={handleAvaRecommend} />
+              )}
+            </div>
 
-            {/* Couple's note + recommended mode */}
-            {(transport?.coupleNote || transport?.recommendedMode) && (
-              <div style={{ padding: '20px 24px', background: 'rgba(10,10,10,0.02)', border: '1px solid rgba(10,10,10,0.07)' }}>
-                {transport.recommendedMode && (
-                  <div style={{ marginBottom: transport.coupleNote ? 10 : 0 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Recommended</span>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '4px 0 0' }}>
-                      {MODE_LABELS[transport.recommendedMode] || transport.recommendedMode}
-                    </p>
-                  </div>
-                )}
-                {transport.coupleNote && (
-                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.65)', fontFamily: PJS, margin: 0, lineHeight: 1.7 }}>
-                    {transport.coupleNote}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Shuttles */}
-            {hasShuttles && (
-              <div style={{ border: '1px solid rgba(10,10,10,0.07)', padding: '20px 24px' }}>
-                <SectionHeading icon={Truck} label="Couple-arranged transport" />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {shuttles.map((s, i) => (
-                    <div key={s.id || i} style={{ padding: '14px 16px', background: 'rgba(10,10,10,0.02)', border: '1px solid rgba(10,10,10,0.06)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 8 }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
-                          {s.name || `Transport ${i + 1}`}
-                        </span>
-                        {s.type && (
-                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.07)', color: '#444444', fontFamily: PJS, flexShrink: 0 }}>
-                            {SHUTTLE_TYPE_LABELS[s.type] || s.type}
-                          </span>
+            {/* Ava suggestions */}
+            {avaSuggestions.length > 0 && (
+              <div style={{ marginBottom: 36 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+                  Ava's suggestions — add what's relevant
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {avaSuggestions.map(s => (
+                    <div key={s._avaId} style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '14px 16px', background: '#FAFAFA', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <TransportIcon type={s.type} size={15} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 3px', fontFamily: PJS }}>{s.name}</p>
+                        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: 0, fontFamily: PJS, lineHeight: 1.5 }}>{s.description}</p>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                        {s.isPlace ? (
+                          <button onClick={() => handleAddAvaPlace(s)} className="btn-primary" style={{ fontSize: 11, padding: '5px 12px' }}>
+                            <Plus size={11} /> Add place
+                          </button>
+                        ) : (
+                          <button onClick={() => handleAddAvaNote(s)} className="btn-primary" style={{ fontSize: 11, padding: '5px 12px' }}>
+                            <Plus size={11} /> Add note
+                          </button>
                         )}
+                        <button onClick={() => setAvaSuggestions(prev => prev.filter(x => x._avaId !== s._avaId))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 0 }}>
+                          <X size={13} />
+                        </button>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <InfoRow label="Pickup location"  value={s.pickupLocation} />
-                        <InfoRow label="Pickup time"      value={s.pickupTime} />
-                        <InfoRow label="Drop-off location" value={s.dropoffLocation} />
-                        <InfoRow label="Return time"       value={s.returnTime} />
-                        <InfoRow label="Capacity"          value={s.capacity} />
-                        <InfoRow label="Contact"           value={s.contact} />
-                      </div>
-                      {s.notes && (
-                        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '10px 0 0', lineHeight: 1.6, borderTop: '1px solid rgba(10,10,10,0.05)', paddingTop: 10 }}>
-                          {s.notes}
-                        </p>
-                      )}
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Parking */}
-            {hasParking && (
-              <div style={{ border: '1px solid rgba(10,10,10,0.07)', padding: '20px 24px' }}>
-                <SectionHeading icon={Car} label="Parking" />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {parking.venueParking && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: '#D1FAE5', color: '#065F46', fontFamily: PJS }}>
-                        Parking available at venue
-                      </span>
-                    </div>
-                  )}
-                  {parking.venueParkingNotes && (
-                    <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.65)', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>
-                      {parking.venueParkingNotes}
-                    </p>
-                  )}
-                  {parking.streetParking && (
-                    <div>
-                      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 4px' }}>Street parking</p>
-                      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.65)', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>{parking.streetParking}</p>
-                    </div>
-                  )}
-                  {parking.accessibilityNotes && (
-                    <div>
-                      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 4px' }}>Accessibility parking</p>
-                      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.65)', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>{parking.accessibilityNotes}</p>
-                    </div>
-                  )}
-                  {parking.nearbyCarParks?.length > 0 && (
-                    <div>
-                      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 8px' }}>Nearby car parks</p>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {parking.nearbyCarParks.map((cp, i) => (
-                          <div key={i} style={{ padding: '10px 14px', border: '1px solid rgba(10,10,10,0.06)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-                            {cp.name && <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, gridColumn: '1/-1' }}>{cp.name}</span>}
-                            {cp.address && <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>{cp.address}</span>}
-                            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, textAlign: 'right' }}>
-                              {cp.distance && `${cp.distance}`}{cp.distance && cp.cost && ' · '}{cp.cost}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            {/* Add a place card */}
+            <div style={{ border: '1px solid rgba(10,10,10,0.1)', borderRadius: 8, padding: '20px 24px', marginBottom: 32 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 18px' }}>Add a transport location</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px 24px', marginBottom: 14 }}>
+                {/* Search */}
+                <div style={{ position: 'relative' }}>
+                  <label style={sectionLabel}>Search Google Places</label>
+                  <div style={{ position: 'relative' }}>
+                    <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                    <Input value={query} onChange={handleQueryChange} onFocus={() => results.length > 0 && setShowDropdown(true)}
+                      placeholder="e.g. Sydney Airport, Central Station…" style={{ paddingLeft: 20 }} />
+                    {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
+                    {selectedPlace && !searching && (
+                      <button onClick={() => { setSelectedPlace(null); setQuery(''); }} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-            {/* Public transport */}
-            {hasPublicTransport && (
-              <div style={{ border: '1px solid rgba(10,10,10,0.07)', padding: '20px 24px' }}>
-                <SectionHeading icon={Bus} label="Public transport" />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {pt.generalNotes && (
-                    <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.65)', fontFamily: PJS, margin: 0, lineHeight: 1.7 }}>
-                      {pt.generalNotes}
-                    </p>
-                  )}
-                  {pt.routes?.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {pt.routes.map((route, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 14px', border: '1px solid rgba(10,10,10,0.06)', background: 'rgba(10,10,10,0.01)' }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.07)', color: '#444444', fontFamily: PJS, flexShrink: 0, alignSelf: 'flex-start', marginTop: 2 }}>
-                            {ROUTE_LABELS[route.type] || route.type || 'Route'}
-                          </span>
-                          <div style={{ flex: 1 }}>
-                            {route.notes && <p style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 2px', lineHeight: 1.5 }}>{route.notes}</p>}
-                            {route.totalTime && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, margin: 0 }}>{route.totalTime}</p>}
+                  {showDropdown && results.length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFF', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, marginTop: 4, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', maxHeight: 280, overflowY: 'auto' }}>
+                      {results.map((place, i) => (
+                        <button key={place.place_id} onClick={() => handleSelectPlace(place)}
+                          style={{ width: '100%', display: 'flex', gap: 10, padding: '10px 12px', alignItems: 'center', background: '#FFF', border: 'none', borderBottom: i < results.length - 1 ? '1px solid rgba(10,10,10,0.05)' : 'none', cursor: 'pointer', textAlign: 'left' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.03)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
+                        >
+                          {place.photo_reference ? (
+                            <img src={photoProxy(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                          ) : (
+                            <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <MapPin size={12} color="rgba(10,10,10,0.2)" />
+                            </div>
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{place.name}</p>
+                            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
                           </div>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   )}
                 </div>
-              </div>
-            )}
 
-            {/* Rideshare */}
-            {hasRideshare && (
-              <div style={{ border: '1px solid rgba(10,10,10,0.07)', padding: '20px 24px' }}>
-                <SectionHeading icon={Car} label="Rideshare & taxi" />
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <InfoRow label="Pickup location"  value={rs.pickupLocation} />
-                  <InfoRow label="Drop-off location" value={rs.dropoffLocation} />
-                  <InfoRow label="Late-night note"  value={rs.lateNightNote} />
+                {/* Type */}
+                <div>
+                  <label style={sectionLabel}>Type</label>
+                  <select value={placeType} onChange={e => setPlaceType(e.target.value)}
+                    style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', outline: 'none', cursor: 'pointer' }}>
+                    {TRANSPORT_TYPES.map(t => <option key={t.key} value={t.key}>{t.label}</option>)}
+                  </select>
+                </div>
+
+                {/* Note */}
+                <div>
+                  <label style={sectionLabel}>Note for guests <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+                  <Input value={placeNote} onChange={e => setPlaceNote(e.target.value)} placeholder="e.g. ~20 min to venue by taxi…" />
+                </div>
+
+                {/* Add button */}
+                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  <button onClick={handleAddPlace} className="btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: 13, padding: '9px 0' }}>
+                    <Plus size={14} /> Add location
+                  </button>
+                </div>
+              </div>
+
+              {selectedPlace && (
+                <div style={{ display: 'flex', gap: 10, padding: '10px 12px', background: 'rgba(224,53,83,0.04)', borderRadius: 6, border: '1px solid rgba(224,53,83,0.15)', alignItems: 'center' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{selectedPlace.name}</p>
+                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS }}>{selectedPlace.address}</p>
+                  </div>
+                  <span style={{ fontSize: 11, color: '#E03553', fontWeight: 600, fontFamily: PJS, flexShrink: 0 }}>Selected</span>
+                </div>
+              )}
+            </div>
+
+            {/* Saved places */}
+            {savedPlaces.length > 0 && (
+              <div style={{ marginBottom: 36 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+                  Getting here — {savedPlaces.length} location{savedPlaces.length !== 1 ? 's' : ''}
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+                  {savedPlaces.map(p => <TransportPlaceCard key={p.id} place={p} onRemove={() => handleRemovePlace(p.id)} />)}
                 </div>
               </div>
             )}
 
-            {/* Additional notes */}
-            {transport?.freeTextNotes && (
-              <div style={{ padding: '16px 20px', border: '1px solid rgba(10,10,10,0.07)' }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 8px' }}>Notes</p>
-                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.65)', fontFamily: PJS, margin: 0, lineHeight: 1.7 }}>{transport.freeTextNotes}</p>
+            {/* Transport notes */}
+            <div style={{ marginBottom: 36 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+                Transport tips & notes
+              </p>
+
+              {savedNotes.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                  {savedNotes.map(n => (
+                    <NoteCard key={n.id} note={n}
+                      onRemove={() => handleRemoveNote(n.id)}
+                      onEdit={(updated) => handleEditNote(n.id, updated)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Add note inline */}
+              <div style={{ border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '14px 16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr auto', gap: '0 12px', alignItems: 'flex-end' }}>
+                  <div>
+                    <label style={sectionLabel}>Title <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+                    <Input value={noteTitle} onChange={e => setNoteTitle(e.target.value)} placeholder="e.g. Rideshare" />
+                  </div>
+                  <div>
+                    <label style={sectionLabel}>Note</label>
+                    <Input value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="e.g. Uber works well here — pick up on the south side of the venue" />
+                  </div>
+                  <button onClick={handleAddNote} className="btn-primary" style={{ fontSize: 12, padding: '8px 16px' }}>
+                    <Plus size={13} /> Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Planning page data (existing) */}
+            {(details?.transport?.shuttles?.length > 0 || details?.transport?.coupleNote) && (
+              <div style={{ paddingTop: 32, borderTop: '1px solid rgba(10,10,10,0.06)' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+                  From your transport planning page
+                </p>
+                {details.transport.coupleNote && (
+                  <p style={{ fontSize: 14, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 16px', lineHeight: 1.7, padding: '14px 16px', background: 'rgba(10,10,10,0.02)', border: '1px solid rgba(10,10,10,0.07)' }}>
+                    {details.transport.coupleNote}
+                  </p>
+                )}
+                {details.transport.shuttles?.map((s, i) => (
+                  <div key={s.id || i} style={{ border: '1px solid rgba(10,10,10,0.07)', padding: '14px 16px', marginBottom: 10 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>{s.name || `Shuttle ${i + 1}`}</p>
+                    {s.pickupLocation && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, margin: '0 0 3px' }}>Pickup: {s.pickupLocation}{s.pickupTime ? ` at ${s.pickupTime}` : ''}</p>}
+                    {s.notes && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, margin: 0, fontStyle: 'italic' }}>{s.notes}</p>}
+                  </div>
+                ))}
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>

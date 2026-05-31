@@ -39,6 +39,9 @@ export default function GuestTransport() {
 
   const transport = details.transport || {};
   const enabledModes = transport.enabledModes || ['shuttle', 'drive', 'rideshare'];
+  const curatedPlaces = details.guestSuiteTransport?.places || [];
+  const curatedNotes  = details.guestSuiteTransport?.notes  || [];
+  const PJS = "'Plus Jakarta Sans', sans-serif";
 
   const modeConfig = {
     shuttle: { label: 'Group Transport', icon: '🚌' },
@@ -64,6 +67,56 @@ export default function GuestTransport() {
 
       {/* Hero */}
       <TransportHero details={details} />
+
+      {/* Curated transport places from Guest Suite editor */}
+      {curatedPlaces.length > 0 && (
+        <div style={{ padding: '32px 24px', borderBottom: '1px solid #EEEEEE' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontFamily: PJS }}>Getting here</p>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS }}>Airports & transit</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+            {curatedPlaces.map((place, i) => (
+              <div key={place.id || i} style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden', background: '#FFFFFF' }}>
+                <div style={{ height: 120, background: '#F5F5F5', position: 'relative', overflow: 'hidden' }}>
+                  {place.photo_url ? (
+                    <img src={place.photo_url} alt={place.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { e.target.style.display = 'none'; }} />
+                  ) : (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: 24, opacity: 0.15 }}>✈️</span>
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: '10px 12px' }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: PJS }}>{place.name}</p>
+                  {place.address && <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontFamily: PJS }}>{place.address}</p>}
+                  {place.note && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 6px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.4 }}>{place.note}</p>}
+                  {place.maps_url && (
+                    <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
+                      style={{ fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
+                      View on maps →
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Curated transport notes */}
+      {curatedNotes.length > 0 && (
+        <div style={{ padding: '24px 24px', borderBottom: '1px solid #EEEEEE' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontFamily: PJS }}>Getting around</p>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>Transport tips</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {curatedNotes.map((note, i) => (
+              <div key={note.id || i} style={{ padding: '14px 16px', border: '1px solid rgba(10,10,10,0.08)', background: '#FFFFFF' }}>
+                {note.title && <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, margin: '0 0 4px', letterSpacing: '0.06em' }}>{note.title}</p>}
+                <p style={{ fontSize: 14, color: '#0A0A0A', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>{note.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* AI banner */}
       {transport.aiAnalysis && (

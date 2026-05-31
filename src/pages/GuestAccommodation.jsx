@@ -63,10 +63,12 @@ export default function GuestAccommodation() {
   }
 
   const manualProperties = details.accommodation?.manualProperties || [];
+  const curatedPlaces   = details.guestSuiteAccommodation?.places || [];
   const city = details.mainCeremony?.address?.split(',').slice(-3, -1).join(',').trim() || 'the area';
+  const PJS = "'Plus Jakarta Sans', sans-serif";
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
       {/* Nav bar */}
       <div style={{ position: 'sticky', top: 0, zIndex: 100, height: 56, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
         <Link to={`/w/${weddingSlug}`} style={{ color: '#0A0A0A', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 600 }}>
@@ -80,10 +82,69 @@ export default function GuestAccommodation() {
       {/* Hero */}
       <AccommodationHero details={details} city={city} />
 
+      {/* Curated places from Guest Suite editor */}
+      {curatedPlaces.length > 0 && (
+        <div style={{ padding: '40px 24px 0' }}>
+          <div style={{ marginBottom: 20 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontFamily: PJS }}>
+              Our picks
+            </p>
+            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 'clamp(20px, 4vw, 26px)', color: '#0A0A0A', margin: 0 }}>
+              Recommended places to stay
+            </h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+            {curatedPlaces.map((place, i) => (
+              <div key={place.id || place.place_id || i} style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden', background: '#FFFFFF' }}>
+                <div style={{ height: 170, background: '#F5F5F5', position: 'relative', overflow: 'hidden' }}>
+                  {place.photo_url ? (
+                    <img src={place.photo_url} alt={place.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { e.target.style.display = 'none'; }} />
+                  ) : (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: 28, opacity: 0.15 }}>🏨</span>
+                    </div>
+                  )}
+                  {place.badge && (
+                    <span style={{ position: 'absolute', top: 10, left: 10, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: '#E03553', color: '#FFF', fontFamily: PJS }}>
+                      {place.badge}
+                    </span>
+                  )}
+                </div>
+                <div style={{ padding: '12px 14px' }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: PJS, lineHeight: 1.3 }}>{place.name}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                    {place.rating && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#0A0A0A', fontFamily: PJS }}>
+                        ⭐ {place.rating}
+                      </span>
+                    )}
+                    {place.price_level > 0 && (
+                      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{'$'.repeat(place.price_level)}</span>
+                    )}
+                    {place.address && (
+                      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{place.address}</span>
+                    )}
+                  </div>
+                  {place.note && (
+                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 8px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.5 }}>"{place.note}"</p>
+                  )}
+                  {place.maps_url && (
+                    <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
+                      View on maps →
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <AccommodationFilters filter={filter} onChange={setFilter} />
 
-      {/* Couple's Picks */}
+      {/* Couple's Picks from planning page */}
       {manualProperties.length > 0 && (
         <CouplePicksSection properties={manualProperties} details={details} />
       )}
