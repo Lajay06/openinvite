@@ -417,5 +417,8 @@ export const WEDDING_PAGES = [
   { slug: 'photos', label: 'Photos', icon: 'Camera' },
   { slug: 'styling', label: 'Styling', icon: 'Sparkles' },
   { slug: 'polls', label: 'Polls', icon: 'BarChart2' },
-  { slug: 'faq', label: 'FAQ', icon: 'HelpCircle' }
+  { slug: 'faq', label: 'FAQ', icon: 'HelpCircle' },
+  { slug: 'stay', label: 'Stay', icon: 'Hotel' },
+  { slug: 'transport', label: 'Getting here', icon: 'Car' },
+  { slug: 'experience', label: 'Guide', icon: 'Compass' },
 ];

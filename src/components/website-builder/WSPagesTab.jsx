@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, BookOpen, Star, CheckSquare, MapPin, Gift, Music, Camera, HelpCircle } from 'lucide-react';
+import { Home, BookOpen, Star, CheckSquare, MapPin, Gift, Music, Camera, HelpCircle, Hotel, Car, Compass } from 'lucide-react';
 
 const ALL_PAGES = [
   { id: 'home', label: 'Home', Icon: Home, path: '' },
@@ -11,6 +11,9 @@ const ALL_PAGES = [
   { id: 'music', label: 'Music', Icon: Music, path: '/music' },
   { id: 'photos', label: 'Photos', Icon: Camera, path: '/photos' },
   { id: 'faq', label: 'FAQ', Icon: HelpCircle, path: '/faq' },
+  { id: 'stay', label: 'Where to stay', Icon: Hotel, path: '/stay', note: 'Guest Suite · Accommodation' },
+  { id: 'transport', label: 'Getting here', Icon: Car, path: '/transport', note: 'Guest Suite · Transport' },
+  { id: 'experience', label: 'Experience guide', Icon: Compass, path: '/experience', note: 'Guest Suite · Experience Guide' },
 ];
 
 export default function WSPagesTab({ details, onChange }) {
@@ -66,7 +69,7 @@ export default function WSPagesTab({ details, onChange }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: 0, lineHeight: 1.2 }}>{label}</p>
                 <p style={{ fontSize: 11, color: '#AAAAAA', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  /w/{slug}{path}
+                  {page.note ? page.note : `/w/${slug}${path}`}
                 </p>
               </div>
 

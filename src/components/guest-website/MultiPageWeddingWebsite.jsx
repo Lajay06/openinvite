@@ -34,7 +34,8 @@ function PasswordGateSimple({ slug, password }) {
 const PAGE_LABELS = {
   'home': 'Home', 'our-story': 'Our Story', 'celebration': 'Celebration',
   'rsvp': 'RSVP', 'travel': 'Travel', 'registry': 'Registry',
-  'music': 'Music', 'photos': 'Photos', 'styling': 'Styling', 'polls': 'Polls', 'faq': 'FAQ'
+  'music': 'Music', 'photos': 'Photos', 'styling': 'Styling', 'polls': 'Polls', 'faq': 'FAQ',
+  'stay': 'Stay', 'transport': 'Getting here', 'experience': 'Guide',
 };
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,6 +51,9 @@ import WeddingPhotosPage from './pages/WeddingPhotosPage';
 import WeddingFAQPage from './pages/WeddingFAQPage';
 import WeddingStylePage from './pages/WeddingStylePage';
 import WeddingPollsPage from './pages/WeddingPollsPage';
+import WeddingStayPage from './pages/WeddingStayPage';
+import WeddingTransportPage from './pages/WeddingTransportPage';
+import WeddingExperiencePage from './pages/WeddingExperiencePage';
 
 const PAGE_COMPONENTS = {
   home: WeddingHomePage,
@@ -62,7 +66,10 @@ const PAGE_COMPONENTS = {
   'photos': WeddingPhotosPage,
   'styling': WeddingStylePage,
   'polls': WeddingPollsPage,
-  'faq': WeddingFAQPage
+  'faq': WeddingFAQPage,
+  'stay': WeddingStayPage,
+  'transport': WeddingTransportPage,
+  'experience': WeddingExperiencePage,
 };
 
 export default function MultiPageWeddingWebsite() {
