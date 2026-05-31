@@ -54,7 +54,7 @@ export default async function handler(req, res) {
         'X-Goog-Api-Key':  key,
         'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.googleMapsUri,places.photos',
       },
-      body: JSON.stringify({ textQuery, maxResultCount: 10 }),
+      body: JSON.stringify({ textQuery, maxResultCount: 20 }),
     });
 
     const data = await response.json();

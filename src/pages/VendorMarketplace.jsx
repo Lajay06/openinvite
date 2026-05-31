@@ -560,8 +560,20 @@ export default function VendorMarketplace() {
   const handleGetQuote = (vendor) => { setSelectedVendor(vendor); setQuoteOpen(true); };
 
   const handleSearch = async () => {
+    // "Online businesses" can't be found via Google Places (location-based API).
+    // Fall back to the curated mock list filtered to online: true.
+    if (onlineOnly) {
+      setPlaceVendors(MOCK_VENDORS.filter(v => v.online));
+      setApiStatus('online_only');
+      return;
+    }
+
     setApiStatus('searching');
-    // Build a specific search query based on category + user search term
+
+    // Query logic:
+    //  - User typed text → use as-is (Google Text Search handles name matching)
+    //  - No text + specific category → build a category-intent query
+    //  - No text + All → generic 'wedding vendor'
     const CATEGORY_QUERIES = {
       'Photography':   'wedding photographer',
       'Videography':   'wedding videographer filmmaker',
@@ -579,8 +591,10 @@ export default function VendorMarketplace() {
       'Jewellery':     'engagement ring jewellery',
       'Other':         'wedding vendor',
     };
-    const categoryQuery = category !== 'All' ? CATEGORY_QUERIES[category] || 'wedding vendor' : null;
     const rawSearch = search.trim();
+    // Only use category keywords when there is no typed text — never combine both
+    // (mixing them over-constrains Text Search and drops exact name matches)
+    const categoryQuery = (!rawSearch && category !== 'All') ? (CATEGORY_QUERIES[category] || 'wedding vendor') : null;
     const q = rawSearch || categoryQuery || 'wedding vendor';
     const params = new URLSearchParams({ q });
     if (locationQ.trim()) params.set('location', locationQ.trim());
@@ -596,7 +610,7 @@ export default function VendorMarketplace() {
         rating: p.rating || 4.0,
         reviewCount: p.user_ratings_total || 0,
         location: p.address || locationQ,
-        online: onlineOnly,
+        online: false,          // Google Places results are physical locations
         priceRange: p.price_level != null ? (priceMap[p.price_level] || '$$') : '$$',
         description: p.address || '',
         tags: [],
@@ -613,13 +627,20 @@ export default function VendorMarketplace() {
   };
 
   const filtered = useMemo(() => {
-    const source = placeVendors !== null ? placeVendors : MOCK_VENDORS;
+    const fromPlaces = placeVendors !== null;
+    const source = fromPlaces ? placeVendors : MOCK_VENDORS;
     let list = source.filter(v => {
-      if (search && !v.name.toLowerCase().includes(search.toLowerCase()) && !v.category.toLowerCase().includes(search.toLowerCase()) && !(v.description || '').toLowerCase().includes(search.toLowerCase())) return false;
-      if (locationQ && placeVendors === null && !v.location.toLowerCase().includes(locationQ.toLowerCase())) return false;
+      // When showing Google Places results, skip the text search filter entirely —
+      // Google already handled name matching. Re-filtering by substring drops results
+      // whose name doesn't exactly contain the typed string (e.g. "Pearsons florist"
+      // drops "Pearsons School of Floristry").
+      if (!fromPlaces && search && !v.name.toLowerCase().includes(search.toLowerCase()) && !v.category.toLowerCase().includes(search.toLowerCase()) && !(v.description || '').toLowerCase().includes(search.toLowerCase())) return false;
+      // Location text-filter only applies to the mock list (Places results are already geo-scoped)
+      if (!fromPlaces && locationQ && !v.location.toLowerCase().includes(locationQ.toLowerCase())) return false;
       if (onlineOnly && !v.online) return false;
       if (category !== 'All' && v.category !== category) return false;
-      if (minRating && v.rating < 4) return false;
+      // Rating and price are post-filters on whatever the source returned
+      if (minRating && (v.rating || 0) < 4) return false;
       if (priceFilter && v.priceRange !== priceFilter) return false;
       return true;
     });
@@ -726,6 +747,12 @@ export default function VendorMarketplace() {
 
       {/* Results */}
       <div style={{ padding: '8px 32px 48px' }}>
+        {apiStatus === 'online_only' && placeVendors !== null && (
+          <div style={{ padding: '10px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 12, fontSize: 12, color: '#3730a3', fontFamily: PJS, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Google Places is location-based and can't find online businesses — showing online vendors from our curated list.</span>
+            <button onClick={() => { setPlaceVendors(null); setApiStatus(''); }} style={{ fontSize: 11, fontWeight: 700, color: '#3730a3', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: PJS }}>Clear</button>
+          </div>
+        )}
         {apiStatus === 'mock' && placeVendors !== null && (
           <div style={{ padding: '10px 14px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', marginBottom: 12, fontSize: 12, color: '#92400e', fontFamily: PJS, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>Showing sample results — Google Places key not configured on server.</span>
