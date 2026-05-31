@@ -110,6 +110,34 @@ Even hotfixes go through a PR. The PR review + merge takes ~2 minutes total.
 
 ---
 
+## Persistence test
+
+After any change that adds or edits a Base44 entity field, run:
+
+```bash
+npm run test:persistence
+```
+
+**What it checks:** Creates a throwaway `WeddingDetails` sentinel record under the test
+account, writes dummy values to all 7 Guest Suite fields, re-reads fresh from Base44,
+and asserts each value round-trips correctly. Prints `✅ PASS` / `❌ FAIL` per field.
+Exits 0 if all pass, 1 if any fail (CI-ready).
+
+**Requires:** `BASE44_TEST_EMAIL` and `BASE44_TEST_PASSWORD` in `.env.local`  
+(dedicated test account `jaygalaxy23@gmail.com` — credentials in `.env.local`, gitignored).
+
+**Run it when you:**
+- Add a new Guest Suite data field
+- Change a field name anywhere in the Guest Suite → Base44 pipeline
+- Update the WeddingDetails schema on Base44
+- Are unsure whether a field is actually persisting
+
+**The bug it catches:** Base44 silently drops any field not registered in the entity
+schema. The test writes → reads → asserts so a dropped field shows up as `❌ FAIL`
+instead of looking like it saved but disappearing on reload.
+
+---
+
 ## What Claude Code sessions should do
 
 Claude always works on a feature branch, never on `main`.  
