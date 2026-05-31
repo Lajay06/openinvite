@@ -88,7 +88,17 @@
       "Bash(vercel inspect *)",
       "Bash(curl *)",
       "Bash(sed -n '304,385p' /Users/urijay/Downloads/openinvite/src/index.css)",
-      "Bash(sed -n '1052,1075p' /Users/urijay/Downloads/openinvite/src/index.css)"
+      "Bash(sed -n '1052,1075p' /Users/urijay/Downloads/openinvite/src/index.css)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(tee /tmp/build_log.txt)",
+      "Bash(sed -n '278,295p' /Users/urijay/Downloads/openinvite/src/pages/GuestSuiteTransport.jsx)",
+      "Bash(sed -n '470,500p' /Users/urijay/Downloads/openinvite/src/pages/GuestSuiteTransport.jsx)",
+      "mcp__claude_ai_Base44__list_entity_schemas",
+      "mcp__claude_ai_Base44__query_entities",
+      "mcp__claude_ai_Base44__update_entity_schema",
+      "Bash(gh --version)",
+      "Bash(chmod +x *)",
+      "mcp__claude_ai_Base44__update_entities"
     ]
   }
 }
