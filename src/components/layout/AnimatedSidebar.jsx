@@ -85,7 +85,7 @@ const NAV_SECTIONS = [
       { icon: Gift,       label: "Registry",      url: createPageUrl("GuestSuiteRegistry") },
       { icon: Hotel,      label: "Accommodation", url: createPageUrl("GuestSuiteAccommodation") },
       { icon: Car,        label: "Transport",     url: createPageUrl("GuestSuiteTransport") },
-      { icon: Radio,      label: "Live stream",   url: createPageUrl("LiveStreaming") },
+      { icon: Radio,      label: "Live stream",   url: createPageUrl("GuestSuiteLiveStream") },
       { icon: BarChart2,  label: "Guest polls",   url: createPageUrl("GuestSuitePolls") },
     ],
   },
