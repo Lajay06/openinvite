@@ -154,7 +154,7 @@ export default function GuestSuiteTransport() {
       });
       setDetails(prev => ({ ...prev, guestSuiteTransport: { ...(prev.guestSuiteTransport || {}), places, notes } }));
       toast.success('Saved');
-    } catch { toast.error('Failed to save'); }
+    } catch (err) { console.error('GuestSuiteTransport save error:', err); toast.error('Failed to save'); }
     setSaving(false);
   };
 

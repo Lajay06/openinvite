@@ -255,7 +255,7 @@ export default function GuestSuiteAccommodation() {
       });
       setDetails(prev => ({ ...prev, guestSuiteAccommodation: { ...(prev.guestSuiteAccommodation || {}), places } }));
       toast.success('Saved');
-    } catch { toast.error('Failed to save'); }
+    } catch (err) { console.error('GuestSuiteAccommodation save error:', err); toast.error('Failed to save'); }
     setSaving(false);
   };
 
