@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Camera, Share2, Baby, Utensils, Gift, Shirt, Clock, FileText, Check } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import DetailsSection from '@/components/event-details/DetailsSection';
+import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 import toast from 'react-hot-toast';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const inputStyle = {
-  width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.15)',
-  padding: '8px 0', fontSize: 14, outline: 'none', boxSizing: 'border-box',
-  fontFamily: PJS, background: 'transparent', color: '#0A0A0A',
+  width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)',
+  background: 'none', fontSize: 14, color: '#0A0A0A',
+  fontFamily: PJS, outline: 'none', padding: '6px 0', boxSizing: 'border-box',
 };
 const textareaStyle = {
-  width: '100%', border: '1px solid rgba(10,10,10,0.1)', borderRadius: 4,
+  width: '100%', border: '1px solid rgba(10,10,10,0.1)',
   padding: '10px 12px', fontSize: 14, outline: 'none', resize: 'vertical',
-  boxSizing: 'border-box', fontFamily: PJS, lineHeight: 1.6, minHeight: 80,
-  color: '#0A0A0A',
+  boxSizing: 'border-box', fontFamily: PJS, lineHeight: 1.6, minHeight: 80, color: '#0A0A0A',
 };
 const fieldLabel = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
+  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
   color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 6, fontFamily: PJS,
 };
 
@@ -50,29 +52,8 @@ function DisplayToggle({ value, onChange }) {
   );
 }
 
-function PolicySection({ title, children }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', marginBottom: 8 }}>
-      <button
-        onClick={() => setOpen(!open)}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px', background: open ? 'rgba(10,10,10,0.02)' : '#FFFFFF',
-          border: 'none', cursor: 'pointer', fontFamily: PJS,
-          borderBottom: open ? '1px solid rgba(10,10,10,0.08)' : 'none',
-        }}
-      >
-        <span style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A' }}>{title}</span>
-        {open ? <ChevronUp size={15} color="rgba(10,10,10,0.4)" /> : <ChevronDown size={15} color="rgba(10,10,10,0.4)" />}
-      </button>
-      {open && <div style={{ padding: '20px 20px 24px' }}>{children}</div>}
-    </div>
-  );
-}
-
 const EMPTY = {
-  photography:  { unplugged: false, message: '', display: false },
+  photography: { unplugged: false, message: '', display: false },
   socialMedia:  { noCeremony: false, tagUs: false, hashtag: '', message: '', display: false },
   children:     { option: 'all', message: '', display: false },
   dietary:      { description: '', contactName: '', contactEmail: '', display: false },
@@ -87,7 +68,8 @@ export default function GuestSuitePolicies() {
   const [policies, setPolicies] = useState(EMPTY);
   const [detailsId, setDetailsId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('idle');
+  const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => {
     base44.entities.WeddingDetails.list()
@@ -96,9 +78,7 @@ export default function GuestSuitePolicies() {
         setDetails(d);
         if (d) {
           setDetailsId(d.id);
-          if (d.weddingPolicies) {
-            setPolicies(prev => ({ ...prev, ...d.weddingPolicies }));
-          }
+          if (d.weddingPolicies) setPolicies(prev => ({ ...prev, ...d.weddingPolicies }));
         }
       })
       .catch(e => console.error('GuestSuitePolicies load error', e))
@@ -111,169 +91,214 @@ export default function GuestSuitePolicies() {
 
   const handleSave = async () => {
     if (!detailsId) { toast.error('No wedding details found'); return; }
-    setSaving(true);
+    setSaveStatus('saving');
     try {
       await base44.entities.WeddingDetails.update(detailsId, { weddingPolicies: policies });
-      toast.success('Policies saved');
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
     } catch {
       toast.error('Failed to save');
+      setSaveStatus('idle');
     }
-    setSaving(false);
   };
 
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Loader2 size={22} className="animate-spin" style={{ color: 'rgba(10,10,10,0.3)' }} />
+        <Loader2 size={24} style={{ color: '#E03553' }} className="animate-spin" />
       </div>
     );
   }
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader
-        title="Policies"
-        subtitle="Set clear expectations for your guests"
-        actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Saving…</span> : null}
-      />
+      <DashboardPageHeader title="Policies" subtitle="Set clear expectations for your guests" />
 
-      <div style={{ padding: '32px 32px 80px', maxWidth: 760 }}>
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
 
-        {/* Photography */}
-        <PolicySection title="Photography policy">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <Toggle value={policies.photography.unplugged} onChange={v => set('photography', 'unplugged', v)} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Unplugged ceremony (no phones during ceremony)</span>
+        {/* Toolbar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+          <AvaButton label="Ask Ava" onClick={() => setAvaOpen(true)} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
           </div>
-          <label style={fieldLabel}>Custom message</label>
-          <textarea style={textareaStyle} value={policies.photography.message} onChange={e => set('photography', 'message', e.target.value)} placeholder="We'd love for you to be fully present during our ceremony…" />
-          <DisplayToggle value={policies.photography.display} onChange={v => set('photography', 'display', v)} />
-        </PolicySection>
+        </div>
 
-        {/* Social media */}
-        <PolicySection title="Social media policy">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <Toggle value={policies.socialMedia.noCeremony} onChange={v => set('socialMedia', 'noCeremony', v)} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>No social media during ceremony</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <Toggle value={policies.socialMedia.tagUs} onChange={v => set('socialMedia', 'tagUs', v)} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Please tag us</span>
-          </div>
-          {policies.socialMedia.tagUs && (
-            <div style={{ marginBottom: 16 }}>
-              <label style={fieldLabel}>Hashtag</label>
-              <input style={inputStyle} value={policies.socialMedia.hashtag} onChange={e => set('socialMedia', 'hashtag', e.target.value)} placeholder="#JohnAndSarah2026" />
-            </div>
-          )}
-          <label style={fieldLabel}>Custom message</label>
-          <textarea style={textareaStyle} value={policies.socialMedia.message} onChange={e => set('socialMedia', 'message', e.target.value)} placeholder="Feel free to share your memories after the ceremony…" />
-          <DisplayToggle value={policies.socialMedia.display} onChange={v => set('socialMedia', 'display', v)} />
-        </PolicySection>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
 
-        {/* Children */}
-        <PolicySection title="Children policy">
-          <label style={fieldLabel}>Policy</label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-            {[
-              { value: 'all',          label: 'All children welcome' },
-              { value: 'wedding_party',label: 'Children of wedding party only' },
-              { value: 'adults_only',  label: 'Adults only' },
-            ].map(opt => (
-              <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
-                <input type="radio" name="children" value={opt.value} checked={policies.children.option === opt.value} onChange={() => set('children', 'option', opt.value)} style={{ accentColor: '#E03553' }} />
-                {opt.label}
-              </label>
-            ))}
-          </div>
-          <label style={fieldLabel}>Custom message</label>
-          <textarea style={textareaStyle} value={policies.children.message} onChange={e => set('children', 'message', e.target.value)} placeholder="We love your little ones…" rows={2} />
-          <DisplayToggle value={policies.children.display} onChange={v => set('children', 'display', v)} />
-        </PolicySection>
-
-        {/* Dietary */}
-        <PolicySection title="Dietary & allergies">
-          <label style={fieldLabel}>Available options</label>
-          <textarea style={textareaStyle} value={policies.dietary.description} onChange={e => set('dietary', 'description', e.target.value)} placeholder="We offer vegetarian, vegan, and gluten-free options…" rows={2} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
-            <div>
-              <label style={fieldLabel}>Contact name</label>
-              <input style={inputStyle} value={policies.dietary.contactName} onChange={e => set('dietary', 'contactName', e.target.value)} placeholder="Name" />
+          {/* Photography */}
+          <DetailsSection title="Photography policy" icon={Camera}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+              <Toggle value={policies.photography.unplugged} onChange={v => set('photography', 'unplugged', v)} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Unplugged ceremony (no phones during ceremony)</span>
             </div>
             <div>
-              <label style={fieldLabel}>Contact email</label>
-              <input style={inputStyle} value={policies.dietary.contactEmail} onChange={e => set('dietary', 'contactEmail', e.target.value)} placeholder="email@example.com" />
+              <label style={fieldLabel}>Custom message</label>
+              <textarea style={textareaStyle} value={policies.photography.message} onChange={e => set('photography', 'message', e.target.value)} placeholder="We'd love for you to be fully present during our ceremony…" />
             </div>
-          </div>
-          <DisplayToggle value={policies.dietary.display} onChange={v => set('dietary', 'display', v)} />
-        </PolicySection>
+            <DisplayToggle value={policies.photography.display} onChange={v => set('photography', 'display', v)} />
+          </DetailsSection>
 
-        {/* Gifts */}
-        <PolicySection title="Gift policy">
-          <label style={fieldLabel}>Policy</label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-            {[
-              { value: 'welcome',      label: 'Gifts welcome' },
-              { value: 'no_gifts',     label: 'No gifts please' },
-              { value: 'charity',      label: 'Charity donation preferred' },
-              { value: 'wishing_well', label: 'Wishing well (cash)' },
-            ].map(opt => (
-              <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
-                <input type="radio" name="gifts" value={opt.value} checked={policies.gifts.option === opt.value} onChange={() => set('gifts', 'option', opt.value)} style={{ accentColor: '#E03553' }} />
-                {opt.label}
-              </label>
-            ))}
-          </div>
-          {policies.gifts.option === 'welcome' && (
-            <div style={{ marginBottom: 12 }}>
-              <label style={fieldLabel}>Registry URL</label>
-              <input style={inputStyle} value={policies.gifts.registryUrl} onChange={e => set('gifts', 'registryUrl', e.target.value)} placeholder="https://…" />
+          {/* Social media */}
+          <DetailsSection title="Social media policy" icon={Share2}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+              <Toggle value={policies.socialMedia.noCeremony} onChange={v => set('socialMedia', 'noCeremony', v)} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>No social media during ceremony</span>
             </div>
-          )}
-          <label style={fieldLabel}>Custom message</label>
-          <textarea style={textareaStyle} value={policies.gifts.message} onChange={e => set('gifts', 'message', e.target.value)} placeholder="Your presence is the greatest gift…" rows={2} />
-          <DisplayToggle value={policies.gifts.display} onChange={v => set('gifts', 'display', v)} />
-        </PolicySection>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+              <Toggle value={policies.socialMedia.tagUs} onChange={v => set('socialMedia', 'tagUs', v)} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Please tag us</span>
+            </div>
+            {policies.socialMedia.tagUs && (
+              <div>
+                <label style={fieldLabel}>Hashtag</label>
+                <input style={inputStyle} value={policies.socialMedia.hashtag} onChange={e => set('socialMedia', 'hashtag', e.target.value)} placeholder="#JohnAndSarah2026" />
+              </div>
+            )}
+            <div>
+              <label style={fieldLabel}>Custom message</label>
+              <textarea style={textareaStyle} value={policies.socialMedia.message} onChange={e => set('socialMedia', 'message', e.target.value)} placeholder="Feel free to share your memories after the ceremony…" />
+            </div>
+            <DisplayToggle value={policies.socialMedia.display} onChange={v => set('socialMedia', 'display', v)} />
+          </DetailsSection>
 
-        {/* Dress code */}
-        <PolicySection title="Dress code">
-          <div style={{ marginBottom: 12 }}>
-            <label style={fieldLabel}>From event details</label>
-            <input style={{ ...inputStyle, color: 'rgba(10,10,10,0.45)' }} value={details?.mainCeremony?.dressCode || ''} readOnly placeholder="Set in Event Details" />
-          </div>
-          <label style={fieldLabel}>Expanded guidance</label>
-          <textarea style={textareaStyle} value={policies.dressCode.guidance} onChange={e => set('dressCode', 'guidance', e.target.value)} placeholder="Formal attire — suits and ties for men, cocktail or formal dresses for women…" />
-          <label style={{ ...fieldLabel, marginTop: 12 }}>Weather note</label>
-          <input style={inputStyle} value={policies.dressCode.weatherNote} onChange={e => set('dressCode', 'weatherNote', e.target.value)} placeholder="e.g. Outdoor ceremony — flat heels recommended" />
-          <DisplayToggle value={policies.dressCode.display} onChange={v => set('dressCode', 'display', v)} />
-        </PolicySection>
+          {/* Children */}
+          <DetailsSection title="Children policy" icon={Baby}>
+            <div>
+              <label style={fieldLabel}>Policy</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 4 }}>
+                {[
+                  { value: 'all',           label: 'All children welcome' },
+                  { value: 'wedding_party', label: 'Children of wedding party only' },
+                  { value: 'adults_only',   label: 'Adults only' },
+                ].map(opt => (
+                  <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
+                    <input type="radio" name="children" value={opt.value} checked={policies.children.option === opt.value} onChange={() => set('children', 'option', opt.value)} style={{ accentColor: '#E03553' }} />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label style={fieldLabel}>Custom message</label>
+              <textarea style={textareaStyle} value={policies.children.message} onChange={e => set('children', 'message', e.target.value)} placeholder="We love your little ones…" rows={2} />
+            </div>
+            <DisplayToggle value={policies.children.display} onChange={v => set('children', 'display', v)} />
+          </DetailsSection>
 
-        {/* Late arrival */}
-        <PolicySection title="Late arrival">
-          <label style={fieldLabel}>Policy</label>
-          <textarea style={textareaStyle} value={policies.lateArrival.policy} onChange={e => set('lateArrival', 'policy', e.target.value)} placeholder="Our ceremony begins promptly at 3:00 PM. Please arrive by 2:45 PM." rows={2} />
-          <DisplayToggle value={policies.lateArrival.display} onChange={v => set('lateArrival', 'display', v)} />
-        </PolicySection>
+          {/* Dietary */}
+          <DetailsSection title="Dietary & allergies" icon={Utensils}>
+            <div>
+              <label style={fieldLabel}>Available options</label>
+              <textarea style={textareaStyle} value={policies.dietary.description} onChange={e => set('dietary', 'description', e.target.value)} placeholder="We offer vegetarian, vegan, and gluten-free options…" rows={2} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div>
+                <label style={fieldLabel}>Contact name</label>
+                <input style={inputStyle} value={policies.dietary.contactName} onChange={e => set('dietary', 'contactName', e.target.value)} placeholder="Name" />
+              </div>
+              <div>
+                <label style={fieldLabel}>Contact email</label>
+                <input style={inputStyle} value={policies.dietary.contactEmail} onChange={e => set('dietary', 'contactEmail', e.target.value)} placeholder="email@example.com" />
+              </div>
+            </div>
+            <DisplayToggle value={policies.dietary.display} onChange={v => set('dietary', 'display', v)} />
+          </DetailsSection>
 
-        {/* Other */}
-        <PolicySection title="Other policies">
-          <textarea style={textareaStyle} value={policies.other.text} onChange={e => set('other', 'text', e.target.value)} placeholder="Any additional policies or information for your guests…" rows={4} />
-          <DisplayToggle value={policies.other.display} onChange={v => set('other', 'display', v)} />
-        </PolicySection>
+          {/* Gift */}
+          <DetailsSection title="Gift policy" icon={Gift}>
+            <div>
+              <label style={fieldLabel}>Policy</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 4 }}>
+                {[
+                  { value: 'welcome',      label: 'Gifts welcome' },
+                  { value: 'no_gifts',     label: 'No gifts please' },
+                  { value: 'charity',      label: 'Charity donation preferred' },
+                  { value: 'wishing_well', label: 'Wishing well (cash)' },
+                ].map(opt => (
+                  <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
+                    <input type="radio" name="gifts" value={opt.value} checked={policies.gifts.option === opt.value} onChange={() => set('gifts', 'option', opt.value)} style={{ accentColor: '#E03553' }} />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            {policies.gifts.option === 'welcome' && (
+              <div>
+                <label style={fieldLabel}>Registry URL</label>
+                <input style={inputStyle} value={policies.gifts.registryUrl} onChange={e => set('gifts', 'registryUrl', e.target.value)} placeholder="https://…" />
+              </div>
+            )}
+            <div>
+              <label style={fieldLabel}>Custom message</label>
+              <textarea style={textareaStyle} value={policies.gifts.message} onChange={e => set('gifts', 'message', e.target.value)} placeholder="Your presence is the greatest gift…" rows={2} />
+            </div>
+            <DisplayToggle value={policies.gifts.display} onChange={v => set('gifts', 'display', v)} />
+          </DetailsSection>
 
-        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '16px 0', fontStyle: 'italic', fontFamily: PJS }}>
+          {/* Dress code */}
+          <DetailsSection title="Dress code" icon={Shirt}>
+            <div>
+              <label style={fieldLabel}>From event details</label>
+              <input style={{ ...inputStyle, color: 'rgba(10,10,10,0.45)' }} value={details?.mainCeremony?.dressCode || ''} readOnly placeholder="Set in Event Details" />
+            </div>
+            <div>
+              <label style={fieldLabel}>Expanded guidance</label>
+              <textarea style={textareaStyle} value={policies.dressCode.guidance} onChange={e => set('dressCode', 'guidance', e.target.value)} placeholder="Formal attire — suits and ties for men, cocktail or formal dresses for women…" />
+            </div>
+            <div>
+              <label style={fieldLabel}>Weather note</label>
+              <input style={inputStyle} value={policies.dressCode.weatherNote} onChange={e => set('dressCode', 'weatherNote', e.target.value)} placeholder="e.g. Outdoor ceremony — flat heels recommended" />
+            </div>
+            <DisplayToggle value={policies.dressCode.display} onChange={v => set('dressCode', 'display', v)} />
+          </DetailsSection>
+
+          {/* Late arrival */}
+          <DetailsSection title="Late arrival" icon={Clock}>
+            <div>
+              <label style={fieldLabel}>Policy</label>
+              <textarea style={textareaStyle} value={policies.lateArrival.policy} onChange={e => set('lateArrival', 'policy', e.target.value)} placeholder="Our ceremony begins promptly at 3:00 PM. Please arrive by 2:45 PM." rows={2} />
+            </div>
+            <DisplayToggle value={policies.lateArrival.display} onChange={v => set('lateArrival', 'display', v)} />
+          </DetailsSection>
+
+          {/* Other */}
+          <DetailsSection title="Other policies" icon={FileText}>
+            <div>
+              <textarea style={textareaStyle} value={policies.other.text} onChange={e => set('other', 'text', e.target.value)} placeholder="Any additional policies or information for your guests…" rows={4} />
+            </div>
+            <DisplayToggle value={policies.other.display} onChange={v => set('other', 'display', v)} />
+          </DetailsSection>
+
+        </div>
+
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '20px 0 16px', fontStyle: 'italic', fontFamily: PJS }}>
           Policies marked "Display on website" will appear in the Policies section of your wedding website and Experience Guide.
         </p>
 
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={saveStatus === 'saving'}
           className="btn-primary"
-          style={{ opacity: saving ? 0.6 : 1 }}
+          style={{ opacity: saveStatus === 'saving' ? 0.6 : 1 }}
         >
-          {saving ? 'Saving…' : 'Save policies'}
+          {saveStatus === 'saving' ? 'Saving…' : 'Save policies'}
         </button>
       </div>
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Wedding policies"
+        systemPrompt="You are Ava, a wedding planning expert. Help the couple write clear, warm, and professional wedding policies for their guests — covering photography, social media, children, dietary needs, gifts, dress code, and late arrival. Keep policies friendly but clear."
+        quickActions={[
+          'Write an unplugged ceremony message',
+          'Draft a children policy for adults-only wedding',
+          'Suggest a dress code note for outdoor venue',
+          'Write a polite no-gifts policy message',
+        ]}
+      />
     </div>
   );
 }
