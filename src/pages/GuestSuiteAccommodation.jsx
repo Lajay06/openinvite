@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Loader2, Hotel, MapPin, Star, ExternalLink, ArrowRight, X, Search, Plus } from 'lucide-react';
+import { Loader2, Hotel, MapPin, Star, ExternalLink, X, Search, Plus } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import { Input } from '@/components/ui/input';
@@ -231,7 +230,6 @@ function AddPlaceCard({ destination, onAdd }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function GuestSuiteAccommodation() {
-  const navigate = useNavigate();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -332,16 +330,6 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
         actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Saving…</span> : null}
       />
 
-      {/* Connected banner */}
-      <div style={{ padding: '10px 32px', background: 'rgba(224,53,83,0.04)', borderBottom: '1px solid rgba(224,53,83,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12, color: '#E03553', fontFamily: PJS, fontWeight: 600 }}>
-          ✨ You can also manage properties via your Accommodation planning page
-        </span>
-        <button onClick={() => navigate('/accommodation')}
-          style={{ fontSize: 12, fontWeight: 700, color: '#E03553', background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-          Open planning page <ArrowRight size={11} />
-        </button>
-      </div>
 
       <div style={{ padding: '32px 32px 80px' }}>
         {loading ? (
@@ -427,26 +415,6 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
               </div>
             )}
 
-            {/* Show existing planning page data */}
-            {(details?.accommodation?.manualProperties || []).length > 0 && (
-              <div style={{ marginTop: 48, paddingTop: 32, borderTop: '1px solid rgba(10,10,10,0.06)' }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
-                  From your accommodation planning page
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-                  {details.accommodation.manualProperties.map((p, i) => (
-                    <div key={p.id || i} style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
-                      {p.photoUrl && <img src={p.photoUrl} alt={p.name} style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }} />}
-                      <div style={{ padding: '12px 14px' }}>
-                        <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: PJS }}>{p.name}</p>
-                        {p.address && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: '0 0 6px', fontFamily: PJS }}>{p.address}</p>}
-                        {p.description && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: 0, fontFamily: PJS, lineHeight: 1.5 }}>{p.description}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </>
         )}
       </div>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Loader2, Car, MapPin, Star, ExternalLink, ArrowRight, X, Search, Plus, Plane, Train, Bus, FileText } from 'lucide-react';
+import { Loader2, Car, MapPin, Star, ExternalLink, X, Search, Plus, Plane, Train, Bus, FileText } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import { Input } from '@/components/ui/input';
@@ -115,7 +114,6 @@ function NoteCard({ note, onRemove, onEdit }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function GuestSuiteTransport() {
-  const navigate = useNavigate();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -280,16 +278,6 @@ isPlace: true only for actual places (airports, stations) that can be found on G
         actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Saving…</span> : null}
       />
 
-      {/* Connected banner */}
-      <div style={{ padding: '10px 32px', background: 'rgba(224,53,83,0.04)', borderBottom: '1px solid rgba(224,53,83,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12, color: '#E03553', fontFamily: PJS, fontWeight: 600 }}>
-          ✨ You can also manage transport details via your Transport planning page
-        </span>
-        <button onClick={() => navigate('/transport')}
-          style={{ fontSize: 12, fontWeight: 700, color: '#E03553', background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-          Open planning page <ArrowRight size={11} />
-        </button>
-      </div>
 
       <div style={{ padding: '32px 32px 80px' }}>
         {loading ? (
@@ -471,26 +459,6 @@ isPlace: true only for actual places (airports, stations) that can be found on G
               </div>
             </div>
 
-            {/* Planning page data (existing) */}
-            {(details?.transport?.shuttles?.length > 0 || details?.transport?.coupleNote) && (
-              <div style={{ paddingTop: 32, borderTop: '1px solid rgba(10,10,10,0.06)' }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
-                  From your transport planning page
-                </p>
-                {details.transport.coupleNote && (
-                  <p style={{ fontSize: 14, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 16px', lineHeight: 1.7, padding: '14px 16px', background: 'rgba(10,10,10,0.02)', border: '1px solid rgba(10,10,10,0.07)' }}>
-                    {details.transport.coupleNote}
-                  </p>
-                )}
-                {details.transport.shuttles?.map((s, i) => (
-                  <div key={s.id || i} style={{ border: '1px solid rgba(10,10,10,0.07)', padding: '14px 16px', marginBottom: 10 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>{s.name || `Shuttle ${i + 1}`}</p>
-                    {s.pickupLocation && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, margin: '0 0 3px' }}>Pickup: {s.pickupLocation}{s.pickupTime ? ` at ${s.pickupTime}` : ''}</p>}
-                    {s.notes && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, margin: 0, fontStyle: 'italic' }}>{s.notes}</p>}
-                  </div>
-                ))}
-              </div>
-            )}
           </>
         )}
       </div>
