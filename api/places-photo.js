@@ -1,7 +1,11 @@
 /**
- * GET /api/places-photo?ref=PHOTO_REFERENCE&maxwidth=600
+ * GET /api/places-photo?ref=PHOTO_REF&maxwidth=600
  *
- * Proxies Google Places photo so the API key stays server-side.
+ * Proxies Google Places photos so the API key stays server-side.
+ *
+ * Handles both:
+ *   - Places API (New): ref = "places/PLACE_ID/photos/PHOTO_ID" (resource name)
+ *   - Places API (Legacy): ref = raw photo_reference string
  */
 
 export default async function handler(req, res) {
@@ -14,7 +18,11 @@ export default async function handler(req, res) {
   const key = process.env.GOOGLE_PLACES_API_KEY;
   if (!key) return res.status(503).json({ error: 'Google Places API not configured' });
 
-  const url = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${encodeURIComponent(ref)}&key=${key}`;
+  // Places API (New) resource names start with "places/"
+  const isNewFormat = ref.startsWith('places/');
+  const url = isNewFormat
+    ? `https://places.googleapis.com/v1/${ref}/media?maxWidthPx=${maxwidth}&key=${key}`
+    : `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${encodeURIComponent(ref)}&key=${key}`;
 
   try {
     const response = await fetch(url, { redirect: 'follow' });
