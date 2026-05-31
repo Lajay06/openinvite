@@ -81,7 +81,14 @@
       "Bash(grep -rn \"99\\\\|199\\\\|\\\\$\" /Users/urijay/Downloads/openinvite/api/webhooks/stripe.js)",
       "Bash(echo \"Exit code: $?\")",
       "Bash(echo \"Exit: $?\")",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(xargs cat)",
+      "Bash(echo \"LINT_EXIT:$?\")",
+      "Bash(vercel ls *)",
+      "Bash(vercel inspect *)",
+      "Bash(curl *)",
+      "Bash(sed -n '304,385p' /Users/urijay/Downloads/openinvite/src/index.css)",
+      "Bash(sed -n '1052,1075p' /Users/urijay/Downloads/openinvite/src/index.css)"
     ]
   }
 }
