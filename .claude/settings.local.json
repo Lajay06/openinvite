@@ -98,7 +98,9 @@
       "mcp__claude_ai_Base44__update_entity_schema",
       "Bash(gh --version)",
       "Bash(chmod +x *)",
-      "mcp__claude_ai_Base44__update_entities"
+      "mcp__claude_ai_Base44__update_entities",
+      "Bash(./scripts/new-feature.sh fix-guest-suite-add-place *)",
+      "Bash(./scripts/ship.sh fix: pull save\\(\\) out of state updaters on Accommodation and Transport pages *)"
     ]
   }
 }

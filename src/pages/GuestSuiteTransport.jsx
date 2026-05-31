@@ -201,52 +201,43 @@ export default function GuestSuiteTransport() {
 
   const handleAddPlace = () => {
     if (!selectedPlace) { toast.error('Select a place first'); return; }
+    console.log('[GuestSuiteTransport] handleAddPlace called:', selectedPlace?.name, '| places before:', places.length);
     const newPlace = {
       id: uid(), place_id: selectedPlace.place_id, name: selectedPlace.name,
       address: selectedPlace.address, type: placeType,
       photo_url: selectedPlace.photo_reference ? photoProxy(selectedPlace.photo_reference) : null,
       maps_url: selectedPlace.maps_url, note: placeNote.trim(),
     };
-    setPlaces(prev => {
-      const next = [...prev, newPlace];
-      saveData(next, notes);
-      return next;
-    });
+    const next = [...places, newPlace];
+    setPlaces(next);
+    saveData(next, notes);
     setSelectedPlace(null); setQuery(''); setPlaceNote('');
   };
 
   const handleRemovePlace = (id) => {
-    setPlaces(prev => {
-      const next = prev.filter(p => p.id !== id);
-      saveData(next, notes);
-      return next;
-    });
+    const next = places.filter(p => p.id !== id);
+    setPlaces(next);
+    saveData(next, notes);
   };
 
   const handleAddNote = () => {
     if (!noteText.trim()) { toast.error('Enter a note'); return; }
-    setNotes(prev => {
-      const next = [...prev, { id: uid(), title: noteTitle.trim(), text: noteText.trim() }];
-      saveData(places, next);
-      return next;
-    });
+    const next = [...notes, { id: uid(), title: noteTitle.trim(), text: noteText.trim() }];
+    setNotes(next);
+    saveData(places, next);
     setNoteTitle(''); setNoteText('');
   };
 
   const handleRemoveNote = (id) => {
-    setNotes(prev => {
-      const next = prev.filter(n => n.id !== id);
-      saveData(places, next);
-      return next;
-    });
+    const next = notes.filter(n => n.id !== id);
+    setNotes(next);
+    saveData(places, next);
   };
 
   const handleEditNote = (id, updated) => {
-    setNotes(prev => {
-      const next = prev.map(n => n.id === id ? { ...n, ...updated } : n);
-      saveData(places, next);
-      return next;
-    });
+    const next = notes.map(n => n.id === id ? { ...n, ...updated } : n);
+    setNotes(next);
+    saveData(places, next);
   };
 
   const handleAvaRecommend = async () => {
@@ -294,21 +285,17 @@ isPlace: true only for actual places (airports, stations) that can be found on G
         place = { ...place, place_id: top.place_id, address: top.address, photo_url: top.photo_reference ? photoProxy(top.photo_reference) : null, maps_url: top.maps_url };
       }
     } catch {}
-    setPlaces(prev => {
-      const next = [...prev, place];
-      saveData(next, notes);
-      return next;
-    });
+    const next = [...places, place];
+    setPlaces(next);
+    saveData(next, notes);
     setAvaSuggestions(prev => prev.filter(s => s._avaId !== suggestion._avaId));
     toast.success(`${suggestion.name} added`);
   };
 
   const handleAddAvaNote = (suggestion) => {
-    setNotes(prev => {
-      const next = [...prev, { id: uid(), title: suggestion.name, text: suggestion.description }];
-      saveData(places, next);
-      return next;
-    });
+    const next = [...notes, { id: uid(), title: suggestion.name, text: suggestion.description }];
+    setNotes(next);
+    saveData(places, next);
     setAvaSuggestions(prev => prev.filter(s => s._avaId !== suggestion._avaId));
     toast.success('Note added');
   };
