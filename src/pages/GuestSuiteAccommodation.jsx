@@ -231,6 +231,8 @@ function AddPlaceCard({ destination, onAdd }) {
 
 export default function GuestSuiteAccommodation() {
   const [details, setDetails] = useState(null);
+  const [places, setPlaces] = useState([]);     // owned state — never stale
+  const [detailsId, setDetailsId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avaSuggestions, setAvaSuggestions] = useState([]);
@@ -238,38 +240,52 @@ export default function GuestSuiteAccommodation() {
 
   useEffect(() => {
     base44.entities.WeddingDetails.list()
-      .then(rows => setDetails(rows[0] || null))
+      .then(rows => {
+        const d = rows[0] || null;
+        setDetails(d);
+        setDetailsId(d?.id || null);
+        // Hydrate places from Base44 on every mount — source of truth
+        setPlaces(d?.guestSuiteAccommodation?.places || []);
+      })
       .catch(e => console.error('GuestSuiteAccommodation load error', e))
       .finally(() => setLoading(false));
   }, []);
 
-  const savedPlaces = details?.guestSuiteAccommodation?.places || [];
   const destination = details?.mainCeremony?.address || '';
 
-  const save = async (places) => {
-    if (!details?.id) return;
+  const save = async (nextPlaces) => {
+    if (!detailsId) { toast.error('No wedding details found'); return; }
     setSaving(true);
     try {
-      await base44.entities.WeddingDetails.update(details.id, {
-        guestSuiteAccommodation: { ...(details.guestSuiteAccommodation || {}), places },
+      await base44.entities.WeddingDetails.update(detailsId, {
+        guestSuiteAccommodation: { places: nextPlaces },
       });
-      setDetails(prev => ({ ...prev, guestSuiteAccommodation: { ...(prev.guestSuiteAccommodation || {}), places } }));
       toast.success('Saved');
-    } catch (err) { console.error('GuestSuiteAccommodation save error:', err); toast.error('Failed to save'); }
+    } catch (err) {
+      console.error('GuestSuiteAccommodation save error:', err);
+      toast.error('Failed to save');
+    }
     setSaving(false);
   };
 
+  // Functional state update so concurrent adds always see the latest list
   const handleAdd = (place) => {
-    const next = [...savedPlaces, { ...place, id: uid() }];
-    save(next);
+    setPlaces(prev => {
+      const next = [...prev, { ...place, id: uid() }];
+      save(next);
+      return next;
+    });
   };
 
   const handleRemove = (id) => {
-    save(savedPlaces.filter(p => p.id !== id));
+    setPlaces(prev => {
+      const next = prev.filter(p => p.id !== id);
+      save(next);
+      return next;
+    });
   };
 
   const handleAddFromAva = async (suggestion) => {
-    // Search Google Places to get a real place + photo
     const loc = destination || '';
     let enriched = { ...suggestion, id: uid() };
     try {
@@ -291,8 +307,11 @@ export default function GuestSuiteAccommodation() {
         };
       }
     } catch {}
-    const next = [...savedPlaces, enriched];
-    save(next);
+    setPlaces(prev => {
+      const next = [...prev, enriched];
+      save(next);
+      return next;
+    });
     setAvaSuggestions(prev => prev.filter(s => s._avaId !== suggestion._avaId));
     toast.success(`${suggestion.name} added`);
   };
@@ -392,13 +411,13 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
             <AddPlaceCard destination={destination} onAdd={handleAdd} />
 
             {/* Saved places */}
-            {savedPlaces.length > 0 ? (
+            {places.length > 0 ? (
               <div>
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
-                  {savedPlaces.length} {savedPlaces.length === 1 ? 'place' : 'places'} added
+                  {places.length} {places.length === 1 ? 'place' : 'places'} added
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-                  {savedPlaces.map(p => <PlaceCard key={p.id || p.place_id} place={p} onRemove={() => handleRemove(p.id || p.place_id)} />)}
+                  {places.map(p => <PlaceCard key={p.id || p.place_id} place={p} onRemove={() => handleRemove(p.id || p.place_id)} />)}
                 </div>
               </div>
             ) : (

@@ -334,7 +334,33 @@ async function run() {
       : fail('polls', written, got));
   }
 
-  // ── 7. Summary ───────────────────────────────────────────────────────────────
+  // ── 7. Sequential append test (catches the "second add overwrites first" bug) ──
+  console.log('\n  Sequential append test (write place A, then append place B):\n');
+  try {
+    const placeA = { id: 'seq-test-A', name: 'Sequential Hotel A', address: '10 First St' };
+    const placeB = { id: 'seq-test-B', name: 'Sequential Hotel B', address: '20 Second St' };
+
+    // Write [A]
+    await api('PUT', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`,
+      { couple1Name: SENTINEL, couple2Name: 'DO_NOT_USE', guestSuiteAccommodation: { places: [placeA] } }, token);
+    // Append [A, B] — mimics handleAdd calling save([...existingPlaces, newPlace])
+    await api('PUT', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`,
+      { couple1Name: SENTINEL, couple2Name: 'DO_NOT_USE', guestSuiteAccommodation: { places: [placeA, placeB] } }, token);
+
+    const after = await api('GET', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`, undefined, token);
+    const gotPlaces = after.guestSuiteAccommodation?.places || [];
+    const bothPresent = gotPlaces.length === 2 &&
+      gotPlaces.some(p => p.id === 'seq-test-A') &&
+      gotPlaces.some(p => p.id === 'seq-test-B');
+    results.push(bothPresent
+      ? pass('guestSuiteAccommodation sequential append', 'both places survive two separate writes')
+      : fail('guestSuiteAccommodation sequential append', [placeA, placeB], gotPlaces));
+  } catch (err) {
+    console.log(`  ❌ FAIL  sequential append — error: ${err.message}`);
+    results.push(false);
+  }
+
+  // ── 8. Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;
   const total  = results.length;
   const allOk  = passed === total;

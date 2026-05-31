@@ -115,6 +115,9 @@ function NoteCard({ note, onRemove, onEdit }) {
 
 export default function GuestSuiteTransport() {
   const [details, setDetails] = useState(null);
+  const [places, setPlaces] = useState([]);   // owned state — never stale
+  const [notes, setNotes]   = useState([]);   // owned state — never stale
+  const [detailsId, setDetailsId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avaSuggestions, setAvaSuggestions] = useState([]);
@@ -136,25 +139,32 @@ export default function GuestSuiteTransport() {
 
   useEffect(() => {
     base44.entities.WeddingDetails.list()
-      .then(rows => setDetails(rows[0] || null))
+      .then(rows => {
+        const d = rows[0] || null;
+        setDetails(d);
+        setDetailsId(d?.id || null);
+        // Hydrate from Base44 on every mount — source of truth
+        setPlaces(d?.guestSuiteTransport?.places || []);
+        setNotes(d?.guestSuiteTransport?.notes   || []);
+      })
       .catch(e => console.error('GuestSuiteTransport load error', e))
       .finally(() => setLoading(false));
   }, []);
 
-  const savedPlaces = details?.guestSuiteTransport?.places || [];
-  const savedNotes  = details?.guestSuiteTransport?.notes  || [];
   const destination = details?.mainCeremony?.address || '';
 
-  const saveData = async (places, notes) => {
-    if (!details?.id) return;
+  const saveData = async (nextPlaces, nextNotes) => {
+    if (!detailsId) { toast.error('No wedding details found'); return; }
     setSaving(true);
     try {
-      await base44.entities.WeddingDetails.update(details.id, {
-        guestSuiteTransport: { ...(details.guestSuiteTransport || {}), places, notes },
+      await base44.entities.WeddingDetails.update(detailsId, {
+        guestSuiteTransport: { places: nextPlaces, notes: nextNotes },
       });
-      setDetails(prev => ({ ...prev, guestSuiteTransport: { ...(prev.guestSuiteTransport || {}), places, notes } }));
       toast.success('Saved');
-    } catch (err) { console.error('GuestSuiteTransport save error:', err); toast.error('Failed to save'); }
+    } catch (err) {
+      console.error('GuestSuiteTransport save error:', err);
+      toast.error('Failed to save');
+    }
     setSaving(false);
   };
 
@@ -191,27 +201,53 @@ export default function GuestSuiteTransport() {
 
   const handleAddPlace = () => {
     if (!selectedPlace) { toast.error('Select a place first'); return; }
-    const next = [...savedPlaces, {
+    const newPlace = {
       id: uid(), place_id: selectedPlace.place_id, name: selectedPlace.name,
       address: selectedPlace.address, type: placeType,
       photo_url: selectedPlace.photo_reference ? photoProxy(selectedPlace.photo_reference) : null,
       maps_url: selectedPlace.maps_url, note: placeNote.trim(),
-    }];
-    saveData(next, savedNotes);
+    };
+    setPlaces(prev => {
+      const next = [...prev, newPlace];
+      saveData(next, notes);
+      return next;
+    });
     setSelectedPlace(null); setQuery(''); setPlaceNote('');
   };
 
-  const handleRemovePlace = (id) => saveData(savedPlaces.filter(p => p.id !== id), savedNotes);
+  const handleRemovePlace = (id) => {
+    setPlaces(prev => {
+      const next = prev.filter(p => p.id !== id);
+      saveData(next, notes);
+      return next;
+    });
+  };
 
   const handleAddNote = () => {
     if (!noteText.trim()) { toast.error('Enter a note'); return; }
-    const next = [...savedNotes, { id: uid(), title: noteTitle.trim(), text: noteText.trim() }];
-    saveData(savedPlaces, next);
+    setNotes(prev => {
+      const next = [...prev, { id: uid(), title: noteTitle.trim(), text: noteText.trim() }];
+      saveData(places, next);
+      return next;
+    });
     setNoteTitle(''); setNoteText('');
   };
 
-  const handleRemoveNote = (id) => saveData(savedPlaces, savedNotes.filter(n => n.id !== id));
-  const handleEditNote  = (id, updated) => saveData(savedPlaces, savedNotes.map(n => n.id === id ? { ...n, ...updated } : n));
+  const handleRemoveNote = (id) => {
+    setNotes(prev => {
+      const next = prev.filter(n => n.id !== id);
+      saveData(places, next);
+      return next;
+    });
+  };
+
+  const handleEditNote = (id, updated) => {
+    setNotes(prev => {
+      const next = prev.map(n => n.id === id ? { ...n, ...updated } : n);
+      saveData(places, next);
+      return next;
+    });
+  };
 
   const handleAvaRecommend = async () => {
     if (!destination) { toast.error('Add your venue address in Event Details first'); return; }
@@ -258,14 +294,21 @@ isPlace: true only for actual places (airports, stations) that can be found on G
         place = { ...place, place_id: top.place_id, address: top.address, photo_url: top.photo_reference ? photoProxy(top.photo_reference) : null, maps_url: top.maps_url };
       }
     } catch {}
-    saveData([...savedPlaces, place], savedNotes);
+    setPlaces(prev => {
+      const next = [...prev, place];
+      saveData(next, notes);
+      return next;
+    });
     setAvaSuggestions(prev => prev.filter(s => s._avaId !== suggestion._avaId));
     toast.success(`${suggestion.name} added`);
   };
 
   const handleAddAvaNote = (suggestion) => {
-    const next = [...savedNotes, { id: uid(), title: suggestion.name, text: suggestion.description }];
-    saveData(savedPlaces, next);
+    setNotes(prev => {
+      const next = [...prev, { id: uid(), title: suggestion.name, text: suggestion.description }];
+      saveData(places, next);
+      return next;
+    });
     setAvaSuggestions(prev => prev.filter(s => s._avaId !== suggestion._avaId));
     toast.success('Note added');
   };
@@ -413,13 +456,13 @@ isPlace: true only for actual places (airports, stations) that can be found on G
             </div>
 
             {/* Saved places */}
-            {savedPlaces.length > 0 && (
+            {places.length > 0 && (
               <div style={{ marginBottom: 36 }}>
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
-                  Getting here — {savedPlaces.length} location{savedPlaces.length !== 1 ? 's' : ''}
+                  Getting here — {places.length} location{places.length !== 1 ? 's' : ''}
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
-                  {savedPlaces.map(p => <TransportPlaceCard key={p.id} place={p} onRemove={() => handleRemovePlace(p.id)} />)}
+                  {places.map(p => <TransportPlaceCard key={p.id} place={p} onRemove={() => handleRemovePlace(p.id)} />)}
                 </div>
               </div>
             )}
@@ -430,9 +473,9 @@ isPlace: true only for actual places (airports, stations) that can be found on G
                 Transport tips & notes
               </p>
 
-              {savedNotes.length > 0 && (
+              {notes.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-                  {savedNotes.map(n => (
+                  {notes.map(n => (
                     <NoteCard key={n.id} note={n}
                       onRemove={() => handleRemoveNote(n.id)}
                       onEdit={(updated) => handleEditNote(n.id, updated)}
