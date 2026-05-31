@@ -8,7 +8,10 @@ import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
 import SectionTemplatePicker from '@/components/website-builder/SectionTemplatePicker';
-import { WEBSITE_THEMES, FONT_OPTIONS, WEDDING_PAGES } from '@/lib/websiteThemes';
+import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, FONT_OPTIONS, WEDDING_PAGES } from '@/lib/websiteThemes';
+import WeddingStayPage from '@/components/guest-website/pages/WeddingStayPage';
+import WeddingTransportPage from '@/components/guest-website/pages/WeddingTransportPage';
+import WeddingExperiencePage from '@/components/guest-website/pages/WeddingExperiencePage';
 import WBSectionRenderer from '@/components/website-builder/WBSectionRenderer';
 import AvaAutoFillModal from '@/components/website-builder/AvaAutoFillModal';
 import PublishModal from '@/components/website-builder/PublishModal';
@@ -811,7 +814,13 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
 
       {/* Sections */}
       <div style={{ flex: 1, overflowY: 'auto', background: universeTheme.background, fontFamily: effectiveBf }}>
-        {currentPageSections.length === 0 ? (
+        {/* Guest Suite data pages — auto-render live data, no manual sections needed */}
+        {currentPage === 'stay' || currentPage === 'transport' || currentPage === 'experience' ? (() => {
+          const GS_PAGES = { stay: WeddingStayPage, transport: WeddingTransportPage, experience: WeddingExperiencePage };
+          const GuestPage = GS_PAGES[currentPage];
+          const typography = TYPOGRAPHY_PAIRINGS.find(t => t.id === details?.activeTypography) || TYPOGRAPHY_PAIRINGS[0];
+          return <GuestPage weddingDetails={details} theme={theme} typography={typography} />;
+        })() : currentPageSections.length === 0 ? (
           showPlaceholders ? (
             placeholderData.sections.map((section, i) => (
               <PlaceholderSection
@@ -856,17 +865,19 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
           </>
         )}
 
-        {/* Add section at bottom */}
-        <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}>
-          <button
-            onClick={() => onAddSection(currentPageSections.length)}
-            style={{ width: '100%', maxWidth: 500, height: 48, border: `2px dashed ${addBtnBorder}`, background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: addBtnColor, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = addBtnBorder; e.currentTarget.style.color = addBtnColor; }}
-          >
-            + Add section
-          </button>
-        </div>
+        {/* Add section at bottom — hidden for auto-rendered Guest Suite pages */}
+        {currentPage !== 'stay' && currentPage !== 'transport' && currentPage !== 'experience' && (
+          <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}>
+            <button
+              onClick={() => onAddSection(currentPageSections.length)}
+              style={{ width: '100%', maxWidth: 500, height: 48, border: `2px dashed ${addBtnBorder}`, background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: addBtnColor, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = addBtnBorder; e.currentTarget.style.color = addBtnColor; }}
+            >
+              + Add section
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
