@@ -262,7 +262,8 @@ export default function EventDetailsPage() {
               })}
               placeholder="Search for ceremony venue…"
             />
-            <UInput label="Ceremony time" type="time" value={mc.startTime} onChange={e => updateNested('mainCeremony', { startTime: e.target.value })} />
+            <UInput label="Ceremony start time" type="time" value={mc.startTime} onChange={e => updateNested('mainCeremony', { startTime: e.target.value })} />
+            <UInput label="Ceremony end time" type="time" value={mc.endTime} onChange={e => updateNested('mainCeremony', { endTime: e.target.value })} />
             <UInput label="Dress code" value={mc.dressCode} onChange={e => updateNested('mainCeremony', { dressCode: e.target.value })} placeholder="e.g. Black tie" />
             <UInput label="Parking info" value={mc.parkingInfo} onChange={e => updateNested('mainCeremony', { parkingInfo: e.target.value })} placeholder="e.g. Street parking available on King St" />
             <UInput label="Accessibility notes" value={mc.accessibilityNotes} onChange={e => updateNested('mainCeremony', { accessibilityNotes: e.target.value })} placeholder="e.g. Wheelchair accessible entrance via side gate" />
@@ -288,7 +289,8 @@ export default function EventDetailsPage() {
               })}
               placeholder="Search for reception venue…"
             />
-            <UInput label="Reception time" type="time" value={rc.startTime} onChange={e => updateNested('reception', { startTime: e.target.value })} />
+            <UInput label="Reception start time" type="time" value={rc.startTime} onChange={e => updateNested('reception', { startTime: e.target.value })} />
+            <UInput label="Reception end time" type="time" value={rc.endTime} onChange={e => updateNested('reception', { endTime: e.target.value })} />
             <UInput label="Parking info" value={rc.parkingInfo} onChange={e => updateNested('reception', { parkingInfo: e.target.value })} placeholder="e.g. On-site parking for 200 cars" />
             <UInput label="Accessibility notes" value={rc.accessibilityNotes} onChange={e => updateNested('reception', { accessibilityNotes: e.target.value })} placeholder="e.g. Step-free access throughout" />
           </>
