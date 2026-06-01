@@ -365,79 +365,92 @@ isPlace: true only for actual places (airports, stations) that can be found on G
 
             {/* Add a place card */}
             <div style={{ border: '1px solid rgba(10,10,10,0.1)', borderRadius: 8, padding: '20px 24px', marginBottom: 32 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 18px' }}>Add a transport location</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px 24px', marginBottom: 14 }}>
-                {/* Search */}
-                <div style={{ position: 'relative' }}>
-                  <label style={sectionLabel}>Search Google Places</label>
-                  <div style={{ position: 'relative' }}>
-                    <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
-                    <Input value={query} onChange={handleQueryChange} onFocus={() => results.length > 0 && setShowDropdown(true)}
-                      placeholder="e.g. Sydney Airport, Central Station…" style={{ paddingLeft: 20 }} />
-                    {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
-                    {selectedPlace && !searching && (
-                      <button onClick={() => { setSelectedPlace(null); setQuery(''); }} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
-                        <X size={13} />
-                      </button>
-                    )}
-                  </div>
-                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 16px' }}>Add a transport location</p>
 
-                  {showDropdown && results.length > 0 && (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFF', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, marginTop: 4, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', maxHeight: 280, overflowY: 'auto' }}>
-                      {results.map((place, i) => (
-                        <button key={place.place_id} onClick={() => handleSelectPlace(place)}
-                          style={{ width: '100%', display: 'flex', gap: 10, padding: '10px 12px', alignItems: 'center', background: '#FFF', border: 'none', borderBottom: i < results.length - 1 ? '1px solid rgba(10,10,10,0.05)' : 'none', cursor: 'pointer', textAlign: 'left' }}
-                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.03)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
-                        >
-                          {place.photo_reference ? (
-                            <img src={photoProxy(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
-                          ) : (
-                            <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <MapPin size={12} color="rgba(10,10,10,0.2)" />
-                            </div>
-                          )}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{place.name}</p>
-                            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+              {/* Search — only field visible before a place is chosen */}
+              <div style={{ position: 'relative' }}>
+                <label style={sectionLabel}>Search Google Places</label>
+                <div style={{ position: 'relative' }}>
+                  <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                  <Input value={query} onChange={handleQueryChange} onFocus={() => results.length > 0 && setShowDropdown(true)}
+                    placeholder="e.g. Sydney Airport, Central Station…" style={{ paddingLeft: 20 }} />
+                  {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
+                  {selectedPlace && !searching && (
+                    <button onClick={() => { setSelectedPlace(null); setQuery(''); setPlaceNote(''); }} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
+                      <X size={13} />
+                    </button>
                   )}
                 </div>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-                {/* Type */}
-                <div>
-                  <label style={sectionLabel}>Type</label>
-                  <select value={placeType} onChange={e => setPlaceType(e.target.value)}
-                    style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', outline: 'none', cursor: 'pointer' }}>
-                    {TRANSPORT_TYPES.map(t => <option key={t.key} value={t.key}>{t.label}</option>)}
-                  </select>
-                </div>
-
-                {/* Note */}
-                <div>
-                  <label style={sectionLabel}>Note for guests <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
-                  <Input value={placeNote} onChange={e => setPlaceNote(e.target.value)} placeholder="e.g. ~20 min to venue by taxi…" />
-                </div>
-
-                {/* Add button */}
-                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                  <button onClick={handleAddPlace} className="btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: 13, padding: '9px 0' }}>
-                    <Plus size={14} /> Add location
-                  </button>
-                </div>
+                {showDropdown && results.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFF', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, marginTop: 4, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', maxHeight: 280, overflowY: 'auto' }}>
+                    {results.map((place, i) => (
+                      <button key={place.place_id} onClick={() => handleSelectPlace(place)}
+                        style={{ width: '100%', display: 'flex', gap: 10, padding: '10px 12px', alignItems: 'center', background: '#FFF', border: 'none', borderBottom: i < results.length - 1 ? '1px solid rgba(10,10,10,0.05)' : 'none', cursor: 'pointer', textAlign: 'left' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.03)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
+                      >
+                        {place.photo_reference ? (
+                          <img src={photoProxy(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                        ) : (
+                          <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <MapPin size={12} color="rgba(10,10,10,0.2)" />
+                          </div>
+                        )}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{place.name}</p>
+                          <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
+              {/* Selected place — type/note/confirm all in one connected panel */}
               {selectedPlace && (
-                <div style={{ display: 'flex', gap: 10, padding: '10px 12px', background: 'rgba(224,53,83,0.04)', borderRadius: 6, border: '1px solid rgba(224,53,83,0.15)', alignItems: 'center' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{selectedPlace.name}</p>
-                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS }}>{selectedPlace.address}</p>
+                <div style={{ marginTop: 16, border: '1px solid rgba(224,53,83,0.18)', borderRadius: 6, overflow: 'hidden' }}>
+                  {/* Place header row */}
+                  <div style={{ display: 'flex', gap: 12, padding: '12px 14px', alignItems: 'center', background: 'rgba(224,53,83,0.04)', borderBottom: '1px solid rgba(224,53,83,0.1)' }}>
+                    {selectedPlace.photo_reference ? (
+                      <img src={photoProxy(selectedPlace.photo_reference, 80)} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: 44, height: 44, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <MapPin size={16} color="rgba(10,10,10,0.2)" />
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{selectedPlace.name}</p>
+                      {selectedPlace.address && <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedPlace.address}</p>}
+                    </div>
+                    <button onClick={() => { setSelectedPlace(null); setQuery(''); setPlaceNote(''); }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                      <X size={14} />
+                    </button>
                   </div>
-                  <span style={{ fontSize: 11, color: '#E03553', fontWeight: 600, fontFamily: PJS, flexShrink: 0 }}>Selected</span>
+
+                  {/* Type + note + confirm */}
+                  <div style={{ padding: '14px 14px 16px', background: '#FFF' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '0 24px', marginBottom: 16 }}>
+                      <div>
+                        <label style={sectionLabel}>Type</label>
+                        <select value={placeType} onChange={e => setPlaceType(e.target.value)}
+                          style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', outline: 'none', cursor: 'pointer' }}>
+                          {TRANSPORT_TYPES.map(t => <option key={t.key} value={t.key}>{t.label}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label style={sectionLabel}>Note for guests <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+                        <Input value={placeNote} onChange={e => setPlaceNote(e.target.value)} placeholder="e.g. ~20 min to venue by taxi…" />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button onClick={handleAddPlace} className="btn-primary" style={{ fontSize: 13, padding: '8px 20px' }}>
+                        <Plus size={14} /> Add location
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
