@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, Hotel, MapPin, Star, ExternalLink, X, Search, Plus } from 'lucide-react';
+import { Loader2, Hotel, Star, ExternalLink, X, Search, Plus, Navigation } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import toast from 'react-hot-toast';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
-
 const BADGE_OPTIONS = ['Closest to venue', 'Best value', 'Where most guests are staying', 'Luxury pick', 'Budget friendly'];
 
 const sectionLabel = {
@@ -73,20 +71,29 @@ function PlaceCard({ place, onRemove }) {
         {place.note && (
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 8px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.5 }}>"{place.note}"</p>
         )}
-        {place.maps_url && (
-          <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
-            <ExternalLink size={10} /> View on maps
-          </a>
-        )}
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          {place.maps_url && (
+            <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
+              <ExternalLink size={10} /> View on maps
+            </a>
+          )}
+          {place.website_url && (
+            <a href={place.website_url} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
+              <ExternalLink size={10} /> Website / booking
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-// ── Add a place card ──────────────────────────────────────────────────────────
+// ── Add a place panel ─────────────────────────────────────────────────────────
 
 function AddPlaceCard({ destination, onAdd }) {
+  // Google search
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -96,14 +103,27 @@ function AddPlaceCard({ destination, onAdd }) {
   const [badge, setBadge] = useState('');
   const debounceRef = useRef(null);
 
+  // Geolocation — transient bias only, never persisted
+  const [geoState, setGeoState] = useState('idle'); // idle | loading | active | error | unavailable
+  const geoCoordsRef = useRef(null); // ref so debounced search always sees latest value
+
+  // Manual entry
+  const [showManual, setShowManual] = useState(false);
+  const [manualName, setManualName] = useState('');
+  const [manualAddress, setManualAddress] = useState('');
+  const [manualUrl, setManualUrl] = useState('');
+  const [manualNote, setManualNote] = useState('');
+  const [manualBadge, setManualBadge] = useState('');
+
   const search = async (q) => {
     if (!q.trim() || q.trim().length < 2) { setResults([]); setShowDropdown(false); return; }
     setSearching(true);
     try {
-      const loc = destination || '';
+      const body = { q: `hotel ${q.trim()}`, location: destination || '' };
+      if (geoCoordsRef.current) { body.lat = geoCoordsRef.current.lat; body.lng = geoCoordsRef.current.lng; }
       const res = await fetch('/api/places-search', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `hotel ${q.trim()}`, location: loc }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       setResults(data.places || []);
@@ -125,10 +145,10 @@ function AddPlaceCard({ destination, onAdd }) {
     setQuery(place.name);
     setShowDropdown(false);
     setResults([]);
+    setShowManual(false);
   };
 
   const handleAdd = () => {
-    console.log('[AddPlaceCard] handleAdd fired, selected:', selected?.name ?? 'null');
     if (!selected) { toast.error('Select a place first'); return; }
     onAdd({
       place_id: selected.place_id,
@@ -144,20 +164,86 @@ function AddPlaceCard({ destination, onAdd }) {
     setSelected(null); setQuery(''); setNote(''); setBadge('');
   };
 
+  const handleManualAdd = () => {
+    if (!manualName.trim()) { toast.error('Name is required'); return; }
+    onAdd({
+      name: manualName.trim(),
+      address: manualAddress.trim(),
+      photo_url: null,
+      maps_url: manualAddress.trim()
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(manualAddress.trim())}`
+        : null,
+      website_url: manualUrl.trim() || null,
+      note: manualNote.trim(),
+      badge: manualBadge || null,
+    });
+    setManualName(''); setManualAddress(''); setManualUrl(''); setManualNote(''); setManualBadge('');
+    setShowManual(false);
+  };
+
+  const handleUseLocation = () => {
+    if (!navigator.geolocation) { setGeoState('unavailable'); return; }
+    setGeoState('loading');
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        geoCoordsRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setGeoState('active');
+      },
+      err => { console.warn('[Geolocation]', err.message); setGeoState('error'); },
+      { timeout: 8000, maximumAge: 300000 }
+    );
+  };
+
+  const clearGeo = () => { geoCoordsRef.current = null; setGeoState('idle'); };
+
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.1)', borderRadius: 8, padding: '20px 24px', marginBottom: 32 }}>
       <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 16px' }}>Add accommodation</p>
 
-      {/* Search — only field visible before a place is chosen */}
+      {/* Search */}
       <div style={{ position: 'relative' }}>
-        <label style={sectionLabel}>Search Google Places</label>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Search Google Places</span>
+          {/* Geolocation control */}
+          {geoState === 'idle' && (
+            <button type="button" onClick={handleUseLocation}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: 0 }}>
+              <Navigation size={11} /> Use my location
+            </button>
+          )}
+          {geoState === 'loading' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> Getting location…
+            </span>
+          )}
+          {geoState === 'active' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: '#E03553', fontFamily: PJS }}>
+              <Navigation size={11} /> Using your location
+              <button type="button" onClick={clearGeo}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: '0 0 0 2px', display: 'flex', alignItems: 'center' }}>
+                <X size={11} />
+              </button>
+            </span>
+          )}
+          {geoState === 'error' && (
+            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              Couldn't get location —{' '}
+              <button type="button" onClick={handleUseLocation}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
+            </span>
+          )}
+          {geoState === 'unavailable' && (
+            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Location not available</span>
+          )}
+        </div>
+
         <div style={{ position: 'relative' }}>
           <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
           <Input value={query} onChange={handleQueryChange} onFocus={() => results.length > 0 && setShowDropdown(true)}
             placeholder="e.g. Hilton Sydney, boutique hotels…" style={{ paddingLeft: 20 }} />
           {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
           {selected && !searching && (
-            <button onClick={() => { setSelected(null); setQuery(''); setNote(''); setBadge(''); }}
+            <button type="button" onClick={() => { setSelected(null); setQuery(''); setNote(''); setBadge(''); }}
               style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
               <X size={13} />
             </button>
@@ -191,6 +277,54 @@ function AddPlaceCard({ destination, onAdd }) {
         )}
       </div>
 
+      {/* Add manually toggle — hidden when a place is selected */}
+      {!selected && (
+        <div style={{ marginTop: 10 }}>
+          <button type="button" onClick={() => setShowManual(m => !m)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, padding: 0, fontWeight: 600 }}>
+            {showManual ? '← Back to search' : 'Add manually'}
+          </button>
+        </div>
+      )}
+
+      {/* Manual entry form */}
+      {!selected && showManual && (
+        <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '16px 16px 18px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
+            <div>
+              <label style={sectionLabel}>Name</label>
+              <Input value={manualName} onChange={e => setManualName(e.target.value)} placeholder="e.g. Airbnb on Crown St" />
+            </div>
+            <div>
+              <label style={sectionLabel}>Address <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+              <Input value={manualAddress} onChange={e => setManualAddress(e.target.value)} placeholder="e.g. 42 Crown St, Sydney NSW" />
+            </div>
+            <div>
+              <label style={sectionLabel}>Link <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional — Airbnb, booking page…)</span></label>
+              <Input value={manualUrl} onChange={e => setManualUrl(e.target.value)} placeholder="https://…" />
+            </div>
+            <div>
+              <label style={sectionLabel}>Highlight badge <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+              <select value={manualBadge} onChange={e => setManualBadge(e.target.value)}
+                style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: manualBadge ? '#0A0A0A' : 'rgba(10,10,10,0.4)', outline: 'none', cursor: 'pointer' }}>
+                <option value="">No badge</option>
+                {BADGE_OPTIONS.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={sectionLabel}>Note for guests <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+              <Input value={manualNote} onChange={e => setManualNote(e.target.value)} placeholder="e.g. Enter via the laneway on the left" />
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button type="button" onClick={handleManualAdd} className="btn-primary" style={{ fontSize: 13, padding: '8px 20px' }}>
+              <Plus size={14} /> Add accommodation
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Selected place — note/badge/confirm all in one connected panel */}
       {selected && (
         <div style={{ marginTop: 16, border: '1px solid rgba(224,53,83,0.18)', borderRadius: 6, overflow: 'hidden' }}>
@@ -212,7 +346,7 @@ function AddPlaceCard({ destination, onAdd }) {
                 <Star size={10} fill="#E03553" color="#E03553" /> {selected.rating}
               </span>
             )}
-            <button onClick={() => { setSelected(null); setQuery(''); setNote(''); setBadge(''); }}
+            <button type="button" onClick={() => { setSelected(null); setQuery(''); setNote(''); setBadge(''); }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
               <X size={14} />
             </button>
@@ -235,7 +369,7 @@ function AddPlaceCard({ destination, onAdd }) {
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={handleAdd} className="btn-primary" style={{ fontSize: 13, padding: '8px 20px' }}>
+              <button type="button" onClick={handleAdd} className="btn-primary" style={{ fontSize: 13, padding: '8px 20px' }}>
                 <Plus size={14} /> Add accommodation
               </button>
             </div>
@@ -250,7 +384,7 @@ function AddPlaceCard({ destination, onAdd }) {
 
 export default function GuestSuiteAccommodation() {
   const [details, setDetails] = useState(null);
-  const [places, setPlaces] = useState([]);     // owned state — never stale
+  const [places, setPlaces] = useState([]);
   const [detailsId, setDetailsId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -263,7 +397,6 @@ export default function GuestSuiteAccommodation() {
         const d = rows[0] || null;
         setDetails(d);
         setDetailsId(d?.id || null);
-        // Hydrate places from Base44 on every mount — source of truth
         setPlaces(d?.guestSuiteAccommodation?.places || []);
       })
       .catch(e => console.error('GuestSuiteAccommodation load error', e))
@@ -288,7 +421,6 @@ export default function GuestSuiteAccommodation() {
   };
 
   const handleAdd = (place) => {
-    console.log('[GuestSuiteAccommodation] handleAdd called:', place?.name, '| places before:', places.length);
     const next = [...places, { ...place, id: uid() }];
     setPlaces(next);
     save(next);
@@ -361,7 +493,6 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
         subtitle="Places to stay near the wedding venue"
         actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Saving…</span> : null}
       />
-
 
       <div style={{ padding: '32px 32px 80px' }}>
         {loading ? (
@@ -446,7 +577,6 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
                 </p>
               </div>
             )}
-
           </>
         )}
       </div>
