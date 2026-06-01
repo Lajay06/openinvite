@@ -3,8 +3,6 @@ import { Accordion } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Palette, Flower, Sparkles, User, Camera } from "lucide-react";
 import toast from 'react-hot-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { createPageUrl } from "@/utils";
 
 import SectionInput from "../components/event-details/SectionInput";
@@ -18,7 +16,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 const ThemeDetails = base44.entities.ThemeDetails;
 const Vendor = base44.entities.Vendor;
 
-const DRESS_CODES = ['Black Tie', 'Formal', 'Cocktail', 'Semi-Formal', 'Casual', 'Beach', 'Garden Party', 'Themed'];
+// Dress code is now managed per-event in Event Details → Venue tab.
 
 const initialDetailsState = {
     flowers: {},
@@ -37,16 +35,7 @@ const [activeTab, setActiveTab] = useState("attire");
   const [showVendorForm, setShowVendorForm] = useState(false);
   const [vendorFormCategory, setVendorFormCategory] = useState('');
   
-  const [isCustomDressCode, setIsCustomDressCode] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
-  
-  useEffect(() => {
-    if (details.attire?.dressCode && !DRESS_CODES.includes(details.attire.dressCode)) {
-      setIsCustomDressCode(true);
-    } else {
-      setIsCustomDressCode(false);
-    }
-  }, [details.attire?.dressCode]);
 
   useEffect(() => {
     loadDetails();
@@ -88,16 +77,6 @@ const [activeTab, setActiveTab] = useState("attire");
     }));
   };
   
-  const handleDressCodeSelect = (value) => {
-      if (value === 'Other') {
-          setIsCustomDressCode(true);
-          handleUpdate('attire', 'dressCode', '');
-      } else {
-          setIsCustomDressCode(false);
-          handleUpdate('attire', 'dressCode', value);
-      }
-  };
-
   const handleVendorSelect = (section, vendorId) => {
     const vendor = vendors.find(v => v.id === vendorId);
     if (vendor) {
@@ -196,39 +175,16 @@ const [activeTab, setActiveTab] = useState("attire");
           {/* Attire Tab */}
           <TabsContent value="attire" className="mt-8">
             <Accordion type="multiple" className="w-full space-y-4">
-              <DetailsSection title="Dress Code" icon={Palette} sectionKey="dress-code" onSave={() => handleSectionSave('attire')} isSaving={isSaving}>
-                <div>
-                  <Select
-                    value={isCustomDressCode ? 'Other' : details.attire?.dressCode}
-                    onValueChange={handleDressCodeSelect}
-                  >
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue placeholder="Select a dress code" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DRESS_CODES.map(code => <SelectItem key={code} value={code}>{code}</SelectItem>)}
-                      <SelectItem value="Other">Other (Please specify)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {isCustomDressCode && (
-                  <div>
-                    <Input
-                      value={details.attire?.dressCode}
-                      onChange={(e) => handleUpdate('attire', 'dressCode', e.target.value)}
-                      placeholder="e.g., Tropical Formal, Whimsical Garden"
-                      className="h-9 text-sm"
-                    />
-                  </div>
-                )}
-
-                <SectionInput 
-                  label="Attire Notes" 
-                  isTextarea 
-                  value={details.attire?.notes} 
-                  onChange={e => handleUpdate('attire', 'notes', e.target.value)} 
-                  placeholder="e.g., 'The ceremony is on grass, so consider footwear.'" 
+              <DetailsSection title="Attire notes" icon={Palette} sectionKey="attire-notes" onSave={() => handleSectionSave('attire')} isSaving={isSaving}>
+                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', marginBottom: 12 }}>
+                  Dress code is now set per event in <a href="/event-details" style={{ color: '#E03553', fontWeight: 600, textDecoration: 'none' }}>Event Details → Venue</a>.
+                </p>
+                <SectionInput
+                  label="Attire notes"
+                  isTextarea
+                  value={details.attire?.notes}
+                  onChange={e => handleUpdate('attire', 'notes', e.target.value)}
+                  placeholder="e.g., 'The ceremony is on grass, so consider footwear.'"
                 />
               </DetailsSection>
             </Accordion>

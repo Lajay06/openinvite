@@ -29,6 +29,15 @@ function FInput({ label, value, onChange, type = 'text', placeholder = '' }) {
     </div>
   );
 }
+function FReadOnly({ label, value }) {
+  if (!value) return null;
+  return (
+    <div style={{ marginBottom: 12 }}>
+      {label && <FLabel>{label}</FLabel>}
+      <div style={{ fontSize: 13, color: '#0A0A0A', padding: '4px 0' }}>{value}</div>
+    </div>
+  );
+}
 function FTextarea({ label, value, onChange, rows = 3, placeholder = '' }) {
   return (
     <div style={{ marginBottom: 16 }}>
@@ -130,23 +139,20 @@ function CelebrationContent({ details, onChange }) {
   const schedule = cc.daySchedule || [];
   const cer = details.mainCeremony || {};
   const rec = details.reception || {};
-  const upCer = (k, v) => onChange('mainCeremony', { ...cer, [k]: v });
-  const upRec = (k, v) => onChange('reception', { ...rec, [k]: v });
   return (
     <>
       <SectionHead>Ceremony</SectionHead>
-      <FInput label="Venue Name" value={cer.venueName} onChange={v => upCer('venueName', v)} />
-      <FInput label="Address" value={cer.address} onChange={v => upCer('address', v)} />
-      <FInput label="Start Time" value={cer.startTime} onChange={v => upCer('startTime', v)} type="time" />
-      <FInput label="End Time" value={cer.endTime} onChange={v => upCer('endTime', v)} type="time" />
-      <FInput label="Dress Code" value={cer.dressCode} onChange={v => upCer('dressCode', v)} />
-      <FTextarea label="Notes" value={cer.notes} onChange={v => upCer('notes', v)} rows={2} />
+      <FReadOnly label="Venue" value={cer.venueName} />
+      <FReadOnly label="Address" value={cer.address} />
+      <FReadOnly label="Start time" value={cer.startTime} />
+      <FReadOnly label="End time" value={cer.endTime} />
+      <FReadOnly label="Dress code" value={cer.dressCode} />
       <SectionHead>Reception</SectionHead>
-      <FInput label="Venue Name" value={rec.venueName} onChange={v => upRec('venueName', v)} />
-      <FInput label="Address" value={rec.address} onChange={v => upRec('address', v)} />
-      <FInput label="Start Time" value={rec.startTime} onChange={v => upRec('startTime', v)} type="time" />
-      <FInput label="End Time" value={rec.endTime} onChange={v => upRec('endTime', v)} type="time" />
-      <FTextarea label="Notes" value={rec.notes} onChange={v => upRec('notes', v)} rows={2} />
+      <FReadOnly label="Venue" value={rec.venueName} />
+      <FReadOnly label="Address" value={rec.address} />
+      <FReadOnly label="Start time" value={rec.startTime} />
+      <FReadOnly label="End time" value={rec.endTime} />
+      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '0 0 12px' }}>Edit event details in <strong>Event Details → Venue</strong></p>
       <SectionHead>Day Schedule</SectionHead>
       {schedule.map((item, i) => (
         <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>

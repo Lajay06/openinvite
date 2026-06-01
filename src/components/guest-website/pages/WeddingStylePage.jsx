@@ -111,7 +111,7 @@ export default function WeddingStylePage({ weddingDetails, theme, typography }) 
 
   const coupleNames = getCoupleNames(weddingDetails);
   const season = deriveSeason(weddingDetails.weddingDate);
-  const dressCode = weddingDetails.mainCeremony?.dressCode || weddingDetails.dressCode;
+  const dressCode = weddingDetails.mainCeremony?.dressCode;
   const weddingStyle = Array.isArray(weddingDetails.weddingStyle) ? weddingDetails.weddingStyle[0] : null;
 
   const currentStep = STEPS[step];

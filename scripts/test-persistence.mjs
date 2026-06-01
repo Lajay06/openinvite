@@ -115,6 +115,23 @@ function writtenSubsetMatches(written, readBack) {
 // ── Test data ─────────────────────────────────────────────────────────────────
 
 const TEST_FIELDS = {
+  // ── Event Details canonical fields (new refactor) ─────────────────────────
+  mainCeremony: {
+    venueName:   'Test Ceremony Venue',
+    address:     '1 Ceremony Lane, Sydney NSW 2000',
+    startTime:   '14:00',
+    endTime:     '15:00',
+    dressCode:   'Black tie',
+    parkingInfo: 'Street parking on Church St',
+  },
+  reception: {
+    venueName:   'Test Reception Hall',
+    address:     '2 Reception Rd, Sydney NSW 2000',
+    startTime:   '17:30',
+    endTime:     '23:00',
+    dressCode:   'Cocktail',
+    parkingInfo: 'On-site parking available',
+  },
   guestSuiteAccommodation: {
     places: [{ id: 'test-hotel-1', name: 'Test Hotel Sydney', address: '1 Test St', rating: 4.5, note: 'persistence check' }],
   },
@@ -179,7 +196,8 @@ const TEST_FIELDS = {
 
 async function run() {
   console.log('\n═══════════════════════════════════════════════════════');
-  console.log('  Base44 persistence test — Openinvite Guest Suite');
+  console.log('  Base44 persistence test — Openinvite');
+  console.log('  Guest Suite + Event Details canonical fields');
   console.log('═══════════════════════════════════════════════════════\n');
 
   let token = null;
@@ -334,7 +352,71 @@ async function run() {
       : fail('polls', written, got));
   }
 
-  // ── 7. Sequential append test (catches the "second add overwrites first" bug) ──
+  // ── 7. Event Details canonical field tests (data-model refactor) ─────────────
+  console.log('\n  Event Details canonical field tests:\n');
+
+  // mainCeremony.dressCode — written via EventDetails path, must round-trip
+  {
+    const written = TEST_FIELDS.mainCeremony.dressCode;
+    const got     = record.mainCeremony?.dressCode;
+    results.push(written === got
+      ? pass('mainCeremony.dressCode', `"${got}" — canonical ceremony dress code`)
+      : fail('mainCeremony.dressCode', written, got));
+  }
+
+  // reception.dressCode — new per-event field, must round-trip
+  {
+    const written = TEST_FIELDS.reception.dressCode;
+    const got     = record.reception?.dressCode;
+    results.push(written === got
+      ? pass('reception.dressCode', `"${got}" — canonical reception dress code`)
+      : fail('reception.dressCode', written, got));
+  }
+
+  // mainCeremony.endTime — now written by EventDetails (not WSContentTab), must round-trip
+  {
+    const written = TEST_FIELDS.mainCeremony.endTime;
+    const got     = record.mainCeremony?.endTime;
+    results.push(written === got
+      ? pass('mainCeremony.endTime', `"${got}"`)
+      : fail('mainCeremony.endTime', written, got));
+  }
+
+  // reception.endTime — now written by EventDetails, must round-trip
+  {
+    const written = TEST_FIELDS.reception.endTime;
+    const got     = record.reception?.endTime;
+    results.push(written === got
+      ? pass('reception.endTime', `"${got}"`)
+      : fail('reception.endTime', written, got));
+  }
+
+  // Sole-writer verification: write mainCeremony.dressCode via canonical path,
+  // then write attire.dressCode separately — canonical must NOT be overwritten.
+  {
+    const canonicalDressCode = 'White tie';
+    const oldAttireValue     = 'Smart casual';
+
+    // Step 1: write canonical path
+    await api('PUT', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`,
+      { couple1Name: SENTINEL, couple2Name: 'DO_NOT_USE',
+        mainCeremony: { dressCode: canonicalDressCode } }, token);
+
+    // Step 2: write attire.dressCode (old Styling-page path) — must NOT touch mainCeremony.dressCode
+    await api('PUT', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`,
+      { couple1Name: SENTINEL, couple2Name: 'DO_NOT_USE',
+        attire: { dressCode: oldAttireValue } }, token);
+
+    // Step 3: verify canonical is still intact
+    const after = await api('GET', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`, undefined, token);
+    const canonical = after.mainCeremony?.dressCode;
+    const isolated  = canonical === canonicalDressCode;
+    results.push(isolated
+      ? pass('sole-writer isolation', `mainCeremony.dressCode="${canonical}" unchanged after separate attire write`)
+      : fail('sole-writer isolation', canonicalDressCode, canonical));
+  }
+
+  // ── 8. Sequential append test (catches the "second add overwrites first" bug) ──
   console.log('\n  Sequential append test (write place A, then append place B):\n');
   try {
     const placeA = { id: 'seq-test-A', name: 'Sequential Hotel A', address: '10 First St' };
@@ -360,7 +442,7 @@ async function run() {
     results.push(false);
   }
 
-  // ── 8. Summary ───────────────────────────────────────────────────────────────
+  // ── 9. Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;
   const total  = results.length;
   const allOk  = passed === total;
@@ -373,7 +455,7 @@ async function run() {
   }
   console.log(`${'─'.repeat(55)}\n`);
 
-  // ── 8. Cleanup ───────────────────────────────────────────────────────────────
+  // ── 10. Cleanup ──────────────────────────────────────────────────────────────
   await cleanup(token, recordId);
 
   process.exit(allOk ? 0 : 1);

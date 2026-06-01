@@ -22,7 +22,7 @@ export const DetailsPreview = ({ invitation, weddingDetails, globalStyles }) => 
             icon: Shirt,
             title: 'Attire',
             time: 'Dress Code',
-            location: weddingDetails?.attire?.dressCode || 'Formal Attire',
+            location: weddingDetails?.mainCeremony?.dressCode || weddingDetails?.attire?.dressCode || 'Formal Attire',
             address: 'Please dress to impress!'
         },
         {

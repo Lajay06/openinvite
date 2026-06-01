@@ -30,3 +30,6 @@ dist-ssr
 
 .env
 .vercel
+
+# Claude Code local config — machine-specific, causes PR conflicts when tracked
+.claude/settings.local.json

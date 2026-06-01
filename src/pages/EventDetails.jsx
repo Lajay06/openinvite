@@ -83,6 +83,21 @@ export default function EventDetailsPage() {
       setRecordId(r.id || null);
       latestRef.current = r;
       setLoading(false);
+
+      // One-time promotion: if mainCeremony.dressCode is empty but attire.dressCode
+      // exists (old Styling-page path), copy it to the canonical location.
+      // Never overwrites an existing value; never touches reception.dressCode.
+      if (r.id && !r.mainCeremony?.dressCode && r.attire?.dressCode) {
+        const promoted = {
+          ...r,
+          mainCeremony: { ...(r.mainCeremony || {}), dressCode: r.attire.dressCode },
+        };
+        base44.entities.WeddingDetails.update(r.id, {
+          mainCeremony: promoted.mainCeremony,
+        }).catch(e => console.warn('Dress code promotion failed:', e));
+        setRecord(promoted);
+        latestRef.current = promoted;
+      }
     }).catch(() => setLoading(false));
   }, []);
 
@@ -219,6 +234,32 @@ export default function EventDetailsPage() {
             </div>
             <UInput label="Exact guest count" type="number" value={r.guestCount} onChange={e => update({ guestCount: e.target.value })} placeholder="e.g. 120" />
 
+            <div style={divider} />
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS, textAlign: 'center' }}>Wedding style</p>
+            {STYLE_GROUPS.map(group => (
+              <div key={group.label} style={{ marginBottom: 20 }}>
+                <div style={{ ...labelStyle, marginBottom: 10 }}>{group.label}</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {group.options.map(s => {
+                    const sel = styles.includes(s);
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => toggleStyle(s)}
+                        style={{
+                          padding: '6px 14px', borderRadius: 999, border: `1px solid ${sel ? '#0A0A0A' : 'rgba(10,10,10,0.18)'}`,
+                          background: sel ? '#0A0A0A' : 'transparent', color: sel ? '#FFFFFF' : '#0A0A0A',
+                          fontSize: 12, fontWeight: 600, fontFamily: PJS, cursor: 'pointer', transition: 'all 0.15s',
+                        }}
+                      >
+                        {s}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
           </>
         )}
 
@@ -262,7 +303,8 @@ export default function EventDetailsPage() {
               })}
               placeholder="Search for ceremony venue…"
             />
-            <UInput label="Ceremony time" type="time" value={mc.startTime} onChange={e => updateNested('mainCeremony', { startTime: e.target.value })} />
+            <UInput label="Ceremony start time" type="time" value={mc.startTime} onChange={e => updateNested('mainCeremony', { startTime: e.target.value })} />
+            <UInput label="Ceremony end time" type="time" value={mc.endTime} onChange={e => updateNested('mainCeremony', { endTime: e.target.value })} />
             <UInput label="Dress code" value={mc.dressCode} onChange={e => updateNested('mainCeremony', { dressCode: e.target.value })} placeholder="e.g. Black tie" />
             <UInput label="Parking info" value={mc.parkingInfo} onChange={e => updateNested('mainCeremony', { parkingInfo: e.target.value })} placeholder="e.g. Street parking available on King St" />
             <UInput label="Accessibility notes" value={mc.accessibilityNotes} onChange={e => updateNested('mainCeremony', { accessibilityNotes: e.target.value })} placeholder="e.g. Wheelchair accessible entrance via side gate" />
@@ -288,7 +330,9 @@ export default function EventDetailsPage() {
               })}
               placeholder="Search for reception venue…"
             />
-            <UInput label="Reception time" type="time" value={rc.startTime} onChange={e => updateNested('reception', { startTime: e.target.value })} />
+            <UInput label="Reception start time" type="time" value={rc.startTime} onChange={e => updateNested('reception', { startTime: e.target.value })} />
+            <UInput label="Reception end time" type="time" value={rc.endTime} onChange={e => updateNested('reception', { endTime: e.target.value })} />
+            <UInput label="Dress code" value={rc.dressCode} onChange={e => updateNested('reception', { dressCode: e.target.value })} placeholder="e.g. Black tie" />
             <UInput label="Parking info" value={rc.parkingInfo} onChange={e => updateNested('reception', { parkingInfo: e.target.value })} placeholder="e.g. On-site parking for 200 cars" />
             <UInput label="Accessibility notes" value={rc.accessibilityNotes} onChange={e => updateNested('reception', { accessibilityNotes: e.target.value })} placeholder="e.g. Step-free access throughout" />
           </>
