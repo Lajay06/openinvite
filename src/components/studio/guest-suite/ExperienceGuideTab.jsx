@@ -53,17 +53,17 @@ function uid() {
 
 export default function ExperienceGuideTab({ details }) {
   const [activeTab, setActiveTab] = useState('categories');
+  // Owned local state — initialised from prop on mount, kept fresh after every save.
+  // The prop (details) never re-renders from the parent after mount, so we cannot
+  // derive guide display data from it directly; that's the stale-closure bug.
+  const [guide, setGuide] = useState(details?.experienceGuide || {});
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
-    mutationFn: async (updates) => {
-      const current = details || {};
-      const experienceGuide = { ...(current.experienceGuide || {}), ...updates };
-      if (current.id) {
-        await base44.entities.WeddingDetails.update(current.id, { experienceGuide });
-      } else {
-        await base44.entities.WeddingDetails.create({ experienceGuide, slug: 'temp' });
-      }
+    // Receives the complete next experienceGuide object — no merging in mutantFn.
+    mutationFn: async (nextGuide) => {
+      if (!details?.id) return;
+      await base44.entities.WeddingDetails.update(details.id, { experienceGuide: nextGuide });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['guestSuiteDetails']);
@@ -72,21 +72,25 @@ export default function ExperienceGuideTab({ details }) {
     onError: () => toast.error('Failed to save'),
   });
 
-  const guide = details?.experienceGuide || {};
-
-  const handleSaveField = (field, value) => updateMutation.mutate({ [field]: value });
+  // Every handler: compute nextGuide → setGuide (immediate UI) → mutate (persist)
+  const handleSaveField = (field, value) => {
+    const next = { ...guide, [field]: value };
+    setGuide(next);
+    updateMutation.mutate(next);
+  };
 
   const handleToggleVibe = (vibe) => {
-    const current = guide.vibes || [];
-    const next = current.includes(vibe) ? current.filter(v => v !== vibe) : [...current, vibe];
-    updateMutation.mutate({ vibes: next });
+    const vibes = guide.vibes || [];
+    const next = { ...guide, vibes: vibes.includes(vibe) ? vibes.filter(v => v !== vibe) : [...vibes, vibe] };
+    setGuide(next);
+    updateMutation.mutate(next);
   };
 
   const handleToggleCategory = (catKey) => {
-    const current = guide.categories || {};
-    updateMutation.mutate({
-      categories: { ...current, [catKey]: { ...current[catKey], enabled: !current[catKey]?.enabled } },
-    });
+    const cats = guide.categories || {};
+    const next = { ...guide, categories: { ...cats, [catKey]: { ...cats[catKey], enabled: !cats[catKey]?.enabled } } };
+    setGuide(next);
+    updateMutation.mutate(next);
   };
 
   const handleAddPlace = (place, catKey, note, isCouplePick) => {
@@ -118,7 +122,9 @@ export default function ExperienceGuideTab({ details }) {
       couplePicks = [...couplePicks, { ...saved, category: CATEGORIES.find(c => c.key === catKey)?.label || catKey }];
     }
 
-    updateMutation.mutate({ categories, couplePicks });
+    const next = { ...guide, categories, couplePicks };
+    setGuide(next);
+    updateMutation.mutate(next);
     toast.success(`Added to ${CATEGORIES.find(c => c.key === catKey)?.label}`);
   };
 
@@ -129,7 +135,9 @@ export default function ExperienceGuideTab({ details }) {
       places: (categories[catKey]?.places || []).filter(p => p.place_id !== placeId),
     };
     const couplePicks = (guide.couplePicks || []).filter(p => p.place_id !== placeId);
-    updateMutation.mutate({ categories, couplePicks });
+    const next = { ...guide, categories, couplePicks };
+    setGuide(next);
+    updateMutation.mutate(next);
   };
 
   const handleGenerateIntro = async () => {
@@ -140,11 +148,17 @@ export default function ExperienceGuideTab({ details }) {
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: `Write a 2-3 sentence editorial introduction for a wedding guest guide to ${destination}. Tone: Vogue travel guide meets Airbnb Experiences. Human, evocative, not robotic.`,
     });
-    updateMutation.mutate({ editorialIntro: response });
+    const next = { ...guide, editorialIntro: response };
+    setGuide(next);
+    updateMutation.mutate(next);
   };
 
   const handleSaveItinerary = useCallback((itinerary) => {
-    updateMutation.mutate({ itinerary });
+    setGuide(prev => {
+      const next = { ...prev, itinerary };
+      updateMutation.mutate(next);
+      return next;
+    });
   }, [updateMutation]);
 
   const destination =
@@ -182,7 +196,7 @@ export default function ExperienceGuideTab({ details }) {
           </TabsList>
 
           <TabsContent value="categories" className="mt-8">
-            <CategoriesTab details={details} onToggleCategory={handleToggleCategory} />
+            <CategoriesTab guide={guide} onToggleCategory={handleToggleCategory} />
           </TabsContent>
 
           <TabsContent value="places" className="mt-8">
@@ -223,8 +237,7 @@ export default function ExperienceGuideTab({ details }) {
 
 // ── Categories tab ─────────────────────────────────────────────────────────────
 
-function CategoriesTab({ details, onToggleCategory }) {
-  const guide = details?.experienceGuide || {};
+function CategoriesTab({ guide, onToggleCategory }) {
   return (
     <div>
       <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: '0 0 28px', lineHeight: 1.6, maxWidth: 560 }}>
@@ -572,7 +585,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
           >
             <option value="all">All categories ({allSavedPlaces.length})</option>
             {CATEGORIES.map(c => {
-              const n = details?.experienceGuide?.categories?.[c.key]?.places?.length || 0;
+              const n = allSavedPlaces.filter(p => p.categoryKey === c.key).length;
               return n > 0 ? <option key={c.key} value={c.key}>{c.label} ({n})</option> : null;
             })}
           </select>
