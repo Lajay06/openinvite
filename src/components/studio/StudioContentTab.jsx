@@ -81,6 +81,16 @@ function Accordion({ title, children, defaultOpen = false }) {
   );
 }
 
+function ReadOnly({ label, value }) {
+  if (!value) return null;
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.4)', letterSpacing: '0.06em', marginBottom: 3 }}>{label}</div>
+      <div style={{ fontSize: 13, color: '#0A0A0A' }}>{value}</div>
+    </div>
+  );
+}
+
 function TagList({ items, onAdd, onRemove, placeholder = 'Add item' }) {
   const [input, setInput] = useState('');
   const handleAdd = () => {
@@ -133,16 +143,17 @@ export default function StudioContentTab({ wedding, onChange }) {
       </Accordion>
 
       <Accordion title="Ceremony & Reception">
-        <Input label="Venue Name" value={W.mainCeremony?.venueName} onChange={v => updateNested('mainCeremony', 'venueName', v)} />
-        <Input label="Address" value={W.mainCeremony?.address} onChange={v => updateNested('mainCeremony', 'address', v)} />
-        <Input label="Start Time" value={W.mainCeremony?.startTime} onChange={v => updateNested('mainCeremony', 'startTime', v)} type="time" />
-        <Input label="Dress Code" value={W.mainCeremony?.dressCode} onChange={v => updateNested('mainCeremony', 'dressCode', v)} />
-        <Textarea label="Notes" value={W.mainCeremony?.notes} onChange={v => updateNested('mainCeremony', 'notes', v)} rows={2} />
-
-        <Input label="Venue Name" value={W.reception?.venueName} onChange={v => updateNested('reception', 'venueName', v)} />
-        <Input label="Address" value={W.reception?.address} onChange={v => updateNested('reception', 'address', v)} />
-        <Input label="Start Time" value={W.reception?.startTime} onChange={v => updateNested('reception', 'startTime', v)} type="time" />
-        <Textarea label="Notes" value={W.reception?.notes} onChange={v => updateNested('reception', 'notes', v)} rows={2} />
+        <ReadOnly label="Ceremony venue" value={W.mainCeremony?.venueName} />
+        <ReadOnly label="Ceremony address" value={W.mainCeremony?.address} />
+        <ReadOnly label="Ceremony start time" value={W.mainCeremony?.startTime} />
+        <ReadOnly label="Ceremony end time" value={W.mainCeremony?.endTime} />
+        <ReadOnly label="Ceremony dress code" value={W.mainCeremony?.dressCode} />
+        <ReadOnly label="Reception venue" value={W.reception?.venueName} />
+        <ReadOnly label="Reception address" value={W.reception?.address} />
+        <ReadOnly label="Reception start time" value={W.reception?.startTime} />
+        <ReadOnly label="Reception end time" value={W.reception?.endTime} />
+        <ReadOnly label="Reception dress code" value={W.reception?.dressCode} />
+        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', marginTop: 4 }}>Edit event details in <strong>Event Details → Venue</strong></p>
       </Accordion>
 
       <Accordion title="RSVP Settings">

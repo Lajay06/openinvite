@@ -66,8 +66,8 @@ function TopBar({ weddingDetails, unreadCount }) {
     ? new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     : '';
 
-  // Venue city for weather (ceremony venue preferred)
-  const venueCity = weddingDetails?.mainCeremony?.city || '';
+  // mainCeremony.city was never written (VenueSearch embeds city into address); weather widget disabled.
+  const venueCity = '';
 
   // User info
   const storedUser = getStoredUser();

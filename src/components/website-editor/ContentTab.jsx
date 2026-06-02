@@ -110,50 +110,25 @@ export default function ContentTab({ wedding, onChange }) {
         </p>
       </div>
 
-      {/* CEREMONY */}
+      {/* CEREMONY — read-only: edit in Event Details → Venue */}
       <div>
-        <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0A0A0A', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Ceremony
         </h3>
-        <EditInput
-          label="Venue Name"
-          value={wedding.mainCeremony?.venueName}
-          onChange={v => onChange('mainCeremony', { ...wedding.mainCeremony, venueName: v })}
-        />
-        <EditInput
-          label="Address"
-          value={wedding.mainCeremony?.address}
-          onChange={v => onChange('mainCeremony', { ...wedding.mainCeremony, address: v })}
-        />
-        <EditInput
-          label="Start Time"
-          value={wedding.mainCeremony?.startTime}
-          onChange={v => onChange('mainCeremony', { ...wedding.mainCeremony, startTime: v })}
-          type="time"
-        />
+        <p style={{ fontSize: '11px', color: '#888888', margin: '0 0 10px' }}>Edit in <strong>Event Details → Venue</strong></p>
+        {wedding.mainCeremony?.venueName && <p style={{ fontSize: 13, color: '#0A0A0A', margin: '0 0 4px' }}>{wedding.mainCeremony.venueName}</p>}
+        {wedding.mainCeremony?.address && <p style={{ fontSize: 11, color: '#888888', margin: '0 0 4px' }}>{wedding.mainCeremony.address}</p>}
+        {wedding.mainCeremony?.startTime && <p style={{ fontSize: 11, color: '#888888', margin: 0 }}>{wedding.mainCeremony.startTime}{wedding.mainCeremony?.endTime ? ` – ${wedding.mainCeremony.endTime}` : ''}</p>}
       </div>
 
-      {/* RECEPTION */}
+      {/* RECEPTION — read-only: edit in Event Details → Venue */}
       <div>
-        <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0A0A0A', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Reception
         </h3>
-        <EditInput
-          label="Venue Name"
-          value={wedding.reception?.venueName}
-          onChange={v => onChange('reception', { ...wedding.reception, venueName: v })}
-        />
-        <EditInput
-          label="Address"
-          value={wedding.reception?.address}
-          onChange={v => onChange('reception', { ...wedding.reception, address: v })}
-        />
-        <EditInput
-          label="Start Time"
-          value={wedding.reception?.startTime}
-          onChange={v => onChange('reception', { ...wedding.reception, startTime: v })}
-          type="time"
-        />
+        {wedding.reception?.venueName && <p style={{ fontSize: 13, color: '#0A0A0A', margin: '0 0 4px' }}>{wedding.reception.venueName}</p>}
+        {wedding.reception?.address && <p style={{ fontSize: 11, color: '#888888', margin: '0 0 4px' }}>{wedding.reception.address}</p>}
+        {wedding.reception?.startTime && <p style={{ fontSize: 11, color: '#888888', margin: 0 }}>{wedding.reception.startTime}{wedding.reception?.endTime ? ` – ${wedding.reception.endTime}` : ''}</p>}
       </div>
 
       {/* OUR STORY */}
