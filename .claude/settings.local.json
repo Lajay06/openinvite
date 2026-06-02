@@ -102,7 +102,9 @@
       "Bash(./scripts/new-feature.sh fix-guest-suite-add-place *)",
       "Bash(./scripts/ship.sh fix: pull save\\(\\) out of state updaters on Accommodation and Transport pages *)",
       "Bash(./scripts/ship.sh ux: co-locate confirm action with selected place on Accommodation and Transport add panels *)",
-      "Bash(./scripts/ship.sh feat: add 'Add manually' + 'Use my location' to Accommodation and Transport add panels *)"
+      "Bash(./scripts/ship.sh feat: add 'Add manually' + 'Use my location' to Accommodation and Transport add panels *)",
+      "Bash(./scripts/new-feature.sh fix-experience-guide-places-save *)",
+      "Bash(./scripts/ship.sh fix: Experience Guide Places — own guide state locally so adds appear immediately and sequential adds don't overwrite each other *)"
     ]
   }
 }
