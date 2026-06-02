@@ -4,7 +4,9 @@
  * Backend proxy for Google Places Text Search.
  * Keeps GOOGLE_PLACES_API_KEY off the browser bundle.
  *
- * Body: { q: string, location?: string }
+ * Body: { q: string, location?: string, lat?: number, lng?: number }
+ *   lat + lng → geographic bias via the Places API location+radius params
+ *   location  → appended to query as "near <location>" (venue city fallback)
  * Response: { places: Place[] }
  *
  * Required env var: GOOGLE_PLACES_API_KEY
@@ -17,14 +19,21 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { q, location } = req.body || {};
+  const { q, location, lat, lng } = req.body || {};
   if (!q?.trim()) return res.status(400).json({ error: 'q is required' });
 
   const key = process.env.GOOGLE_PLACES_API_KEY;
   if (!key) return res.status(503).json({ error: 'Google Places API not configured — add GOOGLE_PLACES_API_KEY env var' });
 
-  const query = location ? `${q.trim()} near ${location}` : q.trim();
-  const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${key}`;
+  let url;
+  if (lat != null && lng != null) {
+    // User's device coordinates — bias results to that location with a 50 km radius
+    url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(q.trim())}&location=${lat},${lng}&radius=50000&key=${key}`;
+  } else {
+    // Fall back to venue city appended to query
+    const query = location ? `${q.trim()} near ${location}` : q.trim();
+    url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${key}`;
+  }
 
   try {
     const response = await fetch(url);

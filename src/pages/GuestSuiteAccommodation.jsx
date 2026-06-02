@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, Hotel, MapPin, Star, ExternalLink, X, Search, Plus } from 'lucide-react';
+import { Loader2, Hotel, Star, ExternalLink, X, Search, Plus, Navigation } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import toast from 'react-hot-toast';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
-
 const BADGE_OPTIONS = ['Closest to venue', 'Best value', 'Where most guests are staying', 'Luxury pick', 'Budget friendly'];
 
 const sectionLabel = {
@@ -73,20 +71,29 @@ function PlaceCard({ place, onRemove }) {
         {place.note && (
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 8px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.5 }}>"{place.note}"</p>
         )}
-        {place.maps_url && (
-          <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
-            <ExternalLink size={10} /> View on maps
-          </a>
-        )}
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          {place.maps_url && (
+            <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
+              <ExternalLink size={10} /> View on maps
+            </a>
+          )}
+          {place.website_url && (
+            <a href={place.website_url} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
+              <ExternalLink size={10} /> Website / booking
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-// ── Add a place card ──────────────────────────────────────────────────────────
+// ── Add a place panel ─────────────────────────────────────────────────────────
 
 function AddPlaceCard({ destination, onAdd }) {
+  // Google search
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -96,14 +103,27 @@ function AddPlaceCard({ destination, onAdd }) {
   const [badge, setBadge] = useState('');
   const debounceRef = useRef(null);
 
+  // Geolocation — transient bias only, never persisted
+  const [geoState, setGeoState] = useState('idle'); // idle | loading | active | error | unavailable
+  const geoCoordsRef = useRef(null); // ref so debounced search always sees latest value
+
+  // Manual entry
+  const [showManual, setShowManual] = useState(false);
+  const [manualName, setManualName] = useState('');
+  const [manualAddress, setManualAddress] = useState('');
+  const [manualUrl, setManualUrl] = useState('');
+  const [manualNote, setManualNote] = useState('');
+  const [manualBadge, setManualBadge] = useState('');
+
   const search = async (q) => {
     if (!q.trim() || q.trim().length < 2) { setResults([]); setShowDropdown(false); return; }
     setSearching(true);
     try {
-      const loc = destination || '';
+      const body = { q: `hotel ${q.trim()}`, location: destination || '' };
+      if (geoCoordsRef.current) { body.lat = geoCoordsRef.current.lat; body.lng = geoCoordsRef.current.lng; }
       const res = await fetch('/api/places-search', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: `hotel ${q.trim()}`, location: loc }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       setResults(data.places || []);
@@ -125,6 +145,7 @@ function AddPlaceCard({ destination, onAdd }) {
     setQuery(place.name);
     setShowDropdown(false);
     setResults([]);
+    setShowManual(false);
   };
 
   const handleAdd = () => {
@@ -143,84 +164,216 @@ function AddPlaceCard({ destination, onAdd }) {
     setSelected(null); setQuery(''); setNote(''); setBadge('');
   };
 
+  const handleManualAdd = () => {
+    if (!manualName.trim()) { toast.error('Name is required'); return; }
+    onAdd({
+      name: manualName.trim(),
+      address: manualAddress.trim(),
+      photo_url: null,
+      maps_url: manualAddress.trim()
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(manualAddress.trim())}`
+        : null,
+      website_url: manualUrl.trim() || null,
+      note: manualNote.trim(),
+      badge: manualBadge || null,
+    });
+    setManualName(''); setManualAddress(''); setManualUrl(''); setManualNote(''); setManualBadge('');
+    setShowManual(false);
+  };
+
+  const handleUseLocation = () => {
+    if (!navigator.geolocation) { setGeoState('unavailable'); return; }
+    setGeoState('loading');
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        geoCoordsRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setGeoState('active');
+      },
+      err => { console.warn('[Geolocation]', err.message); setGeoState('error'); },
+      { timeout: 8000, maximumAge: 300000 }
+    );
+  };
+
+  const clearGeo = () => { geoCoordsRef.current = null; setGeoState('idle'); };
+
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.1)', borderRadius: 8, padding: '20px 24px', marginBottom: 32 }}>
-      <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 18px' }}>Add accommodation</p>
+      <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 16px' }}>Add accommodation</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px 24px', marginBottom: 14 }}>
-        {/* Search */}
-        <div style={{ position: 'relative' }}>
-          <label style={sectionLabel}>Search Google Places</label>
-          <div style={{ position: 'relative' }}>
-            <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
-            <Input value={query} onChange={handleQueryChange} onFocus={() => results.length > 0 && setShowDropdown(true)}
-              placeholder="e.g. Hilton Sydney, boutique hotels…" style={{ paddingLeft: 20 }} />
-            {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
-            {selected && !searching && (
-              <button onClick={() => { setSelected(null); setQuery(''); }}
-                style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
-                <X size={13} />
+      {/* Search */}
+      <div style={{ position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Search Google Places</span>
+          {/* Geolocation control */}
+          {geoState === 'idle' && (
+            <button type="button" onClick={handleUseLocation}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: 0 }}>
+              <Navigation size={11} /> Use my location
+            </button>
+          )}
+          {geoState === 'loading' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> Getting location…
+            </span>
+          )}
+          {geoState === 'active' && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: '#E03553', fontFamily: PJS }}>
+              <Navigation size={11} /> Using your location
+              <button type="button" onClick={clearGeo}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: '0 0 0 2px', display: 'flex', alignItems: 'center' }}>
+                <X size={11} />
               </button>
-            )}
-          </div>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
-          {showDropdown && results.length > 0 && (
-            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFF', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, marginTop: 4, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', maxHeight: 300, overflowY: 'auto' }}>
-              {results.map((place, i) => (
-                <button key={place.place_id} onClick={() => handleSelect(place)}
-                  style={{ width: '100%', display: 'flex', gap: 10, padding: '10px 12px', alignItems: 'center', background: '#FFF', border: 'none', borderBottom: i < results.length - 1 ? '1px solid rgba(10,10,10,0.05)' : 'none', cursor: 'pointer', textAlign: 'left' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.03)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
-                >
-                  {place.photo_reference ? (
-                    <img src={photoProxy(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
-                  ) : (
-                    <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Hotel size={12} color="rgba(10,10,10,0.2)" />
-                    </div>
-                  )}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{place.name}</p>
-                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
-                  </div>
-                  {place.rating && <span style={{ fontSize: 11, color: '#0A0A0A', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}><Star size={9} fill="#E03553" color="#E03553" /> {place.rating}</span>}
-                </button>
-              ))}
-            </div>
+            </span>
+          )}
+          {geoState === 'error' && (
+            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              Couldn't get location —{' '}
+              <button type="button" onClick={handleUseLocation}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
+            </span>
+          )}
+          {geoState === 'unavailable' && (
+            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Location not available</span>
           )}
         </div>
 
-        {/* Note */}
-        <div>
-          <label style={sectionLabel}>Note for guests <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
-          <Input value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Use code WEDDING for 15% off…" />
+        <div style={{ position: 'relative' }}>
+          <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+          <Input value={query} onChange={handleQueryChange} onFocus={() => results.length > 0 && setShowDropdown(true)}
+            placeholder="e.g. Hilton Sydney, boutique hotels…" style={{ paddingLeft: 20 }} />
+          {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
+          {selected && !searching && (
+            <button type="button" onClick={() => { setSelected(null); setQuery(''); setNote(''); setBadge(''); }}
+              style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
+              <X size={13} />
+            </button>
+          )}
         </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-        {/* Badge + Add */}
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 10 }}>
-          <div>
-            <label style={sectionLabel}>Highlight badge <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
-            <select value={badge} onChange={e => setBadge(e.target.value)}
-              style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: badge ? '#0A0A0A' : 'rgba(10,10,10,0.4)', outline: 'none', cursor: 'pointer' }}>
-              <option value="">No badge</option>
-              {BADGE_OPTIONS.map(b => <option key={b} value={b}>{b}</option>)}
-            </select>
+        {showDropdown && results.length > 0 && (
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFF', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, marginTop: 4, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', maxHeight: 300, overflowY: 'auto' }}>
+            {results.map((place, i) => (
+              <button key={place.place_id} onClick={() => handleSelect(place)}
+                style={{ width: '100%', display: 'flex', gap: 10, padding: '10px 12px', alignItems: 'center', background: '#FFF', border: 'none', borderBottom: i < results.length - 1 ? '1px solid rgba(10,10,10,0.05)' : 'none', cursor: 'pointer', textAlign: 'left' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.03)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
+              >
+                {place.photo_reference ? (
+                  <img src={photoProxy(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Hotel size={12} color="rgba(10,10,10,0.2)" />
+                  </div>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{place.name}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
+                </div>
+                {place.rating && <span style={{ fontSize: 11, color: '#0A0A0A', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}><Star size={9} fill="#E03553" color="#E03553" /> {place.rating}</span>}
+              </button>
+            ))}
           </div>
-          <button onClick={handleAdd} className="btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: 13, padding: '9px 0' }}>
-            <Plus size={14} /> Add place
-          </button>
-        </div>
+        )}
       </div>
 
-      {selected && (
-        <div style={{ display: 'flex', gap: 10, padding: '10px 12px', background: 'rgba(224,53,83,0.04)', borderRadius: 6, border: '1px solid rgba(224,53,83,0.15)', alignItems: 'center' }}>
-          {selected.photo_reference && <img src={photoProxy(selected.photo_reference, 60)} alt="" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{selected.name}</p>
-            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS }}>{selected.address}</p>
+      {/* Add manually toggle — hidden when a place is selected */}
+      {!selected && (
+        <div style={{ marginTop: 10 }}>
+          <button type="button" onClick={() => setShowManual(m => !m)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, padding: 0, fontWeight: 600 }}>
+            {showManual ? '← Back to search' : 'Add manually'}
+          </button>
+        </div>
+      )}
+
+      {/* Manual entry form */}
+      {!selected && showManual && (
+        <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '16px 16px 18px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
+            <div>
+              <label style={sectionLabel}>Name</label>
+              <Input value={manualName} onChange={e => setManualName(e.target.value)} placeholder="e.g. Airbnb on Crown St" />
+            </div>
+            <div>
+              <label style={sectionLabel}>Address <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+              <Input value={manualAddress} onChange={e => setManualAddress(e.target.value)} placeholder="e.g. 42 Crown St, Sydney NSW" />
+            </div>
+            <div>
+              <label style={sectionLabel}>Link <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional — Airbnb, booking page…)</span></label>
+              <Input value={manualUrl} onChange={e => setManualUrl(e.target.value)} placeholder="https://…" />
+            </div>
+            <div>
+              <label style={sectionLabel}>Highlight badge <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+              <select value={manualBadge} onChange={e => setManualBadge(e.target.value)}
+                style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: manualBadge ? '#0A0A0A' : 'rgba(10,10,10,0.4)', outline: 'none', cursor: 'pointer' }}>
+                <option value="">No badge</option>
+                {BADGE_OPTIONS.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={sectionLabel}>Note for guests <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+              <Input value={manualNote} onChange={e => setManualNote(e.target.value)} placeholder="e.g. Enter via the laneway on the left" />
+            </div>
           </div>
-          <span style={{ fontSize: 11, color: '#E03553', fontWeight: 600, fontFamily: PJS, flexShrink: 0 }}>Selected</span>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button type="button" onClick={handleManualAdd} className="btn-primary" style={{ fontSize: 13, padding: '8px 20px' }}>
+              <Plus size={14} /> Add accommodation
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Selected place — note/badge/confirm all in one connected panel */}
+      {selected && (
+        <div style={{ marginTop: 16, border: '1px solid rgba(224,53,83,0.18)', borderRadius: 6, overflow: 'hidden' }}>
+          {/* Place header row */}
+          <div style={{ display: 'flex', gap: 12, padding: '12px 14px', alignItems: 'center', background: 'rgba(224,53,83,0.04)', borderBottom: '1px solid rgba(224,53,83,0.1)' }}>
+            {selected.photo_reference ? (
+              <img src={photoProxy(selected.photo_reference, 80)} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+            ) : (
+              <div style={{ width: 44, height: 44, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Hotel size={16} color="rgba(10,10,10,0.2)" />
+              </div>
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{selected.name}</p>
+              {selected.address && <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selected.address}</p>}
+            </div>
+            {selected.rating && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#0A0A0A', fontFamily: PJS, flexShrink: 0 }}>
+                <Star size={10} fill="#E03553" color="#E03553" /> {selected.rating}
+              </span>
+            )}
+            <button type="button" onClick={() => { setSelected(null); setQuery(''); setNote(''); setBadge(''); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              <X size={14} />
+            </button>
+          </div>
+
+          {/* Optional fields + confirm */}
+          <div style={{ padding: '14px 14px 16px', background: '#FFF' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px', marginBottom: 16 }}>
+              <div>
+                <label style={sectionLabel}>Note for guests <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+                <Input value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Use code WEDDING for 15% off…" />
+              </div>
+              <div>
+                <label style={sectionLabel}>Highlight badge <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+                <select value={badge} onChange={e => setBadge(e.target.value)}
+                  style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: badge ? '#0A0A0A' : 'rgba(10,10,10,0.4)', outline: 'none', cursor: 'pointer' }}>
+                  <option value="">No badge</option>
+                  {BADGE_OPTIONS.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button type="button" onClick={handleAdd} className="btn-primary" style={{ fontSize: 13, padding: '8px 20px' }}>
+                <Plus size={14} /> Add accommodation
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -231,7 +384,7 @@ function AddPlaceCard({ destination, onAdd }) {
 
 export default function GuestSuiteAccommodation() {
   const [details, setDetails] = useState(null);
-  const [places, setPlaces] = useState([]);     // owned state — never stale
+  const [places, setPlaces] = useState([]);
   const [detailsId, setDetailsId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -244,7 +397,6 @@ export default function GuestSuiteAccommodation() {
         const d = rows[0] || null;
         setDetails(d);
         setDetailsId(d?.id || null);
-        // Hydrate places from Base44 on every mount — source of truth
         setPlaces(d?.guestSuiteAccommodation?.places || []);
       })
       .catch(e => console.error('GuestSuiteAccommodation load error', e))
@@ -268,21 +420,16 @@ export default function GuestSuiteAccommodation() {
     setSaving(false);
   };
 
-  // Functional state update so concurrent adds always see the latest list
   const handleAdd = (place) => {
-    setPlaces(prev => {
-      const next = [...prev, { ...place, id: uid() }];
-      save(next);
-      return next;
-    });
+    const next = [...places, { ...place, id: uid() }];
+    setPlaces(next);
+    save(next);
   };
 
   const handleRemove = (id) => {
-    setPlaces(prev => {
-      const next = prev.filter(p => p.id !== id);
-      save(next);
-      return next;
-    });
+    const next = places.filter(p => p.id !== id);
+    setPlaces(next);
+    save(next);
   };
 
   const handleAddFromAva = async (suggestion) => {
@@ -307,11 +454,9 @@ export default function GuestSuiteAccommodation() {
         };
       }
     } catch {}
-    setPlaces(prev => {
-      const next = [...prev, enriched];
-      save(next);
-      return next;
-    });
+    const next = [...places, enriched];
+    setPlaces(next);
+    save(next);
     setAvaSuggestions(prev => prev.filter(s => s._avaId !== suggestion._avaId));
     toast.success(`${suggestion.name} added`);
   };
@@ -348,7 +493,6 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
         subtitle="Places to stay near the wedding venue"
         actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Saving…</span> : null}
       />
-
 
       <div style={{ padding: '32px 32px 80px' }}>
         {loading ? (
@@ -433,7 +577,6 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
                 </p>
               </div>
             )}
-
           </>
         )}
       </div>
