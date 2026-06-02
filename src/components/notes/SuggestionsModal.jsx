@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Brain, Loader2, Clock } from "lucide-react";
 import { InvokeLLM } from '@/integrations/Core';
-import { ThemeDetails } from '@/entities/ThemeDetails';
+import { base44 } from '@/api/base44Client';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -79,21 +79,21 @@ export default function SuggestionsModal({ isOpen, onClose, onAddSuggestion }) {
   const [themedSuggestions, setThemedSuggestions] = useState([]);
   const [loadingGeneral, setLoadingGeneral] = useState(false);
   const [loadingThemed, setLoadingThemed] = useState(false);
-  const [themeDetails, setThemeDetails] = useState(null);
+  const [weddingTheme, setWeddingTheme] = useState(null);
   const [added, setAdded] = useState(new Set());
 
   useEffect(() => {
     if (isOpen) {
       setAdded(new Set());
       loadGeneralSuggestions();
-      loadThemeDetails();
+      loadWeddingTheme();
     }
   }, [isOpen]);
 
-  const loadThemeDetails = async () => {
+  const loadWeddingTheme = async () => {
     try {
-      const themes = await ThemeDetails.list();
-      if (themes.length > 0) setThemeDetails(themes[0]);
+      const rows = await base44.entities.WeddingDetails.list();
+      if (rows.length > 0 && rows[0].theme) setWeddingTheme(rows[0].theme);
     } catch (e) { /* ignore */ }
   };
 
@@ -127,11 +127,21 @@ export default function SuggestionsModal({ isOpen, onClose, onAddSuggestion }) {
   };
 
   const loadThemedSuggestions = async () => {
-    if (!themeDetails) { setThemedSuggestions([]); return; }
+    if (!weddingTheme) { setThemedSuggestions([]); return; }
     setLoadingThemed(true);
+    const t = weddingTheme;
+    const faithLine = t.faith === 'Interfaith' && t.faithSecondary
+      ? `Interfaith: ${t.faithSecondary}`
+      : t.faith ? `Faith/religion: ${t.faith}` : '';
+    const cultureItems = [...(t.culture || []), t.cultureOther].filter(Boolean);
+    const cultureLine = cultureItems.length ? `Culture/heritage: ${cultureItems.join(', ')}` : '';
+    const aestheticLine = t.aesthetic?.length ? `Aesthetic: ${t.aesthetic.join(', ')}` : '';
+    const atmosphereLine = t.atmosphere?.length ? `Atmosphere: ${t.atmosphere.join(', ')}` : '';
+    const seasonLine = [t.season && `Season: ${t.season}`, t.setting && `Setting: ${t.setting}`].filter(Boolean).join('; ');
+    const themeContext = [faithLine, cultureLine, aestheticLine, atmosphereLine, seasonLine].filter(Boolean).join(' | ');
     try {
       const response = await InvokeLLM({
-        prompt: `Based on a wedding with vibes: ${themeDetails.vibes?.join(', ')}, season: ${themeDetails.season}, setting: ${themeDetails.setting}, religious: ${themeDetails.is_religious ? `yes, ${themeDetails.religious_details}` : 'no'}, cultural: ${themeDetails.is_cultural ? `yes, ${themeDetails.cultural_details}` : 'no'} — generate a comprehensive list of tailored wedding planning tasks organised by timeline. Make each task specific and actionable.`,
+        prompt: `Based on a wedding with these details: ${themeContext || 'general wedding'} — generate a comprehensive list of tailored wedding planning tasks organised by timeline. Make each task specific and culturally relevant (e.g. if Hindu faith, include mehendi, baraat; if Catholic, include pre-Cana; if Indian culture, include traditional elements). Be actionable.`,
         response_json_schema: {
           type: "object",
           properties: {
@@ -154,7 +164,7 @@ export default function SuggestionsModal({ isOpen, onClose, onAddSuggestion }) {
     setLoadingThemed(false);
   };
 
-  useEffect(() => { if (themeDetails) loadThemedSuggestions(); }, [themeDetails]);
+  useEffect(() => { if (weddingTheme) loadThemedSuggestions(); }, [weddingTheme]);
 
   const handleAdd = (suggestion) => {
     setAdded(prev => new Set([...prev, suggestion.title]));

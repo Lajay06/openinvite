@@ -1,17 +1,20 @@
 import { base44 } from '@/api/base44Client';
 
 export async function buildWeddingContext() {
-  const [guestsResult, budgetResult, vendorsResult, scheduleResult] = await Promise.allSettled([
+  const [guestsResult, budgetResult, vendorsResult, scheduleResult, wdResult] = await Promise.allSettled([
     base44.entities.Guest.list(),
     base44.entities.Budget.list(),
     base44.entities.Vendor.list(),
     base44.entities.Schedule.list(),
+    base44.entities.WeddingDetails.list(),
   ]);
 
   const guests   = guestsResult.status   === 'fulfilled' ? guestsResult.value   : [];
   const budget   = budgetResult.status   === 'fulfilled' ? budgetResult.value   : [];
   const vendors  = vendorsResult.status  === 'fulfilled' ? vendorsResult.value  : [];
   const schedule = scheduleResult.status === 'fulfilled' ? scheduleResult.value : [];
+  const wdRows   = wdResult.status       === 'fulfilled' ? wdResult.value       : [];
+  const theme    = wdRows[0]?.theme || {};
 
   const coupleName  = localStorage.getItem('oi_couple_name') || 'the couple';
   const weddingDate = localStorage.getItem('oi_wedding_date');
@@ -30,11 +33,30 @@ export async function buildWeddingContext() {
   const spent         = budget.reduce((s, b) => s + (b.spent_amount  || 0), 0);
   const bookedVendors = vendors.map(v => v.category).join(', ');
 
-  return `WEDDING CONTEXT:
+  // Build theme block — only include non-empty fields
+  const faithLine = theme.faith === 'Interfaith' && theme.faithSecondary
+    ? `Interfaith: ${theme.faithSecondary}`
+    : theme.faith ? `Faith/religion: ${theme.faith}` : '';
+  const cultureItems = [...(theme.culture || []), theme.cultureOther].filter(Boolean);
+  const cultureLine = cultureItems.length ? `Culture/heritage: ${cultureItems.join(', ')}` : '';
+  const themeLines = [
+    theme.aesthetic?.length  ? `Aesthetic: ${theme.aesthetic.join(', ')}` : '',
+    faithLine,
+    cultureLine,
+    theme.atmosphere?.length ? `Atmosphere: ${theme.atmosphere.join(', ')}` : '',
+    theme.season ? `Season: ${theme.season}` : '',
+    theme.setting ? `Setting: ${theme.setting}` : '',
+  ].filter(Boolean);
+
+  const themeBlock = themeLines.length
+    ? `\nWEDDING THEME:\n${themeLines.join('\n')}`
+    : '';
+
+  const ctx = `WEDDING CONTEXT:
 Couple: ${coupleName}
 Planner: ${user.full_name || 'Unknown'} (${user.email || ''})
 Wedding date: ${weddingDate || 'Not set'}${daysUntil !== null ? ` (${daysUntil} days away)` : ''}
-Location: ${city || 'Not set'}
+Location: ${city || 'Not set'}${themeBlock}
 
 GUESTS:
 Total: ${guests.length} | Confirmed: ${confirmed} | Pending: ${pending}
@@ -45,5 +67,8 @@ Total: $${totalBudget.toLocaleString()} | Spent: $${spent.toLocaleString()} (${t
 VENDORS BOOKED (${vendors.length}):
 ${bookedVendors || 'None yet'}
 
-SCHEDULE ITEMS: ${schedule.length}`.trim();
+SCHEDULE ITEMS: ${schedule.length}`;
+
+  console.log('[Ava context]\n' + ctx);
+  return ctx.trim();
 }

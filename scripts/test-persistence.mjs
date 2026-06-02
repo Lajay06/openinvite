@@ -213,6 +213,17 @@ const TEST_FIELDS = {
       }],
     },
   },
+  // ── Consolidated theme fields ─────────────────────────────────────────────
+  theme: {
+    aesthetic:      ['Classic', 'Romantic'],
+    faith:          'Interfaith',
+    faithSecondary: 'Catholic and Hindu',
+    culture:        ['Indian', 'Italian'],
+    cultureOther:   'Filipino-Australian',
+    atmosphere:     ['Intimate & relaxed', 'Formal & elegant'],
+    season:         'Autumn',
+    setting:        'Mix of both',
+  },
   polls: [
     {
       id: 'test-poll-1',
@@ -512,6 +523,47 @@ async function run() {
     results.push(isolated
       ? pass('sole-writer isolation', `mainCeremony.dressCode="${canonical}" unchanged after separate attire write`)
       : fail('sole-writer isolation', canonicalDressCode, canonical));
+  }
+
+  // ── 7b. Consolidated theme.* round-trip ──────────────────────────────────────
+  console.log('\n  Consolidated theme.* persistence tests:\n');
+  {
+    const written = TEST_FIELDS.theme;
+    const got     = record.theme;
+
+    const aestheticOk  = deepEqual(written.aesthetic, got?.aesthetic);
+    const faithOk      = got?.faith === written.faith;
+    const faithSecOk   = got?.faithSecondary === written.faithSecondary;
+    const cultureOk    = deepEqual(written.culture, got?.culture);
+    const cultureOtherOk = got?.cultureOther === written.cultureOther;
+    const atmosphereOk = deepEqual(written.atmosphere, got?.atmosphere);
+    const seasonOk     = got?.season === written.season;
+    const settingOk    = got?.setting === written.setting;
+
+    results.push(aestheticOk
+      ? pass('theme.aesthetic', JSON.stringify(got?.aesthetic))
+      : fail('theme.aesthetic', written.aesthetic, got?.aesthetic));
+    results.push(faithOk
+      ? pass('theme.faith', got?.faith)
+      : fail('theme.faith', written.faith, got?.faith));
+    results.push(faithSecOk
+      ? pass('theme.faithSecondary (Interfaith)', got?.faithSecondary)
+      : fail('theme.faithSecondary', written.faithSecondary, got?.faithSecondary));
+    results.push(cultureOk
+      ? pass('theme.culture', JSON.stringify(got?.culture))
+      : fail('theme.culture', written.culture, got?.culture));
+    results.push(cultureOtherOk
+      ? pass('theme.cultureOther', got?.cultureOther)
+      : fail('theme.cultureOther', written.cultureOther, got?.cultureOther));
+    results.push(atmosphereOk
+      ? pass('theme.atmosphere', JSON.stringify(got?.atmosphere))
+      : fail('theme.atmosphere', written.atmosphere, got?.atmosphere));
+    results.push(seasonOk
+      ? pass('theme.season', got?.season)
+      : fail('theme.season', written.season, got?.season));
+    results.push(settingOk
+      ? pass('theme.setting', got?.setting)
+      : fail('theme.setting', written.setting, got?.setting));
   }
 
   // ── 8. Sequential append test (catches the "second add overwrites first" bug) ──

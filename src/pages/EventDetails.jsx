@@ -22,11 +22,74 @@ const GUEST_TYPES = [
   { id: 'grand',       label: 'Grand',       range: '150+',     desc: 'Big and festive' },
 ];
 
-const STYLE_GROUPS = [
-  { label: 'Style', options: ['Traditional', 'Modern', 'Minimalist', 'Maximalist', 'Bohemian', 'Luxury'] },
-  { label: 'Cultural / religious', options: ['Christian', 'Catholic', 'Jewish', 'Muslim', 'Hindu', 'Sikh', 'Buddhist', 'Civil', 'Cultural Fusion', 'Non-religious'] },
-  { label: 'Vibe', options: ['Intimate & romantic', 'Party & dancing', 'Outdoor & nature', 'Destination', 'Multi-day', 'Elopement'] },
-];
+// ── Theme migration helpers ────────────────────────────────────────────────────
+// Maps old weddingStyle[] flat array and legacy theme.* into the consolidated theme.
+// Runs once on mount, only fills empty fields — never overwrites existing values.
+
+const _STYLE_TO_AESTHETIC = { Traditional:'Classic', Modern:'Modern', Minimalist:'Minimalist', Bohemian:'Boho', Luxury:'Luxury' };
+const _STYLE_TO_FAITH = {
+  Christian:'Christian', Catholic:'Catholic', Jewish:'Jewish', Muslim:'Muslim',
+  Hindu:'Hindu', Sikh:'Sikh', Buddhist:'Buddhist', 'Non-religious':'Non-religious',
+  'Cultural Fusion':'Interfaith', Civil:'Non-religious',
+};
+const _STYLE_TO_ATMOSPHERE = {
+  'Intimate & romantic':'Intimate & relaxed', 'Party & dancing':'Big party',
+  'Outdoor & nature':'Outdoor & nature', Destination:'Destination',
+  'Multi-day':'Multi-day', Elopement:'Intimate & relaxed',
+};
+const _VIBE_TO_AESTHETIC = {
+  Romantic:'Romantic', Modern:'Modern', Classic:'Classic', Rustic:'Rustic',
+  Boho:'Boho', Glamorous:'Glamorous', Vintage:'Vintage', Minimalist:'Minimalist',
+  Garden:'Garden', Beach:'Beach',
+};
+const _KNOWN_CULTURES = ['Indian','Chinese','Vietnamese','Korean','Filipino','Greek','Italian','Lebanese/Arabic','Persian','Pacific Islander','Latin American','African'];
+const _SETTING_MAP = { Both:'Mix of both' };
+const _FAITH_ORDER = ['Hindu','Muslim','Sikh','Jewish','Catholic','Christian','Buddhist','Non-religious','Cultural Fusion','Civil'];
+
+function migrateThemeFields(wd, tdEntity) {
+  const existing = wd?.theme || {};
+  const ws = wd?.weddingStyle || [];
+  const td = tdEntity || {};
+  let next = { ...existing };
+
+  if (!next.aesthetic?.length) {
+    const fromWS    = ws.flatMap(s => _STYLE_TO_AESTHETIC[s] ? [_STYLE_TO_AESTHETIC[s]] : []);
+    const fromVibes = (existing.vibes || td.vibes || []).flatMap(v => _VIBE_TO_AESTHETIC[v] ? [_VIBE_TO_AESTHETIC[v]] : []);
+    const combined  = [...new Set([...fromWS, ...fromVibes])].filter(Boolean);
+    if (combined.length) next.aesthetic = combined;
+  }
+
+  if (!next.faith) {
+    for (const opt of _FAITH_ORDER) {
+      if (ws.includes(opt) && _STYLE_TO_FAITH[opt]) { next.faith = _STYLE_TO_FAITH[opt]; break; }
+    }
+    if (!next.faith) {
+      const src = existing.is_religious !== undefined ? existing : td;
+      if (src.is_religious && src.religious_details) next.faith = src.religious_details;
+    }
+  }
+
+  if (!next.culture?.length && !next.cultureOther) {
+    const src = existing.is_cultural !== undefined ? existing : td;
+    if (src.is_cultural && src.cultural_details) {
+      if (_KNOWN_CULTURES.includes(src.cultural_details)) next.culture = [src.cultural_details];
+      else if (src.cultural_details) next.cultureOther = src.cultural_details;
+    }
+  }
+
+  if (!next.atmosphere?.length) {
+    const fromWS = ws.flatMap(s => _STYLE_TO_ATMOSPHERE[s] ? [_STYLE_TO_ATMOSPHERE[s]] : []);
+    if (fromWS.length) next.atmosphere = [...new Set(fromWS)];
+  }
+
+  if (!next.season) next.season = existing.season || td.season || '';
+  if (!next.setting) {
+    const raw = existing.setting || td.setting || '';
+    next.setting = _SETTING_MAP[raw] || raw;
+  }
+
+  return next;
+}
 
 const PRE_WEDDING_TYPES  = ['Engagement Party', 'Bridal Shower', 'Bachelor Party', 'Bachelorette Party', 'Rehearsal Dinner', 'Welcome Cocktails', 'Other'];
 const POST_WEDDING_TYPES = ['After Party', 'Next-Day Brunch', 'Farewell Brunch', 'Thank You Reception', 'Other'];
@@ -523,8 +586,12 @@ export default function EventDetailsPage() {
   const [showAddForm, setShowAddForm] = useState(false);
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list().then(rows => {
-      const r = rows[0] || {};
+    Promise.all([
+      base44.entities.WeddingDetails.list(),
+      (base44.entities.ThemeDetails?.list() || Promise.resolve([])).catch(() => []),
+    ]).then(([wdRows, tdRows]) => {
+      const r  = wdRows[0] || {};
+      const td = tdRows[0] || null;
       setRecord(r);
       setRecordId(r.id || null);
       latestRef.current = r;
@@ -537,6 +604,31 @@ export default function EventDetailsPage() {
           .catch(e => console.warn('Dress code promotion failed:', e));
         setRecord(promoted);
         latestRef.current = promoted;
+      }
+
+      // One-time theme migration: fold weddingStyle[] + legacy theme.* + ThemeDetails entity
+      // into the consolidated WeddingDetails.theme.* fields.
+      // Only runs when the new fields are all empty (first load after this deploy).
+      if (r.id) {
+        const existing = r.theme || {};
+        const needsMigration = !existing.aesthetic?.length && !existing.faith && !existing.atmosphere?.length;
+        if (needsMigration) {
+          const migratedTheme = migrateThemeFields(r, td);
+          const hasChanges =
+            migratedTheme.aesthetic?.length ||
+            migratedTheme.faith ||
+            migratedTheme.atmosphere?.length ||
+            migratedTheme.season ||
+            migratedTheme.setting;
+          if (hasChanges) {
+            console.log('[Theme migration] Promoting old data:', migratedTheme);
+            base44.entities.WeddingDetails.update(r.id, { theme: migratedTheme })
+              .catch(e => console.warn('Theme migration failed:', e));
+            const migrated = { ...r, theme: migratedTheme };
+            setRecord(migrated);
+            latestRef.current = migrated;
+          }
+        }
       }
     }).catch(() => setLoading(false));
   }, []);
@@ -603,17 +695,11 @@ export default function EventDetailsPage() {
     </div>
   );
 
-  const r      = record || {};
-  const mc     = r.mainCeremony || {};
-  const rc     = r.reception    || {};
-  const styles = r.weddingStyle || [];
-  const theme  = { ...DEFAULT_THEME, ...(r.theme || {}) };
+  const r            = record || {};
+  const mc           = r.mainCeremony || {};
+  const rc           = r.reception    || {};
+  const theme        = r.theme || {};
   const locationBias = mc.address || '';
-
-  const toggleStyle = (s) => {
-    const arr = r.weddingStyle || [];
-    update({ weddingStyle: arr.includes(s) ? arr.filter(x => x !== s) : [...arr, s] });
-  };
 
   const preEvents  = r.preWeddingEvents  || [];
   const postEvents = r.postWeddingEvents || [];
@@ -679,25 +765,6 @@ export default function EventDetailsPage() {
             })}
           </div>
           <UInput label="Exact guest count" type="number" value={r.guestCount} onChange={e => update({ guestCount: e.target.value })} placeholder="e.g. 120" />
-
-          <div style={divider} />
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS, textAlign: 'center' }}>Wedding style</p>
-          {STYLE_GROUPS.map(group => (
-            <div key={group.label} style={{ marginBottom: 20 }}>
-              <div style={{ ...sLabel, marginBottom: 10 }}>{group.label}</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {group.options.map(s => {
-                  const sel = styles.includes(s);
-                  return (
-                    <button key={s} onClick={() => toggleStyle(s)}
-                      style={{ padding: '6px 14px', borderRadius: 999, border: `1px solid ${sel ? '#0A0A0A' : 'rgba(10,10,10,0.18)'}`, background: sel ? '#0A0A0A' : 'transparent', color: sel ? '#FFFFFF' : '#0A0A0A', fontSize: 12, fontWeight: 600, fontFamily: PJS, cursor: 'pointer', transition: 'all 0.15s' }}>
-                      {s}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
         </div>
       )}
 
@@ -783,8 +850,14 @@ export default function EventDetailsPage() {
         <div style={{ padding: '32px 32px 80px', maxWidth: 640, margin: '0 auto' }}>
           <ThemeSection
             theme={theme}
-            onThemeChange={(key, value) => updateNested('theme', { [key]: value })}
-            onSave={triggerAutoSave}
+            onSave={(nextTheme) => {
+              setRecord(prev => {
+                const next = { ...prev, theme: nextTheme };
+                latestRef.current = next;
+                return next;
+              });
+              triggerAutoSave();
+            }}
           />
         </div>
       )}

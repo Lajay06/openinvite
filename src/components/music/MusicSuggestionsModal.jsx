@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Music, Heart, Loader2 } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
-import { ThemeDetails } from '@/entities/ThemeDetails';
+import { base44 } from '@/api/base44Client';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -90,21 +90,19 @@ export default function MusicSuggestionsModal({ isOpen, onClose, onAddSuggestion
   const [themedSuggestions, setThemedSuggestions] = useState([]);
   const [loadingGeneral, setLoadingGeneral] = useState(false);
   const [loadingThemed, setLoadingThemed] = useState(false);
-  const [themeDetails, setThemeDetails] = useState(null);
+  const [weddingTheme, setWeddingTheme] = useState(null);
 
   useEffect(() => {
     if (!isOpen) return;
     loadGeneralSuggestions();
-    loadThemeDetails();
+    loadWeddingTheme();
   }, [isOpen]);
 
-  const loadThemeDetails = async () => {
+  const loadWeddingTheme = async () => {
     try {
-      const themes = await ThemeDetails.list();
-      if (themes.length > 0) setThemeDetails(themes[0]);
-    } catch (e) {
-      console.error(e);
-    }
+      const rows = await base44.entities.WeddingDetails.list();
+      if (rows.length > 0 && rows[0].theme) setWeddingTheme(rows[0].theme);
+    } catch {}
   };
 
   const loadGeneralSuggestions = async () => {
@@ -125,11 +123,25 @@ export default function MusicSuggestionsModal({ isOpen, onClose, onAddSuggestion
   };
 
   const loadThemedSuggestions = async () => {
-    if (!themeDetails) return;
+    if (!weddingTheme) return;
     setLoadingThemed(true);
+    const t = weddingTheme;
+    const faithLine = t.faith === 'Interfaith' && t.faithSecondary
+      ? `Interfaith: ${t.faithSecondary}`
+      : t.faith ? `Faith/religion: ${t.faith}` : '';
+    const cultureItems = [...(t.culture || []), t.cultureOther].filter(Boolean);
+    const cultureLine = cultureItems.length ? `Culture/heritage: ${cultureItems.join(', ')}` : '';
+    const themeContext = [
+      t.aesthetic?.length ? `Aesthetic: ${t.aesthetic.join(', ')}` : '',
+      faithLine,
+      cultureLine,
+      t.atmosphere?.length ? `Atmosphere: ${t.atmosphere.join(', ')}` : '',
+      t.season ? `Season: ${t.season}` : '',
+      t.setting ? `Setting: ${t.setting}` : '',
+    ].filter(Boolean).join(' | ');
     try {
       const res = await InvokeLLM({
-        prompt: `Wedding theme: vibes=${themeDetails.vibes?.join(', ')}, season=${themeDetails.season}, setting=${themeDetails.setting}. Suggest themed wedding songs. For each: song_title, artist, category, notes.`,
+        prompt: `Wedding theme: ${themeContext || 'general wedding'}. Suggest themed wedding songs that match the aesthetic, faith, culture, and atmosphere. For each: song_title, artist, category (ceremony/cocktail_hour/dinner/dancing/special_moments), notes.`,
         response_json_schema: {
           type: 'object',
           properties: { songs: { type: 'array', items: { type: 'object', properties: { song_title: { type: 'string' }, artist: { type: 'string' }, category: { type: 'string' }, notes: { type: 'string' } } } } }
@@ -143,8 +155,8 @@ export default function MusicSuggestionsModal({ isOpen, onClose, onAddSuggestion
   };
 
   useEffect(() => {
-    if (themeDetails) loadThemedSuggestions();
-  }, [themeDetails]);
+    if (weddingTheme) loadThemedSuggestions();
+  }, [weddingTheme]);
 
   if (!isOpen) return null;
 
