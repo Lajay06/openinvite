@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Search, X, Star, MapPin, Loader2, Globe, Plus, Heart, Clock } from 'lucide-react';
+import { Search, X, Star, MapPin, Loader2, Globe, Plus, Heart, Clock, Navigation, ExternalLink } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -106,6 +106,7 @@ export default function ExperienceGuideTab({ details }) {
       price_level: place.price_level,
       photo_ref: place.photo_reference || place.photo_ref || null,
       maps_url: place.maps_url,
+      website_url: place.website_url || null,
       note: note || '',
       is_couple_pick: isCouplePick,
     };
@@ -271,24 +272,35 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
   const [isCouplePick, setIsCouplePick] = useState(false);
   const [filterCat, setFilterCat] = useState('all');
   const debounceRef = useRef(null);
-  const dropdownRef = useRef(null);
+
+  // Geolocation — transient bias only, never persisted
+  const [geoState, setGeoState] = useState('idle'); // idle | loading | active | error | unavailable
+  const geoCoordsRef = useRef(null);
+
+  // Manual entry
+  const [showManual, setShowManual] = useState(false);
+  const [manualName, setManualName] = useState('');
+  const [manualAddress, setManualAddress] = useState('');
+  const [manualUrl, setManualUrl] = useState('');
+  const [manualNote, setManualNote] = useState('');
+  const [manualCat, setManualCat] = useState(CATEGORIES[0].key);
+  const [manualCouplePick, setManualCouplePick] = useState(false);
 
   const handleSearch = async (q) => {
     if (!q.trim() || q.trim().length < 2) { setResults([]); setShowDropdown(false); return; }
     setSearching(true);
     try {
       const loc = destination !== 'Set your venue in Event Details' ? destination : '';
+      const body = { q: q.trim(), location: loc };
+      if (geoCoordsRef.current) { body.lat = geoCoordsRef.current.lat; body.lng = geoCoordsRef.current.lng; }
       const res = await fetch('/api/places-search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: q.trim(), location: loc }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       setResults(data.places || []);
       setShowDropdown(true);
-    } catch {
-      toast.error('Search failed');
-    }
+    } catch { toast.error('Search failed'); }
     setSearching(false);
   };
 
@@ -305,16 +317,43 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
     setQuery(place.name);
     setShowDropdown(false);
     setResults([]);
+    setShowManual(false);
   };
 
   const handleAdd = () => {
     if (!selectedPlace) { toast.error('Search for and select a place first'); return; }
     onAddPlace(selectedPlace, selectedCat, note, isCouplePick);
-    setSelectedPlace(null);
-    setQuery('');
-    setNote('');
-    setIsCouplePick(false);
+    setSelectedPlace(null); setQuery(''); setNote(''); setIsCouplePick(false);
   };
+
+  const handleManualAdd = () => {
+    if (!manualName.trim()) { toast.error('Name is required'); return; }
+    const manualPlace = {
+      place_id: uid(),
+      name: manualName.trim(),
+      address: manualAddress.trim() || '',
+      rating: null, price_level: null, photo_reference: null,
+      maps_url: manualAddress.trim()
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(manualAddress.trim())}`
+        : null,
+      website_url: manualUrl.trim() || null,
+    };
+    onAddPlace(manualPlace, manualCat, manualNote, manualCouplePick);
+    setManualName(''); setManualAddress(''); setManualUrl(''); setManualNote('');
+    setManualCat(CATEGORIES[0].key); setManualCouplePick(false); setShowManual(false);
+  };
+
+  const handleUseLocation = () => {
+    if (!navigator.geolocation) { setGeoState('unavailable'); return; }
+    setGeoState('loading');
+    navigator.geolocation.getCurrentPosition(
+      pos => { geoCoordsRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude }; setGeoState('active'); },
+      err => { console.warn('[Geolocation]', err.message); setGeoState('error'); },
+      { timeout: 8000, maximumAge: 300000 }
+    );
+  };
+
+  const clearGeo = () => { geoCoordsRef.current = null; setGeoState('idle'); };
 
   const visiblePlaces = filterCat === 'all'
     ? allSavedPlaces
@@ -324,132 +363,195 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
     <div>
       {/* Add a place card */}
       <div style={{ border: '1px solid rgba(10,10,10,0.1)', borderRadius: 8, padding: '20px 24px', marginBottom: 40, maxWidth: 760 }}>
-        <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 20px' }}>Add a place</p>
+        <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 16px' }}>Add a place</p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px 24px', marginBottom: 16 }}>
-          {/* Search with dropdown */}
-          <div style={{ position: 'relative' }} ref={dropdownRef}>
-            <label style={sectionLabel}>Search Google Places</label>
-            <div style={{ position: 'relative' }}>
-              <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
-              <Input
-                value={query}
-                onChange={handleQueryChange}
-                onFocus={() => results.length > 0 && setShowDropdown(true)}
-                placeholder="e.g. rooftop bar, ramen..."
-                style={{ paddingLeft: 20 }}
-              />
-              {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
-              {selectedPlace && !searching && (
-                <button
-                  onClick={() => { setSelectedPlace(null); setQuery(''); }}
-                  style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}
-                >
-                  <X size={13} />
+        {/* Search */}
+        <div style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Search Google Places</span>
+            {geoState === 'idle' && (
+              <button type="button" onClick={handleUseLocation}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: 0 }}>
+                <Navigation size={11} /> Use my location
+              </button>
+            )}
+            {geoState === 'loading' && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> Getting location…
+              </span>
+            )}
+            {geoState === 'active' && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: '#E03553', fontFamily: PJS }}>
+                <Navigation size={11} /> Using your location
+                <button type="button" onClick={clearGeo}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: '0 0 0 2px', display: 'flex', alignItems: 'center' }}>
+                  <X size={11} />
                 </button>
-              )}
-            </div>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
-            {/* Autocomplete dropdown */}
-            {showDropdown && results.length > 0 && (
-              <div style={{
-                position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
-                background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)',
-                borderRadius: 6, marginTop: 4, overflow: 'hidden',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-                maxHeight: 320, overflowY: 'auto',
-              }}>
-                {results.map((place, i) => (
-                  <button
-                    key={place.place_id}
-                    onClick={() => handleSelectResult(place)}
-                    style={{
-                      width: '100%', display: 'flex', gap: 10, padding: '10px 12px',
-                      alignItems: 'center', background: '#FFFFFF', border: 'none',
-                      borderBottom: i < results.length - 1 ? '1px solid rgba(10,10,10,0.05)' : 'none',
-                      cursor: 'pointer', textAlign: 'left',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.03)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#FFFFFF'; }}
-                  >
-                    {place.photo_reference ? (
-                      <img src={photoProxyUrl(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
-                    ) : (
-                      <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <MapPin size={12} color="rgba(10,10,10,0.2)" />
-                      </div>
-                    )}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{place.name}</p>
-                      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
-                    </div>
-                    {place.rating && (
-                      <span style={{ fontSize: 11, color: '#0A0A0A', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-                        <Star size={9} fill="#E03553" color="#E03553" /> {place.rating}
-                      </span>
-                    )}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setShowDropdown(false)}
-                  style={{ width: '100%', padding: '8px 12px', background: 'rgba(10,10,10,0.02)', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}
-                >
-                  Close
-                </button>
-              </div>
+              </span>
+            )}
+            {geoState === 'error' && (
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                Couldn't get location —{' '}
+                <button type="button" onClick={handleUseLocation}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
+              </span>
+            )}
+            {geoState === 'unavailable' && (
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Location not available</span>
             )}
           </div>
 
-          {/* Category */}
-          <div>
-            <label style={sectionLabel}>Category</label>
-            <select
-              value={selectedCat}
-              onChange={e => setSelectedCat(e.target.value)}
-              style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid #0A0A0A', borderRadius: 0, padding: '10px 0', fontSize: 14, fontWeight: 600, fontFamily: PJS, color: '#0A0A0A', outline: 'none', cursor: 'pointer' }}
-            >
-              {CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
-            </select>
+          <div style={{ position: 'relative' }}>
+            <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+            <Input value={query} onChange={handleQueryChange} onFocus={() => results.length > 0 && setShowDropdown(true)}
+              placeholder="e.g. rooftop bar, ramen…" style={{ paddingLeft: 20 }} />
+            {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
+            {selectedPlace && !searching && (
+              <button type="button" onClick={() => { setSelectedPlace(null); setQuery(''); setNote(''); setIsCouplePick(false); }}
+                style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
+                <X size={13} />
+              </button>
+            )}
           </div>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-          {/* Note */}
-          <div>
-            <label style={sectionLabel}>Note for guests <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
-            <Input value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Ask for the corner table..." />
-          </div>
-
-          {/* Couple's pick + Add button */}
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>Couple's pick</span>
-              <Switch checked={isCouplePick} onCheckedChange={setIsCouplePick} />
+          {showDropdown && results.length > 0 && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, marginTop: 4, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', maxHeight: 320, overflowY: 'auto' }}>
+              {results.map((place, i) => (
+                <button key={place.place_id} onClick={() => handleSelectResult(place)}
+                  style={{ width: '100%', display: 'flex', gap: 10, padding: '10px 12px', alignItems: 'center', background: '#FFFFFF', border: 'none', borderBottom: i < results.length - 1 ? '1px solid rgba(10,10,10,0.05)' : 'none', cursor: 'pointer', textAlign: 'left' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.03)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#FFFFFF'; }}
+                >
+                  {place.photo_reference ? (
+                    <img src={photoProxyUrl(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                  ) : (
+                    <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <MapPin size={12} color="rgba(10,10,10,0.2)" />
+                    </div>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{place.name}</p>
+                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
+                  </div>
+                  {place.rating && (
+                    <span style={{ fontSize: 11, color: '#0A0A0A', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
+                      <Star size={9} fill="#E03553" color="#E03553" /> {place.rating}
+                    </span>
+                  )}
+                </button>
+              ))}
+              <button onClick={() => setShowDropdown(false)}
+                style={{ width: '100%', padding: '8px 12px', background: 'rgba(10,10,10,0.02)', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                Close
+              </button>
             </div>
-            <button
-              onClick={handleAdd}
-              className="btn-primary"
-              style={{ width: '100%', justifyContent: 'center', fontSize: 13, padding: '9px 0' }}
-            >
-              <Plus size={14} /> Add place
-            </button>
-          </div>
+          )}
         </div>
 
-        {/* Selected place preview */}
-        {selectedPlace && (
-          <div style={{ display: 'flex', gap: 10, padding: '10px 12px', background: 'rgba(224,53,83,0.04)', borderRadius: 6, border: '1px solid rgba(224,53,83,0.15)', alignItems: 'center', marginTop: 8 }}>
-            {selectedPlace.photo_reference ? (
-              <img src={photoProxyUrl(selectedPlace.photo_reference, 60)} alt="" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
-            ) : (
-              <div style={{ width: 40, height: 40, background: 'rgba(10,10,10,0.06)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <MapPin size={14} color="rgba(10,10,10,0.25)" />
+        {/* Add manually toggle — hidden when a place is selected */}
+        {!selectedPlace && (
+          <div style={{ marginTop: 10 }}>
+            <button type="button" onClick={() => setShowManual(m => !m)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, padding: 0, fontWeight: 600 }}>
+              {showManual ? '← Back to search' : 'Add manually'}
+            </button>
+          </div>
+        )}
+
+        {/* Manual entry form */}
+        {!selectedPlace && showManual && (
+          <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '16px 16px 18px' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
+              <div>
+                <label style={sectionLabel}>Name</label>
+                <Input value={manualName} onChange={e => setManualName(e.target.value)} placeholder="e.g. Uncle Billy's Bakehouse" />
               </div>
-            )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{selectedPlace.name}</p>
-              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS }}>{selectedPlace.address}</p>
+              <div>
+                <label style={sectionLabel}>Category</label>
+                <select value={manualCat} onChange={e => setManualCat(e.target.value)}
+                  style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', outline: 'none', cursor: 'pointer' }}>
+                  {CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={sectionLabel}>Address <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+                <Input value={manualAddress} onChange={e => setManualAddress(e.target.value)} placeholder="e.g. 12 Crown St, Sydney NSW" />
+              </div>
+              <div>
+                <label style={sectionLabel}>Link <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional — website, booking…)</span></label>
+                <Input value={manualUrl} onChange={e => setManualUrl(e.target.value)} placeholder="https://…" />
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={sectionLabel}>Note for guests <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+                <Input value={manualNote} onChange={e => setManualNote(e.target.value)} placeholder="e.g. Go for the sourdough, it's worth the queue" />
+              </div>
+              <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>Couple's pick</span>
+                <Switch checked={manualCouplePick} onCheckedChange={setManualCouplePick} />
+              </div>
             </div>
-            <span style={{ fontSize: 11, color: '#E03553', fontWeight: 600, fontFamily: PJS, flexShrink: 0 }}>Selected</span>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button type="button" onClick={handleManualAdd} className="btn-primary" style={{ fontSize: 13, padding: '8px 20px' }}>
+                <Plus size={14} /> Add place
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Selected place — category/note/couple's pick/confirm all co-located */}
+        {selectedPlace && (
+          <div style={{ marginTop: 16, border: '1px solid rgba(224,53,83,0.18)', borderRadius: 6, overflow: 'hidden' }}>
+            {/* Place header row */}
+            <div style={{ display: 'flex', gap: 12, padding: '12px 14px', alignItems: 'center', background: 'rgba(224,53,83,0.04)', borderBottom: '1px solid rgba(224,53,83,0.1)' }}>
+              {selectedPlace.photo_reference ? (
+                <img src={photoProxyUrl(selectedPlace.photo_reference, 80)} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+              ) : (
+                <div style={{ width: 44, height: 44, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <MapPin size={16} color="rgba(10,10,10,0.2)" />
+                </div>
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{selectedPlace.name}</p>
+                {selectedPlace.address && <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedPlace.address}</p>}
+              </div>
+              {selectedPlace.rating && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#0A0A0A', fontFamily: PJS, flexShrink: 0 }}>
+                  <Star size={10} fill="#E03553" color="#E03553" /> {selectedPlace.rating}
+                </span>
+              )}
+              <button type="button" onClick={() => { setSelectedPlace(null); setQuery(''); setNote(''); setIsCouplePick(false); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Category + note + couple's pick + confirm */}
+            <div style={{ padding: '14px 14px 16px', background: '#FFF' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px', marginBottom: 14 }}>
+                <div>
+                  <label style={sectionLabel}>Category</label>
+                  <select value={selectedCat} onChange={e => setSelectedCat(e.target.value)}
+                    style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', outline: 'none', cursor: 'pointer' }}>
+                    {CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={sectionLabel}>Note for guests <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
+                  <Input value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Ask for the corner table…" />
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>Couple's pick</span>
+                  <Switch checked={isCouplePick} onCheckedChange={setIsCouplePick} />
+                </div>
+                <button type="button" onClick={handleAdd} className="btn-primary" style={{ fontSize: 13, padding: '8px 20px' }}>
+                  <Plus size={14} /> Add place
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -566,10 +668,24 @@ function SavedPlaceCard({ place, onRemove }) {
         </div>
 
         {place.note && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.5)', margin: 0, fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.4 }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.5)', margin: '0 0 6px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.4 }}>
             "{place.note}"
           </p>
         )}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {place.maps_url && (
+            <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
+              <ExternalLink size={10} /> View on maps
+            </a>
+          )}
+          {place.website_url && (
+            <a href={place.website_url} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}>
+              <ExternalLink size={10} /> Website / link
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
