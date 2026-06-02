@@ -117,21 +117,57 @@ function writtenSubsetMatches(written, readBack) {
 const TEST_FIELDS = {
   // ── Event Details canonical fields (new refactor) ─────────────────────────
   mainCeremony: {
-    venueName:   'Test Ceremony Venue',
-    address:     '1 Ceremony Lane, Sydney NSW 2000',
-    startTime:   '14:00',
-    endTime:     '15:00',
-    dressCode:   'Black tie',
-    parkingInfo: 'Street parking on Church St',
+    venueName:          'Test Ceremony Venue',
+    address:            '1 Ceremony Lane, Sydney NSW 2000',
+    placeId:            'test-place-id-ceremony',
+    mapsUrl:            'https://maps.google.com/?q=test-ceremony',
+    photoUrl:           '/api/places-photo?ref=test-ceremony-ref&maxwidth=600',
+    startTime:          '14:00',
+    endTime:            '15:00',
+    dressCode:          'Black tie',
+    parkingInfo:        'Street parking on Church St',
+    accessibilityNotes: 'Wheelchair access via north gate',
+    notes:              'Ceremony runs approximately 40 minutes',
   },
   reception: {
-    venueName:   'Test Reception Hall',
-    address:     '2 Reception Rd, Sydney NSW 2000',
-    startTime:   '17:30',
-    endTime:     '23:00',
-    dressCode:   'Cocktail',
-    parkingInfo: 'On-site parking available',
+    venueName:          'Test Reception Hall',
+    address:            '2 Reception Rd, Sydney NSW 2000',
+    placeId:            'test-place-id-reception',
+    mapsUrl:            'https://maps.google.com/?q=test-reception',
+    photoUrl:           '/api/places-photo?ref=test-reception-ref&maxwidth=600',
+    startTime:          '17:30',
+    endTime:            '23:00',
+    dressCode:          'Cocktail',
+    parkingInfo:        'On-site parking available',
+    accessibilityNotes: 'Step-free access throughout',
+    notes:              'Cocktail hour from 5:30, dinner at 7:00',
   },
+  // Custom event in preWeddingEvents — full new field set
+  preWeddingEvents: [
+    {
+      id:               'test-pre-1',
+      name:             'Welcome Dinner',
+      type:             'Rehearsal Dinner',
+      date:             '2025-11-13',
+      startTime:        '18:30',
+      endTime:          '21:30',
+      venueName:        'Test Restaurant',
+      venueAddress:     '10 Harbour St, Sydney NSW 2000',
+      venueMapsUrl:     'https://maps.google.com/?q=test-restaurant',
+      venuePhotoUrl:    null,
+      venuePlaceId:     'test-restaurant-place-id',
+      dressCode:        'Smart casual',
+      parkingInfo:      'Street parking available',
+      accessibilityNotes: 'Ground floor, fully accessible',
+      details:          'Family and close friends only',
+      // legacy compat
+      venue:   'Test Restaurant',
+      address: '10 Harbour St, Sydney NSW 2000',
+      time:    '18:30',
+      notes:   'Family and close friends only',
+      isCustomType: false,
+    },
+  ],
   guestSuiteAccommodation: {
     places: [{ id: 'test-hotel-1', name: 'Test Hotel Sydney', address: '1 Test St', rating: 4.5, note: 'persistence check' }],
   },
@@ -352,7 +388,7 @@ async function run() {
       : fail('polls', written, got));
   }
 
-  // ── 7. Event Details canonical field tests (data-model refactor) ─────────────
+  // ── 7. Event Details canonical field tests (data-model refactor + redesign) ─────
   console.log('\n  Event Details canonical field tests:\n');
 
   // mainCeremony.dressCode — written via EventDetails path, must round-trip
@@ -389,6 +425,68 @@ async function run() {
     results.push(written === got
       ? pass('reception.endTime', `"${got}"`)
       : fail('reception.endTime', written, got));
+  }
+
+  // mainCeremony.photoUrl — new schema field for venue photo
+  {
+    const written = TEST_FIELDS.mainCeremony.photoUrl;
+    const got     = record.mainCeremony?.photoUrl;
+    results.push(written === got
+      ? pass('mainCeremony.photoUrl', `"${got}"`)
+      : fail('mainCeremony.photoUrl', written, got));
+  }
+
+  // mainCeremony.mapsUrl — new schema field
+  {
+    const written = TEST_FIELDS.mainCeremony.mapsUrl;
+    const got     = record.mainCeremony?.mapsUrl;
+    results.push(written === got
+      ? pass('mainCeremony.mapsUrl', `"${got}"`)
+      : fail('mainCeremony.mapsUrl', written, got));
+  }
+
+  // mainCeremony.placeId — new schema field
+  {
+    const written = TEST_FIELDS.mainCeremony.placeId;
+    const got     = record.mainCeremony?.placeId;
+    results.push(written === got
+      ? pass('mainCeremony.placeId', `"${got}"`)
+      : fail('mainCeremony.placeId', written, got));
+  }
+
+  // reception.photoUrl + mapsUrl + placeId
+  {
+    const pOk = record.reception?.photoUrl === TEST_FIELDS.reception.photoUrl;
+    const mOk = record.reception?.mapsUrl  === TEST_FIELDS.reception.mapsUrl;
+    const iOk = record.reception?.placeId  === TEST_FIELDS.reception.placeId;
+    if (pOk && mOk && iOk) {
+      results.push(pass('reception.photoUrl/mapsUrl/placeId', 'all three new fields'));
+    } else {
+      if (!pOk) results.push(fail('reception.photoUrl',  TEST_FIELDS.reception.photoUrl,  record.reception?.photoUrl));
+      if (!mOk) results.push(fail('reception.mapsUrl',   TEST_FIELDS.reception.mapsUrl,   record.reception?.mapsUrl));
+      if (!iOk) results.push(fail('reception.placeId',   TEST_FIELDS.reception.placeId,   record.reception?.placeId));
+    }
+  }
+
+  // Custom event in preWeddingEvents — full new field set
+  {
+    const written  = TEST_FIELDS.preWeddingEvents[0];
+    const gotArray = record.preWeddingEvents || [];
+    const got      = gotArray.find(e => e.id === written.id);
+    const fieldsOk = got &&
+      got.startTime         === written.startTime &&
+      got.endTime           === written.endTime &&
+      got.venueName         === written.venueName &&
+      got.venueAddress      === written.venueAddress &&
+      got.venueMapsUrl      === written.venueMapsUrl &&
+      got.venuePlaceId      === written.venuePlaceId &&
+      got.dressCode         === written.dressCode &&
+      got.parkingInfo       === written.parkingInfo &&
+      got.accessibilityNotes=== written.accessibilityNotes &&
+      got.details           === written.details;
+    results.push(fieldsOk
+      ? pass('preWeddingEvents[0] full field set', 'startTime/endTime/venue/dressCode/parkingInfo/accessibility/details all persist')
+      : fail('preWeddingEvents[0] full field set', written, got));
   }
 
   // Sole-writer verification: write mainCeremony.dressCode via canonical path,
