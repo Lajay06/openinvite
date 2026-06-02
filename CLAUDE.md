@@ -24,6 +24,20 @@ project root. All changes must comply with it.
 - Open a PR with ./scripts/ship.sh and let the Vercel preview deploy before merging
 - If a new pattern was introduced, update DESIGN_SPEC.md
 
+## Definition of done — READ THIS
+A task is NOT done until it is merged to main AND verified working on openinvite.com.au.
+- "Build passes" is NOT done.
+- "PR opened" is NOT done.
+- Done = merged to main + live site confirmed.
+
+## PR rule — same session, no exceptions
+Every PR must be merged or closed in the SAME session it is opened.
+Never leave a PR open at the end of a session. Never start a new task with an open PR pending.
+If a PR can't be merged yet (conflict, needs review), say so explicitly — don't move on silently.
+
+## Start of every session
+Run `gh pr list` first. If any PRs are open from a previous session, surface them to the user immediately before doing anything else. Do not let open PRs go unnoticed.
+
 ## File structure
 - Layout shell: src/Layout.jsx
 - Sidebar: src/components/layout/AnimatedSidebar.jsx  

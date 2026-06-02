@@ -1,10 +1,19 @@
 # Development workflow — Openinvite
 
-## The rule
+## The rules
 
 **Never commit or push directly to `main`.**  
 `main` = production = openinvite.com.au. It must always be deployable.  
 Every change goes through a feature branch → PR → Vercel preview → merge.
+
+**Every PR must be merged or closed in the same session it is opened.**  
+Never leave a session with an open PR. An open PR is work that has not shipped — it is easy to forget, and it creates stacking conflicts when new work starts on top of an unmerged base. If a PR genuinely can't merge yet, say so explicitly and decide what to do before moving on.
+
+**"Done" means merged to main AND verified on openinvite.com.au.**  
+Not "build passes." Not "PR opened." Not "Vercel preview looks good." Done = on main = live.
+
+**Start every session with `gh pr list`.**  
+If any PRs are open from a previous session, surface them immediately before starting new work.
 
 ---
 
@@ -58,6 +67,9 @@ You should always open the preview URL and verify the change before merging.
 ## Full cycle example
 
 ```bash
+# 0. Start of session — always check for leftover open PRs first
+gh pr list   # if anything is open, resolve it before starting new work
+
 # 1. Start work
 ./scripts/new-feature.sh marketplace-search-fix
 
@@ -70,6 +82,9 @@ npm run build
 # 4. Copy the Vercel preview URL from the PR comment, open it, test the feature
 
 # 5. Merge on GitHub — production deploys automatically
+
+# 6. Verify on openinvite.com.au — THIS is done. Not before.
+#    Do not open the next task until this PR is merged and confirmed live.
 ```
 
 ---
