@@ -29,7 +29,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { priceId } = req.body || {};
+    const { priceId, userId, userEmail, email } = req.body || {};
+    const customerEmail = (userEmail || email || '').trim();
 
     if (!priceId) {
       return res.status(400).json({ error: 'priceId is required' });
@@ -54,6 +55,8 @@ export default async function handler(req, res) {
       ],
       line_items: [{ price: priceId, quantity: 1 }],
       metadata: { plan },
+      ...(userId ? { client_reference_id: userId } : {}),
+      ...(customerEmail ? { customer_email: customerEmail } : {}),
       success_url: `${process.env.VITE_APP_URL || 'https://openinvite.com.au'}/dashboard?checkout=success`,
       cancel_url: `${process.env.VITE_APP_URL || 'https://openinvite.com.au'}/pricing?checkout=cancelled`,
     });

@@ -25,6 +25,10 @@ import { purchaseConfirmationEmail } from '../emails/purchase-confirmation.js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const BASE44_API    = 'https://base44.app/api';
+const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
+const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
+
 const FROM = 'Openinvite <hello@openinvite.com.au>';
 
 // Reads the raw request body as a Buffer. Vercel may have already consumed
@@ -78,23 +82,85 @@ export default async function handler(req, res) {
       case 'checkout.session.completed': {
         const session = event.data.object;
 
-        // Verify the session is real by re-fetching from Stripe
-        // This is a secondary guard when raw-body signature verification isn't possible
-        const verifiedSession = await stripe.checkout.sessions.retrieve(session.id);
+        // Re-fetch from Stripe with line_items expanded — secondary guard against
+        // replayed/forged events, and gives us the real price ID for tier mapping.
+        const verifiedSession = await stripe.checkout.sessions.retrieve(session.id, {
+          expand: ['line_items'],
+        });
 
         const email =
           verifiedSession.customer_email ||
           verifiedSession.customer_details?.email;
 
-        const plan = verifiedSession.metadata?.plan || 'pro';
+        // ── Determine tier ────────────────────────────────────────────────────
+        // Prefer price ID from line items (tamper-proof — comes from Stripe).
+        // Fall back to metadata.plan only when price-ID env vars aren't set.
+        const proPriceId   = process.env.STRIPE_PRO_PRICE_ID;
+        const ultraPriceId = process.env.STRIPE_ULTRA_PRICE_ID;
+        const sessionPriceId = verifiedSession.line_items?.data?.[0]?.price?.id;
+
+        let plan, planSource;
+        if (sessionPriceId && (proPriceId || ultraPriceId)) {
+          if (sessionPriceId === ultraPriceId)     { plan = 'ultra'; planSource = 'price_id'; }
+          else if (sessionPriceId === proPriceId)  { plan = 'pro';   planSource = 'price_id'; }
+        }
+        if (!plan) {
+          plan = verifiedSession.metadata?.plan || 'pro';
+          planSource = 'metadata_fallback';
+        }
+
         const planLabel = plan === 'ultra' ? 'Ultra' : 'Pro';
 
         console.log('[stripe-webhook] checkout.session.completed:', {
           sessionId: verifiedSession.id,
           email: email || '(none)',
           plan,
+          planSource,
+          clientReferenceId: verifiedSession.client_reference_id || '(none)',
         });
 
+        // ── Write plan to Base44 ──────────────────────────────────────────────
+        const userId = verifiedSession.client_reference_id;
+
+        if (!userId) {
+          console.error(
+            '[stripe-webhook] PAID USER — client_reference_id missing on session:',
+            verifiedSession.id,
+            '— plan NOT written. Manually set plan for email:', email || '(unknown)',
+          );
+        } else if (!BASE44_ADMIN_KEY) {
+          console.error(
+            '[stripe-webhook] BASE44_ADMIN_KEY not set — plan NOT written for user:', userId,
+            '— set BASE44_ADMIN_KEY in Vercel environment variables.',
+          );
+        } else {
+          try {
+            const writeRes = await fetch(
+              `${BASE44_API}/apps/${BASE44_APP_ID}/entities/User/${userId}?api_key=${BASE44_ADMIN_KEY}`,
+              {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan, planActivatedAt: new Date().toISOString() }),
+              },
+            );
+            if (writeRes.ok) {
+              console.log('[stripe-webhook] Base44 plan written:', { userId, plan, planSource });
+            } else {
+              const errBody = await writeRes.text().catch(() => '');
+              console.error(
+                '[stripe-webhook] PAID USER — Base44 plan write FAILED:',
+                { userId, plan, status: writeRes.status, body: errBody.slice(0, 200) },
+              );
+            }
+          } catch (writeErr) {
+            console.error(
+              '[stripe-webhook] PAID USER — Base44 plan write threw:',
+              { userId, plan, error: writeErr.message },
+            );
+          }
+        }
+
+        // ── Send confirmation email ───────────────────────────────────────────
         if (email) {
           const result = await resend.emails.send({
             from: FROM,
