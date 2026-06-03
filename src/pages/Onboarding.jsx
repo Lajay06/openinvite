@@ -161,9 +161,10 @@ export default function Onboarding() {
           venueName: typeof onboardingData.venue === 'object' ? onboardingData.venue?.name : onboardingData.venue,
           address: typeof onboardingData.venue === 'object' ? onboardingData.venue?.address : onboardingData.location,
         },
-        foodAndBeverage: {
-          guestCount: onboardingData.guestCount?.toString()
-        },
+        // guestCount written as string to match EventDetails.jsx (e.target.value from a number input)
+        // guestType uses lowercase tile ids matching the enum: 'intimate' | 'celebration' | 'grand'
+        guestCount: onboardingData.guestCount != null ? String(onboardingData.guestCount) : undefined,
+        guestType:  onboardingData.guestType  || undefined,
         websiteEnabled: false,
         activeUniverse,
         websiteMode,
