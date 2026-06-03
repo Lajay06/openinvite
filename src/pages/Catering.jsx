@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UtensilsCrossed, Plus, ChefHat, Coffee, Wine, Cake, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -36,10 +36,7 @@ export default function CateringPage() {
 
   const [details, setDetails] = useState({ foodAndBeverage: {} });
   const [detailsId, setDetailsId] = useState(null);
-  const [isSavingDetails, setIsSavingDetails] = useState(false);
-
-  const autoSaveRef  = useRef(null);
-  const detailsIdRef = useRef(null); // ref so the debounced closure always reads the latest id
+  const [saveStatus, setSaveStatus] = useState('idle');
 
   useEffect(() => { loadData(); }, []);
 
@@ -54,7 +51,6 @@ export default function CateringPage() {
       if (detailsData.length > 0) {
         setDetails(detailsData[0]);
         setDetailsId(detailsData[0].id);
-        detailsIdRef.current = detailsData[0].id;
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -63,28 +59,8 @@ export default function CateringPage() {
     setLoading(false);
   };
 
-  const persist = (nextFoodAndBeverage) => {
-    clearTimeout(autoSaveRef.current);
-    autoSaveRef.current = setTimeout(async () => {
-      const id = detailsIdRef.current;
-      try {
-        if (id) {
-          await WeddingDetails.update(id, { foodAndBeverage: nextFoodAndBeverage });
-        } else {
-          const c = await WeddingDetails.create({ foodAndBeverage: nextFoodAndBeverage });
-          setDetailsId(c.id);
-          detailsIdRef.current = c.id;
-        }
-      } catch (e) {
-        console.error('[Catering] autosave failed:', e);
-      }
-    }, 800);
-  };
-
   const handleDetailsUpdate = (field, value) => {
-    const next = { ...(details.foodAndBeverage || {}), [field]: value };
-    setDetails(prev => ({ ...prev, foodAndBeverage: next }));
-    persist(next);
+    setDetails(prev => ({ ...prev, foodAndBeverage: { ...prev.foodAndBeverage, [field]: value } }));
   };
 
   const handleVendorSelect = (vendorId) => {
@@ -98,22 +74,22 @@ export default function CateringPage() {
     }
   };
 
-  const handleDetailsSave = async () => {
-    setIsSavingDetails(true);
-    const toastId = toast.loading('Saving catering details...');
+  const handleSave = async () => {
+    setSaveStatus('saving');
     try {
       if (!detailsId) {
-        const newDetails = await WeddingDetails.create({ foodAndBeverage: details.foodAndBeverage });
-        setDetailsId(newDetails.id);
+        const c = await WeddingDetails.create({ foodAndBeverage: details.foodAndBeverage });
+        setDetailsId(c.id);
       } else {
         await WeddingDetails.update(detailsId, { foodAndBeverage: details.foodAndBeverage });
       }
-      toast.success('Catering details saved!', { id: toastId });
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
       console.error('Error saving catering details:', error);
-      toast.error('Failed to save catering details.', { id: toastId });
+      toast.error('Failed to save catering details.');
+      setSaveStatus('idle');
     }
-    setIsSavingDetails(false);
   };
 
   const handleAddFromSearch = async (searchResult) => {
@@ -188,9 +164,14 @@ export default function CateringPage() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px' }}>
+      {/* Ava + Save */}
+      <div style={{ padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <AvaButton label="Ask Ava to find caterers" onClick={() => setAvaOpen(true)} />
+        <button onClick={handleSave} disabled={saveStatus === 'saving'}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 999, fontSize: 13, fontWeight: 600, background: '#E03553', color: '#FFFFFF', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', fontFamily: PJS, opacity: saveStatus === 'saving' ? 0.7 : 1 }}>
+          {saveStatus === 'saving' && <Loader2 size={13} className="animate-spin" />}
+          {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : 'Save'}
+        </button>
       </div>
 
       {/* Tab bar */}
@@ -215,7 +196,7 @@ export default function CateringPage() {
         {activeTab === 'planning' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-            <DetailsSection title="Caterer / venue" icon={ChefHat} sectionKey="caterer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
+            <DetailsSection title="Caterer / venue" icon={ChefHat} sectionKey="caterer">
               <div>
                 <label style={labelStyle}>Select caterer</label>
                 {caterers.length > 0 ? (
@@ -276,7 +257,7 @@ export default function CateringPage() {
               </div>
             </DetailsSection>
 
-            <DetailsSection title="Menu & dishes" icon={UtensilsCrossed} sectionKey="menu" onSave={handleDetailsSave} isSaving={isSavingDetails}>
+            <DetailsSection title="Menu & dishes" icon={UtensilsCrossed} sectionKey="menu">
               <SectionInput label="Menu items" isTextarea value={details.foodAndBeverage?.menuItems?.map(item => `${item.name}: ${item.description}`).join('\n') || ''}
                 onChange={e => {
                   const items = e.target.value.split('\n').map(line => { const [name, description] = line.split(':').map(s => s.trim()); return { name: name || '', description: description || '' }; }).filter(item => item.name);
@@ -288,7 +269,7 @@ export default function CateringPage() {
                 placeholder="Vegetarian, vegan, gluten-free, etc. (comma separated)" />
             </DetailsSection>
 
-            <DetailsSection title="Bar & beverages" icon={Wine} sectionKey="bar" onSave={handleDetailsSave} isSaving={isSavingDetails}>
+            <DetailsSection title="Bar & beverages" icon={Wine} sectionKey="bar">
               <div>
                 <label style={labelStyle}>Bar type</label>
                 <Select value={details.foodAndBeverage?.barType || ''} onValueChange={v => handleDetailsUpdate('barType', v)}>
@@ -311,12 +292,12 @@ export default function CateringPage() {
               <SectionInput label="Bar notes" isTextarea value={details.foodAndBeverage?.barNotes} onChange={e => handleDetailsUpdate('barNotes', e.target.value)} placeholder="Bar preferences, restrictions, special requests" />
             </DetailsSection>
 
-            <DetailsSection title="Dessert & cake" icon={Cake} sectionKey="dessert" onSave={handleDetailsSave} isSaving={isSavingDetails}>
+            <DetailsSection title="Dessert & cake" icon={Cake} sectionKey="dessert">
               <SectionInput label="Wedding cake" isTextarea value={details.foodAndBeverage?.cake} onChange={e => handleDetailsUpdate('cake', e.target.value)} placeholder="Cake flavors, tiers, design details" />
               <SectionInput label="Additional desserts" isTextarea value={details.foodAndBeverage?.desserts} onChange={e => handleDetailsUpdate('desserts', e.target.value)} placeholder="Other dessert options (cookies, pastries, dessert bar, etc.)" />
             </DetailsSection>
 
-            <DetailsSection title="Coffee & late night" icon={Coffee} sectionKey="latenight" onSave={handleDetailsSave} isSaving={isSavingDetails}>
+            <DetailsSection title="Coffee & late night" icon={Coffee} sectionKey="latenight">
               <SectionInput label="Coffee service" isTextarea value={details.foodAndBeverage?.coffee} onChange={e => handleDetailsUpdate('coffee', e.target.value)} placeholder="Coffee bar, espresso, specialty drinks" />
               <SectionInput label="Late night snacks" isTextarea value={details.foodAndBeverage?.lateNightSnacks} onChange={e => handleDetailsUpdate('lateNightSnacks', e.target.value)} placeholder="Pizza, sliders, donuts, or other late-night food" />
             </DetailsSection>
