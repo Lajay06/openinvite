@@ -21,7 +21,7 @@ const PRIORITY = {
 
 const KANBAN_COLS = ['Ideas', 'In progress', 'Done'];
 
-export default function TodoList() {
+export default function TodoList({ embedded = false }) {
   const [tasks, setTasks]           = useState([]);
   const [loading, setLoading]       = useState(true);
   const [view, setView]             = useState('list');       // 'list' | 'kanban'
@@ -110,7 +110,7 @@ export default function TodoList() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      <DashboardPageHeader title="To do list" subtitle="Track tasks, ideas, and to-dos for your wedding" />
+      {!embedded && <DashboardPageHeader title="To do list" subtitle="Track tasks, ideas, and to-dos for your wedding" />}
 
       <div style={{ padding: '32px 32px 48px' }}>
 
