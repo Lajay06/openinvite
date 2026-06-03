@@ -49,7 +49,7 @@ const EVENT_STYLES = {
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"];
 
-export default function CalendarPage() {
+export default function CalendarPage({ embedded = false }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -226,7 +226,7 @@ export default function CalendarPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Calendar" subtitle="View and manage all your wedding dates and appointments" />
+      {!embedded && <DashboardPageHeader title="Calendar" subtitle="View and manage all your wedding dates and appointments" />}
 
       {/* Stat strip */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
