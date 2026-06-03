@@ -16,7 +16,7 @@ export default function OnboardingWelcome({ onNext, theme }) {
         color: isDark ? '#FFFFFF' : '#0A0A0A',
         fontFamily: PJS, margin: '0 0 24px',
       }}>
-        Weddings are complicated. Openinvite isn't.
+        Weddings are complicated.<br />Openinvite isn't.
       </h1>
 
       {/* Subheadline */}
