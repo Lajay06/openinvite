@@ -128,7 +128,7 @@ export default function Dashboard() {
     try {
       const currentUser = await base44.auth.me();
       if (currentUser?.id) identify(currentUser.id, { email: currentUser.email, name: currentUser.full_name });
-      if (currentUser && !currentUser.onboarding_completed) setShowWelcomeBanner(true);
+      if (currentUser && !currentUser.onboardingCompleted) setShowWelcomeBanner(true);
       const tipsShown = localStorage.getItem('openinvite_tips_shown');
       if (!tipsShown) setShowTipsModal(true);
       const [guestData, budgetData, scheduleData] = await Promise.all([
@@ -159,7 +159,7 @@ export default function Dashboard() {
 
   const dismissWelcome = async () => {
     setShowWelcomeBanner(false);
-    try { await base44.auth.updateMe({ onboarding_completed: true }); } catch {}
+    try { await base44.auth.updateMe({ onboardingCompleted: true }); } catch {}
   };
 
   return (
