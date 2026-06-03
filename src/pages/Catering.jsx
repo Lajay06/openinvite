@@ -38,8 +38,9 @@ export default function CateringPage() {
   const [detailsId, setDetailsId] = useState(null);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
 
-  const autoSaveRef  = useRef(null);
-  const detailsIdRef = useRef(null); // ref so the debounced closure always reads the latest id
+  const autoSaveRef   = useRef(null);
+  const detailsIdRef  = useRef(null); // ref so the debounced closure always reads the latest id
+  const latestFabRef  = useRef({});   // always-current foodAndBeverage — avoids stale-state drops
 
   useEffect(() => { loadData(); }, []);
 
@@ -54,7 +55,8 @@ export default function CateringPage() {
       if (detailsData.length > 0) {
         setDetails(detailsData[0]);
         setDetailsId(detailsData[0].id);
-        detailsIdRef.current = detailsData[0].id;
+        detailsIdRef.current  = detailsData[0].id;
+        latestFabRef.current  = detailsData[0].foodAndBeverage || {};
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -82,7 +84,8 @@ export default function CateringPage() {
   };
 
   const handleDetailsUpdate = (field, value) => {
-    const next = { ...(details.foodAndBeverage || {}), [field]: value };
+    const next = { ...latestFabRef.current, [field]: value };
+    latestFabRef.current = next;
     setDetails(prev => ({ ...prev, foodAndBeverage: next }));
     persist(next);
   };
@@ -103,10 +106,11 @@ export default function CateringPage() {
     const toastId = toast.loading('Saving catering details...');
     try {
       if (!detailsId) {
-        const newDetails = await WeddingDetails.create({ foodAndBeverage: details.foodAndBeverage });
+        const newDetails = await WeddingDetails.create({ foodAndBeverage: latestFabRef.current });
         setDetailsId(newDetails.id);
+        detailsIdRef.current = newDetails.id;
       } else {
-        await WeddingDetails.update(detailsId, { foodAndBeverage: details.foodAndBeverage });
+        await WeddingDetails.update(detailsId, { foodAndBeverage: latestFabRef.current });
       }
       toast.success('Catering details saved!', { id: toastId });
     } catch (error) {
