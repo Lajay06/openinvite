@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Accordion } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Plus, Palette, Flower, Sparkles, User, Camera } from "lucide-react";
 import toast from 'react-hot-toast';
 import { createPageUrl } from "@/utils";
