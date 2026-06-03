@@ -40,6 +40,8 @@ const SCHEMAS = {
     homeContent:1, ourStoryContent:1, celebrationContent:1, rsvpContent:1, travelContent:1,
     registryContent:1, musicContent:1, photosContent:1, pageSections:1, customPages:1,
     polls:1, dayVendorContacts:1,
+    // Registered 2026-06-03 (previously silently dropped — planning page fields)
+    foodAndBeverage:1, photography:1, attire:1, flowers:1, decorations:1, beauty:1, entertainmentDetails:1,
     // Registered top-level OBJECT keys (also have sub-field definitions in _nested)
     mainCeremony:1, reception:1, theme:1, celebrant:1, license:1, rehearsal:1,
     welcomeDinner:1, dayAfterBrunch:1, contactPerson:1, experienceGuide:1,

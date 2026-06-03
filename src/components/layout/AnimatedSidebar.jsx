@@ -48,7 +48,7 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: "Creative",
+    label: "Essentials",
     items: [
       { icon: Palette,         label: "Styling",         url: createPageUrl("Styling") },
       { icon: Camera,          label: "Photography",      url: createPageUrl("Photography") },
