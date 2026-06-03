@@ -96,7 +96,6 @@ import Registry from './pages/Registry';
 import Schedule from './pages/Schedule';
 import Seating from './pages/Seating';
 import Styling from './pages/Styling';
-import Theme from './pages/Theme';
 import TodoList from './pages/TodoList';
 import Vendors from './pages/Vendors';
 import VowsSpeeches from './pages/VowsSpeeches';
@@ -160,7 +159,6 @@ export const PAGES = {
     "Schedule": Schedule,
     "Seating": Seating,
     "Styling": Styling,
-    "Theme": Theme,
     "TodoList": TodoList,
     "Vendors": Vendors,
     "VowsSpeeches": VowsSpeeches,

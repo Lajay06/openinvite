@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sparkles, Loader2, Plus, AlertTriangle, CheckCircle, Lightbulb } from "lucide-react";
 import { InvokeLLM } from '@/integrations/Core';
-import { ThemeDetails } from '@/entities/ThemeDetails';
 
 const CATEGORY_CONFIG = {
   ceremony:       { bg: '#E03553',               text: '#FFFFFF' },
@@ -48,21 +47,11 @@ export default function ScheduleAvaModal({ isOpen, onClose, onAddSuggestion, sch
   const [analysisResult, setAnalysisResult] = useState(null);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
-  const [themeDetails, setThemeDetails] = useState(null);
-
   useEffect(() => {
     if (isOpen) {
-      loadTheme();
       loadSuggestions();
     }
   }, [isOpen]);
-
-  const loadTheme = async () => {
-    try {
-      const themes = await ThemeDetails.list();
-      if (themes.length > 0) setThemeDetails(themes[0]);
-    } catch {}
-  };
 
   const loadSuggestions = async () => {
     setSuggestionsLoading(true);

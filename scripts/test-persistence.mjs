@@ -117,21 +117,57 @@ function writtenSubsetMatches(written, readBack) {
 const TEST_FIELDS = {
   // ── Event Details canonical fields (new refactor) ─────────────────────────
   mainCeremony: {
-    venueName:   'Test Ceremony Venue',
-    address:     '1 Ceremony Lane, Sydney NSW 2000',
-    startTime:   '14:00',
-    endTime:     '15:00',
-    dressCode:   'Black tie',
-    parkingInfo: 'Street parking on Church St',
+    venueName:          'Test Ceremony Venue',
+    address:            '1 Ceremony Lane, Sydney NSW 2000',
+    placeId:            'test-place-id-ceremony',
+    mapsUrl:            'https://maps.google.com/?q=test-ceremony',
+    photoUrl:           '/api/places-photo?ref=test-ceremony-ref&maxwidth=600',
+    startTime:          '14:00',
+    endTime:            '15:00',
+    dressCode:          'Black tie',
+    parkingInfo:        'Street parking on Church St',
+    accessibilityNotes: 'Wheelchair access via north gate',
+    notes:              'Ceremony runs approximately 40 minutes',
   },
   reception: {
-    venueName:   'Test Reception Hall',
-    address:     '2 Reception Rd, Sydney NSW 2000',
-    startTime:   '17:30',
-    endTime:     '23:00',
-    dressCode:   'Cocktail',
-    parkingInfo: 'On-site parking available',
+    venueName:          'Test Reception Hall',
+    address:            '2 Reception Rd, Sydney NSW 2000',
+    placeId:            'test-place-id-reception',
+    mapsUrl:            'https://maps.google.com/?q=test-reception',
+    photoUrl:           '/api/places-photo?ref=test-reception-ref&maxwidth=600',
+    startTime:          '17:30',
+    endTime:            '23:00',
+    dressCode:          'Cocktail',
+    parkingInfo:        'On-site parking available',
+    accessibilityNotes: 'Step-free access throughout',
+    notes:              'Cocktail hour from 5:30, dinner at 7:00',
   },
+  // Custom event in preWeddingEvents — full new field set
+  preWeddingEvents: [
+    {
+      id:               'test-pre-1',
+      name:             'Welcome Dinner',
+      type:             'Rehearsal Dinner',
+      date:             '2025-11-13',
+      startTime:        '18:30',
+      endTime:          '21:30',
+      venueName:        'Test Restaurant',
+      venueAddress:     '10 Harbour St, Sydney NSW 2000',
+      venueMapsUrl:     'https://maps.google.com/?q=test-restaurant',
+      venuePhotoUrl:    null,
+      venuePlaceId:     'test-restaurant-place-id',
+      dressCode:        'Smart casual',
+      parkingInfo:      'Street parking available',
+      accessibilityNotes: 'Ground floor, fully accessible',
+      details:          'Family and close friends only',
+      // legacy compat
+      venue:   'Test Restaurant',
+      address: '10 Harbour St, Sydney NSW 2000',
+      time:    '18:30',
+      notes:   'Family and close friends only',
+      isCustomType: false,
+    },
+  ],
   guestSuiteAccommodation: {
     places: [{ id: 'test-hotel-1', name: 'Test Hotel Sydney', address: '1 Test St', rating: 4.5, note: 'persistence check' }],
   },
@@ -176,6 +212,17 @@ const TEST_FIELDS = {
         },
       }],
     },
+  },
+  // ── Consolidated theme fields ─────────────────────────────────────────────
+  theme: {
+    aesthetic:      ['Classic', 'Romantic'],
+    faith:          'Interfaith',
+    faithSecondary: 'Catholic and Hindu',
+    culture:        ['Indian', 'Italian'],
+    cultureOther:   'Filipino-Australian',
+    atmosphere:     ['Intimate & relaxed', 'Formal & elegant'],
+    season:         'Autumn',
+    setting:        'Mix of both',
   },
   polls: [
     {
@@ -352,7 +399,7 @@ async function run() {
       : fail('polls', written, got));
   }
 
-  // ── 7. Event Details canonical field tests (data-model refactor) ─────────────
+  // ── 7. Event Details canonical field tests (data-model refactor + redesign) ─────
   console.log('\n  Event Details canonical field tests:\n');
 
   // mainCeremony.dressCode — written via EventDetails path, must round-trip
@@ -391,6 +438,68 @@ async function run() {
       : fail('reception.endTime', written, got));
   }
 
+  // mainCeremony.photoUrl — new schema field for venue photo
+  {
+    const written = TEST_FIELDS.mainCeremony.photoUrl;
+    const got     = record.mainCeremony?.photoUrl;
+    results.push(written === got
+      ? pass('mainCeremony.photoUrl', `"${got}"`)
+      : fail('mainCeremony.photoUrl', written, got));
+  }
+
+  // mainCeremony.mapsUrl — new schema field
+  {
+    const written = TEST_FIELDS.mainCeremony.mapsUrl;
+    const got     = record.mainCeremony?.mapsUrl;
+    results.push(written === got
+      ? pass('mainCeremony.mapsUrl', `"${got}"`)
+      : fail('mainCeremony.mapsUrl', written, got));
+  }
+
+  // mainCeremony.placeId — new schema field
+  {
+    const written = TEST_FIELDS.mainCeremony.placeId;
+    const got     = record.mainCeremony?.placeId;
+    results.push(written === got
+      ? pass('mainCeremony.placeId', `"${got}"`)
+      : fail('mainCeremony.placeId', written, got));
+  }
+
+  // reception.photoUrl + mapsUrl + placeId
+  {
+    const pOk = record.reception?.photoUrl === TEST_FIELDS.reception.photoUrl;
+    const mOk = record.reception?.mapsUrl  === TEST_FIELDS.reception.mapsUrl;
+    const iOk = record.reception?.placeId  === TEST_FIELDS.reception.placeId;
+    if (pOk && mOk && iOk) {
+      results.push(pass('reception.photoUrl/mapsUrl/placeId', 'all three new fields'));
+    } else {
+      if (!pOk) results.push(fail('reception.photoUrl',  TEST_FIELDS.reception.photoUrl,  record.reception?.photoUrl));
+      if (!mOk) results.push(fail('reception.mapsUrl',   TEST_FIELDS.reception.mapsUrl,   record.reception?.mapsUrl));
+      if (!iOk) results.push(fail('reception.placeId',   TEST_FIELDS.reception.placeId,   record.reception?.placeId));
+    }
+  }
+
+  // Custom event in preWeddingEvents — full new field set
+  {
+    const written  = TEST_FIELDS.preWeddingEvents[0];
+    const gotArray = record.preWeddingEvents || [];
+    const got      = gotArray.find(e => e.id === written.id);
+    const fieldsOk = got &&
+      got.startTime         === written.startTime &&
+      got.endTime           === written.endTime &&
+      got.venueName         === written.venueName &&
+      got.venueAddress      === written.venueAddress &&
+      got.venueMapsUrl      === written.venueMapsUrl &&
+      got.venuePlaceId      === written.venuePlaceId &&
+      got.dressCode         === written.dressCode &&
+      got.parkingInfo       === written.parkingInfo &&
+      got.accessibilityNotes=== written.accessibilityNotes &&
+      got.details           === written.details;
+    results.push(fieldsOk
+      ? pass('preWeddingEvents[0] full field set', 'startTime/endTime/venue/dressCode/parkingInfo/accessibility/details all persist')
+      : fail('preWeddingEvents[0] full field set', written, got));
+  }
+
   // Sole-writer verification: write mainCeremony.dressCode via canonical path,
   // then write attire.dressCode separately — canonical must NOT be overwritten.
   {
@@ -414,6 +523,47 @@ async function run() {
     results.push(isolated
       ? pass('sole-writer isolation', `mainCeremony.dressCode="${canonical}" unchanged after separate attire write`)
       : fail('sole-writer isolation', canonicalDressCode, canonical));
+  }
+
+  // ── 7b. Consolidated theme.* round-trip ──────────────────────────────────────
+  console.log('\n  Consolidated theme.* persistence tests:\n');
+  {
+    const written = TEST_FIELDS.theme;
+    const got     = record.theme;
+
+    const aestheticOk  = deepEqual(written.aesthetic, got?.aesthetic);
+    const faithOk      = got?.faith === written.faith;
+    const faithSecOk   = got?.faithSecondary === written.faithSecondary;
+    const cultureOk    = deepEqual(written.culture, got?.culture);
+    const cultureOtherOk = got?.cultureOther === written.cultureOther;
+    const atmosphereOk = deepEqual(written.atmosphere, got?.atmosphere);
+    const seasonOk     = got?.season === written.season;
+    const settingOk    = got?.setting === written.setting;
+
+    results.push(aestheticOk
+      ? pass('theme.aesthetic', JSON.stringify(got?.aesthetic))
+      : fail('theme.aesthetic', written.aesthetic, got?.aesthetic));
+    results.push(faithOk
+      ? pass('theme.faith', got?.faith)
+      : fail('theme.faith', written.faith, got?.faith));
+    results.push(faithSecOk
+      ? pass('theme.faithSecondary (Interfaith)', got?.faithSecondary)
+      : fail('theme.faithSecondary', written.faithSecondary, got?.faithSecondary));
+    results.push(cultureOk
+      ? pass('theme.culture', JSON.stringify(got?.culture))
+      : fail('theme.culture', written.culture, got?.culture));
+    results.push(cultureOtherOk
+      ? pass('theme.cultureOther', got?.cultureOther)
+      : fail('theme.cultureOther', written.cultureOther, got?.cultureOther));
+    results.push(atmosphereOk
+      ? pass('theme.atmosphere', JSON.stringify(got?.atmosphere))
+      : fail('theme.atmosphere', written.atmosphere, got?.atmosphere));
+    results.push(seasonOk
+      ? pass('theme.season', got?.season)
+      : fail('theme.season', written.season, got?.season));
+    results.push(settingOk
+      ? pass('theme.setting', got?.setting)
+      : fail('theme.setting', written.setting, got?.setting));
   }
 
   // ── 8. Sequential append test (catches the "second add overwrites first" bug) ──

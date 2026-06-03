@@ -22,7 +22,7 @@ import {
 import { InvokeLLM, GenerateImage } from '@/integrations/Core';
 import toast from 'react-hot-toast';
 
-export default function AIStylingAssistant({ isOpen, onClose, weddingDetails, themeDetails }) {
+export default function AIStylingAssistant({ isOpen, onClose, weddingDetails, theme = {} }) {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('colors');
   
@@ -72,8 +72,8 @@ Theme: ${colorParams.theme || 'Not specified'}
 Mood/Vibe: ${colorParams.mood || 'Not specified'}
 Season: ${colorParams.season || 'Not specified'}
 Venue Type: ${colorParams.venue || 'Not specified'}
-${themeDetails?.vibes?.length ? `Additional Vibes: ${themeDetails.vibes.join(', ')}` : ''}
-${themeDetails?.season ? `Wedding Season: ${themeDetails.season}` : ''}
+${theme.aesthetic?.length ? `Aesthetic: ${theme.aesthetic.join(', ')}` : ''}
+${theme.season ? `Wedding Season: ${theme.season}` : ''}
 
 For each palette, provide:
 1. A creative palette name
@@ -146,7 +146,7 @@ Make the palettes diverse, creative, and wedding-appropriate.`;
 Style: ${moodBoardParams.style || 'Not specified'}
 Color Palette: ${moodBoardParams.colors || 'Not specified'}
 Inspiration: ${moodBoardParams.inspiration || 'Not specified'}
-${themeDetails?.vibes?.length ? `Vibes: ${themeDetails.vibes.join(', ')}` : ''}
+${theme.aesthetic?.length ? `Aesthetic: ${theme.aesthetic.join(', ')}` : ''}
 
 Create a comprehensive mood board including:
 1. Overall aesthetic description
@@ -209,8 +209,8 @@ Theme/Style: ${decorParams.theme || 'Not specified'}
 Budget: ${decorParams.budget || 'Flexible'}
 Venue: ${decorParams.venue || 'Not specified'}
 Guest Count: ${decorParams.guestCount || 'Not specified'}
-${themeDetails?.vibes?.length ? `Vibes: ${themeDetails.vibes.join(', ')}` : ''}
-${themeDetails?.setting ? `Setting: ${themeDetails.setting}` : ''}
+${theme.aesthetic?.length ? `Aesthetic: ${theme.aesthetic.join(', ')}` : ''}
+${theme.setting ? `Setting: ${theme.setting}` : ''}
 
 Provide detailed recommendations for:
 1. Ceremony decor (arch, aisle, seating)
@@ -304,11 +304,11 @@ Be practical and budget-conscious while maintaining style.`,
       const response = await InvokeLLM({
         prompt: `You are a wedding floral designer expert. Provide comprehensive floral and centerpiece advice for a wedding with these details:
 
-Season: ${floralParams.season || themeDetails?.season || 'Not specified'}
+Season: ${floralParams.season || theme.season || 'Not specified'}
 Color Palette: ${floralParams.colors || 'Not specified'}
 Style: ${floralParams.style || 'Not specified'}
 Budget: ${floralParams.budget || 'Flexible'}
-${themeDetails?.vibes?.length ? `Wedding Vibes: ${themeDetails.vibes.join(', ')}` : ''}
+${theme.aesthetic?.length ? `Aesthetic: ${theme.aesthetic.join(', ')}` : ''}
 
 Provide detailed advice on:
 1. Best flowers for this season and style

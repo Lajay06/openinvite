@@ -13,7 +13,6 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { base44 } from "@/api/base44Client";
 const WeddingDetails = base44.entities.WeddingDetails;
-const ThemeDetails = base44.entities.ThemeDetails;
 const Vendor = base44.entities.Vendor;
 
 // Dress code is now managed per-event in Event Details → Venue tab.
@@ -27,7 +26,6 @@ const initialDetailsState = {
 export default function StylingPage() {
   const [details, setDetails] = useState(initialDetailsState);
   const [detailsId, setDetailsId] = useState(null);
-  const [themeDetails, setThemeDetails] = useState({});
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -44,19 +42,14 @@ const [activeTab, setActiveTab] = useState("attire");
   const loadDetails = async () => {
     setLoading(true);
     try {
-      const [existingDetails, themeData, vendorData] = await Promise.all([
+      const [existingDetails, vendorData] = await Promise.all([
         WeddingDetails.list(),
-        ThemeDetails.list(),
         Vendor.list()
       ]);
 
       if (existingDetails.length > 0) {
         setDetails(existingDetails[0]);
         setDetailsId(existingDetails[0].id);
-      }
-
-      if (themeData.length > 0) {
-        setThemeDetails(themeData[0]);
       }
 
       setVendors(vendorData);
