@@ -58,6 +58,7 @@ import Honeymoon from './pages/Honeymoon';
 import PhotographyDetails from './pages/PhotographyDetails';
 import Transport from './pages/Transport';
 import Calendar from './pages/Calendar';
+import ScheduleHub from './pages/ScheduleHub';
 import Catering from './pages/Catering';
 import Checklist from './pages/Checklist';
 import Considerations from './pages/Considerations';
@@ -120,7 +121,7 @@ export const PAGES = {
     "Honeymoon": Honeymoon,
     "PhotographyDetails": PhotographyDetails,
     "Transport": Transport,
-    "Calendar": Calendar,
+    "Calendar": ScheduleHub,
     "Catering": Catering,
     "Checklist": Checklist,
     "Considerations": Considerations,
@@ -156,7 +157,7 @@ export const PAGES = {
     "Policies": Policies,
     "Pricing": Pricing,
     "Registry": Registry,
-    "Schedule": Schedule,
+    "Schedule": ScheduleHub,
     "Seating": Seating,
     "Styling": Styling,
     "TodoList": TodoList,

@@ -60,7 +60,7 @@ const CATEGORIES = [
   "transportation", "rehearsal", "pre_wedding", "post_wedding", "other",
 ];
 
-export default function SchedulePage() {
+export default function SchedulePage({ embedded = false }) {
   const [scheduleItems, setScheduleItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -174,7 +174,7 @@ export default function SchedulePage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      <DashboardPageHeader title="Schedule" subtitle="Build, visualise and optimise your wedding day timeline" />
+      {!embedded && <DashboardPageHeader title="Schedule" subtitle="Build, visualise and optimise your wedding day timeline" />}
 
       {/* Stat strip */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
