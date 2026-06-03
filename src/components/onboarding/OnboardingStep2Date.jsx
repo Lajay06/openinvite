@@ -57,12 +57,12 @@ export default function OnboardingStep2Date({ onNext, data, theme }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="space-y-4"
+        className="space-y-6"
       >
         {date && (
           <button
             onClick={handleSubmit}
-            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-gradient-to-r from-[#E03553] to-[#803D81] hover:bg-none hover:bg-black hover:text-white active:bg-neutral-900 transition-colors duration-150"
+            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150"
           >
             Continue →
           </button>

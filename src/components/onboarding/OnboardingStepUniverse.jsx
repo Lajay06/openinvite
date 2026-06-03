@@ -181,11 +181,12 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
             onMouseLeave={() => setContinueHovered(false)}
             style={{
               padding: '14px 48px',
+              borderRadius: 999,
               background: !selectedUniverse
                 ? 'transparent'
                 : continueHovered
                   ? '#0A0A0A'
-                  : 'linear-gradient(135deg, #E03553, #803D81)',
+                  : '#E03553',
               border: selectedUniverse ? 'none' : '1px solid rgba(255,255,255,0.25)',
               color: selectedUniverse ? '#FFFFFF' : 'rgba(255,255,255,0.35)',
               cursor: selectedUniverse ? 'pointer' : 'default',
