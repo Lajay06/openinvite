@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Plus, Star, X, Check, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import toast from 'react-hot-toast';
@@ -91,6 +91,9 @@ export default function BeautyPage() {
   const [showTrialForm, setShowTrialForm] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
 
+  const autoSaveRef = useRef(null);
+  const latestRef = useRef(null);
+
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
@@ -106,6 +109,7 @@ export default function BeautyPage() {
       if (!bd.trials) bd.trials = [];
       setBeautyData(bd);
       setRecordId(r.id || null);
+      latestRef.current = r;
       setVendors(vendorData.filter(v => v.category === 'beauty'));
     } catch (e) {
       console.error(e);
@@ -114,26 +118,30 @@ export default function BeautyPage() {
     setLoading(false);
   };
 
-  const handleSave = async () => {
+  const persist = (nextBeauty) => {
+    clearTimeout(autoSaveRef.current);
     setSaveStatus('saving');
-    try {
-      if (recordId) {
-        await WeddingDetails.update(recordId, { beauty: beautyData });
-      } else {
-        const c = await WeddingDetails.create({ beauty: beautyData });
-        setRecordId(c.id);
-      }
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch {
-      toast.error('Failed to save beauty details.');
-      setSaveStatus('idle');
-    }
+    autoSaveRef.current = setTimeout(async () => {
+      try {
+        const full = { ...latestRef.current, beauty: nextBeauty };
+        if (recordId) {
+          await WeddingDetails.update(recordId, full);
+        } else {
+          const c = await WeddingDetails.create(full);
+          setRecordId(c.id);
+          latestRef.current = { ...full, id: c.id };
+        }
+        latestRef.current = { ...latestRef.current, beauty: nextBeauty };
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch { setSaveStatus('idle'); }
+    }, 900);
   };
 
   const update = (patch) => {
     const next = { ...beautyData, ...patch };
     setBeautyData(next);
+    persist(next);
   };
 
   const beautyVendors = vendors;
@@ -151,36 +159,50 @@ export default function BeautyPage() {
   ];
 
   const addPerson = () => {
-    setBeautyData(prev => ({ ...prev, gettingReadyPeople: [...(prev.gettingReadyPeople || []), { id: Date.now(), name: '', role: '', service: 'both' }] }));
+    const next = { ...beautyData, gettingReadyPeople: [...gettingReadyPeople, { id: Date.now(), name: '', role: '', service: 'both' }] };
+    setBeautyData(next);
+    persist(next);
   };
 
   const updatePerson = (id, field, val) => {
-    setBeautyData(prev => ({ ...prev, gettingReadyPeople: (prev.gettingReadyPeople || []).map(p => p.id === id ? { ...p, [field]: val } : p) }));
+    const next = { ...beautyData, gettingReadyPeople: gettingReadyPeople.map(p => p.id === id ? { ...p, [field]: val } : p) };
+    setBeautyData(next);
+    persist(next);
   };
 
   const removePerson = (id) => {
-    setBeautyData(prev => ({ ...prev, gettingReadyPeople: (prev.gettingReadyPeople || []).filter(p => p.id !== id) }));
+    const next = { ...beautyData, gettingReadyPeople: gettingReadyPeople.filter(p => p.id !== id) };
+    setBeautyData(next);
+    persist(next);
   };
 
   const skincareTimeline = beautyData.skincareTimeline || [];
 
   const updateMilestone = (id, field, val) => {
-    setBeautyData(prev => ({ ...prev, skincareTimeline: (prev.skincareTimeline || []).map(m => m.id === id ? { ...m, [field]: val } : m) }));
+    const next = { ...beautyData, skincareTimeline: skincareTimeline.map(m => m.id === id ? { ...m, [field]: val } : m) };
+    setBeautyData(next);
+    persist(next);
   };
 
   const addMilestone = () => {
-    setBeautyData(prev => ({ ...prev, skincareTimeline: [...(prev.skincareTimeline || []), { id: `m${Date.now()}`, timeframe: '', treatment: '', notes: '', done: false }] }));
+    const next = { ...beautyData, skincareTimeline: [...skincareTimeline, { id: `m${Date.now()}`, timeframe: '', treatment: '', notes: '', done: false }] };
+    setBeautyData(next);
+    persist(next);
   };
 
   const trials = beautyData.trials || [];
 
   const addTrial = (trialData) => {
-    setBeautyData(prev => ({ ...prev, trials: [...(prev.trials || []), { id: Date.now(), ...trialData }] }));
+    const next = { ...beautyData, trials: [...trials, { id: Date.now(), ...trialData }] };
+    setBeautyData(next);
+    persist(next);
     setShowTrialForm(false);
   };
 
   const removeTrial = (id) => {
-    setBeautyData(prev => ({ ...prev, trials: (prev.trials || []).filter(t => t.id !== id) }));
+    const next = { ...beautyData, trials: trials.filter(t => t.id !== id) };
+    setBeautyData(next);
+    persist(next);
   };
 
   const handleVendorSubmit = async (vendorData) => {
@@ -235,14 +257,9 @@ export default function BeautyPage() {
         ))}
       </div>
 
-      {/* Ava + Save */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to help plan your beauty day" onClick={() => setAvaOpen(true)} />
-        <button onClick={handleSave} disabled={saveStatus === 'saving'}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 999, fontSize: 13, fontWeight: 600, background: '#E03553', color: '#FFFFFF', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', fontFamily: PJS, opacity: saveStatus === 'saving' ? 0.7 : 1 }}>
-          {saveStatus === 'saving' && <Loader2 size={13} className="animate-spin" />}
-          {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : 'Save'}
-        </button>
       </div>
 
       {/* Tab bar */}
@@ -260,6 +277,19 @@ export default function BeautyPage() {
         ))}
       </div>
 
+      {/* Auto-save indicator */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '8px 32px 0', minHeight: 28 }}>
+        {saveStatus === 'saving' && (
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Loader2 size={11} className="animate-spin" />Saving…
+          </span>
+        )}
+        {saveStatus === 'saved' && (
+          <span style={{ fontSize: 12, color: '#6b7700', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Check size={11} />Saved
+          </span>
+        )}
+      </div>
 
       <div style={{ padding: '24px 32px 64px' }}>
 

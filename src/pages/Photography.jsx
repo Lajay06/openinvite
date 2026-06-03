@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, Plus, Video, Image, Clock, Loader2, Check } from "lucide-react";
+import { Camera, Plus, Video, Image, Clock, Loader2 } from "lucide-react";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
@@ -58,7 +58,7 @@ export default function PhotographyPage() {
 
   const [details, setDetails] = useState({ photography: {} });
   const [detailsId, setDetailsId] = useState(null);
-  const [saveStatus, setSaveStatus] = useState('idle');
+  const [isSavingDetails, setIsSavingDetails] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -103,22 +103,22 @@ export default function PhotographyPage() {
     }
   };
 
-  const handleSave = async () => {
-    setSaveStatus('saving');
+  const handleDetailsSave = async () => {
+    setIsSavingDetails(true);
+    const toastId = toast.loading('Saving photography details...');
     try {
       if (!detailsId) {
-        const c = await WeddingDetails.create({ photography: details.photography });
-        setDetailsId(c.id);
+        const newDetails = await WeddingDetails.create({ photography: details.photography });
+        setDetailsId(newDetails.id);
       } else {
         await WeddingDetails.update(detailsId, { photography: details.photography });
       }
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 2000);
+      toast.success('Photography details saved!', { id: toastId });
     } catch (error) {
-      console.error('Error saving photography details:', error);
-      toast.error('Failed to save photography details.');
-      setSaveStatus('idle');
+      console.error('Error saving:', error);
+      toast.error('Failed to save photography details.', { id: toastId });
     }
+    setIsSavingDetails(false);
   };
 
   const handleSubmit = async (photographerData) => {
@@ -205,14 +205,9 @@ export default function PhotographyPage() {
         ))}
       </div>
 
-      {/* Ava + Save */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to plan your photo coverage" onClick={() => setAvaOpen(true)} />
-        <button onClick={handleSave} disabled={saveStatus === 'saving'}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 999, fontSize: 13, fontWeight: 600, background: '#E03553', color: '#FFFFFF', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", opacity: saveStatus === 'saving' ? 0.7 : 1 }}>
-          {saveStatus === 'saving' && <Loader2 size={13} className="animate-spin" />}
-          {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : 'Save'}
-        </button>
       </div>
 
       {/* Tab bar */}
@@ -269,7 +264,7 @@ export default function PhotographyPage() {
         {/* Photo & video details tab */}
         {activeTab === 'details' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Photographer details" icon={Camera} sectionKey="photographer">
+            <DetailsSection title="Photographer details" icon={Camera} sectionKey="photographer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={labelStyle}>Select photographer</label>
                 {photographersList.length > 0 ? (
@@ -307,7 +302,7 @@ export default function PhotographyPage() {
               <SectionInput label="Photography style" isTextarea value={details.photography?.photographyStyle} onChange={e => handleDetailsUpdate('photographyStyle', e.target.value)} placeholder="Candid, traditional, artistic, documentary, etc." />
             </DetailsSection>
 
-            <DetailsSection title="Videographer details" icon={Video} sectionKey="videographer">
+            <DetailsSection title="Videographer details" icon={Video} sectionKey="videographer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={labelStyle}>Select videographer</label>
                 {videographersList.length > 0 ? (
@@ -350,7 +345,7 @@ export default function PhotographyPage() {
         {/* Shot list tab */}
         {activeTab === 'shot-list' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Shot list" icon={Image} sectionKey="shotlist">
+            <DetailsSection title="Shot list" icon={Image} sectionKey="shotlist" onSave={handleDetailsSave} isSaving={isSavingDetails}>
               <SectionInput label="Getting ready" isTextarea value={details.photography?.gettingReadyShots} onChange={e => handleDetailsUpdate('gettingReadyShots', e.target.value)} placeholder="Details, dress, shoes, rings, etc." />
               <SectionInput label="Ceremony shots" isTextarea value={details.photography?.ceremonyShots} onChange={e => handleDetailsUpdate('ceremonyShots', e.target.value)} placeholder="Processional, vows, first kiss, recessional" />
               <SectionInput label="Family portraits" isTextarea value={details.photography?.familyPortraits} onChange={e => handleDetailsUpdate('familyPortraits', e.target.value)} placeholder="List family groupings for formal photos" />
@@ -370,7 +365,7 @@ export default function PhotographyPage() {
         {/* Timeline tab */}
         {activeTab === 'timeline' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Delivery & editing" icon={Clock} sectionKey="delivery">
+            <DetailsSection title="Delivery & editing" icon={Clock} sectionKey="delivery" onSave={handleDetailsSave} isSaving={isSavingDetails}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <SectionInput label="Photo delivery timeline" value={details.photography?.photoDeliveryTimeline} onChange={e => handleDetailsUpdate('photoDeliveryTimeline', e.target.value)} placeholder="e.g., 4-6 weeks" />
                 <SectionInput label="Number of edited photos" type="number" value={details.photography?.editedPhotosCount} onChange={e => handleDetailsUpdate('editedPhotosCount', e.target.value)} placeholder="Number" />

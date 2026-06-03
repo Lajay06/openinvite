@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import toast from 'react-hot-toast';
+import React, { useState, useEffect, useRef } from "react";
 import { InvokeLLM } from "@/integrations/Core";
 import { Lightbulb, Loader2, X, Search, FileText, Check, Music4, Mic2, Sparkles } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
@@ -130,6 +129,9 @@ export default function EntertainmentDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [showAva, setShowAva] = useState(false);
+  const autoSaveRef = useRef(null);
+  const latestRef = useRef(null);
+
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
@@ -138,30 +140,35 @@ export default function EntertainmentDetailsPage() {
       const r = rows[0] || {};
       setData(r.entertainmentDetails || {});
       setRecordId(r.id || null);
+      latestRef.current = r;
     } catch (e) { console.error(e); }
     setLoading(false);
   };
 
-  const handleSave = async () => {
+  const persist = (full) => {
+    clearTimeout(autoSaveRef.current);
     setSaveStatus('saving');
-    try {
-      if (recordId) {
-        await WeddingDetails.update(recordId, { entertainmentDetails: data });
-      } else {
-        const c = await WeddingDetails.create({ entertainmentDetails: data });
-        setRecordId(c.id);
-      }
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch {
-      toast.error('Failed to save entertainment details.');
-      setSaveStatus('idle');
-    }
+    autoSaveRef.current = setTimeout(async () => {
+      try {
+        if (recordId) {
+          await WeddingDetails.update(recordId, full);
+        } else {
+          const c = await WeddingDetails.create(full);
+          setRecordId(c.id);
+          latestRef.current = { ...full, id: c.id };
+        }
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch { setSaveStatus('idle'); }
+    }, 1200);
   };
 
   const update = (patch) => {
     const next = { ...data, ...patch };
     setData(next);
+    const full = { ...latestRef.current, entertainmentDetails: next };
+    latestRef.current = full;
+    persist(full);
   };
 
   if (loading) return (
@@ -178,11 +185,10 @@ export default function EntertainmentDetailsPage() {
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
           <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
-          <button onClick={handleSave} disabled={saveStatus === 'saving'}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 999, fontSize: 13, fontWeight: 600, background: '#E03553', color: '#FFFFFF', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", opacity: saveStatus === 'saving' ? 0.7 : 1 }}>
-            {saveStatus === 'saving' && <Loader2 size={13} className="animate-spin" />}
-            {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : 'Save'}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>

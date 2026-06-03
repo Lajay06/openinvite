@@ -3,7 +3,7 @@ import { Accordion } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Plus, Palette, Flower, Sparkles, User, Camera, Loader2 } from "lucide-react";
+import { Plus, Palette, Flower, Sparkles, User, Camera } from "lucide-react";
 import toast from 'react-hot-toast';
 import { createPageUrl } from "@/utils";
 
@@ -30,7 +30,7 @@ export default function StylingPage() {
   const [detailsId, setDetailsId] = useState(null);
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saveStatus, setSaveStatus] = useState('idle');
+  const [isSaving, setIsSaving] = useState(false);
 const [activeTab, setActiveTab] = useState("attire");
   const [showVendorForm, setShowVendorForm] = useState(false);
   const [vendorFormCategory, setVendorFormCategory] = useState('');
@@ -95,26 +95,25 @@ const [activeTab, setActiveTab] = useState("attire");
     }
   };
 
-  const handleSave = async () => {
-    setSaveStatus('saving');
+  const handleSectionSave = async (sectionKey) => {
+    setIsSaving(true);
+    const toastId = toast.loading(`Saving ${sectionKey}...`);
+    
     try {
-      if (!detailsId) {
-        const c = await WeddingDetails.create(details);
-        setDetailsId(c.id);
-      } else {
-        await WeddingDetails.update(detailsId, {
-          attire: details.attire,
-          flowers: details.flowers,
-          decorations: details.decorations,
-        });
-      }
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 2000);
+        let currentDetailsId = detailsId;
+        if (!currentDetailsId) {
+            const newDetails = await WeddingDetails.create(details);
+            setDetailsId(newDetails.id);
+            currentDetailsId = newDetails.id;
+        } else {
+            await WeddingDetails.update(currentDetailsId, { [sectionKey]: details[sectionKey] });
+        }
+        toast.success(`${sectionKey} saved successfully!`, { id: toastId });
     } catch (error) {
-      console.error('Error saving styling:', error);
-      toast.error('Failed to save styling details.');
-      setSaveStatus('idle');
+        console.error(`Error saving ${sectionKey}:`, error);
+        toast.error(`Failed to save ${sectionKey}.`, { id: toastId });
     }
+    setIsSaving(false);
   };
 
   // Filter vendors by category
@@ -139,14 +138,9 @@ const [activeTab, setActiveTab] = useState("attire");
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Styling" subtitle="Attire, flowers and decorations for your big day" />
 
-      {/* Ava + Save */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Ava button */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to help with your wedding style" onClick={() => setAvaOpen(true)} />
-        <button onClick={handleSave} disabled={saveStatus === 'saving'}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 999, fontSize: 13, fontWeight: 600, background: '#E03553', color: '#FFFFFF', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", opacity: saveStatus === 'saving' ? 0.7 : 1 }}>
-          {saveStatus === 'saving' && <Loader2 size={13} className="animate-spin" />}
-          {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? '✓ Saved' : 'Save'}
-        </button>
       </div>
 
       <div style={{ padding: '32px 32px 48px' }}>
@@ -176,7 +170,7 @@ const [activeTab, setActiveTab] = useState("attire");
           {/* Attire Tab */}
           <TabsContent value="attire" className="mt-8">
             <Accordion type="multiple" className="w-full space-y-4">
-              <DetailsSection title="Attire notes" icon={Palette} sectionKey="attire-notes">
+              <DetailsSection title="Attire notes" icon={Palette} sectionKey="attire-notes" onSave={() => handleSectionSave('attire')} isSaving={isSaving}>
                 <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', marginBottom: 12 }}>
                   Dress code is now set per event in <a href="/event-details" style={{ color: '#E03553', fontWeight: 600, textDecoration: 'none' }}>Event Details → Venue</a>.
                 </p>
@@ -194,7 +188,7 @@ const [activeTab, setActiveTab] = useState("attire");
           {/* Flowers Tab */}
           <TabsContent value="flowers" className="mt-8">
             <Accordion type="multiple" className="w-full space-y-4">
-              <DetailsSection title="Florist" icon={User} sectionKey="florist">
+              <DetailsSection title="Florist" icon={User} sectionKey="florist" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
                 <div>
                   {floristVendors.length > 0 ? (
                     <div className="flex gap-2">
@@ -238,7 +232,7 @@ const [activeTab, setActiveTab] = useState("attire");
                 </div>
               </DetailsSection>
 
-              <DetailsSection title="Bouquets & Personal Flowers" icon={Flower} sectionKey="bouquets">
+              <DetailsSection title="Bouquets & Personal Flowers" icon={Flower} sectionKey="bouquets" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
                 <SectionInput 
                   label="Bridal Bouquet" 
                   isTextarea 
@@ -263,7 +257,7 @@ const [activeTab, setActiveTab] = useState("attire");
                 />
               </DetailsSection>
 
-              <DetailsSection title="Ceremony Flowers" icon={Flower} sectionKey="ceremony-flowers">
+              <DetailsSection title="Ceremony Flowers" icon={Flower} sectionKey="ceremony-flowers" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
                 <SectionInput 
                   label="Ceremony Flowers" 
                   isTextarea 
@@ -273,7 +267,7 @@ const [activeTab, setActiveTab] = useState("attire");
                 />
               </DetailsSection>
 
-              <DetailsSection title="Reception Flowers" icon={Flower} sectionKey="reception-flowers">
+              <DetailsSection title="Reception Flowers" icon={Flower} sectionKey="reception-flowers" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
                 <SectionInput 
                   label="Reception Centerpieces" 
                   isTextarea 
@@ -304,7 +298,7 @@ const [activeTab, setActiveTab] = useState("attire");
           {/* Decorations Tab */}
           <TabsContent value="decorations" className="mt-8">
             <Accordion type="multiple" className="w-full space-y-4">
-              <DetailsSection title="Decorator / Designer" icon={User} sectionKey="decorator">
+              <DetailsSection title="Decorator / Designer" icon={User} sectionKey="decorator" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>
                 <div>
                   {decorationVendors.length > 0 ? (
                     <div className="flex gap-2">
@@ -348,7 +342,7 @@ const [activeTab, setActiveTab] = useState("attire");
                 </div>
               </DetailsSection>
 
-              <DetailsSection title="Theme & Colors" icon={Palette} sectionKey="theme-colors">
+              <DetailsSection title="Theme & Colors" icon={Palette} sectionKey="theme-colors" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>
                 <SectionInput 
                   label="Overall Theme" 
                   value={details.decorations?.theme} 
@@ -380,7 +374,7 @@ const [activeTab, setActiveTab] = useState("attire");
                 />
               </DetailsSection>
 
-              <DetailsSection title="Ceremony Decorations" icon={Camera} sectionKey="ceremony-decor">
+              <DetailsSection title="Ceremony Decorations" icon={Camera} sectionKey="ceremony-decor" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>
                 <SectionInput 
                   label="Ceremony Decorations" 
                   isTextarea 
@@ -390,7 +384,7 @@ const [activeTab, setActiveTab] = useState("attire");
                 />
               </DetailsSection>
 
-              <DetailsSection title="Reception Decorations" icon={Sparkles} sectionKey="reception-decor">
+              <DetailsSection title="Reception Decorations" icon={Sparkles} sectionKey="reception-decor" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>
                 <SectionInput 
                   label="Reception Decorations" 
                   isTextarea 
