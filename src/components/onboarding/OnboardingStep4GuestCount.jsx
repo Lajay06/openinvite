@@ -25,7 +25,9 @@ export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
       selected === 'intimate' ? 50 :
       selected === 'celebration' ? 100 : 200
     );
-    onNext({ guestCount: count });
+    // Pass guestType (tile id) so saveOnboarding can write the canonical guestType field.
+    // Empty when the user typed a custom count without selecting a tile — that's fine.
+    onNext({ guestCount: count, guestType: selected || '' });
   };
 
   const isReady = selected || customCount;

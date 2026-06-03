@@ -13,8 +13,18 @@ export async function buildWeddingContext() {
   const budget   = budgetResult.status   === 'fulfilled' ? budgetResult.value   : [];
   const vendors  = vendorsResult.status  === 'fulfilled' ? vendorsResult.value  : [];
   const schedule = scheduleResult.status === 'fulfilled' ? scheduleResult.value : [];
-  const wdRows   = wdResult.status       === 'fulfilled' ? wdResult.value       : [];
-  const theme    = wdRows[0]?.theme || {};
+  const wdRows      = wdResult.status === 'fulfilled' ? wdResult.value : [];
+  const wd          = wdRows[0] || {};
+  const theme       = wd.theme || {};
+  const expectedCount    = wd.guestCount ? String(wd.guestCount) : '';
+  const expectedTierRaw  = wd.guestType  || '';
+  // Capitalise tier label for display (schema stores lowercase: intimate → Intimate)
+  const expectedTier = expectedTierRaw
+    ? expectedTierRaw.charAt(0).toUpperCase() + expectedTierRaw.slice(1)
+    : '';
+  const expectedGuestLine = expectedCount
+    ? `Expected guest count: ~${expectedCount}${expectedTier ? ` (${expectedTier})` : ''}`
+    : '';
 
   const coupleName  = localStorage.getItem('oi_couple_name') || 'the couple';
   const weddingDate = localStorage.getItem('oi_wedding_date');
@@ -58,7 +68,7 @@ Planner: ${user.full_name || 'Unknown'} (${user.email || ''})
 Wedding date: ${weddingDate || 'Not set'}${daysUntil !== null ? ` (${daysUntil} days away)` : ''}
 Location: ${city || 'Not set'}${themeBlock}
 
-GUESTS:
+${expectedGuestLine ? expectedGuestLine + '\n' : ''}GUESTS (actual RSVPs):
 Total: ${guests.length} | Confirmed: ${confirmed} | Pending: ${pending}
 
 BUDGET:
