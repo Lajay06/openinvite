@@ -230,7 +230,28 @@ export default function LoginScreen({ initialMode = "login" }) {
       track('user_logged_in', { method: 'email' });
       if (me?.id) identify(me.id, { email: me.email, name: me.full_name });
       crispIdentify(me?.email, me?.full_name);
-      window.location.href = "/Dashboard";
+
+      // Decide: /onboarding vs /Dashboard.
+      // Route to /onboarding only when BOTH are true:
+      //   1. onboardingCompleted is false — must read via base44.auth.me() because
+      //      loginViaEmailPassword returns the auth-level user (lacks custom fields)
+      //   2. no meaningful wedding data — guards legacy accounts whose onboardingCompleted
+      //      flag was never persisted (schema registration bug, now fixed) but who have
+      //      real wedding data. Emptiness signal: no WeddingDetails record, or the record
+      //      has no couple1Name. couple1Name is always written by onboarding completion
+      //      (OnboardingStep1Names is required), so its absence reliably means the account
+      //      was never fully onboarded.
+      // Any failure in the routing check defaults safely to /Dashboard.
+      let dest = "/Dashboard";
+      try {
+        const currentUser = await base44.auth.me();
+        if (!currentUser?.onboardingCompleted) {
+          const wdRows = await base44.entities.WeddingDetails.list();
+          const hasData = wdRows.length > 0 && !!(wdRows[0].couple1Name);
+          if (!hasData) dest = "/onboarding";
+        }
+      } catch { /* routing check failed — default to Dashboard */ }
+      window.location.href = dest;
     } catch (err) {
       setError(err?.message || "Invalid email or password. Please try again.");
       setLoading(false);
