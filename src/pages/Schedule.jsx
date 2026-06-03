@@ -60,7 +60,7 @@ const CATEGORIES = [
   "transportation", "rehearsal", "pre_wedding", "post_wedding", "other",
 ];
 
-export default function SchedulePage({ embedded = false }) {
+export default function SchedulePage({ embedded = false, activeView = null }) {
   const [scheduleItems, setScheduleItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -69,6 +69,8 @@ export default function SchedulePage({ embedded = false }) {
   const [activeTab, setActiveTab] = useState("visual");
   const [loading, setLoading] = useState(true);
   const [avaOpen, setAvaOpen] = useState(false);
+  // When the hub drives the view externally, use that; otherwise use internal state
+  const effectiveTab = activeView ?? activeTab;
 
   useEffect(() => { loadScheduleItems(); }, []);
 
@@ -215,13 +217,15 @@ export default function SchedulePage({ embedded = false }) {
       {/* Content */}
       <div style={{ padding: '32px 32px 48px' }}>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full justify-start">
-            <TabsTrigger value="visual">Visual builder</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline view</TabsTrigger>
-            <TabsTrigger value="list">List view</TabsTrigger>
-            <TabsTrigger value="considerations">Considerations</TabsTrigger>
-          </TabsList>
+        <Tabs value={effectiveTab} onValueChange={setActiveTab}>
+          {activeView === null && (
+            <TabsList className="w-full justify-start">
+              <TabsTrigger value="visual">Visual builder</TabsTrigger>
+              <TabsTrigger value="timeline">Timeline view</TabsTrigger>
+              <TabsTrigger value="list">List view</TabsTrigger>
+              <TabsTrigger value="considerations">Considerations</TabsTrigger>
+            </TabsList>
+          )}
 
           {/* Visual Builder */}
           <TabsContent value="visual" className="mt-8">
