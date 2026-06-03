@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UtensilsCrossed, Plus, ChefHat, Coffee, Wine, Cake, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -38,6 +38,9 @@ export default function CateringPage() {
   const [detailsId, setDetailsId] = useState(null);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
 
+  const autoSaveRef  = useRef(null);
+  const detailsIdRef = useRef(null); // ref so the debounced closure always reads the latest id
+
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
@@ -51,6 +54,7 @@ export default function CateringPage() {
       if (detailsData.length > 0) {
         setDetails(detailsData[0]);
         setDetailsId(detailsData[0].id);
+        detailsIdRef.current = detailsData[0].id;
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -59,8 +63,28 @@ export default function CateringPage() {
     setLoading(false);
   };
 
+  const persist = (nextFoodAndBeverage) => {
+    clearTimeout(autoSaveRef.current);
+    autoSaveRef.current = setTimeout(async () => {
+      const id = detailsIdRef.current;
+      try {
+        if (id) {
+          await WeddingDetails.update(id, { foodAndBeverage: nextFoodAndBeverage });
+        } else {
+          const c = await WeddingDetails.create({ foodAndBeverage: nextFoodAndBeverage });
+          setDetailsId(c.id);
+          detailsIdRef.current = c.id;
+        }
+      } catch (e) {
+        console.error('[Catering] autosave failed:', e);
+      }
+    }, 800);
+  };
+
   const handleDetailsUpdate = (field, value) => {
-    setDetails(prev => ({ ...prev, foodAndBeverage: { ...prev.foodAndBeverage, [field]: value } }));
+    const next = { ...(details.foodAndBeverage || {}), [field]: value };
+    setDetails(prev => ({ ...prev, foodAndBeverage: next }));
+    persist(next);
   };
 
   const handleVendorSelect = (vendorId) => {
