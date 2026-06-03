@@ -308,7 +308,7 @@ const TABS = [
   { key: 'overview',     label: 'Planning overview' },
 ];
 
-export default function ChecklistPage() {
+export default function ChecklistPage({ embedded = false }) {
   const [lists, setLists] = useState(() => loadChecklist());
   const [activeTab, setActiveTab] = useState('my-checklist');
   const [avaOpen, setAvaOpen] = useState(false);
@@ -333,7 +333,7 @@ export default function ChecklistPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Checklist" subtitle="Track every task from first steps to big day" />
+      {!embedded && <DashboardPageHeader title="Checklist" subtitle="Track every task from first steps to big day" />}
 
       {/* Stat strip */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

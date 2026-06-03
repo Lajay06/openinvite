@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useAuth } from "@/lib/AuthContext";
 import {
-  LayoutDashboard, Calendar, CheckSquare, ListTodo,
+  LayoutDashboard, Calendar, ListTodo,
   Users, UserCheck, LayoutGrid, MessageCircle,
   Wallet, Gift, Package,
   Palette, Music2, Image, FileText, Camera,
@@ -26,7 +26,6 @@ const NAV_SECTIONS = [
       { icon: Sparkles,        label: "Daily update", url: createPageUrl("DailyUpdate") },
       { icon: LayoutDashboard, label: "Overall",      url: createPageUrl("Dashboard") },
       { icon: Calendar,        label: "Schedule",     url: createPageUrl("Schedule") },
-      { icon: CheckSquare,     label: "Checklist",    url: createPageUrl("Checklist") },
       { icon: ListTodo,        label: "To do",        url: createPageUrl("TodoList") },
     ],
   },

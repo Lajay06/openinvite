@@ -61,6 +61,7 @@ import Calendar from './pages/Calendar';
 import ScheduleHub from './pages/ScheduleHub';
 import Catering from './pages/Catering';
 import Checklist from './pages/Checklist';
+import TasksHub from './pages/TasksHub';
 import Considerations from './pages/Considerations';
 import CouplesStudio from './pages/CouplesStudio';
 import Dashboard from './pages/Dashboard';
@@ -123,7 +124,7 @@ export const PAGES = {
     "Transport": Transport,
     "Calendar": ScheduleHub,
     "Catering": Catering,
-    "Checklist": Checklist,
+    "Checklist": TasksHub,
     "Considerations": Considerations,
     "CouplesStudio": CouplesStudio,
     "Dashboard": Dashboard,
@@ -160,7 +161,7 @@ export const PAGES = {
     "Schedule": ScheduleHub,
     "Seating": Seating,
     "Styling": Styling,
-    "TodoList": TodoList,
+    "TodoList": TasksHub,
     "Vendors": Vendors,
     "VowsSpeeches": VowsSpeeches,
     "WebsiteCustomization": WebsiteCustomization,
