@@ -26,6 +26,7 @@ const NAV_SECTIONS = [
       { icon: Sparkles,        label: "Daily update", url: createPageUrl("DailyUpdate") },
       { icon: LayoutDashboard, label: "Overall",      url: createPageUrl("Dashboard") },
       { icon: Calendar,        label: "Calendar",     url: createPageUrl("Calendar") },
+      { icon: Clock,           label: "Schedule",     url: createPageUrl("Schedule") },
       { icon: CheckSquare,     label: "Checklist",    url: createPageUrl("Checklist") },
       { icon: ListTodo,        label: "To do list",   url: createPageUrl("TodoList") },
     ],
@@ -70,11 +71,10 @@ const NAV_SECTIONS = [
   {
     label: "Day of",
     items: [
-      { icon: Clock,   label: "Schedule",          url: createPageUrl("Schedule") },
-      { icon: Heart,   label: "Ceremony details",  url: "/ceremony-details" },
-      { icon: Hotel,   label: "Accommodation",     url: "/accommodation" },
-      { icon: Car,     label: "Transport",         url: "/transport" },
-      { icon: Phone,   label: "Emergency contact", url: "/emergency-contact" },
+      { icon: Heart,  label: "Ceremony details",  url: "/ceremony-details" },
+      { icon: Car,    label: "Transport",         url: "/transport" },
+      { icon: Hotel,  label: "Accommodation",     url: "/accommodation" },
+      { icon: Phone,  label: "Emergency contact", url: "/emergency-contact" },
     ],
   },
   {
