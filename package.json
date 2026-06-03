@@ -10,7 +10,8 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
-    "test:persistence": "node scripts/test-persistence.mjs"
+    "test:persistence": "node scripts/test-persistence.mjs",
+    "reset:test": "node scripts/reset-test-account.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.31",
