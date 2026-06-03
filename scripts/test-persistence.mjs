@@ -237,6 +237,93 @@ const TEST_FIELDS = {
       ],
     },
   ],
+  // ── 7 planning pages — previously silently dropped, now registered ───────────
+  foodAndBeverage: {
+    caterer: 'Test Catering Co',
+    cateringContact: 'Jane Smith',
+    cateringPhone: '+61 400 000 010',
+    cateringEmail: 'catering@test.com',
+    serviceStyle: 'Seated',
+    guestCount: '120',
+    menuItems: [{ name: 'Entree', description: 'Bruschetta' }],
+    dietaryOptions: ['Vegan', 'Gluten-free'],
+    barType: 'Open bar',
+    barNotes: 'House wine and beer included',
+    cake: 'Three-tier vanilla sponge',
+    desserts: 'Dessert bar',
+    coffee: 'Espresso station',
+    lateNightSnacks: 'Mini burgers',
+  },
+  photography: {
+    photographer: 'Test Photography Studio',
+    photographerContact: 'Alex Jones',
+    photographerPhone: '+61 400 000 011',
+    photographerEmail: 'photo@test.com',
+    photographyPackage: 'Full day',
+    photographyHours: '10',
+    photographyStyle: 'Documentary candid',
+    videographer: 'Test Video Co',
+    videographerPhone: '+61 400 000 012',
+    videoLength: '5 minute highlight reel',
+    mustHaveShots: 'First look, ring exchange, first dance',
+    photoDeliveryTimeline: '6 weeks',
+    editedPhotosCount: '600',
+    editingStyle: 'Natural',
+  },
+  attire: {
+    notes: 'Bride: ivory silk gown. Groom: navy suit. Bridesmaids: dusty rose.',
+  },
+  flowers: {
+    florist: 'Test Florist Studio',
+    vendorId: 'vendor-test-florist-1',
+    bouquet: 'White peonies and garden roses',
+    boutonnieres: 'Single white rose',
+    ceremonyArrangements: 'Arch florals with greenery',
+    receptionCentrepieces: 'Low arrangements, white and blush',
+    flowerBudget: '4000',
+    colorPalette: 'White, blush, sage',
+    floralNotes: 'No lilies — allergy',
+  },
+  decorations: {
+    decorator: 'Test Decorations Co',
+    theme: 'Garden romantic',
+    colorScheme: 'White, blush, gold',
+    lightingStyle: 'String lights and candles',
+    tableLinen: 'White linen with gold chargers',
+    signage: 'Acrylic welcome sign',
+    photoBooth: false,
+    decorationNotes: 'Sustainable florals preferred',
+  },
+  beauty: {
+    hairStylist: 'Test Hair Studio',
+    makeupArtist: 'Test Makeup Co',
+    trialDate: '2025-10-15',
+    gettingReadyPeople: [
+      { name: 'Bride', services: ['hair', 'makeup'] },
+      { name: 'Maid of honour', services: ['hair'] },
+    ],
+    skincareTimeline: [
+      { date: '2025-10-01', task: 'Facial' },
+      { date: '2025-11-01', task: 'Final facial' },
+    ],
+    trials: [
+      { date: '2025-10-15', type: 'Hair and makeup trial', notes: 'Updo with loose curls' },
+    ],
+    beautyNotes: 'Airbrush foundation preferred',
+  },
+  entertainmentDetails: {
+    bandOrDj: 'DJ',
+    entertainerName: 'Test DJ Services',
+    entertainerPhone: '+61 400 000 013',
+    firstDanceSong: 'Perfect - Ed Sheeran',
+    fatherDaughterSong: 'My Girl - The Temptations',
+    doNotPlayList: ['Cotton Eye Joe'],
+    mc: 'Best man',
+    mcName: 'Test Best Man',
+    photoBooth: true,
+    photoBoothProvider: 'Test Photo Booth Co',
+    entertainmentNotes: 'DJ to play until midnight',
+  },
 };
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -564,6 +651,17 @@ async function run() {
     results.push(settingOk
       ? pass('theme.setting', got?.setting)
       : fail('theme.setting', written.setting, got?.setting));
+  }
+
+  // ── 7c. Planning page fields — previously silently dropped, now registered ────
+  console.log('\n  Planning page field persistence tests (foodAndBeverage, photography, attire, flowers, decorations, beauty, entertainmentDetails):\n');
+
+  for (const field of ['foodAndBeverage', 'photography', 'attire', 'flowers', 'decorations', 'beauty', 'entertainmentDetails']) {
+    const written = TEST_FIELDS[field];
+    const got     = record[field];
+    results.push(writtenSubsetMatches(written, got)
+      ? pass(field, `all sub-fields persisted`)
+      : fail(field, written, got));
   }
 
   // ── 8. Sequential append test (catches the "second add overwrites first" bug) ──
