@@ -13,6 +13,7 @@ import VendorForm from "../components/vendors/VendorForm";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+import AttirePanel from '../components/styling/AttirePanel';
 import { base44 } from "@/api/base44Client";
 const WeddingDetails = base44.entities.WeddingDetails;
 const Vendor = base44.entities.Vendor;
@@ -169,20 +170,7 @@ const [activeTab, setActiveTab] = useState("attire");
 
           {/* Attire Tab */}
           <TabsContent value="attire" className="mt-8">
-            <Accordion type="multiple" className="w-full space-y-4">
-              <DetailsSection title="Attire notes" icon={Palette} sectionKey="attire-notes" onSave={() => handleSectionSave('attire')} isSaving={isSaving}>
-                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', marginBottom: 12 }}>
-                  Dress code is now set per event in <a href="/event-details" style={{ color: '#E03553', fontWeight: 600, textDecoration: 'none' }}>Event Details → Venue</a>.
-                </p>
-                <SectionInput
-                  label="Attire notes"
-                  isTextarea
-                  value={details.attire?.notes}
-                  onChange={e => handleUpdate('attire', 'notes', e.target.value)}
-                  placeholder="e.g., 'The ceremony is on grass, so consider footwear.'"
-                />
-              </DetailsSection>
-            </Accordion>
+            <AttirePanel />
           </TabsContent>
 
           {/* Flowers Tab */}

@@ -272,6 +272,19 @@ const TEST_FIELDS = {
   },
   attire: {
     notes: 'Bride: ivory silk gown. Groom: navy suit. Bridesmaids: dusty rose.',
+    outfits: [
+      { id: 'outfit-test-1', role: 'Bride', roleCustom: '', name: 'Test Bride', description: 'Ivory silk gown', source: 'Jenny Yoo', status: 'Ordered', measurements: 'Size 8', cost: '$2,800', photoUrl: '' },
+      { id: 'outfit-test-2', role: 'Groom', roleCustom: '', name: 'Test Groom', description: 'Navy three-piece suit', source: 'Trenery', status: 'Ready', measurements: 'Chest 42', cost: '$950', photoUrl: '' },
+    ],
+    tailor: { name: 'Test Tailor Studio', contact: 'Mary Needles', phone: '+61 400 000 099', email: 'tailor@test.com', notes: 'First fitting six weeks before' },
+    fittings: [
+      { id: 'fitting-test-1', date: '2025-10-15', who: 'Bride', notes: 'First dress fitting' },
+      { id: 'fitting-test-2', date: '2025-11-01', who: 'Groom', notes: 'Suit alterations check' },
+    ],
+    accessories: [
+      { id: 'acc-test-1', item: 'Veil', forWhom: 'Bride', done: false },
+      { id: 'acc-test-2', item: 'Cufflinks', forWhom: 'Groom', done: true },
+    ],
   },
   flowers: {
     florist: 'Test Florist Studio',
@@ -662,6 +675,54 @@ async function run() {
     results.push(writtenSubsetMatches(written, got)
       ? pass(field, `all sub-fields persisted`)
       : fail(field, written, got));
+  }
+
+  // ── 7d. Attire nested arrays — new sub-fields (outfits, tailor, fittings, accessories) ──
+  console.log('\n  Attire nested arrays persistence tests (outfits, tailor, fittings, accessories, notes):\n');
+
+  // attire.notes — must be preserved (existing field, must not be dropped by the new structure)
+  {
+    const written = TEST_FIELDS.attire.notes;
+    const got     = record.attire?.notes;
+    results.push(written === got
+      ? pass('attire.notes', `"${got}"`)
+      : fail('attire.notes', written, got));
+  }
+
+  // attire.outfits[] — array of objects with nested fields
+  {
+    const written = TEST_FIELDS.attire.outfits;
+    const got     = record.attire?.outfits;
+    results.push(deepEqual(written, got)
+      ? pass('attire.outfits', `${got?.length} outfit(s) round-tripped`)
+      : fail('attire.outfits', written, got));
+  }
+
+  // attire.tailor — nested vendor object
+  {
+    const written = TEST_FIELDS.attire.tailor;
+    const got     = record.attire?.tailor;
+    results.push(deepEqual(written, got)
+      ? pass('attire.tailor', 'tailor object round-tripped')
+      : fail('attire.tailor', written, got));
+  }
+
+  // attire.fittings[] — array of fitting objects
+  {
+    const written = TEST_FIELDS.attire.fittings;
+    const got     = record.attire?.fittings;
+    results.push(deepEqual(written, got)
+      ? pass('attire.fittings', `${got?.length} fitting(s) round-tripped`)
+      : fail('attire.fittings', written, got));
+  }
+
+  // attire.accessories[] — array of accessory checklist items
+  {
+    const written = TEST_FIELDS.attire.accessories;
+    const got     = record.attire?.accessories;
+    results.push(deepEqual(written, got)
+      ? pass('attire.accessories', `${got?.length} accessory(ies) round-tripped`)
+      : fail('attire.accessories', written, got));
   }
 
   // ── 8. Sequential append test (catches the "second add overwrites first" bug) ──
