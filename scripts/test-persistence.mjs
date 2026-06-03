@@ -633,6 +633,47 @@ async function run() {
     }
   }
 
+  // ── 8c. Guest invite-tracking fields — previously silently dropped, now registered ──
+  console.log('\n  Guest invite-tracking field persistence tests (invite_sent_at, invite_channel, reminder_sent_at):\n');
+  let guestInviteId = null;
+  try {
+    const gi = await api('POST', `/apps/${APP_ID}/entities/Guest`,
+      { name: '__PERSISTENCE_TEST_INVITE__' }, token);
+    guestInviteId = gi.id;
+    if (!guestInviteId) throw new Error('No id on created Guest');
+
+    const sentAt = new Date().toISOString();
+
+    // Write invite fields exactly as SendInvitesModal does
+    await api('PUT', `/apps/${APP_ID}/entities/Guest/${guestInviteId}`,
+      { name: '__PERSISTENCE_TEST_INVITE__', invite_sent_at: sentAt, invite_channel: 'email' }, token);
+    // Reminder written in a separate PUT (mirrors the real reminder code path)
+    await api('PUT', `/apps/${APP_ID}/entities/Guest/${guestInviteId}`,
+      { name: '__PERSISTENCE_TEST_INVITE__', reminder_sent_at: sentAt }, token);
+
+    const giBack = await api('GET', `/apps/${APP_ID}/entities/Guest/${guestInviteId}`, undefined, token);
+
+    results.push(giBack.invite_sent_at === sentAt
+      ? pass('Guest.invite_sent_at', `"${giBack.invite_sent_at}"`)
+      : fail('Guest.invite_sent_at', sentAt, giBack.invite_sent_at));
+
+    results.push(giBack.invite_channel === 'email'
+      ? pass('Guest.invite_channel', `"${giBack.invite_channel}"`)
+      : fail('Guest.invite_channel', 'email', giBack.invite_channel));
+
+    results.push(giBack.reminder_sent_at === sentAt
+      ? pass('Guest.reminder_sent_at', `"${giBack.reminder_sent_at}"`)
+      : fail('Guest.reminder_sent_at', sentAt, giBack.reminder_sent_at));
+  } catch (err) {
+    console.log(`  ❌ FAIL  Guest invite-tracking fields — error: ${err.message}`);
+    results.push(false); results.push(false); results.push(false);
+  } finally {
+    if (guestInviteId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestInviteId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
   // ── 9. Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;
   const total  = results.length;
