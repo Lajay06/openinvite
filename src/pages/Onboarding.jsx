@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon } from 'lucide-react';
 
 // TASK 1: entity references via authenticated client (no @/entities/* imports)
 const WeddingDetails = base44.entities.WeddingDetails;
@@ -219,7 +218,7 @@ export default function Onboarding() {
     navigate('/Dashboard');
   };
 
-  const stepProps = { theme, setTheme };
+  const stepProps = { theme };
 
   // Fork step always renders on a light background
   const isForkStep = currentStep === 'fork';
@@ -289,27 +288,6 @@ export default function Onboarding() {
           </button>
         )}
       </div>
-
-      {/* TASK 2: Theme toggle — fixed top-right */}
-      <button
-        onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-        style={{
-          position: 'fixed', top: 20, right: 24, zIndex: 50,
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '6px 14px', borderRadius: 999,
-          fontSize: 12, fontFamily: PJS, cursor: 'pointer',
-          background: pageIsLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.1)',
-          color: pageIsLight ? '#0A0A0A' : '#FFFFFF',
-          border: pageIsLight ? '1px solid rgba(0,0,0,0.12)' : '1px solid rgba(255,255,255,0.2)',
-          transition: 'all 0.2s ease',
-        }}
-      >
-        {pageIsLight
-          ? <Sun size={14} />
-          : <Moon size={14} />
-        }
-        {isDark && !isForkStep ? 'Dark' : 'Light'}
-      </button>
 
       {/* Steps container */}
       <AnimatePresence mode="wait">

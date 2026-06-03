@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import VenueSearchPanel from '@/components/shared/VenueSearchPanel';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 export default function OnboardingStep3Location({ onNext, data, theme }) {
-  // Normalise stored venue — it may be a plain string or an object from the old LocationPicker
-  const initialVenue =
-    typeof data?.venue === 'object'
-      ? data?.venue?.name || ''
-      : data?.venue || '';
+  // venue: null | { name, address, placeId, mapsUrl, photoUrl }
+  // Normalise from legacy string or object saved by a previous session
+  const initialVenue = (() => {
+    if (!data?.venue) return null;
+    if (typeof data.venue === 'object' && data.venue.name) return data.venue;
+    if (typeof data.venue === 'string' && data.venue.trim()) {
+      return { name: data.venue.trim(), address: data.location || '', placeId: null, mapsUrl: null, photoUrl: null };
+    }
+    return null;
+  })();
 
   const [venue, setVenue] = useState(initialVenue);
   const [location, setLocation] = useState(data?.location || '');
@@ -22,19 +28,8 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
     onNext({ venue, location });
   };
 
-  const canContinue = venue.trim() || location.trim();
-
-  const inputStyle = {
-    width: '100%',
-    background: 'transparent',
-    border: 'none',
-    borderBottom: `1px solid ${inputBorder}`,
-    padding: '6px 0',
-    fontSize: 15,
-    color: textPrimary,
-    fontFamily: PJS,
-    outline: 'none',
-  };
+  // Can continue if a venue was picked/typed, OR a city was entered
+  const canContinue = venue?.name || location.trim();
 
   const labelStyle = {
     fontSize: 11,
@@ -76,19 +71,15 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
         transition={{ delay: 0.2 }}
         className="space-y-6 mb-12 max-w-md mx-auto text-left"
       >
-        <div>
-          <label style={labelStyle}>Venue name</label>
-          <input
-            type="text"
-            value={venue}
-            onChange={e => setVenue(e.target.value)}
-            placeholder="e.g. The Grand Ballroom"
-            className="s3-input"
-            style={inputStyle}
-            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          />
-        </div>
+        {/* Venue name — Places-powered search */}
+        <VenueSearchPanel
+          venue={venue}
+          onChange={setVenue}
+          locationBias={location}
+          label="Venue name"
+        />
 
+        {/* City or location — free text, always available */}
         <div>
           <label style={labelStyle}>City or location</label>
           <input
@@ -97,7 +88,17 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
             onChange={e => setLocation(e.target.value)}
             placeholder="e.g. Sydney, Australia"
             className="s3-input"
-            style={inputStyle}
+            style={{
+              width: '100%',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `1px solid ${inputBorder}`,
+              padding: '6px 0',
+              fontSize: 15,
+              color: textPrimary,
+              fontFamily: PJS,
+              outline: 'none',
+            }}
             onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           />
         </div>
@@ -107,7 +108,7 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="space-y-4"
+        className="space-y-6"
       >
         {canContinue && (
           <button
@@ -118,7 +119,7 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
           </button>
         )}
         <button
-          onClick={() => onNext({ venue: '', location: '' })}
+          onClick={() => onNext({ venue: null, location: '' })}
           style={{ display: 'block', margin: '0 auto', color: skipColor, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS }}
         >
           Not sure yet →
