@@ -82,6 +82,25 @@ export default function MultiPageWeddingWebsite() {
   // Must be called before any early return — React rules of hooks
   const prefersReduced = useReducedMotion();
 
+  // Inject Google Font for the selected typography pairing via a <link> in <head>.
+  // CSS @import inside a body <style> tag is unreliable — browsers often ignore it.
+  useEffect(() => {
+    const pairing = TYPOGRAPHY_PAIRINGS.find(t => t.id === weddingDetails?.activeTypography)
+      || TYPOGRAPHY_PAIRINGS[0];
+    if (!pairing.googleFonts) return;
+    const href = `https://fonts.googleapis.com/css2?family=${pairing.googleFonts}&display=swap`;
+    let link = document.getElementById('wf-typo-pairing');
+    if (link) {
+      if (link.href !== href) link.href = href;
+      return;
+    }
+    link = document.createElement('link');
+    link.id = 'wf-typo-pairing';
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }, [weddingDetails?.activeTypography]);
+
   useEffect(() => {
     const loadWeddingDetails = async () => {
       try {
@@ -151,14 +170,15 @@ export default function MultiPageWeddingWebsite() {
   };
 
   return (
-    <div style={{ backgroundColor: theme.darkBg, color: theme.darkText, fontFamily: typography.bodyFont }}>
-      {/* Font imports */}
-      <style>
-        {`
-          ${typography.headingImport || ''}
-          ${typography.bodyImport || ''}
-        `}
-      </style>
+    <div
+      className="wb-guest-root"
+      style={{
+        '--wb-heading-font': typography.headingFont,
+        '--wb-body-font': typography.bodyFont,
+        backgroundColor: theme.darkBg,
+        color: theme.darkText,
+      }}
+    >
 
       {/* Navigation */}
       <WeddingWebsiteNav

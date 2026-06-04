@@ -333,10 +333,9 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 
   const theme = WEBSITE_THEMES.find(t => t.id === (details?.activeTheme || 'still')) || WEBSITE_THEMES[0];
   const universeTheme = UNIVERSE_THEMES[details?.activeUniverse] || UNIVERSE_THEMES.aman;
-  const typo = {
-    fontDisplay: details?.displayFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif',
-    fontBody: details?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif',
-  };
+  // Derive typo from the selected pairing so the builder preview matches the published site.
+  // activeTypography is the Base44-registered field written by WBRightPanel's pairing grid.
+  const typo = TYPOGRAPHY_PAIRINGS.find(t => t.id === details?.activeTypography) || TYPOGRAPHY_PAIRINGS[0];
 
   const setDetailsAndMark = (updater) => {
     setDetails(prev => {
@@ -774,7 +773,10 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
   console.log('[typo] PreviewContent — hf:', effectiveHf, '| bf:', effectiveBf);
 
   return (
-    <>
+    <div
+      className="wb-guest-root"
+      style={{ '--wb-heading-font': effectiveHf, '--wb-body-font': effectiveBf, display: 'contents' }}
+    >
       {/* Nav bar inside preview */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
         <div style={{ background: universeTheme.primary, padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
@@ -879,6 +881,6 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
