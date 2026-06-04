@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Plus, ChevronLeft } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
-import { WEBSITE_THEMES, FONT_OPTIONS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, HERO_EFFECT_OPTIONS } from '@/lib/websiteThemes';
+import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, HERO_EFFECT_OPTIONS } from '@/lib/websiteThemes';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
 import {
@@ -97,39 +97,18 @@ function DesignTab({ details, onChange, universeTheme }) {
   const [themeOpen, setThemeOpen] = useState(false);
   const [typoOpen, setTypoOpen] = useState(false);
 
-  const defDisplay = universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
-  const defBody = universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
-  const [displayFont, setDisplayFont] = useState(details.displayFont || defDisplay);
-  const [bodyFont, setBodyFont] = useState(details.bodyFont || defBody);
+  const activeTypoId = details.activeTypography || 'classic';
+  const activeTypo = TYPOGRAPHY_PAIRINGS.find(t => t.id === activeTypoId) || TYPOGRAPHY_PAIRINGS[0];
 
+  // Load Google Fonts for the selected pairing so the Aa preview renders correctly
   useEffect(() => {
-    const injectFont = (fontValue) => {
-      const opt = FONT_OPTIONS.find(f => f.value === fontValue);
-      if (!opt?.google) return;
-      const href = `https://fonts.googleapis.com/css2?family=${opt.google}&display=swap`;
-      if (!document.head.querySelector(`link[href="${href}"]`)) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        link.setAttribute('data-wf-font-sel', '1');
-        document.head.appendChild(link);
-      }
-    };
-    injectFont(displayFont);
-    injectFont(bodyFont);
-  }, [displayFont, bodyFont]);
-
-  const handleDisplayFont = (val) => {
-    setDisplayFont(val);
-    onChange('displayFont', val);
-  };
-
-  const handleBodyFont = (val) => {
-    setBodyFont(val);
-    onChange('bodyFont', val);
-  };
-
-  const displayFontLabel = FONT_OPTIONS.find(f => f.value === displayFont)?.label;
+    if (!activeTypo.googleFonts) return;
+    const href = `https://fonts.googleapis.com/css2?family=${activeTypo.googleFonts}&display=swap`;
+    if (document.head.querySelector(`link[href="${href}"]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet'; link.href = href;
+    document.head.appendChild(link);
+  }, [activeTypo.googleFonts]);
 
   const universeName    = universeTheme?.name    || 'Aman';
   const universeAccent  = universeTheme?.accent  || '#C4956A';
@@ -201,20 +180,34 @@ function DesignTab({ details, onChange, universeTheme }) {
       </div>
       <Divider />
       <SLabel onClick={() => setTypoOpen(o => !o)} isOpen={typoOpen}>
-        {displayFontLabel ? `Typography · ${displayFontLabel}` : 'Typography'}
+        {`Typography · ${activeTypo.name}`}
       </SLabel>
-      <div style={{ overflow: 'hidden', maxHeight: typoOpen ? '400px' : '0px', transition: 'max-height 0.2s ease' }}>
-        <div style={{ marginBottom: 12 }}>
-          <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Primary font</p>
-          <select value={displayFont} onChange={e => handleDisplayFont(e.target.value)} style={selectStyle}>
-            {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-          </select>
-        </div>
-        <div style={{ marginBottom: 8 }}>
-          <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Secondary font</p>
-          <select value={bodyFont} onChange={e => handleBodyFont(e.target.value)} style={selectStyle}>
-            {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-          </select>
+      <div style={{ overflow: 'hidden', maxHeight: typoOpen ? '700px' : '0px', transition: 'max-height 0.2s ease' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 8 }}>
+          {TYPOGRAPHY_PAIRINGS.map(t => {
+            const sel = activeTypoId === t.id;
+            return (
+              <div
+                key={t.id}
+                onClick={() => onChange('activeTypography', t.id)}
+                style={{
+                  border: sel ? '2px solid rgba(255,255,255,0.7)' : '1px solid rgba(255,255,255,0.1)',
+                  padding: '10px 12px', cursor: 'pointer',
+                  background: sel ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  position: 'relative', transition: 'border-color 0.15s',
+                }}
+              >
+                {sel && (
+                  <div style={{ position: 'absolute', top: 5, right: 5, width: 13, height: 13, borderRadius: '50%', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 8, fontWeight: 700, color: '#0A0A0A', lineHeight: 1 }}>✓</span>
+                  </div>
+                )}
+                <p style={{ fontFamily: t.fontDisplay, fontSize: 18, fontWeight: 400, color: '#FFFFFF', margin: '0 0 2px', lineHeight: 1 }}>Aa</p>
+                <p style={{ fontSize: 10, fontWeight: 700, color: sel ? '#FFFFFF' : 'rgba(255,255,255,0.6)', margin: '0 0 1px', fontFamily: 'inherit' }}>{t.name}</p>
+                <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', margin: 0, fontFamily: 'inherit' }}>{t.description}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
       <Divider />
