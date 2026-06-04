@@ -60,7 +60,12 @@ const CATEGORIES = [
   "transportation", "rehearsal", "pre_wedding", "post_wedding", "other",
 ];
 
-export default function SchedulePage({ embedded = false, activeView = null }) {
+export default function SchedulePage({
+  embedded    = false,
+  activeView  = null,
+  hideChrome  = false,   // when true: suppress stat strip, banner, action bar (hub owns them)
+  refreshKey  = 0,       // hub increments to trigger a fresh data load after it modifies items
+}) {
   const [scheduleItems, setScheduleItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -73,6 +78,7 @@ export default function SchedulePage({ embedded = false, activeView = null }) {
   const effectiveTab = activeView ?? activeTab;
 
   useEffect(() => { loadScheduleItems(); }, []);
+  useEffect(() => { if (refreshKey > 0) loadScheduleItems(); }, [refreshKey]);
 
   const loadScheduleItems = async () => {
     try {
@@ -178,41 +184,47 @@ export default function SchedulePage({ embedded = false, activeView = null }) {
 
       {!embedded && <DashboardPageHeader title="Schedule" subtitle="Build, visualise and optimise your wedding day timeline" />}
 
-      {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-        {STAT_CARDS.map((s, i) => (
-          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
-            <p style={statLabelStyle}>{s.label}</p>
-            {loading
-              ? <div style={{ width: 60, height: 32, background: 'rgba(10,10,10,0.06)' }} />
-              : <p style={statValueStyle}><CountUp to={s.value} /></p>
-            }
-          </div>
-        ))}
-      </div>
-
-      {/* Guest Suite visibility banner */}
-      <div style={{ padding: '8px 32px', background: 'rgba(10,10,10,0.02)', borderBottom: '1px solid rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          ✨ This schedule is visible to guests in your Guest Suite
-        </span>
-      </div>
-
-      {/* Ava + actions bar */}
-      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-        <AvaButton label="Ask Ava to build your wedding timeline" onClick={() => setAvaOpen(true)} />
-        <div className="flex flex-wrap items-center gap-[10px]">
-          <button
-            onClick={exportSchedule}
-            disabled={scheduleItems.length === 0}
-            className="btn-editorial-secondary"
-            style={{ opacity: scheduleItems.length === 0 ? 0.4 : 1 }}
-          >
-            Export CSV
-          </button>
-          <button onClick={handleAddEvent} className="btn-primary">+ Add event</button>
+      {/* Stat strip — hidden when hub owns it above the tab row */}
+      {!hideChrome && (
+        <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+          {STAT_CARDS.map((s, i) => (
+            <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+              <p style={statLabelStyle}>{s.label}</p>
+              {loading
+                ? <div style={{ width: 60, height: 32, background: 'rgba(10,10,10,0.06)' }} />
+                : <p style={statValueStyle}><CountUp to={s.value} /></p>
+              }
+            </div>
+          ))}
         </div>
-      </div>
+      )}
+
+      {/* Guest Suite visibility banner — hidden when hub owns it */}
+      {!hideChrome && (
+        <div style={{ padding: '8px 32px', background: 'rgba(10,10,10,0.02)', borderBottom: '1px solid rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            ✨ This schedule is visible to guests in your Guest Suite
+          </span>
+        </div>
+      )}
+
+      {/* Ava + actions bar — hidden when hub owns it */}
+      {!hideChrome && (
+        <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+          <AvaButton label="Ask Ava to build your wedding timeline" onClick={() => setAvaOpen(true)} />
+          <div className="flex flex-wrap items-center gap-[10px]">
+            <button
+              onClick={exportSchedule}
+              disabled={scheduleItems.length === 0}
+              className="btn-editorial-secondary"
+              style={{ opacity: scheduleItems.length === 0 ? 0.4 : 1 }}
+            >
+              Export CSV
+            </button>
+            <button onClick={handleAddEvent} className="btn-primary">+ Add event</button>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div style={{ padding: '32px 32px 48px' }}>
