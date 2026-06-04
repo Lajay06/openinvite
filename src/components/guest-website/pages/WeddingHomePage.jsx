@@ -1,8 +1,10 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
+import GrainOverlay from '../GrainOverlay';
 
-export default function WeddingHomePage({ weddingDetails, theme, typography }) {
+export default function WeddingHomePage({ weddingDetails, theme, typography, universeConfig }) {
   const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || 'We are overjoyed to celebrate with you.';
+  const prefersReduced = useReducedMotion();
 
   return (
     <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -19,6 +21,11 @@ export default function WeddingHomePage({ weddingDetails, theme, typography }) {
           position: 'relative'
         }}
       >
+        {/* Grain texture — Aman only, barely perceptible on dark hero */}
+        {universeConfig?.texture && (
+          <GrainOverlay opacity={universeConfig.texture.opacity} />
+        )}
+
         <div
           style={{
             position: 'absolute',
@@ -28,9 +35,9 @@ export default function WeddingHomePage({ weddingDetails, theme, typography }) {
         />
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: prefersReduced ? 0 : 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.8) }}
           style={{
             position: 'relative',
             zIndex: 10,
@@ -69,9 +76,9 @@ export default function WeddingHomePage({ weddingDetails, theme, typography }) {
           </p>
 
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: prefersReduced ? 0 : 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
+            transition={{ delay: prefersReduced ? 0 : 0.3, duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.8) }}
             style={{
               fontFamily: typography.bodyFont,
               fontSize: 'clamp(0.875rem, 1.5vw, 1rem)',

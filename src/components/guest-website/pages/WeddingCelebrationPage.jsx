@@ -1,24 +1,29 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import SectionReveal from '../SectionReveal';
+import GrainOverlay from '../GrainOverlay';
 
-export default function WeddingCelebrationPage({ weddingDetails, theme, typography }) {
+export default function WeddingCelebrationPage({ weddingDetails, theme, typography, universeConfig }) {
   const ceremony = weddingDetails.mainCeremony || {};
   const reception = weddingDetails.reception || {};
   const daySchedule = weddingDetails.celebrationContent?.daySchedule || [];
 
-  const EventBlock = ({ title, data, theme, typography }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      style={{
-        backgroundColor: theme.darkBg,
-        color: theme.darkText,
-        padding: '40px',
-        borderRadius: '4px',
-        marginBottom: '40px'
-      }}
-    >
+  // Dark block: scroll-revealed, with optional grain for Aman universe.
+  // universeConfig null → SectionReveal falls back to default fade (unchanged for non-Aman).
+  const EventBlock = ({ title, data }) => (
+    <SectionReveal universeConfig={universeConfig}>
+      <div
+        style={{
+          position: 'relative',
+          backgroundColor: theme.darkBg,
+          color: theme.darkText,
+          padding: '40px',
+          borderRadius: '4px',
+          marginBottom: '40px',
+        }}
+      >
+        {universeConfig?.texture && (
+          <GrainOverlay opacity={universeConfig.texture.opacity} />
+        )}
       <h2
         style={{
           fontFamily: typography.headingFont,
@@ -73,71 +78,74 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
           </div>
         </div>
       )}
-    </motion.div>
+      </div>
+    </SectionReveal>
   );
 
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          style={{
-            fontFamily: typography.headingFont,
-            fontSize: 'clamp(2rem, 5vw, 3rem)',
-            fontWeight: typography.headingWeight,
-            marginBottom: '60px',
-            textAlign: 'center'
-          }}
-        >
-          The Celebration
-        </motion.h1>
+        <SectionReveal universeConfig={universeConfig}>
+          <h1
+            style={{
+              fontFamily: typography.headingFont,
+              fontSize: 'clamp(2rem, 5vw, 3rem)',
+              fontWeight: typography.headingWeight,
+              marginBottom: '60px',
+              textAlign: 'center'
+            }}
+          >
+            The Celebration
+          </h1>
+        </SectionReveal>
 
         {Object.keys(ceremony).length > 0 && (
-          <EventBlock title="Ceremony" data={ceremony} theme={theme} typography={typography} />
+          <EventBlock title="Ceremony" data={ceremony} />
         )}
 
         {Object.keys(reception).length > 0 && (
-          <EventBlock title="Reception" data={reception} theme={theme} typography={typography} />
+          <EventBlock title="Reception" data={reception} />
         )}
 
         {daySchedule.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            style={{
-              backgroundColor: theme.darkBg,
-              color: theme.darkText,
-              padding: '40px',
-              borderRadius: '4px'
-            }}
-          >
-            <h2
+          <SectionReveal universeConfig={universeConfig}>
+            <div
               style={{
-                fontFamily: typography.headingFont,
-                fontSize: 'clamp(1.5rem, 4vw, 2rem)',
-                fontWeight: typography.headingWeight,
-                marginBottom: '32px'
+                position: 'relative',
+                backgroundColor: theme.darkBg,
+                color: theme.darkText,
+                padding: '40px',
+                borderRadius: '4px',
               }}
             >
-              Day Schedule
-            </h2>
+              {universeConfig?.texture && (
+                <GrainOverlay opacity={universeConfig.texture.opacity} />
+              )}
+              <h2
+                style={{
+                  fontFamily: typography.headingFont,
+                  fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+                  fontWeight: typography.headingWeight,
+                  marginBottom: '32px'
+                }}
+              >
+                Day Schedule
+              </h2>
 
-            <div style={{ space: '24px' }}>
-              {daySchedule.map((event, i) => (
-                <div key={i} style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: `1px solid ${theme.accent}20` }}>
-                  <div style={{ fontSize: '0.875rem', color: theme.accent, fontWeight: 600, marginBottom: '4px' }}>
-                    {event.time}
+              <div style={{ space: '24px' }}>
+                {daySchedule.map((event, i) => (
+                  <div key={i} style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: `1px solid ${theme.accent}20` }}>
+                    <div style={{ fontSize: '0.875rem', color: theme.accent, fontWeight: 600, marginBottom: '4px' }}>
+                      {event.time}
+                    </div>
+                    <div style={{ fontFamily: typography.bodyFont, fontSize: '1.125rem', fontWeight: typography.bodyWeight }}>
+                      {event.description}
+                    </div>
                   </div>
-                  <div style={{ fontFamily: typography.bodyFont, fontSize: '1.125rem', fontWeight: typography.bodyWeight }}>
-                    {event.description}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </motion.div>
+          </SectionReveal>
         )}
       </div>
     </div>
