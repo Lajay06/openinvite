@@ -112,9 +112,8 @@ export default function AccountPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           priceId: PRICE_IDS[planKey],
-          email: user?.email || '',
-          successUrl: window.location.origin + '/payment-success?plan=' + planKey,
-          cancelUrl: window.location.href,
+          userId: user?.id || '',
+          userEmail: user?.email || '',
         }),
       });
       const data = await res.json();
