@@ -773,7 +773,10 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
   console.log('[typo] PreviewContent — hf:', effectiveHf, '| bf:', effectiveBf);
 
   return (
-    <>
+    <div
+      className="wb-guest-root"
+      style={{ '--wb-heading-font': effectiveHf, '--wb-body-font': effectiveBf, display: 'contents' }}
+    >
       {/* Nav bar inside preview */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
         <div style={{ background: universeTheme.primary, padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
@@ -878,6 +881,6 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

@@ -42,13 +42,32 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Force Plus Jakarta Sans everywhere ───────────────────────── */
+/* ── Force Plus Jakarta Sans everywhere (admin/studio UI) ─────────── */
 *, *::before, *::after {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
 h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, select {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* ── Guest-website font scope ─────────────────────────────────────── */
+/* The * rule above locks every element to PJS with !important, beating
+   any inline style={{ fontFamily }}. To let the chosen typography pairing
+   apply on the guest site and builder preview, we use CSS custom properties
+   (--wb-heading-font / --wb-body-font) set from React, with higher-specificity
+   !important rules that override the * lock. */
+.wb-guest-root,
+.wb-guest-root * {
+  font-family: var(--wb-body-font, 'Plus Jakarta Sans', sans-serif) !important;
+}
+.wb-guest-root h1,
+.wb-guest-root h2,
+.wb-guest-root h3,
+.wb-guest-root h4,
+.wb-guest-root h5,
+.wb-guest-root h6 {
+  font-family: var(--wb-heading-font, 'Plus Jakarta Sans', sans-serif) !important;
 }
 
 @layer base {

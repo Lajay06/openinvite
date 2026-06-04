@@ -170,7 +170,15 @@ export default function MultiPageWeddingWebsite() {
   };
 
   return (
-    <div style={{ backgroundColor: theme.darkBg, color: theme.darkText, fontFamily: typography.bodyFont }}>
+    <div
+      className="wb-guest-root"
+      style={{
+        '--wb-heading-font': typography.headingFont,
+        '--wb-body-font': typography.bodyFont,
+        backgroundColor: theme.darkBg,
+        color: theme.darkText,
+      }}
+    >
 
       {/* Navigation */}
       <WeddingWebsiteNav
