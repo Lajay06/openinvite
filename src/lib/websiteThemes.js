@@ -1,5 +1,21 @@
 export const WEBSITE_THEMES = [
   {
+    // ── Aman universe theme — deep black, warm linen, #C4956A gold, Cormorant Garamond ──
+    // This entry is written when the couple selects the Aman universe. It faithfully
+    // expresses Aman's identity (dark bg, gold accent) inside the existing theme system
+    // so MultiPageWeddingWebsite renders it without any changes to its read path.
+    id: 'aman',
+    name: 'Aman',
+    mood: 'Quiet Luxury',
+    darkBg: '#0A0A0A',
+    lightBg: '#F8F7F5',
+    darkText: '#F8F7F5',
+    lightText: '#0A0A0A',
+    accent: '#C4956A',
+    accentSecondary: '#8B6340',
+    navBg: '#0A0A0A',
+  },
+  {
     id: 'still',
     name: 'Still',
     mood: 'Quiet Luxury',
