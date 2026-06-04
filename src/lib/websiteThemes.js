@@ -378,7 +378,19 @@ export const TYPOGRAPHY_PAIRINGS = [
     fontBody: '"Inter", sans-serif',
     googleFonts: 'Didact+Gothic&family=Inter:wght@300;400;500',
   },
-];
+].map(t => ({
+  ...t,
+  // Aliases used by MultiPageWeddingWebsite + all guest-site page components
+  headingFont: t.fontDisplay,
+  bodyFont: t.fontBody,
+  headingWeight: 400,
+  headingStyle: 'normal',
+  bodyWeight: 400,
+  headingImport: t.googleFonts
+    ? `@import url('https://fonts.googleapis.com/css2?family=${t.googleFonts}&display=swap');`
+    : '',
+  bodyImport: '',
+}));
 
 export const TRANSITION_OPTIONS = [
   { id: 'fade', name: 'Fade', mood: 'Gentle', description: 'Pages fade in/out, opacity only' },
