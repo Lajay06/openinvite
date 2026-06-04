@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Plus, ChevronLeft } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
 import { WEBSITE_THEMES, FONT_OPTIONS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, HERO_EFFECT_OPTIONS } from '@/lib/websiteThemes';
@@ -90,7 +91,10 @@ const selectStyle = {
 
 // ── DESIGN TAB ────────────────────────────────────────────────
 function DesignTab({ details, onChange, universeTheme }) {
-  const [themeOpen, setThemeOpen] = useState(true);
+  const navigate = useNavigate();
+
+  // Theme starts collapsed — it's a secondary refinement, not the headline choice
+  const [themeOpen, setThemeOpen] = useState(false);
   const [typoOpen, setTypoOpen] = useState(false);
 
   const defDisplay = universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
@@ -127,9 +131,50 @@ function DesignTab({ details, onChange, universeTheme }) {
 
   const displayFontLabel = FONT_OPTIONS.find(f => f.value === displayFont)?.label;
 
+  const universeName    = universeTheme?.name    || 'Aman';
+  const universeAccent  = universeTheme?.accent  || '#C4956A';
+  const universeFeeling = universeTheme?.feeling || 'Quiet luxury';
+
   return (
     <div>
-      <SLabel onClick={() => setThemeOpen(o => !o)} isOpen={themeOpen}>Theme</SLabel>
+
+      {/* ── Universe — prominent global master ───────────────── */}
+      {/* Governs colour, fonts, and (in future) texture + motion */}
+      <div style={{
+        borderLeft: `3px solid ${universeAccent}`,
+        background: 'rgba(255,255,255,0.04)',
+        padding: '12px 12px 12px 14px',
+        marginBottom: 16,
+      }}>
+        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', margin: '0 0 8px', fontFamily: 'inherit' }}>
+          Universe
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Accent swatch represents the universe's colour identity */}
+          <div style={{ width: 28, height: 28, background: universeAccent, flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', margin: 0, lineHeight: 1.2, fontFamily: 'inherit' }}>
+              {universeName}
+            </p>
+            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0', fontFamily: 'inherit' }}>
+              {universeFeeling}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/studio/universe')}
+            style={{
+              padding: '5px 12px', background: '#E03553', color: '#FFFFFF',
+              border: 'none', borderRadius: 999, fontSize: 11, fontWeight: 600,
+              cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit',
+            }}
+          >
+            Change
+          </button>
+        </div>
+      </div>
+
+      {/* ── Fine-tune palette — collapsed by default, secondary ─ */}
+      <SLabel onClick={() => setThemeOpen(o => !o)} isOpen={themeOpen}>Fine-tune palette</SLabel>
       <div style={{ overflow: 'hidden', maxHeight: themeOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 8 }}>
         {WEBSITE_THEMES.map(t => {
