@@ -333,10 +333,9 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 
   const theme = WEBSITE_THEMES.find(t => t.id === (details?.activeTheme || 'still')) || WEBSITE_THEMES[0];
   const universeTheme = UNIVERSE_THEMES[details?.activeUniverse] || UNIVERSE_THEMES.aman;
-  const typo = {
-    fontDisplay: details?.displayFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif',
-    fontBody: details?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif',
-  };
+  // Derive typo from the selected pairing so the builder preview matches the published site.
+  // activeTypography is the Base44-registered field written by WBRightPanel's pairing grid.
+  const typo = TYPOGRAPHY_PAIRINGS.find(t => t.id === details?.activeTypography) || TYPOGRAPHY_PAIRINGS[0];
 
   const setDetailsAndMark = (updater) => {
     setDetails(prev => {
