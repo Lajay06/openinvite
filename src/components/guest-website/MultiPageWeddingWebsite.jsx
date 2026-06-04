@@ -79,6 +79,9 @@ export default function MultiPageWeddingWebsite() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true';
 
+  // Must be called before any early return — React rules of hooks
+  const prefersReduced = useReducedMotion();
+
   useEffect(() => {
     const loadWeddingDetails = async () => {
       try {
@@ -111,8 +114,11 @@ export default function MultiPageWeddingWebsite() {
   const enabledPages = weddingDetails.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'];
   const PageComponent = PAGE_COMPONENTS[page] || WeddingHomePage;
 
-  const prefersReduced = useReducedMotion();
-  const universeConfig = UNIVERSE_CONFIGS[weddingDetails.activeUniverse] ?? null;
+  // Case-insensitive, whitespace-tolerant lookup so 'Aman'/'aman'/'AMAN' all activate
+  const universeKey = typeof weddingDetails.activeUniverse === 'string'
+    ? weddingDetails.activeUniverse.trim().toLowerCase()
+    : null;
+  const universeConfig = universeKey ? (UNIVERSE_CONFIGS[universeKey] ?? null) : null;
 
   const getTransitionVariants = (transitionType) => {
     switch (transitionType) {

@@ -445,18 +445,18 @@ export const UNIVERSE_CONFIGS = {
   aman: {
     texture: {
       type:    'grain',   // SVG feTurbulence fractalNoise overlay on dark sections
-      opacity: 0.04,      // 4% — barely perceptible; felt not seen
+      opacity: 0.06,      // 6% — barely-there on #0A0A0A; felt not seen
     },
     motion: {
       sectionReveal: 'fade',   // type: fade-up on viewport entry
       duration:      0.75,     // 750ms — gentle, unhurried
-      yOffset:       10,       // px rise — tiny, whisper-level (not a big slide)
+      yOffset:       18,       // px rise — perceptible gentle lift on scroll entry
       ease:          'easeOut',// soft stop
       intensity:     'subtle', // semantic flag for future tuning
     },
     pageTransition: {
       type:     'fade',
-      duration: 0.5,     // 500ms page cross-fade
+      duration: 0.65,    // 650ms — clearly a deliberate soft fade (exit+enter = ~1.3s total)
     },
   },
   // tulum, kyoto, capri, tokyo, marrakech, paris, amalfi, sedona, aspen, santorini:
