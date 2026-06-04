@@ -455,7 +455,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginLeft: 'auto' }}>
           <button
-            onClick={() => setShowFullPreview(true)}
+            onClick={async () => { if (unsaved) await doSave(false); setShowFullPreview(true); }}
             style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 500, padding: '5px 12px', fontFamily: 'inherit', transition: 'color 0.15s' }}
             onMouseEnter={e => e.currentTarget.style.color = '#FFFFFF'}
             onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
@@ -464,17 +464,15 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
             Preview
           </button>
           {previewUrl && (
-            <a
-              href={previewUrl}
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', padding: '5px 6px', textDecoration: 'none', transition: 'color 0.15s' }}
+            <button
+              onClick={async (e) => { if (unsaved) await doSave(false); window.open(previewUrl, '_blank', 'noreferrer'); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', padding: '5px 6px', transition: 'color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
               onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
               title="Open in new tab"
             >
               <ExternalLink size={11} />
-            </a>
+            </button>
           )}
           <button
             onClick={() => doSave(true)}

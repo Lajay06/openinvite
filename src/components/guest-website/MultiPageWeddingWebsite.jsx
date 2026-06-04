@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, UNIVERSE_CONFIGS } from '@/lib/websiteThemes';
+import WBSectionRenderer from '@/components/website-builder/WBSectionRenderer';
 
 function PasswordGateSimple({ slug, password }) {
   const [val, setVal] = useState('');
@@ -237,12 +238,40 @@ export default function MultiPageWeddingWebsite() {
               : (universeConfig?.pageTransition?.duration ?? 0.6),
           }}
         >
-          <PageComponent
-            weddingDetails={weddingDetails}
-            theme={theme}
-            typography={typography}
-            universeConfig={universeConfig}
-          />
+          {(() => {
+            // If the builder has authored sections for this page, render them.
+            // This makes the published site match the builder preview exactly.
+            const dynamicSections = weddingDetails.pageSections?.[page];
+            const sorted = dynamicSections?.length
+              ? [...dynamicSections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+              : [];
+            if (sorted.length > 0) {
+              return (
+                <div>
+                  {sorted.map(section => (
+                    <WBSectionRenderer
+                      key={section.id}
+                      section={section}
+                      theme={theme}
+                      typo={typography}
+                      universeTheme={null}
+                      masterData={weddingDetails}
+                    />
+                  ))}
+                </div>
+              );
+            }
+            // Fallback: data-driven pages (Stay, Transport, Experience) and any
+            // page where no sections have been authored yet.
+            return (
+              <PageComponent
+                weddingDetails={weddingDetails}
+                theme={theme}
+                typography={typography}
+                universeConfig={universeConfig}
+              />
+            );
+          })()}
         </motion.div>
       </AnimatePresence>
     </div>
