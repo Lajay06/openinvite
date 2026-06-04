@@ -21,11 +21,6 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
           position: 'relative'
         }}
       >
-        {/* Grain texture — Aman only, barely perceptible on dark hero */}
-        {universeConfig?.texture && (
-          <GrainOverlay opacity={universeConfig.texture.opacity} />
-        )}
-
         <div
           style={{
             position: 'absolute',
@@ -33,6 +28,11 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
             backgroundColor: `${theme.darkBg}40`
           }}
         />
+
+        {/* Grain — after dark overlay so it renders above it; text stays at zIndex:10 above both */}
+        {universeConfig?.texture && (
+          <GrainOverlay opacity={universeConfig.texture.opacity} />
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: prefersReduced ? 0 : 20 }}
