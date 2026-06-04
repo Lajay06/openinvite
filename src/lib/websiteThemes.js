@@ -445,7 +445,7 @@ export const UNIVERSE_CONFIGS = {
   aman: {
     texture: {
       type:    'grain',   // SVG feTurbulence fractalNoise overlay on dark sections
-      opacity: 0.10,      // 10% — subtle but visible on #0A0A0A; felt and seen
+      opacity: 0.06,      // 6% — barely-there on #0A0A0A; felt not seen
     },
     motion: {
       sectionReveal: 'fade',   // type: fade-up on viewport entry
