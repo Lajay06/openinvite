@@ -375,7 +375,8 @@ export default function EventDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const autoSaveRef = useRef(null);
-  const latestRef  = useRef(null);
+  const latestRef   = useRef(null);
+  const recordIdRef = useRef(null); // ref copy of recordId — avoids stale closure in save callbacks
   const [expandedIds, setExpandedIds] = useState(new Set());
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -388,6 +389,7 @@ export default function EventDetailsPage() {
       const td = tdRows[0] || null;
       setRecord(r);
       setRecordId(r.id || null);
+      recordIdRef.current = r.id || null;
       latestRef.current = r;
       setLoading(false);
 
@@ -428,40 +430,46 @@ export default function EventDetailsPage() {
   }, []);
 
   const update = (patch) => {
-    setRecord(prev => {
-      const next = { ...prev, ...patch };
-      latestRef.current = next;
-      return next;
-    });
+    const next = { ...(latestRef.current || {}), ...patch };
+    latestRef.current = next;
+    setRecord(next);
     triggerAutoSave();
   };
 
   const updateNested = (key, patch) => {
-    setRecord(prev => {
-      const next = { ...prev, [key]: { ...(prev?.[key] || {}), ...patch } };
-      latestRef.current = next;
-      return next;
-    });
+    const curr = latestRef.current || {};
+    const next = { ...curr, [key]: { ...(curr[key] || {}), ...patch } };
+    latestRef.current = next;
+    setRecord(next);
     triggerAutoSave();
+  };
+
+  const doSave = async () => {
+    clearTimeout(autoSaveRef.current);
+    const data = latestRef.current;
+    const id   = recordIdRef.current;
+    if (!data) return;
+    setSaveStatus('saving');
+    try {
+      if (id) {
+        await base44.entities.WeddingDetails.update(id, data);
+      } else {
+        const created = await base44.entities.WeddingDetails.create(data);
+        setRecordId(created.id);
+        recordIdRef.current = created.id;
+      }
+      setSaveStatus('saved');
+      window.dispatchEvent(new CustomEvent('weddingDetailsSaved'));
+      setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2000);
+    } catch {
+      setSaveStatus('idle');
+      toast.error('Save failed. Please try again.');
+    }
   };
 
   const triggerAutoSave = () => {
     clearTimeout(autoSaveRef.current);
-    setSaveStatus('saving');
-    autoSaveRef.current = setTimeout(async () => {
-      const data = latestRef.current;
-      try {
-        if (recordId) {
-          await base44.entities.WeddingDetails.update(recordId, data);
-        } else {
-          const created = await base44.entities.WeddingDetails.create(data);
-          setRecordId(created.id);
-        }
-        setSaveStatus('saved');
-        window.dispatchEvent(new CustomEvent('weddingDetailsSaved'));
-        setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch { setSaveStatus('idle'); }
-    }, 1500);
+    autoSaveRef.current = setTimeout(doSave, 2500);
   };
 
   const toggleExpanded = (id) => {
@@ -502,7 +510,7 @@ export default function EventDetailsPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
       <DashboardPageHeader title="Event details" subtitle="Manage your wedding event information" />
 
-      {/* Ava + save status bar */}
+      {/* Ava + action bar */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to help plan your event details" />
         <div className="flex items-center gap-[10px]">
@@ -511,11 +519,16 @@ export default function EventDetailsPage() {
               <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Saving…
             </span>
           )}
-          {saveStatus === 'saved' && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#22C55E', fontWeight: 600, fontFamily: PJS }}>
-              <Check size={13} /> Saved
-            </span>
-          )}
+          <button
+            onClick={doSave}
+            disabled={saveStatus === 'saving'}
+            className="btn-primary"
+            style={{ padding: '7px 20px', fontSize: 13 }}
+          >
+            {saveStatus === 'saved'
+              ? <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} />Saved</span>
+              : 'Save'}
+          </button>
         </div>
       </div>
 
@@ -645,11 +658,9 @@ export default function EventDetailsPage() {
           <ThemeSection
             theme={theme}
             onSave={(nextTheme) => {
-              setRecord(prev => {
-                const next = { ...prev, theme: nextTheme };
-                latestRef.current = next;
-                return next;
-              });
+              const next = { ...(latestRef.current || {}), theme: nextTheme };
+              latestRef.current = next;
+              setRecord(next);
               triggerAutoSave();
             }}
           />
