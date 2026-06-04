@@ -134,7 +134,18 @@ export default function UniverseViewBase({ isOnboarding = false, onBack, onSelec
     if (isOnboarding) { onSelect && onSelect(); return; }
     setSelectState('loading');
     try {
-      if (details?.id) await base44.entities.WeddingDetails.update(details.id, { activeUniverse: id, activeTheme: 'still' });
+      if (details?.id) {
+        // Aman universe sets its own dedicated theme + the matching typography pairing
+        // so the public website renders in Aman's identity (deep black, #C4956A gold,
+        // Cormorant Garamond) from the moment of selection. All other universes continue
+        // to use the generic 'still' default; they are not touched here.
+        const payload = { activeUniverse: id, activeTheme: 'still' };
+        if (id === 'aman') {
+          payload.activeTheme      = 'aman';
+          payload.activeTypography = 'classic'; // Cormorant Garamond — matches Aman's fontDisplay
+        }
+        await base44.entities.WeddingDetails.update(details.id, payload);
+      }
       setSelectState('choice');
     } catch { setSelectState('idle'); }
   };
