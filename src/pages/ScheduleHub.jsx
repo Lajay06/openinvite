@@ -49,8 +49,7 @@ function CountUp({ to, duration = 1200 }) {
 const TABS = [
   { key: "calendar",       label: "Calendar" },
   { key: "visual",         label: "Visual builder" },
-  { key: "timeline",       label: "Timeline view" },
-  { key: "list",           label: "List view" },
+  { key: "list",           label: "Run sheet" },
   { key: "considerations", label: "Considerations" },
 ];
 
