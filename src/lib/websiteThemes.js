@@ -437,3 +437,28 @@ export const WEDDING_PAGES = [
   { slug: 'transport', label: 'Getting here', icon: 'Car' },
   { slug: 'experience', label: 'Guide', icon: 'Compass' },
 ];
+// ── Universe identity configs — texture + motion per universe ─────────────────
+// Static, code-defined (not stored in DB — these are per-universe constants).
+// Only AMAN has real values for now; others get undefined (flat behaviour).
+// Later phases: each universe declares its own texture + motion philosophy.
+export const UNIVERSE_CONFIGS = {
+  aman: {
+    texture: {
+      type:    'grain',   // SVG feTurbulence fractalNoise overlay on dark sections
+      opacity: 0.04,      // 4% — barely perceptible; felt not seen
+    },
+    motion: {
+      sectionReveal: 'fade',   // type: fade-up on viewport entry
+      duration:      0.75,     // 750ms — gentle, unhurried
+      yOffset:       10,       // px rise — tiny, whisper-level (not a big slide)
+      ease:          'easeOut',// soft stop
+      intensity:     'subtle', // semantic flag for future tuning
+    },
+    pageTransition: {
+      type:     'fade',
+      duration: 0.5,     // 500ms page cross-fade
+    },
+  },
+  // tulum, kyoto, capri, tokyo, marrakech, paris, amalfi, sedona, aspen, santorini:
+  // not yet defined — they inherit flat/default behaviour until their phase.
+};

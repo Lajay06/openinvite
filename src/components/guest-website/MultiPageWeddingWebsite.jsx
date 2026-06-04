@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useReducedMotion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS } from '@/lib/websiteThemes';
+import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, UNIVERSE_CONFIGS } from '@/lib/websiteThemes';
 
 function PasswordGateSimple({ slug, password }) {
   const [val, setVal] = useState('');
@@ -110,6 +111,9 @@ export default function MultiPageWeddingWebsite() {
   const enabledPages = weddingDetails.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'];
   const PageComponent = PAGE_COMPONENTS[page] || WeddingHomePage;
 
+  const prefersReduced = useReducedMotion();
+  const universeConfig = UNIVERSE_CONFIGS[weddingDetails.activeUniverse] ?? null;
+
   const getTransitionVariants = (transitionType) => {
     switch (transitionType) {
       case 'slide':
@@ -195,16 +199,23 @@ export default function MultiPageWeddingWebsite() {
       <AnimatePresence mode="wait">
         <motion.div
           key={page}
-          variants={getTransitionVariants(weddingDetails.pageTransition || 'fade')}
+          variants={getTransitionVariants(
+            universeConfig?.pageTransition?.type ?? weddingDetails.pageTransition ?? 'fade'
+          )}
           initial="initial"
           animate="animate"
           exit="exit"
-          transition={{ duration: 0.6 }}
+          transition={{
+            duration: prefersReduced
+              ? 0
+              : (universeConfig?.pageTransition?.duration ?? 0.6),
+          }}
         >
           <PageComponent
             weddingDetails={weddingDetails}
             theme={theme}
             typography={typography}
+            universeConfig={universeConfig}
           />
         </motion.div>
       </AnimatePresence>
