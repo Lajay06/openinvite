@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Check, Plus, X, ChevronDown, ChevronUp, MapPin, Trash2 } from "lucide-react";
+import { Loader2, Plus, X, MapPin, Trash2, Edit2, MoreHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
 import DatePicker from "@/components/shared/DatePicker";
@@ -23,8 +29,6 @@ const GUEST_TYPES = [
 ];
 
 // ── Theme migration helpers ────────────────────────────────────────────────────
-// Maps old weddingStyle[] flat array and legacy theme.* into the consolidated theme.
-// Runs once on mount, only fills empty fields — never overwrites existing values.
 
 const _STYLE_TO_AESTHETIC = { Traditional:'Classic', Modern:'Modern', Minimalist:'Minimalist', Bohemian:'Boho', Luxury:'Luxury' };
 const _STYLE_TO_FAITH = {
@@ -94,15 +98,9 @@ function migrateThemeFields(wd, tdEntity) {
 const PRE_WEDDING_TYPES  = ['Engagement Party', 'Bridal Shower', 'Bachelor Party', 'Bachelorette Party', 'Rehearsal Dinner', 'Welcome Cocktails', 'Other'];
 const POST_WEDDING_TYPES = ['After Party', 'Next-Day Brunch', 'Farewell Brunch', 'Thank You Reception', 'Other'];
 
-const DEFAULT_THEME = { vibes: [], season: '', setting: '', is_religious: false, religious_details: '', is_cultural: false, cultural_details: '' };
-
 const sLabel = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8, display: 'block' };
 const divider = { height: 1, background: 'rgba(10,10,10,0.08)', margin: '28px 0' };
 
-function photoProxy(ref, w = 600) {
-  if (!ref) return null;
-  return `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=${w}`;
-}
 function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
 function fmtTime(t) {
   if (!t) return '';
@@ -116,12 +114,12 @@ function fmtDate(d) {
   catch { return d; }
 }
 
-// ── Shared field components ───────────────────────────────────────────────────
+// ── Details tab shared field components ──────────────────────────────────────
 
-function UInput({ label, value, onChange, placeholder = '', type = 'text', half }) {
+function UInput({ label, value, onChange, placeholder = '', type = 'text' }) {
   const [focused, setFocused] = useState(false);
   return (
-    <div style={{ marginBottom: 20, ...(half ? {} : {}) }}>
+    <div style={{ marginBottom: 20 }}>
       {label && <span style={sLabel}>{label}</span>}
       <input type={type} value={value || ''} onChange={onChange} placeholder={placeholder}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
@@ -144,223 +142,275 @@ function UTextarea({ label, value, onChange, placeholder = '', rows = 3 }) {
   );
 }
 
+// ── Event form modal (mirrors VendorForm pattern) ─────────────────────────────
 
-// ── Event accordion card ──────────────────────────────────────────────────────
-
-function EventCard({ eventType, data, weddingDate, isPost, isExpanded, onToggle, onUpdate, onDelete, locationBias }) {
-  const isFixed = eventType === 'ceremony' || eventType === 'reception';
-  const title = eventType === 'ceremony' ? 'Ceremony' : eventType === 'reception' ? 'Reception' : (data.name || 'Untitled event');
-
-  // Venue object — shape is consistent for all event types
-  const venue = data.venueName
-    ? { name: data.venueName, address: data.venueAddress || data.address || '', mapsUrl: data.venueMapsUrl || data.mapsUrl || null, photoUrl: data.venuePhotoUrl || data.photoUrl || null, placeId: data.venuePlaceId || data.placeId || null }
-    : null;
-
-  const startTime = data.startTime || data.time || '';
-  const endTime   = data.endTime || '';
-  const eventDate = isFixed ? weddingDate : data.date;
-
-  const timeStr = [fmtTime(startTime), endTime && fmtTime(endTime)].filter(Boolean).join(' – ');
-  const dateStr = fmtDate(eventDate);
-  const summaryParts = [dateStr, timeStr, venue?.name].filter(Boolean);
-
-  const handleVenueChange = (v) => {
+function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locationBias }) {
+  const initVenue = () => {
+    if (!event?.venueName) return null;
     if (isFixed) {
-      // ceremony/reception — write directly to the flat mainCeremony/reception fields
-      onUpdate({
-        venueName: v?.name  || '',
-        address:   v?.address || '',
-        mapsUrl:   v?.mapsUrl || null,
-        photoUrl:  v?.photoUrl || null,
-        placeId:   v?.placeId || null,
-      });
-    } else {
-      // custom event — prefix venue fields to avoid collision with legacy 'address' field
-      onUpdate({
-        venueName:    v?.name    || '',
-        venueAddress: v?.address  || '',
-        venueMapsUrl: v?.mapsUrl  || null,
-        venuePhotoUrl:v?.photoUrl || null,
-        venuePlaceId: v?.placeId  || null,
-        // keep legacy field in sync for any existing guest-site readers
-        venue:   v?.name    || '',
-        address: v?.address || '',
-      });
+      return { name: event.venueName, address: event.address || '', mapsUrl: event.mapsUrl || null, photoUrl: event.photoUrl || null, placeId: event.placeId || null };
     }
+    return { name: event.venueName, address: event.venueAddress || event.address || '', mapsUrl: event.venueMapsUrl || event.mapsUrl || null, photoUrl: event.venuePhotoUrl || event.photoUrl || null, placeId: event.venuePlaceId || event.placeId || null };
   };
 
-  const typeBadge = isFixed
-    ? null
-    : (data.type || (isPost ? 'Post-wedding' : 'Pre-wedding'));
+  const defaultKind = isPost ? 'post' : 'pre';
+  const [kind, setKind] = useState(defaultKind);
+  const [form, setForm] = useState({
+    name: event?.name || '',
+    type: event?.type || (isPost ? POST_WEDDING_TYPES[0] : PRE_WEDDING_TYPES[0]),
+    date: event?.date || '',
+    startTime: event?.startTime || event?.time || '',
+    endTime: event?.endTime || '',
+    venue: initVenue(),
+    dressCode: event?.dressCode || '',
+    parkingInfo: event?.parkingInfo || '',
+    accessibilityNotes: event?.accessibilityNotes || '',
+    notes: isFixed ? (event?.notes || '') : (event?.details || event?.notes || ''),
+  });
+
+  const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleKindChange = (k) => {
+    setKind(k);
+    set('type', k === 'pre' ? PRE_WEDDING_TYPES[0] : POST_WEDDING_TYPES[0]);
+  };
+
+  const handleSave = () => {
+    const venueData = isFixed
+      ? {
+          venueName: form.venue?.name || '',
+          address: form.venue?.address || '',
+          mapsUrl: form.venue?.mapsUrl || null,
+          photoUrl: form.venue?.photoUrl || null,
+          placeId: form.venue?.placeId || null,
+        }
+      : {
+          venueName: form.venue?.name || '',
+          venueAddress: form.venue?.address || '',
+          venueMapsUrl: form.venue?.mapsUrl || null,
+          venuePhotoUrl: form.venue?.photoUrl || null,
+          venuePlaceId: form.venue?.placeId || null,
+          venue: form.venue?.name || '',
+          address: form.venue?.address || '',
+        };
+
+    onSave({
+      name: form.name,
+      type: form.type,
+      kind,
+      date: form.date,
+      startTime: form.startTime || '',
+      endTime: form.endTime || '',
+      time: form.startTime || '',
+      dressCode: form.dressCode,
+      parkingInfo: form.parkingInfo,
+      accessibilityNotes: form.accessibilityNotes,
+      notes: form.notes,
+      details: form.notes,
+      ...venueData,
+    });
+  };
+
+  const typeOptions = kind === 'pre' ? PRE_WEDDING_TYPES : POST_WEDDING_TYPES;
+  const modalTitle = isFixed
+    ? (fixedType === 'ceremony' ? 'Edit ceremony' : 'Edit reception')
+    : (event?.id ? 'Edit event' : 'Add event');
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.1)', borderRadius: 8, overflow: 'visible', marginBottom: 10, background: '#FFF' }}>
-      {/* Collapsed header */}
-      <button type="button" onClick={onToggle}
-        style={{ width: '100%', display: 'flex', gap: 14, padding: '16px 20px', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', borderRadius: isExpanded ? '8px 8px 0 0' : 8 }}>
-        {venue?.photoUrl ? (
-          <img src={venue.photoUrl} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
-            onError={e => { e.target.style.display = 'none'; }} />
-        ) : (
-          <div style={{ width: 44, height: 44, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <MapPin size={18} color="rgba(10,10,10,0.2)" />
-          </div>
-        )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>{title}</p>
-            {typeBadge && (
-              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.45)', fontFamily: PJS, flexShrink: 0 }}>
-                {typeBadge}
-              </span>
-            )}
-          </div>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {summaryParts.join(' · ') || 'Tap to add details'}
-          </p>
-        </div>
-        <div style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0 }}>
-          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </div>
-      </button>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF', position: 'relative' }}>
 
-      {/* Expanded body */}
-      {isExpanded && (
-        <div style={{ padding: '20px 24px 24px', borderTop: '1px solid rgba(10,10,10,0.06)' }}>
+        {/* Header — mirrors VendorForm */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', position: 'sticky', top: 0, background: '#FFFFFF', zIndex: 10 }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
+            {modalTitle}
+          </span>
+          <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4, borderRadius: 999 }}>
+            <X size={16} />
+          </button>
+        </div>
 
-          {/* Custom event meta (name + type + date) */}
+        <div style={{ padding: 24 }}>
+
+          {/* Custom event fields: name, type, date */}
           {!isFixed && (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
-                <UInput label="Event name" value={data.name} onChange={e => onUpdate({ name: e.target.value })} placeholder="e.g. Welcome dinner" />
+              {/* Pre / Post toggle — only for new events */}
+              {!event?.id && (
                 <div style={{ marginBottom: 20 }}>
-                  <span style={sLabel}>Type</span>
-                  <select value={data.type || ''} onChange={e => onUpdate({ type: e.target.value })}
-                    style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', padding: '6px 0', fontSize: 14, fontWeight: 500, color: '#0A0A0A', outline: 'none', fontFamily: PJS, cursor: 'pointer' }}>
-                    {(isPost ? POST_WEDDING_TYPES : PRE_WEDDING_TYPES).map(t => (
-                      <option key={t} value={t}>{t}</option>
+                  <span style={sLabel}>Event timing</span>
+                  <div style={{ display: 'flex', gap: 0, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999, overflow: 'hidden', width: 'fit-content' }}>
+                    {[['pre', 'Pre-wedding'], ['post', 'Post-wedding']].map(([k, lbl]) => (
+                      <button key={k} type="button" onClick={() => handleKindChange(k)}
+                        style={{ padding: '6px 18px', background: kind === k ? '#0A0A0A' : '#FFF', color: kind === k ? '#FFF' : 'rgba(10,10,10,0.55)', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: PJS, transition: 'all 0.15s' }}>
+                        {lbl}
+                      </button>
                     ))}
-                  </select>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                  <Label htmlFor="ev-name">Event name</Label>
+                  <Input id="ev-name" value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Welcome dinner" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                  <Label>Type</Label>
+                  <Select value={form.type} onValueChange={v => set('type', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {typeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              <div style={{ marginBottom: 20 }}>
-                <span style={sLabel}>Date</span>
-                <DatePicker value={data.date} onChange={v => onUpdate({ date: v })} placeholder="Select event date" />
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                <Label>Date</Label>
+                <DatePicker value={form.date} onChange={v => set('date', v)} placeholder="Select date" />
               </div>
+
               <div style={divider} />
             </>
           )}
 
           {/* Venue */}
           <VenueSearchPanel
-            venue={venue}
-            onChange={handleVenueChange}
+            venue={form.venue}
+            onChange={v => set('venue', v)}
             locationBias={locationBias}
           />
 
-          {/* Timing */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
-            <UInput label="Start time" type="time" value={startTime}
-              onChange={e => onUpdate(isFixed ? { startTime: e.target.value } : { startTime: e.target.value, time: e.target.value })} />
-            <UInput label="End time" type="time" value={endTime}
-              onChange={e => onUpdate({ endTime: e.target.value })} />
+          <div style={divider} />
+
+          {/* Timing — time inputs (native time picker, stores HH:MM strings) */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+              <Label htmlFor="ev-start">Start time</Label>
+              <Input id="ev-start" type="time" value={form.startTime} onChange={e => set('startTime', e.target.value)} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+              <Label htmlFor="ev-end">End time</Label>
+              <Input id="ev-end" type="time" value={form.endTime} onChange={e => set('endTime', e.target.value)} />
+            </div>
           </div>
 
-          {/* Details fields */}
-          <div style={{ ...divider, margin: '8px 0 20px' }} />
-          <UInput label="Dress code" value={data.dressCode}
-            onChange={e => onUpdate({ dressCode: e.target.value })} placeholder="e.g. Black tie, smart casual" />
-          <UInput label="Parking info" value={data.parkingInfo}
-            onChange={e => onUpdate({ parkingInfo: e.target.value })} placeholder="e.g. Free parking on Church St" />
-          <UInput label="Accessibility notes" value={data.accessibilityNotes}
-            onChange={e => onUpdate({ accessibilityNotes: e.target.value })} placeholder="e.g. Wheelchair accessible via north entrance" />
-          <UTextarea label="Notes" rows={3}
-            value={isFixed ? (data.notes || '') : (data.details || data.notes || '')}
-            onChange={e => onUpdate(isFixed ? { notes: e.target.value } : { details: e.target.value, notes: e.target.value })}
-            placeholder="e.g. Outdoor setting — dress for warm weather, ceremony runs ~40 minutes" />
-
-          {/* Delete — only for custom events */}
-          {!isFixed && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 4 }}>
-              <button type="button" onClick={onDelete}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, fontWeight: 600, padding: 0 }}>
-                <Trash2 size={13} /> Remove event
-              </button>
+          {/* Details */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Label htmlFor="ev-dress">Dress code</Label>
+              <Input id="ev-dress" value={form.dressCode} onChange={e => set('dressCode', e.target.value)} placeholder="e.g. Black tie, smart casual" />
             </div>
-          )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Label htmlFor="ev-parking">Parking info</Label>
+              <Input id="ev-parking" value={form.parkingInfo} onChange={e => set('parkingInfo', e.target.value)} placeholder="e.g. Free parking on Church St" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Label htmlFor="ev-access">Accessibility notes</Label>
+              <Input id="ev-access" value={form.accessibilityNotes} onChange={e => set('accessibilityNotes', e.target.value)} placeholder="e.g. Wheelchair accessible via north entrance" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Label htmlFor="ev-notes">Notes</Label>
+              <Textarea id="ev-notes" value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Additional notes about this event" />
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Footer — mirrors VendorForm */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+          <button type="button" onClick={onCancel} className="btn-editorial-secondary">Cancel</button>
+          <button type="button" onClick={handleSave} className="btn-primary">
+            {!isFixed && !event?.id ? 'Add event' : 'Save'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
-// ── Add event inline form ─────────────────────────────────────────────────────
+// ── Event card row (mirrors VendorList row pattern) ───────────────────────────
 
-function AddEventForm({ onAdd, onCancel }) {
-  const [kind, setKind] = useState('pre');
-  const [eventType, setEventType] = useState(PRE_WEDDING_TYPES[0]);
-  const [name, setName] = useState('');
-  const [date, setDate] = useState('');
+function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, onDelete }) {
+  const title = fixedType === 'ceremony' ? 'Ceremony'
+    : fixedType === 'reception' ? 'Reception'
+    : (event?.name || 'Untitled event');
 
-  const types = kind === 'pre' ? PRE_WEDDING_TYPES : POST_WEDDING_TYPES;
+  const photoUrl  = isFixed ? (event?.photoUrl  || null) : (event?.venuePhotoUrl || event?.photoUrl || null);
+  const venueName = isFixed ? (event?.venueName || '')   : (event?.venueName || event?.venue || '');
+  const date      = isFixed ? weddingDate : event?.date;
+  const startTime = event?.startTime || event?.time || '';
+  const endTime   = event?.endTime || '';
+  const typeBadge = isFixed ? null : (event?.type || (isPost ? 'Post-wedding' : 'Pre-wedding'));
 
-  const handleKindChange = (k) => {
-    setKind(k);
-    setEventType(k === 'pre' ? PRE_WEDDING_TYPES[0] : POST_WEDDING_TYPES[0]);
-  };
-
-  const handleCreate = () => {
-    onAdd({
-      id: uid(),
-      name: name.trim() || eventType,
-      type: eventType,
-      date: date || '',
-      startTime: '', endTime: '',
-      venueName: '', venueAddress: '', venueMapsUrl: null, venuePhotoUrl: null, venuePlaceId: null,
-      dressCode: '', parkingInfo: '', accessibilityNotes: '', details: '',
-      // legacy compat fields
-      time: '', venue: '', address: '', notes: '',
-      isCustomType: false,
-    }, kind);
-  };
+  const timeStr = [fmtTime(startTime), endTime && fmtTime(endTime)].filter(Boolean).join(' – ');
+  const dateStr = fmtDate(date);
 
   return (
-    <div style={{ border: '1px solid rgba(224,53,83,0.2)', borderRadius: 8, padding: '20px 24px', marginBottom: 10, background: 'rgba(224,53,83,0.02)' }}>
-      <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 16px' }}>New event</p>
+    <div
+      style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 0', borderBottom: '1px solid rgba(10,10,10,0.05)', cursor: 'pointer' }}
+      onClick={onEdit}
+    >
+      {/* Venue photo / placeholder */}
+      {photoUrl ? (
+        <img src={photoUrl} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
+          onError={e => { e.target.style.display = 'none'; }} />
+      ) : (
+        <div style={{ width: 44, height: 44, background: 'rgba(10,10,10,0.04)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <MapPin size={18} color="rgba(10,10,10,0.2)" />
+        </div>
+      )}
 
-      {/* Pre / Post toggle */}
-      <div style={{ display: 'flex', gap: 0, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, overflow: 'hidden', marginBottom: 18, width: 'fit-content' }}>
-        {[['pre', 'Pre-wedding'], ['post', 'Post-wedding']].map(([k, label]) => (
-          <button key={k} type="button" onClick={() => handleKindChange(k)}
-            style={{ padding: '7px 18px', background: kind === k ? '#0A0A0A' : '#FFF', color: kind === k ? '#FFF' : 'rgba(10,10,10,0.55)', border: 'none', borderRight: k === 'pre' ? '1px solid rgba(10,10,10,0.12)' : 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: PJS, transition: 'all 0.15s' }}>
-            {label}
-          </button>
-        ))}
+      {/* Event name + type badge — mirrors vendor name+contact column */}
+      <div style={{ flex: '0 0 180px', minWidth: 0 }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {title}
+        </p>
+        {typeBadge && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 7px', borderRadius: 999, fontSize: 10, fontWeight: 600, fontFamily: PJS, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.45)', marginTop: 3 }}>
+            {typeBadge}
+          </span>
+        )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
-        <UInput label="Event name" value={name} onChange={e => setName(e.target.value)} placeholder={eventType} />
-        <div style={{ marginBottom: 20 }}>
-          <span style={sLabel}>Type</span>
-          <select value={eventType} onChange={e => setEventType(e.target.value)}
-            style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', padding: '6px 0', fontSize: 14, fontWeight: 500, color: '#0A0A0A', outline: 'none', fontFamily: PJS, cursor: 'pointer' }}>
-            {types.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </div>
-        <div style={{ marginBottom: 20 }}>
-          <span style={sLabel}>Date</span>
-          <DatePicker value={date} onChange={setDate} placeholder="Select date" />
-        </div>
+      {/* Date + time — mirrors vendor contact-info column */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+        {dateStr && <p style={{ fontSize: 13, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>{dateStr}</p>}
+        {timeStr && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>{timeStr}</p>}
+        {!dateStr && !timeStr && (
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', margin: 0, fontFamily: PJS }}>No date or time set</p>
+        )}
       </div>
 
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-        <button type="button" onClick={onCancel}
-          style={{ background: 'none', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, padding: '7px 16px' }}>
-          Cancel
-        </button>
-        <button type="button" onClick={handleCreate} className="btn-primary" style={{ fontSize: 12, padding: '7px 18px' }}>
-          <Plus size={13} /> Create event
-        </button>
+      {/* Venue name */}
+      <div style={{ flex: '0 0 180px', minWidth: 0 }}>
+        {venueName && (
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {venueName}
+          </p>
+        )}
+      </div>
+
+      {/* Actions dropdown — mirrors VendorList actions column */}
+      <div style={{ flex: '0 0 auto' }}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" style={{ width: 28, height: 28 }}
+              onClick={e => e.stopPropagation()}>
+              <MoreHorizontal size={14} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={e => { e.stopPropagation(); onEdit(); }}>
+              <Edit2 size={13} style={{ marginRight: 8 }} />Edit
+            </DropdownMenuItem>
+            {!isFixed && (
+              <DropdownMenuItem onClick={e => { e.stopPropagation(); onDelete(); }} style={{ color: '#E03553' }}>
+                <Trash2 size={13} style={{ marginRight: 8 }} />Delete
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
@@ -374,10 +424,16 @@ export default function EventDetailsPage() {
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
-  const autoSaveRef = useRef(null);
-  const latestRef  = useRef(null);
-  const [expandedIds, setExpandedIds] = useState(new Set());
-  const [showAddForm, setShowAddForm] = useState(false);
+  const autoSaveRef  = useRef(null);
+  const latestRef    = useRef(null);
+  const recordIdRef  = useRef(null);
+
+  // Modal state
+  const [showEventForm, setShowEventForm]   = useState(false);
+  const [editingEvent,  setEditingEvent]    = useState(null);   // null = new event
+  const [editingFixed,  setEditingFixed]    = useState(false);  // true = ceremony or reception
+  const [editingFType,  setEditingFType]    = useState(null);   // 'ceremony' | 'reception' | null
+  const [editingIsPost, setEditingIsPost]   = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -388,6 +444,7 @@ export default function EventDetailsPage() {
       const td = tdRows[0] || null;
       setRecord(r);
       setRecordId(r.id || null);
+      recordIdRef.current = r.id || null;
       latestRef.current = r;
       setLoading(false);
 
@@ -400,9 +457,7 @@ export default function EventDetailsPage() {
         latestRef.current = promoted;
       }
 
-      // One-time theme migration: fold weddingStyle[] + legacy theme.* + ThemeDetails entity
-      // into the consolidated WeddingDetails.theme.* fields.
-      // Only runs when the new fields are all empty (first load after this deploy).
+      // One-time theme migration
       if (r.id) {
         const existing = r.theme || {};
         const needsMigration = !existing.aesthetic?.length && !existing.faith && !existing.atmosphere?.length;
@@ -415,7 +470,6 @@ export default function EventDetailsPage() {
             migratedTheme.season ||
             migratedTheme.setting;
           if (hasChanges) {
-            console.log('[Theme migration] Promoting old data:', migratedTheme);
             base44.entities.WeddingDetails.update(r.id, { theme: migratedTheme })
               .catch(e => console.warn('Theme migration failed:', e));
             const migrated = { ...r, theme: migratedTheme };
@@ -428,58 +482,126 @@ export default function EventDetailsPage() {
   }, []);
 
   const update = (patch) => {
-    setRecord(prev => {
-      const next = { ...prev, ...patch };
-      latestRef.current = next;
-      return next;
-    });
+    const next = { ...(latestRef.current || {}), ...patch };
+    latestRef.current = next;
+    setRecord(next);
     triggerAutoSave();
   };
 
   const updateNested = (key, patch) => {
-    setRecord(prev => {
-      const next = { ...prev, [key]: { ...(prev?.[key] || {}), ...patch } };
-      latestRef.current = next;
-      return next;
-    });
+    const curr = latestRef.current || {};
+    const next = { ...curr, [key]: { ...(curr[key] || {}), ...patch } };
+    latestRef.current = next;
+    setRecord(next);
     triggerAutoSave();
+  };
+
+  const doSave = async () => {
+    clearTimeout(autoSaveRef.current);
+    const data = latestRef.current;
+    const id   = recordIdRef.current;
+    if (!data) return;
+    setSaveStatus('saving');
+    try {
+      if (id) {
+        await base44.entities.WeddingDetails.update(id, data);
+      } else {
+        const created = await base44.entities.WeddingDetails.create(data);
+        setRecordId(created.id);
+        recordIdRef.current = created.id;
+      }
+      setSaveStatus('saved');
+      window.dispatchEvent(new CustomEvent('weddingDetailsSaved'));
+      setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2000);
+    } catch {
+      setSaveStatus('idle');
+      toast.error('Save failed. Please try again.');
+    }
   };
 
   const triggerAutoSave = () => {
     clearTimeout(autoSaveRef.current);
-    setSaveStatus('saving');
-    autoSaveRef.current = setTimeout(async () => {
-      const data = latestRef.current;
-      try {
-        if (recordId) {
-          await base44.entities.WeddingDetails.update(recordId, data);
-        } else {
-          const created = await base44.entities.WeddingDetails.create(data);
-          setRecordId(created.id);
-        }
-        setSaveStatus('saved');
-        window.dispatchEvent(new CustomEvent('weddingDetailsSaved'));
-        setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch { setSaveStatus('idle'); }
-    }, 1500);
+    autoSaveRef.current = setTimeout(doSave, 2500);
   };
 
-  const toggleExpanded = (id) => {
-    setExpandedIds(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  // ── Event form handlers ───────────────────────────────────────────────────
+
+  const openAddEvent = () => {
+    setEditingEvent(null);
+    setEditingFixed(false);
+    setEditingFType(null);
+    setEditingIsPost(false);
+    setShowEventForm(true);
   };
 
-  const handleAddEvent = (newEvent, kind) => {
-    if (kind === 'pre') {
-      update({ preWeddingEvents:  [...((record?.preWeddingEvents  || [])), newEvent] });
+  const openEditFixed = (fType) => {
+    const data = fType === 'ceremony' ? (latestRef.current?.mainCeremony || {}) : (latestRef.current?.reception || {});
+    setEditingEvent(data);
+    setEditingFixed(true);
+    setEditingFType(fType);
+    setEditingIsPost(false);
+    setShowEventForm(true);
+  };
+
+  const openEditCustom = (ev, isPost) => {
+    setEditingEvent(ev);
+    setEditingFixed(false);
+    setEditingFType(null);
+    setEditingIsPost(isPost);
+    setShowEventForm(true);
+  };
+
+  const closeEventForm = () => {
+    setShowEventForm(false);
+    setEditingEvent(null);
+    setEditingFixed(false);
+    setEditingFType(null);
+    setEditingIsPost(false);
+  };
+
+  const handleSaveEvent = async (saved) => {
+    if (editingFixed) {
+      // Update mainCeremony or reception nested object
+      const key = editingFType === 'ceremony' ? 'mainCeremony' : 'reception';
+      updateNested(key, {
+        venueName: saved.venueName,
+        address:   saved.address,
+        mapsUrl:   saved.mapsUrl,
+        photoUrl:  saved.photoUrl,
+        placeId:   saved.placeId,
+        startTime: saved.startTime || '',
+        endTime:   saved.endTime   || '',
+        dressCode: saved.dressCode,
+        parkingInfo: saved.parkingInfo,
+        accessibilityNotes: saved.accessibilityNotes,
+        notes: saved.notes,
+      });
+    } else if (editingEvent?.id) {
+      // Edit existing custom event
+      const isPost = editingIsPost;
+      const key    = isPost ? 'postWeddingEvents' : 'preWeddingEvents';
+      const list   = latestRef.current?.[key] || [];
+      const next   = list.map(e => e.id === editingEvent.id ? { ...e, ...saved, id: e.id } : e);
+      update({ [key]: next });
     } else {
-      update({ postWeddingEvents: [...((record?.postWeddingEvents || [])), newEvent] });
+      // Create new custom event
+      const isPost = saved.kind === 'post';
+      const key    = isPost ? 'postWeddingEvents' : 'preWeddingEvents';
+      const list   = latestRef.current?.[key] || [];
+      const newEv  = { ...saved, id: uid() };
+      update({ [key]: [...list, newEv] });
     }
-    setShowAddForm(false);
-    setExpandedIds(prev => new Set([...prev, newEvent.id]));
+
+    closeEventForm();
+    // Flush auto-save immediately after state update settles
+    setTimeout(() => doSave(), 50);
+  };
+
+  const handleDeleteCustom = (evId, isPost) => {
+    if (!window.confirm('Remove this event?')) return;
+    const key  = isPost ? 'postWeddingEvents' : 'preWeddingEvents';
+    const list = latestRef.current?.[key] || [];
+    update({ [key]: list.filter(e => e.id !== evId) });
   };
 
   if (loading) return (
@@ -489,32 +611,38 @@ export default function EventDetailsPage() {
     </div>
   );
 
-  const r            = record || {};
-  const mc           = r.mainCeremony || {};
-  const rc           = r.reception    || {};
+  const r  = record || {};
+  const mc = r.mainCeremony || {};
+  const rc = r.reception    || {};
   const theme        = r.theme || {};
   const locationBias = mc.address || '';
 
   const preEvents  = r.preWeddingEvents  || [];
   const postEvents = r.postWeddingEvents || [];
 
+  // Sort custom events chronologically by date then start time
+  const sortedCustom = [
+    ...preEvents.map(e  => ({ ...e, _kind: 'pre'  })),
+    ...postEvents.map(e => ({ ...e, _kind: 'post' })),
+  ].sort((a, b) => {
+    const da = a.date || '9999-12-31', db = b.date || '9999-12-31';
+    if (da !== db) return da.localeCompare(db);
+    const ta = a.startTime || a.time || '', tb = b.startTime || b.time || '';
+    return ta.localeCompare(tb);
+  });
+
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
       <DashboardPageHeader title="Event details" subtitle="Manage your wedding event information" />
 
-      {/* Ava + save status bar */}
+      {/* Ava + actions bar — Add event button appears on Events tab */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to help plan your event details" />
-        <div className="flex items-center gap-[10px]">
-          {saveStatus === 'saving' && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
-              <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Saving…
-            </span>
-          )}
-          {saveStatus === 'saved' && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#22C55E', fontWeight: 600, fontFamily: PJS }}>
-              <Check size={13} /> Saved
-            </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {tab === 'events' && (
+            <button onClick={openAddEvent} className="btn-primary">
+              + Add event
+            </button>
           )}
         </div>
       </div>
@@ -565,76 +693,60 @@ export default function EventDetailsPage() {
       {/* ── Events tab ───────────────────────────────────────────────────────── */}
       {tab === 'events' && (
         <div style={{ padding: '32px 32px 80px' }}>
-          {/* Ceremony (fixed) */}
-          <EventCard
-            eventType="ceremony"
-            data={mc}
+
+          {/* Fixed events header */}
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 4px' }}>
+            Main events
+          </p>
+
+          {/* Ceremony */}
+          <EventCardRow
+            event={mc}
+            isFixed
+            fixedType="ceremony"
             weddingDate={r.weddingDate}
-            isExpanded={expandedIds.has('ceremony')}
-            onToggle={() => toggleExpanded('ceremony')}
-            onUpdate={patch => updateNested('mainCeremony', patch)}
-            locationBias={locationBias}
+            onEdit={() => openEditFixed('ceremony')}
           />
 
-          {/* Reception (fixed) */}
-          <EventCard
-            eventType="reception"
-            data={rc}
+          {/* Reception */}
+          <EventCardRow
+            event={rc}
+            isFixed
+            fixedType="reception"
             weddingDate={r.weddingDate}
-            isExpanded={expandedIds.has('reception')}
-            onToggle={() => toggleExpanded('reception')}
-            onUpdate={patch => updateNested('reception', patch)}
-            locationBias={locationBias}
+            onEdit={() => openEditFixed('reception')}
           />
 
-          {/* Pre-wedding custom events */}
-          {preEvents.map(ev => (
-            <EventCard
-              key={ev.id}
-              eventType="custom"
-              data={ev}
-              weddingDate={r.weddingDate}
-              isPost={false}
-              isExpanded={expandedIds.has(ev.id)}
-              onToggle={() => toggleExpanded(ev.id)}
-              onUpdate={patch => {
-                const next = preEvents.map(e => e.id === ev.id ? { ...e, ...patch } : e);
-                update({ preWeddingEvents: next });
-              }}
-              onDelete={() => update({ preWeddingEvents: preEvents.filter(e => e.id !== ev.id) })}
-              locationBias={locationBias}
-            />
-          ))}
+          {/* Custom events — sorted chronologically */}
+          {sortedCustom.length > 0 && (
+            <>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '28px 0 4px' }}>
+                Additional events
+              </p>
+              {sortedCustom.map(ev => (
+                <EventCardRow
+                  key={ev.id}
+                  event={ev}
+                  isFixed={false}
+                  isPost={ev._kind === 'post'}
+                  weddingDate={r.weddingDate}
+                  onEdit={() => openEditCustom(ev, ev._kind === 'post')}
+                  onDelete={() => handleDeleteCustom(ev.id, ev._kind === 'post')}
+                />
+              ))}
+            </>
+          )}
 
-          {/* Post-wedding custom events */}
-          {postEvents.map(ev => (
-            <EventCard
-              key={ev.id}
-              eventType="custom"
-              data={ev}
-              weddingDate={r.weddingDate}
-              isPost={true}
-              isExpanded={expandedIds.has(ev.id)}
-              onToggle={() => toggleExpanded(ev.id)}
-              onUpdate={patch => {
-                const next = postEvents.map(e => e.id === ev.id ? { ...e, ...patch } : e);
-                update({ postWeddingEvents: next });
-              }}
-              onDelete={() => update({ postWeddingEvents: postEvents.filter(e => e.id !== ev.id) })}
-              locationBias={locationBias}
-            />
-          ))}
-
-          {/* Add event form or button */}
-          {showAddForm ? (
-            <AddEventForm onAdd={handleAddEvent} onCancel={() => setShowAddForm(false)} />
-          ) : (
-            <button type="button" onClick={() => setShowAddForm(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 18px', border: '1px dashed rgba(10,10,10,0.18)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, width: '100%', justifyContent: 'center', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(10,10,10,0.18)'; e.currentTarget.style.color = 'rgba(10,10,10,0.45)'; }}>
-              <Plus size={16} /> Add event
-            </button>
+          {/* Empty custom events state */}
+          {sortedCustom.length === 0 && (
+            <div style={{ padding: '32px', textAlign: 'center', border: '1px dashed rgba(10,10,10,0.12)', marginTop: 24 }}>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.35)', margin: '0 0 12px', fontFamily: PJS }}>
+                No additional events yet — add an engagement party, rehearsal dinner, and more.
+              </p>
+              <button onClick={openAddEvent} className="btn-primary" style={{ fontSize: 12 }}>
+                + Add event
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -645,15 +757,26 @@ export default function EventDetailsPage() {
           <ThemeSection
             theme={theme}
             onSave={(nextTheme) => {
-              setRecord(prev => {
-                const next = { ...prev, theme: nextTheme };
-                latestRef.current = next;
-                return next;
-              });
+              const next = { ...(latestRef.current || {}), theme: nextTheme };
+              latestRef.current = next;
+              setRecord(next);
               triggerAutoSave();
             }}
           />
         </div>
+      )}
+
+      {/* Event form modal — mirrors Vendors.jsx modal structure */}
+      {showEventForm && (
+        <EventForm
+          event={editingEvent}
+          isFixed={editingFixed}
+          fixedType={editingFType}
+          isPost={editingIsPost}
+          onSave={handleSaveEvent}
+          onCancel={closeEventForm}
+          locationBias={locationBias}
+        />
       )}
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
