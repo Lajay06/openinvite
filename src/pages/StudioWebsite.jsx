@@ -9,6 +9,16 @@ import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
 import SectionTemplatePicker from '@/components/website-builder/SectionTemplatePicker';
 import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, FONT_OPTIONS, WEDDING_PAGES } from '@/lib/websiteThemes';
+import WeddingHomePage from '@/components/guest-website/pages/WeddingHomePage';
+import WeddingOurStoryPage from '@/components/guest-website/pages/WeddingOurStoryPage';
+import WeddingCelebrationPage from '@/components/guest-website/pages/WeddingCelebrationPage';
+import WeddingRSVPPage from '@/components/guest-website/pages/WeddingRSVPPage';
+import WeddingRegistryPage from '@/components/guest-website/pages/WeddingRegistryPage';
+import WeddingMusicPage from '@/components/guest-website/pages/WeddingMusicPage';
+import WeddingPhotosPage from '@/components/guest-website/pages/WeddingPhotosPage';
+import WeddingStylePage from '@/components/guest-website/pages/WeddingStylePage';
+import WeddingPollsPage from '@/components/guest-website/pages/WeddingPollsPage';
+import WeddingFAQPage from '@/components/guest-website/pages/WeddingFAQPage';
 import WeddingStayPage from '@/components/guest-website/pages/WeddingStayPage';
 import WeddingTransportPage from '@/components/guest-website/pages/WeddingTransportPage';
 import WeddingExperiencePage from '@/components/guest-website/pages/WeddingExperiencePage';
@@ -814,35 +824,8 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
 
       {/* Sections */}
       <div style={{ flex: 1, overflowY: 'auto', background: universeTheme.background, fontFamily: effectiveBf }}>
-        {/* Guest Suite data pages — auto-render live data, no manual sections needed */}
-        {currentPage === 'stay' || currentPage === 'transport' || currentPage === 'experience' ? (() => {
-          const GS_PAGES = { stay: WeddingStayPage, transport: WeddingTransportPage, experience: WeddingExperiencePage };
-          const GuestPage = GS_PAGES[currentPage];
-          const typography = TYPOGRAPHY_PAIRINGS.find(t => t.id === details?.activeTypography) || TYPOGRAPHY_PAIRINGS[0];
-          return <GuestPage weddingDetails={details} theme={theme} typography={typography} />;
-        })() : currentPageSections.length === 0 ? (
-          showPlaceholders ? (
-            placeholderData.sections.map((section, i) => (
-              <PlaceholderSection
-                key={i}
-                section={section}
-                universeTheme={universeTheme}
-                effectiveHf={effectiveHf}
-                effectiveBf={effectiveBf}
-                onCustomise={() => onAddSection(0)}
-              />
-            ))
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: bgIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28, color: universeTheme.text }}>+</div>
-              <p style={{ fontSize: 18, fontWeight: 600, color: universeTheme.text, marginBottom: 8, fontFamily: effectiveBf }}>No sections yet</p>
-              <p style={{ fontSize: 14, color: bgIsDark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.4)', marginBottom: 24, fontFamily: effectiveBf }}>Add your first section to start building this page</p>
-              <button onClick={() => onAddSection(0)} style={{ padding: '12px 24px', background: universeTheme.primary, color: bgIsDark ? universeTheme.background : '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
-                + Add first section
-              </button>
-            </div>
-          )
-        ) : (
+        {currentPageSections.length > 0 ? (
+          // Builder sections authored — render them
           <>
             {currentPageSections.map((section, index) => (
               <SectionWrap
@@ -863,6 +846,49 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
               />
             ))}
           </>
+        ) : (
+          // No sections yet — use the SAME published page components so the builder
+          // preview is a faithful mirror of the guest site (reads real data fields).
+          (() => {
+            const typography = TYPOGRAPHY_PAIRINGS.find(t => t.id === details?.activeTypography) || TYPOGRAPHY_PAIRINGS[0];
+            const PAGE_FALLBACKS = {
+              'home':         WeddingHomePage,
+              'our-story':    WeddingOurStoryPage,
+              'celebration':  WeddingCelebrationPage,
+              'rsvp':         WeddingRSVPPage,
+              'registry':     WeddingRegistryPage,
+              'music':        WeddingMusicPage,
+              'photos':       WeddingPhotosPage,
+              'styling':      WeddingStylePage,
+              'polls':        WeddingPollsPage,
+              'faq':          WeddingFAQPage,
+              'stay':         WeddingStayPage,
+              'transport':    WeddingTransportPage,
+              'experience':   WeddingExperiencePage,
+            };
+            const FallbackPage = PAGE_FALLBACKS[currentPage];
+            if (FallbackPage) {
+              return (
+                <FallbackPage
+                  weddingDetails={details}
+                  theme={theme}
+                  typography={typography}
+                  universeConfig={null}
+                />
+              );
+            }
+            // Custom page with no sections yet
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
+                <div style={{ width: 64, height: 64, borderRadius: '50%', background: bgIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28, color: universeTheme.text }}>+</div>
+                <p style={{ fontSize: 18, fontWeight: 600, color: universeTheme.text, marginBottom: 8, fontFamily: effectiveBf }}>No sections yet</p>
+                <p style={{ fontSize: 14, color: bgIsDark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.4)', marginBottom: 24, fontFamily: effectiveBf }}>Add your first section to start building this page</p>
+                <button onClick={() => onAddSection(0)} style={{ padding: '12px 24px', background: universeTheme.primary, color: bgIsDark ? universeTheme.background : '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
+                  + Add first section
+                </button>
+              </div>
+            );
+          })()
         )}
 
         {/* Add section at bottom — hidden for auto-rendered Guest Suite pages */}
