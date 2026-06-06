@@ -330,8 +330,6 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
 // ── Event card (horizontal card with right image panel) ──────────────────────
 
 function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, onDelete }) {
-  const [photoError, setPhotoError] = useState(false);
-
   const title = fixedType === 'ceremony' ? 'Ceremony'
     : fixedType === 'reception' ? 'Reception'
     : (event?.name || event?.type || 'Untitled event');
@@ -352,8 +350,6 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
   const timeStr   = [fmtTime(startTime), endTime && fmtTime(endTime)].filter(Boolean).join(' – ');
   const dateStr   = fmtDate(date);
   const dateTimeStr = [dateStr, timeStr].filter(Boolean).join(' · ');
-
-  const showPhoto = !!photoUrl && !photoError;
 
   return (
     <div className="ev-card">
@@ -410,18 +406,20 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
 
       {/* ── Image panel ──────────────────────────────────────────────────── */}
       <div className="ev-photo">
-        {showPhoto ? (
+        {/* Fallback sits in background; image covers it when loaded */}
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <MapPin size={20} color="rgba(10,10,10,0.18)" />
+          {!photoUrl && (
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>Add a photo</span>
+          )}
+        </div>
+        {photoUrl && (
           <img
             src={photoUrl}
             alt={venueName || title}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            onError={() => setPhotoError(true)}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            onError={e => { e.target.style.display = 'none'; }}
           />
-        ) : (
-          <div style={{ width: '100%', height: '100%', background: 'rgba(10,10,10,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <MapPin size={20} color="rgba(10,10,10,0.18)" />
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>Add a photo</span>
-          </div>
         )}
       </div>
     </div>
@@ -813,6 +811,7 @@ export default function EventDetailsPage() {
           flex: 0 0 230px;
           width: 230px;
           overflow: hidden;
+          position: relative;
         }
 
         /* Mobile: image on top, info below */
