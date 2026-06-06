@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Plus, X, MapPin, Trash2, Edit2, MoreHorizontal } from "lucide-react";
+import { Loader2, Plus, X, MapPin, Trash2, Edit2, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
 import DatePicker from "@/components/shared/DatePicker";
@@ -329,88 +327,102 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
   );
 }
 
-// ── Event card row (mirrors VendorList row pattern) ───────────────────────────
+// ── Event card (horizontal card with right image panel) ──────────────────────
 
 function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, onDelete }) {
+  const [photoError, setPhotoError] = useState(false);
+
   const title = fixedType === 'ceremony' ? 'Ceremony'
     : fixedType === 'reception' ? 'Reception'
-    : (event?.name || 'Untitled event');
+    : (event?.name || event?.type || 'Untitled event');
 
-  const photoUrl  = isFixed ? (event?.photoUrl  || null) : (event?.venuePhotoUrl || event?.photoUrl || null);
-  const venueName = isFixed ? (event?.venueName || '')   : (event?.venueName || event?.venue || '');
+  const overline = isFixed
+    ? 'Main event'
+    : (event?.type || (isPost ? 'Post-wedding' : 'Pre-wedding'));
+  const overlineColor = isFixed ? '#E03553' : 'rgba(10,10,10,0.4)';
+
+  const photoUrl  = isFixed ? (event?.photoUrl || null) : (event?.venuePhotoUrl || event?.photoUrl || null);
+  const venueName = isFixed ? (event?.venueName || '') : (event?.venueName || event?.venue || '');
+  const address   = isFixed ? (event?.address || '') : (event?.venueAddress || event?.address || '');
+  const locationLine = venueName || address;
+
   const date      = isFixed ? weddingDate : event?.date;
   const startTime = event?.startTime || event?.time || '';
   const endTime   = event?.endTime || '';
-  const typeBadge = isFixed ? null : (event?.type || (isPost ? 'Post-wedding' : 'Pre-wedding'));
+  const timeStr   = [fmtTime(startTime), endTime && fmtTime(endTime)].filter(Boolean).join(' – ');
+  const dateStr   = fmtDate(date);
+  const dateTimeStr = [dateStr, timeStr].filter(Boolean).join(' · ');
 
-  const timeStr = [fmtTime(startTime), endTime && fmtTime(endTime)].filter(Boolean).join(' – ');
-  const dateStr = fmtDate(date);
+  const showPhoto = !!photoUrl && !photoError;
 
   return (
-    <div
-      style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 0', borderBottom: '1px solid rgba(10,10,10,0.05)', cursor: 'pointer' }}
-      onClick={onEdit}
-    >
-      {/* Venue photo / placeholder */}
-      {photoUrl ? (
-        <img src={photoUrl} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
-          onError={e => { e.target.style.display = 'none'; }} />
-      ) : (
-        <div style={{ width: 44, height: 44, background: 'rgba(10,10,10,0.04)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <MapPin size={18} color="rgba(10,10,10,0.2)" />
-        </div>
-      )}
+    <div className="ev-card">
+      {/* ── Info panel ───────────────────────────────────────────────────── */}
+      <div className="ev-info">
+        {/* Type overline */}
+        <p style={{ fontSize: 12, fontWeight: 600, color: overlineColor, fontFamily: PJS, margin: '0 0 8px', letterSpacing: '0.01em' }}>
+          {overline}
+        </p>
 
-      {/* Event name + type badge — mirrors vendor name+contact column */}
-      <div style={{ flex: '0 0 180px', minWidth: 0 }}>
-        <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {/* Event name */}
+        <p style={{ fontSize: 26, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 16px', lineHeight: 1.1 }}>
           {title}
         </p>
-        {typeBadge && (
-          <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 7px', borderRadius: 999, fontSize: 10, fontWeight: 600, fontFamily: PJS, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.45)', marginTop: 3 }}>
-            {typeBadge}
+
+        {/* Date · time */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 8 }}>
+          <Calendar size={13} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, lineHeight: 1.3 }}>
+            {dateTimeStr || 'Date to be confirmed'}
           </span>
-        )}
+        </div>
+
+        {/* Location */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7 }}>
+          <MapPin size={13} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, lineHeight: 1.3 }}>
+            {locationLine || 'Location to be confirmed'}
+          </span>
+        </div>
+
+        {/* Edit / Delete — pushed to bottom */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 'auto', paddingTop: 20 }}>
+          <button
+            type="button"
+            onClick={onEdit}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', fontFamily: PJS, fontSize: 12, fontWeight: 600, padding: 0 }}
+          >
+            <Edit2 size={12} />
+            Edit
+          </button>
+          {!isFixed && (
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); onDelete(); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, fontSize: 12, fontWeight: 600, padding: 0 }}
+            >
+              <Trash2 size={12} />
+              Delete
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Date + time — mirrors vendor contact-info column */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
-        {dateStr && <p style={{ fontSize: 13, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>{dateStr}</p>}
-        {timeStr && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>{timeStr}</p>}
-        {!dateStr && !timeStr && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', margin: 0, fontFamily: PJS }}>No date or time set</p>
+      {/* ── Image panel ──────────────────────────────────────────────────── */}
+      <div className="ev-photo">
+        {showPhoto ? (
+          <img
+            src={photoUrl}
+            alt={venueName || title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            onError={() => setPhotoError(true)}
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: 'rgba(10,10,10,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <MapPin size={20} color="rgba(10,10,10,0.18)" />
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>Add a photo</span>
+          </div>
         )}
-      </div>
-
-      {/* Venue name */}
-      <div style={{ flex: '0 0 180px', minWidth: 0 }}>
-        {venueName && (
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {venueName}
-          </p>
-        )}
-      </div>
-
-      {/* Actions dropdown — mirrors VendorList actions column */}
-      <div style={{ flex: '0 0 auto' }}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" style={{ width: 28, height: 28 }}
-              onClick={e => e.stopPropagation()}>
-              <MoreHorizontal size={14} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={e => { e.stopPropagation(); onEdit(); }}>
-              <Edit2 size={13} style={{ marginRight: 8 }} />Edit
-            </DropdownMenuItem>
-            {!isFixed && (
-              <DropdownMenuItem onClick={e => { e.stopPropagation(); onDelete(); }} style={{ color: '#E03553' }}>
-                <Trash2 size={13} style={{ marginRight: 8 }} />Delete
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </div>
   );
@@ -695,7 +707,7 @@ export default function EventDetailsPage() {
         <div style={{ padding: '32px 32px 80px' }}>
 
           {/* Fixed events header */}
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 4px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 auto 12px', maxWidth: 680 }}>
             Main events
           </p>
 
@@ -720,7 +732,7 @@ export default function EventDetailsPage() {
           {/* Custom events — sorted chronologically */}
           {sortedCustom.length > 0 && (
             <>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '28px 0 4px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '28px auto 12px', maxWidth: 680 }}>
                 Additional events
               </p>
               {sortedCustom.map(ev => (
@@ -739,7 +751,7 @@ export default function EventDetailsPage() {
 
           {/* Empty custom events state */}
           {sortedCustom.length === 0 && (
-            <div style={{ padding: '32px', textAlign: 'center', border: '1px dashed rgba(10,10,10,0.12)', marginTop: 24 }}>
+            <div style={{ padding: '32px', textAlign: 'center', border: '1px dashed rgba(10,10,10,0.12)', marginTop: 24, maxWidth: 680, marginLeft: 'auto', marginRight: 'auto' }}>
               <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.35)', margin: '0 0 12px', fontFamily: PJS }}>
                 No additional events yet — add an engagement party, rehearsal dinner, and more.
               </p>
@@ -779,7 +791,37 @@ export default function EventDetailsPage() {
         />
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Event card — horizontal layout with right image panel */
+        .ev-card {
+          display: flex;
+          max-width: 680px;
+          margin: 0 auto 12px;
+          border: 1px solid rgba(10,10,10,0.10);
+          min-height: 180px;
+        }
+        .ev-info {
+          flex: 1;
+          padding: 28px 32px;
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+        .ev-photo {
+          flex: 0 0 230px;
+          width: 230px;
+          overflow: hidden;
+        }
+
+        /* Mobile: image on top, info below */
+        @media (max-width: 600px) {
+          .ev-card { flex-direction: column; margin-bottom: 12px; }
+          .ev-photo { order: -1; flex: none; width: 100%; height: 180px; }
+          .ev-info { padding: 20px 20px 24px; }
+        }
+      `}</style>
     </div>
   );
 }
