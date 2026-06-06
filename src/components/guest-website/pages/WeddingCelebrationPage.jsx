@@ -5,7 +5,7 @@ function fmtTime(t) {
   if (!t) return '';
   const [h, m] = t.split(':').map(Number);
   if (isNaN(h)) return t;
-  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'pm' : 'am'}`;
 }
 
 export default function WeddingCelebrationPage({ weddingDetails, theme, typography, universeConfig }) {

@@ -104,7 +104,7 @@ function fmtTime(t) {
   if (!t) return '';
   const [h, m] = t.split(':').map(Number);
   if (isNaN(h)) return t;
-  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'pm' : 'am'}`;
 }
 function fmtDate(d) {
   if (!d) return '';
@@ -570,10 +570,14 @@ export default function EventDetailsPage() {
   };
 
   const handleSaveEvent = async (saved) => {
+    // Compute the full next record explicitly so we save exactly what we computed,
+    // never re-reading latestRef after an async gap.
+    let nextData;
+
     if (editingFixed) {
-      // Update mainCeremony or reception nested object
-      const key = editingFType === 'ceremony' ? 'mainCeremony' : 'reception';
-      updateNested(key, {
+      const key  = editingFType === 'ceremony' ? 'mainCeremony' : 'reception';
+      const curr = latestRef.current || {};
+      nextData = { ...curr, [key]: { ...(curr[key] || {}),
         venueName: saved.venueName,
         address:   saved.address,
         mapsUrl:   saved.mapsUrl,
@@ -585,26 +589,42 @@ export default function EventDetailsPage() {
         parkingInfo: saved.parkingInfo,
         accessibilityNotes: saved.accessibilityNotes,
         notes: saved.notes,
-      });
+      }};
     } else if (editingEvent?.id) {
-      // Edit existing custom event
-      const isPost = editingIsPost;
-      const key    = isPost ? 'postWeddingEvents' : 'preWeddingEvents';
-      const list   = latestRef.current?.[key] || [];
-      const next   = list.map(e => e.id === editingEvent.id ? { ...e, ...saved, id: e.id } : e);
-      update({ [key]: next });
+      const key  = editingIsPost ? 'postWeddingEvents' : 'preWeddingEvents';
+      const list = latestRef.current?.[key] || [];
+      const next = list.map(e => e.id === editingEvent.id ? { ...e, ...saved, id: e.id } : e);
+      nextData = { ...(latestRef.current || {}), [key]: next };
     } else {
-      // Create new custom event
-      const isPost = saved.kind === 'post';
-      const key    = isPost ? 'postWeddingEvents' : 'preWeddingEvents';
-      const list   = latestRef.current?.[key] || [];
-      const newEv  = { ...saved, id: uid() };
-      update({ [key]: [...list, newEv] });
+      const key   = saved.kind === 'post' ? 'postWeddingEvents' : 'preWeddingEvents';
+      const list  = latestRef.current?.[key] || [];
+      const newEv = { ...saved, id: uid() };
+      nextData = { ...(latestRef.current || {}), [key]: [...list, newEv] };
     }
 
+    // Synchronously commit to ref + React state, then save with the explicit value.
+    latestRef.current = nextData;
+    setRecord(nextData);
     closeEventForm();
-    // Flush auto-save immediately after state update settles
-    setTimeout(() => doSave(), 50);
+
+    clearTimeout(autoSaveRef.current);
+    const id = recordIdRef.current;
+    setSaveStatus('saving');
+    try {
+      if (id) {
+        await base44.entities.WeddingDetails.update(id, nextData);
+      } else {
+        const created = await base44.entities.WeddingDetails.create(nextData);
+        setRecordId(created.id);
+        recordIdRef.current = created.id;
+      }
+      setSaveStatus('saved');
+      window.dispatchEvent(new CustomEvent('weddingDetailsSaved'));
+      setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2000);
+    } catch {
+      setSaveStatus('idle');
+      toast.error('Save failed. Please try again.');
+    }
   };
 
   const handleDeleteCustom = (evId, isPost) => {
