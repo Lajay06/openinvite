@@ -702,16 +702,36 @@ export default function EventDetailsPage() {
   const preEvents  = r.preWeddingEvents  || [];
   const postEvents = r.postWeddingEvents || [];
 
-  // Sort custom events chronologically by date then start time
+  // Parse ISO date string to ms; unparseable / empty → Infinity so it sorts to end
+  const safeDateMs = d => {
+    if (!d) return Infinity;
+    const t = Date.parse(d + 'T00:00:00');
+    return isNaN(t) ? Infinity : t;
+  };
+  const cmpTime = (ta, tb) => {
+    if (!ta && !tb) return 0;
+    if (!ta) return 1;
+    if (!tb) return -1;
+    return ta.localeCompare(tb);
+  };
+
+  // Sort additional events by date then start time; no-date/invalid events sort to end
   const sortedCustom = [
     ...preEvents.map(e  => ({ ...e, _kind: 'pre'  })),
     ...postEvents.map(e => ({ ...e, _kind: 'post' })),
   ].sort((a, b) => {
-    const da = a.date || '9999-12-31', db = b.date || '9999-12-31';
-    if (da !== db) return da.localeCompare(db);
-    const ta = a.startTime || a.time || '', tb = b.startTime || b.time || '';
-    return ta.localeCompare(tb);
+    const da = safeDateMs(a.date), db = safeDateMs(b.date);
+    if (da !== db) return da - db;
+    return cmpTime(a.startTime || a.time || '', b.startTime || b.time || '');
   });
+
+  // Sort main events by start time; no-time sorts to end, keeps ceremony before reception when equal
+  const sortedMain = [
+    { event: mc, fixedType: 'ceremony' },
+    { event: rc, fixedType: 'reception' },
+  ].sort((a, b) =>
+    cmpTime(a.event?.startTime || a.event?.time || '', b.event?.startTime || b.event?.time || '')
+  );
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
@@ -781,23 +801,17 @@ export default function EventDetailsPage() {
             Main events
           </p>
 
-          {/* Ceremony */}
-          <EventCardRow
-            event={mc}
-            isFixed
-            fixedType="ceremony"
-            weddingDate={r.weddingDate}
-            onEdit={() => openEditFixed('ceremony')}
-          />
-
-          {/* Reception */}
-          <EventCardRow
-            event={rc}
-            isFixed
-            fixedType="reception"
-            weddingDate={r.weddingDate}
-            onEdit={() => openEditFixed('reception')}
-          />
+          {/* Main events — sorted by start time within the group */}
+          {sortedMain.map(({ event, fixedType }) => (
+            <EventCardRow
+              key={fixedType}
+              event={event}
+              isFixed
+              fixedType={fixedType}
+              weddingDate={r.weddingDate}
+              onEdit={() => openEditFixed(fixedType)}
+            />
+          ))}
 
           {/* Custom events — sorted chronologically */}
           {sortedCustom.length > 0 && (
