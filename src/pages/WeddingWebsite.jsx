@@ -838,7 +838,7 @@ export default function WeddingWebsite() {
                   <div className="space-y-4 pt-2">
                     {weddingDetails?.preWeddingEvents && weddingDetails.preWeddingEvents.length > 0 ? (
                       weddingDetails.preWeddingEvents.map((event, idx) => (
-                        <div key={idx} className="pl-3 border-l-2 border-gray-200 py-2">
+                        <div key={event.id || idx} className="pl-3 border-l-2 border-gray-200 py-2">
                           <p className="font-medium text-gray-900 mb-1">{event.name}</p>
                           {event.date && <p className="text-sm text-gray-600">{event.date} {event.time && `at ${event.time}`}</p>}
                           {event.venue && <p className="text-sm text-gray-600">{event.venue}</p>}
@@ -871,7 +871,7 @@ export default function WeddingWebsite() {
                   <div className="space-y-4 pt-2">
                     {weddingDetails?.postWeddingEvents && weddingDetails.postWeddingEvents.length > 0 ? (
                       weddingDetails.postWeddingEvents.map((event, idx) => (
-                        <div key={idx} className="pl-3 border-l-2 border-gray-200 py-2">
+                        <div key={event.id || idx} className="pl-3 border-l-2 border-gray-200 py-2">
                           <p className="font-medium text-gray-900 mb-1">{event.name}</p>
                           {event.date && <p className="text-sm text-gray-600">{event.date} {event.time && `at ${event.time}`}</p>}
                           {event.venue && <p className="text-sm text-gray-600">{event.venue}</p>}
@@ -1600,7 +1600,7 @@ export default function WeddingWebsite() {
                       <div className="space-y-4">
                         {weddingDetails?.preWeddingEvents && weddingDetails.preWeddingEvents.length > 0 ? (
                           weddingDetails.preWeddingEvents.map((event, idx) => (
-                            <div key={idx} className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div key={event.id || idx} className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-lg">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
                                   <Clock className="w-4 h-4 text-gray-400" />
@@ -1739,7 +1739,7 @@ export default function WeddingWebsite() {
                       <div className="space-y-4">
                         {weddingDetails?.postWeddingEvents && weddingDetails.postWeddingEvents.length > 0 ? (
                           weddingDetails.postWeddingEvents.map((event, idx) => (
-                            <div key={idx} className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div key={event.id || idx} className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-lg">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
                                   <Clock className="w-4 h-4 text-gray-400" />

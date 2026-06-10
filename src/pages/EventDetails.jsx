@@ -519,6 +519,27 @@ export default function EventDetailsPage() {
         latestRef.current = promoted;
       }
 
+      // Lazy event_id backfill — assigns a stable event_id to any embedded event that lacks one.
+      // Idempotent: only runs when missing, never overwrites an existing event_id.
+      // Required by Smart RSVP (D1) so event_responses can reference events by id rather than index.
+      if (r.id) {
+        const pre  = r.preWeddingEvents  || [];
+        const post = r.postWeddingEvents || [];
+        const needsPre  = pre.some(e  => !e.event_id);
+        const needsPost = post.some(e => !e.event_id);
+        if (needsPre || needsPost) {
+          const patchedPre  = needsPre  ? pre.map(e  => e.event_id ? e : { ...e, event_id: e.id || uid() }) : pre;
+          const patchedPost = needsPost ? post.map(e => e.event_id ? e : { ...e, event_id: e.id || uid() }) : post;
+          const patched = { ...r, preWeddingEvents: patchedPre, postWeddingEvents: patchedPost };
+          base44.entities.WeddingDetails.update(r.id, {
+            preWeddingEvents: patchedPre,
+            postWeddingEvents: patchedPost,
+          }).catch(e => console.warn('event_id backfill failed:', e));
+          setRecord(patched);
+          latestRef.current = patched;
+        }
+      }
+
       // One-time theme migration
       if (r.id) {
         const existing = r.theme || {};
@@ -645,12 +666,13 @@ export default function EventDetailsPage() {
     } else if (editingEvent?.id) {
       const key  = editingIsPost ? 'postWeddingEvents' : 'preWeddingEvents';
       const list = latestRef.current?.[key] || [];
-      const next = list.map(e => e.id === editingEvent.id ? { ...e, ...saved, id: e.id } : e);
+      const next = list.map(e => e.id === editingEvent.id ? { ...e, ...saved, id: e.id, event_id: e.event_id || e.id } : e);
       nextData = { ...(latestRef.current || {}), [key]: next };
     } else {
       const key   = saved.kind === 'post' ? 'postWeddingEvents' : 'preWeddingEvents';
       const list  = latestRef.current?.[key] || [];
-      const newEv = { ...saved, id: uid() };
+      const eid   = uid();
+      const newEv = { ...saved, id: eid, event_id: eid };
       nextData = { ...(latestRef.current || {}), [key]: [...list, newEv] };
     }
 
