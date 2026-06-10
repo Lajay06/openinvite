@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
-import { Loader2, Globe, Mail, CheckSquare, Printer, Eye, MapPin, Calendar, Clock, ArrowRight } from 'lucide-react';
+import { Loader2, Globe, Mail, CheckSquare, Printer, Eye, MapPin, Calendar, Clock, ArrowRight, Image } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
@@ -74,7 +74,7 @@ export default function GuestSuite() {
   const coupleName = couple1 && couple2 ? `${couple1} & ${couple2}` : couple1 || couple2 || '';
   const weddingDate = wedding?.weddingDate || '';
   const venueName = wedding?.mainCeremony?.venueName || '';
-  const venueAddress = wedding?.mainCeremony?.address || '';
+  const venuePhotoUrl = wedding?.mainCeremony?.photoUrl || null;
   const days = daysUntil(weddingDate);
   const hasDetails = coupleName || weddingDate || venueName;
 
@@ -90,60 +90,75 @@ export default function GuestSuite() {
         <AvaButton label="Ask Ava about your guest experience" onClick={() => setAvaOpen(true)} />
       </div>
 
-      {/* Wedding-at-a-glance strip */}
+      {/* Wedding overview — split hero card */}
       {loading ? (
         <div style={{ padding: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Loader2 size={20} style={{ color: 'rgba(10,10,10,0.3)' }} className="animate-spin" />
         </div>
       ) : hasDetails ? (
-        <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-          {/* Couple names */}
-          <div className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '20px 32px', borderRight: '1px solid rgba(10,10,10,0.08)' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 6px' }}>Couple</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {coupleName || <span style={{ color: 'rgba(10,10,10,0.3)' }}>—</span>}
-            </p>
-          </div>
+        <div style={{ padding: '24px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+          <div className="gs-hero-card">
 
-          {/* Date */}
-          <div className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '20px 32px', borderRight: '1px solid rgba(10,10,10,0.08)' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 6px' }}>Date</p>
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>
-              {fmt(weddingDate) || <span style={{ color: 'rgba(10,10,10,0.3)' }}>—</span>}
-            </p>
-          </div>
-
-          {/* Venue */}
-          <div className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '20px 32px', borderRight: '1px solid rgba(10,10,10,0.08)' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 6px' }}>Venue</p>
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {venueName || <span style={{ color: 'rgba(10,10,10,0.3)' }}>—</span>}
-            </p>
-            {venueAddress && (
-              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, margin: '2px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {venueAddress}
+            {/* Info panel — left on desktop, below photo on mobile */}
+            <div className="gs-hero-info">
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 8px', letterSpacing: '0.01em' }}>
+                Your wedding
               </p>
-            )}
-          </div>
 
-          {/* Countdown */}
-          <div className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '20px 32px' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 6px' }}>Countdown</p>
-            {days !== null ? (
-              days > 0 ? (
-                <p style={{ fontSize: 20, fontWeight: 700, color: '#E03553', fontFamily: PJS, margin: 0 }}>
-                  {days} <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.5)' }}>days to go</span>
-                </p>
-              ) : days === 0 ? (
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#E03553', fontFamily: PJS, margin: 0 }}>Today! 🎉</p>
-              ) : (
-                <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
-                  {Math.abs(days)} days ago
-                </p>
-              )
-            ) : (
-              <span style={{ color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>—</span>
-            )}
+              <p style={{ fontSize: 38, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 20px', lineHeight: 1.05, letterSpacing: '-0.02em' }}>
+                {coupleName || <span style={{ color: 'rgba(10,10,10,0.3)' }}>—</span>}
+              </p>
+
+              {weddingDate && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+                  <Calendar size={14} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} />
+                  <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>
+                    {fmt(weddingDate)}
+                  </span>
+                </div>
+              )}
+
+              {venueName && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: days !== null ? 16 : 0 }}>
+                  <MapPin size={14} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} />
+                  <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>
+                    {venueName}
+                  </span>
+                </div>
+              )}
+
+              {days !== null && (
+                days > 0 ? (
+                  <p style={{ fontSize: 18, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, margin: 0 }}>
+                    <span style={{ fontWeight: 700, color: '#E03553' }}>{days}</span> days to go
+                  </p>
+                ) : days === 0 ? (
+                  <p style={{ fontSize: 18, fontWeight: 700, color: '#E03553', fontFamily: PJS, margin: 0 }}>Today! 🎉</p>
+                ) : (
+                  <p style={{ fontSize: 18, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, margin: 0 }}>
+                    {Math.abs(days)} days ago
+                  </p>
+                )
+              )}
+            </div>
+
+            {/* Photo panel — right on desktop, top on mobile */}
+            <div className="gs-hero-photo">
+              {/* Fallback always in background; image covers it when loaded */}
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <Image size={22} color="rgba(10,10,10,0.22)" />
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>Venue photo</span>
+              </div>
+              {venuePhotoUrl && (
+                <img
+                  src={venuePhotoUrl}
+                  alt={venueName || 'Venue'}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  onError={e => { e.target.style.display = 'none'; }}
+                />
+              )}
+            </div>
+
           </div>
         </div>
       ) : (
@@ -226,6 +241,35 @@ export default function GuestSuite() {
         systemPrompt="You are Ava, a wedding guest experience advisor. Help plan the guest website, invitations, RSVP flow, and overall guest experience."
         quickActions={["What should go on my wedding website?", "How do I write a great RSVP message?", "Tips for making guests feel welcome", "What information do guests need before the wedding?"]}
       />
+
+      <style>{`
+        .gs-hero-card {
+          display: flex;
+          flex-direction: row;
+          border: 1px solid rgba(10,10,10,0.10);
+        }
+        .gs-hero-info {
+          flex: 1;
+          padding: 40px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          min-width: 0;
+        }
+        .gs-hero-photo {
+          flex: 0 0 248px;
+          width: 248px;
+          position: relative;
+          overflow: hidden;
+          background: #ECE7E1;
+          min-height: 200px;
+        }
+        @media (max-width: 640px) {
+          .gs-hero-card { flex-direction: column; }
+          .gs-hero-photo { order: -1; flex: 0 0 180px; width: 100%; height: 180px; min-height: 0; }
+          .gs-hero-info { padding: 24px 24px 32px; }
+        }
+      `}</style>
     </div>
   );
 }
