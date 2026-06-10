@@ -176,6 +176,7 @@ export default function MultiPageWeddingWebsite() {
       style={{
         '--wb-heading-font': typography.headingFont,
         '--wb-body-font': typography.bodyFont,
+        '--universe-grain-opacity': universeConfig?.texture?.opacity,
         backgroundColor: theme.darkBg,
         color: theme.darkText,
       }}
