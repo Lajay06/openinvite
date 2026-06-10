@@ -23,7 +23,7 @@ const GRAIN_SVG = encodeURIComponent(
 );
 const GRAIN_URI = `url("data:image/svg+xml,${GRAIN_SVG}")`;
 
-export default function GrainOverlay({ opacity = 0.04 }) {
+export default function GrainOverlay({ opacity = 0.025 }) {
   return (
     <div
       aria-hidden="true"
@@ -34,7 +34,7 @@ export default function GrainOverlay({ opacity = 0.04 }) {
         backgroundImage:  GRAIN_URI,
         backgroundRepeat: 'repeat',
         backgroundSize:   '200px 200px',
-        opacity,
+        opacity:          `var(--universe-grain-opacity, ${opacity})`,
       }}
     />
   );
