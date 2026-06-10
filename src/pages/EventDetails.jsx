@@ -140,6 +140,58 @@ function UTextarea({ label, value, onChange, placeholder = '', rows = 3 }) {
   );
 }
 
+// ── Time-select dropdown (underline style, 15-min increments, 24-h stored) ────
+
+const TIME_OPTIONS = (() => {
+  const opts = [{ value: '', label: 'No time set' }];
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      const val = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      opts.push({ value: val, label: fmtTime(val) });
+    }
+  }
+  return opts;
+})();
+
+function TimeSelect({ id, value, onChange }) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div style={{ position: 'relative' }}>
+      <select
+        id={id}
+        value={value || ''}
+        onChange={e => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          width: '100%',
+          border: 'none',
+          borderBottom: `${focused ? 2 : 1}px solid ${focused ? '#E03553' : 'rgba(10,10,10,0.18)'}`,
+          background: 'transparent',
+          padding: '6px 20px 6px 0',
+          fontSize: 14,
+          fontWeight: 500,
+          color: value ? '#0A0A0A' : 'rgba(10,10,10,0.4)',
+          outline: 'none',
+          fontFamily: PJS,
+          cursor: 'pointer',
+          appearance: 'none',
+          WebkitAppearance: 'none',
+          MozAppearance: 'none',
+          boxSizing: 'border-box',
+        }}
+      >
+        {TIME_OPTIONS.map(({ value: v, label }) => (
+          <option key={v} value={v}>{label}</option>
+        ))}
+      </select>
+      <svg style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
+        <path d="M1.5 3.5l4 4 4-4" stroke="rgba(10,10,10,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
+  );
+}
+
 // ── Event form modal (mirrors VendorForm pattern) ─────────────────────────────
 
 function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locationBias }) {
@@ -282,15 +334,15 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
 
           <div style={divider} />
 
-          {/* Timing — time inputs (native time picker, stores HH:MM strings) */}
+          {/* Timing — dropdown pickers (15-min increments, stores HH:MM 24-h) */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
               <Label htmlFor="ev-start">Start time</Label>
-              <Input id="ev-start" type="time" value={form.startTime} onChange={e => set('startTime', e.target.value)} />
+              <TimeSelect id="ev-start" value={form.startTime} onChange={v => set('startTime', v)} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
               <Label htmlFor="ev-end">End time</Label>
-              <Input id="ev-end" type="time" value={form.endTime} onChange={e => set('endTime', e.target.value)} />
+              <TimeSelect id="ev-end" value={form.endTime} onChange={v => set('endTime', v)} />
             </div>
           </div>
 
