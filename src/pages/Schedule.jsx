@@ -232,15 +232,20 @@ export default function SchedulePage({
         <Tabs value={effectiveTab} onValueChange={setActiveTab}>
           {activeView === null && (
             <TabsList className="w-full justify-start">
-              <TabsTrigger value="visual">Visual builder</TabsTrigger>
+              <TabsTrigger value="visual">Timeline</TabsTrigger>
               <TabsTrigger value="timeline">Timeline view</TabsTrigger>
               <TabsTrigger value="list">List view</TabsTrigger>
               <TabsTrigger value="considerations">Considerations</TabsTrigger>
             </TabsList>
           )}
 
-          {/* Visual Builder */}
+          {/* Timeline */}
           <TabsContent value="visual" className="mt-8">
+            <div style={{ padding: '10px 16px', background: 'rgba(10,10,10,0.03)', borderLeft: '2px solid #E03553', marginBottom: 24 }}>
+              <p style={{ margin: 0, fontSize: 13, color: 'rgba(10,10,10,0.55)', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.5 }}>
+                [CONFIRMED COPY HERE]
+              </p>
+            </div>
             <WeddingDayTimelineBuilder
               scheduleItems={scheduleItems}
               onEdit={handleEdit}
