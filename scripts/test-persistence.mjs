@@ -146,6 +146,7 @@ const TEST_FIELDS = {
   preWeddingEvents: [
     {
       id:               'test-pre-1',
+      event_id:         'test-pre-event-id-1',
       name:             'Welcome Dinner',
       type:             'Rehearsal Dinner',
       date:             '2025-11-13',
@@ -166,6 +167,19 @@ const TEST_FIELDS = {
       time:    '18:30',
       notes:   'Family and close friends only',
       isCustomType: false,
+    },
+  ],
+  postWeddingEvents: [
+    {
+      id:       'test-post-1',
+      event_id: 'test-post-event-id-1',
+      name:     'Farewell Brunch',
+      type:     'Brunch',
+      date:     '2025-11-15',
+      startTime: '10:00',
+      endTime:   '12:00',
+      venueName: 'Test Cafe',
+      details:   'Relaxed send-off',
     },
   ],
   guestSuiteAccommodation: {
@@ -598,6 +612,23 @@ async function run() {
     results.push(fieldsOk
       ? pass('preWeddingEvents[0] full field set', 'startTime/endTime/venue/dressCode/parkingInfo/accessibility/details all persist')
       : fail('preWeddingEvents[0] full field set', written, got));
+    // Stable event_id — prerequisite for Smart RSVP per-event responses
+    results.push(got?.event_id === written.event_id
+      ? pass('preWeddingEvents[0].event_id', written.event_id)
+      : fail('preWeddingEvents[0].event_id — SCHEMA REGISTRATION REQUIRED', written.event_id, got?.event_id));
+  }
+
+  // postWeddingEvents round-trip — incl. event_id
+  {
+    const written  = TEST_FIELDS.postWeddingEvents[0];
+    const gotArray = record.postWeddingEvents || [];
+    const got      = gotArray.find(e => e.id === written.id);
+    results.push(got?.name === written.name
+      ? pass('postWeddingEvents[0] persists', written.name)
+      : fail('postWeddingEvents[0] persists', written, got));
+    results.push(got?.event_id === written.event_id
+      ? pass('postWeddingEvents[0].event_id', written.event_id)
+      : fail('postWeddingEvents[0].event_id — SCHEMA REGISTRATION REQUIRED', written.event_id, got?.event_id));
   }
 
   // Sole-writer verification: write mainCeremony.dressCode via canonical path,
