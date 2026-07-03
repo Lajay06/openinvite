@@ -864,6 +864,128 @@ async function run() {
     }
   }
 
+  // ── 8d. Guest.event_responses — Smart RSVP per-event matrix (PR 2) ─────────────
+  console.log('\n  Guest.event_responses field persistence tests (per-event RSVP matrix):\n');
+  let guestEventRespId = null;
+  try {
+    const eventResponsesPayload = [
+      {
+        event_id:        'reorder-test-event-A',
+        invited:         true,
+        status:          'yes',
+        meal_choice:     'chicken',
+        plus_ones:       1,
+        plus_one_names:  ['Jane Doe'],
+        responded_at:    new Date().toISOString(),
+      },
+      {
+        event_id:        'reorder-test-event-B',
+        invited:         true,
+        status:          'pending',
+        meal_choice:     null,
+        plus_ones:       0,
+        plus_one_names:  [],
+        responded_at:    null,
+      },
+    ];
+
+    const geCreated = await api('POST', `/apps/${APP_ID}/entities/Guest`,
+      { name: '__PERSISTENCE_TEST_EVENT_RESPONSES__' }, token);
+    guestEventRespId = geCreated.id;
+    if (!guestEventRespId) throw new Error('No id on created Guest');
+
+    await api('PUT', `/apps/${APP_ID}/entities/Guest/${guestEventRespId}`,
+      { name: '__PERSISTENCE_TEST_EVENT_RESPONSES__', event_responses: eventResponsesPayload }, token);
+
+    const geBack = await api('GET', `/apps/${APP_ID}/entities/Guest/${guestEventRespId}`, undefined, token);
+    const gotResponses = geBack.event_responses || [];
+
+    // Round-trip every nested field individually (write → fresh read → assert not undefined)
+    for (const written of eventResponsesPayload) {
+      const got = gotResponses.find(r => r.event_id === written.event_id);
+      const label = `event_responses[event_id=${written.event_id}]`;
+
+      results.push(got !== undefined
+        ? pass(`${label} entry exists`, `found`)
+        : fail(`${label} entry exists`, written, got));
+
+      results.push(got?.invited !== undefined && got.invited === written.invited
+        ? pass(`${label}.invited`, String(got?.invited))
+        : fail(`${label}.invited`, written.invited, got?.invited));
+
+      results.push(got?.status !== undefined && got.status === written.status
+        ? pass(`${label}.status`, got?.status)
+        : fail(`${label}.status`, written.status, got?.status));
+
+      results.push('meal_choice' in (got || {}) && got.meal_choice === written.meal_choice
+        ? pass(`${label}.meal_choice`, JSON.stringify(got?.meal_choice))
+        : fail(`${label}.meal_choice`, written.meal_choice, got?.meal_choice));
+
+      results.push(got?.plus_ones !== undefined && got.plus_ones === written.plus_ones
+        ? pass(`${label}.plus_ones`, String(got?.plus_ones))
+        : fail(`${label}.plus_ones`, written.plus_ones, got?.plus_ones));
+
+      results.push('plus_one_names' in (got || {}) && deepEqual(got.plus_one_names, written.plus_one_names)
+        ? pass(`${label}.plus_one_names`, JSON.stringify(got?.plus_one_names))
+        : fail(`${label}.plus_one_names`, written.plus_one_names, got?.plus_one_names));
+
+      results.push('responded_at' in (got || {}) && got.responded_at === written.responded_at
+        ? pass(`${label}.responded_at`, JSON.stringify(got?.responded_at))
+        : fail(`${label}.responded_at`, written.responded_at, got?.responded_at));
+    }
+  } catch (err) {
+    console.log(`  ❌ FAIL  Guest.event_responses — error: ${err.message}`);
+    for (let i = 0; i < 14; i++) results.push(false);
+  }
+
+  // ── 8e. event_responses survives a WeddingDetails events-array reorder ─────────
+  // event_responses references events by stable event_id, never array index — a
+  // couple reordering the events list must not corrupt which guest response maps
+  // to which event. See SMART_RSVP_MODEL.md "Base44 gotchas".
+  console.log('\n  event_responses survives events-array reorder:\n');
+  try {
+    const eventA = { id: 'reorder-test-event-A', event_id: 'reorder-test-event-A', name: 'Welcome Drinks', type: 'Welcome Party', date: '2025-11-13' };
+    const eventB = { id: 'reorder-test-event-B', event_id: 'reorder-test-event-B', name: 'Send-off Brunch', type: 'Brunch', date: '2025-11-15' };
+
+    // Write events in order [A, B]
+    await api('PUT', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`,
+      { couple1Name: SENTINEL, couple2Name: 'DO_NOT_USE', preWeddingEvents: [eventA], postWeddingEvents: [eventB] }, token);
+
+    // Reorder: swap so B comes before A in a unified read (simulate the chronological sort)
+    await api('PUT', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`,
+      { couple1Name: SENTINEL, couple2Name: 'DO_NOT_USE', preWeddingEvents: [eventB], postWeddingEvents: [eventA] }, token);
+
+    const wdBack = await api('GET', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`, undefined, token);
+    const allEventsAfterReorder = [...(wdBack.preWeddingEvents || []), ...(wdBack.postWeddingEvents || [])];
+    const foundA = allEventsAfterReorder.find(e => e.event_id === 'reorder-test-event-A');
+    const foundB = allEventsAfterReorder.find(e => e.event_id === 'reorder-test-event-B');
+
+    const eventsSurvivedReorder = foundA?.name === eventA.name && foundB?.name === eventB.name;
+    results.push(eventsSurvivedReorder
+      ? pass('WeddingDetails events survive reorder', 'event_id still resolves to correct event after position swap')
+      : fail('WeddingDetails events survive reorder', { eventA, eventB }, { foundA, foundB }));
+
+    // The Guest's event_responses (written before the reorder) must still resolve
+    // to the correct events purely by event_id, regardless of the position swap.
+    const geAfterReorder = await api('GET', `/apps/${APP_ID}/entities/Guest/${guestEventRespId}`, undefined, token);
+    const respA = (geAfterReorder.event_responses || []).find(r => r.event_id === 'reorder-test-event-A');
+    const respB = (geAfterReorder.event_responses || []).find(r => r.event_id === 'reorder-test-event-B');
+    const responsesStillMapCorrectly =
+      respA?.event_id === foundA?.event_id && respA?.status === 'yes' &&
+      respB?.event_id === foundB?.event_id && respB?.status === 'pending';
+    results.push(responsesStillMapCorrectly
+      ? pass('Guest.event_responses survives reorder', 'event_id references unaffected by WeddingDetails array reorder')
+      : fail('Guest.event_responses survives reorder', { respA, respB }, { foundA, foundB }));
+  } catch (err) {
+    console.log(`  ❌ FAIL  events-array reorder — error: ${err.message}`);
+    results.push(false); results.push(false);
+  } finally {
+    if (guestEventRespId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestEventRespId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
   // ── 9. Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;
   const total  = results.length;
