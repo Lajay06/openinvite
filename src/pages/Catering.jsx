@@ -4,6 +4,7 @@ import { UtensilsCrossed, Plus, ChefHat, Coffee, Wine, Cake, Loader2 } from "luc
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import toast from 'react-hot-toast';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import AvaButton from '../components/shared/AvaButton';
@@ -47,16 +48,16 @@ export default function CateringPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [allVendors, detailsData] = await Promise.all([
+      const [allVendors, myDetails] = await Promise.all([
         Vendor.list('-created_date'),
-        WeddingDetails.list().catch(() => [])
+        getMyWeddingDetails().catch(() => null)
       ]);
       setCaterers(allVendors.filter(v => v.category === 'catering'));
-      if (detailsData.length > 0) {
-        setDetails(detailsData[0]);
-        setDetailsId(detailsData[0].id);
-        detailsIdRef.current  = detailsData[0].id;
-        latestFabRef.current  = detailsData[0].foodAndBeverage || {};
+      if (myDetails) {
+        setDetails(myDetails);
+        setDetailsId(myDetails.id);
+        detailsIdRef.current  = myDetails.id;
+        latestFabRef.current  = myDetails.foodAndBeverage || {};
       }
     } catch (error) {
       console.error("Error loading data:", error);

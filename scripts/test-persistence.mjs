@@ -383,7 +383,7 @@ async function run() {
     const created = await api(
       'POST',
       `/apps/${APP_ID}/entities/WeddingDetails`,
-      { couple1Name: SENTINEL, couple2Name: 'DO_NOT_USE', slug: `__test__${Date.now()}` },
+      { couple1Name: SENTINEL, couple2Name: 'DO_NOT_USE', slug: `__test__${Date.now()}`, is_test: true },
       token,
     );
     recordId = created.id;
@@ -394,16 +394,21 @@ async function run() {
     process.exit(1);
   }
 
-  // ── 3. Safety guard ─────────────────────────────────────────────────────────
-  const check = await api('GET', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`, undefined, token);
-  if (check.couple1Name !== SENTINEL) {
-    console.error(`\n✗ SAFETY ABORT — record ${recordId} is not the sentinel. Refusing to write. Delete it manually.`);
-    process.exit(1);
-  }
-
-  // ── 4. Write all test fields in one PUT ─────────────────────────────────────
-  process.stdout.write('  Writing test values to all Guest Suite fields… ');
+  // ── 3-5. Safety guard, write, fresh read ─────────────────────────────────────
+  // Wrapped in one try/finally so ANY failure in this phase (known or not)
+  // still deletes the sentinel record before exiting. This replaced scattered
+  // manual cleanup()-then-exit calls, one of which had a real gap: the
+  // safety-guard abort used to exit WITHOUT ever deleting the record it had
+  // just created, leaking a sentinel into product data on every such failure.
+  let record;
   try {
+    const check = await api('GET', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`, undefined, token);
+    if (check.couple1Name !== SENTINEL) {
+      throw new Error(`SAFETY ABORT — record ${recordId} is not the sentinel. Refusing to write.`);
+    }
+
+    // ── 4. Write all test fields in one PUT ───────────────────────────────────
+    process.stdout.write('  Writing test values to all Guest Suite fields… ');
     await api(
       'PUT',
       `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`,
@@ -411,26 +416,27 @@ async function run() {
       token,
     );
     console.log('✓ written\n');
-  } catch (err) {
-    console.error(`\n✗ Write failed: ${err.message}`);
-    await cleanup(token, recordId);
-    process.exit(1);
-  }
 
-  // ── 5. Fresh read ────────────────────────────────────────────────────────────
-  process.stdout.write('  Reading record back fresh from Base44… ');
-  let record;
-  try {
+    // ── 5. Fresh read ──────────────────────────────────────────────────────────
+    process.stdout.write('  Reading record back fresh from Base44… ');
     record = await api('GET', `/apps/${APP_ID}/entities/WeddingDetails/${recordId}`, undefined, token);
     console.log('✓\n');
   } catch (err) {
-    console.error(`\n✗ Read failed: ${err.message}`);
+    console.error(`\n✗ ${err.message}`);
     await cleanup(token, recordId);
     process.exit(1);
   }
 
   // ── 6. Assert each field ─────────────────────────────────────────────────────
   console.log('  Field assertions:\n');
+
+  // is_test — harness-hygiene tag; must persist so product queries can
+  // defensively exclude test records even if cleanup below fails.
+  {
+    results.push(record.is_test === true
+      ? pass('is_test', 'true')
+      : fail('is_test', true, record.is_test));
+  }
 
   // guestSuiteAccommodation.places
   {
@@ -787,7 +793,7 @@ async function run() {
   let guestSentinelId = null;
   try {
     const gCreated = await api('POST', `/apps/${APP_ID}/entities/Guest`,
-      { name: '__PERSISTENCE_TEST_GUEST__', rsvp_link_id: 'test-sentinel-rsvp' }, token);
+      { name: '__PERSISTENCE_TEST_GUEST__', rsvp_link_id: 'test-sentinel-rsvp', is_test: true }, token);
     guestSentinelId = gCreated.id;
     if (!guestSentinelId) throw new Error('No id on created Guest');
 
@@ -828,7 +834,7 @@ async function run() {
   let guestInviteId = null;
   try {
     const gi = await api('POST', `/apps/${APP_ID}/entities/Guest`,
-      { name: '__PERSISTENCE_TEST_INVITE__' }, token);
+      { name: '__PERSISTENCE_TEST_INVITE__', is_test: true }, token);
     guestInviteId = gi.id;
     if (!guestInviteId) throw new Error('No id on created Guest');
 
@@ -984,6 +990,45 @@ async function run() {
       try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestEventRespId}`, undefined, token); }
       catch { /* non-fatal */ }
     }
+  }
+
+  // ── 8f. Ownership isolation — a second user cannot resolve this wedding ──────
+  // Exercises the exact filter mechanism src/lib/resolveMyWedding.js relies on:
+  // WeddingDetails.filter({ created_by_id: <user> }) must scope strictly to
+  // that owner. This app currently has no second real account to log in as
+  // (confirmed via a live query — only one WeddingDetails owner exists), so
+  // this proves isolation at the mechanism level instead: filtering by the
+  // REAL test account's own id must find the sentinel; filtering by a
+  // fabricated, definitely-non-existent user id must NOT find it. That is the
+  // exact positive/negative behaviour every ownership-scoped page now depends
+  // on — if Base44 ever started ignoring the created_by_id filter and just
+  // returning everything (the original bug, one level up the stack), this
+  // would catch it.
+  console.log('\n  Ownership isolation tests (second user cannot resolve this wedding):\n');
+  try {
+    const me = await api('GET', `/apps/${APP_ID}/entities/User/me`, undefined, token);
+    const realUserId = me.id;
+    if (!realUserId) throw new Error('Could not resolve the test account\'s own user id');
+
+    const ownQuery = encodeURIComponent(JSON.stringify({ created_by_id: realUserId }));
+    const ownResults = await api('GET', `/apps/${APP_ID}/entities/WeddingDetails?q=${ownQuery}`, undefined, token);
+    const ownList = Array.isArray(ownResults) ? ownResults : (ownResults?.data || ownResults?.results || []);
+    const foundBySelf = ownList.some(w => w.id === recordId);
+    results.push(foundBySelf
+      ? pass('WeddingDetails.filter({created_by_id: <real owner>})', 'sentinel found, as expected')
+      : fail('WeddingDetails.filter({created_by_id: <real owner>})', recordId, ownList.map(w => w.id)));
+
+    const fakeUserId = `test-second-user-${Date.now()}-does-not-exist`;
+    const fakeQuery = encodeURIComponent(JSON.stringify({ created_by_id: fakeUserId }));
+    const fakeResults = await api('GET', `/apps/${APP_ID}/entities/WeddingDetails?q=${fakeQuery}`, undefined, token);
+    const fakeList = Array.isArray(fakeResults) ? fakeResults : (fakeResults?.data || fakeResults?.results || []);
+    const leakedToOther = fakeList.some(w => w.id === recordId);
+    results.push(!leakedToOther
+      ? pass('WeddingDetails.filter({created_by_id: <other user>})', 'sentinel correctly absent')
+      : fail('WeddingDetails.filter({created_by_id: <other user>}) — ISOLATION BREACH', 'sentinel absent', 'sentinel present'));
+  } catch (err) {
+    console.log(`  ❌ FAIL  ownership isolation — error: ${err.message}`);
+    results.push(false); results.push(false);
   }
 
   // ── 9. Summary ───────────────────────────────────────────────────────────────

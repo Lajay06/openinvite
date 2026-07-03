@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { X, Mail, MessageCircle, Link, Check, Loader2, Search, ArrowLeft, ArrowRight, Send, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -123,8 +124,7 @@ export default function SendInvitesModal({ guests, onClose, onSent, defaultFilte
   // Load wedding details and set default message
   useEffect(() => {
     setTimeout(() => setMounted(true), 10);
-    base44.entities.WeddingDetails.list().then(d => {
-      const w = d[0] || null;
+    getMyWeddingDetails().then(w => {
       setWedding(w);
       const cn = w?.coupleName || w?.couple_name || '';
       const wd = w?.weddingDate || w?.wedding_date || '';

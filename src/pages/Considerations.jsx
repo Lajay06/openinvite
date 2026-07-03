@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Loader2, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
@@ -828,9 +828,9 @@ export default function Considerations() {
   const [tab, setTab] = useState('cultural');
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list()
-      .then(rows => {
-        const r = rows[0] || {};
+    getMyWeddingDetails()
+      .then(r => {
+        r = r || {};
         setWeddingStyle(Array.isArray(r.weddingStyle) ? r.weddingStyle : []);
         setLoading(false);
       })

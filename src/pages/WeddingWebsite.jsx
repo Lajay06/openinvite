@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -278,9 +279,9 @@ export default function WeddingWebsite() {
 
   const loadWeddingData = async () => {
     try {
-      const [invitations, details, registry, gifts, hotelData, restaurantData, storyData, photoData, streamData, customPagesData, themeData] = await Promise.all([
-        base44.entities.Invitation.list(),
-        base44.entities.WeddingDetails.list(),
+      const [invitation, details, registry, gifts, hotelData, restaurantData, storyData, photoData, streamData, customPagesData, themeData] = await Promise.all([
+        getMyInvitation(),
+        getMyWeddingDetails(),
         base44.entities.RegistryItem.list(),
         base44.entities.CustomGift.list(),
         base44.entities.Hotel.list().catch(() => []),
@@ -292,8 +293,8 @@ export default function WeddingWebsite() {
         base44.entities.WebsiteTheme.list().catch(() => [])
       ]);
 
-      setInvitation(invitations[0] || null);
-      setWeddingDetails(details[0] || null);
+      setInvitation(invitation || null);
+      setWeddingDetails(details || null);
       setRegistryItems(registry);
       setCustomGifts(gifts);
       setHotels(hotelData);

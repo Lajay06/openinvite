@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Loader2, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
@@ -104,8 +105,8 @@ export default function QandA() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list().then(rows => {
-      const r = rows[0] || {};
+    getMyWeddingDetails().then(row => {
+      const r = row || {};
       setRecord(r);
       setRecordId(r.id || null);
       setLoading(false);

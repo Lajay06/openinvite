@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 
 const sans = "'Plus Jakarta Sans', sans-serif";
 
@@ -25,7 +26,7 @@ export default function AvaStudio() {
   };
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list().then(r => { if (r.length > 0) setDetails(r[0]); });
+    getMyWeddingDetails().then(r => { if (r) setDetails(r); });
   }, []);
 
   const coupleName = details?.coupleNames || `${details?.couple1Name || 'You'} & ${details?.couple2Name || 'Your Partner'}`;

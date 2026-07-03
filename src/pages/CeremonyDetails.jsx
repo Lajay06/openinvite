@@ -7,6 +7,7 @@ import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
 import AvaButton from '@/components/shared/AvaButton';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
@@ -120,8 +121,7 @@ export default function CeremonyDetailsPage() {
 
   const loadData = async () => {
     try {
-      const rows = await WeddingDetails.list();
-      const r = rows[0] || {};
+      const r = (await getMyWeddingDetails()) || {};
       setData({
         celebrant: r.celebrant || {},
         license: r.license || {},

@@ -112,13 +112,16 @@ export default function RSVPPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [guests, weddings] = await Promise.all([
-          base44.entities.Guest.filter({ rsvp_link_id: token }),
-          base44.entities.WeddingDetails.list(),
-        ]);
+        const guests = await base44.entities.Guest.filter({ rsvp_link_id: token });
         if (guests.length === 0) { setNotFound(true); setLoading(false); return; }
         const g = guests[0];
-        const wd = weddings[0] || null;
+        // Scope the wedding lookup to the SAME owner as the matched guest —
+        // never the app-wide most-recently-created WeddingDetails record.
+        const weddings = await base44.entities.WeddingDetails.filter({ created_by_id: g.created_by_id });
+        const realWeddings = weddings.filter(w => !w.is_test);
+        const wd = realWeddings.length > 0
+          ? realWeddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
+          : null;
         setGuest(g);
         setWedding(wd);
         // Pre-populate any previous poll votes

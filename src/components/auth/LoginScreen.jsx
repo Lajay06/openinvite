@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { ImageSlider } from "@/components/ui/ImageSlider";
 import { track, identify } from "@/lib/analytics";
 import { identifyUser as crispIdentify } from "@/lib/crisp";
@@ -246,8 +247,8 @@ export default function LoginScreen({ initialMode = "login" }) {
       try {
         const currentUser = await base44.auth.me();
         if (!currentUser?.onboardingCompleted) {
-          const wdRows = await base44.entities.WeddingDetails.list();
-          const hasData = wdRows.length > 0 && !!(wdRows[0].couple1Name);
+          const myWedding = await getMyWeddingDetails();
+          const hasData = !!myWedding?.couple1Name;
           if (!hasData) dest = "/onboarding";
         }
       } catch { /* routing check failed — default to Dashboard */ }

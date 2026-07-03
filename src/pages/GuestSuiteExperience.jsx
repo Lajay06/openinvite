@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 import ExperienceGuideTab from '@/components/studio/guest-suite/ExperienceGuideTab';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 
 export default function GuestSuiteExperience() {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list()
-      .then(rows => { setDetails(rows[0] || null); })
+    getMyWeddingDetails()
+      .then(details => { setDetails(details); })
       .catch(e => console.error('GuestSuiteExperience load error', e))
       .finally(() => setLoading(false));
   }, []);

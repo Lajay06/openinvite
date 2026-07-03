@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Loader2, BarChart2, ArrowRight } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
@@ -120,8 +120,8 @@ export default function GuestSuitePolls() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list()
-      .then(rows => { setPolls(rows[0]?.polls || []); })
+    getMyWeddingDetails()
+      .then(w => { setPolls(w?.polls || []); })
       .catch(e => console.error('GuestSuitePolls load error', e))
       .finally(() => setLoading(false));
   }, []);

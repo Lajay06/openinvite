@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Brain, Loader2, Clock } from "lucide-react";
 import { InvokeLLM } from '@/integrations/Core';
-import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -92,8 +92,8 @@ export default function SuggestionsModal({ isOpen, onClose, onAddSuggestion }) {
 
   const loadWeddingTheme = async () => {
     try {
-      const rows = await base44.entities.WeddingDetails.list();
-      if (rows.length > 0 && rows[0].theme) setWeddingTheme(rows[0].theme);
+      const details = await getMyWeddingDetails();
+      if (details?.theme) setWeddingTheme(details.theme);
     } catch (e) { /* ignore */ }
   };
 

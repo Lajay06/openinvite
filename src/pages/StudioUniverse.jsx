@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Crown } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 
 const PREMIUM_IDS = new Set(['tokyo', 'marrakech', 'paris', 'amalfi', 'sedona', 'aspen', 'santorini']);
@@ -94,10 +94,9 @@ export default function StudioUniverse() {
   const fromOnboarding = params.get('from') === 'onboarding';
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list().then(r => {
-      if (r.length > 0) {
-        setActiveUniverse(r[0].activeUniverse || null);
-        const d = r[0];
+    getMyWeddingDetails().then(d => {
+      if (d) {
+        setActiveUniverse(d.activeUniverse || null);
         setCoupleName(d.coupleNames || (d.couple1Name && d.couple2Name ? `${d.couple1Name} & ${d.couple2Name}` : ''));
       }
     }).catch(() => {});

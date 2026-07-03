@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { ChevronLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -36,11 +37,11 @@ export default function StudioShare() {
 
   useEffect(() => {
     const load = async () => {
-      const [dList, gList] = await Promise.all([
-        base44.entities.WeddingDetails.list(),
+      const [d, gList] = await Promise.all([
+        getMyWeddingDetails(),
         base44.entities.Guest.list(),
       ]);
-      if (dList.length > 0) { setDetails(dList[0]); setDetailsId(dList[0].id); }
+      if (d) { setDetails(d); setDetailsId(d.id); }
       setGuests(gList);
     };
     load();

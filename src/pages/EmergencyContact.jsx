@@ -5,6 +5,7 @@ import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import AvaButton from '@/components/shared/AvaButton';
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -100,8 +101,7 @@ export default function EmergencyContactPage() {
 
   const loadData = async () => {
     try {
-      const rows = await WeddingDetails.list();
-      const r = rows[0] || {};
+      const r = (await getMyWeddingDetails()) || {};
       setData(r.emergencyContacts || {});
       setVendorContacts(r.dayVendorContacts || []);
       setRecordId(r.id || null);

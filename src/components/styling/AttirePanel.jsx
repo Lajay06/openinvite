@@ -7,6 +7,7 @@ import {
 import toast from 'react-hot-toast';
 import { base44 } from '@/api/base44Client';
 import { validateUploadFile } from '@/lib/uploadValidation';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -266,12 +267,12 @@ export default function AttirePanel() {
 
   async function load() {
     try {
-      const data = await WeddingDetails.list();
-      if (data.length > 0) {
-        const a = data[0].attire || {};
+      const data = await getMyWeddingDetails();
+      if (data) {
+        const a = data.attire || {};
         setAttire(a);
         latestAttireRef.current = a;
-        detailsIdRef.current = data[0].id;
+        detailsIdRef.current = data.id;
       }
     } catch (e) {
       console.error('[AttirePanel] load error:', e);

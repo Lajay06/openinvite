@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import UniverseSelector from '@/components/universe-studio/UniverseSelector';
 import AssetGrid from '@/components/universe-studio/AssetGrid';
 import AssetEditorModal from '@/components/universe-studio/AssetEditorModal';
@@ -15,10 +16,10 @@ export default function UniverseStudio() {
     const load = async () => {
       try {
         const [details, guestList] = await Promise.all([
-          base44.entities.WeddingDetails.list(),
+          getMyWeddingDetails(),
           base44.entities.Guest.list()
         ]);
-        const d = details[0] || {};
+        const d = details || {};
         setWeddingDetails(d);
         setSelectedUniverse(d.activeUniverse || 'aman');
         setGuests(guestList);

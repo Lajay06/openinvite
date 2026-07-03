@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Loader2, ChevronDown, ChevronUp, HelpCircle, ArrowRight } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -50,8 +50,8 @@ export default function GuestSuiteQandA() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list()
-      .then(rows => { setQna(rows[0]?.qna || []); })
+    getMyWeddingDetails()
+      .then(details => { setQna(details?.qna || []); })
       .catch(e => console.error('GuestSuiteQandA load error', e))
       .finally(() => setLoading(false));
   }, []);

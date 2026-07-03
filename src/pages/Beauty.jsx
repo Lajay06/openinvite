@@ -10,6 +10,7 @@ import VendorForm from '../components/vendors/VendorForm';
 import VendorList from '../components/vendors/VendorList';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 const WeddingDetails = base44.entities.WeddingDetails;
 const Vendor = base44.entities.Vendor;
 
@@ -98,11 +99,11 @@ export default function BeautyPage() {
 
   const loadData = async () => {
     try {
-      const [rows, vendorData] = await Promise.all([
-        WeddingDetails.list(),
+      const [wd, vendorData] = await Promise.all([
+        getMyWeddingDetails(),
         Vendor.list(),
       ]);
-      const r = rows[0] || {};
+      const r = wd || {};
       const bd = r.beauty || {};
       if (!bd.skincareTimeline) bd.skincareTimeline = [];
       if (!bd.gettingReadyPeople) bd.gettingReadyPeople = [];

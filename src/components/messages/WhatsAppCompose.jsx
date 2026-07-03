@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-const Invitation = base44.entities.Invitation;
+import { getMyInvitation } from '@/lib/resolveMyWedding';
 
 const WHATSAPP_GREEN = "#25D366";
 
@@ -53,8 +53,7 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
         base44.entities.Guest.update(guest.id, { rsvp_link_id: token }).catch(() => {});
       }
 
-      const invitations = await Invitation.list();
-      const inv = invitations[0];
+      const inv = await getMyInvitation();
       if (inv) {
         setVariables({
           couple_names: inv.couple_names || "", wedding_date: inv.wedding_date || "",

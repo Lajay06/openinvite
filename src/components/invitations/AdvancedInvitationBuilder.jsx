@@ -11,8 +11,8 @@ import {
     AlignCenter, AlignRight, Save, Settings, Layers, Calendar, MapPin, Clock, 
     Loader2, Eye, Users
 } from 'lucide-react';
-import { WeddingDetails } from '@/entities/WeddingDetails';
 import { GuestSuiteSettings } from '@/entities/GuestSuiteSettings';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { InvokeLLM } from '@/integrations/Core';
 
 const GOOGLE_FONTS = [
@@ -95,11 +95,11 @@ const AdvancedInvitationBuilder = ({ invitationData, onSave }) => {
         
         const fetchData = async () => {
             try {
-                const [detailsList, guestSettings] = await Promise.all([
-                    WeddingDetails.list(),
+                const [details, guestSettings] = await Promise.all([
+                    getMyWeddingDetails(),
                     GuestSuiteSettings.list()
                 ]);
-                if(detailsList.length > 0) setEventDetails(detailsList[0]);
+                if(details) setEventDetails(details);
                 if(guestSettings.length > 0) setGuestSuiteSettings(guestSettings[0]);
             } catch (error) {
                 console.error('Error fetching data:', error);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Loader2, Car, MapPin, Star, ExternalLink, X, Search, Plus, Plane, Train, Bus, FileText, Navigation } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
@@ -157,9 +158,8 @@ export default function GuestSuiteTransport() {
   const [noteText, setNoteText] = useState('');
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list()
-      .then(rows => {
-        const d = rows[0] || null;
+    getMyWeddingDetails()
+      .then(d => {
         setDetails(d);
         setDetailsId(d?.id || null);
         setPlaces(d?.guestSuiteTransport?.places || []);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Globe, Sparkles, Eye, ChevronRight, Camera, Map } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 
 export default function StudioHub() {
   const navigate = useNavigate();
@@ -13,10 +14,10 @@ export default function StudioHub() {
     const load = async () => {
       try {
         const [details, guests] = await Promise.all([
-          base44.entities.WeddingDetails.list(),
+          getMyWeddingDetails(),
           base44.entities.Guest.list(),
         ]);
-        setWedding(details[0] || null);
+        setWedding(details || null);
         setRsvpCount(guests.filter(g => g.rsvp_status === 'attending').length);
       } catch (e) {}
       setLoading(false);

@@ -10,9 +10,7 @@ import RestaurantRecommendations from "../components/guest-experience/Restaurant
 import ItineraryPlanner from "../components/guest-experience/ItineraryPlanner";
 import LocalTips from "../components/guest-experience/LocalTips";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
-import { base44 } from "@/api/base44Client";
-const WeddingDetails = base44.entities.WeddingDetails;
-const Invitation = base44.entities.Invitation;
+import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
 
 const TABS = [
   { id: 'hotels', label: 'Hotels', icon: Hotel },
@@ -44,11 +42,11 @@ export default function GuestExperiencePage() {
   const loadWeddingLocation = async () => {
     setLoading(true);
     try {
-      const weddingDetails = await WeddingDetails.list();
-      const invitations = await Invitation.list();
+      const weddingDetails = await getMyWeddingDetails();
+      const invitation = await getMyInvitation();
 
-      if (weddingDetails.length > 0 && weddingDetails[0].mainCeremony?.address) {
-        const address = weddingDetails[0].mainCeremony.address;
+      if (weddingDetails?.mainCeremony?.address) {
+        const address = weddingDetails.mainCeremony.address;
         setWeddingLocation(address);
         const cityMatch = address.match(/([^,]+),\s*([A-Z]{2})/);
         if (cityMatch) {
@@ -56,13 +54,13 @@ export default function GuestExperiencePage() {
         } else {
           setWeddingCity(address.split(',')[0]);
         }
-      } else if (invitations.length > 0) {
+      } else if (invitation) {
         setWeddingLocation("Wedding Venue Area");
         setWeddingCity("Wedding Venue Area");
       }
 
-      if (invitations.length > 0 && invitations[0].wedding_date) {
-        setWeddingDate(invitations[0].wedding_date);
+      if (invitation?.wedding_date) {
+        setWeddingDate(invitation.wedding_date);
       }
     } catch (error) {
       console.error("Error loading wedding location:", error);

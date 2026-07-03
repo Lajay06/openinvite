@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -117,7 +118,7 @@ export default function DailyBriefing() {
         base44.entities.Vendor.list().catch(() => []),
         base44.entities.Schedule.list().catch(() => []),
         base44.entities.Note.list().catch(() => []),
-        base44.entities.WeddingDetails.list().catch(() => []),
+        getMyWeddingDetails().then(d => d ? [d] : []).catch(() => []),
       ]);
     } catch {}
 
