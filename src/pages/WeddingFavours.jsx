@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { InvokeLLM } from "@/integrations/Core";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Loader2, X, Search, FileText, Check, Plus, Gift, Package, Trash2 } from "lucide-react";
+import { Sparkles, Loader2, X, Search, FileText, Check, Plus, Gift, Package, Trash2, Lightbulb } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';

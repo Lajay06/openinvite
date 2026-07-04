@@ -84,6 +84,7 @@ const CATEGORY_LABELS = {
 };
 
 const bodyFont = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
+const sectionLabel = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', ...bodyFont };
 
 export default function EmailTemplates({ guests }) {
   const [selectedTemplate, setSelectedTemplate] = useState(PRESET_TEMPLATES[0]);

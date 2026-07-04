@@ -113,7 +113,6 @@ export default function SchedulePage({
 
   const handleAddSuggestion = (suggestion) => {
     setEditingItem({ event_name: suggestion.event_name, category: suggestion.category, description: suggestion.description, event_date: "", start_time: "", end_time: "" });
-    setShowAvaModal(false);
     setShowForm(true);
   };
 
