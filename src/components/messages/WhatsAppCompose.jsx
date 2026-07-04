@@ -44,12 +44,21 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
 
   const loadVariables = async () => {
     try {
+      // Each guest gets their own personal /rsvp/:token link (same mechanism
+      // as SendInvitesModal) — generate and persist one if this guest doesn't
+      // have one yet, rather than pointing at the retired /GuestRSVP page.
+      let token = guest?.rsvp_link_id;
+      if (guest?.id && !token) {
+        token = crypto.randomUUID();
+        base44.entities.Guest.update(guest.id, { rsvp_link_id: token }).catch(() => {});
+      }
+
       const invitations = await Invitation.list();
       const inv = invitations[0];
       if (inv) {
         setVariables({
           couple_names: inv.couple_names || "", wedding_date: inv.wedding_date || "",
-          rsvp_link: `${window.location.origin}/GuestRSVP`, venue: "venue TBD",
+          rsvp_link: token ? `${window.location.origin}/rsvp/${token}` : '', venue: "venue TBD",
           ceremony_time: "TBD", ceremony_venue: "TBD",
           reception_time: "TBD", reception_venue: "TBD",
         });
