@@ -100,7 +100,7 @@ function AssetCard({ asset, isHovered, onHover, onLeave, coupleName, weddingDate
 }
 
 export default function UniverseViewBase({ isOnboarding = false, onBack, onSelect, navigate, config }) {
-  const { id, name, tagline,  bg, primary, accent, fontDisplay, fontDisplayName, fontBody, philosophyHeadline, philosophyCopy, heroCopy, palette, heroImage, moodImages, moodQuote } = config;
+  const { id, name, tagline, bg, primary, accent, fontDisplay, fontDisplayName, fontBody, philosophyHeadline, philosophyCopy, heroCopy, palette, heroImage, moodImages, moodQuote } = config;
 
   const [details, setDetails] = useState(null);
   const [loaded, setLoaded] = useState(false);
