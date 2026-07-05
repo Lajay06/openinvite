@@ -1,6 +1,7 @@
 {
   "name": "WeddingDetails",
   "type": "object",
+  "required": [],
   "properties": {
     "couple1Name": {
       "type": "string"
@@ -47,6 +48,24 @@
         "address": {
           "type": "string"
         },
+        "placeId": {
+          "type": "string"
+        },
+        "mapsUrl": {
+          "type": "string"
+        },
+        "photoUrl": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "number"
+        },
         "startTime": {
           "type": "string"
         },
@@ -54,6 +73,12 @@
           "type": "string"
         },
         "dressCode": {
+          "type": "string"
+        },
+        "parkingInfo": {
+          "type": "string"
+        },
+        "accessibilityNotes": {
           "type": "string"
         },
         "notes": {
@@ -70,13 +95,97 @@
         "address": {
           "type": "string"
         },
+        "placeId": {
+          "type": "string"
+        },
+        "mapsUrl": {
+          "type": "string"
+        },
+        "photoUrl": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "number"
+        },
         "startTime": {
           "type": "string"
         },
         "endTime": {
           "type": "string"
         },
+        "dressCode": {
+          "type": "string"
+        },
+        "parkingInfo": {
+          "type": "string"
+        },
+        "accessibilityNotes": {
+          "type": "string"
+        },
         "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "description": "Consolidated wedding theme — canonical home for all aesthetic, faith, culture, atmosphere, season and setting data.",
+      "properties": {
+        "aesthetic": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "faith": {
+          "type": "string"
+        },
+        "faithSecondary": {
+          "type": "string"
+        },
+        "culture": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cultureOther": {
+          "type": "string"
+        },
+        "atmosphere": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "season": {
+          "type": "string"
+        },
+        "setting": {
+          "type": "string"
+        },
+        "vibes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "is_religious": {
+          "type": "boolean"
+        },
+        "religious_details": {
+          "type": "string"
+        },
+        "is_cultural": {
+          "type": "boolean"
+        },
+        "cultural_details": {
           "type": "string"
         }
       }
@@ -381,7 +490,7 @@
     },
     "pageSections": {
       "type": "object",
-      "description": "Map of page slug \u2192 array of section objects",
+      "description": "Map of page slug to array of section objects",
       "additionalProperties": {
         "type": "array",
         "items": {
@@ -473,6 +582,9 @@
           }
         },
         "categories": {
+          "type": "object"
+        },
+        "itinerary": {
           "type": "object"
         }
       }
@@ -636,7 +748,153 @@
           "type": "object"
         }
       }
+    },
+    "guestSuiteAccommodation": {
+      "type": "object",
+      "description": "Guest Suite curated accommodation places",
+      "properties": {
+        "places": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "guestSuiteTransport": {
+      "type": "object",
+      "description": "Guest Suite curated transport locations and tips",
+      "properties": {
+        "places": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "weddingPolicies": {
+      "type": "object",
+      "description": "Guest-facing wedding policies",
+      "properties": {
+        "photography": {
+          "type": "object"
+        },
+        "socialMedia": {
+          "type": "object"
+        },
+        "children": {
+          "type": "object"
+        },
+        "dietary": {
+          "type": "object"
+        },
+        "gifts": {
+          "type": "object"
+        },
+        "dressCode": {
+          "type": "object"
+        },
+        "lateArrival": {
+          "type": "object"
+        },
+        "other": {
+          "type": "object"
+        },
+        "stylingQuestionnaire": {
+          "type": "object",
+          "description": "Guest styling questionnaire toggle (roadmap D2) — { enabled: boolean }"
+        }
+      }
+    },
+    "emergencyContacts": {
+      "type": "object",
+      "description": "Wedding day emergency contacts",
+      "properties": {
+        "primary": {
+          "type": "object"
+        },
+        "backup": {
+          "type": "object"
+        },
+        "venue": {
+          "type": "object"
+        },
+        "otherNotes": {
+          "type": "string"
+        }
+      }
+    },
+    "dayVendorContacts": {
+      "type": "array",
+      "description": "Key vendor contacts for the wedding day",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "polls": {
+      "type": "array",
+      "description": "Guest polls",
+      "items": {
+        "type": "object"
+      }
+    },
+    "foodAndBeverage": {
+      "type": "object",
+      "description": "Catering details — caterer, menu, bar, cake, dietary options, etc.",
+      "additionalProperties": true
+    },
+    "photography": {
+      "type": "object",
+      "description": "Photography and videography planning details — vendors, packages, shot lists, delivery timelines, etc.",
+      "additionalProperties": true
+    },
+    "attire": {
+      "type": "object",
+      "description": "Wedding attire notes — bridal, groom, wedding party, etc.",
+      "additionalProperties": true
+    },
+    "flowers": {
+      "type": "object",
+      "description": "Flowers and floral arrangements — florist, bouquets, ceremony and reception florals, etc.",
+      "additionalProperties": true
+    },
+    "decorations": {
+      "type": "object",
+      "description": "Decorations and styling — decorator, theme, colour scheme, venue dressing, etc.",
+      "additionalProperties": true
+    },
+    "beauty": {
+      "type": "object",
+      "description": "Hair and makeup planning — stylists, getting-ready people, skincare timeline, trials, etc.",
+      "additionalProperties": true
+    },
+    "entertainmentDetails": {
+      "type": "object",
+      "description": "Entertainment planning — band/DJ, songs, MC, photo booth, etc.",
+      "additionalProperties": true
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
     }
-  },
-  "required": []
+  }
 }
