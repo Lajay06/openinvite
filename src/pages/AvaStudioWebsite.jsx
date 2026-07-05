@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { MediaLibraryContext } from '@/components/website-builder/SectionEditorFields';
 import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import toast from 'react-hot-toast';
@@ -262,8 +263,8 @@ export default function AvaStudioWebsite() {
   const sub = dark ? 'rgba(255,255,255,0.4)' : '#888';
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list().then(r => {
-      if (r.length > 0) { setDetails(r[0]); setDetailsId(r[0].id); }
+    getMyWeddingDetails().then(details => {
+      if (details) { setDetails(details); setDetailsId(details.id); }
       else setDetails({});
     });
     base44.entities.Photo.list('-created_date', 100).then(photos => {

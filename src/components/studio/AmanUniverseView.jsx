@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import UniverseSelectedChoice from '@/components/studio/UniverseSelectedChoice';
 
 
@@ -142,8 +143,8 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
   const [selectState, setSelectState] = useState('idle');
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list().then(res => {
-      setDetails(res[0] || {});
+    getMyWeddingDetails().then(d => {
+      setDetails(d || {});
       setLoaded(true);
     }).catch(() => {
       setDetails({});

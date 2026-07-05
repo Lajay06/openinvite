@@ -5,8 +5,8 @@ import toast from 'react-hot-toast';
 import InvitationStudio from "../components/invitations/InvitationStudio";
 import InvitationBuilder from "../components/invitations/InvitationBuilder";
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
 const Invitation = base44.entities.Invitation;
-const WeddingDetails = base44.entities.WeddingDetails;
 
 export default function InvitationsPage() {
   const [invitation, setInvitation] = useState(null);
@@ -22,17 +22,17 @@ export default function InvitationsPage() {
     setLoading(true);
     setView('loading');
     try {
-      const [invitationsData, detailsData] = await Promise.all([
-        Invitation.list('-created_date', 1), // Only ever fetch the most recent one
-        WeddingDetails.list()
+      const [myInvitation, myDetails] = await Promise.all([
+        getMyInvitation(),
+        getMyWeddingDetails()
       ]);
 
-      if (detailsData.length > 0) {
-        setWeddingDetails(detailsData[0]);
+      if (myDetails) {
+        setWeddingDetails(myDetails);
       }
 
-      if (invitationsData.length > 0) {
-        setInvitation(invitationsData[0]);
+      if (myInvitation) {
+        setInvitation(myInvitation);
         setView('studio');
       } else {
         // No invitation exists, go to the builder

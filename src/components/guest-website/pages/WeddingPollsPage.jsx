@@ -48,7 +48,7 @@ function ResultsBar({ option, total, isWinner, theme }) {
   );
 }
 
-function PollCard({ poll, theme, typography, onVote }) {
+function PollCard({ poll, theme, typography, onVote, weddingDetails }) {
   const votes = getVotes();
   const myVote = votes[poll.id];
   const hasVoted = !!myVote;
@@ -68,12 +68,13 @@ function PollCard({ poll, theme, typography, onVote }) {
     setCommentText('');
     setSubmitting(false);
     try {
-      const details = await base44.entities.WeddingDetails.list();
-      if (details[0]) {
-        const updatedPolls = (details[0].polls || []).map(p =>
+      // Write to THIS wedding (weddingDetails, resolved by the parent via slug) —
+      // never the app-wide most-recently-created WeddingDetails record.
+      if (weddingDetails?.id) {
+        const updatedPolls = (weddingDetails.polls || []).map(p =>
           p.id === poll.id ? { ...p, comments: updated } : p
         );
-        await base44.entities.WeddingDetails.update(details[0].id, { polls: updatedPolls });
+        await base44.entities.WeddingDetails.update(weddingDetails.id, { polls: updatedPolls });
       }
     } catch {}
   };
@@ -276,17 +277,18 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography }) 
     );
     setPolls(updatedPolls);
     try {
-      const details = await base44.entities.WeddingDetails.list();
-      if (details[0]) {
-        const allPolls = (details[0].polls || []).map(p =>
+      // Write to THIS wedding (weddingDetails, resolved by the parent via slug) —
+      // never the app-wide most-recently-created WeddingDetails record.
+      if (weddingDetails?.id) {
+        const allPolls = (weddingDetails.polls || []).map(p =>
           p.id === pollId
             ? { ...p, options: p.options.map(o => o.id === optionId ? { ...o, votes: (o.votes || 0) + 1 } : o) }
             : p
         );
-        base44.entities.WeddingDetails.update(details[0].id, { polls: allPolls });
+        base44.entities.WeddingDetails.update(weddingDetails.id, { polls: allPolls });
       }
     } catch {}
-  }, [polls]);
+  }, [polls, weddingDetails]);
 
   return (
     <div style={{ minHeight: '100vh', background: theme.darkBg }}>
@@ -354,6 +356,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography }) 
               theme={theme}
               typography={typography}
               onVote={handleVote}
+              weddingDetails={weddingDetails}
             />
           ))
         )}

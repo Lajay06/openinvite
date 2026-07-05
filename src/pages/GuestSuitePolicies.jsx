@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Loader2, Camera, Share2, Baby, Utensils, Gift, Shirt, Clock, FileText, Check } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import DetailsSection from '@/components/event-details/DetailsSection';
@@ -72,9 +73,8 @@ export default function GuestSuitePolicies() {
   const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list()
-      .then(rows => {
-        const d = rows[0] || null;
+    getMyWeddingDetails()
+      .then(d => {
         setDetails(d);
         if (d) {
           setDetailsId(d.id);

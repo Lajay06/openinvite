@@ -15,6 +15,7 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import AttirePanel from '../components/styling/AttirePanel';
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 const WeddingDetails = base44.entities.WeddingDetails;
 const Vendor = base44.entities.Vendor;
 
@@ -45,14 +46,14 @@ const [activeTab, setActiveTab] = useState("attire");
   const loadDetails = async () => {
     setLoading(true);
     try {
-      const [existingDetails, vendorData] = await Promise.all([
-        WeddingDetails.list(),
+      const [myDetails, vendorData] = await Promise.all([
+        getMyWeddingDetails(),
         Vendor.list()
       ]);
 
-      if (existingDetails.length > 0) {
-        setDetails(existingDetails[0]);
-        setDetailsId(existingDetails[0].id);
+      if (myDetails) {
+        setDetails(myDetails);
+        setDetailsId(myDetails.id);
       }
 
       setVendors(vendorData);

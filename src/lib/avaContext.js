@@ -1,4 +1,5 @@
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 
 export async function buildWeddingContext() {
   const [guestsResult, budgetResult, vendorsResult, scheduleResult, wdResult] = await Promise.allSettled([
@@ -6,15 +7,14 @@ export async function buildWeddingContext() {
     base44.entities.Budget.list(),
     base44.entities.Vendor.list(),
     base44.entities.Schedule.list(),
-    base44.entities.WeddingDetails.list(),
+    getMyWeddingDetails(),
   ]);
 
   const guests   = guestsResult.status   === 'fulfilled' ? guestsResult.value   : [];
   const budget   = budgetResult.status   === 'fulfilled' ? budgetResult.value   : [];
   const vendors  = vendorsResult.status  === 'fulfilled' ? vendorsResult.value  : [];
   const schedule = scheduleResult.status === 'fulfilled' ? scheduleResult.value : [];
-  const wdRows      = wdResult.status === 'fulfilled' ? wdResult.value : [];
-  const wd          = wdRows[0] || {};
+  const wd          = (wdResult.status === 'fulfilled' && wdResult.value) || {};
   const theme       = wd.theme || {};
   const expectedCount    = wd.guestCount ? String(wd.guestCount) : '';
   const expectedTierRaw  = wd.guestType  || '';

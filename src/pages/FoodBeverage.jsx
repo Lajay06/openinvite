@@ -8,6 +8,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -48,8 +49,7 @@ export default function FoodBeveragePage() {
 
   const loadData = async () => {
     try {
-      const rows = await WeddingDetails.list();
-      const r = rows[0] || {};
+      const r = (await getMyWeddingDetails()) || {};
       setData(r.foodBeverage || {});
       setMenuItems(r.menuItems || []);
       setRecordId(r.id || null);

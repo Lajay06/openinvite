@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink, Menu, X } from 'lucide-react';
@@ -241,10 +242,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 
   const { data: existing, isLoading } = useQuery({
     queryKey: ['wb-details'],
-    queryFn: async () => {
-      const r = await base44.entities.WeddingDetails.list();
-      return r.length > 0 ? r[0] : null;
-    },
+    queryFn: async () => await getMyWeddingDetails(),
   });
 
   useEffect(() => {

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { InvokeLLM } from "@/integrations/Core";
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -76,10 +77,10 @@ export default function PoliciesPage() {
   const loadDetails = async () => {
     setLoading(true);
     try {
-      const existingDetails = await WeddingDetails.list();
-      if (existingDetails.length > 0) {
-        setDetails(existingDetails[0]);
-        setDetailsId(existingDetails[0].id);
+      const existingDetails = await getMyWeddingDetails();
+      if (existingDetails) {
+        setDetails(existingDetails);
+        setDetailsId(existingDetails.id);
       }
     } catch {
       toast.error("Failed to load details.");

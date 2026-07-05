@@ -6,9 +6,8 @@ import { Sparkles, Send, X, User, Lightbulb, Calendar, DollarSign, Palette, User
 import { motion, AnimatePresence } from "framer-motion";
 import { InvokeLLM } from "@/integrations/Core";
 import { base44 } from "@/api/base44Client";
-const Invitation = base44.entities.Invitation;
+import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
 const Guest = base44.entities.Guest;
-const WeddingDetails = base44.entities.WeddingDetails;
 
 export default function AIWeddingAssistant() {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,17 +32,17 @@ export default function AIWeddingAssistant() {
 
   const loadWeddingContext = async () => {
     try {
-      const [invitations, guests, details] = await Promise.all([
-        Invitation.list(),
+      const [invitation, guests, details] = await Promise.all([
+        getMyInvitation(),
         Guest.list(),
-        WeddingDetails.list()
+        getMyWeddingDetails()
       ]);
 
       const context = {
-        weddingDate: invitations[0]?.wedding_date || null,
+        weddingDate: invitation?.wedding_date || null,
         guestCount: guests.length || 0,
-        location: details[0]?.mainCeremony?.address || null,
-        venue: details[0]?.mainCeremony?.venueName || null
+        location: details?.mainCeremony?.address || null,
+        venue: details?.mainCeremony?.venueName || null
       };
 
       setWeddingContext(context);

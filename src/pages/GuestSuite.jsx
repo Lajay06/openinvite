@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Loader2, Globe, Mail, CheckSquare, Printer, Eye, MapPin, Calendar, Clock, ArrowRight, Image } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
@@ -63,8 +63,8 @@ export default function GuestSuite() {
   const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list()
-      .then(rows => { setWedding(rows[0] || null); })
+    getMyWeddingDetails()
+      .then(w => { setWedding(w); })
       .catch(e => console.error('GuestSuite: failed to load wedding details', e))
       .finally(() => setLoading(false));
   }, []);

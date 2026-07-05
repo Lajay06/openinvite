@@ -12,6 +12,7 @@ import PhotographerForm from "../components/photography/PhotographerForm";
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 const Photographer = base44.entities.Photographer;
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -67,12 +68,12 @@ export default function PhotographyPage() {
     try {
       const [photographersData, detailsData] = await Promise.all([
         Photographer.list('-created_date'),
-        WeddingDetails.list().catch(() => []),
+        getMyWeddingDetails().catch(() => null),
       ]);
       setPhotographers(photographersData);
-      if (detailsData.length > 0) {
-        setDetails(detailsData[0]);
-        setDetailsId(detailsData[0].id);
+      if (detailsData) {
+        setDetails(detailsData);
+        setDetailsId(detailsData.id);
       }
     } catch (error) {
       console.error("Error loading data:", error);

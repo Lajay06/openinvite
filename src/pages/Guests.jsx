@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 const Guest = base44.entities.Guest;
-const WeddingDetails = base44.entities.WeddingDetails;
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Mail } from "lucide-react";
@@ -76,8 +76,8 @@ export default function Guests() {
 
   useEffect(() => { loadGuests(); }, []);
   useEffect(() => {
-    WeddingDetails.list().then(rows => {
-      setWeddingParty((rows[0] || {}).weddingParty || {});
+    getMyWeddingDetails().then(details => {
+      setWeddingParty((details || {}).weddingParty || {});
     }).catch(() => {});
   }, []);
 

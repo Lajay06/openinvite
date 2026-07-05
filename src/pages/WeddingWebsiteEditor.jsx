@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
@@ -47,10 +48,7 @@ export default function WeddingWebsiteEditor() {
 
   const { data: existingWedding, isLoading } = useQuery({
     queryKey: ['wedding-details'],
-    queryFn: async () => {
-      const weddings = await base44.entities.WeddingDetails.list();
-      return weddings.length > 0 ? weddings[0] : null;
-    },
+    queryFn: () => getMyWeddingDetails(),
   });
 
   useEffect(() => {

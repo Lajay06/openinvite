@@ -6,6 +6,7 @@ import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 const WeddingDetails = base44.entities.WeddingDetails;
 const Guest = base44.entities.Guest;
 
@@ -305,11 +306,11 @@ export default function WeddingPartyPage() {
 
   const loadData = async () => {
     try {
-      const [rows, guestData] = await Promise.all([
-        WeddingDetails.list(),
+      const [wd, guestData] = await Promise.all([
+        getMyWeddingDetails(),
         Guest.list('-created_date', 500),
       ]);
-      const r = rows[0] || {};
+      const r = wd || {};
       setData(r.weddingParty || {});
       setRecordId(r.id || null);
       latestRef.current = r;

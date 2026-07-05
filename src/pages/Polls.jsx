@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { Loader2, Trash2, Share2, Plus, X, ChevronLeft } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
@@ -260,8 +261,7 @@ export default function Polls() {
 
   const load = async () => {
     try {
-      const rows = await base44.entities.WeddingDetails.list();
-      const r = rows[0] || {};
+      const r = (await getMyWeddingDetails()) || {};
       setRecord(r);
       setRecordId(r.id || null);
       const loadedPolls = Array.isArray(r.polls) ? r.polls : [];

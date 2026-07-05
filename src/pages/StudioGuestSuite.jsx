@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, Crown } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { useAuth } from '@/lib/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -99,10 +99,7 @@ export default function StudioGuestSuite() {
 
   const { data: details } = useQuery({
     queryKey: ['guestSuiteDetails'],
-    queryFn: async () => {
-      const r = await base44.entities.WeddingDetails.list();
-      return r[0] || null;
-    },
+    queryFn: () => getMyWeddingDetails(),
   });
 
   const handleTabChange = (tabId) => {

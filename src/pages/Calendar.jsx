@@ -5,10 +5,9 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { base44 } from "@/api/base44Client";
+import { getMyInvitation } from '@/lib/resolveMyWedding';
 const Vendor = base44.entities.Vendor;
 const Schedule = base44.entities.Schedule;
-const WeddingDetails = base44.entities.WeddingDetails;
-const Invitation = base44.entities.Invitation;
 const Photographer = base44.entities.Photographer;
 
 const labelStyle = {
@@ -64,27 +63,26 @@ export default function CalendarPage({ embedded = false }) {
   const loadAllEvents = async () => {
     setLoading(true);
     try {
-      const [vendors, scheduleItems, weddingDetails, invitations, photographers] = await Promise.all([
+      const [vendors, scheduleItems, invitation, photographers] = await Promise.all([
         Vendor.list().catch(() => []),
         Schedule.list().catch(() => []),
-        WeddingDetails.list().catch(() => []),
-        Invitation.list().catch(() => []),
+        getMyInvitation().catch(() => null),
         Photographer.list().catch(() => [])
       ]);
 
       const allEvents = [];
 
-      if (invitations.length > 0 && invitations[0].wedding_date) {
+      if (invitation?.wedding_date) {
         allEvents.push({
           id: 'wedding-day',
-          title: `Wedding day: ${invitations[0].couple_names || 'Your wedding'}`,
-          date: invitations[0].wedding_date, time: '',
+          title: `Wedding day: ${invitation.couple_names || 'Your wedding'}`,
+          date: invitation.wedding_date, time: '',
           description: 'Your special day!', type: 'wedding'
         });
-        if (invitations[0].rsvp_deadline) {
+        if (invitation.rsvp_deadline) {
           allEvents.push({
             id: 'rsvp-deadline', title: 'RSVP deadline',
-            date: invitations[0].rsvp_deadline, time: '',
+            date: invitation.rsvp_deadline, time: '',
             description: 'Last day for guest RSVPs', type: 'wedding'
           });
         }

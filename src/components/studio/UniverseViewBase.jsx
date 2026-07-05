@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import UniverseSelectedChoice from '@/components/studio/UniverseSelectedChoice';
 
 const ASSETS = [
@@ -120,7 +121,7 @@ export default function UniverseViewBase({ isOnboarding = false, onBack, onSelec
   const lineColor = dark ? 'rgba(255,255,255,0.2)' : `rgba(${primRgb},0.25)`;
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list().then(r => { setDetails(r[0] || {}); setLoaded(true); }).catch(() => { setDetails({}); setLoaded(true); });
+    getMyWeddingDetails().then(d => { setDetails(d || {}); setLoaded(true); }).catch(() => { setDetails({}); setLoaded(true); });
   }, []);
 
   const coupleName = details?.coupleNames || (details?.couple1Name && details?.couple2Name ? `${details.couple1Name} & ${details.couple2Name}` : 'John & Sarah');

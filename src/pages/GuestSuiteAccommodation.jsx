@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Loader2, Hotel, Star, ExternalLink, X, Search, Plus, Navigation } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
@@ -392,9 +393,8 @@ export default function GuestSuiteAccommodation() {
   const [avaLoading, setAvaLoading] = useState(false);
 
   useEffect(() => {
-    base44.entities.WeddingDetails.list()
-      .then(rows => {
-        const d = rows[0] || null;
+    getMyWeddingDetails()
+      .then(d => {
         setDetails(d);
         setDetailsId(d?.id || null);
         setPlaces(d?.guestSuiteAccommodation?.places || []);
