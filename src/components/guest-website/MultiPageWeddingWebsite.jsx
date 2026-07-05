@@ -37,7 +37,7 @@ const PAGE_LABELS = {
   'home': 'Home', 'our-story': 'Our Story', 'celebration': 'Celebration',
   'rsvp': 'RSVP', 'registry': 'Registry',
   'music': 'Music', 'photos': 'Photos', 'styling': 'Styling', 'polls': 'Polls', 'faq': 'FAQ',
-  'stay': 'Stay', 'transport': 'Getting here', 'experience': 'Guide',
+  'stay': 'Stay', 'transport': 'Getting here', 'experience': 'Guide', 'guestbook': 'Guestbook',
 };
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -55,6 +55,7 @@ import WeddingPollsPage from './pages/WeddingPollsPage';
 import WeddingStayPage from './pages/WeddingStayPage';
 import WeddingTransportPage from './pages/WeddingTransportPage';
 import WeddingExperiencePage from './pages/WeddingExperiencePage';
+import WeddingGuestbookPage from './pages/WeddingGuestbookPage';
 
 const PAGE_COMPONENTS = {
   home: WeddingHomePage,
@@ -70,6 +71,7 @@ const PAGE_COMPONENTS = {
   'stay': WeddingStayPage,
   'transport': WeddingTransportPage,
   'experience': WeddingExperiencePage,
+  'guestbook': WeddingGuestbookPage,
 };
 
 export default function MultiPageWeddingWebsite() {

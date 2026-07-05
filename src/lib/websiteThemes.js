@@ -448,6 +448,7 @@ export const WEDDING_PAGES = [
   { slug: 'stay', label: 'Stay', icon: 'Hotel' },
   { slug: 'transport', label: 'Getting here', icon: 'Car' },
   { slug: 'experience', label: 'Guide', icon: 'Compass' },
+  { slug: 'guestbook', label: 'Guestbook', icon: 'Heart' },
 ];
 // ── Universe identity configs — texture + motion per universe ─────────────────
 // Static, code-defined (not stored in DB — these are per-universe constants).
