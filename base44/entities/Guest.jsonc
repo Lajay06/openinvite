@@ -210,6 +210,40 @@
           }
         }
       }
+    },
+    "song_request": {
+      "type": "string",
+      "description": "Guest's requested song for the reception"
+    },
+    "rsvp_note": {
+      "type": "string",
+      "description": "Free-text note the guest left with their RSVP"
+    },
+    "poll_votes": {
+      "type": "object",
+      "description": "Map of poll_id -> selected option_id, one entry per poll this guest has voted in",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "invite_sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the invitation was sent to this guest"
+    },
+    "invite_channel": {
+      "type": "string",
+      "description": "How the invitation was sent — 'email', 'whatsapp', or 'email+whatsapp' if sent via both"
+    },
+    "reminder_sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the most recent RSVP reminder was sent to this guest"
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
     }
   },
   "required": [
