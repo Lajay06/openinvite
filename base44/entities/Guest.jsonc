@@ -163,6 +163,53 @@
         ]
       },
       "description": "Guest interests and preferences for personalized recommendations"
+    },
+    "event_responses": {
+      "type": "array",
+      "description": "Per-event RSVP matrix — one entry per WeddingDetails event this guest is invited to. Keyed by event_id (stable id from preWeddingEvents[]/postWeddingEvents[]/mainCeremony/reception), never array index. See SMART_RSVP_MODEL.md.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "description": "Stable id of the WeddingDetails event this response is for"
+          },
+          "invited": {
+            "type": "boolean",
+            "description": "Whether this guest is invited to this event"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "yes",
+              "no"
+            ],
+            "default": "pending",
+            "description": "Attendance response for this event"
+          },
+          "meal_choice": {
+            "type": "string",
+            "description": "Menu option id/label for this event, null if not yet chosen"
+          },
+          "plus_ones": {
+            "type": "number",
+            "description": "Count of plus-ones granted/used for this event"
+          },
+          "plus_one_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Names of plus-ones attending this event"
+          },
+          "responded_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the guest submitted this event's response"
+          }
+        }
+      }
     }
   },
   "required": [
