@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import GrainOverlay from '../GrainOverlay';
+import TextureOverlay from '../TextureOverlay';
 
 export default function WeddingHomePage({ weddingDetails, theme, typography, universeConfig }) {
   const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || 'We are overjoyed to celebrate with you.';
@@ -29,9 +29,9 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
           }}
         />
 
-        {/* Grain — after dark overlay so it renders above it; text stays at zIndex:10 above both */}
+        {/* Texture — after dark overlay so it renders above it; text stays at zIndex:10 above both */}
         {universeConfig?.texture && (
-          <GrainOverlay opacity={universeConfig.texture.opacity} />
+          <TextureOverlay textureId={universeConfig.texture.type} opacity={universeConfig.texture.opacity} />
         )}
 
         <motion.div
