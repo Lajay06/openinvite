@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, XCircle, Clock, Utensils, Users, Copy, ExternalLink } from 'lucide-react';
-import { createPageUrl } from '@/utils';
+import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
 
 const labelStyle = {
@@ -21,6 +21,31 @@ const MEAL_LABELS = {
 
 export default function RSVPManagement({ guests }) {
   const [copiedLink, setCopiedLink] = useState(false);
+  // Each guest gets their own personal /rsvp/:token link — there is no single
+  // shared RSVP URL anymore. This widget previews/copies the first guest's
+  // link as a representative example, generating+persisting a token for them
+  // if they don't have one yet (same mechanism as SendInvitesModal).
+  const [exampleGuest, setExampleGuest] = useState(null);
+
+  useEffect(() => {
+    const ensureExampleGuestToken = async () => {
+      const first = guests?.[0];
+      if (!first) { setExampleGuest(null); return; }
+      if (first.rsvp_link_id) { setExampleGuest(first); return; }
+      const token = crypto.randomUUID();
+      try {
+        await base44.entities.Guest.update(first.id, { rsvp_link_id: token });
+        setExampleGuest({ ...first, rsvp_link_id: token });
+      } catch {
+        setExampleGuest(first);
+      }
+    };
+    ensureExampleGuestToken();
+  }, [guests]);
+
+  const exampleUrl = exampleGuest?.rsvp_link_id
+    ? `${window.location.origin}/rsvp/${exampleGuest.rsvp_link_id}`
+    : '';
 
   const stats = React.useMemo(() => {
     const total = guests.length;
@@ -42,8 +67,8 @@ export default function RSVPManagement({ guests }) {
   }, [guests]);
 
   const handleCopy = () => {
-    const url = `${window.location.origin}${createPageUrl('GuestRSVP')}`;
-    navigator.clipboard.writeText(url);
+    if (!exampleUrl) return;
+    navigator.clipboard.writeText(exampleUrl);
     setCopiedLink(true);
     toast.success('RSVP link copied');
     setTimeout(() => setCopiedLink(false), 2000);
@@ -69,23 +94,25 @@ export default function RSVPManagement({ guests }) {
             Guest RSVP portal
           </p>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: '0 0 16px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Share this link with your guests so they can RSVP online
+            {exampleGuest
+              ? `Each guest gets their own personal RSVP link — here's ${exampleGuest.name || 'a guest'}'s as an example`
+              : 'Add guests to generate their personal RSVP links'}
           </p>
           <div style={{ background: 'rgba(255,255,255,0.08)', padding: '8px 14px', fontFamily: 'monospace', fontSize: 12, color: 'rgba(255,255,255,0.6)', wordBreak: 'break-all' }}>
-            {window.location.origin}{createPageUrl('GuestRSVP')}
+            {exampleUrl || '—'}
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
-          <button onClick={handleCopy} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+          <button onClick={handleCopy} disabled={!exampleUrl} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center', opacity: exampleUrl ? 1 : 0.5 }}>
             <Copy size={13} />
             {copiedLink ? 'Copied!' : 'Copy link'}
           </button>
           <a
-            href={createPageUrl('GuestRSVP')}
+            href={exampleUrl || undefined}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-editorial-secondary"
-            style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center', textDecoration: 'none', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.2)' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center', textDecoration: 'none', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.2)', pointerEvents: exampleUrl ? 'auto' : 'none', opacity: exampleUrl ? 1 : 0.5 }}
           >
             <ExternalLink size={13} />
             Preview

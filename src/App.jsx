@@ -35,6 +35,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MultiPageWeddingWebsite from './components/guest-website/MultiPageWeddingWebsite';
 import RSVPPage from './components/rsvp/RSVPPage';
+import GuestRSVPRetired from './pages/GuestRSVPRetired';
 import UniverseStudio from './pages/UniverseStudio';
 import StudioHub from './pages/StudioHub';
 import StudioWebsite from './pages/StudioWebsite';
@@ -99,6 +100,7 @@ const PUBLIC_PATH_SET = new Set([
   '/cookie-policy',
   '/data-deletion',
   '/refund-policy',
+  '/GuestRSVP',
 ]);
 const isPublicPath = (pathname) =>
   PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/');
@@ -156,6 +158,7 @@ const AuthenticatedApp = () => {
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
         <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
         <Route path="/rsvp/:token" element={<RSVPPage />} />
+        <Route path="/GuestRSVP" element={<GuestRSVPRetired />} />
       </Routes>
     );
   }
