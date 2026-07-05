@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Sparkles, ChevronLeft, Check, Copy } from 'lucide-react';
+import RulesBasedStyleQuestionnaire from './RulesBasedStyleQuestionnaire';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -102,7 +103,19 @@ const RESULT_SCHEMA = {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function WeddingStylePage({ weddingDetails, theme, typography }) {
+// Dispatcher: the couple can switch the Styling section between the
+// AI-generated stylist (default, unchanged) and the deterministic
+// rules-based questionnaire (roadmap D2), toggled from Guest Suite →
+// Policies. Kept as a thin wrapper so the AI flow below is untouched.
+export default function WeddingStylePage(props) {
+  const stylingQuestionnaireEnabled = !!props.weddingDetails?.weddingPolicies?.stylingQuestionnaire?.enabled;
+  if (stylingQuestionnaireEnabled) {
+    return <RulesBasedStyleQuestionnaire {...props} />;
+  }
+  return <AIStyleQuestionnaire {...props} />;
+}
+
+function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
   const [phase, setPhase] = useState('questionnaire'); // 'questionnaire' | 'loading' | 'results' | 'error'
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({ gender: '', style: '', comfort: '', budget: '', notes: '' });

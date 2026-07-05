@@ -193,6 +193,7 @@ const TEST_FIELDS = {
     photography: { unplugged: true,  message: 'Persistence test photography policy', display: true },
     socialMedia:  { noCeremony: false, message: 'Persistence test social media policy', display: false },
     children:     { option: 'all', message: 'All welcome', display: true },
+    stylingQuestionnaire: { enabled: true },
   },
   emergencyContacts: {
     primary:    { name: 'Test Primary', phone: '+61 400 000 001', role: 'Maid of honour' },
@@ -472,6 +473,16 @@ async function run() {
     results.push(writtenSubsetMatches(written, got)
       ? pass('weddingPolicies', 'photography + socialMedia + children (extra null sub-fields from schema OK)')
       : fail('weddingPolicies', written, got));
+  }
+
+  // weddingPolicies.stylingQuestionnaire.enabled — the couple-side toggle for
+  // the guest styling questionnaire (roadmap D2)
+  {
+    const written = TEST_FIELDS.weddingPolicies.stylingQuestionnaire.enabled;
+    const got     = record.weddingPolicies?.stylingQuestionnaire?.enabled;
+    results.push(got === written
+      ? pass('weddingPolicies.stylingQuestionnaire.enabled', String(got))
+      : fail('weddingPolicies.stylingQuestionnaire.enabled', written, got));
   }
 
   // emergencyContacts — same: venue sub-field backfilled as null
