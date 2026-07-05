@@ -1031,6 +1031,117 @@ async function run() {
     results.push(false); results.push(false);
   }
 
+  // ── 8g. Per-event RSVP — guest-side write path (SMART_RSVP_MODEL.md PR 3+4) ──
+  // Mirrors RSVPPage.jsx's handleSubmit exactly: seed a guest with pending
+  // event_responses for two invited events (one plus-one eligible), then
+  // build the same Map-keyed-by-event_id merge the form submits, write it,
+  // and assert every nested field round-trips on a fresh read.
+  console.log('\n  Per-event RSVP guest-side write path (RSVPPage.jsx handleSubmit):\n');
+  let guestEventRsvpId = null;
+  try {
+    const seededResponses = [
+      { event_id: 'test-event-ceremony', invited: true, status: 'pending', meal_choice: null, plus_ones: 0, plus_one_names: [], responded_at: null },
+      { event_id: 'test-event-reception', invited: true, status: 'pending', meal_choice: null, plus_ones: 0, plus_one_names: [], responded_at: null },
+    ];
+
+    const created = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
+      name: '__PERSISTENCE_TEST_EVENT_RSVP__',
+      rsvp_link_id: 'test-per-event-rsvp-token',
+      plus_one: true,
+      event_responses: seededResponses,
+    }, token);
+    guestEventRsvpId = created.id;
+    if (!guestEventRsvpId) throw new Error('No id on created Guest');
+
+    // ── Simulate the guest's form submission exactly as handleSubmit does ──
+    const now = new Date().toISOString();
+    const eventForm = {
+      'test-event-ceremony': { status: 'yes', meal_choice: 'chicken', plus_one_attending: false, plus_one_name: '' },
+      'test-event-reception': { status: 'yes', meal_choice: 'vegetarian', plus_one_attending: true, plus_one_name: 'Jamie Guest' },
+    };
+    const invitedEvents = [{ event_id: 'test-event-ceremony' }, { event_id: 'test-event-reception' }];
+
+    const existingResponses = seededResponses; // guest.event_responses at load time
+    const updatedByEventId = new Map(existingResponses.map(r => [r.event_id, r]));
+    for (const ev of invitedEvents) {
+      const form = eventForm[ev.event_id];
+      updatedByEventId.set(ev.event_id, {
+        event_id: ev.event_id,
+        invited: true,
+        status: form.status,
+        meal_choice: form.status === 'yes' ? (form.meal_choice || null) : null,
+        plus_ones: (form.status === 'yes' && form.plus_one_attending) ? 1 : 0,
+        plus_one_names: (form.status === 'yes' && form.plus_one_attending && form.plus_one_name) ? [form.plus_one_name] : [],
+        responded_at: now,
+      });
+    }
+    const nextEventResponses = Array.from(updatedByEventId.values());
+
+    await api('PUT', `/apps/${APP_ID}/entities/Guest/${guestEventRsvpId}`, {
+      event_responses: nextEventResponses,
+      song_request: 'Uptown Funk',
+      rsvp_note: 'Cannot wait!',
+      dietary_restrictions: 'Gluten free',
+      rsvp_date: now.split('T')[0],
+    }, token);
+
+    const back = await api('GET', `/apps/${APP_ID}/entities/Guest/${guestEventRsvpId}`, undefined, token);
+    const backResponses = back.event_responses || [];
+    const ceremony = backResponses.find(r => r.event_id === 'test-event-ceremony');
+    const reception = backResponses.find(r => r.event_id === 'test-event-reception');
+
+    results.push(ceremony?.status === 'yes'
+      ? pass('event_responses[ceremony].status', ceremony?.status)
+      : fail('event_responses[ceremony].status', 'yes', ceremony?.status));
+    results.push(ceremony?.meal_choice === 'chicken'
+      ? pass('event_responses[ceremony].meal_choice', ceremony?.meal_choice)
+      : fail('event_responses[ceremony].meal_choice', 'chicken', ceremony?.meal_choice));
+    results.push(ceremony?.plus_ones === 0
+      ? pass('event_responses[ceremony].plus_ones', String(ceremony?.plus_ones))
+      : fail('event_responses[ceremony].plus_ones', 0, ceremony?.plus_ones));
+    results.push(Array.isArray(ceremony?.plus_one_names) && ceremony.plus_one_names.length === 0
+      ? pass('event_responses[ceremony].plus_one_names', JSON.stringify(ceremony?.plus_one_names))
+      : fail('event_responses[ceremony].plus_one_names', [], ceremony?.plus_one_names));
+    results.push(!!ceremony?.responded_at
+      ? pass('event_responses[ceremony].responded_at', ceremony?.responded_at)
+      : fail('event_responses[ceremony].responded_at', now, ceremony?.responded_at));
+
+    results.push(reception?.status === 'yes'
+      ? pass('event_responses[reception].status', reception?.status)
+      : fail('event_responses[reception].status', 'yes', reception?.status));
+    results.push(reception?.meal_choice === 'vegetarian'
+      ? pass('event_responses[reception].meal_choice', reception?.meal_choice)
+      : fail('event_responses[reception].meal_choice', 'vegetarian', reception?.meal_choice));
+    results.push(reception?.plus_ones === 1
+      ? pass('event_responses[reception].plus_ones', String(reception?.plus_ones))
+      : fail('event_responses[reception].plus_ones', 1, reception?.plus_ones));
+    results.push(JSON.stringify(reception?.plus_one_names) === JSON.stringify(['Jamie Guest'])
+      ? pass('event_responses[reception].plus_one_names', JSON.stringify(reception?.plus_one_names))
+      : fail('event_responses[reception].plus_one_names', ['Jamie Guest'], reception?.plus_one_names));
+    results.push(!!reception?.responded_at
+      ? pass('event_responses[reception].responded_at', reception?.responded_at)
+      : fail('event_responses[reception].responded_at', now, reception?.responded_at));
+
+    // Wedding-level fields written alongside — render once, not per event
+    results.push(back.song_request === 'Uptown Funk'
+      ? pass('Guest.song_request (per-event submit)', back.song_request)
+      : fail('Guest.song_request (per-event submit)', 'Uptown Funk', back.song_request));
+    results.push(back.rsvp_note === 'Cannot wait!'
+      ? pass('Guest.rsvp_note (per-event submit)', back.rsvp_note)
+      : fail('Guest.rsvp_note (per-event submit)', 'Cannot wait!', back.rsvp_note));
+    results.push(back.dietary_restrictions === 'Gluten free'
+      ? pass('Guest.dietary_restrictions (per-event submit)', back.dietary_restrictions)
+      : fail('Guest.dietary_restrictions (per-event submit)', 'Gluten free', back.dietary_restrictions));
+  } catch (err) {
+    console.log(`  ❌ FAIL  Per-event RSVP write path — error: ${err.message}`);
+    for (let i = 0; i < 13; i++) results.push(false);
+  } finally {
+    if (guestEventRsvpId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestEventRsvpId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
   // ── 9. Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;
   const total  = results.length;
