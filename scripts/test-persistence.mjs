@@ -1088,8 +1088,15 @@ async function run() {
     }
     const nextEventResponses = Array.from(updatedByEventId.values());
 
+    // Mirror RSVPPage.jsx's derived rsvp_status logic exactly.
+    const invitedResponses = nextEventResponses.filter(r => r.invited);
+    const anyYes = invitedResponses.some(r => r.status === 'yes');
+    const allNo = invitedResponses.length > 0 && invitedResponses.every(r => r.status === 'no');
+    const derivedRsvpStatus = anyYes ? 'attending' : allNo ? 'declined' : 'pending';
+
     await api('PUT', `/apps/${APP_ID}/entities/Guest/${guestEventRsvpId}`, {
       event_responses: nextEventResponses,
+      rsvp_status: derivedRsvpStatus,
       song_request: 'Uptown Funk',
       rsvp_note: 'Cannot wait!',
       dietary_restrictions: 'Gluten free',
@@ -1143,12 +1150,57 @@ async function run() {
     results.push(back.dietary_restrictions === 'Gluten free'
       ? pass('Guest.dietary_restrictions (per-event submit)', back.dietary_restrictions)
       : fail('Guest.dietary_restrictions (per-event submit)', 'Gluten free', back.dietary_restrictions));
+
+    // Both invited events answered "yes" → derived rsvp_status must be "attending",
+    // so Dashboard's RSVPChart / InvitationsTab badges / GuestList badge all reflect
+    // this guest correctly instead of showing them stuck on "pending".
+    results.push(back.rsvp_status === 'attending'
+      ? pass('Guest.rsvp_status derived from event_responses (any yes → attending)', back.rsvp_status)
+      : fail('Guest.rsvp_status derived from event_responses (any yes → attending)', 'attending', back.rsvp_status));
   } catch (err) {
     console.log(`  ❌ FAIL  Per-event RSVP write path — error: ${err.message}`);
-    for (let i = 0; i < 13; i++) results.push(false);
+    for (let i = 0; i < 14; i++) results.push(false);
   } finally {
     if (guestEventRsvpId) {
       try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestEventRsvpId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
+  // ── 8g2. Per-event RSVP — derived rsvp_status covers the "declined" branch ──
+  // The block above only exercises "any yes → attending". This proves the other
+  // branch: every invited event answered "no" → rsvp_status must be "declined",
+  // not left on the default "pending".
+  console.log('\n  Per-event RSVP derived rsvp_status — all-declined case:\n');
+  let guestAllDeclinedId = null;
+  try {
+    const declinedResponses = [
+      { event_id: 'test-event-ceremony', invited: true, status: 'no', meal_choice: null, plus_ones: 0, plus_one_names: [], responded_at: new Date().toISOString() },
+      { event_id: 'test-event-reception', invited: true, status: 'no', meal_choice: null, plus_ones: 0, plus_one_names: [], responded_at: new Date().toISOString() },
+    ];
+    const invitedOnly = declinedResponses.filter(r => r.invited);
+    const anyYes2 = invitedOnly.some(r => r.status === 'yes');
+    const allNo2 = invitedOnly.length > 0 && invitedOnly.every(r => r.status === 'no');
+    const derived2 = anyYes2 ? 'attending' : allNo2 ? 'declined' : 'pending';
+
+    const created2 = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
+      name: '__PERSISTENCE_TEST_EVENT_RSVP_DECLINED__',
+      event_responses: declinedResponses,
+      rsvp_status: derived2,
+    }, token);
+    guestAllDeclinedId = created2.id;
+    if (!guestAllDeclinedId) throw new Error('No id on created Guest');
+
+    const back2 = await api('GET', `/apps/${APP_ID}/entities/Guest/${guestAllDeclinedId}`, undefined, token);
+    results.push(back2.rsvp_status === 'declined'
+      ? pass('Guest.rsvp_status derived from event_responses (all no → declined)', back2.rsvp_status)
+      : fail('Guest.rsvp_status derived from event_responses (all no → declined)', 'declined', back2.rsvp_status));
+  } catch (err) {
+    console.log(`  ❌ FAIL  Per-event RSVP declined-derivation — error: ${err.message}`);
+    results.push(false);
+  } finally {
+    if (guestAllDeclinedId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestAllDeclinedId}`, undefined, token); }
       catch { /* non-fatal */ }
     }
   }
