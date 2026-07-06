@@ -11,6 +11,7 @@
  *   sanitizeString(str)                        → string
  *   isValidEmail(email)                        → bool
  *   isValidPriceId(priceId)                    → bool
+ *   verifyTurnstileToken(token, ip)             → Promise<{ success, 'error-codes'? }>
  */
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
@@ -177,4 +178,69 @@ export function isValidEmail(email) {
 export function isValidPriceId(priceId) {
   if (typeof priceId !== 'string') return false;
   return /^price_[A-Za-z0-9]+$/.test(priceId);
+}
+
+// ─── Turnstile ────────────────────────────────────────────────────────────────
+
+const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+const TURNSTILE_TIMEOUT_MS = 5_000; // abort the Cloudflare fetch after 5 s
+
+/**
+ * Verify a Turnstile token with Cloudflare's siteverify API.
+ * Shared by every endpoint gating a public write behind Turnstile
+ * (originally implemented in api/verify-signup.js; factored out here so
+ * new Turnstile-gated endpoints — e.g. the guestbook — reuse the exact
+ * same verification behaviour rather than re-implementing it).
+ *
+ * - Uses an AbortController so a slow/unreachable Cloudflare API times out in
+ *   5 seconds instead of hanging the entire Vercel function.
+ * - If TURNSTILE_SECRET_KEY is unset, skips the check and returns success
+ *   (allows dev / Vercel preview deployments without the env var).
+ *
+ * @param {string} token   — cf-turnstile-response token from the client
+ * @param {string} ip      — client IP forwarded to Cloudflare for extra signal
+ * @param {string} [logPrefix] — e.g. '[guestbook-submit]', used in console output
+ * @returns {Promise<{ success: boolean, 'error-codes'?: string[] }>}
+ */
+export async function verifyTurnstileToken(token, ip, logPrefix = '[turnstile]') {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+
+  if (!secret) {
+    console.warn(
+      `${logPrefix} TURNSTILE_SECRET_KEY is not set — ` +
+      'skipping Turnstile check (dev/preview only). ' +
+      'Add this env var to Vercel project settings before going to production.'
+    );
+    return { success: true };
+  }
+
+  const controller = new AbortController();
+  const timerId    = setTimeout(() => controller.abort(), TURNSTILE_TIMEOUT_MS);
+
+  const body = new URLSearchParams({ secret, response: token });
+  if (ip && ip !== 'unknown') body.set('remoteip', ip);
+
+  try {
+    const res = await fetch(TURNSTILE_VERIFY_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    body.toString(),
+      signal:  controller.signal,
+    });
+
+    if (!res.ok) {
+      console.error(`${logPrefix} Cloudflare siteverify returned HTTP`, res.status);
+      return { success: false, 'error-codes': ['cf-http-error'] };
+    }
+
+    return await res.json();
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      console.error(`${logPrefix} Cloudflare siteverify timed out after`, TURNSTILE_TIMEOUT_MS, 'ms');
+      return { success: false, 'error-codes': ['cf-timeout'] };
+    }
+    throw err; // re-throw unexpected network errors
+  } finally {
+    clearTimeout(timerId);
+  }
 }

@@ -20,7 +20,7 @@ const ASSETS = [
 ];
 
 const PAGE_ICONS = {
-  LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, Sparkles, BarChart2,
+  LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, Sparkles, BarChart2, Heart,
 };
 
 function PageIcon({ name, active }) {

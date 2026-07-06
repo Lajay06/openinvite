@@ -1,0 +1,28 @@
+{
+  "name": "GuestbookEntry",
+  "type": "object",
+  "properties": {
+    "wedding_id": {
+      "type": "string",
+      "description": "id of the WeddingDetails record this entry belongs to"
+    },
+    "guest_name": {
+      "type": "string",
+      "description": "Name the guest entered when signing the guestbook"
+    },
+    "message": {
+      "type": "string",
+      "description": "The guest's message"
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in a real couple's guestbook, even if harness cleanup fails."
+    }
+  },
+  "required": [
+    "wedding_id",
+    "guest_name",
+    "message"
+  ]
+}
