@@ -23,7 +23,7 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/";
+      window.location.href = "/Dashboard";
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -32,7 +32,7 @@ export default function Login() {
   };
 
   const handleProvider = (provider) => {
-    base44.auth.loginWithProvider(provider, "/");
+    base44.auth.loginWithProvider(provider, "/Dashboard");
   };
 
   return (
