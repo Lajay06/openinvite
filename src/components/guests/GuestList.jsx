@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, CalendarCheck } from "lucide-react";
+import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, CalendarCheck, ChevronDown, ChevronRight } from "lucide-react";
 import { toggleEventInvite, getGuestEventResponse } from "@/lib/weddingEvents";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -266,10 +266,92 @@ function EventsInvitedCell({ guest, weddingEvents, onUpdate }) {
   );
 }
 
+function fmtRespondedAt(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+const STATUS_LABELS = { yes: 'Attending', no: 'Declined', pending: 'Pending' };
+const STATUS_COLORS = { yes: '#166534', no: '#991b1b', pending: 'rgba(10,10,10,0.4)' };
+
+/* ── Per-event RSVP detail sub-row — shows what a guest actually answered ── */
+function RsvpDetailRow({ guest, weddingEvents }) {
+  if (!weddingEvents || weddingEvents.length === 0) {
+    return (
+      <TableRow style={{ background: 'rgba(10,10,10,0.015)' }}>
+        <TableCell colSpan={9} style={{ padding: '12px 16px 12px 44px' }}>
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No events set up for this wedding yet.</span>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  return (
+    <TableRow style={{ background: 'rgba(10,10,10,0.015)' }}>
+      <TableCell colSpan={9} style={{ padding: '12px 16px 16px 44px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid rgba(10,10,10,0.08)', maxWidth: 720 }}>
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1.3fr 0.8fr 0.8fr 0.7fr 1.1fr 0.9fr',
+            gap: 8, padding: '8px 12px', background: 'rgba(10,10,10,0.02)',
+            borderBottom: '1px solid rgba(10,10,10,0.08)',
+          }}>
+            {['Event', 'Invited', 'Status', 'Meal', 'Plus-one', 'Responded'].map(h => (
+              <span key={h} style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{h}</span>
+            ))}
+          </div>
+          {weddingEvents.map((event, i) => {
+            const r = getGuestEventResponse(guest, event);
+            const plusOneText = r.plus_ones > 0
+              ? ((r.plus_one_names || []).filter(Boolean).join(', ') || `${r.plus_ones} guest${r.plus_ones > 1 ? 's' : ''}`)
+              : '—';
+            return (
+              <div
+                key={event.event_id}
+                style={{
+                  display: 'grid', gridTemplateColumns: '1.3fr 0.8fr 0.8fr 0.7fr 1.1fr 0.9fr',
+                  gap: 8, padding: '10px 12px',
+                  borderBottom: i < weddingEvents.length - 1 ? '1px solid rgba(10,10,10,0.05)' : 'none',
+                }}
+              >
+                <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>{event.name}</span>
+                <span style={{ fontSize: 12, color: r.invited ? '#0A0A0A' : 'rgba(10,10,10,0.3)', fontFamily: PJS }}>
+                  {r.invited ? 'Yes' : 'No'}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: r.invited ? (STATUS_COLORS[r.status] || STATUS_COLORS.pending) : 'rgba(10,10,10,0.25)', fontFamily: PJS }}>
+                  {r.invited ? (STATUS_LABELS[r.status] || 'Pending') : '—'}
+                </span>
+                <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
+                  {r.invited && r.meal_choice ? r.meal_choice : '—'}
+                </span>
+                <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
+                  {r.invited ? plusOneText : '—'}
+                </span>
+                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                  {r.invited ? fmtRespondedAt(r.responded_at) : '—'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 /* ─── Main component ─────────────────────────────────────────────────────── */
 export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRoles = {}, loading, weddingEvents = [] }) {
   const [editCell, setEditCell] = useState(null); // { id, field }
   const [editValue, setEditValue] = useState('');
+  const [expandedGuestIds, setExpandedGuestIds] = useState(() => new Set());
+
+  const toggleExpanded = (guestId) => {
+    setExpandedGuestIds(prev => {
+      const next = new Set(prev);
+      if (next.has(guestId)) next.delete(guestId);
+      else next.add(guestId);
+      return next;
+    });
+  };
 
   // Close edit cell on Escape at document level
   useEffect(() => {
@@ -467,7 +549,19 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRol
 
                   {/* ── Invited to (per-event) ── */}
                   <TableCell className="align-middle">
-                    <EventsInvitedCell guest={guest} weddingEvents={weddingEvents} onUpdate={onUpdate} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <EventsInvitedCell guest={guest} weddingEvents={weddingEvents} onUpdate={onUpdate} />
+                      {weddingEvents.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => toggleExpanded(guest.id)}
+                          title={expandedGuestIds.has(guest.id) ? 'Hide RSVP details' : 'Show RSVP details'}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center', color: 'rgba(10,10,10,0.4)' }}
+                        >
+                          {expandedGuestIds.has(guest.id) ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                        </button>
+                      )}
+                    </div>
                   </TableCell>
 
                   {/* ── Table ── */}
@@ -530,6 +624,13 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRol
                     {/* Remaining 8 columns empty */}
                     <TableCell colSpan={8} />
                   </TableRow>
+                );
+              }
+
+              /* ── RSVP detail sub-row (per-event answers) ── */
+              if (expandedGuestIds.has(guest.id)) {
+                rows.push(
+                  <RsvpDetailRow key={`${guest.id}-rsvp`} guest={guest} weddingEvents={weddingEvents} />
                 );
               }
 

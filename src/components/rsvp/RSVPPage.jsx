@@ -296,14 +296,25 @@ export default function RSVPPage() {
 
       const nextEventResponses = Array.from(updatedByEventId.values());
 
+      // Derive the overall rsvp_status from the per-event responses so every
+      // existing couple-facing surface (RSVPChart, InvitationsTab, GuestList)
+      // that only reads this legacy field — not event_responses — still
+      // reflects reality. "attending" wins if any invited event is a yes;
+      // "declined" only if every invited event is a no; otherwise "pending".
+      const invitedResponses = nextEventResponses.filter(r => r.invited);
+      const anyYes = invitedResponses.some(r => r.status === 'yes');
+      const allNo = invitedResponses.length > 0 && invitedResponses.every(r => r.status === 'no');
+      const derivedRsvpStatus = anyYes ? 'attending' : allNo ? 'declined' : 'pending';
+
       await base44.entities.Guest.update(guest.id, {
         event_responses: nextEventResponses,
+        rsvp_status: derivedRsvpStatus,
         song_request: songRequest,
         rsvp_note: rsvpNote,
         dietary_restrictions: dietaryRestrictions,
         rsvp_date: now.split('T')[0],
       });
-      setGuest(prev => ({ ...prev, event_responses: nextEventResponses, song_request: songRequest, rsvp_note: rsvpNote, dietary_restrictions: dietaryRestrictions }));
+      setGuest(prev => ({ ...prev, event_responses: nextEventResponses, rsvp_status: derivedRsvpStatus, song_request: songRequest, rsvp_note: rsvpNote, dietary_restrictions: dietaryRestrictions }));
       // Advance to polls if any active, otherwise straight to done
       setStep(activePolls.length > 0 ? 'polls' : 'done');
     } catch (err) {
