@@ -65,7 +65,7 @@ export default function ValuePropSection() {
         >
           <h2
             style={{
-              fontSize: "clamp(22px, 6vw, 40px)",
+              fontSize: "clamp(28px, 5vw, 56px)",
               fontWeight: 700,
               lineHeight: 1.2,
               letterSpacing: "-0.02em",
@@ -91,7 +91,7 @@ export default function ValuePropSection() {
         >
           <h2
             style={{
-              fontSize: "clamp(40px, 5.5vw, 72px)",
+              fontSize: "clamp(32px, 4vw, 56px)",
               fontWeight: 700,
               lineHeight: 1.15,
               letterSpacing: "-0.02em",

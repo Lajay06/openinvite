@@ -45,7 +45,12 @@ export default function Contact() {
     }, 3000);
   };
 
-  const interests = ["Guest Management", "Budget Tracking", "Digital Invitations", "Seating Planner", "AI Assistant", "Pricing"];
+  const interests = [
+    "Guest Management", "Budget Tracking", "Digital Invitations", "Seating Planner", "AI Assistant", "Pricing",
+    // NEW-COPY-DRAFT — Guest Suite and Website builder added to the interests list
+    // (MARKETING_AUDIT.md sequence item 10)
+    "Guest Suite", "Website Builder",
+  ];
 
   const formLines = [
     { text: "Hi, my name is ", input: "name", inputText: "(your name)" },
@@ -64,8 +69,8 @@ export default function Contact() {
       <section style={{ position: "relative", overflow: "hidden", padding: "80px clamp(32px, 6vw, 80px)", textAlign: "center", borderBottom: "1px solid #E0E0DC" }}>
         <img src="https://static.wixstatic.com/media/d2df22_5f864fb8dc374942930cb254fc220681~mv2.jpg" alt="Contact banner" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
         <div style={{ position: "absolute", inset: 0, background: "rgba(245,245,243,0.88)" }} />
-        <p style={{ fontSize: 11, fontWeight: 600, color: "#E03553", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 16, position: "relative", zIndex: 2 }}>Get in touch</p>
-        <h1 style={{ fontSize: 48, fontWeight: 700, color: "#0A0A0A", lineHeight: 1.1, hyphens: "none", maxWidth: 600, margin: "0 auto", position: "relative", zIndex: 2 }}>
+        <p style={{ fontSize: 11, fontWeight: 600, color: "#E03553", letterSpacing: "0.15em", marginBottom: 16, position: "relative", zIndex: 2 }}>Get in touch</p>
+        <h1 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#0A0A0A", lineHeight: 1.1, hyphens: "none", maxWidth: 600, margin: "0 auto", position: "relative", zIndex: 2 }}>
           Let's plan something beautiful.
         </h1>
       </section>
@@ -132,7 +137,6 @@ export default function Contact() {
                         color: formData.interests.includes(item) ? "#FFFFFF" : "#0A0A0A",
                         fontSize: 12,
                         fontWeight: 500,
-                        textTransform: "uppercase",
                         letterSpacing: "0.05em",
                         cursor: "pointer",
                         transition: "all 0.2s ease",
@@ -207,12 +211,12 @@ export default function Contact() {
             <div style={{ borderBottom: "1px solid #E0E0DC", marginBottom: 32 }} />
 
             {[
-              { label: "EMAIL", value: "hello@openinvite.com" },
-              { label: "SUPPORT", value: "support@openinvite.com" },
-              { label: "RESPONSE TIME", value: "Within 24 hours" },
+              { label: "Email", value: "hello@openinvite.com" },
+              { label: "Support", value: "support@openinvite.com" },
+              { label: "Response time", value: "Within 24 hours" },
             ].map((item, i) => (
               <div key={i} style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 6 }}>{item.label}</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em", marginBottom: 6 }}>{item.label}</p>
                 <p style={{ fontSize: 16, color: "#0A0A0A", fontWeight: 500 }}>{item.value}</p>
               </div>
             ))}

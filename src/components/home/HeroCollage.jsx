@@ -9,8 +9,8 @@ const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const HEADLINE_STYLE = {
-  fontSize: "clamp(40px, 5vw, 64px)",
-  fontWeight: 600,
+  fontSize: "clamp(36px, 5vw, 64px)",
+  fontWeight: 700,
   letterSpacing: "-0.02em",
   lineHeight: 1.1,
   color: "#FFFFFF",
@@ -66,11 +66,11 @@ export default function HeroCollage({ onCTA }) {
           maxWidth: 900,
           padding: "0 24px",
           opacity: visible ? 1 : 0,
-          filter: visible ? "blur(0px)" : "blur(8px)",
-          transition: `opacity 0.9s ${EASE}, filter 0.9s ${EASE}`,
+          transform: visible ? "translateY(0)" : "translateY(24px)",
+          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
         }}
       >
-        <h1 style={{ ...HEADLINE_STYLE, marginBottom: "2rem", fontWeight: 700 }}>
+        <h1 style={{ ...HEADLINE_STYLE, marginBottom: "2rem" }}>
           Because planning your wedding should feel exciting.
         </h1>
 

@@ -124,11 +124,10 @@ const prefersReduced = () =>
 function PricingSection({ onCTA }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
-  const [spring, setSpring] = useState(false);
   const reduced = prefersReduced();
 
   useEffect(() => {
-    if (reduced) { setVisible(true); setSpring(true); return; }
+    if (reduced) { setVisible(true); return; }
     const obs = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
       { threshold: 0.2 }
@@ -137,25 +136,19 @@ function PricingSection({ onCTA }) {
     return () => obs.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (visible && !spring) setTimeout(() => setSpring(true), 80);
-  }, [visible]);
-
   return (
-    <section ref={ref} style={{ background: "#0A0A0A", padding: "clamp(80px, 10vw, 160px)" }}>
-      <div style={{ opacity: visible ? 1 : 0, transition: reduced ? "none" : `opacity 0.6s ${EASE}`, display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "0 12px" }}>
-        <span style={{ fontSize: "clamp(40px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05, color: "#FFFFFF", whiteSpace: "nowrap" }}>
+    <section ref={ref} style={{ background: "#0A0A0A", padding: "clamp(64px, 8vw, 120px)" }}>
+      <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)", transition: reduced ? "none" : `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`, display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "0 12px" }}>
+        <span style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", whiteSpace: "nowrap" }}>
           Go All In –{" "}
         </span>
         <span style={{
-          fontSize: "clamp(40px, 5vw, 64px)",
+          fontSize: "clamp(36px, 5vw, 64px)",
           fontWeight: 700,
-          letterSpacing: "-0.03em",
-          lineHeight: 1.05,
+          letterSpacing: "-0.02em",
+          lineHeight: 1.1,
           color: "#DDF762",
           display: "inline-block",
-          transform: reduced ? "scale(1)" : spring ? "scale(1)" : visible ? "scale(1.2)" : "scale(0)",
-          transition: reduced ? "none" : spring ? `transform 0.5s ${EASE}` : `transform 0.4s ease`,
         }}>
           $79
         </span>
@@ -168,12 +161,12 @@ function PricingSection({ onCTA }) {
         fontSize: 18,
         lineHeight: 1.6,
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(20px)",
+        transform: visible ? "translateY(0)" : "translateY(24px)",
         transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
       }}>
         Unlock the full experience. One-time payment, lifetime access. Everything you need. Nothing you don't.
       </p>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)", transition: reduced ? "none" : `opacity 0.6s ${EASE} 0.1s, transform 0.6s ${EASE} 0.1s` }}>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)", transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s` }}>
         <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
         <SeePricingButton />
       </div>

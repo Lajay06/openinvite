@@ -20,6 +20,9 @@ const PRO_FEATURES = [
   "Vows & speeches writer",
   "Priority support",
   "24-month access",
+  // NEW-COPY-DRAFT — catchall line for supporting tools that don't need individual
+  // marketing real estate (MARKETING_AUDIT.md placement plan, sequence item 11)
+  "Plus wedding party, guest gifts, honeymoon planning, food & beverage, ceremony details and more",
 ];
 
 const ULTRA_EXTRAS = [
@@ -387,7 +390,7 @@ export default function Pricing() {
       {/* ── COMPARISON TABLE ── */}
       <section style={{ background: "#FFFFFF", padding: "80px 24px" }}>
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
-          <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 40, fontFamily: PJS }}>
+          <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 40, fontFamily: PJS }}>
             Compare plans
           </h2>
 
@@ -428,7 +431,7 @@ export default function Pricing() {
       {/* ── FAQ ── */}
       <section style={{ background: "#FFFFFF", padding: "0 24px 80px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
-          <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 40, fontFamily: PJS }}>
+          <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 40, fontFamily: PJS }}>
             Questions
           </h2>
 
@@ -450,7 +453,7 @@ export default function Pricing() {
       {/* ── BOTTOM CTA ── */}
       <section style={{ background: "#0A0A0A", padding: "100px 24px", textAlign: "center" }}>
         <h2 style={{
-          fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, letterSpacing: "-0.02em",
+          fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em",
           color: "#FFFFFF", marginBottom: 16, lineHeight: 1.15, fontFamily: PJS,
         }}>
           Your wedding deserves this.

@@ -1,6 +1,47 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, useTransform, useSpring, useMotionValue } from 'framer-motion';
 
+const EASE = "cubic-bezier(0.16,1,0.3,1)";
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
+}
+
+// Reduced-motion fallback: this component's entire layout (5000px scroll-jacked
+// container, spring-driven card positions) only exists to serve the scroll
+// animation — there's no way to "turn off the motion" and keep the same
+// layout, so reduced-motion users get a normal-height static section instead
+// of being dropped into a multi-thousand-pixel empty scroll zone.
+function ScrollMorphStatic() {
+  return (
+    <section style={{ background: '#0A0A0A', padding: 'clamp(64px, 8vw, 120px) 24px', textAlign: 'center' }}>
+      <h2 style={{
+        fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: 700, color: '#FFFFFF',
+        letterSpacing: '-0.02em', lineHeight: 1.1, fontFamily: "'Plus Jakarta Sans', sans-serif",
+        margin: '0 0 24px',
+      }}>
+        So, why us?
+      </h2>
+      <p style={{
+        color: '#AAAAAA', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 400,
+        fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.01em',
+        lineHeight: 1.6, maxWidth: 600, margin: '0 auto',
+      }}>
+        Planning, invitations, guests, timelines and budgets, intelligently connected in one seamless experience.
+      </p>
+    </section>
+  );
+}
+
 const MORPH_IMAGES = [
   "https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg",
   "https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg",
@@ -65,6 +106,12 @@ function FlipCard({ src, index, target }) {
 }
 
 export default function ScrollMorphSection() {
+  const reducedMotion = usePrefersReducedMotion();
+  if (reducedMotion) return <ScrollMorphStatic />;
+  return <ScrollMorphInteractive />;
+}
+
+function ScrollMorphInteractive() {
   const [introPhase, setIntroPhase] = useState("scatter");
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [morphVal, setMorphVal] = useState(0);
@@ -222,8 +269,8 @@ export default function ScrollMorphSection() {
             willChange: 'opacity',
           }}>
             <h2 style={{
-              fontSize: 'clamp(48px, 8vw, 96px)',
-              fontWeight: 600,
+              fontSize: 'clamp(32px, 4vw, 56px)',
+              fontWeight: 700,
               color: '#FFFFFF',
               letterSpacing: '-0.03em',
               lineHeight: 1,
@@ -247,8 +294,8 @@ export default function ScrollMorphSection() {
           }}>
             <h2 style={{
               color: '#FFFFFF',
-              fontSize: 'clamp(48px, 7vw, 88px)',
-              fontWeight: 600,
+              fontSize: 'clamp(32px, 4vw, 56px)',
+              fontWeight: 700,
               letterSpacing: '-0.02em',
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               margin: 0,

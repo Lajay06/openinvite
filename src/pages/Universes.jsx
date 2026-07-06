@@ -160,10 +160,10 @@ const Universes = () => {
           <h1 style={{
             fontFamily: 'Plus Jakarta Sans, sans-serif',
             fontWeight: 700,
-            fontSize: 'clamp(48px, 8vw, 96px)',
+            fontSize: 'clamp(36px, 5vw, 64px)',
             color: '#FFFFFF',
             letterSpacing: '-0.02em',
-            lineHeight: 1.05,
+            lineHeight: 1.1,
             margin: '0 0 24px',
           }}>
             Your Universe
