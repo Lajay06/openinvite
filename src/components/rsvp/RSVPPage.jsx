@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { getWeddingEvents, getGuestEventResponse } from '@/lib/weddingEvents';
 
 const MEAL_OPTIONS = [
   { value: 'chicken', label: 'Chicken' },
@@ -80,6 +81,93 @@ function PollCard({ poll, selectedOptionId, onSelect }) {
   );
 }
 
+// ── Per-event RSVP card ────────────────────────────────────────────────────────
+function EventCard({ event, value, onChange, hasPlusOne, mealChoices }) {
+  const attending = value.status === 'yes';
+  const dateStr = event.date
+    ? new Date(event.date + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })
+    : '';
+
+  return (
+    <div style={{ border: '1px solid rgba(10,10,10,0.09)', background: '#FFFFFF', padding: '20px 20px 20px', marginBottom: 16 }}>
+      <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', ...F }}>
+        {event.name}
+      </p>
+      {(dateStr || event.startTime) && (
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', margin: '0 0 16px', ...F }}>
+          {[dateStr, event.startTime].filter(Boolean).join(' · ')}
+        </p>
+      )}
+
+      <div style={{ display: 'flex', gap: 10, marginBottom: attending ? 20 : 0 }}>
+        {[
+          { value: 'yes', label: 'Attending' },
+          { value: 'no', label: "Can't make it" },
+        ].map(opt => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange({ ...value, status: opt.value })}
+            style={{
+              flex: 1, padding: '10px 14px', border: '1px solid',
+              borderColor: value.status === opt.value ? '#E03553' : 'rgba(10,10,10,0.12)',
+              background: value.status === opt.value ? '#FFF0F3' : '#FFFFFF',
+              color: value.status === opt.value ? '#E03553' : '#0A0A0A',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer', borderRadius: 999,
+              transition: 'all 0.15s ease', ...F,
+            }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {attending && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+              Meal preference
+            </label>
+            <select
+              value={value.meal_choice || ''}
+              onChange={e => onChange({ ...value, meal_choice: e.target.value })}
+              style={{ width: '100%', padding: '9px 10px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none' }}
+            >
+              <option value="">Select a meal</option>
+              {mealChoices.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+          </div>
+
+          {hasPlusOne && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <input
+                type="checkbox"
+                id={`plusone-${event.event_id}`}
+                checked={!!value.plus_one_attending}
+                onChange={e => onChange({ ...value, plus_one_attending: e.target.checked })}
+                style={{ width: 16, height: 16, accentColor: '#E03553' }}
+              />
+              <label htmlFor={`plusone-${event.event_id}`} style={{ fontSize: 13, color: '#0A0A0A', cursor: 'pointer', ...F }}>
+                I'm bringing a plus-one to this event
+              </label>
+            </div>
+          )}
+
+          {hasPlusOne && value.plus_one_attending && (
+            <input
+              type="text"
+              value={value.plus_one_name || ''}
+              onChange={e => onChange({ ...value, plus_one_name: e.target.value })}
+              placeholder="Plus-one's name"
+              style={{ width: '100%', padding: '9px 10px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function RSVPPage() {
   const { token } = useParams();
@@ -94,20 +182,29 @@ export default function RSVPPage() {
   // { [pollId]: optionId } — guest's current poll selections
   const [guestVotes, setGuestVotes] = useState({});
 
-  const [form, setForm] = useState({
-    rsvp_status: '',
-    meal_choice: '',
-    dietary_restrictions: '',
-    song_request: '',
-    rsvp_note: '',
-    plus_one_meal_choice: '',
-  });
+  // Wedding-level fields — render once, not per event. Dietary restrictions
+  // are constant across events per SMART_RSVP_MODEL.md (not per-event, unlike
+  // meal_choice which does vary by event's menu).
+  const [songRequest, setSongRequest] = useState('');
+  const [rsvpNote, setRsvpNote] = useState('');
+  const [dietaryRestrictions, setDietaryRestrictions] = useState('');
+
+  // Per-event form state: { [event_id]: { status, meal_choice, plus_one_attending, plus_one_name } }
+  const [eventForm, setEventForm] = useState({});
 
   // Derive active polls from loaded wedding data
   const activePolls = useMemo(
     () => (wedding?.polls || []).filter(p => p.isActive),
     [wedding]
   );
+
+  // The events this guest is actually invited to — never shown a blank form
+  // if they have no event_responses yet (pre-existing guests default to
+  // invited for main events, see getGuestEventResponse).
+  const invitedEvents = useMemo(() => {
+    if (!wedding) return [];
+    return getWeddingEvents(wedding).filter(ev => getGuestEventResponse(guest, ev).invited);
+  }, [wedding, guest]);
 
   useEffect(() => {
     const load = async () => {
@@ -126,18 +223,30 @@ export default function RSVPPage() {
         setWedding(wd);
         // Pre-populate any previous poll votes
         setGuestVotes(g.poll_votes || {});
-        setForm(f => ({
-          ...f,
-          rsvp_status:          g.rsvp_status          || '',
-          meal_choice:          g.meal_choice          || '',
-          dietary_restrictions: g.dietary_restrictions || '',
-          song_request:         g.song_request         || '',
-          rsvp_note:            g.rsvp_note            || '',
-          plus_one_meal_choice: g.plus_one_meal_choice || '',
-        }));
+        setSongRequest(g.song_request || '');
+        setRsvpNote(g.rsvp_note || '');
+        setDietaryRestrictions(g.dietary_restrictions || '');
 
-        // Decide initial step for returning guests
-        if (g.rsvp_status && g.rsvp_status !== 'pending') {
+        // Seed per-event form state from existing event_responses (or sane defaults)
+        const events = wd ? getWeddingEvents(wd) : [];
+        const seeded = {};
+        for (const ev of events) {
+          const r = getGuestEventResponse(g, ev);
+          if (!r.invited) continue;
+          seeded[ev.event_id] = {
+            status: r.status === 'pending' ? '' : r.status,
+            meal_choice: r.meal_choice || '',
+            plus_one_attending: (r.plus_ones || 0) > 0,
+            plus_one_name: (r.plus_one_names || [])[0] || '',
+          };
+        }
+        setEventForm(seeded);
+
+        // Decide initial step for returning guests — "responded" means every
+        // invited event has a non-pending status.
+        const invitedIds = events.filter(ev => getGuestEventResponse(g, ev).invited).map(ev => ev.event_id);
+        const allResponded = invitedIds.length > 0 && invitedIds.every(id => seeded[id]?.status);
+        if (allResponded) {
           const polls = wd?.polls || [];
           const activePollsList = polls.filter(p => p.isActive);
           const existingVotes = g.poll_votes || {};
@@ -155,15 +264,46 @@ export default function RSVPPage() {
     load();
   }, [token]);
 
+  const updateEvent = (eventId, value) => {
+    setEventForm(prev => ({ ...prev, [eventId]: value }));
+  };
+
+  const allEventsAnswered = invitedEvents.length > 0 &&
+    invitedEvents.every(ev => eventForm[ev.event_id]?.status);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.rsvp_status) return;
+    if (!allEventsAnswered) return;
     setSubmitting(true);
     try {
+      const now = new Date().toISOString();
+      const existingResponses = guest.event_responses || [];
+      const updatedByEventId = new Map(existingResponses.map(r => [r.event_id, r]));
+
+      for (const ev of invitedEvents) {
+        const form = eventForm[ev.event_id];
+        updatedByEventId.set(ev.event_id, {
+          event_id: ev.event_id,
+          invited: true,
+          status: form.status,
+          meal_choice: form.status === 'yes' ? (form.meal_choice || null) : null,
+          plus_ones: (form.status === 'yes' && form.plus_one_attending) ? 1 : 0,
+          plus_one_names: (form.status === 'yes' && form.plus_one_attending && form.plus_one_name)
+            ? [form.plus_one_name] : [],
+          responded_at: now,
+        });
+      }
+
+      const nextEventResponses = Array.from(updatedByEventId.values());
+
       await base44.entities.Guest.update(guest.id, {
-        ...form,
-        rsvp_date: new Date().toISOString().split('T')[0],
+        event_responses: nextEventResponses,
+        song_request: songRequest,
+        rsvp_note: rsvpNote,
+        dietary_restrictions: dietaryRestrictions,
+        rsvp_date: now.split('T')[0],
       });
+      setGuest(prev => ({ ...prev, event_responses: nextEventResponses, song_request: songRequest, rsvp_note: rsvpNote, dietary_restrictions: dietaryRestrictions }));
       // Advance to polls if any active, otherwise straight to done
       setStep(activePolls.length > 0 ? 'polls' : 'done');
     } catch (err) {
@@ -230,7 +370,8 @@ export default function RSVPPage() {
     : '';
 
   const firstName = guest?.name ? guest.name.split(' ')[0] : '';
-  const attending = form.rsvp_status === 'attending';
+  // For the "done" screen icon/copy — attending overall if any invited event is a yes.
+  const anyAttending = Object.values(eventForm).some(v => v.status === 'yes');
   const hasMealOptions = wedding?.mealOptions && wedding.mealOptions.length > 0;
   const mealChoices = hasMealOptions ? wedding.mealOptions : MEAL_OPTIONS;
 
@@ -262,21 +403,21 @@ export default function RSVPPage() {
     return (
       <PageShell coupleName={coupleName} dateStr={dateStr} venue={venue}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 56, height: 56, background: attending ? '#F0FDF4' : '#F5F5F5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 22 }}>
-            {attending ? '✓' : '♥'}
+          <div style={{ width: 56, height: 56, background: anyAttending ? '#F0FDF4' : '#F5F5F5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 22 }}>
+            {anyAttending ? '✓' : '♥'}
           </div>
           <p style={{ fontSize: 13, fontWeight: 700, color: '#E03553', letterSpacing: '0.1em', marginBottom: 10, ...F }}>
-            {attending ? 'SEE YOU THERE' : 'RESPONSE RECEIVED'}
+            {anyAttending ? 'SEE YOU THERE' : 'RESPONSE RECEIVED'}
           </p>
           <h2 style={{ fontSize: 26, fontWeight: 800, color: '#0A0A0A', marginBottom: 14, letterSpacing: '-0.02em', ...F }}>
-            {attending ? `We can't wait to celebrate with you!` : 'Thank you for letting us know'}
+            {anyAttending ? `We can't wait to celebrate with you!` : 'Thank you for letting us know'}
           </h2>
-          {attending && dateStr && (
+          {anyAttending && dateStr && (
             <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, ...F }}>
               Mark your calendar — {dateStr}.{venue ? ` We'll see you at ${venue}.` : ''}
             </p>
           )}
-          {!attending && (
+          {!anyAttending && (
             <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, ...F }}>
               You'll be missed. Thank you for taking the time to respond.
             </p>
@@ -346,7 +487,7 @@ export default function RSVPPage() {
     );
   }
 
-  // ── RSVP form (step === 'rsvp') ────────────────────────────────────────────
+  // ── RSVP form (step === 'rsvp') — one card per invited event ───────────────
   return (
     <div style={{ minHeight: '100vh', background: '#FAFAFA', ...F }}>
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' }}>
@@ -371,130 +512,81 @@ export default function RSVPPage() {
         {firstName && (
           <p style={{ fontSize: 16, color: '#0A0A0A', marginBottom: 8 }}>Hi {firstName},</p>
         )}
-        <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.65)', lineHeight: 1.7, marginBottom: 36 }}>
-          {coupleName || 'We'} would love to know if you can join {coupleName ? 'them' : 'us'} to celebrate. Please take a moment to respond below.
+        <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.65)', lineHeight: 1.7, marginBottom: 28 }}>
+          {coupleName || 'We'} would love to know if you can join {coupleName ? 'them' : 'us'} to celebrate. Please respond for each event below.
         </p>
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
 
-          {/* Attending / Not attending */}
-          <div style={{ marginBottom: 28 }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 12, letterSpacing: '-0.01em' }}>Will you be attending?</p>
-            <div style={{ display: 'flex', gap: 12 }}>
-              {[
-                { value: 'attending',  label: 'Attending' },
-                { value: 'declined',   label: 'Unable to attend' },
-              ].map(opt => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, rsvp_status: opt.value }))}
-                  style={{
-                    flex: 1, padding: '12px 16px', border: '1px solid',
-                    borderColor: form.rsvp_status === opt.value ? '#E03553' : 'rgba(10,10,10,0.12)',
-                    background: form.rsvp_status === opt.value ? '#FFF0F3' : '#FFFFFF',
-                    color: form.rsvp_status === opt.value ? '#E03553' : '#0A0A0A',
-                    fontSize: 14, fontWeight: 600, cursor: 'pointer', borderRadius: 8,
-                    transition: 'all 0.15s ease', ...F,
-                  }}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Attending-only fields */}
-          {attending && (
-            <>
-              {/* Meal choice */}
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
-                  Meal preference
-                </label>
-                <select
-                  value={form.meal_choice}
-                  onChange={e => setForm(f => ({ ...f, meal_choice: e.target.value }))}
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 8, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none' }}
-                >
-                  <option value="">Select a meal</option>
-                  {mealChoices.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                </select>
-              </div>
-
-              {/* Dietary restrictions */}
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
-                  Dietary restrictions
-                  <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
-                </label>
-                <input
-                  type="text"
-                  value={form.dietary_restrictions}
-                  onChange={e => setForm(f => ({ ...f, dietary_restrictions: e.target.value }))}
-                  placeholder="e.g. gluten free, nut allergy"
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 8, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              {/* Plus one meal */}
-              {guest?.plus_one && guest?.plus_one_name && (
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
-                    Meal preference for {guest.plus_one_name}
-                  </label>
-                  <select
-                    value={form.plus_one_meal_choice}
-                    onChange={e => setForm(f => ({ ...f, plus_one_meal_choice: e.target.value }))}
-                    style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 8, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none' }}
-                  >
-                    <option value="">Select a meal</option>
-                    {mealChoices.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                  </select>
-                </div>
-              )}
-
-              {/* Song request */}
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
-                  Song request
-                  <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
-                </label>
-                <input
-                  type="text"
-                  value={form.song_request}
-                  onChange={e => setForm(f => ({ ...f, song_request: e.target.value }))}
-                  placeholder="What song will get you on the dance floor?"
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 8, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
-                />
-              </div>
-            </>
+          {invitedEvents.length === 0 ? (
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', marginBottom: 28 }}>
+              No events found for this invitation yet — please check back soon or contact the couple.
+            </p>
+          ) : (
+            invitedEvents.map(ev => (
+              <EventCard
+                key={ev.event_id}
+                event={ev}
+                value={eventForm[ev.event_id] || { status: '', meal_choice: '', plus_one_attending: false, plus_one_name: '' }}
+                onChange={(value) => updateEvent(ev.event_id, value)}
+                hasPlusOne={!!guest?.plus_one}
+                mealChoices={mealChoices}
+              />
+            ))
           )}
 
-          {/* Note for couple */}
+          {/* Wedding-level fields — render once, not per event */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+              Dietary restrictions
+              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
+            </label>
+            <input
+              type="text"
+              value={dietaryRestrictions}
+              onChange={e => setDietaryRestrictions(e.target.value)}
+              placeholder="e.g. gluten free, nut allergy"
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
+            />
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+              Song request
+              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
+            </label>
+            <input
+              type="text"
+              value={songRequest}
+              onChange={e => setSongRequest(e.target.value)}
+              placeholder="What song will get you on the dance floor?"
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
+            />
+          </div>
+
           <div style={{ marginBottom: 32 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
-              {attending ? 'Message for the couple' : 'Leave a note'}
+              Message for the couple
               <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
             </label>
             <textarea
-              value={form.rsvp_note}
-              onChange={e => setForm(f => ({ ...f, rsvp_note: e.target.value }))}
-              placeholder={attending ? "We're so excited to celebrate with you!" : "Sorry we can't make it — wishing you a wonderful day!"}
+              value={rsvpNote}
+              onChange={e => setRsvpNote(e.target.value)}
+              placeholder="We're so excited to celebrate with you!"
               rows={3}
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 8, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 }}
             />
           </div>
 
           {/* Submit */}
           <button
             type="submit"
-            disabled={!form.rsvp_status || submitting}
+            disabled={!allEventsAnswered || submitting}
             style={{
               width: '100%', padding: '14px 24px', background: '#E03553', color: '#FFFFFF',
               border: 'none', borderRadius: 999, fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              opacity: (!form.rsvp_status || submitting) ? 0.5 : 1, transition: 'opacity 0.15s ease', ...F,
+              opacity: (!allEventsAnswered || submitting) ? 0.5 : 1, transition: 'opacity 0.15s ease', ...F,
             }}
           >
             {submitting ? 'Sending…' : 'Submit RSVP'}

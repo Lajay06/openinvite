@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, CalendarCheck } from "lucide-react";
+import { toggleEventInvite, getGuestEventResponse } from "@/lib/weddingEvents";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -185,6 +186,7 @@ const SkeletonRows = () => (
         <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
+        <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 50, height: 14 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 30, height: 14 }} /></TableCell>
         <TableCell />
@@ -212,8 +214,60 @@ function HoverDiv({ onClick, pointer, children, title }) {
   );
 }
 
+/* ─── Events invited cell — per-event invite checkboxes (SMART_RSVP_MODEL.md) ── */
+function EventsInvitedCell({ guest, weddingEvents, onUpdate }) {
+  if (!weddingEvents || weddingEvents.length === 0) {
+    return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>;
+  }
+
+  const invitedCount = weddingEvents.filter(ev => getGuestEventResponse(guest, ev).invited).length;
+
+  const handleToggle = (event, invited) => {
+    if (!onUpdate) return;
+    onUpdate(guest.id, { event_responses: toggleEventInvite(guest, event, invited) });
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            fontFamily: PJS, fontSize: 11, fontWeight: 700,
+            padding: '3px 9px', borderRadius: 999,
+            border: '1px solid rgba(10,10,10,0.15)', background: 'transparent',
+            color: invitedCount > 0 ? '#0A0A0A' : 'rgba(10,10,10,0.35)',
+            cursor: 'pointer',
+          }}
+        >
+          <CalendarCheck size={11} />
+          {invitedCount} of {weddingEvents.length}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        <DropdownMenuLabel>Invited to</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {weddingEvents.map(event => {
+          const response = getGuestEventResponse(guest, event);
+          return (
+            <DropdownMenuCheckboxItem
+              key={event.event_id}
+              checked={response.invited}
+              onCheckedChange={(checked) => handleToggle(event, checked)}
+              onSelect={(e) => e.preventDefault()}
+            >
+              {event.name}
+            </DropdownMenuCheckboxItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 /* ─── Main component ─────────────────────────────────────────────────────── */
-export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRoles = {}, loading }) {
+export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRoles = {}, loading, weddingEvents = [] }) {
   const [editCell, setEditCell] = useState(null); // { id, field }
   const [editValue, setEditValue] = useState('');
 
@@ -327,6 +381,7 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRol
               <TableHead>Category</TableHead>
               <TableHead>Dietary</TableHead>
               <TableHead>RSVP</TableHead>
+              <TableHead>Invited to</TableHead>
               <TableHead>Table</TableHead>
               <TableHead>+1</TableHead>
               <TableHead style={{ width: 48 }} />
@@ -410,6 +465,11 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRol
                     )}
                   </TableCell>
 
+                  {/* ── Invited to (per-event) ── */}
+                  <TableCell className="align-middle">
+                    <EventsInvitedCell guest={guest} weddingEvents={weddingEvents} onUpdate={onUpdate} />
+                  </TableCell>
+
                   {/* ── Table ── */}
                   <TableCell className="align-middle">
                     {textCell(guest, 'table_assignment',
@@ -467,8 +527,8 @@ export default function GuestList({ guests, onEdit, onDelete, onUpdate, guestRol
                         </span>
                       </div>
                     </TableCell>
-                    {/* Remaining 6 columns empty */}
-                    <TableCell colSpan={7} />
+                    {/* Remaining 8 columns empty */}
+                    <TableCell colSpan={8} />
                   </TableRow>
                 );
               }

@@ -17,6 +17,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import EmailTemplates from "../components/guests/EmailTemplates";
 import PageConsiderations from '../components/shared/PageConsiderations';
+import { getWeddingEvents, defaultEventResponses } from '@/lib/weddingEvents';
 
 function CountUp({ to, duration = 1200, suffix = '' }) {
   const [value, setValue] = useState(0);
@@ -73,11 +74,14 @@ export default function Guests() {
   const [showImport, setShowImport] = useState(false);
   const [showBulkAdd, setShowBulkAdd] = useState(false);
   const [weddingParty, setWeddingParty] = useState({});
+  const [weddingEvents, setWeddingEvents] = useState([]);
 
   useEffect(() => { loadGuests(); }, []);
   useEffect(() => {
     getMyWeddingDetails().then(details => {
-      setWeddingParty((details || {}).weddingParty || {});
+      const wd = details || {};
+      setWeddingParty(wd.weddingParty || {});
+      setWeddingEvents(getWeddingEvents(wd));
     }).catch(() => {});
   }, []);
 
@@ -99,7 +103,13 @@ export default function Guests() {
         await Guest.update(editingGuest.id, guestData);
         toast.success('Guest updated', { id: tid });
       } else {
-        await Guest.create(guestData);
+        // New guests default to invited for main events (ceremony + reception) —
+        // per SMART_RSVP_MODEL.md, custom events are opt-in via the couple's
+        // per-guest event checkboxes.
+        const payload = guestData.event_responses
+          ? guestData
+          : { ...guestData, event_responses: defaultEventResponses(weddingEvents) };
+        await Guest.create(payload);
         toast.success('Guest added', { id: tid });
       }
       setShowForm(false);
@@ -299,7 +309,7 @@ export default function Guests() {
               />
             )}
 
-            <GuestList guests={filteredGuests} onEdit={handleEdit} onDelete={handleDelete} onUpdate={handleInlineUpdate} guestRoles={guestRoles} loading={loading} />
+            <GuestList guests={filteredGuests} onEdit={handleEdit} onDelete={handleDelete} onUpdate={handleInlineUpdate} guestRoles={guestRoles} loading={loading} weddingEvents={weddingEvents} />
           </TabsContent>
 
           <TabsContent value="invitations" className="mt-8">
