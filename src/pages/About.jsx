@@ -100,7 +100,7 @@ export default function About() {
 <section
   style={{
     background: "#F5F5F3",
-    padding: "120px 80px",
+    padding: "clamp(64px, 8vw, 120px) clamp(24px, 6vw, 80px)",
     borderBottom: "1px solid #E0E0DC",
     display: "flex",
     justifyContent: "center",
@@ -208,8 +208,8 @@ function EditorialIntro() {
   const [ref, visible] = useScrollReveal(0.2);
 
   return (
-    <section ref={ref} style={{ background: "#FFFFFF", padding: "120px 80px", borderBottom: "1px solid #E0E0DC", maxWidth: 1100, margin: "0 auto" }}>
-      <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: "opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s" }}>
+    <section ref={ref} style={{ background: "#FFFFFF", padding: "clamp(64px, 8vw, 120px) clamp(24px, 6vw, 80px)", borderBottom: "1px solid #E0E0DC", maxWidth: 1100, margin: "0 auto" }}>
+      <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)", transition: `opacity 0.7s ${EASE} 0.2s, transform 0.7s ${EASE} 0.2s` }}>
         <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, color: "#0A0A0A", lineHeight: 1.1, marginBottom: 32, hyphens: "none" }}>
           Wedding planning, reimagined for the way modern couples actually live.
         </h2>
@@ -236,9 +236,9 @@ function TwoColumnSection({ id, number, title, headline, body, background, belie
   const [ref, visible] = useScrollReveal(0.2);
 
   return (
-    <section ref={ref} id={id} style={{ background: background || "#FFFFFF", padding: "120px 80px", maxWidth: 1100, margin: "0 auto", borderBottom: "1px solid #E0E0DC" }}>
+    <section ref={ref} id={id} style={{ background: background || "#FFFFFF", padding: "clamp(64px, 8vw, 120px) clamp(24px, 6vw, 80px)", maxWidth: 1100, margin: "0 auto", borderBottom: "1px solid #E0E0DC" }}>
       {/* Content */}
-      <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: "opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s" }}>
+      <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)", transition: `opacity 0.7s ${EASE} 0.2s, transform 0.7s ${EASE} 0.2s` }}>
         <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em", marginBottom: 16 }}>{title}</p>
         <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, color: "#0A0A0A", marginBottom: 32, hyphens: "none" }}>
           {headline}
@@ -280,7 +280,7 @@ function StatsSection() {
   ];
 
   return (
-    <section ref={ref} style={{ background: "#0A0A0A", padding: "80px clamp(32px, 6vw, 80px)", color: "#FFFFFF", opacity: visible ? 1 : 0, transition: "opacity 0.8s ease" }}>
+    <section ref={ref} style={{ background: "#0A0A0A", padding: "clamp(64px, 8vw, 120px) clamp(32px, 6vw, 80px)", color: "#FFFFFF", opacity: visible ? 1 : 0, transition: `opacity 0.7s ${EASE}` }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0, borderTop: "1px solid #222", borderLeft: "1px solid #222" }}>
         {stats.map((stat, i) => (
           <div key={i} style={{ padding: "40px", borderRight: "1px solid #222", borderBottom: "1px solid #222" }}>
@@ -299,7 +299,7 @@ function CTASection({ onCTA }) {
   const [ref, visible] = useScrollReveal(0.2);
 
   return (
-    <section ref={ref} id="cta" style={{ background: "#0A0A0A", padding: "160px clamp(32px, 6vw, 80px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(32px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}>
+    <section ref={ref} id="cta" style={{ background: "#0A0A0A", padding: "clamp(64px, 8vw, 120px) clamp(32px, 6vw, 80px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)", transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}` }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", textAlign: "center" }}>
         <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, color: "#FFFFFF", marginBottom: 16, hyphens: "none" }}>
           Ready to start planning?
