@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { Loader2, Camera, Share2, Baby, Utensils, Gift, Shirt, Clock, FileText, Check } from 'lucide-react';
+import { Loader2, Camera, Share2, Baby, Utensils, Gift, Shirt, Clock, FileText, Check, ClipboardList } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import DetailsSection from '@/components/event-details/DetailsSection';
 import AvaButton from '@/components/shared/AvaButton';
@@ -62,6 +62,7 @@ const EMPTY = {
   dressCode:    { guidance: '', weatherNote: '', display: false },
   lateArrival:  { policy: '', display: false },
   other:        { text: '', display: false },
+  stylingQuestionnaire: { enabled: false },
 };
 
 export default function GuestSuitePolicies() {
@@ -252,6 +253,17 @@ export default function GuestSuitePolicies() {
               <input style={inputStyle} value={policies.dressCode.weatherNote} onChange={e => set('dressCode', 'weatherNote', e.target.value)} placeholder="e.g. Outdoor ceremony — flat heels recommended" />
             </div>
             <DisplayToggle value={policies.dressCode.display} onChange={v => set('dressCode', 'display', v)} />
+          </DetailsSection>
+
+          {/* Guest styling questionnaire */}
+          <DetailsSection title="Guest styling questionnaire" icon={ClipboardList}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+              <Toggle value={policies.stylingQuestionnaire.enabled} onChange={v => set('stylingQuestionnaire', 'enabled', v)} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Show a quick "what to wear" questionnaire on the Styling page</span>
+            </div>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, lineHeight: 1.6 }}>
+              Guests pick the events they're attending, their style, and their budget — we instantly suggest an outfit based on your dress codes. No account needed, nothing is saved.
+            </p>
           </DetailsSection>
 
           {/* Late arrival */}
