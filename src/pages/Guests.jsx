@@ -4,20 +4,24 @@ import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Mail } from "lucide-react";
+import { Search, Send, Copy, CalendarCheck } from "lucide-react";
 import toast from 'react-hot-toast';
+import { useAuth } from "@/lib/AuthContext";
 
 import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
 import ImportGuestModal from "../components/guests/ImportGuestModal";
 import BulkAddGuestModal from "../components/guests/BulkAddGuestModal";
-import InvitationsTab from "../components/guests/InvitationsTab";
+import SendInvitesModal from "../components/guests/SendInvitesModal";
+import SetEventsModal from "../components/guests/SetEventsModal";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import EmailTemplates from "../components/guests/EmailTemplates";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { getWeddingEvents, defaultEventResponses } from '@/lib/weddingEvents';
+
+const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
 function CountUp({ to, duration = 1200, suffix = '' }) {
   const [value, setValue] = useState(0);
@@ -62,12 +66,17 @@ const statValueStyle = {
 };
 
 export default function Guests() {
+  const { user } = useAuth();
+  const plan = user?.plan || 'free';
+  const isPro = plan === 'pro';
+  const upgradeTooltip = 'Upgrade to Ultra to send invitations';
+
   const [guests, setGuests] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingGuest, setEditingGuest] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [activeTab, setActiveTab] = useState("list");
+  const [activeTab, setActiveTab] = useState("guests");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
@@ -75,6 +84,11 @@ export default function Guests() {
   const [showBulkAdd, setShowBulkAdd] = useState(false);
   const [weddingParty, setWeddingParty] = useState({});
   const [weddingEvents, setWeddingEvents] = useState([]);
+
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [sendModalConfig, setSendModalConfig] = useState(null); // { initialSelectedIds } | { defaultFilter }
+  const [setEventsGuests, setSetEventsGuests] = useState(null); // array of guests, or null
+  const [autoSendAfterSetEvents, setAutoSendAfterSetEvents] = useState(null); // guestId
 
   useEffect(() => { loadGuests(); }, []);
   useEffect(() => {
@@ -130,6 +144,7 @@ export default function Guests() {
     try {
       await Guest.delete(guestId);
       toast.success('Guest deleted', { id: tid });
+      setSelectedIds(prev => { const next = new Set(prev); next.delete(guestId); return next; });
       loadGuests();
     } catch (e) {
       toast.error(e?.message || 'Failed to delete guest', { id: tid });
@@ -149,18 +164,39 @@ export default function Guests() {
 
   const stats = React.useMemo(() => {
     const total = guests.length;
-    const plusOnes = guests.filter(g => g.plus_one).length;
+    const invited = guests.filter(g => g.invite_sent_at).length;
     const attending = guests.filter(g => g.rsvp_status === 'attending').length;
     const declined = guests.filter(g => g.rsvp_status === 'declined').length;
-    const pending = guests.filter(g => g.rsvp_status === 'pending' || !g.rsvp_status).length;
-    return { total, plusOnes, attending, declined, pending };
+    const awaiting = guests.filter(g => g.invite_sent_at && (!g.rsvp_status || g.rsvp_status === 'pending')).length;
+    const plusOnes = guests.filter(g => g.plus_one).length;
+    return { total, invited, attending, declined, awaiting, plusOnes };
   }, [guests]);
+
+  const FILTERS = [
+    { val: 'all',         label: `All (${stats.total})` },
+    { val: 'not_invited', label: 'Not yet invited' },
+    { val: 'awaiting',    label: 'Awaiting reply' },
+    { val: 'attending',   label: 'Attending' },
+    { val: 'declined',    label: 'Declined' },
+  ];
+
+  const STAT_CARDS = [
+    { label: 'Total guests',   value: stats.total + stats.plusOnes, sub: stats.plusOnes > 0 ? `${stats.total} guest${stats.total !== 1 ? 's' : ''} · ${stats.plusOnes} plus one${stats.plusOnes !== 1 ? 's' : ''}` : null },
+    { label: 'Invited',        value: stats.invited },
+    { label: 'Attending',      value: stats.attending },
+    { label: 'Awaiting reply', value: stats.awaiting },
+  ];
 
   const filteredGuests = guests.filter(guest => {
     const matchesSearch = guest.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           guest.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    if (activeFilter === "all") return matchesSearch;
-    return matchesSearch && guest.rsvp_status === activeFilter;
+    if (!matchesSearch) return false;
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'not_invited') return !guest.invite_sent_at;
+    if (activeFilter === 'awaiting') return !!guest.invite_sent_at && (!guest.rsvp_status || guest.rsvp_status === 'pending');
+    if (activeFilter === 'attending') return guest.rsvp_status === 'attending';
+    if (activeFilter === 'declined') return guest.rsvp_status === 'declined';
+    return true;
   });
 
   const exportGuestList = () => {
@@ -197,24 +233,85 @@ export default function Guests() {
     return map;
   }, [weddingParty]);
 
-  const FILTERS = [
-    { val: 'all',      label: `All (${stats.total})` },
-    { val: 'pending',  label: `Pending (${stats.pending})` },
-    { val: 'attending',label: `Attending (${stats.attending})` },
-    { val: 'declined', label: `Declined (${stats.declined})` },
-  ];
+  /* ── Selection ────────────────────────────────────────────────────────── */
+  const toggleSelect = (guestId) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(guestId) ? next.delete(guestId) : next.add(guestId);
+      return next;
+    });
+  };
 
-  const STAT_CARDS = [
-    { label: 'Total guests',   value: stats.total + stats.plusOnes, sub: stats.plusOnes > 0 ? `${stats.total} guest${stats.total !== 1 ? 's' : ''} · ${stats.plusOnes} plus one${stats.plusOnes !== 1 ? 's' : ''}` : null },
-    { label: 'Attending',      value: stats.attending },
-    { label: 'Declined',       value: stats.declined },
-    { label: 'Awaiting reply', value: stats.pending },
-  ];
+  const toggleSelectAll = (visibleIds) => {
+    setSelectedIds(prev => {
+      const allSelected = visibleIds.length > 0 && visibleIds.every(id => prev.has(id));
+      const next = new Set(prev);
+      if (allSelected) visibleIds.forEach(id => next.delete(id));
+      else visibleIds.forEach(id => next.add(id));
+      return next;
+    });
+  };
+
+  const selectedGuests = guests.filter(g => selectedIds.has(g.id));
+
+  /* ── Send invites ─────────────────────────────────────────────────────── */
+  const openSendForSelection = () => {
+    if (isPro) return;
+    if (selectedIds.size > 0) {
+      setSendModalConfig({ initialSelectedIds: Array.from(selectedIds) });
+    } else {
+      setSendModalConfig({ defaultFilter: 'not_invited' });
+    }
+  };
+
+  const handleSent = () => {
+    setSelectedIds(new Set());
+    setSendModalConfig(null);
+    loadGuests();
+  };
+
+  /* ── Copy links (bulk) ───────────────────────────────────────────────── */
+  const handleCopyLinks = async () => {
+    if (isPro || selectedGuests.length === 0) return;
+    const withTokens = await Promise.all(selectedGuests.map(async g => {
+      if (g.rsvp_link_id) return g.rsvp_link_id;
+      const token = crypto.randomUUID();
+      await Guest.update(g.id, { rsvp_link_id: token });
+      return token;
+    }));
+    const links = withTokens.map(t => RSVP_BASE + t).join('\n');
+    await navigator.clipboard.writeText(links);
+    toast.success(`${withTokens.length} RSVP link${withTokens.length !== 1 ? 's' : ''} copied`);
+    loadGuests();
+  };
+
+  /* ── Set events (bulk, from selection bar) ──────────────────────────── */
+  const openSetEventsForSelection = () => {
+    if (selectedGuests.length === 0) return;
+    setAutoSendAfterSetEvents(null);
+    setSetEventsGuests(selectedGuests);
+  };
+
+  /* ── Set events & send (per-row, for a single uninvited guest) ──────── */
+  const handleSetEventsAndSend = (guest) => {
+    setAutoSendAfterSetEvents(guest.id);
+    setSetEventsGuests([guest]);
+  };
+
+  const handleSetEventsSaved = () => {
+    if (autoSendAfterSetEvents && !isPro) {
+      setSendModalConfig({ initialSelectedIds: [autoSendAfterSetEvents] });
+    }
+    setAutoSendAfterSetEvents(null);
+    loadGuests();
+  };
+
+  const selectionBarVisible = selectedIds.size > 0;
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      <DashboardPageHeader title="Guest list" subtitle="Manage your guests, RSVPs and meal selections" />
+      <DashboardPageHeader title="Guests" subtitle="Manage your guest list, invitations and RSVPs" />
 
       {/* Stat strip */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -253,9 +350,20 @@ export default function Guests() {
           <button onClick={() => setShowBulkAdd(true)} className="btn-editorial-secondary">
             Bulk add
           </button>
-          <button onClick={() => { setEditingGuest(null); setShowForm(true); setActiveTab('list'); }} className="btn-primary">
+          <button onClick={() => { setEditingGuest(null); setShowForm(true); setActiveTab('guests'); }} className="btn-editorial-secondary">
             + Add guest
           </button>
+          <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>
+            <button
+              onClick={openSendForSelection}
+              disabled={isPro}
+              className="btn-primary"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, ...(isPro ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
+            >
+              <Send size={13} />
+              Send invites
+            </button>
+          </span>
         </div>
       </div>
 
@@ -264,24 +372,12 @@ export default function Guests() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full justify-start">
-            <TabsTrigger value="list">Guest list</TabsTrigger>
-            <TabsTrigger value="invitations">
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: 'rgba(224,53,83,0.1)', color: '#E03553',
-                padding: '2px 8px', borderRadius: 999,
-                fontSize: 12, fontWeight: 700,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-              }}>
-                <Mail size={11} strokeWidth={2} />
-                Invitations
-              </span>
-            </TabsTrigger>
+            <TabsTrigger value="guests">Guests</TabsTrigger>
             <TabsTrigger value="emails">Email templates</TabsTrigger>
             <TabsTrigger value="considerations">Considerations</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="list" className="mt-8 space-y-6">
+          <TabsContent value="guests" className="mt-8 space-y-6">
             {/* Search + filter row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <div style={{ position: 'relative', flex: '1 1 240px', maxWidth: 360 }}>
@@ -300,6 +396,47 @@ export default function Guests() {
               </div>
             </div>
 
+            {/* Selection bar */}
+            {selectionBarVisible && (
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
+                border: '1px solid rgba(10,10,10,0.08)', background: 'rgba(224,53,83,0.03)',
+                padding: '10px 16px',
+              }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  {selectedIds.size} selected
+                </span>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button onClick={openSetEventsForSelection} className="btn-editorial-secondary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <CalendarCheck size={13} />
+                    Set events
+                  </button>
+                  <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>
+                    <button
+                      onClick={handleCopyLinks}
+                      disabled={isPro}
+                      className="btn-editorial-secondary"
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, ...(isPro ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
+                    >
+                      <Copy size={13} />
+                      Copy links
+                    </button>
+                  </span>
+                  <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>
+                    <button
+                      onClick={openSendForSelection}
+                      disabled={isPro}
+                      className="btn-primary"
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, ...(isPro ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
+                    >
+                      <Send size={13} />
+                      Send invites to selected
+                    </button>
+                  </span>
+                </div>
+              </div>
+            )}
+
             {showForm && (
               <GuestForm
                 guest={editingGuest}
@@ -309,11 +446,19 @@ export default function Guests() {
               />
             )}
 
-            <GuestList guests={filteredGuests} onEdit={handleEdit} onDelete={handleDelete} onUpdate={handleInlineUpdate} guestRoles={guestRoles} loading={loading} weddingEvents={weddingEvents} />
-          </TabsContent>
-
-          <TabsContent value="invitations" className="mt-8">
-            <InvitationsTab guests={guests} loadGuests={loadGuests} loading={loading} />
+            <GuestList
+              guests={filteredGuests}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onUpdate={handleInlineUpdate}
+              guestRoles={guestRoles}
+              loading={loading}
+              weddingEvents={weddingEvents}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+              onToggleSelectAll={toggleSelectAll}
+              onSetEventsAndSend={handleSetEventsAndSend}
+            />
           </TabsContent>
 
           <TabsContent value="emails" className="mt-8">
@@ -345,6 +490,26 @@ export default function Guests() {
         <BulkAddGuestModal
           onClose={() => setShowBulkAdd(false)}
           onImported={loadGuests}
+        />
+      )}
+
+      {sendModalConfig && (
+        <SendInvitesModal
+          guests={guests}
+          defaultFilter={sendModalConfig.defaultFilter}
+          initialSelectedIds={sendModalConfig.initialSelectedIds}
+          onClose={() => setSendModalConfig(null)}
+          onSent={handleSent}
+        />
+      )}
+
+      {setEventsGuests && (
+        <SetEventsModal
+          guests={setEventsGuests}
+          weddingEvents={weddingEvents}
+          onUpdate={handleInlineUpdate}
+          onClose={() => { setSetEventsGuests(null); setAutoSendAfterSetEvents(null); }}
+          onSaved={handleSetEventsSaved}
         />
       )}
     </div>
