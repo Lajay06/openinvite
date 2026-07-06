@@ -29,7 +29,7 @@ function cmpTime(ta, tb) {
 
 /**
  * @param {object} weddingDetails
- * @returns {Array<{event_id: string, name: string, date: string|null, startTime: string, isMain: boolean}>}
+ * @returns {Array<{event_id: string, name: string, date: string|null, startTime: string, isMain: boolean, dressCode: string}>}
  *   Chronologically sorted (main events by start time, custom events by date then start time —
  *   same ordering EventDetails.jsx uses).
  */
@@ -40,8 +40,8 @@ export function getWeddingEvents(weddingDetails) {
   const post = weddingDetails?.postWeddingEvents || [];
 
   const main = [
-    { event_id: MAIN_CEREMONY_EVENT_ID, name: 'Ceremony', date: null, startTime: mc.startTime || '', isMain: true },
-    { event_id: RECEPTION_EVENT_ID, name: 'Reception', date: null, startTime: rc.startTime || '', isMain: true },
+    { event_id: MAIN_CEREMONY_EVENT_ID, name: 'Ceremony', date: null, startTime: mc.startTime || '', isMain: true, dressCode: mc.dressCode || '' },
+    { event_id: RECEPTION_EVENT_ID, name: 'Reception', date: null, startTime: rc.startTime || '', isMain: true, dressCode: rc.dressCode || '' },
   ].sort((a, b) => cmpTime(a.startTime, b.startTime));
 
   const custom = [...pre, ...post]
@@ -52,6 +52,7 @@ export function getWeddingEvents(weddingDetails) {
       date: e.date || null,
       startTime: e.startTime || e.time || '',
       isMain: false,
+      dressCode: e.dressCode || '',
     }))
     .sort((a, b) => {
       const da = safeDateMs(a.date), db = safeDateMs(b.date);
