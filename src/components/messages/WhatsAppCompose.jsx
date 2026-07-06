@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { getMyInvitation } from '@/lib/resolveMyWedding';
+import { createPageUrl } from '@/utils';
 
 const WHATSAPP_GREEN = "#25D366";
 
@@ -136,6 +138,14 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
         <div style={{ background: '#F5F5F5', padding: '10px 12px', fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Opens WhatsApp on your device or browser
         </div>
+
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
+          Sending formal invitations or reminders to multiple guests? Use{' '}
+          <Link to={createPageUrl('Guests')} style={{ color: '#E03553', fontWeight: 600 }}>
+            the guest list
+          </Link>{' '}
+          to send and track them there.
+        </p>
       </div>
 
       {/* Footer */}

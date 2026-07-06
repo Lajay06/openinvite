@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { X, Mail, MessageCircle, Link, Check, Loader2, Search, ArrowLeft, ArrowRight, Send, AlertCircle } from 'lucide-react';
@@ -100,7 +100,7 @@ function Avatar({ name, size = 36 }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function SendInvitesModal({ guests, onClose, onSent, defaultFilter = 'not_invited', defaultIsReminder = false }) {
+export default function SendInvitesModal({ guests, onClose, onSent, defaultFilter = 'not_invited', defaultIsReminder = false, initialSelectedIds }) {
   const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(1);
   const [wedding, setWedding] = useState(null);
@@ -108,7 +108,14 @@ export default function SendInvitesModal({ guests, onClose, onSent, defaultFilte
   // Step 1
   const [filter, setFilter] = useState(defaultFilter);
   const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState(new Set());
+  const [selected, setSelected] = useState(() =>
+    initialSelectedIds?.length ? new Set(initialSelectedIds) : new Set()
+  );
+  // When guests are preloaded (e.g. from a hub's checkbox selection), skip the
+  // filter-driven auto-select exactly once on mount so it doesn't clobber the
+  // caller's explicit selection — subsequent user-driven filter clicks inside
+  // the modal still auto-select as normal.
+  const skipNextAutoSelect = useRef(!!initialSelectedIds?.length);
 
   // Step 2
   const [isReminder, setIsReminder] = useState(defaultIsReminder);
@@ -162,6 +169,7 @@ export default function SendInvitesModal({ guests, onClose, onSent, defaultFilte
 
   // Auto-select when filter changes
   useEffect(() => {
+    if (skipNextAutoSelect.current) { skipNextAutoSelect.current = false; return; }
     setSelected(new Set(filteredGuests.map(g => g.id)));
   }, [filter]);
 
