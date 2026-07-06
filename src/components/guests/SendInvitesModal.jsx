@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
+import { renderInvitationEmail } from '@/lib/emailTemplate';
 import { X, Mail, MessageCircle, Link, Check, Loader2, Search, ArrowLeft, ArrowRight, Send, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -151,6 +153,20 @@ export default function SendInvitesModal({ guests, onClose, onSent, defaultFilte
   const dateStr = weddingDate
     ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
     : '';
+  const universeId = wedding?.activeUniverse;
+
+  // Events the wedding has set up, enriched with venue/date (getWeddingEvents
+  // alone strips those — see getEventVenueAndDate's doc comment).
+  const weddingEvents = useMemo(() => {
+    if (!wedding) return [];
+    return getWeddingEvents(wedding).map(ev => ({ ...ev, ...getEventVenueAndDate(wedding, ev) }));
+  }, [wedding]);
+
+  // The events THIS guest is invited to — same shape the email template and
+  // /api/send-invites expect (name, date, startTime, venue).
+  const buildGuestEvents = (guest) => weddingEvents
+    .filter(ev => getGuestEventResponse(guest, ev).invited)
+    .map(ev => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
 
   // Filtered guest list for Step 1
   const filteredGuests = useMemo(() => {
@@ -207,9 +223,27 @@ export default function SendInvitesModal({ guests, onClose, onSent, defaultFilte
     setTimeout(onClose, 280);
   };
 
-  // Live preview (Step 2)
+  // Live preview (Step 2) — subject/body with merge tags resolved for the
+  // first selected guest (or a placeholder if none selected yet).
   const previewSubject = replaceMergeTags(subject, selectedGuests[0]?.name, coupleName, dateStr);
   const previewBody = replaceMergeTags(messageBody, selectedGuests[0]?.name, coupleName, dateStr);
+
+  // Real rendered email HTML — the exact same renderInvitationEmail() call
+  // api/emails/wedding-invite.js makes server-side, so this preview is
+  // byte-for-byte what gets sent (same template, same universe style).
+  const previewGuest = selectedGuests[0] || null;
+  const previewEvents = previewGuest
+    ? buildGuestEvents(previewGuest)
+    : weddingEvents.map(ev => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
+  const previewRsvpUrl = previewGuest?.rsvp_link_id ? buildRsvpUrl(previewGuest.rsvp_link_id) : `${RSVP_BASE}preview-token`;
+  const previewEmailHtml = renderInvitationEmail({
+    universeId,
+    coupleNames: coupleName,
+    events: previewEvents,
+    personalMessage: previewBody,
+    rsvpUrl: previewRsvpUrl,
+    isReminder,
+  }).html;
 
   // Ensure tokens and return guest list with tokens
   const ensureTokens = async (list) => {
@@ -240,7 +274,11 @@ export default function SendInvitesModal({ guests, onClose, onSent, defaultFilte
         if (emailList.length > 0) {
           const payload = {
             type: isReminder ? 'reminder' : 'invite',
-            guests: emailList.map(g => ({ email: g.email, name: g.name, rsvpUrl: buildRsvpUrl(g.rsvp_link_id) })),
+            universeId,
+            guests: emailList.map(g => ({
+              email: g.email, name: g.name, rsvpUrl: buildRsvpUrl(g.rsvp_link_id),
+              events: buildGuestEvents(g),
+            })),
             wedding: { coupleName, weddingDate, venue },
             customSubject: subject,
             customBody: messageBody,
@@ -511,7 +549,9 @@ export default function SendInvitesModal({ guests, onClose, onSent, defaultFilte
                   </div>
                 </div>
 
-                {/* Right: live preview */}
+                {/* Right: live preview — actual rendered email HTML, same
+                    renderer used server-side, in an iframe for full CSS
+                    isolation from the app's own styles */}
                 <div>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.5)', letterSpacing: '0.08em', marginBottom: 6 }}>PREVIEW</label>
                   <div style={{
@@ -524,27 +564,15 @@ export default function SendInvitesModal({ guests, onClose, onSent, defaultFilte
                         <strong style={{ color: '#0A0A0A' }}>Subject:</strong> {previewSubject || '—'}
                       </p>
                     </div>
-                    {/* Email body */}
-                    <div style={{ background: '#FAFAFA', padding: '14px 14px 10px' }}>
-                      <div style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', padding: '16px' }}>
-                        <p style={{ margin: '0 0 8px', fontSize: 11, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.01em', ...F }}>openinvite</p>
-                        <div style={{ height: 1, background: '#F0F0F0', margin: '0 0 10px' }} />
-                        {coupleName && (
-                          <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', ...F }}>{coupleName}</p>
-                        )}
-                        {dateStr && <p style={{ margin: '0 0 8px', fontSize: 11, color: 'rgba(10,10,10,0.5)', ...F }}>{dateStr}</p>}
-                        <p style={{ margin: '0 0 10px', fontSize: 12, color: 'rgba(10,10,10,0.65)', whiteSpace: 'pre-wrap', ...F }}>{previewBody}</p>
-                        <div style={{ background: '#E03553', borderRadius: 999, display: 'inline-block', padding: '6px 14px' }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: '#FFFFFF', ...F }}>RSVP now</span>
-                        </div>
-                      </div>
-                    </div>
+                    <iframe
+                      title="Email preview"
+                      srcDoc={previewEmailHtml}
+                      style={{ width: '100%', height: 460, border: 'none', display: 'block', background: '#FFFFFF' }}
+                    />
                   </div>
-                  {selectedGuests[0] && (
-                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', marginTop: 6, ...F }}>
-                      Preview shown for: {selectedGuests[0].name}
-                    </p>
-                  )}
+                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', marginTop: 6, ...F }}>
+                    {previewGuest ? `Preview shown for: ${previewGuest.name}` : 'Select a guest to preview their exact events — showing all wedding events for now.'}
+                  </p>
                 </div>
               </div>
             </div>

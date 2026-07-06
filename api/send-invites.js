@@ -2,11 +2,18 @@
  * POST /api/send-invites
  *
  * Sends wedding invitations or RSVP reminders in batch using Resend's batch API.
+ * Email HTML/text comes from the shared universe-styled template
+ * (src/lib/emailTemplate.js) via api/emails/wedding-{invite,reminder}.js —
+ * the same renderer the compose-step preview uses client-side.
  *
  * Body:
  *   {
  *     type: 'invite' | 'reminder',
- *     guests: [{ email: string, name: string, rsvpUrl: string }],
+ *     universeId?: string,      // one of UNIVERSE_EMAIL_STYLES' keys, falls back to 'aman'
+ *     guests: [{ email: string, name: string, rsvpUrl: string, events?: Array<{name,date,startTime,venue}> }],
+ *       // events — the events THIS guest is invited to; per-guest since invite
+ *       // lists differ per event. Falls back to wedding.venue/weddingDate as a
+ *       // single synthetic event if omitted (back-compat with older callers).
  *     wedding: { coupleName: string, weddingDate: string, venue: string },
  *     customSubject?: string,   // merge tags: [Guest name], [Wedding date], [Couple names]
  *     customBody?: string,      // merge tags: [Guest name], [Wedding date], [Couple names], [RSVP link]
@@ -52,7 +59,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { type = 'invite', guests = [], wedding = {}, customSubject, customBody } = req.body || {};
+    const { type = 'invite', guests = [], wedding = {}, customSubject, customBody, universeId } = req.body || {};
 
     if (!Array.isArray(guests) || guests.length === 0) {
       return res.status(400).json({ error: 'guests array is required and must not be empty' });
@@ -92,11 +99,18 @@ export default async function handler(req, res) {
         ? replaceMergeTags(sanitizeString(customBody), guestName, coupleName, dateStr, rsvpUrl)
         : null;
 
-      const html = isReminder
-        ? weddingReminderEmail({ guestName, coupleName, weddingDate, rsvpUrl, customBody: processedBody })
-        : weddingInviteEmail({ guestName, coupleName, weddingDate, venue, rsvpUrl, customBody: processedBody });
+      // Per-guest events (which events THIS guest is invited to). Falls back
+      // to a single synthetic event from wedding.venue/weddingDate for older
+      // callers that don't send a per-guest events array.
+      const events = Array.isArray(g.events) && g.events.length > 0
+        ? g.events
+        : (venue || weddingDate) ? [{ name: 'Wedding day', date: weddingDate, venue }] : [];
 
-      return { from: FROM, to: g.email, subject, html };
+      const { html, text } = isReminder
+        ? weddingReminderEmail({ guestName, coupleName, events, rsvpUrl, customBody: processedBody, universeId })
+        : weddingInviteEmail({ guestName, coupleName, events, rsvpUrl, customBody: processedBody, universeId });
+
+      return { from: FROM, to: g.email, subject, html, text };
     });
 
     const result = await resend.batch.send(batch);
