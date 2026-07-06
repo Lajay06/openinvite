@@ -64,6 +64,35 @@ export function getWeddingEvents(weddingDetails) {
 }
 
 /**
+ * getWeddingEvents() intentionally strips venue/date for main events (they
+ * aren't stored on the event itself — ceremony/reception venue lives on
+ * wedding.mainCeremony/wedding.reception, and both share wedding.weddingDate
+ * since neither has its own date field). Custom events DO carry their own
+ * date/venueName directly. This looks those back up from the wedding record
+ * for callers (e.g. invitation emails) that need venue + date per event.
+ */
+export function getEventVenueAndDate(weddingDetails, event) {
+  if (event.event_id === MAIN_CEREMONY_EVENT_ID) {
+    return {
+      venue: weddingDetails?.mainCeremony?.venueName || '',
+      date: weddingDetails?.weddingDate || null,
+    };
+  }
+  if (event.event_id === RECEPTION_EVENT_ID) {
+    return {
+      venue: weddingDetails?.reception?.venueName || '',
+      date: weddingDetails?.weddingDate || null,
+    };
+  }
+  const custom = [...(weddingDetails?.preWeddingEvents || []), ...(weddingDetails?.postWeddingEvents || [])]
+    .find(e => (e.event_id || e.id) === event.event_id);
+  return {
+    venue: custom?.venueName || custom?.venue || '',
+    date: custom?.date || null,
+  };
+}
+
+/**
  * Default event_responses for a brand-new guest: invited to main events
  * (ceremony + reception) only, pending. Custom events are opt-in.
  */
