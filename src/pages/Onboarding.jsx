@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { buildWeddingDetailsPayload, verifyOnboardingSave } from '@/lib/onboardingSave';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // TASK 1: entity references via authenticated client (no @/entities/* imports)
@@ -67,6 +69,7 @@ export default function Onboarding() {
   const [user, setUser] = useState(null);
   // TASK 2: theme state
   const [theme, setTheme] = useState('dark');
+  const [hydrating, setHydrating] = useState(true);
 
   const [onboardingData, setOnboardingData] = useState({
     couple1Name: '',
@@ -86,6 +89,23 @@ export default function Onboarding() {
     activeUniverse: 'aman',
     websiteMode: 'dark',
   });
+
+  // The draft WeddingDetails record write-as-you-go persistence writes to —
+  // null until the first step with real data advances, or hydrated from an
+  // existing unfinished draft on mount (resume-after-refresh).
+  const [draftWeddingId, setDraftWeddingId] = useState(null);
+
+  // Final-save state: never show the completion screen or navigate to
+  // Dashboard on a failed save — show an honest error with retry instead.
+  const [saveError, setSaveError] = useState(null);
+  const [savingFinal, setSavingFinal] = useState(false);
+  const [lastAttemptedPath, setLastAttemptedPath] = useState(null);
+
+  // Serialises draft persistence calls so a slow earlier step's write can
+  // never land after and clobber a faster later step's write.
+  const draftSaveChain = useRef(Promise.resolve());
+  const draftWeddingIdRef = useRef(null);
+  useEffect(() => { draftWeddingIdRef.current = draftWeddingId; }, [draftWeddingId]);
 
   const currentStep = STEPS[currentStepIndex];
   const isDark = theme !== 'light';
@@ -112,17 +132,73 @@ export default function Onboarding() {
           return;
         }
         setUser(currentUser);
+
+        // Resume-after-refresh: if an unfinished draft exists for this user,
+        // rehydrate onboardingData and jump back to where they left off
+        // instead of restarting from welcome.
+        const draft = await getMyWeddingDetails().catch(() => null);
+        if (draft?.onboardingDraft) {
+          setDraftWeddingId(draft.id);
+          setOnboardingData(prev => ({
+            ...prev,
+            couple1Name: draft.couple1Name || prev.couple1Name,
+            couple2Name: draft.couple2Name || prev.couple2Name,
+            weddingDate: draft.weddingDate || prev.weddingDate,
+            venue: draft.mainCeremony?.venueName || prev.venue,
+            location: draft.mainCeremony?.address || prev.location,
+            guestCount: draft.guestCount != null ? draft.guestCount : prev.guestCount,
+            guestType: draft.guestType || prev.guestType,
+            activeUniverse: draft.activeUniverse || prev.activeUniverse,
+            websiteMode: draft.websiteMode || prev.websiteMode,
+          }));
+          const resumeIndex = typeof draft.onboardingStepIndex === 'number'
+            ? Math.min(Math.max(draft.onboardingStepIndex, 0), STEPS.length - 1)
+            : 0;
+          setCurrentStepIndex(resumeIndex);
+        }
       } catch (err) {
         navigate('/');
       }
+      setHydrating(false);
     };
     checkAuth();
   }, [navigate]);
 
+  // Write-as-you-go: best-effort, non-blocking persistence of WeddingDetails
+  // fields on every step advance, so a refresh mid-onboarding resumes rather
+  // than restarts. Chained through a ref so writes always apply in the order
+  // steps were taken, never out of order under variable network timing.
+  const persistDraftStep = (mergedData, stepIndex) => {
+    draftSaveChain.current = draftSaveChain.current
+      .then(async () => {
+        const payload = { ...buildWeddingDetailsPayload(mergedData), onboardingDraft: true, onboardingStepIndex: stepIndex };
+        if (draftWeddingIdRef.current) {
+          await WeddingDetails.update(draftWeddingIdRef.current, payload);
+        } else {
+          const created = await WeddingDetails.create(payload);
+          draftWeddingIdRef.current = created.id;
+          setDraftWeddingId(created.id);
+        }
+      })
+      .catch(err => {
+        // Best-effort — a couple should never be blocked from continuing
+        // onboarding because the resume-draft write hiccuped. The final
+        // save (saveOnboarding) is the one place failures must be surfaced.
+        console.error('Onboarding draft persistence error:', err);
+      });
+  };
+
   const goNext = (data) => {
-    setOnboardingData(prev => ({ ...prev, ...(data || {}) }));
-    setCurrentStepIndex(prev => Math.min(prev + 1, STEPS.length - 1));
+    const merged = { ...onboardingData, ...(data || {}) };
+    setOnboardingData(merged);
+    const nextIndex = Math.min(currentStepIndex + 1, STEPS.length - 1);
+    setCurrentStepIndex(nextIndex);
     window.scrollTo(0, 0);
+    // Only worth persisting once there's a name to identify the draft by —
+    // avoids creating an empty placeholder record from the welcome step.
+    if (merged.couple1Name || merged.couple2Name) {
+      persistDraftStep(merged, nextIndex);
+    }
   };
 
   const goBack = () => {
@@ -140,42 +216,44 @@ export default function Onboarding() {
   };
 
   const handlePathB = async () => {
-    await saveOnboarding('quick');
-    goToStep(STEPS.indexOf('completion'));
+    setLastAttemptedPath('quick');
+    const result = await saveOnboarding('quick');
+    if (result.success) {
+      setSaveError(null);
+      goToStep(STEPS.indexOf('completion'));
+    } else {
+      setSaveError(result.error || 'Something went wrong saving your details.');
+    }
   };
 
+  /**
+   * Saves everything onboarding collected, in phases so a retry after a
+   * partial failure never re-runs (and duplicates) a phase that already
+   * succeeded. Returns { success, error } — never throws, never silently
+   * swallows a failure into a false "done" state. On success, re-fetches
+   * the record fresh to verify it actually round-tripped before reporting
+   * success.
+   */
   const saveOnboarding = async (path) => {
+    setSavingFinal(true);
+    const completed = { weddingDetails: false, guests: false, budget: false, vendors: false, moodboard: false, userFlag: false };
     try {
-      const activeUniverse = onboardingData.activeUniverse || 'aman';
-      const websiteMode = onboardingData.websiteMode || 'dark';
-      const activeTheme = websiteMode === 'light' ? 'ivory' : 'still';
+      const payload = { ...buildWeddingDetailsPayload(onboardingData), onboardingDraft: false };
 
-      const weddingDetails = {
-        coupleNames: `${onboardingData.couple1Name} & ${onboardingData.couple2Name}`,
-        couple1Name: onboardingData.couple1Name,
-        couple2Name: onboardingData.couple2Name,
-        weddingDate: onboardingData.weddingDate,
-        slug: onboardingData.couple1Name?.toLowerCase().replace(/\s+/g, '-') + '-' +
-              onboardingData.couple2Name?.toLowerCase().replace(/\s+/g, '-'),
-        mainCeremony: {
-          venueName: typeof onboardingData.venue === 'object' ? onboardingData.venue?.name : onboardingData.venue,
-          address: typeof onboardingData.venue === 'object' ? onboardingData.venue?.address : onboardingData.location,
-        },
-        // guestCount written as string to match EventDetails.jsx (e.target.value from a number input)
-        // guestType uses lowercase tile ids matching the enum: 'intimate' | 'celebration' | 'grand'
-        guestCount: onboardingData.guestCount != null ? String(onboardingData.guestCount) : undefined,
-        guestType:  onboardingData.guestType  || undefined,
-        websiteEnabled: false,
-        activeUniverse,
-        websiteMode,
-        activeTheme,
-      };
-
-      await WeddingDetails.create(weddingDetails);
+      let weddingId = draftWeddingId;
+      if (weddingId) {
+        await WeddingDetails.update(weddingId, payload);
+      } else {
+        const created = await WeddingDetails.create(payload);
+        weddingId = created.id;
+        setDraftWeddingId(weddingId);
+      }
+      completed.weddingDetails = true;
 
       if (onboardingData.guestList.length > 0) {
         await Guest.bulkCreate(onboardingData.guestList);
       }
+      completed.guests = true;
 
       if (onboardingData.budget) {
         await Budget.create({
@@ -184,6 +262,7 @@ export default function Onboarding() {
           budgeted_amount: onboardingData.budget,
         });
       }
+      completed.budget = true;
 
       if (onboardingData.vendors.length > 0) {
         await Promise.all(onboardingData.vendors.map(v =>
@@ -195,6 +274,7 @@ export default function Onboarding() {
           })
         ));
       }
+      completed.vendors = true;
 
       if (onboardingData.inspirationPhotos.length > 0) {
         await Promise.all(onboardingData.inspirationPhotos.map(photo =>
@@ -205,18 +285,52 @@ export default function Onboarding() {
           })
         ));
       }
+      completed.moodboard = true;
 
       await base44.auth.updateMe({ onboardingCompleted: true, onboardingPath: path });
+      completed.userFlag = true;
+
+      // Verify — re-fetch fresh rather than trusting the write call's own
+      // response, and confirm the couple names we just sent actually match
+      // what comes back before telling the couple they're done.
+      const verified = await getMyWeddingDetails();
+      const expectedNames = `${onboardingData.couple1Name || ''} & ${onboardingData.couple2Name || ''}`;
+      if (!verifyOnboardingSave({ weddingId, expectedNames, verified })) {
+        return { success: false, error: "We couldn't confirm your details saved correctly. Please try again." };
+      }
+
+      return { success: true };
     } catch (err) {
-      console.error('Error saving onboarding:', err);
+      console.error('Error saving onboarding:', err, 'completed phases:', completed);
+      return { success: false, error: err.message || 'Something went wrong saving your details.' };
+    } finally {
+      setSavingFinal(false);
     }
   };
 
   const handleCompletion = async () => {
-    if (onboardingData.path === 'detailed') {
-      await saveOnboarding('detailed');
+    if (onboardingData.path !== 'detailed') {
+      navigate('/Dashboard');
+      return;
     }
-    navigate('/Dashboard');
+    setLastAttemptedPath('detailed');
+    const result = await saveOnboarding('detailed');
+    if (result.success) {
+      setSaveError(null);
+      navigate('/Dashboard');
+    } else {
+      setSaveError(result.error || 'Something went wrong saving your details.');
+    }
+  };
+
+  const retrySave = async () => {
+    if (!lastAttemptedPath) return;
+    setSaveError(null);
+    if (lastAttemptedPath === 'quick') {
+      await handlePathB();
+    } else {
+      await handleCompletion();
+    }
   };
 
   const stepProps = { theme };
@@ -225,6 +339,10 @@ export default function Onboarding() {
   const isForkStep = currentStep === 'fork';
   const pageBg = isForkStep ? '#F5F4F0' : (isDark ? '#0A0A0A' : '#FAFAFA');
   const pageIsLight = isForkStep || !isDark;
+
+  if (hydrating) {
+    return <div style={{ minHeight: '100vh', background: '#0A0A0A' }} />;
+  }
 
   return (
     <div style={{
@@ -250,6 +368,31 @@ export default function Onboarding() {
           transition={{ duration: 0.4, ease: 'easeOut' }}
         />
       </div>
+
+      {/* Save-error banner — never advance past a failed save, always offer retry */}
+      {saveError && (
+        <div style={{
+          position: 'fixed', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 200,
+          display: 'flex', alignItems: 'center', gap: 12, maxWidth: '90vw',
+          background: '#FFFFFF', border: '1px solid rgba(224,53,83,0.3)',
+          padding: '10px 16px', borderRadius: 999, boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+        }}>
+          <span style={{ fontSize: 13, color: '#E03553', fontFamily: PJS, fontWeight: 600 }}>
+            {saveError}
+          </span>
+          <button
+            onClick={retrySave}
+            disabled={savingFinal}
+            style={{
+              fontSize: 12, fontWeight: 700, color: '#FFFFFF', background: '#E03553',
+              border: 'none', borderRadius: 999, padding: '6px 14px', cursor: 'pointer',
+              fontFamily: PJS, flexShrink: 0, opacity: savingFinal ? 0.6 : 1,
+            }}
+          >
+            {savingFinal ? 'Retrying…' : 'Retry'}
+          </button>
+        </div>
+      )}
 
       {/* TASK 3+4+5: Top-left fixed column — logo, step counter, back */}
       <div style={{
