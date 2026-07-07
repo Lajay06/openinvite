@@ -234,11 +234,32 @@ export default function Onboarding() {
    * the record fresh to verify it actually round-tripped before reporting
    * success.
    */
+  // Two couples with the same or similar names would otherwise collide on
+  // the exact same /w/:slug — checks the candidate, and every "-2", "-3", …
+  // suffix in turn, against real (non-draft-of-this-record) WeddingDetails
+  // records, until one is free.
+  const resolveUniqueSlug = async (baseSlug, excludeId) => {
+    if (!baseSlug) return baseSlug;
+    let candidate = baseSlug;
+    let suffix = 1;
+    // Bounded — collisions on a second or third attempt are already an edge
+    // case; this only loops further if several couples share the same name.
+    while (suffix < 50) {
+      const matches = await WeddingDetails.filter({ slug: candidate });
+      const collision = (matches || []).some(w => w.id !== excludeId);
+      if (!collision) return candidate;
+      suffix += 1;
+      candidate = `${baseSlug}-${suffix}`;
+    }
+    return `${baseSlug}-${Date.now()}`; // pathological fallback, guaranteed unique
+  };
+
   const saveOnboarding = async (path) => {
     setSavingFinal(true);
     const completed = { weddingDetails: false, guests: false, budget: false, vendors: false, moodboard: false, userFlag: false };
     try {
       const payload = { ...buildWeddingDetailsPayload(onboardingData), onboardingDraft: false };
+      payload.slug = await resolveUniqueSlug(payload.slug, draftWeddingId);
 
       let weddingId = draftWeddingId;
       if (weddingId) {
