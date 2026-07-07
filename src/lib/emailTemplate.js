@@ -1,18 +1,83 @@
 /**
  * src/lib/emailTemplate.js
  *
- * The single invitation/reminder email template. Table-based layout, all CSS
+ * The single invitation/reminder/update/thank-you email template — the only
+ * place in the codebase that produces this HTML. Table-based layout, all CSS
  * inline, no <script>, no background-image, max-width 600px — renders
  * correctly in Gmail, Apple Mail, and Outlook without relying on anything
  * those clients strip or refuse to load.
  *
- * Pure JS, no DOM/Node APIs — importable both from api/emails/*.js (Node,
- * Vercel functions) and from src/ (Vite/browser, for the live compose-step
+ * Pure JS, no DOM/Node APIs — importable both from api/*.js (Node, Vercel
+ * functions) and from src/ (Vite/browser, for the live compose-pane
  * preview). Whatever calls this and gets `html` back is byte-for-byte what
  * Resend sends — there is no second, preview-only render path.
+ *
+ * Five email types share this one template, differing only in kicker,
+ * whether events/RSVP are shown, the CTA label, the footer's noun, and the
+ * default personal message when the caller doesn't supply one:
+ *   invite               — the original invitation, events shown, RSVP CTA
+ *   reminder             — nudge to RSVP, events shown, RSVP CTA
+ *   update                — event details changed, events shown, RSVP CTA
+ *                            (guest may need to re-confirm)
+ *   thank_you_attending   — sent after RSVP; no events/RSVP CTA, already answered
+ *   thank_you_declined    — sent after RSVP; no events/RSVP CTA, already answered
  */
 
 import { getUniverseEmailStyle } from './universeEmailStyles.js';
+
+const SANS_FALLBACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+
+const TYPE_CONFIG = {
+  invite: {
+    kicker: "You're invited",
+    showEvents: true,
+    showRsvp: true,
+    ctaLabel: 'RSVP now',
+    footerNoun: 'invitation',
+    defaultMessage: (firstName) =>
+      `Dear ${firstName},\n\nWe would love to have you join us to celebrate our wedding. Please let us know if you'll be able to make it.`,
+  },
+  reminder: {
+    kicker: 'RSVP reminder',
+    showEvents: true,
+    showRsvp: true,
+    ctaLabel: 'RSVP now',
+    footerNoun: 'reminder',
+    defaultMessage: (firstName, coupleNames) =>
+      `Hi ${firstName},\n\nJust a friendly nudge — ${coupleNames || 'the couple'} would love to hear from you. It only takes a minute to RSVP.`,
+  },
+  update: {
+    kicker: 'Event update',
+    showEvents: true,
+    showRsvp: true,
+    ctaLabel: 'View details & RSVP',
+    footerNoun: 'update',
+    defaultMessage: (firstName) =>
+      `Dear ${firstName},\n\nWe wanted to share an important update regarding our upcoming celebration. Please review the details below and let us know if you have any questions.`,
+  },
+  thank_you_attending: {
+    kicker: 'Thank you',
+    showEvents: false,
+    showRsvp: false,
+    footerNoun: 'note',
+    defaultMessage: (firstName) =>
+      `Dear ${firstName},\n\nThank you so much for confirming you'll be celebrating with us! Your presence means the world to us and we can't wait to make beautiful memories together.`,
+  },
+  thank_you_declined: {
+    kicker: "We'll miss you",
+    showEvents: false,
+    showRsvp: false,
+    footerNoun: 'note',
+    defaultMessage: (firstName) =>
+      `Dear ${firstName},\n\nThank you for letting us know. We completely understand, and while we'll miss celebrating with you on the day, we hope to see you again soon.`,
+  },
+};
+
+export const EMAIL_TYPES = Object.keys(TYPE_CONFIG);
+
+export function getEmailTypeConfig(type) {
+  return TYPE_CONFIG[type] || TYPE_CONFIG.invite;
+}
 
 function escapeHtml(str) {
   return String(str || '')
@@ -46,32 +111,34 @@ function dividerHtml(style, accent) {
 /**
  * @param {object} opts
  * @param {string} opts.universeId — one of UNIVERSE_EMAIL_STYLES' keys; falls back to 'aman'
+ * @param {'invite'|'reminder'|'update'|'thank_you_attending'|'thank_you_declined'} [opts.type='invite']
+ * @param {string} [opts.guestName] — used only to build the default personalMessage when omitted
  * @param {string} opts.coupleNames
- * @param {Array<{name:string, date?:string, startTime?:string, venue?:string}>} opts.events
- *   — the events THIS guest is invited to, in the wedding's own event shape
- *   (see getWeddingEvents/getEventVenueAndDate in weddingEvents.js)
- * @param {string} [opts.personalMessage] — free text, may contain newlines
- * @param {string} opts.rsvpUrl
- * @param {boolean} [opts.isReminder]
+ * @param {Array<{name:string, date?:string, startTime?:string, venue?:string}>} [opts.events]
+ *   — the events THIS guest is invited to (ignored when the type doesn't show events)
+ * @param {string} [opts.personalMessage] — free text, may contain newlines; defaults per type when omitted
+ * @param {string} [opts.rsvpUrl] — required when the type shows an RSVP CTA
  * @returns {{ html: string, text: string }}
  */
 export function renderInvitationEmail({
   universeId,
+  type = 'invite',
+  guestName,
   coupleNames,
   events = [],
   personalMessage,
   rsvpUrl,
-  isReminder = false,
 }) {
+  const cfg = getEmailTypeConfig(type);
   const style = getUniverseEmailStyle(universeId);
   const { bgTint, cardBg, textColor, accent, fontDisplay, fontBody, divider } = style;
 
-  const kicker = isReminder ? 'RSVP reminder' : "You're invited";
-  const preheader = isReminder
-    ? `A reminder to RSVP${coupleNames ? ` to ${coupleNames}'s wedding` : ''}.`
-    : `You're invited${coupleNames ? ` to ${coupleNames}'s wedding` : ''}. Please RSVP.`;
+  const firstName = guestName ? guestName.split(' ')[0] : 'there';
+  const message = personalMessage || cfg.defaultMessage(firstName, coupleNames);
 
-  const eventBlocksHtml = events.map(ev => {
+  const preheader = `${cfg.kicker}${coupleNames ? ` — ${coupleNames}` : ''}.`;
+
+  const eventBlocksHtml = cfg.showEvents ? events.map(ev => {
     const dateStr = formatEventDate(ev.date);
     const metaLine = [dateStr, ev.startTime].filter(Boolean).join(' · ');
     return `
@@ -82,12 +149,30 @@ export function renderInvitationEmail({
               ${ev.venue ? `<p style="margin:2px 0 0;font-size:14px;color:rgba(0,0,0,0.55);font-family:${fontBody};">${escapeHtml(ev.venue)}</p>` : ''}
             </td>
           </tr>`;
-  }).join('');
+  }).join('') : '';
 
-  const messageHtml = personalMessage ? `
+  const messageHtml = message ? `
           <tr>
             <td style="padding:28px 40px 0;">
-              <p style="margin:0;font-size:15px;line-height:1.7;color:rgba(0,0,0,0.68);font-family:${fontBody};">${nl2br(personalMessage)}</p>
+              <p style="margin:0;font-size:15px;line-height:1.7;color:rgba(0,0,0,0.68);font-family:${fontBody};">${nl2br(message)}</p>
+            </td>
+          </tr>` : '';
+
+  const ctaHtml = (cfg.showRsvp && rsvpUrl) ? `
+          <tr>
+            <td style="padding:32px 40px 0;">
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:${accent};border-radius:999px;">
+                    <a href="${rsvpUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${fontBody};letter-spacing:0.01em;">
+                      ${escapeHtml(cfg.ctaLabel)}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:16px 0 0;font-size:12px;color:rgba(0,0,0,0.4);word-break:break-all;font-family:${fontBody};">
+                Or copy this link: ${escapeHtml(rsvpUrl)}
+              </p>
             </td>
           </tr>` : '';
 
@@ -96,7 +181,7 @@ export function renderInvitationEmail({
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(kicker)}</title>
+  <title>${escapeHtml(cfg.kicker)}</title>
 </head>
 <body style="margin:0;padding:0;background:${bgTint};font-family:${fontBody};">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(preheader)}</div>
@@ -115,7 +200,7 @@ export function renderInvitationEmail({
           <!-- Kicker + headline -->
           <tr>
             <td style="padding:36px 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${accent};letter-spacing:0.14em;text-transform:uppercase;font-family:${fontBody};">${escapeHtml(kicker)}</p>
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${accent};letter-spacing:0.14em;text-transform:uppercase;font-family:${fontBody};">${escapeHtml(cfg.kicker)}</p>
               <h1 style="margin:0;font-family:${fontDisplay};font-weight:400;font-size:32px;color:${textColor};line-height:1.15;">${escapeHtml(coupleNames || 'The Wedding')}</h1>
             </td>
           </tr>
@@ -128,24 +213,7 @@ export function renderInvitationEmail({
           </tr>
 ${eventBlocksHtml}
 ${messageHtml}
-
-          <!-- CTA -->
-          <tr>
-            <td style="padding:32px 40px 0;">
-              <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background:${accent};border-radius:999px;">
-                    <a href="${rsvpUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${fontBody};letter-spacing:0.01em;">
-                      RSVP now
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin:16px 0 0;font-size:12px;color:rgba(0,0,0,0.4);word-break:break-all;font-family:${fontBody};">
-                Or copy this link: ${escapeHtml(rsvpUrl)}
-              </p>
-            </td>
-          </tr>
+${ctaHtml}
 
           <!-- Footer -->
           <tr>
@@ -156,7 +224,7 @@ ${messageHtml}
           <tr>
             <td style="padding:20px 40px 36px;">
               <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(0,0,0,0.35);font-family:${fontBody};">
-                You received this ${isReminder ? 'reminder' : 'invitation'} because someone added you to their guest list on openinvite.com.au.<br />
+                You received this ${cfg.footerNoun} because someone added you to their guest list on openinvite.com.au.<br />
                 If you think this was sent in error, you can ignore this email.
               </p>
             </td>
@@ -170,20 +238,19 @@ ${messageHtml}
 </html>`;
 
   const textLines = [
-    `${kicker.toUpperCase()} — ${coupleNames || 'The Wedding'}`,
+    `${cfg.kicker.toUpperCase()} — ${coupleNames || 'The Wedding'}`,
     '',
-    ...events.flatMap(ev => {
+    ...(cfg.showEvents ? events.flatMap(ev => {
       const dateStr = formatEventDate(ev.date);
       const metaLine = [dateStr, ev.startTime].filter(Boolean).join(' · ');
       return [ev.name, metaLine, ev.venue, ''].filter(l => l !== undefined && l !== '');
-    }),
-    personalMessage || '',
-    personalMessage ? '' : null,
-    `RSVP: ${rsvpUrl}`,
+    }) : []),
+    message || '',
     '',
-    `You received this ${isReminder ? 'reminder' : 'invitation'} because someone added you to their guest list on openinvite.com.au.`,
+    ...((cfg.showRsvp && rsvpUrl) ? [`${cfg.ctaLabel}: ${rsvpUrl}`, ''] : []),
+    `You received this ${cfg.footerNoun} because someone added you to their guest list on openinvite.com.au.`,
     'If you think this was sent in error, you can ignore this email.',
-  ].filter(l => l !== null);
+  ];
 
   const text = textLines.join('\n');
 

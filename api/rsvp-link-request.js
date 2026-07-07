@@ -30,7 +30,7 @@ import {
   isValidEmail,
   sanitizeString,
 } from './_lib/security.js';
-import { weddingReminderEmail } from './emails/wedding-reminder.js';
+import { renderInvitationEmail } from '../src/lib/emailTemplate.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = 'Openinvite <hello@openinvite.com.au>';
@@ -127,10 +127,16 @@ export default async function handler(req, res) {
       const coupleName = wedding.coupleNames
         || [wedding.couple1Name, wedding.couple2Name].filter(Boolean).join(' & ');
 
-      const html = weddingReminderEmail({
+      const events = wedding.weddingDate
+        ? [{ name: 'Wedding day', date: wedding.weddingDate, venue: wedding.mainCeremony?.venueName || '' }]
+        : [];
+
+      const { html, text } = renderInvitationEmail({
+        universeId: wedding.activeUniverse,
+        type: 'reminder',
         guestName: guest.name,
-        coupleName,
-        weddingDate: wedding.weddingDate || '',
+        coupleNames: coupleName,
+        events,
         rsvpUrl,
       });
 
@@ -139,6 +145,7 @@ export default async function handler(req, res) {
         to: guest.email,
         subject: `Your RSVP link — ${coupleName || 'the wedding'}`,
         html,
+        text,
       });
 
       console.log('[rsvp-link-request] Sent RSVP link for wedding', weddingSlug);
