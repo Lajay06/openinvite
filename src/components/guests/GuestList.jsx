@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus } from "lucide-react";
+import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus, Pencil } from "lucide-react";
 import { getGuestEventResponse } from "@/lib/weddingEvents";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -72,7 +72,7 @@ function NotYetInvitedChip() {
 }
 
 /* ── Per-guest status chips + "Set events & send" for uninvited guests ──── */
-function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend }) {
+function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend, onEditEvents }) {
   const hasResponses = Array.isArray(guest.event_responses) && guest.event_responses.length > 0;
 
   if (!hasResponses) {
@@ -103,12 +103,23 @@ function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend }) {
     return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>;
   }
 
+  // The whole chip row is clickable — reopens the same event-checkbox
+  // control used by "Set events & send", pre-checked with current state,
+  // so invites stay editable at any time, not just before the first send.
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxWidth: 320 }}>
+    <button
+      type="button"
+      onClick={() => onEditEvents?.(guest)}
+      title="Edit which events this guest is invited to"
+      style={{
+        display: 'flex', flexWrap: 'wrap', gap: 5, maxWidth: 320,
+        background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', textAlign: 'left',
+      }}
+    >
       {weddingEvents.map(event => (
         <EventChip key={event.event_id} event={event} response={getGuestEventResponse(guest, event)} />
       ))}
-    </div>
+    </button>
   );
 }
 
@@ -306,7 +317,7 @@ const STATUS_LABELS = { yes: 'Attending', no: 'Declined', pending: 'Pending' };
 const STATUS_COLORS = { yes: '#166534', no: '#991b1b', pending: 'rgba(10,10,10,0.4)' };
 
 /* ── Per-event RSVP detail sub-row — shows what a guest actually answered ── */
-function RsvpDetailRow({ guest, weddingEvents }) {
+function RsvpDetailRow({ guest, weddingEvents, onEditEvents }) {
   const hasNote = !!(guest.rsvp_note || guest.song_request);
 
   return (
@@ -319,7 +330,7 @@ function RsvpDetailRow({ guest, weddingEvents }) {
             <div style={{
               display: 'grid', gridTemplateColumns: '1.3fr 0.8fr 0.8fr 0.7fr 1.1fr 0.9fr',
               gap: 8, padding: '8px 12px', background: 'rgba(10,10,10,0.02)',
-              borderBottom: '1px solid rgba(10,10,10,0.08)',
+              borderBottom: '1px solid rgba(10,10,10,0.08)', alignItems: 'center',
             }}>
               {['Event', 'Invited', 'Status', 'Meal', 'Plus-one', 'Responded'].map(h => (
                 <span key={h} style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{h}</span>
@@ -361,6 +372,22 @@ function RsvpDetailRow({ guest, weddingEvents }) {
           </div>
         )}
 
+        {weddingEvents.length > 0 && (
+          <button
+            type="button"
+            onClick={() => onEditEvents?.(guest)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 10,
+              background: 'none', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 999,
+              padding: '4px 10px', fontSize: 11, fontWeight: 600, color: '#0A0A0A',
+              cursor: 'pointer', fontFamily: PJS,
+            }}
+          >
+            <Pencil size={11} />
+            Edit events
+          </button>
+        )}
+
         {hasNote && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 12, maxWidth: 720 }}>
             {guest.song_request && (
@@ -385,7 +412,7 @@ function RsvpDetailRow({ guest, weddingEvents }) {
 /* ─── Main component ─────────────────────────────────────────────────────── */
 export default function GuestList({
   guests, onEdit, onDelete, onUpdate, guestRoles = {}, loading, weddingEvents = [],
-  selectedIds, onToggleSelect, onToggleSelectAll, onSetEventsAndSend,
+  selectedIds, onToggleSelect, onToggleSelectAll, onSetEventsAndSend, onEditEvents,
 }) {
   const [editCell, setEditCell] = useState(null); // { id, field }
   const [editValue, setEditValue] = useState('');
@@ -616,7 +643,7 @@ export default function GuestList({
 
                   {/* ── Status — per-event chips (replaces RSVP + Invited to) ── */}
                   <TableCell className="align-middle">
-                    <GuestStatusCell guest={guest} weddingEvents={weddingEvents} onSetEventsAndSend={onSetEventsAndSend} />
+                    <GuestStatusCell guest={guest} weddingEvents={weddingEvents} onSetEventsAndSend={onSetEventsAndSend} onEditEvents={onEditEvents} />
                   </TableCell>
 
                   {/* ── Last sent ── */}
@@ -690,7 +717,7 @@ export default function GuestList({
               /* ── RSVP detail sub-row (per-event answers + note/song) ── */
               if (isExpanded) {
                 rows.push(
-                  <RsvpDetailRow key={`${guest.id}-rsvp`} guest={guest} weddingEvents={weddingEvents} />
+                  <RsvpDetailRow key={`${guest.id}-rsvp`} guest={guest} weddingEvents={weddingEvents} onEditEvents={onEditEvents} />
                 );
               }
 

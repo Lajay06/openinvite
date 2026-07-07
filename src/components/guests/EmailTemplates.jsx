@@ -11,7 +11,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
-import { renderInvitationEmail, EMAIL_TYPES } from '@/lib/emailTemplate';
+import { renderInvitationEmail, EMAIL_TYPES, getBannerImageUrl, getDefaultBannerChoice } from '@/lib/emailTemplate';
 import { TYPE_LABELS } from './SendInvitesModal';
 import { FlaskConical, ArrowUpRight, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -54,6 +54,10 @@ export default function EmailTemplates({ guests, onUseTemplate }) {
     : weddingEvents.map(ev => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
   const sampleRsvpUrl = sampleGuest ? `${RSVP_BASE}${sampleGuest.rsvp_link_id}` : `${RSVP_BASE}preview-token`;
 
+  const bannerPhotos = { coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl };
+  const bannerChoice = getDefaultBannerChoice(bannerPhotos);
+  const bannerImageUrl = getBannerImageUrl(bannerPhotos, bannerChoice);
+
   const handleSendTest = async (type) => {
     if (!user?.email) { toast.error('No email on your account'); return; }
     setSendingTestType(type);
@@ -65,9 +69,13 @@ export default function EmailTemplates({ guests, onUseTemplate }) {
         body: JSON.stringify({
           type,
           universeId,
+          bannerChoice,
           isTest: true,
           guests: [{ email: user.email, name: 'Test guest', rsvpUrl: sampleRsvpUrl, events: sampleEvents }],
-          wedding: { coupleName, weddingDate: wedding?.weddingDate, venue: wedding?.mainCeremony?.venueName },
+          wedding: {
+            coupleName, weddingDate: wedding?.weddingDate, venue: wedding?.mainCeremony?.venueName,
+            coverPhoto: bannerPhotos.coverPhoto, venuePhotoUrl: bannerPhotos.venuePhotoUrl,
+          },
         }),
       });
       const data = await res.json();
@@ -104,6 +112,7 @@ export default function EmailTemplates({ guests, onUseTemplate }) {
             coupleNames: coupleName,
             events: sampleEvents,
             rsvpUrl: sampleRsvpUrl,
+            bannerImageUrl,
           }).html;
           const sendingTest = sendingTestType === type;
 

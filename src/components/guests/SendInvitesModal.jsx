@@ -3,7 +3,9 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
-import { renderInvitationEmail, EMAIL_TYPES } from '@/lib/emailTemplate';
+import {
+  renderInvitationEmail, EMAIL_TYPES, getTypeComposeDefaults, getBannerImageUrl, getDefaultBannerChoice,
+} from '@/lib/emailTemplate';
 import { X, Mail, MessageCircle, Check, Loader2, Search, ArrowLeft, ArrowRight, Send, AlertCircle, FlaskConical } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -151,7 +153,7 @@ function WhatsAppPreview({ guest, coupleName, weddingDate, rsvpUrl }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function SendInvitesModal({
-  guests, onClose, onSent, initialType = 'invite', defaultFilter, initialSelectedIds,
+  guests, onClose, onSent, initialType = 'invite', defaultFilter, initialSelectedIds, restrictEventIds,
 }) {
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
@@ -171,9 +173,15 @@ export default function SendInvitesModal({
   // inside the modal still auto-select as normal.
   const skipNextAutoSelect = useRef(!!initialSelectedIds?.length);
 
-  // Step 2
+  // Step 2 — subject/body default per type until the user actually edits one
+  // this session, at which point their edit carries over across type
+  // switches (it does not reset back to a default, even for a different type).
   const [subject, setSubject] = useState('');
   const [messageBody, setMessageBody] = useState('');
+  const [subjectEdited, setSubjectEdited] = useState(false);
+  const [bodyEdited, setBodyEdited] = useState(false);
+  const [bannerChoice, setBannerChoice] = useState('none');
+  const [bannerChoiceTouched, setBannerChoiceTouched] = useState(false);
 
   // Step 3
   const [channel, setChannel] = useState('email');
@@ -184,22 +192,28 @@ export default function SendInvitesModal({
 
   const isReminder = type === 'reminder'; // only affects Guest.update tracking below
 
-  // Load wedding details and set default message
+  // Load wedding details
   useEffect(() => {
     setTimeout(() => setMounted(true), 10);
-    getMyWeddingDetails().then(w => {
-      setWedding(w);
-      const cn = w?.coupleName || w?.couple_name || '';
-      const wd = w?.weddingDate || w?.wedding_date || '';
-      const ds = wd
-        ? new Date(wd).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
-        : '[Wedding date]';
-      setSubject(`You're invited to ${cn ? `${cn}'s wedding` : 'our wedding'} 💍`);
-      setMessageBody(
-        `Hi [Guest name],\n\nWe'd love for you to celebrate with us on ${ds}. Click below to view your invitation and RSVP.\n\nWe can't wait to see you!\n\n— ${cn || '[Couple names]'}`
-      );
-    }).catch(() => {});
+    getMyWeddingDetails().then(w => setWedding(w)).catch(() => {});
   }, []);
+
+  // Banner defaults to whichever source the wedding actually has, once it
+  // loads — unless the user has already touched the control this session.
+  useEffect(() => {
+    if (bannerChoiceTouched || !wedding) return;
+    setBannerChoice(getDefaultBannerChoice({ coverPhoto: wedding.coverPhoto, venuePhotoUrl: wedding.mainCeremony?.photoUrl }));
+  }, [wedding, bannerChoiceTouched]);
+
+  // Subject/body default per type — only overwritten when the user hasn't
+  // edited that field yet this session, so switching type never clobbers a
+  // real edit, but does swap in the right default the moment nothing has
+  // been typed.
+  useEffect(() => {
+    const defaults = getTypeComposeDefaults(type);
+    if (!subjectEdited) setSubject(defaults.subject);
+    if (!bodyEdited) setMessageBody(defaults.body);
+  }, [type]);
 
   const coupleName = wedding?.coupleName || wedding?.couple_name || '';
   const weddingDate = wedding?.weddingDate || wedding?.wedding_date || '';
@@ -217,10 +231,18 @@ export default function SendInvitesModal({
   }, [wedding]);
 
   // The events THIS guest is invited to — same shape the email template and
-  // /api/send-invites expect (name, date, startTime, venue).
+  // /api/send-invites expect (name, date, startTime, venue). When
+  // restrictEventIds is set (e.g. "send invite for the new events" after an
+  // events edit), narrows to just those — intersected with actually-invited
+  // events as a safety net, never events the guest isn't invited to.
   const buildGuestEvents = (guest) => weddingEvents
     .filter(ev => getGuestEventResponse(guest, ev).invited)
+    .filter(ev => !restrictEventIds || restrictEventIds.includes(ev.event_id))
     .map(ev => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
+
+  const bannerImageUrl = getBannerImageUrl({ coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl }, bannerChoice);
+  const hasWeddingPhoto = !!wedding?.coverPhoto;
+  const hasVenuePhoto = !!wedding?.mainCeremony?.photoUrl;
 
   // Filtered guest list for Step 1
   const filteredGuests = useMemo(() => {
@@ -304,6 +326,7 @@ export default function SendInvitesModal({
     events: previewEvents,
     personalMessage: previewBody,
     rsvpUrl: previewRsvpUrl,
+    bannerImageUrl,
   }).html;
 
   // Ensure tokens and return guest list with tokens
@@ -336,11 +359,12 @@ export default function SendInvitesModal({
           const payload = {
             type,
             universeId,
+            bannerChoice,
             guests: emailList.map(g => ({
               email: g.email, name: g.name, rsvpUrl: buildRsvpUrl(g.rsvp_link_id),
               events: buildGuestEvents(g),
             })),
-            wedding: { coupleName, weddingDate, venue },
+            wedding: { coupleName, weddingDate, venue, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
             customSubject: subject,
             customBody: messageBody,
           };
@@ -397,9 +421,10 @@ export default function SendInvitesModal({
       const payload = {
         type,
         universeId,
+        bannerChoice,
         isTest: true,
         guests: [{ email: user.email, name: 'Test guest', rsvpUrl: previewRsvpUrl, events: previewEvents }],
-        wedding: { coupleName, weddingDate, venue },
+        wedding: { coupleName, weddingDate, venue, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
         customSubject: subject,
         customBody: messageBody,
       };
@@ -667,7 +692,7 @@ export default function SendInvitesModal({
                   <input
                     type="text"
                     value={subject}
-                    onChange={e => setSubject(e.target.value)}
+                    onChange={e => { setSubject(e.target.value); setSubjectEdited(true); }}
                     style={{
                       width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)',
                       borderRadius: 8, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF',
@@ -675,11 +700,11 @@ export default function SendInvitesModal({
                     }}
                   />
                 </div>
-                <div>
+                <div style={{ marginBottom: 20 }}>
                   <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.5)', letterSpacing: '0.08em', marginBottom: 6 }}>MESSAGE BODY</label>
                   <textarea
                     value={messageBody}
-                    onChange={e => setMessageBody(e.target.value)}
+                    onChange={e => { setMessageBody(e.target.value); setBodyEdited(true); }}
                     rows={12}
                     style={{
                       width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)',
@@ -687,6 +712,35 @@ export default function SendInvitesModal({
                       ...F, outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6,
                     }}
                   />
+                </div>
+
+                {/* Banner image control */}
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.5)', letterSpacing: '0.08em', marginBottom: 6 }}>BANNER IMAGE</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {[
+                      { val: 'wedding', label: 'Wedding photo', disabled: !hasWeddingPhoto },
+                      { val: 'venue', label: 'Venue photo', disabled: !hasVenuePhoto },
+                      { val: 'none', label: 'No banner', disabled: false },
+                    ].map(opt => (
+                      <button
+                        key={opt.val}
+                        type="button"
+                        disabled={opt.disabled}
+                        onClick={() => { setBannerChoice(opt.val); setBannerChoiceTouched(true); }}
+                        title={opt.disabled ? 'No photo available for this source' : undefined}
+                        style={{
+                          padding: '7px 14px', border: '1px solid',
+                          borderColor: bannerChoice === opt.val ? '#E03553' : 'rgba(10,10,10,0.12)',
+                          background: bannerChoice === opt.val ? '#FFF0F3' : '#FFFFFF',
+                          color: opt.disabled ? 'rgba(10,10,10,0.25)' : bannerChoice === opt.val ? '#E03553' : 'rgba(10,10,10,0.55)',
+                          fontSize: 12, fontWeight: 600, cursor: opt.disabled ? 'not-allowed' : 'pointer', borderRadius: 999, ...F,
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
