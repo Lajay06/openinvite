@@ -462,7 +462,7 @@ export default function Guests() {
           </TabsContent>
 
           <TabsContent value="emails" className="mt-8">
-            <EmailTemplates guests={guests} />
+            <EmailTemplates guests={guests} onUseTemplate={(t) => setSendModalConfig({ type: t })} />
           </TabsContent>
 
           <TabsContent value="considerations" className="mt-8" style={{ maxWidth: 860 }}>
@@ -498,6 +498,7 @@ export default function Guests() {
           guests={guests}
           defaultFilter={sendModalConfig.defaultFilter}
           initialSelectedIds={sendModalConfig.initialSelectedIds}
+          initialType={sendModalConfig.type}
           onClose={() => setSendModalConfig(null)}
           onSent={handleSent}
         />
