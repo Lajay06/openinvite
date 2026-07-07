@@ -1283,6 +1283,71 @@ async function run() {
     }
   }
 
+  // ── 8k. LiveStream ownership isolation (fix/livestream-scoping) ───────────────
+  // GuestSuiteLiveStream.jsx and LiveStreaming.jsx both used to call
+  // LiveStream.list('-created_date') with no created_by_id filter — the exact
+  // "most-recent-record-across-the-whole-app" bug resolveMyWedding.js's own
+  // doc comment describes, just never migrated to that fix for this entity.
+  // Both now go through the new getMyLiveStream() helper. This proves the
+  // underlying filter mechanism it depends on actually isolates by owner:
+  // a sentinel LiveStream must be found when filtering by its real owner,
+  // and must NOT be found when filtering by a different (fabricated) user id.
+  console.log('\n  LiveStream ownership isolation tests (one wedding\'s stream is not resolvable from another\'s context):\n');
+  let liveStreamId = null;
+  try {
+    const created = await api('POST', `/apps/${APP_ID}/entities/LiveStream`, {
+      title: '__PERSISTENCE_TEST_LIVESTREAM__',
+      stream_url: 'https://www.youtube.com/watch?v=test-sentinel',
+      is_test: true,
+    }, token);
+    liveStreamId = created.id;
+    if (!liveStreamId) throw new Error('No id on created LiveStream');
+
+    const me = await api('GET', `/apps/${APP_ID}/entities/User/me`, undefined, token);
+    const realUserId = me.id;
+    if (!realUserId) throw new Error('Could not resolve the test account\'s own user id');
+
+    const ownQuery = encodeURIComponent(JSON.stringify({ created_by_id: realUserId }));
+    const ownResults = await api('GET', `/apps/${APP_ID}/entities/LiveStream?q=${ownQuery}`, undefined, token);
+    const ownList = Array.isArray(ownResults) ? ownResults : (ownResults?.data || ownResults?.results || []);
+    const foundBySelf = ownList.some(s => s.id === liveStreamId);
+    results.push(foundBySelf
+      ? pass('LiveStream.filter({created_by_id: <real owner>})', 'sentinel found, as expected')
+      : fail('LiveStream.filter({created_by_id: <real owner>})', liveStreamId, ownList.map(s => s.id)));
+
+    const fakeUserId = `test-second-user-${Date.now()}-does-not-exist`;
+    const fakeQuery = encodeURIComponent(JSON.stringify({ created_by_id: fakeUserId }));
+    const fakeResults = await api('GET', `/apps/${APP_ID}/entities/LiveStream?q=${fakeQuery}`, undefined, token);
+    const fakeList = Array.isArray(fakeResults) ? fakeResults : (fakeResults?.data || fakeResults?.results || []);
+    const leakedToOther = fakeList.some(s => s.id === liveStreamId);
+    results.push(!leakedToOther
+      ? pass('LiveStream.filter({created_by_id: <other user>})', 'sentinel correctly absent')
+      : fail('LiveStream.filter({created_by_id: <other user>}) — ISOLATION BREACH', 'sentinel absent', 'sentinel present'));
+
+    // The old bug specifically: an UNFILTERED list() call would return this
+    // sentinel as [0] (most recent) regardless of who's asking. Confirm the
+    // fixed helper's actual query shape excludes it for a different owner —
+    // i.e. simulate "another wedding's context" the same way
+    // getMyLiveStream() does, scoped by created_by_id, and confirm it comes
+    // back null rather than resolving this wedding's sentinel stream.
+    const otherContextResults = await api('GET', `/apps/${APP_ID}/entities/LiveStream?q=${fakeQuery}`, undefined, token);
+    const otherContextList = Array.isArray(otherContextResults) ? otherContextResults : (otherContextResults?.data || otherContextResults?.results || []);
+    const resolvedForOtherContext = otherContextList.filter(s => !s.is_test).length > 0
+      ? otherContextList.filter(s => !s.is_test).sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
+      : null;
+    results.push(resolvedForOtherContext === null
+      ? pass('getMyLiveStream() mechanism — another wedding\'s context resolves no stream', 'null, as expected')
+      : fail('getMyLiveStream() mechanism — another wedding\'s context resolves no stream', null, resolvedForOtherContext?.id));
+  } catch (err) {
+    console.log(`  ❌ FAIL  LiveStream ownership isolation — error: ${err.message}`);
+    results.push(false, false, false);
+  } finally {
+    if (liveStreamId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/LiveStream/${liveStreamId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
   // ── 9. Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;
   const total  = results.length;

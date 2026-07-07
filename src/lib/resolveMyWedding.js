@@ -43,3 +43,11 @@ export async function getMyInvitation() {
   const rows = await base44.entities.Invitation.filter({ created_by_id: me.id });
   return mostRecent(rows);
 }
+
+/** @returns {Promise<object|null>} the logged-in user's own LiveStream record, or null if they have none yet. */
+export async function getMyLiveStream() {
+  const me = await base44.auth.me().catch(() => null);
+  if (!me?.id) return null;
+  const rows = await base44.entities.LiveStream.filter({ created_by_id: me.id });
+  return mostRecent(rows);
+}

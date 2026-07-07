@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { getMyLiveStream } from '@/lib/resolveMyWedding';
 import { Video, Loader2, Check, Radio, ExternalLink } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
@@ -84,9 +85,8 @@ export default function LiveStreamingPage() {
 
   const loadData = async () => {
     try {
-      const streams = await base44.entities.LiveStream.list('-created_date');
-      if (streams.length > 0) {
-        const s = streams[0];
+      const s = await getMyLiveStream();
+      if (s) {
         setStreamId(s.id);
         setIsLive(s.is_live || false);
         setForm({

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { getMyLiveStream } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Loader2, Video, ExternalLink, ArrowRight, Calendar, Clock, Lock, FileText, Radio } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -39,8 +39,8 @@ export default function GuestSuiteLiveStream() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.LiveStream.list('-created_date')
-      .then(streams => { setStream(streams[0] || null); })
+    getMyLiveStream()
+      .then(s => setStream(s))
       .catch(e => console.error('GuestSuiteLiveStream load error', e))
       .finally(() => setLoading(false));
   }, []);
