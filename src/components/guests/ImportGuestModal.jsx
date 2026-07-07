@@ -98,8 +98,29 @@ export default function ImportGuestModal({ onClose, onImported }) {
     if (validRows.length === 0) { toast.error('No valid rows to import'); return; }
     setImporting(true);
     const tid = toast.loading(`Importing ${validRows.length} guests…`);
+
+    // Skip rows whose email already matches an existing guest — importing
+    // the same list twice (a common re-export/re-import habit) would
+    // otherwise silently double every guest.
+    const existingGuests = await Guest.list().catch(() => []);
+    const existingEmails = new Set(
+      existingGuests.map(g => g.email?.trim().toLowerCase()).filter(Boolean)
+    );
+
+    const toImport = [];
+    const duplicates = [];
+    for (const row of validRows) {
+      const email = row.email?.trim().toLowerCase();
+      if (email && existingEmails.has(email)) {
+        duplicates.push(row._rowIndex);
+      } else {
+        toImport.push(row);
+        if (email) existingEmails.add(email); // guard against duplicate emails within the same file
+      }
+    }
+
     const failed = [];
-    await Promise.all(validRows.map(async (row) => {
+    await Promise.all(toImport.map(async (row) => {
       const { _rowIndex, _error, ...guestData } = row;
       try {
         await Guest.create(guestData);
@@ -108,15 +129,28 @@ export default function ImportGuestModal({ onClose, onImported }) {
       }
     }));
     setImporting(false);
-    if (failed.length === 0) {
-      toast.success(`${validRows.length} guests imported`, { id: tid });
+
+    const importedCount = toImport.length - failed.length;
+    if (failed.length === 0 && duplicates.length === 0) {
+      toast.success(`${importedCount} guests imported`, { id: tid });
       onImported();
       onClose();
     } else {
-      toast.error(`${failed.length} rows failed to save`, { id: tid });
-      setRows(prev => prev.map(r =>
-        failed.includes(r._rowIndex) ? { ...r, _error: 'Failed to save' } : r
-      ));
+      const parts = [];
+      if (importedCount > 0) parts.push(`${importedCount} imported`);
+      if (duplicates.length > 0) parts.push(`${duplicates.length} skipped (already on your list)`);
+      if (failed.length > 0) parts.push(`${failed.length} failed`);
+      toast(parts.join(' · '), { id: tid, icon: duplicates.length > 0 || failed.length > 0 ? '⚠️' : undefined });
+      setRows(prev => prev.map(r => {
+        if (failed.includes(r._rowIndex)) return { ...r, _error: 'Failed to save' };
+        if (duplicates.includes(r._rowIndex)) return { ...r, _error: 'Already on your guest list — skipped' };
+        return r;
+      }));
+      if (importedCount > 0) onImported();
+      if (failed.length === 0) {
+        // Only genuine duplicates remain flagged — nothing left to retry, safe to close.
+        onClose();
+      }
     }
   };
 
