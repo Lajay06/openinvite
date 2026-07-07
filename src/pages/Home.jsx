@@ -1,93 +1,34 @@
-import React, { useRef, useEffect, useState } from "react";
-import { createPageUrl } from "@/utils";
+import React from "react";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import HeroCollage from "@/components/home/HeroCollage";
-import ValuePropSection from "@/components/home/ValuePropSection";
-import FeatureInvitations from "@/components/home/FeatureInvitations";
-import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
-import ScrollMorphSection from "@/components/home/ScrollMorphSection";
+import Block from "@/components/home/blocks/Block";
+import BulletList from "@/components/home/blocks/BulletList";
+import FeatureRows from "@/components/home/blocks/FeatureRows";
+import { cloudinaryUrl } from "@/lib/cloudinaryUrl";
 
-import LightSectionReveal from "@/components/home/LightSectionReveal";
-import HowItWorksSection from "@/components/home/HowItWorksSection";
-import TestimonialsSection from "@/components/home/TestimonialsSection";
-import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
-import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
+// ── Cloudinary images — one unique image per photo block, none reused ──────
+const IMG_VALUE_PROP  = cloudinaryUrl("https://res.cloudinary.com/dsr84xknv/image/upload/v1779185602/DTS_Remote_Studio_Tino_Renato_Photos_ID3726_vgcgmv.jpg");
+const IMG_GUESTS       = cloudinaryUrl("https://res.cloudinary.com/dsr84xknv/image/upload/v1779185626/DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa.jpg");
+const IMG_TIMELINE     = cloudinaryUrl("https://res.cloudinary.com/dsr84xknv/image/upload/v1779185631/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0.jpg");
+const IMG_UNIVERSES    = cloudinaryUrl("https://res.cloudinary.com/dsr84xknv/image/upload/v1779218329/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID3470_knfncz.jpg");
+const IMG_FINAL_CTA    = cloudinaryUrl("https://res.cloudinary.com/dsr84xknv/image/upload/v1779233659/DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj.jpg");
 
-export default function Home() {
-  const handleCTA = () => {
-    window.location.href = '/signup';
-  };
+const UNIVERSE_FEATURES = [
+  { heading: 'Entire wedding identities', description: 'Not just invitations, complete visual ecosystems. Every Universe includes matching save the dates, seating charts, menus, guest experiences, thank you cards, and more.' },
+  { heading: 'Designed as one seamless system', description: 'Every detail works together beautifully. Fonts, colours, layouts, motion, and styling are carried across every touchpoint for a fully cohesive wedding experience.' },
+  { heading: 'Built for modern weddings', description: 'Digital-first designs made to feel immersive on any device. Elegant mobile invitations, animated interactions, live updates, and guest experiences designed for the way people celebrate today.' },
+  { heading: 'A universe for every style', description: 'From modern minimal to culturally inspired celebrations. Choose from curated Universes influenced by aesthetics, destinations, traditions, and luxury design worlds from around the globe.' },
+];
 
-  const SECTION_LABELS = [
-  { id: "section-hero", label: "OVERVIEW" },
-  { id: "section-features", label: "FEATURES" },
-  { id: "section-invitations", label: "INVITATIONS" },
-  { id: "section-pricing", label: "PRICING" }];
-
-
-  return (
-    <div className="min-h-screen bg-[#0A0A0A] font-sans" style={{ scrollBehavior: "smooth" }}>
-      <PublicNav />
-      <ScrollProgress />
-
-      {/* 1. HERO */}
-      <div id="section-hero">
-        <HeroCollage onCTA={handleCTA} />
-      </div>
-
-      {/* 2. RED SILHOUETTE — full-width natural-height image */}
-      <ValuePropSection />
-
-      {/* 3. SCROLL MORPH — "So, why us?" */}
-      <ScrollMorphSection />
-
-      {/* 4. HORIZONTAL SCROLL */}
-      <div id="section-features" style={{ background: "#0A0A0A" }}>
-        <HorizontalScrollSection />
-      </div>
-
-      {/* 5. LIGHT SECTION CURTAIN REVEAL — transitions to white */}
-      <LightSectionReveal />
-
-      {/* 5. FEATURE BLOCKS — all on white */}
-      <div style={{ background: "#FFFFFF" }}>
-        <div id="section-invitations"><FeatureInvitations onCTA={handleCTA} /></div>
-      </div>
-
-      {/* 6. HOW IT WORKS */}
-      <HowItWorksSection />
-
-      {/* 7. TESTIMONIALS */}
-      <TestimonialsSection />
-
-      {/* 8. AVA GRADIENT BANNER + SPOTLIGHT */}
-      <div className="min-h-[140px] md:min-h-[180px]" style={{
-        background: "linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "40px 24px",
-      }}>
-        <span style={{ fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
-          AI meets I Do. Say hello to Ava.
-        </span>
-      </div>
-      <AvaSpotlightSection />
-
-      {/* 10. PRICING */}
-      <div id="section-pricing">
-        <PricingSection onCTA={handleCTA} />
-      </div>
-
-      {/* 9. FULL BLEED PHOTO CTA */}
-      <FullBleedPhotoCTA onCTA={handleCTA} />
-
-      {/* 12. FOOTER */}
-      <PublicFooter />
-    </div>);
-
-}
+const AVA_ROWS = [
+  { heading: 'Smart suggestions', description: 'Personalised recommendations based on your style and budget' },
+  { heading: 'Budget intelligence', description: 'Real-time tips to keep spending on track without compromise' },
+  { heading: 'Guest insights', description: 'Dietary, seating, and RSVP patterns analysed automatically' },
+  { heading: 'Timeline optimisation', description: 'Day-of schedule refined to perfection' },
+];
 
 // ── See Pricing ghost button ─────────────────────────────────────
 function SeePricingButton() {
@@ -115,68 +56,186 @@ function SeePricingButton() {
   );
 }
 
-// ── Pricing ───────────────────────────────────────────────────────
-
-const EASE = "cubic-bezier(0.16,1,0.3,1)";
-const prefersReduced = () =>
-  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-function PricingSection({ onCTA }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  const [spring, setSpring] = useState(false);
-  const reduced = prefersReduced();
-
-  useEffect(() => {
-    if (reduced) { setVisible(true); setSpring(true); return; }
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.2 }
-    );
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (visible && !spring) setTimeout(() => setSpring(true), 80);
-  }, [visible]);
+export default function Home() {
+  const handleCTA = () => {
+    window.location.href = '/signup';
+  };
 
   return (
-    <section ref={ref} style={{ background: "#0A0A0A", padding: "clamp(80px, 10vw, 160px)" }}>
-      <div style={{ opacity: visible ? 1 : 0, transition: reduced ? "none" : `opacity 0.6s ${EASE}`, display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "0 12px" }}>
-        <span style={{ fontSize: "clamp(40px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05, color: "#FFFFFF", whiteSpace: "nowrap" }}>
-          Go All In –{" "}
-        </span>
-        <span style={{
-          fontSize: "clamp(40px, 5vw, 64px)",
-          fontWeight: 700,
-          letterSpacing: "-0.03em",
-          lineHeight: 1.05,
-          color: "#DDF762",
-          display: "inline-block",
-          transform: reduced ? "scale(1)" : spring ? "scale(1)" : visible ? "scale(1.2)" : "scale(0)",
-          transition: reduced ? "none" : spring ? `transform 0.5s ${EASE}` : `transform 0.4s ease`,
-        }}>
-          $79
-        </span>
+    <div className="min-h-screen bg-[#0A0A0A] font-sans" style={{ scrollBehavior: "smooth" }}>
+      <PublicNav />
+      <ScrollProgress />
+
+      {/* 1. HERO — untouched */}
+      <div id="section-hero">
+        <HeroCollage onCTA={handleCTA} />
       </div>
-      <p style={{
-        maxWidth: 480,
-        marginTop: "1.5rem",
-        marginBottom: "2.5rem",
-        color: "#FFFFFF",
-        fontSize: 18,
-        lineHeight: 1.6,
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(20px)",
-        transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
-      }}>
-        Unlock the full experience. One-time payment, lifetime access. Everything you need. Nothing you don't.
-      </p>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)", transition: reduced ? "none" : `opacity 0.6s ${EASE} 0.1s, transform 0.6s ${EASE} 0.1s` }}>
-        <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
-        <SeePricingButton />
+
+      {/* 2. PHOTO — value prop */}
+      <Block
+        type="photo"
+        image={IMG_VALUE_PROP}
+        imageAlt="Openinvite platform"
+        headline="All the powerful tools, beautifully designed to make wedding planning smooth, stylish, and seriously organised."
+        staggerIndex={0}
+      />
+
+      {/* 3. BLACK — "so, why us?" */}
+      <Block
+        type="black"
+        kicker="So, why us?"
+        headline="Every detail, beautifully handled."
+        copy="Planning, invitations, guests, timelines and budgets, intelligently connected in one seamless experience."
+        align="center"
+        staggerIndex={1}
+      />
+
+      {/* 4. PHOTO — Advanced Guest Management */}
+      <div id="section-features">
+        <Block
+          type="photo"
+          image={IMG_GUESTS}
+          imageAlt="Wedding guests celebrating"
+          kicker="01"
+          headline="Advanced Guest Management"
+          copy="From RSVP tracking to seating charts, we handle the guest list chaos so you can stay cool, calm, and perfectly in control."
+          staggerIndex={0}
+        >
+          <BulletList
+            items={["Unlimited guest lists", "Real-time RSVP tracking", "Smart table assignments"]}
+            textColor="#FFFFFF"
+            hairline="rgba(255,255,255,0.2)"
+          />
+        </Block>
       </div>
-    </section>
+
+      {/* 5. WHITE — Smart Budget Tracking */}
+      <Block
+        type="white"
+        kicker="02"
+        headline="Smart Budget Tracking"
+        copy="Plan like a pro. Full visibility, clear control, and a few clever nudges to keep things beautifully on track."
+        staggerIndex={1}
+      >
+        <BulletList
+          items={["Budget vs. actual spend", "Vendor payment scheduling", "Visual expense analytics"]}
+          textColor="#0A0A0A"
+          hairline="rgba(10,10,10,0.1)"
+        />
+      </Block>
+
+      {/* 6. PHOTO — Timeline & Schedule Planning */}
+      <Block
+        type="photo"
+        image={IMG_TIMELINE}
+        imageAlt="Wedding day timeline"
+        kicker="03"
+        headline="Timeline & Schedule Planning"
+        copy="Run the day like a director — with an intuitive builder that keeps every moment smooth, stylish, and on time."
+        staggerIndex={0}
+      >
+        <BulletList
+          items={["Visual timeline builder", "Vendor coordination", "Seamless day-of rundown"]}
+          textColor="#FFFFFF"
+          hairline="rgba(255,255,255,0.2)"
+        />
+      </Block>
+
+      {/* 7. WHITE — Collaborative Playlists */}
+      <Block
+        type="white"
+        kicker="04"
+        headline="Collaborative Playlists"
+        copy="Curate the ultimate wedding soundtrack — and let your guests be part of the vibe."
+        staggerIndex={1}
+      >
+        <BulletList
+          items={["Spotify integration", "Guest song suggestions", "DJ collaboration tools"]}
+          textColor="#0A0A0A"
+          hairline="rgba(10,10,10,0.1)"
+        />
+      </Block>
+
+      {/* 8. BLACK — "37 planning tools. One platform." */}
+      <Block
+        type="black"
+        headline="37 planning tools."
+        copy="One platform."
+        align="center"
+        staggerIndex={0}
+      >
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <ApplePillButton onClick={() => { window.location.href = '/Features'; }}>
+            Explore all features
+          </ApplePillButton>
+        </div>
+      </Block>
+
+      {/* 9. PHOTO — Universes intro */}
+      <Block
+        type="photo"
+        image={IMG_UNIVERSES}
+        imageAlt="A wedding universe"
+        headline="Universes"
+        copy="Choose your aesthetic universe. Every invitation, asset and piece of design follows a single visual vision — from your Save the Date to your Thank You Notes. 9 universes, 10 pieces each."
+        align="center"
+        staggerIndex={1}
+      >
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <ApplePillButton onClick={handleCTA}>Get started</ApplePillButton>
+        </div>
+      </Block>
+
+      {/* 10. WHITE — Universes feature grid */}
+      <div id="section-invitations">
+        <Block type="white" staggerIndex={0}>
+          <FeatureRows rows={UNIVERSE_FEATURES} textColor="#0A0A0A" hairline="rgba(10,10,10,0.1)" />
+        </Block>
+      </div>
+
+      {/* 11. RED — the one accent block on the page */}
+      <Block
+        type="red"
+        headline="AI meets I Do. Say hello to Ava."
+        align="center"
+        staggerIndex={1}
+      />
+
+      {/* 12. WHITE — Ava detail */}
+      <Block
+        type="white"
+        copy="Ava learns your style, your budget, and your vision — then helps you make smarter decisions at every step. From vendor suggestions to seating optimisation, she's always one step ahead."
+        staggerIndex={0}
+      >
+        <FeatureRows rows={AVA_ROWS} textColor="#0A0A0A" hairline="rgba(10,10,10,0.1)" />
+      </Block>
+
+      {/* 13. BLACK — pricing */}
+      <div id="section-pricing">
+        <Block
+          type="black"
+          headline="Go All In – $79"
+          copy="Unlock the full experience. One-time payment, lifetime access. Everything you need. Nothing you don't."
+          staggerIndex={1}
+        >
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+            <ApplePillButton onClick={handleCTA}>Get started</ApplePillButton>
+            <SeePricingButton />
+          </div>
+        </Block>
+      </div>
+
+      {/* 14. PHOTO — final CTA */}
+      <Block
+        type="photo"
+        image={IMG_FINAL_CTA}
+        imageAlt="Wedding moment"
+        headline="Your wedding deserves this."
+        staggerIndex={0}
+      />
+
+      {/* FOOTER */}
+      <PublicFooter />
+    </div>
   );
 }
