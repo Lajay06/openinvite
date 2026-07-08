@@ -207,8 +207,8 @@ export default function Contact() {
             <div style={{ borderBottom: "1px solid #E0E0DC", marginBottom: 32 }} />
 
             {[
-              { label: "EMAIL", value: "hello@openinvite.com" },
-              { label: "SUPPORT", value: "support@openinvite.com" },
+              { label: "EMAIL", value: "hello@openinvite.com.au" },
+              { label: "SUPPORT", value: "customercare@openinvite.com.au" },
               { label: "RESPONSE TIME", value: "Within 24 hours" },
             ].map((item, i) => (
               <div key={i} style={{ marginBottom: 24 }}>

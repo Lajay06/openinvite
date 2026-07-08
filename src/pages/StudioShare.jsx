@@ -168,7 +168,7 @@ export default function StudioShare() {
           <div style={{ border: '1px solid #EEEEEE', padding: 20, marginBottom: 16 }}>
             <div style={{ display: 'flex', marginBottom: 12 }}>
               <div style={{ flex: 1, padding: '10px 12px', background: '#F8F8F8', fontSize: 12, color: '#444', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderBottom: '1px solid #DDD' }}>
-                openinvite.com/w/{details?.slug || 'your-wedding'}
+                openinvite.com.au/w/{details?.slug || 'your-wedding'}
               </div>
               <button onClick={copyLink} style={{ padding: '10px 16px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans, whiteSpace: 'nowrap' }}>
                 {copied ? '✓ Copied' : 'Copy'}
@@ -192,7 +192,7 @@ export default function StudioShare() {
           <div style={{ border: '1px solid #EEEEEE', padding: 20 }}>
             <p style={{ fontSize: 11, fontWeight: 600, color: '#888', margin: '0 0 6px' }}>Your URL</p>
             <div style={{ display: 'flex', border: '1px solid #DDD', marginBottom: 12 }}>
-              <span style={{ padding: '8px 10px', background: '#F8F8F8', fontSize: 11, color: '#888', flexShrink: 0, fontFamily: 'monospace' }}>openinvite.com/w/</span>
+              <span style={{ padding: '8px 10px', background: '#F8F8F8', fontSize: 11, color: '#888', flexShrink: 0, fontFamily: 'monospace' }}>openinvite.com.au/w/</span>
               <input value={slugInput} onChange={e => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
                 style={{ flex: 1, border: 'none', padding: '8px 10px', fontSize: 12, outline: 'none', fontFamily: 'monospace', minWidth: 0 }} />
               <button onClick={() => saveSlug(slugInput)} style={{ padding: '8px 12px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: sans }}>Save</button>
@@ -302,7 +302,7 @@ export default function StudioShare() {
           {/* QR CODE */}
           <div style={{ border: '1px solid #EEEEEE', padding: 20, marginBottom: 16, textAlign: 'center' }}>
             <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(siteUrl)}&color=0A0A0A&bgcolor=FFFFFF`} alt="QR Code" style={{ width: 160, height: 160, marginBottom: 12, display: 'block', margin: '0 auto 12px' }} />
-            <p style={{ fontSize: 12, color: '#888', margin: '0 0 16px', fontFamily: 'monospace', wordBreak: 'break-all' }}>openinvite.com/w/{details?.slug || 'your-wedding'}</p>
+            <p style={{ fontSize: 12, color: '#888', margin: '0 0 16px', fontFamily: 'monospace', wordBreak: 'break-all' }}>openinvite.com.au/w/{details?.slug || 'your-wedding'}</p>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={downloadQR} style={{ flex: 1, padding: '10px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans }}>Download</button>
               <button onClick={() => window.print()} style={{ flex: 1, padding: '10px', border: '1px solid #0A0A0A', background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans }}>Print</button>

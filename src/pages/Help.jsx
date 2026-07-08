@@ -300,7 +300,7 @@ const ARTICLES = {
         <li style={S.li}>Click "+ Add Section" and choose one of three RSVP templates: Full RSVP Form, Simple RSVP, or RSVP + Meal</li>
         <li style={S.li}>Click the RSVP section to open its editor: set your RSVP deadline date, add meal options (type and press Enter), toggle plus ones / dietary field / song requests / guest message</li>
         <li style={S.li}>Add a closing message: "We cannot wait to celebrate with you."</li>
-        <li style={S.li}>Save — your RSVP form is live at openinvite.com/w/[your-slug]/rsvp</li>
+        <li style={S.li}>Save — your RSVP form is live at openinvite.com.au/w/[your-slug]/rsvp</li>
       </ol>
       <h3 style={S.h3}>How responses work</h3>
       <ul style={S.ul}>
@@ -316,7 +316,7 @@ const ARTICLES = {
   ),
   'Publishing and sharing your site': (
     <div>
-      <p style={S.p}>Publishing makes your wedding website live at openinvite.com/w/[your-slug] so guests can visit it.</p>
+      <p style={S.p}>Publishing makes your wedding website live at openinvite.com.au/w/[your-slug] so guests can visit it.</p>
       <h3 style={S.h3}>How to publish</h3>
       <ol style={S.ol}>
         <li style={S.li}>Open the Guest Suite</li>
@@ -325,7 +325,7 @@ const ARTICLES = {
         <li style={S.li}>Your site is immediately live</li>
       </ol>
       <h3 style={S.h3}>Your website URL</h3>
-      <p style={S.p}>Your default URL is openinvite.com/w/[your-name-slug]. To customise it: in the Publish modal → Website tab → edit the slug field (e.g. "john-and-sarah-2026") → Save. Your new URL is active immediately.</p>
+      <p style={S.p}>Your default URL is openinvite.com.au/w/[your-name-slug]. To customise it: in the Publish modal → Website tab → edit the slug field (e.g. "john-and-sarah-2026") → Save. Your new URL is active immediately.</p>
       <h3 style={S.h3}>Sharing options (Guest Suite → Share tab)</h3>
       <ul style={S.ul}>
         <li style={S.li}><strong>Copy link:</strong> one click to copy your full URL</li>

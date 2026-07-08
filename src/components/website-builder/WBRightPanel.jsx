@@ -243,7 +243,7 @@ function SettingsTab({ details, onChange }) {
     <div>
       <SLabel>Your site URL</SLabel>
       <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.08)', padding: '7px 10px', marginBottom: 8 }}>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }}>openinvite.com/w/</span>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }}>openinvite.com.au/w/</span>
         <input value={details.slug || ''} onChange={e => onChange('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
           placeholder="your-names" style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit' }} />
       </div>

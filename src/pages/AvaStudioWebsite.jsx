@@ -368,7 +368,7 @@ export default function AvaStudioWebsite() {
         <div style={{ textAlign: 'center', padding: '0 40px' }}>
           <div style={{ fontSize: 72, marginBottom: 24 }}>🎉</div>
           <h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, color: fg, margin: '0 0 16px' }}>Your website is ready!</h2>
-          <p style={{ fontSize: 16, color: sub, margin: '0 0 40px' }}>{coupleName} · openinvite.com/w/{details?.slug || 'your-wedding'}</p>
+          <p style={{ fontSize: 16, color: sub, margin: '0 0 40px' }}>{coupleName} · openinvite.com.au/w/{details?.slug || 'your-wedding'}</p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button onClick={() => navigate('/studio/share')} style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14, fontFamily: sans }}>
               Share with Guests →

@@ -47,8 +47,8 @@ export default function PublicFooter() {
             <Link to="/Contact" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors block mb-2">
               Get in touch
             </Link>
-            <a href="mailto:info@openinvite.com" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">
-              info@openinvite.com
+            <a href="mailto:customercare@openinvite.com.au" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">
+              customercare@openinvite.com.au
             </a>
 
             {/* Social icons */}

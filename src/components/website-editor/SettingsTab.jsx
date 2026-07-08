@@ -74,7 +74,7 @@ export default function SettingsTab({ wedding, onChange }) {
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
           <p style={{ fontSize: '11px', color: '#888888', margin: 0, flex: 1 }}>
-            openinvite.com/w/{wedding.slug || 'your-slug'}
+            openinvite.com.au/w/{wedding.slug || 'your-slug'}
           </p>
           {slugAvailable !== null && (
             slugAvailable ? (

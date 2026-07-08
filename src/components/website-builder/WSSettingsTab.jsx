@@ -7,7 +7,7 @@ export default function WSSettingsTab({ details, onChange, existingId }) {
   const [copied, setCopied] = useState(false);
   const origin = window.location.origin;
   const siteUrl = details.slug ? `${origin}/w/${details.slug}` : '';
-  const displayUrl = details.slug ? `openinvite.com/w/${details.slug}` : '';
+  const displayUrl = details.slug ? `openinvite.com.au/w/${details.slug}` : '';
 
   const copyLink = () => {
     if (!siteUrl) { toast.error('Set a URL slug first.'); return; }
@@ -41,7 +41,7 @@ export default function WSSettingsTab({ details, onChange, existingId }) {
       <div>
         <p style={sectionLabel}>Your Website URL</p>
         <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #EEEEEE', background: '#FAFAFA', padding: '8px 12px', marginBottom: 6 }}>
-          <span style={{ fontSize: 12, color: '#888', flexShrink: 0 }}>openinvite.com/w/</span>
+          <span style={{ fontSize: 12, color: '#888', flexShrink: 0 }}>openinvite.com.au/w/</span>
           <input
             value={details.slug || ''}
             onChange={e => onChange('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
