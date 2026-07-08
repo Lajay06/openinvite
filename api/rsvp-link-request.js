@@ -29,6 +29,7 @@ import {
   getClientIp,
   isValidEmail,
   sanitizeString,
+  verifyTurnstileToken,
 } from './_lib/security.js';
 import { renderInvitationEmail } from '../src/lib/emailTemplate.js';
 
@@ -95,14 +96,37 @@ export default async function handler(req, res) {
 
   const email = sanitizeString(req.body?.email || '').toLowerCase();
   const weddingSlug = sanitizeString(req.body?.weddingSlug || '');
+  const turnstileToken = req.body?.turnstileToken;
 
   if (!isValidEmail(email) || !weddingSlug) {
     return res.status(400).json({ error: 'A valid email and wedding are required' });
   }
 
+  if (!turnstileToken) {
+    return res.status(400).json({ error: 'Security verification token is missing.' });
+  }
+
   if (!BASE44_ADMIN_KEY) {
     console.error('[rsvp-link-request] BASE44_ADMIN_KEY env var is not set');
     return res.status(500).json({ error: 'Server not configured' });
+  }
+
+  // ── Cloudflare Turnstile verification ──────────────────────────────────────
+  // This check must reject on failure (400), NOT fall through to the neutral
+  // { sent: true } response below — the neutral response exists specifically
+  // to resist email-enumeration on the *match* branch, which is a separate
+  // concern from rejecting a request that isn't a human at all.
+  let turnstileResult;
+  try {
+    turnstileResult = await verifyTurnstileToken(turnstileToken, ip, '[rsvp-link-request]');
+  } catch (err) {
+    console.error('[rsvp-link-request] Turnstile network error:', err.message);
+    return res.status(500).json({ error: 'Security check unavailable. Please try again.' });
+  }
+
+  if (!turnstileResult.success) {
+    console.warn('[rsvp-link-request] Turnstile failed — codes:', turnstileResult['error-codes'], '| IP:', ip);
+    return res.status(400).json({ error: 'Security verification failed. Please refresh the page and try again.' });
   }
 
   // Neutral success — returned whether or not the email matched a guest.

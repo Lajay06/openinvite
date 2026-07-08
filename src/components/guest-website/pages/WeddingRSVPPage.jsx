@@ -1,25 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const STATUS = { idle: 'idle', sending: 'sending', sent: 'sent', error: 'error' };
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 export default function WeddingRSVPPage({ weddingDetails, theme, typography }) {
   const content = weddingDetails.rsvpContent || {};
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState(STATUS.idle);
 
+  const turnstileRef = useRef(null);
+  const tsTokenRef = useRef('');
+
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSubmit = async () => {
     if (!isValidEmail || status === STATUS.sending) return;
+    if (!tsTokenRef.current) { setStatus(STATUS.error); return; }
     setStatus(STATUS.sending);
     try {
       const res = await fetch('/api/rsvp-link-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, weddingSlug: weddingDetails.slug }),
+        body: JSON.stringify({ email, weddingSlug: weddingDetails.slug, turnstileToken: tsTokenRef.current }),
       });
       setStatus(res.ok ? STATUS.sent : STATUS.error);
+      tsTokenRef.current = '';
+      turnstileRef.current?.reset();
     } catch {
       setStatus(STATUS.error);
     }
@@ -124,6 +132,15 @@ export default function WeddingRSVPPage({ weddingDetails, theme, typography }) {
                   Something went wrong — please try again in a moment.
                 </p>
               )}
+
+              {/* Invisible Turnstile — execution="render" auto-generates a token on mount */}
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={TURNSTILE_SITE_KEY}
+                onSuccess={(token) => { tsTokenRef.current = token; }}
+                onExpire={() => { tsTokenRef.current = ''; }}
+                options={{ appearance: 'execute', execution: 'render' }}
+              />
 
               <button
                 type="button"

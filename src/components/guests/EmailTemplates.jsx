@@ -65,7 +65,10 @@ export default function EmailTemplates({ guests, onUseTemplate }) {
     try {
       const res = await fetch('/api/send-invites', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+        },
         body: JSON.stringify({
           type,
           universeId,

@@ -194,8 +194,11 @@ const TURNSTILE_TIMEOUT_MS = 5_000; // abort the Cloudflare fetch after 5 s
  *
  * - Uses an AbortController so a slow/unreachable Cloudflare API times out in
  *   5 seconds instead of hanging the entire Vercel function.
- * - If TURNSTILE_SECRET_KEY is unset, skips the check and returns success
- *   (allows dev / Vercel preview deployments without the env var).
+ * - If TURNSTILE_SECRET_KEY is unset, FAILS CLOSED — returns success:false
+ *   rather than skipping the check. A misconfigured environment must never
+ *   silently accept unverified submissions; set TURNSTILE_SECRET_KEY (even
+ *   to a Cloudflare test key) in every environment that exposes a
+ *   Turnstile-gated form, including local dev and preview deployments.
  *
  * @param {string} token   — cf-turnstile-response token from the client
  * @param {string} ip      — client IP forwarded to Cloudflare for extra signal
@@ -206,12 +209,12 @@ export async function verifyTurnstileToken(token, ip, logPrefix = '[turnstile]')
   const secret = process.env.TURNSTILE_SECRET_KEY;
 
   if (!secret) {
-    console.warn(
-      `${logPrefix} TURNSTILE_SECRET_KEY is not set — ` +
-      'skipping Turnstile check (dev/preview only). ' +
-      'Add this env var to Vercel project settings before going to production.'
+    console.error(
+      `${logPrefix} TURNSTILE_SECRET_KEY is not set — failing closed. ` +
+      'Add this env var (a Cloudflare test key is fine for local dev/preview) ' +
+      'before this endpoint can accept submissions.'
     );
-    return { success: true };
+    return { success: false, 'error-codes': ['config-missing'] };
   }
 
   const controller = new AbortController();

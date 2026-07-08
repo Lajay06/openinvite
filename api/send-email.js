@@ -48,6 +48,7 @@ import {
   isValidEmail,
   sanitizeString,
 } from './_lib/security.js';
+import { verifyBase44User } from './_lib/auth.js';
 import { welcomeEmail } from './emails/welcome.js';
 import { purchaseConfirmationEmail } from './emails/purchase-confirmation.js';
 import { onboardingDay1Email } from './emails/onboarding-day1.js';
@@ -106,6 +107,12 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
   }
 
+  // ── Auth: only the authenticated caller's own address may be emailed ─────
+  const caller = await verifyBase44User(req);
+  if (!caller) {
+    return res.status(401).json({ error: 'Authentication required.' });
+  }
+
   try {
     const { type, template, to, data = {} } = req.body || {};
 
@@ -119,6 +126,10 @@ export default async function handler(req, res) {
     // ── Validate email address ─────────────────────────────────────────────
     if (!isValidEmail(to)) {
       return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    if (to.trim().toLowerCase() !== caller.email?.trim().toLowerCase()) {
+      return res.status(403).json({ error: 'You can only send to your own email address.' });
     }
 
     // ── Sanitize user-supplied data fields ────────────────────────────────

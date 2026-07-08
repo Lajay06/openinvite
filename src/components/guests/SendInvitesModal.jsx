@@ -370,7 +370,10 @@ export default function SendInvitesModal({
           };
           const res = await fetch('/api/send-invites', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+            },
             body: JSON.stringify(payload),
           });
           const data = await res.json();
