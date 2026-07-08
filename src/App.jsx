@@ -26,8 +26,6 @@ import CookiePolicy from './pages/CookiePolicy';
 import DataDeletion from './pages/DataDeletion';
 import RefundPolicy from './pages/RefundPolicy';
 import ScrollMorph from './pages/ScrollMorph';
-import GuestWebsite from './pages/GuestWebsite';
-import WeddingWebsiteEditor from './pages/WeddingWebsiteEditor';
 import Universes from './pages/Universes';
 import Onboarding from './pages/Onboarding';
 import ProtectedRoute from '@/components/ProtectedRoute';

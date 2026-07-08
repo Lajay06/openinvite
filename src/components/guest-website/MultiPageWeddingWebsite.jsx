@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
 import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, UNIVERSE_CONFIGS } from '@/lib/websiteThemes';
 import WBSectionRenderer from '@/components/website-builder/WBSectionRenderer';
+import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 
-function PasswordGateSimple({ slug, password }) {
+function PasswordGateSimple({ slug, onUnlock }) {
   const [val, setVal] = useState('');
   const [error, setError] = useState(false);
-  const submit = () => {
-    if (val === password) {
-      sessionStorage.setItem('wb_pw_' + slug, password);
-      window.location.reload();
+  const [checking, setChecking] = useState(false);
+  const submit = async () => {
+    setChecking(true);
+    setError(false);
+    const result = await fetchWeddingBySlug(slug, val);
+    setChecking(false);
+    if (result && !result.passwordProtected) {
+      sessionStorage.setItem('wb_pw_' + slug, val);
+      onUnlock(result);
     } else {
       setError(true);
     }
@@ -25,8 +30,8 @@ function PasswordGateSimple({ slug, password }) {
         <input type="password" value={val} onChange={e => { setVal(e.target.value); setError(false); }} onKeyDown={e => e.key === 'Enter' && submit()}
           placeholder="Password" style={{ width: '100%', padding: '12px 16px', background: '#1a1a1a', border: `1px solid ${error ? '#E03553' : '#333'}`, color: '#fff', fontSize: 14, outline: 'none', borderRadius: 4, marginBottom: 12, boxSizing: 'border-box' }} />
         {error && <p style={{ color: '#E03553', fontSize: 12, marginBottom: 8 }}>Incorrect password</p>}
-        <button onClick={submit} style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg,#E03553,#803D81)', color: '#fff', border: 'none', borderRadius: 4, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
-          Enter
+        <button onClick={submit} disabled={checking} style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg,#E03553,#803D81)', color: '#fff', border: 'none', borderRadius: 4, fontSize: 14, fontWeight: 700, cursor: checking ? 'default' : 'pointer', opacity: checking ? 0.6 : 1 }}>
+          {checking ? 'Checking…' : 'Enter'}
         </button>
       </div>
     </div>
@@ -106,29 +111,24 @@ export default function MultiPageWeddingWebsite() {
 
   useEffect(() => {
     const loadWeddingDetails = async () => {
-      try {
-        const details = await base44.entities.WeddingDetails.list();
-        const match = details.find(d => d.slug === weddingSlug) || details[0];
-        if (!match) { navigate('/'); return; }
-        setWeddingDetails(match);
-      } catch (error) {
-        console.error('Error loading wedding:', error);
-      }
+      const cachedPassword = sessionStorage.getItem('wb_pw_' + weddingSlug) || '';
+      const result = await fetchWeddingBySlug(weddingSlug, cachedPassword, isPreview);
+      if (!result) { navigate('/'); return; }
+      setWeddingDetails(result);
       setLoading(false);
     };
     loadWeddingDetails();
-  }, [weddingSlug, navigate]);
+  }, [weddingSlug, navigate, isPreview]);
 
   if (loading) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="text-white">Loading...</div></div>;
 
   if (!weddingDetails) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="text-white">Wedding not found</div></div>;
 
-  // Password gate (skipped when isPreview=true)
-  if (!isPreview && weddingDetails.websitePassword?.trim()) {
-    const enteredPw = sessionStorage.getItem('wb_pw_' + weddingSlug);
-    if (enteredPw !== weddingDetails.websitePassword.trim()) {
-      return <PasswordGateSimple slug={weddingSlug} password={weddingDetails.websitePassword.trim()} />;
-    }
+  // Password gate — the endpoint returns { passwordProtected: true } with no
+  // other fields when a password is required and none (or the wrong one)
+  // was supplied; the real password never reaches the browser.
+  if (weddingDetails.passwordProtected) {
+    return <PasswordGateSimple slug={weddingSlug} onUnlock={setWeddingDetails} />;
   }
 
   const theme = WEBSITE_THEMES.find(t => t.id === weddingDetails.activeTheme) || WEBSITE_THEMES[0];

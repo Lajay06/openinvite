@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft } from 'lucide-react';
 
 export default function GuestAccommodation() {
@@ -14,12 +14,12 @@ export default function GuestAccommodation() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const all = await base44.entities.WeddingDetails.filter({ slug: weddingSlug });
-        if (all.length > 0) {
-          setDetails(all[0]);
+        const wedding = await fetchWeddingBySlug(weddingSlug);
+        if (wedding) {
+          setDetails(wedding);
           // Load partner results if enabled
-          if (all[0].accommodation?.partnerRecommendationsEnabled) {
-            loadPartnerResults(all[0]);
+          if (wedding.accommodation?.partnerRecommendationsEnabled) {
+            loadPartnerResults(wedding);
           }
         }
       } catch (err) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft, Heart, Star, MapPin, ExternalLink, Clock } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -198,8 +198,8 @@ export default function ExperienceGuidePage() {
   }, [weddingSlug]);
 
   useEffect(() => {
-    base44.entities.WeddingDetails.filter({ slug: weddingSlug })
-      .then(rows => rows.length > 0 && setDetails(rows[0]))
+    fetchWeddingBySlug(weddingSlug)
+      .then(wedding => wedding && setDetails(wedding))
       .catch(err => console.error('[ExperienceGuide]', err))
       .finally(() => setLoading(false));
   }, [weddingSlug]);

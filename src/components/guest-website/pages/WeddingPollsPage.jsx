@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { base44 } from '@/api/base44Client';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { BarChart2, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
+
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 const VOTE_KEY = 'oi_poll_votes';
 
@@ -48,7 +50,7 @@ function ResultsBar({ option, total, isWinner, theme }) {
   );
 }
 
-function PollCard({ poll, theme, typography, onVote, weddingDetails }) {
+function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileToken }) {
   const votes = getVotes();
   const myVote = votes[poll.id];
   const hasVoted = !!myVote;
@@ -60,23 +62,25 @@ function PollCard({ poll, theme, typography, onVote, weddingDetails }) {
   const [submitting, setSubmitting] = useState(false);
 
   const submitComment = async () => {
-    if (!commentText.trim()) return;
+    if (!commentText.trim() || !weddingSlug) return;
+    const turnstileToken = getTurnstileToken();
+    if (!turnstileToken) return;
     setSubmitting(true);
-    const comment = { text: commentText.trim(), timestamp: new Date().toISOString() };
-    const updated = [...localComments, comment];
-    setLocalComments(updated);
-    setCommentText('');
-    setSubmitting(false);
+    const text = commentText.trim();
     try {
-      // Write to THIS wedding (weddingDetails, resolved by the parent via slug) —
-      // never the app-wide most-recently-created WeddingDetails record.
-      if (weddingDetails?.id) {
-        const updatedPolls = (weddingDetails.polls || []).map(p =>
-          p.id === poll.id ? { ...p, comments: updated } : p
-        );
-        await base44.entities.WeddingDetails.update(weddingDetails.id, { polls: updatedPolls });
+      const res = await fetch('/api/wedding-poll-comment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ weddingSlug, pollId: poll.id, comment: text, turnstileToken }),
+      });
+      if (res.ok) {
+        setLocalComments(prev => [...prev, { text, timestamp: new Date().toISOString() }]);
+        setCommentText('');
       }
-    } catch {}
+    } catch {
+      // Non-fatal — the comment box just doesn't clear, guest can retry.
+    }
+    setSubmitting(false);
   };
 
   return (
@@ -262,6 +266,9 @@ function PollCard({ poll, theme, typography, onVote, weddingDetails }) {
 
 export default function WeddingPollsPage({ weddingDetails, theme, typography }) {
   const [polls, setPolls] = useState([]);
+  const turnstileRef = useRef(null);
+  const tsTokenRef = useRef('');
+  const getTurnstileToken = useCallback(() => tsTokenRef.current, []);
 
   useEffect(() => {
     const active = (weddingDetails?.polls || []).filter(p => p.isActive);
@@ -269,26 +276,30 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography }) 
   }, [weddingDetails]);
 
   const handleVote = useCallback(async (pollId, optionId) => {
+    if (!weddingDetails?.slug) return;
+    const turnstileToken = tsTokenRef.current;
+    if (!turnstileToken) return;
+
     saveVote(pollId, optionId);
-    const updatedPolls = polls.map(p =>
+    setPolls(prev => prev.map(p =>
       p.id === pollId
         ? { ...p, options: p.options.map(o => o.id === optionId ? { ...o, votes: (o.votes || 0) + 1 } : o) }
         : p
-    );
-    setPolls(updatedPolls);
+    ));
     try {
-      // Write to THIS wedding (weddingDetails, resolved by the parent via slug) —
-      // never the app-wide most-recently-created WeddingDetails record.
-      if (weddingDetails?.id) {
-        const allPolls = (weddingDetails.polls || []).map(p =>
-          p.id === pollId
-            ? { ...p, options: p.options.map(o => o.id === optionId ? { ...o, votes: (o.votes || 0) + 1 } : o) }
-            : p
-        );
-        base44.entities.WeddingDetails.update(weddingDetails.id, { polls: allPolls });
-      }
-    } catch {}
-  }, [polls, weddingDetails]);
+      // Server re-resolves the wedding by slug and increments the vote
+      // count with the admin key — never a direct client-side write.
+      await fetch('/api/wedding-poll-vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ weddingSlug: weddingDetails.slug, pollId, optionId, turnstileToken }),
+      });
+    } catch {
+      // Non-fatal — the visitor's own vote is already reflected optimistically
+      // and recorded in their localStorage; a failed server write just means
+      // the couple's aggregate count misses this one vote.
+    }
+  }, [weddingDetails?.slug]);
 
   return (
     <div style={{ minHeight: '100vh', background: theme.darkBg }}>
@@ -356,11 +367,25 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography }) 
               theme={theme}
               typography={typography}
               onVote={handleVote}
-              weddingDetails={weddingDetails}
+              weddingSlug={weddingDetails?.slug}
+              getTurnstileToken={getTurnstileToken}
             />
           ))
         )}
       </div>
+
+      {/* Invisible Turnstile — execution="render" auto-generates a token on
+          mount, shared across every poll card's vote/comment actions on this
+          page. Only rendered when there's an active poll to interact with. */}
+      {polls.length > 0 && (
+        <Turnstile
+          ref={turnstileRef}
+          siteKey={TURNSTILE_SITE_KEY}
+          onSuccess={(token) => { tsTokenRef.current = token; }}
+          onExpire={() => { tsTokenRef.current = ''; }}
+          options={{ appearance: 'execute', execution: 'render' }}
+        />
+      )}
     </div>
   );
 }

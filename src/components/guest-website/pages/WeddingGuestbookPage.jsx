@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { base44 } from '@/api/base44Client';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -32,18 +31,18 @@ export default function WeddingGuestbookPage({ weddingDetails, theme, typography
   const tsTokenRef = useRef('');
 
   const loadEntries = useCallback(async () => {
-    if (!weddingDetails?.id) return;
+    if (!weddingDetails?.slug) return;
     try {
-      const rows = await base44.entities.GuestbookEntry.filter(
-        { wedding_id: weddingDetails.id },
-        '-created_date'
-      );
-      setEntries(rows.filter(r => !r.is_test));
+      const res = await fetch(`/api/wedding-guestbook?slug=${encodeURIComponent(weddingDetails.slug)}`);
+      if (res.ok) {
+        const { entries: rows } = await res.json();
+        setEntries(rows || []);
+      }
     } catch (e) {
       console.error('Guestbook load error', e);
     }
     setLoadingEntries(false);
-  }, [weddingDetails?.id]);
+  }, [weddingDetails?.slug]);
 
   useEffect(() => { loadEntries(); }, [loadEntries]);
 

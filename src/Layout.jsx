@@ -22,7 +22,7 @@ const TOP_BAR_H = 48;
 
 const noLayoutPages = [
   "Home", "Features", "Pricing", "CouplesStudio", "PlanSelection",
-  "Onboarding", "PaymentWall", "GuestWebsite", "WeddingWebsiteEditor",
+  "Onboarding", "PaymentWall",
 ];
 
 const LANGUAGES = [
