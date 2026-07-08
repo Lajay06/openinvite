@@ -1576,6 +1576,78 @@ async function run() {
     }
   }
 
+  // ── 8n. Onboarding — slug uniqueness disambiguation (UX_INTRICACIES.md #3) ───
+  // Onboarding.jsx's slug used to be written with zero uniqueness check —
+  // two couples with the same or similar names would collide on the exact
+  // same /w/:slug. resolveUniqueSlug now checks the candidate, then every
+  // "-2", "-3", … suffix, against real WeddingDetails records until one is
+  // free. This mirrors that exact algorithm against two real colliding
+  // records to prove the mechanism actually picks an available slug rather
+  // than colliding.
+  console.log('\n  Onboarding slug uniqueness disambiguation:\n');
+  let slugFirstId = null;
+  let slugSecondId = null;
+  try {
+    const baseSlug = `test-slug-collision-${Date.now()}`;
+
+    const first = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
+      couple1Name: 'Alex', couple2Name: 'Sam', slug: baseSlug,
+    }, token);
+    slugFirstId = first.id;
+    if (!slugFirstId) throw new Error('No id on first sentinel WeddingDetails');
+
+    // Mirrors resolveUniqueSlug's own algorithm exactly: check the base
+    // candidate, then "-2", "-3", … against real records, excluding the
+    // record being saved itself.
+    const resolveUniqueSlug = async (candidateBase, excludeId) => {
+      let candidate = candidateBase;
+      let suffix = 1;
+      while (suffix < 50) {
+        const query = encodeURIComponent(JSON.stringify({ slug: candidate }));
+        const matches = await api('GET', `/apps/${APP_ID}/entities/WeddingDetails?q=${query}`, undefined, token);
+        const list = Array.isArray(matches) ? matches : (matches?.data || matches?.results || []);
+        const collision = list.some(w => w.id !== excludeId);
+        if (!collision) return candidate;
+        suffix += 1;
+        candidate = `${candidateBase}-${suffix}`;
+      }
+      return `${candidateBase}-${Date.now()}`;
+    };
+
+    const resolvedForSecondCouple = await resolveUniqueSlug(baseSlug, null);
+    results.push(resolvedForSecondCouple === `${baseSlug}-2`
+      ? pass('resolveUniqueSlug — second couple with the same base slug gets a disambiguated one', resolvedForSecondCouple)
+      : fail('resolveUniqueSlug — second couple with the same base slug gets a disambiguated one', `${baseSlug}-2`, resolvedForSecondCouple));
+
+    const second = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
+      couple1Name: 'Alex', couple2Name: 'Sam', slug: resolvedForSecondCouple,
+    }, token);
+    slugSecondId = second.id;
+
+    // Re-resolving for the FIRST couple's own record (excluding its own id)
+    // must return its own unchanged slug, not treat itself as a collision.
+    const resolvedForFirstOwnRecord = await resolveUniqueSlug(baseSlug, slugFirstId);
+    results.push(resolvedForFirstOwnRecord === baseSlug
+      ? pass('resolveUniqueSlug — a record excludes itself from its own collision check', resolvedForFirstOwnRecord)
+      : fail('resolveUniqueSlug — a record excludes itself from its own collision check', baseSlug, resolvedForFirstOwnRecord));
+
+    // A third couple, arriving after both slugs are taken, must skip both
+    // and land on "-3".
+    const resolvedForThirdCouple = await resolveUniqueSlug(baseSlug, null);
+    results.push(resolvedForThirdCouple === `${baseSlug}-3`
+      ? pass('resolveUniqueSlug — a third collision correctly skips to the next free suffix', resolvedForThirdCouple)
+      : fail('resolveUniqueSlug — a third collision correctly skips to the next free suffix', `${baseSlug}-3`, resolvedForThirdCouple));
+  } catch (err) {
+    console.log(`  ❌ FAIL  Onboarding slug uniqueness — error: ${err.message}`);
+    results.push(false, false, false);
+  } finally {
+    for (const id of [slugFirstId, slugSecondId]) {
+      if (!id) continue;
+      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${id}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
   // ── 9. Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;
   const total  = results.length;

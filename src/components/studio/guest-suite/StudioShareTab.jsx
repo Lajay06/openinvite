@@ -94,6 +94,15 @@ export default function StudioShareTab({ details: propDetails }) {
 
   const saveSlug = async (val) => {
     const slug = val.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    const isActualChange = details?.slug && slug !== details.slug;
+    // Changing the URL after it's already been shared silently breaks every
+    // link already sent in an invitation — warn before applying it.
+    if (isActualChange && details?.websiteEnabled) {
+      const confirmed = window.confirm(
+        `Change your wedding's URL to /w/${slug}? Any invitations already sent with the old link (/w/${details.slug}) will stop working.`
+      );
+      if (!confirmed) return;
+    }
     await updateField('slug', slug);
     toast.success('URL saved!');
   };
