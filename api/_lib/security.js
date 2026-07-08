@@ -247,3 +247,52 @@ export async function verifyTurnstileToken(token, ip, logPrefix = '[turnstile]')
     clearTimeout(timerId);
   }
 }
+
+// ─── Cookies ─────────────────────────────────────────────────────────────────
+
+/**
+ * Parses the request's raw Cookie header into a plain object. Used for OAuth
+ * state validation (api/spotify-callback.js) and short-lived server-to-
+ * browser handoffs, since Vercel functions are stateless across invocations
+ * — an in-memory store (like the rate-limit Map) can't reliably survive
+ * from one request in a multi-step flow to the next, but a browser-held
+ * cookie can.
+ *
+ * @param {import('http').IncomingMessage} req
+ * @returns {Record<string, string>}
+ */
+export function parseCookies(req) {
+  const header = req.headers?.cookie;
+  if (!header) return {};
+  return Object.fromEntries(
+    header.split(';').map(pair => {
+      const eq = pair.indexOf('=');
+      if (eq < 0) return [pair.trim(), ''];
+      return [pair.slice(0, eq).trim(), decodeURIComponent(pair.slice(eq + 1).trim())];
+    }).filter(([k]) => k)
+  );
+}
+
+/**
+ * Serializes a Set-Cookie header value. Defaults are appropriate for a
+ * short-lived, first-party-only value (OAuth state nonce, a pending-token
+ * handoff) — HttpOnly by default so client JS can never read it, Secure so
+ * it's never sent over plain HTTP, SameSite=Lax so it survives the
+ * cross-site redirect back from Spotify's authorize page (Strict would be
+ * dropped on that redirect).
+ *
+ * @param {string} name
+ * @param {string} value
+ * @param {{ maxAge?: number, httpOnly?: boolean }} [options]
+ * @returns {string}
+ */
+export function serializeCookie(name, value, { maxAge = 600, httpOnly = true } = {}) {
+  const parts = [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'SameSite=Lax', 'Secure', `Max-Age=${maxAge}`];
+  if (httpOnly) parts.push('HttpOnly');
+  return parts.join('; ');
+}
+
+/** Serializes a Set-Cookie header that immediately expires a cookie. */
+export function expireCookie(name) {
+  return `${name}=; Path=/; SameSite=Lax; Secure; HttpOnly; Max-Age=0`;
+}
