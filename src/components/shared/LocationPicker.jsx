@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY';
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 function loadGoogleMapsScript() {
   if (window.google?.maps?.places) return;
