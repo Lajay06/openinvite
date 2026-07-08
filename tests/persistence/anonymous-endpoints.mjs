@@ -19,15 +19,26 @@ import songRequestSubmitHandler from '../../api/song-request-submit.js';
 import weddingPollVoteHandler from '../../api/wedding-poll-vote.js';
 import weddingGuestbookHandler from '../../api/wedding-guestbook.js';
 
-/** Runs a handler with TURNSTILE_SECRET_KEY temporarily unset, isolating a
- *  test from needing a real Cloudflare challenge/response pair. */
+// Cloudflare's official "always passes" Turnstile test keypair — documented
+// for exactly this purpose (automated tests with no real browser widget).
+// verifyTurnstileToken now fails closed when TURNSTILE_SECRET_KEY is unset
+// (fix/endpoint-auth), so tests can no longer bypass the check by deleting
+// the env var — this swaps in the real test secret + test token pair
+// instead, which still exercises the actual Cloudflare siteverify call.
+const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
+const TURNSTILE_TEST_TOKEN = 'XXXX.DUMMY.TOKEN.XXXX';
+
+/** Runs a handler with the Cloudflare test Turnstile secret temporarily
+ *  substituted, so its wedding-linkage/vote-scoping logic (not Turnstile
+ *  itself) is what's under test. */
 async function withTurnstileFailOpen(fn) {
   const saved = process.env.TURNSTILE_SECRET_KEY;
-  delete process.env.TURNSTILE_SECRET_KEY;
+  process.env.TURNSTILE_SECRET_KEY = TURNSTILE_TEST_SECRET;
   try {
     return await fn();
   } finally {
     if (saved !== undefined) process.env.TURNSTILE_SECRET_KEY = saved;
+    else delete process.env.TURNSTILE_SECRET_KEY;
   }
 }
 
@@ -177,7 +188,7 @@ export async function runAnonymousEndpoints() {
       body: {
         weddingSlug: wedding.slug,
         title: 'Test Song Title', artist: 'Test Artist', submittedBy: 'Test Guest',
-        turnstileToken: 'test-token',
+        turnstileToken: TURNSTILE_TEST_TOKEN,
       },
     });
 
@@ -229,7 +240,7 @@ export async function runAnonymousEndpoints() {
 
     const { req, res } = mockReqRes({
       method: 'POST',
-      body: { weddingSlug: wedding.slug, pollId: 'poll-1', optionId: 'opt-a', turnstileToken: 'test-token' },
+      body: { weddingSlug: wedding.slug, pollId: 'poll-1', optionId: 'opt-a', turnstileToken: TURNSTILE_TEST_TOKEN },
     });
     await withTurnstileFailOpen(() => weddingPollVoteHandler(req, res));
 
