@@ -89,6 +89,7 @@ export default function Guests() {
   const [sendModalConfig, setSendModalConfig] = useState(null); // { initialSelectedIds } | { defaultFilter }
   const [setEventsGuests, setSetEventsGuests] = useState(null); // array of guests, or null
   const [autoSendAfterSetEvents, setAutoSendAfterSetEvents] = useState(null); // guestId
+  const [editingEventsGuestId, setEditingEventsGuestId] = useState(null); // guestId, for the "edit events" (not auto-send) flow
 
   useEffect(() => { loadGuests(); }, []);
   useEffect(() => {
@@ -295,14 +296,42 @@ export default function Guests() {
   /* ── Set events & send (per-row, for a single uninvited guest) ──────── */
   const handleSetEventsAndSend = (guest) => {
     setAutoSendAfterSetEvents(guest.id);
+    setEditingEventsGuestId(null);
     setSetEventsGuests([guest]);
   };
 
-  const handleSetEventsSaved = () => {
+  /* ── Edit events (chips area / expanded row, for an already-invited guest) ── */
+  const handleEditEvents = (guest) => {
+    setAutoSendAfterSetEvents(null);
+    setEditingEventsGuestId(guest.id);
+    setSetEventsGuests([guest]);
+  };
+
+  const handleSetEventsSaved = (newlyInvitedEventIds) => {
     if (autoSendAfterSetEvents && !isPro) {
       setSendModalConfig({ initialSelectedIds: [autoSendAfterSetEvents] });
+    } else if (editingEventsGuestId && newlyInvitedEventIds?.length > 0 && !isPro) {
+      const guestId = editingEventsGuestId;
+      toast((t) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {newlyInvitedEventIds.length} new event{newlyInvitedEventIds.length !== 1 ? 's' : ''} added.
+          </span>
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              setSendModalConfig({ initialSelectedIds: [guestId], restrictEventIds: newlyInvitedEventIds });
+            }}
+            className="btn-primary"
+            style={{ fontSize: 12, padding: '6px 14px', whiteSpace: 'nowrap' }}
+          >
+            Send invite for the new events
+          </button>
+        </div>
+      ), { duration: 10000 });
     }
     setAutoSendAfterSetEvents(null);
+    setEditingEventsGuestId(null);
     loadGuests();
   };
 
@@ -458,6 +487,7 @@ export default function Guests() {
               onToggleSelect={toggleSelect}
               onToggleSelectAll={toggleSelectAll}
               onSetEventsAndSend={handleSetEventsAndSend}
+              onEditEvents={handleEditEvents}
             />
           </TabsContent>
 
@@ -499,6 +529,7 @@ export default function Guests() {
           defaultFilter={sendModalConfig.defaultFilter}
           initialSelectedIds={sendModalConfig.initialSelectedIds}
           initialType={sendModalConfig.type}
+          restrictEventIds={sendModalConfig.restrictEventIds}
           onClose={() => setSendModalConfig(null)}
           onSent={handleSent}
         />

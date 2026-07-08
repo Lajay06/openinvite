@@ -79,6 +79,63 @@ export function getEmailTypeConfig(type) {
   return TYPE_CONFIG[type] || TYPE_CONFIG.invite;
 }
 
+/**
+ * Per-type default subject/body for the SendInvitesModal compose textboxes
+ * (and the gallery, for consistency) — written with the modal's own
+ * [Bracket] merge-tag convention (resolved live by its replaceMergeTags,
+ * not by this file) rather than TYPE_CONFIG's defaultMessage() above, which
+ * is a plain-text fallback used only when a send has no customBody at all.
+ * One place owns "each type's copy block set" so switching type in the
+ * drawer always has somewhere correct to load from.
+ */
+const TYPE_COMPOSE_DEFAULTS = {
+  invite: {
+    subject: "You're invited to [Couple names]'s wedding 💍",
+    body: "Hi [Guest name],\n\nWe'd love for you to celebrate with us on [Wedding date]. Click below to view your invitation and RSVP.\n\nWe can't wait to see you!\n\n— [Couple names]",
+  },
+  reminder: {
+    subject: 'Reminder: RSVP to [Couple names]\'s wedding',
+    body: "Hi [Guest name],\n\nJust a friendly nudge — [Couple names] would love to hear from you. It only takes a minute to RSVP.\n\n— [Couple names]",
+  },
+  update: {
+    subject: "An update about [Couple names]'s wedding",
+    body: "Hi [Guest name],\n\nWe wanted to share an important update regarding our upcoming celebration on [Wedding date]. Please review the details below and let us know if you have any questions.\n\n— [Couple names]",
+  },
+  thank_you_attending: {
+    subject: 'Thank you for celebrating with [Couple names]!',
+    body: "Dear [Guest name],\n\nThank you so much for confirming you'll be celebrating with us! Your presence means the world to us and we can't wait to make beautiful memories together.\n\n— [Couple names]",
+  },
+  thank_you_declined: {
+    subject: "We'll miss you — from [Couple names]",
+    body: "Dear [Guest name],\n\nThank you for letting us know. We completely understand, and while we'll miss celebrating with you on the day, we hope to see you again soon.\n\n— [Couple names]",
+  },
+};
+
+export function getTypeComposeDefaults(type) {
+  return TYPE_COMPOSE_DEFAULTS[type] || TYPE_COMPOSE_DEFAULTS.invite;
+}
+
+/**
+ * Resolves the banner image URL for the email's banner slot. `choice` is
+ * the compose pane's explicit selection — 'wedding' (the wedding's own
+ * cover photo), 'venue' (the main ceremony venue's Places photo), or
+ * 'none'. No silent fallback to a different source than what's selected —
+ * if the chosen source has no photo, the banner is simply omitted rather
+ * than substituting a different (surprising) image.
+ */
+export function getBannerImageUrl({ coverPhoto, venuePhotoUrl } = {}, choice) {
+  if (choice === 'venue') return venuePhotoUrl || null;
+  if (choice === 'wedding') return coverPhoto || null;
+  return null;
+}
+
+/** First available source, for initialising the compose pane's control. */
+export function getDefaultBannerChoice({ coverPhoto, venuePhotoUrl } = {}) {
+  if (coverPhoto) return 'wedding';
+  if (venuePhotoUrl) return 'venue';
+  return 'none';
+}
+
 function escapeHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -118,6 +175,7 @@ function dividerHtml(style, accent) {
  *   — the events THIS guest is invited to (ignored when the type doesn't show events)
  * @param {string} [opts.personalMessage] — free text, may contain newlines; defaults per type when omitted
  * @param {string} [opts.rsvpUrl] — required when the type shows an RSVP CTA
+ * @param {string} [opts.bannerImageUrl] — resolved via getBannerImageUrl(); omitted entirely when falsy, never a broken image or stock placeholder
  * @returns {{ html: string, text: string }}
  */
 export function renderInvitationEmail({
@@ -128,6 +186,7 @@ export function renderInvitationEmail({
   events = [],
   personalMessage,
   rsvpUrl,
+  bannerImageUrl,
 }) {
   const cfg = getEmailTypeConfig(type);
   const style = getUniverseEmailStyle(universeId);
@@ -155,6 +214,16 @@ export function renderInvitationEmail({
           <tr>
             <td style="padding:28px 40px 0;">
               <p style="margin:0;font-size:15px;line-height:1.7;color:rgba(0,0,0,0.68);font-family:${fontBody};">${nl2br(message)}</p>
+            </td>
+          </tr>` : '';
+
+  // Single <img>, full-width, fixed height — no background-image (Outlook
+  // doesn't render CSS background-image reliably), no broken-image risk:
+  // simply omitted when there's no resolved URL.
+  const bannerHtml = bannerImageUrl ? `
+          <tr>
+            <td style="padding:0;line-height:0;font-size:0;">
+              <img src="${escapeHtml(bannerImageUrl)}" alt="${escapeHtml(coupleNames ? `${coupleNames}'s wedding` : 'Wedding banner')}" width="600" height="220" style="width:100%;max-width:600px;height:220px;object-fit:cover;display:block;border:0;" />
             </td>
           </tr>` : '';
 
@@ -189,7 +258,7 @@ export function renderInvitationEmail({
     <tr>
       <td align="center">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:${cardBg};border:1px solid rgba(0,0,0,0.08);">
-
+${bannerHtml}
           <!-- Header -->
           <tr>
             <td style="padding:36px 40px 24px;border-bottom:1px solid rgba(0,0,0,0.06);">

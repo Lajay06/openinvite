@@ -24,6 +24,8 @@ import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildWeddingDetailsPayload, verifyOnboardingSave } from '../src/lib/onboardingSave.js';
+import { EMAIL_TYPES, getTypeComposeDefaults } from '../src/lib/emailTemplate.js';
+import { getGuestEventResponse, toggleEventInvite } from '../src/lib/weddingEvents.js';
 
 // ── Load .env.local ───────────────────────────────────────────────────────────
 
@@ -1202,6 +1204,116 @@ async function run() {
   } finally {
     if (guestAllDeclinedId) {
       try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestAllDeclinedId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
+  // ── 8i. Type-switch changes body defaults (fix/send-flow-details #1) ──────
+  // Pure-function check, no Base44 round-trip needed: every email type must
+  // have its own distinct default subject/body, and none may leak another
+  // type's copy — this is what SendInvitesModal reloads when the user
+  // switches type without having edited the field yet.
+  console.log('\n  Type-switch body defaults (each type has its own distinct copy):\n');
+  try {
+    const defaultsByType = EMAIL_TYPES.map(t => ({ type: t, ...getTypeComposeDefaults(t) }));
+    const allDistinctBodies = new Set(defaultsByType.map(d => d.body)).size === defaultsByType.length;
+    const allDistinctSubjects = new Set(defaultsByType.map(d => d.subject)).size === defaultsByType.length;
+    const allNonEmpty = defaultsByType.every(d => d.subject?.trim() && d.body?.trim());
+
+    results.push(allDistinctBodies
+      ? pass('getTypeComposeDefaults — every type has a distinct default body', `${defaultsByType.length} types`)
+      : fail('getTypeComposeDefaults — every type has a distinct default body', 'all distinct', 'duplicate found'));
+    results.push(allDistinctSubjects
+      ? pass('getTypeComposeDefaults — every type has a distinct default subject', `${defaultsByType.length} types`)
+      : fail('getTypeComposeDefaults — every type has a distinct default subject', 'all distinct', 'duplicate found'));
+    results.push(allNonEmpty
+      ? pass('getTypeComposeDefaults — no type has an empty default', 'all non-empty')
+      : fail('getTypeComposeDefaults — no type has an empty default', 'non-empty', 'empty found'));
+  } catch (err) {
+    console.log(`  ❌ FAIL  Type-switch defaults — error: ${err.message}`);
+    results.push(false, false, false);
+  }
+
+  // ── 8j. Editing invites later — invite-set edit round-trip + RSVP-form
+  //        visibility (fix/send-flow-details #3) ─────────────────────────────
+  // Simulates exactly what SetEventsModal.handleSave does when a couple edits
+  // an already-invited guest's events later: reuses toggleEventInvite the
+  // same way, adding a brand-new event the guest was never invited to before.
+  // Then proves two things on a fresh read: (a) the new event round-trips as
+  // invited:true/status:'pending', and (b) getGuestEventResponse — the exact
+  // function RSVPPage.jsx uses to build the guest's invitedEvents list — now
+  // reports it invited, meaning the guest's RSVP form would show it.
+  console.log('\n  Editing invites later — invite-set edit round-trip:\n');
+  let editInvitesGuestId = null;
+  try {
+    const WEDDING_EVENTS_SHAPE = [
+      { event_id: 'test-event-ceremony', name: 'Ceremony', isMain: true },
+      { event_id: 'test-event-reception', name: 'Reception', isMain: true },
+      { event_id: 'test-event-afterparty', name: 'Afterparty', isMain: false },
+    ];
+    const [ceremonyEv, receptionEv, afterpartyEv] = WEDDING_EVENTS_SHAPE;
+
+    // Guest already invited to ceremony+reception (already RSVP'd yes to
+    // ceremony), never invited to the afterparty — the state a real guest
+    // would be in before the couple decides to add them to a newly-created
+    // event.
+    const seededResponses = [
+      { event_id: ceremonyEv.event_id, invited: true, status: 'yes', meal_choice: 'vegetarian', plus_ones: 0, plus_one_names: [], responded_at: new Date().toISOString() },
+      { event_id: receptionEv.event_id, invited: true, status: 'yes', meal_choice: 'vegetarian', plus_ones: 0, plus_one_names: [], responded_at: new Date().toISOString() },
+    ];
+
+    const created = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
+      name: '__PERSISTENCE_TEST_EDIT_INVITES__',
+      event_responses: seededResponses,
+    }, token);
+    editInvitesGuestId = created.id;
+    if (!editInvitesGuestId) throw new Error('No id on created Guest');
+
+    // Mirror SetEventsModal.handleSave: for each event in the wedding,
+    // toggleEventInvite with the desired invited state — ceremony/reception
+    // stay invited (unchanged), afterparty newly becomes invited.
+    const guestBeforeEdit = { event_responses: seededResponses };
+    let responses = guestBeforeEdit.event_responses;
+    responses = toggleEventInvite({ event_responses: responses }, ceremonyEv, true);
+    responses = toggleEventInvite({ event_responses: responses }, receptionEv, true);
+    responses = toggleEventInvite({ event_responses: responses }, afterpartyEv, true); // the edit: newly invited
+
+    await api('PUT', `/apps/${APP_ID}/entities/Guest/${editInvitesGuestId}`, {
+      event_responses: responses,
+    }, token);
+
+    const back = await api('GET', `/apps/${APP_ID}/entities/Guest/${editInvitesGuestId}`, undefined, token);
+    const afterpartyBack = (back.event_responses || []).find(r => r.event_id === afterpartyEv.event_id);
+
+    results.push(afterpartyBack?.invited === true
+      ? pass('Edited guest — newly-added event round-trips invited:true', String(afterpartyBack?.invited))
+      : fail('Edited guest — newly-added event round-trips invited:true', true, afterpartyBack?.invited));
+    results.push(afterpartyBack?.status === 'pending'
+      ? pass('Edited guest — newly-added event round-trips status:pending', afterpartyBack?.status)
+      : fail('Edited guest — newly-added event round-trips status:pending', 'pending', afterpartyBack?.status));
+
+    // Existing responses (ceremony's prior "yes"/meal choice) must survive
+    // the edit untouched — editing invites must not clobber real RSVP data.
+    const ceremonyBack = (back.event_responses || []).find(r => r.event_id === ceremonyEv.event_id);
+    results.push(ceremonyBack?.status === 'yes' && ceremonyBack?.meal_choice === 'vegetarian'
+      ? pass('Edited guest — pre-existing RSVP (ceremony) untouched by the edit', `${ceremonyBack?.status}/${ceremonyBack?.meal_choice}`)
+      : fail('Edited guest — pre-existing RSVP (ceremony) untouched by the edit', 'yes/vegetarian', `${ceremonyBack?.status}/${ceremonyBack?.meal_choice}`));
+
+    // The exact function RSVPPage.jsx calls to build a guest's invitedEvents
+    // — if this reports the afterparty as invited, the guest's RSVP form
+    // will show it after this edit, with no further code path to verify.
+    const rsvpFormWouldShowAfterparty = WEDDING_EVENTS_SHAPE
+      .filter(ev => getGuestEventResponse(back, ev).invited)
+      .some(ev => ev.event_id === afterpartyEv.event_id);
+    results.push(rsvpFormWouldShowAfterparty
+      ? pass('RSVP form event list (getGuestEventResponse) includes the newly-added event', 'included')
+      : fail('RSVP form event list (getGuestEventResponse) includes the newly-added event', 'included', 'missing'));
+  } catch (err) {
+    console.log(`  ❌ FAIL  Editing invites later — error: ${err.message}`);
+    results.push(false, false, false, false);
+  } finally {
+    if (editInvitesGuestId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${editInvitesGuestId}`, undefined, token); }
       catch { /* non-fatal */ }
     }
   }

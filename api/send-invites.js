@@ -18,7 +18,8 @@
  *       // events — the events THIS guest is invited to; per-guest since invite
  *       // lists differ per event. Falls back to wedding.venue/weddingDate as a
  *       // single synthetic event if omitted (back-compat with older callers).
- *     wedding: { coupleName: string, weddingDate: string, venue: string },
+ *     wedding: { coupleName: string, weddingDate: string, venue: string, coverPhoto?: string, venuePhotoUrl?: string },
+ *     bannerChoice?: 'wedding' | 'venue' | 'none',  // resolved server-side via getBannerImageUrl; defaults to 'none'
  *     customSubject?: string,   // merge tags: [Guest name], [Wedding date], [Couple names]
  *     customBody?: string,      // merge tags: [Guest name], [Wedding date], [Couple names], [RSVP link]
  *   }
@@ -32,7 +33,7 @@ import {
   isValidEmail,
   sanitizeString,
 } from './_lib/security.js';
-import { renderInvitationEmail, getEmailTypeConfig } from '../src/lib/emailTemplate.js';
+import { renderInvitationEmail, getEmailTypeConfig, getBannerImageUrl } from '../src/lib/emailTemplate.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = 'Openinvite <hello@openinvite.com.au>';
@@ -64,6 +65,7 @@ export default async function handler(req, res) {
   try {
     const {
       type = 'invite', guests = [], wedding = {}, customSubject, customBody, universeId, isTest = false,
+      bannerChoice = 'none',
     } = req.body || {};
 
     if (!Array.isArray(guests) || guests.length === 0) {
@@ -89,6 +91,10 @@ export default async function handler(req, res) {
 
     const typeConfig = getEmailTypeConfig(type);
     const defaultSubject = `${typeConfig.kicker} — ${coupleName || 'a wedding'}`;
+    const bannerImageUrl = getBannerImageUrl(
+      { coverPhoto: wedding.coverPhoto, venuePhotoUrl: wedding.venuePhotoUrl },
+      bannerChoice,
+    );
 
     const batch = validGuests.map(g => {
       const guestName = sanitizeString(g.name) || '';
@@ -110,7 +116,7 @@ export default async function handler(req, res) {
         : (venue || weddingDate) ? [{ name: 'Wedding day', date: weddingDate, venue }] : [];
 
       const { html, text } = renderInvitationEmail({
-        universeId, type, guestName, coupleNames: coupleName, events, personalMessage: processedBody, rsvpUrl,
+        universeId, type, guestName, coupleNames: coupleName, events, personalMessage: processedBody, rsvpUrl, bannerImageUrl,
       });
 
       return { from: FROM, to: g.email, subject, html, text };
