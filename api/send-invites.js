@@ -34,9 +34,11 @@ import {
   sanitizeString,
 } from './_lib/security.js';
 import { renderInvitationEmail, getEmailTypeConfig, getBannerImageUrl } from '../src/lib/emailTemplate.js';
+import { verifyBase44User, fetchOwnedGuestEmails, filterGuestsByOwnership } from './_lib/auth.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = 'Openinvite <hello@openinvite.com.au>';
+const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
 
 function replaceMergeTags(str, guestName, coupleName, dateStr, rsvpUrl) {
   const firstName = guestName ? guestName.split(' ')[0] : 'Guest';
@@ -62,6 +64,16 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
   }
 
+  const caller = await verifyBase44User(req);
+  if (!caller) {
+    return res.status(401).json({ error: 'Authentication required.' });
+  }
+
+  if (!BASE44_ADMIN_KEY) {
+    console.error('[send-invites] BASE44_ADMIN_KEY env var is not set');
+    return res.status(500).json({ error: 'Server not configured' });
+  }
+
   try {
     const {
       type = 'invite', guests = [], wedding = {}, customSubject, customBody, universeId, isTest = false,
@@ -75,6 +87,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Maximum 200 guests per batch' });
     }
 
+    // Only send to guests that actually belong to the authenticated
+    // caller's own wedding — never an arbitrary attacker-supplied email,
+    // even if the request body claims one. The caller's own verified email
+    // is also allowed through, since "send a test copy to me" (isTest)
+    // submits the caller's own address as a synthetic guest entry, not a
+    // real Guest record.
+    const ownedEmails = await fetchOwnedGuestEmails(caller.id, BASE44_ADMIN_KEY);
+    if (caller.email) ownedEmails.add(caller.email.trim().toLowerCase());
+    const ownedGuests = filterGuestsByOwnership(guests, ownedEmails);
+    if (ownedGuests.length === 0) {
+      return res.status(403).json({ error: 'None of the supplied guests belong to your wedding.' });
+    }
+
     const coupleName = sanitizeString(wedding.coupleName) || '';
     const weddingDate = sanitizeString(wedding.weddingDate) || '';
     const venue = sanitizeString(wedding.venue) || '';
@@ -83,7 +108,7 @@ export default async function handler(req, res) {
       ? new Date(weddingDate).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
       : '';
 
-    const validGuests = guests.filter(g => g.email && isValidEmail(g.email) && g.rsvpUrl);
+    const validGuests = ownedGuests.filter(g => g.email && isValidEmail(g.email) && g.rsvpUrl);
 
     if (validGuests.length === 0) {
       return res.status(400).json({ error: 'No guests with valid email addresses and RSVP links' });
@@ -128,7 +153,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       sent: batch.length,
-      skipped: guests.length - validGuests.length,
+      skipped: guests.length - validGuests.length, // includes both non-owned and invalid entries
     });
   } catch (err) {
     console.error('[send-invites] Error:', err.message);

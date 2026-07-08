@@ -93,10 +93,13 @@ export default function AccountPage() {
   const handlePortal = async () => {
     setPortalLoading(true);
     try {
+      const token = localStorage.getItem('base44_access_token');
       const res = await fetch('/api/create-portal-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId: user?.stripeCustomerId }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
