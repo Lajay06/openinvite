@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, ExternalLink, Phone, Loader2, Clock, Star, Car } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY';
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
