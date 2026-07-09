@@ -29,7 +29,7 @@ export default function StudioHub() {
     ? Math.max(0, Math.ceil((new Date(wedding.weddingDate) - new Date()) / (1000 * 60 * 60 * 24)))
     : null;
 
-  const siteUrl = wedding?.slug ? `openinvite.com/w/${wedding.slug}` : null;
+  const siteUrl = wedding?.slug ? `openinvite.com.au/w/${wedding.slug}` : null;
 
   const cards = [
     {

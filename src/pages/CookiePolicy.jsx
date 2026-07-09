@@ -26,7 +26,7 @@ function CookieTable({ rows }) {
         <tbody>
           {rows.map((row, i) => (
             <tr key={i} style={{ borderBottom: '1px solid rgba(10,10,10,0.06)', background: i % 2 === 0 ? 'rgba(10,10,10,0.02)' : 'transparent' }}>
-              <td style={{ padding: '10px 12px', fontWeight: 600, color: '#0A0A0A', whiteSpace: 'nowrap' }}>{row[0]}</td>
+              <td style={{ padding: '10px 12px', fontWeight: 600, color: '#0A0A0A', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>{row[0]}</td>
               <td style={{ padding: '10px 12px', color: 'rgba(10,10,10,0.7)' }}>{row[1]}</td>
               <td style={{ padding: '10px 12px', color: 'rgba(10,10,10,0.5)', whiteSpace: 'nowrap' }}>{row[2]}</td>
             </tr>
@@ -44,48 +44,38 @@ export default function CookiePolicy() {
       <main style={{ paddingTop: 120, paddingBottom: 120 }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
 
-          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 10 }}>Last updated: May 2026</div>
+          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 10 }}>Last updated: 9 July 2026</div>
           <h1 style={H1}>Cookie policy</h1>
-          <p style={{ ...P, fontSize: 16, color: 'rgba(10,10,10,0.6)', marginBottom: 48 }}>We keep cookies to a minimum. Here is exactly what we use and why.</p>
+          <p style={{ ...P, fontSize: 16, color: 'rgba(10,10,10,0.6)', marginBottom: 48 }}>We keep cookies and similar browser-storage technologies to a minimum. Here is exactly what we use and why.</p>
 
           <div style={DIV} />
-          <h2 style={H2}>1. What are cookies?</h2>
-          <p style={P}>Cookies are small text files stored on your device by your browser. They help websites remember information between visits — like whether you are logged in or what your preferences are.</p>
-          <p style={P}>Cookies are not executable programs and cannot access files on your device. They simply store small pieces of text.</p>
+          <h2 style={H2}>1. What this covers</h2>
+          <p style={P}>Cookies are small text files a website can store in your browser. We — and some of the third-party services we use — also use your browser's local storage for the same kind of purpose (keeping you signed in, remembering a choice). This policy covers both, referred to together as "cookies" below.</p>
 
           <div style={DIV} />
-          <h2 style={H2}>2. Cookies we use</h2>
+          <h2 style={H2}>2. Cookies and storage we use directly</h2>
 
-          <h3 style={H3}>Essential cookies — always on</h3>
-          <p style={P}>These cookies are required for the service to function. They cannot be turned off.</p>
+          <h3 style={H3}>Essential — always on</h3>
+          <p style={P}>Required for the service to function. They cannot be turned off.</p>
           <CookieTable rows={[
-            ['oi_auth', 'Keeps you logged in to your OpenInvite account', 'Session / 30 days'],
-            ['oi_session', 'Maintains your current session state', 'Session'],
-            ['oi_cookie_consent', 'Remembers your cookie consent choice', '1 year'],
+            ['base44_access_token', 'Keeps you signed in to your OpenInvite account', 'Until you sign out'],
+            ['oi_auth / oi_user', 'Stores your session state and basic profile so the app doesn\'t need to re-check on every page', 'Until you sign out'],
+            ['oi_cookie_consent', 'Remembers your cookie consent choice from the banner', '1 year'],
+            ['wb_pw_&#123;wedding-slug&#125;', 'On a password-protected wedding site, remembers that a guest has already entered the correct password for that visit', 'Browser session'],
           ]} />
 
-          <h3 style={H3}>Preference cookies</h3>
-          <p style={P}>These cookies remember your in-app settings so we can restore them on your next visit.</p>
-          <CookieTable rows={[
-            ['oi_wedding_date', 'Stores your wedding date for quick access', 'Persistent'],
-            ['oi_couple_name', 'Stores your couple name for personalisation', 'Persistent'],
-            ['oi_wedding_city', 'Stores your wedding location', 'Persistent'],
-          ]} />
-
-          <h3 style={H3}>Analytics cookies — with consent</h3>
-          <p style={P}>If you accept analytics cookies, we may use privacy-preserving analytics to understand how the platform is being used. This helps us build better features.</p>
-          <p style={P}>We do not use advertising cookies or sell analytics data to third parties.</p>
+          <h3 style={H3}>Analytics — with consent</h3>
+          <p style={P}>If you accept analytics cookies, we use <strong>PostHog</strong> to understand how the platform is used — pages visited and features used — so we can build better features. We do not use advertising cookies, and we do not sell analytics data to third parties.</p>
 
           <div style={DIV} />
           <h2 style={H2}>3. How to control cookies</h2>
-          <p style={P}>You can manage your cookie consent at any time:</p>
           <ul style={UL}>
             <li>Use the cookie banner shown on your first visit to accept or decline analytics cookies</li>
-            <li>Clear cookies via your browser settings at any time</li>
-            <li>Use your browser's privacy mode to prevent persistent cookies</li>
+            <li>Clear cookies and site data via your browser settings at any time</li>
+            <li>Use your browser's private/incognito mode to avoid persistent storage</li>
           </ul>
-          <p style={P}>Note: disabling essential cookies will prevent you from staying logged in.</p>
-          <p style={P}>Most browsers let you control cookies in their settings. Visit your browser's help pages for instructions:</p>
+          <p style={P}>Note: clearing or blocking essential cookies will sign you out and may break password-protected guest sites you've already unlocked.</p>
+          <p style={P}>Most browsers let you manage cookies in their settings:</p>
           <ul style={UL}>
             <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" style={LK}>Google Chrome</a></li>
             <li><a href="https://support.mozilla.org/en-US/kb/cookies-information-websites-store-on-your-computer" target="_blank" rel="noopener noreferrer" style={LK}>Mozilla Firefox</a></li>
@@ -93,17 +83,20 @@ export default function CookiePolicy() {
           </ul>
 
           <div style={DIV} />
-          <h2 style={H2}>4. Third-party cookies</h2>
-          <p style={P}>Some of our third-party services may set their own cookies:</p>
+          <h2 style={H2}>4. Cookies set by third-party services</h2>
+          <p style={P}>Some of the services we use (see our <Link to="/privacy-policy" style={LK}>Privacy policy</Link> for the full list and what each processes) may set their own cookies in your browser:</p>
           <ul style={UL}>
-            <li><strong>Google</strong> — sets cookies as part of Google sign-in (OAuth)</li>
-            <li><strong>Stripe</strong> — sets cookies to prevent fraud during checkout</li>
+            <li><strong>Google</strong> — if you choose "continue with Google" to sign in</li>
+            <li><strong>Stripe</strong> — during checkout, to help prevent payment fraud</li>
+            <li><strong>PostHog</strong> — analytics, only if you've consented (see above)</li>
+            <li><strong>Crisp</strong> — if you open the live chat support widget</li>
+            <li><strong>Cloudflare Turnstile</strong> — on public forms (RSVP-link requests, guestbook, sign-up), to confirm a human is submitting</li>
           </ul>
-          <p style={P}>These cookies are governed by the respective companies' privacy policies.</p>
+          <p style={P}>These are governed by each company's own privacy and cookie policies.</p>
 
           <div style={DIV} />
           <h2 style={H2}>5. Contact us</h2>
-          <p style={P}>Questions about cookies? <a href="mailto:hello@openinvite.com" style={LK}>hello@openinvite.com</a></p>
+          <p style={P}>Questions about cookies? <a href="mailto:hello@openinvite.com.au" style={LK}>hello@openinvite.com.au</a></p>
           <p style={P}>For broader privacy questions, see our <Link to="/privacy-policy" style={LK}>Privacy policy</Link>.</p>
 
         </div>

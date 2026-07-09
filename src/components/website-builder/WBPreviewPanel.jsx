@@ -70,7 +70,7 @@ export default function WBPreviewPanel({
         }}>
           <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', marginRight: 6, flexShrink: 0 }} />
           <span style={{ fontSize: 11, color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            openinvite.com/w/{details.slug || 'your-wedding'}/{currentPage !== 'home' ? currentPage : ''}
+            openinvite.com.au/w/{details.slug || 'your-wedding'}/{currentPage !== 'home' ? currentPage : ''}
           </span>
         </div>
 

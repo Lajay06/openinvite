@@ -22,7 +22,7 @@ export default function WebsitePreview({ wedding }) {
         }}
       >
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '28px', background: '#1a1a1a', borderRadius: '12px 12px 0 0', borderBottom: '1px solid #333333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <p style={{ fontSize: '10px', color: '#666666' }}>openinvite.com/w/your-slug</p>
+          <p style={{ fontSize: '10px', color: '#666666' }}>openinvite.com.au/w/your-slug</p>
         </div>
 
         <p style={{ fontSize: '16px', color: '#FFFFFF', fontWeight: 300, margin: 0, marginTop: '40px' }}>
@@ -51,7 +51,7 @@ export default function WebsitePreview({ wedding }) {
     >
       {/* Browser Chrome */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '28px', background: '#F5F5F5', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-        <p style={{ fontSize: '10px', color: '#888888' }}>openinvite.com/w/{wedding.slug}</p>
+        <p style={{ fontSize: '10px', color: '#888888' }}>openinvite.com.au/w/{wedding.slug}</p>
       </div>
 
       {/* Preview Watermark */}

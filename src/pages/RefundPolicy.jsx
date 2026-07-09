@@ -32,57 +32,51 @@ export default function RefundPolicy() {
       <main style={{ paddingTop: 120, paddingBottom: 120 }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
 
-          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 10 }}>Last updated: May 2026</div>
+          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 10 }}>Last updated: 9 July 2026</div>
           <h1 style={H1}>Refund policy</h1>
           <p style={{ fontSize: 15, lineHeight: 1.75, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 48 }}>
-            We keep our refund policy simple and fair. Here is exactly what to expect.
+            Pro and Ultra are one-time purchases, not subscriptions — so our refund policy is a single, simple guarantee.
           </p>
 
-          <PolicyCard icon="🎉" title="Free plan">
-            <p style={{ ...P, marginBottom: 0 }}>No charges, no refunds needed. The free plan is always free.</p>
+          <PolicyCard icon="🎉" title="Free trial">
+            <p style={{ ...P, marginBottom: 0 }}>No charge, no refund needed. Try the full product free before you buy.</p>
           </PolicyCard>
 
-          <PolicyCard icon="📅" title="Monthly plans">
-            <p style={P}>You may cancel a monthly plan at any time. You will retain access to paid features until the end of your current billing period.</p>
-            <p style={{ ...P, marginBottom: 0 }}>We do not offer partial refunds for unused days in a monthly billing period.</p>
-          </PolicyCard>
-
-          <PolicyCard icon="⭐" title="Annual plans — 14-day money back guarantee">
-            <p style={P}>If you purchase an annual plan and are not satisfied, you may request a full refund within <strong>14 days</strong> of the purchase date — no questions asked.</p>
-            <p style={{ ...P, marginBottom: 0 }}>After 14 days, the annual plan is non-refundable. You retain access until the end of your subscription year.</p>
+          <PolicyCard icon="⭐" title="Pro and Ultra — 14-day money-back guarantee">
+            <p style={P}>If you purchase Pro ($79 AUD) or Ultra ($149 AUD) and are not satisfied, you may request a full refund within <strong>14 days</strong> of your purchase date — no questions asked.</p>
+            <p style={{ ...P, marginBottom: 0 }}>After 14 days, your purchase is non-refundable. You keep access to your plan's features for the full 24-month access period regardless.</p>
           </PolicyCard>
 
           <PolicyCard icon="🔄" title="Material service changes">
-            <p style={P}>If we materially change or discontinue a feature you paid for, you may contact us within <strong>14 days</strong> of the change for a pro-rata refund of the affected period.</p>
-            <p style={{ ...P, marginBottom: 0 }}>Minor updates, redesigns, or improvements do not qualify for refunds.</p>
+            <p style={P}>If we materially remove a feature you specifically purchased a plan for, you may contact us within 14 days of that change for a case-by-case refund assessment.</p>
+            <p style={{ ...P, marginBottom: 0 }}>Minor updates, redesigns, or improvements do not qualify.</p>
           </PolicyCard>
 
           <div style={DIV} />
           <h2 style={H2}>How to request a refund</h2>
-          <p style={P}>To request a refund, email us with the following details:</p>
+          <p style={P}>Email us with the following details:</p>
           <ul style={UL}>
             <li>Subject line: <strong>"Refund request"</strong></li>
             <li>The email address on your OpenInvite account</li>
             <li>The reason for your refund request</li>
-            <li>The purchase date (if you have it)</li>
+            <li>Your purchase date, if you have it</li>
           </ul>
           <p style={P}>
-            <strong>Email:</strong> <a href="mailto:hello@openinvite.com" style={LK}>hello@openinvite.com</a>
+            <strong>Email:</strong> <a href="mailto:customercare@openinvite.com.au" style={LK}>customercare@openinvite.com.au</a>
           </p>
-          <p style={P}>We process refund requests within 5–7 business days. Refunds are returned to the original payment method and may take an additional 5–10 business days to appear depending on your bank.</p>
+          <p style={P}>We aim to process refund requests within 5–7 business days. Refunds are returned to your original payment method via Stripe and may take an additional 5–10 business days to appear, depending on your bank.</p>
 
           <div style={DIV} />
           <h2 style={H2}>What is not refundable</h2>
           <ul style={UL}>
-            <li>Monthly plans past their billing period end</li>
-            <li>Annual plans past the 14-day window (unless a material change occurred)</li>
+            <li>Purchases past the 14-day window (unless a material change occurred, see above)</li>
             <li>Accounts suspended for violating our <Link to="/terms-of-service" style={LK}>Terms of service</Link></li>
           </ul>
 
           <div style={DIV} />
           <h2 style={H2}>Questions?</h2>
-          <p style={P}>If you are unsure whether your situation qualifies for a refund, just ask. We would rather find a fair solution than leave you unhappy.</p>
-          <p style={P}><a href="mailto:hello@openinvite.com" style={LK}>hello@openinvite.com</a></p>
+          <p style={P}>If you're unsure whether your situation qualifies, just ask — we'd rather find a fair solution than leave you unhappy.</p>
+          <p style={P}><a href="mailto:customercare@openinvite.com.au" style={LK}>customercare@openinvite.com.au</a></p>
 
         </div>
       </main>

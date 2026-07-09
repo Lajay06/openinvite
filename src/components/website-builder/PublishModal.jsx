@@ -21,7 +21,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
   const [slugInput, setSlugInput] = useState(details?.slug || '');
   const [copied, setCopied] = useState(false);
 
-  const siteUrl = `openinvite.com/w/${details?.slug || 'your-wedding'}`;
+  const siteUrl = `openinvite.com.au/w/${details?.slug || 'your-wedding'}`;
 
   const togglePublish = async () => {
     const next = { websiteEnabled: !details?.websiteEnabled };
@@ -117,7 +117,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
               {/* URL */}
               <p style={{ fontSize: 11, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>YOUR URL</p>
               <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: 20, borderBottom: '1px solid #DDD' }}>
-                <span style={{ fontSize: 13, color: '#888', padding: '10px 12px', background: '#F5F5F5', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>openinvite.com/w/</span>
+                <span style={{ fontSize: 13, color: '#888', padding: '10px 12px', background: '#F5F5F5', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>openinvite.com.au/w/</span>
                 <input
                   value={slugInput}
                   onChange={e => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
@@ -205,7 +205,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
 
               <div style={{ width: 200, height: 200, margin: '0 auto 24px', border: '1px solid #EEE', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFF' }}>
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://openinvite.com/w/${details?.slug || 'wedding'}&color=0A0A0A&bgcolor=FFFFFF`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://openinvite.com.au/w/${details?.slug || 'wedding'}&color=0A0A0A&bgcolor=FFFFFF`}
                   alt="QR Code"
                   style={{ width: 180, height: 180 }}
                 />
@@ -215,7 +215,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
 
               <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
                 <a
-                  href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=https://openinvite.com/w/${details?.slug || 'wedding'}&color=0A0A0A&bgcolor=FFFFFF`}
+                  href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=https://openinvite.com.au/w/${details?.slug || 'wedding'}&color=0A0A0A&bgcolor=FFFFFF`}
                   download="wedding-qr-code.png"
                   style={{ padding: '10px 24px', background: '#0A0A0A', color: '#FFF', textDecoration: 'none', fontSize: 13, fontWeight: 600, fontFamily: 'inherit' }}
                 >

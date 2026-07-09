@@ -41,7 +41,7 @@ export default function StudioPagesTab({ wedding, onChange }) {
         {WEDDING_PAGES.map((page, idx) => {
           const isEnabled = enabledPages.includes(page.slug);
           const isHome = page.slug === 'home';
-          const pageUrl = `openinvite.com/w/${slug}${page.slug === 'home' ? '' : '/' + page.slug}`;
+          const pageUrl = `openinvite.com.au/w/${slug}${page.slug === 'home' ? '' : '/' + page.slug}`;
 
           return (
             <div
