@@ -15,7 +15,7 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import AttirePanel from '../components/styling/AttirePanel';
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 const WeddingDetails = base44.entities.WeddingDetails;
 const Vendor = base44.entities.Vendor;
 
@@ -48,7 +48,7 @@ const [activeTab, setActiveTab] = useState("attire");
     try {
       const [myDetails, vendorData] = await Promise.all([
         getMyWeddingDetails(),
-        Vendor.list()
+        getMyRecords('Vendor')
       ]);
 
       if (myDetails) {
@@ -89,7 +89,7 @@ const [activeTab, setActiveTab] = useState("attire");
       const created = await Vendor.create({ ...vendorData, category: vendorFormCategory || vendorData.category });
       toast.success('Vendor added', { id: tid });
       setShowVendorForm(false);
-      const refreshed = await Vendor.list();
+      const refreshed = await getMyRecords('Vendor');
       setVendors(refreshed);
       if (vendorFormCategory) handleVendorSelect(vendorFormCategory, created.id);
     } catch {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { useNavigate } from 'react-router-dom';
 
 const ENTITIES = [
@@ -32,7 +33,12 @@ export default function DevReset() {
           addLog(`⚠️  ${label}: entity not found, skipping`);
           continue;
         }
-        const records = await entity.list();
+        // Scoped to the logged-in user's own records only — this used to
+        // call entity.list() with no filter, meaning anyone who found this
+        // route could permanently delete every OTHER couple's guests,
+        // budget items, schedule, vendors, moodboard items, notes, and
+        // wedding details too, not just their own.
+        const records = await getMyRecords(key);
         if (!records || records.length === 0) {
           addLog(`✓  ${label}: already empty`);
           continue;

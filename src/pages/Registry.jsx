@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { RegistryItem } from '@/entities/RegistryItem';
-import { CustomGift } from '@/entities/CustomGift';
-import { RegistryProduct } from '@/entities/RegistryProduct';
+import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { Plus, Share2, Sparkles, Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import toast from 'react-hot-toast';
@@ -18,6 +17,10 @@ import ReceivedGifts from '../components/registry/ReceivedGifts';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+
+const RegistryItem = base44.entities.RegistryItem;
+const CustomGift = base44.entities.CustomGift;
+const RegistryProduct = base44.entities.RegistryProduct;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -66,7 +69,7 @@ export default function RegistryPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [s, c, p] = await Promise.all([RegistryItem.list(), CustomGift.list(), RegistryProduct.list()]);
+      const [s, c, p] = await Promise.all([getMyRecords('RegistryItem'), getMyRecords('CustomGift'), getMyRecords('RegistryProduct')]);
       setStoreItems(s); setCustomGifts(c); setProducts(p);
     } catch { toast.error('Failed to load registry data'); }
     setLoading(false);

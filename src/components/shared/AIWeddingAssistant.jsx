@@ -5,9 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Sparkles, Send, X, User, Lightbulb, Calendar, DollarSign, Palette, Users, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { InvokeLLM } from "@/integrations/Core";
-import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
-const Guest = base44.entities.Guest;
+import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 
 export default function AIWeddingAssistant() {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,7 +32,7 @@ export default function AIWeddingAssistant() {
     try {
       const [invitation, guests, details] = await Promise.all([
         getMyInvitation(),
-        Guest.list(),
+        getMyRecords('Guest'),
         getMyWeddingDetails()
       ]);
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,7 +32,7 @@ export default function OurStoryPage() {
 
   const loadMilestones = async () => {
     try {
-      const data = await base44.entities.StoryMilestone.list();
+      const data = await getMyRecords('StoryMilestone');
       setMilestones(data.sort((a, b) => (a.order || 0) - (b.order || 0)));
     } catch (error) {
       console.error('Error loading milestones:', error);

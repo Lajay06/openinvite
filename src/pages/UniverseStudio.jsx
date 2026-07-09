@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import UniverseSelector from '@/components/universe-studio/UniverseSelector';
 import AssetGrid from '@/components/universe-studio/AssetGrid';
 import AssetEditorModal from '@/components/universe-studio/AssetEditorModal';
@@ -17,7 +17,7 @@ export default function UniverseStudio() {
       try {
         const [details, guestList] = await Promise.all([
           getMyWeddingDetails(),
-          base44.entities.Guest.list()
+          getMyRecords('Guest')
         ]);
         const d = details || {};
         setWeddingDetails(d);

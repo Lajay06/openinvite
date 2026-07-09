@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { X, Upload, Download, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 
 const Guest = base44.entities.Guest;
@@ -102,7 +103,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
     // Skip rows whose email already matches an existing guest — importing
     // the same list twice (a common re-export/re-import habit) would
     // otherwise silently double every guest.
-    const existingGuests = await Guest.list().catch(() => []);
+    const existingGuests = await getMyRecords('Guest').catch(() => []);
     const existingEmails = new Set(
       existingGuests.map(g => g.email?.trim().toLowerCase()).filter(Boolean)
     );

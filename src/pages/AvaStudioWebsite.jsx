@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { MediaLibraryContext } from '@/components/website-builder/SectionEditorFields';
 import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import toast from 'react-hot-toast';
@@ -267,7 +267,7 @@ export default function AvaStudioWebsite() {
       if (details) { setDetails(details); setDetailsId(details.id); }
       else setDetails({});
     });
-    base44.entities.Photo.list('-created_date', 100).then(photos => {
+    getMyRecords('Photo', '-created_date', 100).then(photos => {
       setMediaLibrary(photos.map(p => ({ id: p.id, url: p.url || p.photo_url || '', thumbnail: p.url || p.photo_url || '', type: 'photo', name: p.caption || 'Photo' })).filter(p => p.url));
     }).catch(() => {});
   }, []);

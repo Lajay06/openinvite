@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Loader2, Gift, ExternalLink, ArrowRight } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -175,9 +175,9 @@ export default function GuestSuiteRegistry() {
 
   useEffect(() => {
     Promise.all([
-      base44.entities.RegistryItem.list(),
-      base44.entities.RegistryProduct.list(),
-      base44.entities.CustomGift.list(),
+      getMyRecords('RegistryItem'),
+      getMyRecords('RegistryProduct'),
+      getMyRecords('CustomGift'),
     ])
       .then(([p, pr, cf]) => { setPlatforms(p || []); setProducts(pr || []); setCashFunds(cf || []); })
       .catch(e => console.error('GuestSuiteRegistry load error', e))

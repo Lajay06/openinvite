@@ -4,11 +4,7 @@ import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
-import { base44 } from "@/api/base44Client";
-import { getMyInvitation } from '@/lib/resolveMyWedding';
-const Vendor = base44.entities.Vendor;
-const Schedule = base44.entities.Schedule;
-const Photographer = base44.entities.Photographer;
+import { getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -64,10 +60,10 @@ export default function CalendarPage({ embedded = false }) {
     setLoading(true);
     try {
       const [vendors, scheduleItems, invitation, photographers] = await Promise.all([
-        Vendor.list().catch(() => []),
-        Schedule.list().catch(() => []),
+        getMyRecords('Vendor').catch(() => []),
+        getMyRecords('Schedule').catch(() => []),
         getMyInvitation().catch(() => null),
-        Photographer.list().catch(() => [])
+        getMyRecords('Photographer').catch(() => [])
       ]);
 
       const allEvents = [];

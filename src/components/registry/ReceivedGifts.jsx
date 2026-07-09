@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Guest } from '@/entities/Guest';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -68,12 +68,12 @@ export default function ReceivedGifts() {
 
   useEffect(() => {
     Promise.all([
-      ReceivedGift.list('-created_date').then(setGifts),
-      Guest.list().then(setGuests),
+      getMyRecords('ReceivedGift', '-created_date').then(setGifts),
+      getMyRecords('Guest').then(setGuests),
     ]).finally(() => setLoading(false));
   }, []);
 
-  const reload = () => ReceivedGift.list('-created_date').then(setGifts);
+  const reload = () => getMyRecords('ReceivedGift', '-created_date').then(setGifts);
 
   const filteredGuests = useMemo(() =>
     guests.filter(g => g.name.toLowerCase().includes(guestSearch.toLowerCase())).slice(0, 8),

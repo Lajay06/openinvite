@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
+import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
 import { Loader2, Plus, X, MapPin, Trash2, Edit2, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -501,7 +501,7 @@ export default function EventDetailsPage() {
   useEffect(() => {
     Promise.all([
       getMyWeddingDetails(),
-      (base44.entities.ThemeDetails?.list() || Promise.resolve([])).catch(() => []),
+      getMyRecords('ThemeDetails').catch(() => []),
     ]).then(([wd, tdRows]) => {
       const r  = wd || {};
       const td = tdRows[0] || null;

@@ -2,9 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { createPageUrl } from '@/utils';
-import { Guest } from '@/entities/Guest';
-import { Budget } from '@/entities/Budget';
-import { Schedule } from '@/entities/Schedule';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -28,7 +26,7 @@ export default function Header({ weddingName }) {
 
   const loadSearchData = async () => {
     try {
-      const [guests, budget, schedule] = await Promise.all([Guest.list(), Budget.list(), Schedule.list()]);
+      const [guests, budget, schedule] = await Promise.all([getMyRecords('Guest'), getMyRecords('Budget'), getMyRecords('Schedule')]);
       setSearchData({ guests, budget, schedule });
     } catch {}
   };

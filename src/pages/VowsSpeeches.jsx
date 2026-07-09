@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { VowSpeech } from '@/entities/VowSpeech';
+import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { Plus, Edit, Trash2, Mic, Heart, Printer, Sparkles, Loader2, User } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const VowSpeech = base44.entities.VowSpeech;
 import VowSpeechEditor from '../components/vows/VowSpeechEditor';
 import AIVowsSpeechesAssistant from '../components/vows/AIVowsSpeechesAssistant';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -50,7 +53,7 @@ export default function VowsSpeechesPage() {
   const loadItems = async () => {
     setLoading(true);
     try {
-      const data = await VowSpeech.list('-created_date');
+      const data = await getMyRecords('VowSpeech', '-created_date');
       setItems(data);
     } catch (e) {
       console.error(e);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Loader2, Calendar, MapPin, ArrowRight } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -50,7 +50,7 @@ export default function GuestSuiteSchedule() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.Schedule.list('start_time')
+    getMyRecords('Schedule', 'start_time')
       .then(data => setItems(data || []))
       .catch(e => console.error('GuestSuiteSchedule load error', e))
       .finally(() => setLoading(false));

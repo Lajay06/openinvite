@@ -14,6 +14,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { getMyRecords } from "@/lib/resolveMyWedding";
 const Budget = base44.entities.Budget;
 
 function CountUp({ to, duration = 1200, format }) {
@@ -180,7 +181,7 @@ export default function BudgetPage() {
 
   const loadBudgetItems = async () => {
     try {
-      const data = await Budget.list('-created_date');
+      const data = await getMyRecords('Budget', '-created_date');
       setBudgetItems(data);
     } catch {
       toast.error("Failed to load budget");

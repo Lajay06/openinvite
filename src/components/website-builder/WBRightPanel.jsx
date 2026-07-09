@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, Plus, ChevronLeft } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
 import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, HERO_EFFECT_OPTIONS } from '@/lib/websiteThemes';
-import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 import {
   FLabel, UInput, RichTextField, MediaPicker, MediaLibraryContext,
@@ -658,7 +658,7 @@ export default function WBRightPanel({ details, universeTheme, onChange, selecte
   const [mediaCallback, setMediaCallback] = useState(null);
 
   useEffect(() => {
-    base44.entities.Photo.list('-created_date', 100).then(photos => {
+    getMyRecords('Photo', '-created_date', 100).then(photos => {
       setMediaLibrary(photos.map(p => ({
         id: p.id,
         url: p.url || p.photo_url || p.imageUrl || '',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -282,15 +282,15 @@ export default function WeddingWebsite() {
       const [invitation, details, registry, gifts, hotelData, restaurantData, storyData, photoData, streamData, customPagesData, themeData] = await Promise.all([
         getMyInvitation(),
         getMyWeddingDetails(),
-        base44.entities.RegistryItem.list(),
-        base44.entities.CustomGift.list(),
-        base44.entities.Hotel.list().catch(() => []),
-        base44.entities.Restaurant.list().catch(() => []),
-        base44.entities.StoryMilestone.list().catch(() => []),
-        base44.entities.Photo.list().catch(() => []),
-        base44.entities.LiveStream.list().catch(() => []),
-        base44.entities.CustomEventPage.list('order').catch(() => []),
-        base44.entities.WebsiteTheme.list().catch(() => [])
+        getMyRecords('RegistryItem'),
+        getMyRecords('CustomGift'),
+        getMyRecords('Hotel').catch(() => []),
+        getMyRecords('Restaurant').catch(() => []),
+        getMyRecords('StoryMilestone').catch(() => []),
+        getMyRecords('Photo').catch(() => []),
+        getMyRecords('LiveStream').catch(() => []),
+        getMyRecords('CustomEventPage', 'order').catch(() => []),
+        getMyRecords('WebsiteTheme').catch(() => [])
       ]);
 
       setInvitation(invitation || null);
@@ -308,7 +308,7 @@ export default function WeddingWebsite() {
       }
 
       if (guestId) {
-        const guests = await base44.entities.Guest.list();
+        const guests = await getMyRecords('Guest');
         const guestData = guests.find(g => g.id === guestId);
         if (guestData) {
           setGuest(guestData);

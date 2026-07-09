@@ -12,6 +12,7 @@ import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
+import { getMyRecords } from "@/lib/resolveMyWedding";
 const Vendor = base44.entities.Vendor;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -85,7 +86,7 @@ export default function VendorsPage() {
 
   const loadVendors = async () => {
     try {
-      const data = await Vendor.list('-created_date');
+      const data = await getMyRecords('Vendor', '-created_date');
       setVendors(data);
     } catch { toast.error("Failed to load vendors"); }
     setLoading(false);

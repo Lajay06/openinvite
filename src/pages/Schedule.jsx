@@ -13,6 +13,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
+import { getMyRecords } from "@/lib/resolveMyWedding";
 const Schedule = base44.entities.Schedule;
 
 function CountUp({ to, duration = 1200, format }) {
@@ -82,7 +83,7 @@ export default function SchedulePage({
 
   const loadScheduleItems = async () => {
     try {
-      const data = await Schedule.list('start_time');
+      const data = await getMyRecords('Schedule', 'start_time');
       setScheduleItems(data);
     } catch {
       toast.error("Failed to load schedule");

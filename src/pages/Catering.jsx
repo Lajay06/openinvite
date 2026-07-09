@@ -4,7 +4,7 @@ import { UtensilsCrossed, Plus, ChefHat, Coffee, Wine, Cake, Loader2 } from "luc
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import toast from 'react-hot-toast';
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import AvaButton from '../components/shared/AvaButton';
@@ -49,7 +49,7 @@ export default function CateringPage() {
     setLoading(true);
     try {
       const [allVendors, myDetails] = await Promise.all([
-        Vendor.list('-created_date'),
+        getMyRecords('Vendor', '-created_date'),
         getMyWeddingDetails().catch(() => null)
       ]);
       setCaterers(allVendors.filter(v => v.category === 'catering'));
