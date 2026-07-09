@@ -135,7 +135,7 @@
     },
     "theme": {
       "type": "object",
-      "description": "Consolidated wedding theme — canonical home for all aesthetic, faith, culture, atmosphere, season and setting data.",
+      "description": "Consolidated wedding theme \u2014 canonical home for all aesthetic, faith, culture, atmosphere, season and setting data.",
       "properties": {
         "aesthetic": {
           "type": "array",
@@ -809,7 +809,7 @@
         },
         "stylingQuestionnaire": {
           "type": "object",
-          "description": "Guest styling questionnaire toggle (roadmap D2) — { enabled: boolean }"
+          "description": "Guest styling questionnaire toggle (roadmap D2) \u2014 { enabled: boolean }"
         }
       }
     },
@@ -858,43 +858,53 @@
     },
     "foodAndBeverage": {
       "type": "object",
-      "description": "Catering details — caterer, menu, bar, cake, dietary options, etc.",
+      "description": "Catering details \u2014 caterer, menu, bar, cake, dietary options, etc.",
       "additionalProperties": true
     },
     "photography": {
       "type": "object",
-      "description": "Photography and videography planning details — vendors, packages, shot lists, delivery timelines, etc.",
+      "description": "Photography and videography planning details \u2014 vendors, packages, shot lists, delivery timelines, etc.",
       "additionalProperties": true
     },
     "attire": {
       "type": "object",
-      "description": "Wedding attire notes — bridal, groom, wedding party, etc.",
+      "description": "Wedding attire notes \u2014 bridal, groom, wedding party, etc.",
       "additionalProperties": true
     },
     "flowers": {
       "type": "object",
-      "description": "Flowers and floral arrangements — florist, bouquets, ceremony and reception florals, etc.",
+      "description": "Flowers and floral arrangements \u2014 florist, bouquets, ceremony and reception florals, etc.",
       "additionalProperties": true
     },
     "decorations": {
       "type": "object",
-      "description": "Decorations and styling — decorator, theme, colour scheme, venue dressing, etc.",
+      "description": "Decorations and styling \u2014 decorator, theme, colour scheme, venue dressing, etc.",
       "additionalProperties": true
     },
     "beauty": {
       "type": "object",
-      "description": "Hair and makeup planning — stylists, getting-ready people, skincare timeline, trials, etc.",
+      "description": "Hair and makeup planning \u2014 stylists, getting-ready people, skincare timeline, trials, etc.",
       "additionalProperties": true
     },
     "entertainmentDetails": {
       "type": "object",
-      "description": "Entertainment planning — band/DJ, songs, MC, photo booth, etc.",
+      "description": "Entertainment planning \u2014 band/DJ, songs, MC, photo booth, etc.",
       "additionalProperties": true
     },
     "is_test": {
       "type": "boolean",
       "default": false,
       "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
+    }
+  },
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
     }
   }
 }
