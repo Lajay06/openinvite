@@ -38,6 +38,7 @@ export const GUEST_SAFE_WEDDING_FIELDS = [
   'activeTypography',
   'activeUniverse',
   'pageTransition',
+  'scrollAnimation',
   'weddingPolicies',
   'polls',
   'qna',

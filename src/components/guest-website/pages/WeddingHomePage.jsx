@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import TextureOverlay from '../TextureOverlay';
 
 export default function WeddingHomePage({ weddingDetails, theme, typography, universeConfig }) {
   const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || 'We are overjoyed to celebrate with you.';
@@ -29,10 +28,8 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
           }}
         />
 
-        {/* Texture — after dark overlay so it renders above it; text stays at zIndex:10 above both */}
-        {universeConfig?.texture && (
-          <TextureOverlay textureId={universeConfig.texture.type} opacity={universeConfig.texture.opacity} />
-        )}
+        {/* Texture now renders once, site-wide, at the root in
+            MultiPageWeddingWebsite.jsx — no longer duplicated here. */}
 
         <motion.div
           initial={{ opacity: 0, y: prefersReduced ? 0 : 20 }}

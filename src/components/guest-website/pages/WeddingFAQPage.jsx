@@ -1,37 +1,36 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
+import SectionReveal from '../SectionReveal';
+import { isMotionEnabled } from '@/lib/universeStyling';
 
-export default function WeddingFAQPage({ weddingDetails, theme, typography }) {
+export default function WeddingFAQPage({ weddingDetails, theme, typography, universeConfig }) {
   const qna = weddingDetails.qna || [];
   const [openIndex, setOpenIndex] = useState(null);
 
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          style={{
-            fontFamily: typography.headingFont,
-            fontSize: 'clamp(2rem, 5vw, 3rem)',
-            fontWeight: typography.headingWeight,
-            marginBottom: '60px',
-            textAlign: 'center'
-          }}
-        >
-          FAQ
-        </motion.h1>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+          <h1
+            style={{
+              fontFamily: typography.headingFont,
+              fontSize: 'clamp(2rem, 5vw, 3rem)',
+              fontWeight: typography.headingWeight,
+              marginBottom: '60px',
+              textAlign: 'center'
+            }}
+          >
+            FAQ
+          </h1>
+        </SectionReveal>
 
         {qna.length > 0 ? (
           <div style={{ space: '12px' }}>
             {qna.map((item, i) => (
-              <motion.div
+              <SectionReveal
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: i * 0.05 }}
+                universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
                 style={{
                   backgroundColor: theme.darkBg,
                   borderRadius: '4px',
@@ -87,14 +86,12 @@ export default function WeddingFAQPage({ weddingDetails, theme, typography }) {
                     {item.answer}
                   </motion.div>
                 )}
-              </motion.div>
+              </SectionReveal>
             ))}
           </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+          <SectionReveal
+            universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
             style={{
               backgroundColor: theme.darkBg,
               color: theme.darkText,
@@ -106,7 +103,7 @@ export default function WeddingFAQPage({ weddingDetails, theme, typography }) {
             <p style={{ fontFamily: typography.bodyFont, fontSize: '1.125rem' }}>
               No FAQs added yet.
             </p>
-          </motion.div>
+          </SectionReveal>
         )}
       </div>
     </div>

@@ -32,6 +32,7 @@ import { runOnboarding } from '../tests/persistence/onboarding.mjs';
 import { runEndpointAuth } from '../tests/persistence/endpoint-auth.mjs';
 import { runSpotifyOAuth } from '../tests/persistence/spotify-oauth.mjs';
 import { runAnonymousEndpoints } from '../tests/persistence/anonymous-endpoints.mjs';
+import { runUniverseStyling } from '../tests/persistence/universe-styling.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -75,6 +76,7 @@ async function run() {
   results.push(...await runEndpointAuth());
   results.push(...await runSpotifyOAuth());
   results.push(...await runAnonymousEndpoints());
+  results.push(...await runUniverseStyling());
 
   // ── Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;

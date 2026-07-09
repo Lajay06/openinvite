@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { Turnstile } from '@marsidev/react-turnstile';
+import SectionReveal from '../SectionReveal';
+import { isMotionEnabled } from '@/lib/universeStyling';
 
 const STATUS = { idle: 'idle', sending: 'sending', sent: 'sent', error: 'error' };
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
-export default function WeddingRSVPPage({ weddingDetails, theme, typography }) {
+export default function WeddingRSVPPage({ weddingDetails, theme, typography, universeConfig }) {
   const content = weddingDetails.rsvpContent || {};
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState(STATUS.idle);
@@ -36,26 +37,23 @@ export default function WeddingRSVPPage({ weddingDetails, theme, typography }) {
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '520px', margin: '0 auto' }}>
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          style={{
-            fontFamily: typography.headingFont,
-            fontSize: 'clamp(2rem, 5vw, 3rem)',
-            fontWeight: typography.headingWeight,
-            marginBottom: '12px',
-            textAlign: 'center'
-          }}
-        >
-          RSVP
-        </motion.h1>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+          <h1
+            style={{
+              fontFamily: typography.headingFont,
+              fontSize: 'clamp(2rem, 5vw, 3rem)',
+              fontWeight: typography.headingWeight,
+              marginBottom: '12px',
+              textAlign: 'center'
+            }}
+          >
+            RSVP
+          </h1>
+        </SectionReveal>
 
         {content.rsvpDeadline && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
+          <SectionReveal
+            universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
             style={{
               textAlign: 'center',
               fontSize: '0.875rem',
@@ -64,13 +62,11 @@ export default function WeddingRSVPPage({ weddingDetails, theme, typography }) {
             }}
           >
             Please respond by {new Date(content.rsvpDeadline).toLocaleDateString()}
-          </motion.p>
+          </SectionReveal>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+        <SectionReveal
+          universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
           style={{
             backgroundColor: theme.darkBg,
             color: theme.darkText,
@@ -163,7 +159,7 @@ export default function WeddingRSVPPage({ weddingDetails, theme, typography }) {
               </button>
             </>
           )}
-        </motion.div>
+        </SectionReveal>
       </div>
     </div>
   );

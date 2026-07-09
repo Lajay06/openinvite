@@ -9,7 +9,8 @@ import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
 import SectionTemplatePicker from '@/components/website-builder/SectionTemplatePicker';
-import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, FONT_OPTIONS, WEDDING_PAGES } from '@/lib/websiteThemes';
+import { WEBSITE_THEMES, FONT_OPTIONS, WEDDING_PAGES, UNIVERSE_CONFIGS, normalizeUniverseKey } from '@/lib/websiteThemes';
+import { resolveTypography, resolveUniverseConfig, googleFontsHref } from '@/lib/universeStyling';
 import WeddingHomePage from '@/components/guest-website/pages/WeddingHomePage';
 import WeddingOurStoryPage from '@/components/guest-website/pages/WeddingOurStoryPage';
 import WeddingCelebrationPage from '@/components/guest-website/pages/WeddingCelebrationPage';
@@ -74,16 +75,16 @@ const UNIVERSE_THEMES = {
     fontBody: '"Plus Jakarta Sans", sans-serif',
     feeling: 'Joyful luxury, coastal summer, effortless glamour',
   },
-  tokyo: {
-    name: 'Tokyo',
-    primary: '#FFFFFF',
-    secondary: '#C0C0C0',
-    background: '#0A0A0A',
-    text: '#FFFFFF',
-    accent: '#B8FF00',
-    fontDisplay: '"Cormorant Garamond", serif',
-    fontBody: '"Plus Jakarta Sans", sans-serif',
-    feeling: 'Editorial nightlife, modern luxury, elevated tech',
+  brooklyn: {
+    name: 'Brooklyn',
+    primary: '#1C1C1C',
+    secondary: '#E5E5E5',
+    background: '#F5F5F5',
+    text: '#1C1C1C',
+    accent: '#B85C38',
+    fontDisplay: '"Bebas Neue", sans-serif',
+    fontBody: '"IBM Plex Sans", sans-serif',
+    feeling: 'Urban industrial, gritty, direct, unfussy',
   },
   marrakech: {
     name: 'Marrakech',
@@ -103,53 +104,42 @@ const UNIVERSE_THEMES = {
     background: '#FAF7F2',
     text: '#1A1A2E',
     accent: '#C9A96E',
-    fontDisplay: '"Cormorant Garamond", serif',
-    fontBody: '"Plus Jakarta Sans", sans-serif',
-    feeling: 'Chic, timeless, understated luxury',
-  },
-  amalfi: {
-    name: 'Amalfi',
-    primary: '#1B4B6B',
-    secondary: '#E8A040',
-    background: '#FEFDF9',
-    text: '#1B3A4B',
-    accent: '#2E8B8B',
     fontDisplay: '"Playfair Display", serif',
-    fontBody: '"Plus Jakarta Sans", sans-serif',
-    feeling: 'Sun-drenched, luxurious, vibrant',
+    fontBody: '"Lato", sans-serif',
+    feeling: 'Chic, timeless, French romance',
   },
-  sedona: {
-    name: 'Sedona',
-    primary: '#3D2415',
-    secondary: '#C4783A',
-    background: '#F2EAE0',
-    text: '#3D2415',
-    accent: '#8B4513',
-    fontDisplay: '"Playfair Display", serif',
-    fontBody: '"Plus Jakarta Sans", sans-serif',
-    feeling: 'Earthy, intimate, spiritual luxury',
+  bali: {
+    name: 'Bali',
+    primary: '#2D5A27',
+    secondary: '#F5E6CC',
+    background: '#FAF7EF',
+    text: '#1A3318',
+    accent: '#F5E6CC',
+    fontDisplay: '"Prata", serif',
+    fontBody: '"Mulish", sans-serif',
+    feeling: 'Tropical spirit, lush, languid, alive',
   },
-  aspen: {
-    name: 'Aspen',
-    primary: '#1A1A1A',
-    secondary: '#2D5A27',
-    background: '#F8F8F6',
-    text: '#1A1A1A',
-    accent: '#2D5A27',
-    fontDisplay: '"Cormorant Garamond", serif',
-    fontBody: '"Plus Jakarta Sans", sans-serif',
-    feeling: 'Cozy luxury, black tie winter romance',
+  capetown: {
+    name: 'Cape Town',
+    primary: '#5C3D2E',
+    secondary: '#C4A882',
+    background: '#F5EEE3',
+    text: '#3D2818',
+    accent: '#C4A882',
+    fontDisplay: '"Bitter", serif',
+    fontBody: '"Josefin Sans", sans-serif',
+    feeling: 'Safari chic, earthy, adventurous, warm',
   },
-  santorini: {
-    name: 'Santorini',
-    primary: '#0A2540',
-    secondary: '#4A90D9',
-    background: '#FAFCFF',
+  mykonos: {
+    name: 'Mykonos',
+    primary: '#1B4F8A',
+    secondary: '#FFFFFF',
+    background: '#F5FAFF',
     text: '#0A2540',
-    accent: '#4A90D9',
-    fontDisplay: '"Cormorant Garamond", serif',
-    fontBody: '"Plus Jakarta Sans", sans-serif',
-    feeling: 'Sculptural, crisp, modern coastal elegance',
+    accent: '#1B4F8A',
+    fontDisplay: '"Cinzel", serif',
+    fontBody: '"Montserrat", sans-serif',
+    feeling: 'Aegean blue, crisp, whitewashed, coastal',
   },
 };
 
@@ -340,10 +330,12 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
   }, [details, currentPage]);
 
   const theme = WEBSITE_THEMES.find(t => t.id === (details?.activeTheme || 'still')) || WEBSITE_THEMES[0];
-  const universeTheme = UNIVERSE_THEMES[details?.activeUniverse] || UNIVERSE_THEMES.aman;
-  // Derive typo from the selected pairing so the builder preview matches the published site.
-  // activeTypography is the Base44-registered field written by WBRightPanel's pairing grid.
-  const typo = TYPOGRAPHY_PAIRINGS.find(t => t.id === details?.activeTypography) || TYPOGRAPHY_PAIRINGS[0];
+  const universeTheme = UNIVERSE_THEMES[normalizeUniverseKey(details?.activeUniverse)] || UNIVERSE_THEMES.aman;
+  // Derive typo through the same universe-aware resolver the published site
+  // uses (resolveTypography) — a universe's own font pairing takes priority
+  // over the generic activeTypography picker, so builder preview matches
+  // exactly what publishes.
+  const typo = resolveTypography(details);
 
   const setDetailsAndMark = (updater) => {
     setDetails(prev => {
@@ -729,26 +721,45 @@ function PlaceholderSection({ section, universeTheme, effectiveHf, effectiveBf, 
   );
 }
 
-// Universe fonts not covered by any TYPOGRAPHY_PAIRINGS entry
-const UNIVERSE_GFONTS = {
-  'Noto Serif JP': 'https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400&display=swap',
-};
-
 function PreviewContent({ theme, typo, universeTheme, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection, isMobile }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Preload ALL typography fonts at mount so switching is instant (no loading delay)
+  // Preload ALL typography fonts at mount so switching is instant (no loading
+  // delay) — both the generic FONT_OPTIONS/TYPOGRAPHY_PAIRINGS set AND every
+  // universe's font pairing, since the universe picker can switch fonts too.
+  // (The published site takes the opposite approach — loads only the ONE
+  // active pairing — since it only ever has one real visitor-facing config;
+  // the builder preloads everything because a couple actively comparing
+  // universes/pairings should see instant switching, not a fetch each time.)
   useEffect(() => {
     const needed = new Set();
 
-    // Universe display font (for fonts not covered by any typography pairing)
-    const univName = universeTheme?.fontDisplay?.replace(/['"]/g, '').split(',')[0].trim();
-    if (univName && UNIVERSE_GFONTS[univName]) needed.add(UNIVERSE_GFONTS[univName]);
+    // Preload every universe's font pairing
+    Object.values(UNIVERSE_CONFIGS).forEach(cfg => {
+      const href = googleFontsHref(cfg.typography);
+      if (href) needed.add(href);
+    });
 
     // Preload every font option so switching is instant
     FONT_OPTIONS.forEach(f => {
       if (f.google) needed.add(`https://fonts.googleapis.com/css2?family=${f.google}&display=swap`);
     });
+
+    // Preconnect once — shaves the DNS/TLS handshake off every font request
+    // below, whether it's 1 or 25 stylesheet links.
+    if (!document.querySelector('link[rel="preconnect"][href="https://fonts.googleapis.com"]')) {
+      const p1 = document.createElement('link');
+      p1.rel = 'preconnect';
+      p1.href = 'https://fonts.googleapis.com';
+      document.head.appendChild(p1);
+    }
+    if (!document.querySelector('link[rel="preconnect"][href="https://fonts.gstatic.com"]')) {
+      const p2 = document.createElement('link');
+      p2.rel = 'preconnect';
+      p2.href = 'https://fonts.gstatic.com';
+      p2.crossOrigin = 'anonymous';
+      document.head.appendChild(p2);
+    }
 
     // Remove previously injected font links
     document.head.querySelectorAll('link[data-wf-font]').forEach(el => el.remove());
@@ -848,7 +859,7 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
           // No sections yet — use the SAME published page components so the builder
           // preview is a faithful mirror of the guest site (reads real data fields).
           (() => {
-            const typography = TYPOGRAPHY_PAIRINGS.find(t => t.id === details?.activeTypography) || TYPOGRAPHY_PAIRINGS[0];
+            const typography = resolveTypography(details);
             const PAGE_FALLBACKS = {
               'home':         WeddingHomePage,
               'our-story':    WeddingOurStoryPage,
@@ -871,7 +882,7 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
                   weddingDetails={details}
                   theme={theme}
                   typography={typography}
-                  universeConfig={null}
+                  universeConfig={resolveUniverseConfig(details)}
                 />
               );
             }

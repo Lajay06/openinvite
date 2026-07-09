@@ -1,15 +1,9 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { MapPin, Star, ExternalLink, Hotel } from 'lucide-react';
+import SectionReveal from '../SectionReveal';
+import { isMotionEnabled } from '@/lib/universeStyling';
 
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
-  transition: { duration: 0.6, delay },
-});
-
-export default function WeddingStayPage({ weddingDetails, theme, typography }) {
+export default function WeddingStayPage({ weddingDetails, theme, typography, universeConfig }) {
   const places = weddingDetails.guestSuiteAccommodation?.places || [];
   // Also show legacy manual properties if no curated places
   const legacy = weddingDetails.accommodation?.manualProperties || [];
@@ -49,25 +43,25 @@ export default function WeddingStayPage({ weddingDetails, theme, typography }) {
       <div style={{ maxWidth: 860, margin: '0 auto' }}>
 
         {/* Page title */}
-        <motion.h1 {...fadeUp()} style={{ ...heading, fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }}>
-          Where to stay
-        </motion.h1>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+          <h1 style={{ ...heading, fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }}>Where to stay</h1>
+        </SectionReveal>
 
         {accom.coupleNote && (
-          <motion.p {...fadeUp(0.06)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
             {accom.coupleNote}
-          </motion.p>
+          </SectionReveal>
         )}
 
         {!accom.coupleNote && (
-          <motion.p {...fadeUp(0.06)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
             We've curated a few great places to stay so you can find something that suits your style and budget.
-          </motion.p>
+          </SectionReveal>
         )}
 
         {/* Check-in / check-out dates */}
         {(accom.checkInDate || accom.checkOutDate) && (
-          <motion.div {...fadeUp(0.1)} style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 48 }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 48 }}>
             {accom.checkInDate && (
               <div style={{ textAlign: 'center' }}>
                 <p style={{ ...label, marginBottom: 4 }}>Check in</p>
@@ -84,18 +78,18 @@ export default function WeddingStayPage({ weddingDetails, theme, typography }) {
                 </p>
               </div>
             )}
-          </motion.div>
+          </SectionReveal>
         )}
 
         {/* Curated places */}
         {places.length > 0 && (
           <div>
-            <motion.p {...fadeUp(0.08)} style={{ ...label, marginBottom: 24 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...label, marginBottom: 24 }}>
               Our recommendations
-            </motion.p>
+            </SectionReveal>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
               {places.map((place, i) => (
-                <motion.div key={place.id || place.place_id || i} {...fadeUp(0.08 + i * 0.04)} style={card}>
+                <SectionReveal key={place.id || place.place_id || i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={card}>
                   {/* Photo */}
                   <div style={{ height: 190, background: `${theme.darkBg}cc`, position: 'relative', overflow: 'hidden' }}>
                     {place.photo_url ? (
@@ -153,7 +147,7 @@ export default function WeddingStayPage({ weddingDetails, theme, typography }) {
                       </a>
                     )}
                   </div>
-                </motion.div>
+                </SectionReveal>
               ))}
             </div>
           </div>
@@ -163,7 +157,7 @@ export default function WeddingStayPage({ weddingDetails, theme, typography }) {
         {places.length === 0 && legacy.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
             {legacy.map((p, i) => (
-              <motion.div key={p.id || i} {...fadeUp(0.08 + i * 0.04)} style={card}>
+              <SectionReveal key={p.id || i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={card}>
                 {p.photoUrl && <img src={p.photoUrl} alt={p.name} style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }} />}
                 <div style={{ padding: '16px 20px' }}>
                   <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1rem', color: theme.darkText, margin: '0 0 6px' }}>{p.name}</p>
@@ -176,25 +170,25 @@ export default function WeddingStayPage({ weddingDetails, theme, typography }) {
                     </a>
                   )}
                 </div>
-              </motion.div>
+              </SectionReveal>
             ))}
           </div>
         )}
 
         {/* Empty state */}
         {places.length === 0 && legacy.length === 0 && (
-          <motion.div {...fadeUp(0.1)} style={{ textAlign: 'center', padding: '60px 24px' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: 'center', padding: '60px 24px' }}>
             <p style={{ ...body, opacity: 0.4, fontStyle: 'italic' }}>
               Accommodation recommendations will be added here by the couple.
             </p>
-          </motion.div>
+          </SectionReveal>
         )}
 
         {/* Additional notes */}
         {accom.additionalNotes && (
-          <motion.div {...fadeUp(0.15)} style={{ marginTop: 40, padding: '24px 28px', border: `1px solid ${theme.accent}30`, borderRadius: 4 }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ marginTop: 40, padding: '24px 28px', border: `1px solid ${theme.accent}30`, borderRadius: 4 }}>
             <p style={{ ...body, margin: 0, whiteSpace: 'pre-wrap' }}>{accom.additionalNotes}</p>
-          </motion.div>
+          </SectionReveal>
         )}
       </div>
     </div>

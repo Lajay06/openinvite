@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { Turnstile } from '@marsidev/react-turnstile';
+import SectionReveal from '../SectionReveal';
+import { isMotionEnabled } from '@/lib/universeStyling';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -18,7 +19,7 @@ function GuestbookCard({ entry, theme }) {
   );
 }
 
-export default function WeddingGuestbookPage({ weddingDetails, theme, typography }) {
+export default function WeddingGuestbookPage({ weddingDetails, theme, typography, universeConfig }) {
   const [entries, setEntries] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [guestName, setGuestName] = useState('');
@@ -92,29 +93,26 @@ export default function WeddingGuestbookPage({ weddingDetails, theme, typography
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: 560, margin: '0 auto' }}>
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          style={{
-            fontFamily: typography.headingFont,
-            fontSize: 'clamp(2rem, 5vw, 3rem)',
-            fontWeight: typography.headingWeight,
-            marginBottom: '12px',
-            textAlign: 'center',
-          }}
-        >
-          Guestbook
-        </motion.h1>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+          <h1
+            style={{
+              fontFamily: typography.headingFont,
+              fontSize: 'clamp(2rem, 5vw, 3rem)',
+              fontWeight: typography.headingWeight,
+              marginBottom: '12px',
+              textAlign: 'center',
+            }}
+          >
+            Guestbook
+          </h1>
+        </SectionReveal>
         <p style={{ textAlign: 'center', fontSize: 14, color: theme.lightText, opacity: 0.7, marginBottom: 40, fontFamily: PJS }}>
           Leave the couple a message they'll keep forever.
         </p>
 
         {/* Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+        <SectionReveal
+          universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
           style={{ backgroundColor: theme.darkBg, color: theme.darkText, padding: '32px', marginBottom: 40 }}
         >
           {submitted ? (
@@ -197,7 +195,7 @@ export default function WeddingGuestbookPage({ weddingDetails, theme, typography
               </button>
             </form>
           )}
-        </motion.div>
+        </SectionReveal>
 
         {/* Entries — newest first */}
         {!loadingEntries && entries.length === 0 && (

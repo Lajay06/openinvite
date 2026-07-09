@@ -1,5 +1,6 @@
 import React from 'react';
 import SectionReveal from '../SectionReveal';
+import { isMotionEnabled } from '@/lib/universeStyling';
 
 function fmtTime(t) {
   if (!t) return '';
@@ -98,7 +99,7 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: '80px 32px 120px' }}>
 
         {/* Page heading */}
-        <SectionReveal universeConfig={universeConfig}>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
           <h1 style={{
             fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.025em',
             fontSize: 'clamp(2.4rem, 6vw, 4rem)', lineHeight: 1.05,
@@ -122,7 +123,7 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
           }
 
           return (
-            <SectionReveal key={dateKey || gi} universeConfig={universeConfig}>
+            <SectionReveal key={dateKey || gi} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
               <div style={{ marginBottom: gi < dayOrder.length - 1 ? 112 : 0 }}>
 
                 {/* Day header */}
@@ -190,7 +191,7 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
           );
         }) : (
           /* ── Empty state ──────────────────────────────────────────────────── */
-          <SectionReveal universeConfig={universeConfig}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <p style={{ fontFamily: bFont, fontSize: '1rem', color: `${lt}50`, textAlign: 'center', margin: 0 }}>
               Event details coming soon.
             </p>
@@ -199,7 +200,7 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
 
         {/* ── Legacy day schedule fallback (if no structured events) ──────── */}
         {!hasEvents && daySchedule.length > 0 && (
-          <SectionReveal universeConfig={universeConfig}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginTop: 40 }}>
               <h2 style={{ fontFamily: hFont, fontWeight: hWt, fontSize: 'clamp(1.5rem, 3vw, 2rem)', letterSpacing: '-0.02em', color: lt, margin: '0 0 40px' }}>
                 Day schedule

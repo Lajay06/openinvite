@@ -1,6 +1,7 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { MapPin, Plane, Train, Bus, Car, Ship, Navigation2, ExternalLink, FileText } from 'lucide-react';
+import SectionReveal from '../SectionReveal';
+import { isMotionEnabled } from '@/lib/universeStyling';
 
 const TYPE_ICONS = {
   airport:       Plane,
@@ -20,14 +21,7 @@ const TYPE_LABELS = {
   other:         'Transport',
 };
 
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
-  transition: { duration: 0.6, delay },
-});
-
-export default function WeddingTransportPage({ weddingDetails, theme, typography }) {
+export default function WeddingTransportPage({ weddingDetails, theme, typography, universeConfig }) {
   const places = weddingDetails.guestSuiteTransport?.places || [];
   const notes  = weddingDetails.guestSuiteTransport?.notes  || [];
   const transport = weddingDetails.transport || {};
@@ -65,32 +59,34 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
     <div style={{ backgroundColor: theme.lightBg, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: 860, margin: '0 auto' }}>
 
-        <motion.h1 {...fadeUp()} style={{ ...heading, fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }}>
-          Getting here
-        </motion.h1>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+          <h1 style={{ ...heading, fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }}>
+            Getting here
+          </h1>
+        </SectionReveal>
 
         {transport.coupleNote ? (
-          <motion.p {...fadeUp(0.06)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
             {transport.coupleNote}
-          </motion.p>
+          </SectionReveal>
         ) : (
-          <motion.p {...fadeUp(0.06)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
             Here's everything you need to know to get to the venue.
-          </motion.p>
+          </SectionReveal>
         )}
 
         {/* Transport places */}
         {places.length > 0 && (
           <div style={{ marginBottom: 48 }}>
-            <motion.p {...fadeUp(0.08)} style={{ ...label, marginBottom: 24 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...label, marginBottom: 24 }}>
               Airports &amp; transit
-            </motion.p>
+            </SectionReveal>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
               {places.map((place, i) => {
                 const Icon = TYPE_ICONS[place.type] || Navigation2;
                 const typeLabel = TYPE_LABELS[place.type] || 'Transport';
                 return (
-                  <motion.div key={place.id || i} {...fadeUp(0.08 + i * 0.04)} style={card}>
+                  <SectionReveal key={place.id || i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={card}>
                     <div style={{ height: 160, background: `${theme.darkBg}cc`, position: 'relative', overflow: 'hidden' }}>
                       {place.photo_url ? (
                         <img src={place.photo_url} alt={place.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
@@ -127,7 +123,7 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
                         </a>
                       )}
                     </div>
-                  </motion.div>
+                  </SectionReveal>
                 );
               })}
             </div>
@@ -137,12 +133,12 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
         {/* Transport notes */}
         {notes.length > 0 && (
           <div style={{ marginBottom: 48 }}>
-            <motion.p {...fadeUp(0.1)} style={{ ...label, marginBottom: 20 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...label, marginBottom: 20 }}>
               Getting around
-            </motion.p>
+            </SectionReveal>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {notes.map((note, i) => (
-                <motion.div key={note.id || i} {...fadeUp(0.1 + i * 0.03)} style={{ ...card, padding: '18px 22px', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                <SectionReveal key={note.id || i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...card, padding: '18px 22px', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                   <FileText size={14} color={theme.accent} style={{ flexShrink: 0, marginTop: 3 }} />
                   <div>
                     {note.title && (
@@ -152,7 +148,7 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
                     )}
                     <p style={{ ...body, margin: 0, opacity: 0.85, fontSize: '0.9rem' }}>{note.text}</p>
                   </div>
-                </motion.div>
+                </SectionReveal>
               ))}
             </div>
           </div>
@@ -160,11 +156,11 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
 
         {/* Empty state */}
         {places.length === 0 && notes.length === 0 && (
-          <motion.div {...fadeUp(0.1)} style={{ textAlign: 'center', padding: '60px 24px' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: 'center', padding: '60px 24px' }}>
             <p style={{ ...body, opacity: 0.4, fontStyle: 'italic' }}>
               Transport information will be added here by the couple.
             </p>
-          </motion.div>
+          </SectionReveal>
         )}
 
       </div>

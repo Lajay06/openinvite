@@ -8,6 +8,9 @@
  * - If no universeConfig is provided (or universe has no motion config), falls
  *   back to a sensible default fade — so non-Aman pages are not broken.
  * - `viewport={{ once: true }}` means each section reveals once, then stays.
+ * - `disabled` is the builder's on/off switch (weddingDetails.scrollAnimation
+ *   === 'none', via src/lib/universeStyling.js's isMotionEnabled) — when true,
+ *   the section renders immediately with no animation, same as reduced-motion.
  */
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -15,6 +18,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 export default function SectionReveal({
   children,
   universeConfig,
+  disabled = false,
   style,
   className,
 }) {
@@ -25,9 +29,10 @@ export default function SectionReveal({
   //   (a) universe declares sectionReveal — use config values, or
   //   (b) universeConfig is absent (null/undefined) — default fade, preserving
   //       existing behaviour on pages that don't yet pass a config.
-  // Never animate: OS prefers-reduced-motion, or config present but no motion key.
+  // Never animate: OS prefers-reduced-motion, the builder's motion toggle is
+  // off, or config present but no motion key.
   const hasConfig = universeConfig != null;
-  const shouldAnimate = !prefersReduced && (!!m?.sectionReveal || !hasConfig);
+  const shouldAnimate = !disabled && !prefersReduced && (!!m?.sectionReveal || !hasConfig);
 
   const yOffset  = m?.yOffset  ?? 20;
   const duration = m?.duration ?? 0.7;

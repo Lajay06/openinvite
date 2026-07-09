@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import SectionReveal from '../SectionReveal';
+import { isMotionEnabled } from '@/lib/universeStyling';
 
-export default function WeddingPhotosPage({ weddingDetails, theme, typography }) {
+export default function WeddingPhotosPage({ weddingDetails, theme, typography, universeConfig }) {
   const content = weddingDetails.photosContent || {};
   const gallery = content.gallery || [];
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -9,78 +11,73 @@ export default function WeddingPhotosPage({ weddingDetails, theme, typography })
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          style={{
-            fontFamily: typography.headingFont,
-            fontSize: 'clamp(2rem, 5vw, 3rem)',
-            fontWeight: typography.headingWeight,
-            marginBottom: '60px',
-            textAlign: 'center'
-          }}
-        >
-          Photos
-        </motion.h1>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+          <h1
+            style={{
+              fontFamily: typography.headingFont,
+              fontSize: 'clamp(2rem, 5vw, 3rem)',
+              fontWeight: typography.headingWeight,
+              marginBottom: '60px',
+              textAlign: 'center'
+            }}
+          >
+            Photos
+          </h1>
+        </SectionReveal>
 
         {gallery.length > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
             {gallery.map((photo, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: i * 0.05 }}
-                onClick={() => setSelectedIndex(i)}
-                style={{
-                  position: 'relative',
-                  cursor: 'pointer',
-                  overflow: 'hidden',
-                  borderRadius: '4px',
-                  aspectRatio: '1 / 1'
-                }}
-              >
-                <img
-                  src={photo.url}
-                  alt={photo.caption || `Photo ${i + 1}`}
+              <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+                <div
+                  onClick={() => setSelectedIndex(i)}
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transition: 'transform 0.3s ease'
+                    position: 'relative',
+                    cursor: 'pointer',
+                    overflow: 'hidden',
+                    borderRadius: '4px',
+                    aspectRatio: '1 / 1'
                   }}
-                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-                />
-                {photo.caption && (
-                  <div
+                >
+                  <img
+                    src={photo.url}
+                    alt={photo.caption || `Photo ${i + 1}`}
                     style={{
-                      position: 'absolute',
-                      inset: 0,
-                      backgroundColor: `${theme.darkBg}CC`,
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      padding: '16px',
-                      opacity: 0,
-                      transition: 'opacity 0.3s ease'
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: 'transform 0.3s ease'
                     }}
-                    onMouseEnter={(e) => e.parentElement.style.opacity = 1}
-                    onMouseLeave={(e) => e.parentElement.style.opacity = 0}
-                  >
-                    <p style={{ fontFamily: typography.bodyFont, fontSize: '0.875rem', color: theme.darkText }}>
-                      {photo.caption}
-                    </p>
-                  </div>
-                )}
-              </motion.div>
+                    onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                    onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                  />
+                  {photo.caption && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        backgroundColor: `${theme.darkBg}CC`,
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        padding: '16px',
+                        opacity: 0,
+                        transition: 'opacity 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => e.parentElement.style.opacity = 1}
+                      onMouseLeave={(e) => e.parentElement.style.opacity = 0}
+                    >
+                      <p style={{ fontFamily: typography.bodyFont, fontSize: '0.875rem', color: theme.darkText }}>
+                        {photo.caption}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </SectionReveal>
             ))}
           </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+          <SectionReveal
+            universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
             style={{
               backgroundColor: theme.darkBg,
               color: theme.darkText,
@@ -92,7 +89,7 @@ export default function WeddingPhotosPage({ weddingDetails, theme, typography })
             <p style={{ fontFamily: typography.bodyFont, fontSize: '1.125rem' }}>
               Photos coming soon!
             </p>
-          </motion.div>
+          </SectionReveal>
         )}
 
         {/* Lightbox */}

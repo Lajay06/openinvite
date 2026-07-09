@@ -1,6 +1,7 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Star, MapPin, ExternalLink, Heart } from 'lucide-react';
+import SectionReveal from '../SectionReveal';
+import { isMotionEnabled } from '@/lib/universeStyling';
 
 const CATEGORIES = [
   { key: 'mustEat',        label: 'Must eat' },
@@ -21,14 +22,7 @@ function photoUrl(ref) {
   return `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=600`;
 }
 
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
-  transition: { duration: 0.6, delay },
-});
-
-export default function WeddingExperiencePage({ weddingDetails, theme, typography }) {
+export default function WeddingExperiencePage({ weddingDetails, theme, typography, universeConfig }) {
   const guide = weddingDetails.experienceGuide || {};
   const cats = guide.categories || {};
   const couplePicks = guide.couplePicks || [];
@@ -69,23 +63,25 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
     <div style={{ backgroundColor: theme.lightBg, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
-        <motion.h1 {...fadeUp()} style={{ ...heading, fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }}>
-          {destination ? `Your guide to ${destination.split(',')[0].trim()}` : 'Experience guide'}
-        </motion.h1>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+          <h1 style={{ ...heading, fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }}>
+            {destination ? `Your guide to ${destination.split(',')[0].trim()}` : 'Experience guide'}
+          </h1>
+        </SectionReveal>
 
         {guide.editorialIntro ? (
-          <motion.p {...fadeUp(0.06)} style={{ ...body, textAlign: 'center', maxWidth: 620, margin: '0 auto 48px' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 620, margin: '0 auto 48px' }}>
             {guide.editorialIntro}
-          </motion.p>
+          </SectionReveal>
         ) : (
-          <motion.p {...fadeUp(0.06)} style={{ ...body, textAlign: 'center', maxWidth: 620, margin: '0 auto 48px' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 620, margin: '0 auto 48px' }}>
             We've hand-picked our favourite spots so you can make the most of your time here.
-          </motion.p>
+          </SectionReveal>
         )}
 
         {/* Couple picks strip */}
         {couplePicks.length > 0 && (
-          <motion.div {...fadeUp(0.1)} style={{ marginBottom: 56 }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ marginBottom: 56 }}>
             <p style={{ ...label, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 6 }}>
               <Heart size={11} fill={theme.accent} color={theme.accent} /> Our favourites
             </p>
@@ -133,14 +129,14 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                 );
               })}
             </div>
-          </motion.div>
+          </SectionReveal>
         )}
 
         {/* Enabled categories */}
-        {enabledCats.map((cat, ci) => {
+        {enabledCats.map((cat) => {
           const places = cats[cat.key]?.places || [];
           return (
-            <motion.div key={cat.key} {...fadeUp(0.1 + ci * 0.05)} style={{ marginBottom: 48 }}>
+            <SectionReveal key={cat.key} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ marginBottom: 48 }}>
               <p style={{ ...label, marginBottom: 20 }}>{cat.label}</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
                 {places.map((place, i) => {
@@ -198,17 +194,17 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                   );
                 })}
               </div>
-            </motion.div>
+            </SectionReveal>
           );
         })}
 
         {/* Empty state */}
         {enabledCats.length === 0 && couplePicks.length === 0 && (
-          <motion.div {...fadeUp(0.1)} style={{ textAlign: 'center', padding: '60px 24px' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: 'center', padding: '60px 24px' }}>
             <p style={{ ...body, opacity: 0.4, fontStyle: 'italic' }}>
               The experience guide will be added here by the couple.
             </p>
-          </motion.div>
+          </SectionReveal>
         )}
 
       </div>
