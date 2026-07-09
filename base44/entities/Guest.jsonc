@@ -166,7 +166,7 @@
     },
     "event_responses": {
       "type": "array",
-      "description": "Per-event RSVP matrix — one entry per WeddingDetails event this guest is invited to. Keyed by event_id (stable id from preWeddingEvents[]/postWeddingEvents[]/mainCeremony/reception), never array index. See SMART_RSVP_MODEL.md.",
+      "description": "Per-event RSVP matrix \u2014 one entry per WeddingDetails event this guest is invited to. Keyed by event_id (stable id from preWeddingEvents[]/postWeddingEvents[]/mainCeremony/reception), never array index. See SMART_RSVP_MODEL.md.",
       "items": {
         "type": "object",
         "properties": {
@@ -233,7 +233,7 @@
     },
     "invite_channel": {
       "type": "string",
-      "description": "How the invitation was sent — 'email', 'whatsapp', or 'email+whatsapp' if sent via both"
+      "description": "How the invitation was sent \u2014 'email', 'whatsapp', or 'email+whatsapp' if sent via both"
     },
     "reminder_sent_at": {
       "type": "string",
@@ -248,5 +248,15 @@
   },
   "required": [
     "name"
-  ]
+  ],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
 }
