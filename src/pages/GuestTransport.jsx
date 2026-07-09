@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft } from 'lucide-react';
 
 export default function GuestTransport() {
@@ -12,8 +12,8 @@ export default function GuestTransport() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const all = await base44.entities.WeddingDetails.filter({ slug: weddingSlug });
-        if (all.length > 0) setDetails(all[0]);
+        const wedding = await fetchWeddingBySlug(weddingSlug);
+        if (wedding) setDetails(wedding);
       } finally {
         setLoading(false);
       }

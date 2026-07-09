@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { getWeddingEvents, getGuestEventResponse } from '@/lib/weddingEvents';
 
 const MEAL_OPTIONS = [
@@ -209,16 +208,9 @@ export default function RSVPPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const guests = await base44.entities.Guest.filter({ rsvp_link_id: token });
-        if (guests.length === 0) { setNotFound(true); setLoading(false); return; }
-        const g = guests[0];
-        // Scope the wedding lookup to the SAME owner as the matched guest —
-        // never the app-wide most-recently-created WeddingDetails record.
-        const weddings = await base44.entities.WeddingDetails.filter({ created_by_id: g.created_by_id });
-        const realWeddings = weddings.filter(w => !w.is_test);
-        const wd = realWeddings.length > 0
-          ? realWeddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
-          : null;
+        const res = await fetch(`/api/rsvp-lookup?token=${encodeURIComponent(token)}`);
+        if (!res.ok) { setNotFound(true); setLoading(false); return; }
+        const { guest: g, wedding: wd } = await res.json();
         setGuest(g);
         setWedding(wd);
         // Pre-populate any previous poll votes
@@ -277,44 +269,49 @@ export default function RSVPPage() {
     setSubmitting(true);
     try {
       const now = new Date().toISOString();
-      const existingResponses = guest.event_responses || [];
-      const updatedByEventId = new Map(existingResponses.map(r => [r.event_id, r]));
 
-      for (const ev of invitedEvents) {
+      // Just this submission's newly-answered events — the server merges
+      // these onto the guest's existing event_responses (resolved fresh
+      // from the token) and derives the overall rsvp_status itself, so the
+      // exact same merge/derive logic can't drift between client and
+      // server copies.
+      const submittedResponses = invitedEvents.map(ev => {
         const form = eventForm[ev.event_id];
-        updatedByEventId.set(ev.event_id, {
+        return {
           event_id: ev.event_id,
-          invited: true,
           status: form.status,
           meal_choice: form.status === 'yes' ? (form.meal_choice || null) : null,
           plus_ones: (form.status === 'yes' && form.plus_one_attending) ? 1 : 0,
           plus_one_names: (form.status === 'yes' && form.plus_one_attending && form.plus_one_name)
             ? [form.plus_one_name] : [],
           responded_at: now,
-        });
-      }
+        };
+      });
 
-      const nextEventResponses = Array.from(updatedByEventId.values());
+      const res = await fetch('/api/rsvp-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          event_responses: submittedResponses,
+          song_request: songRequest,
+          rsvp_note: rsvpNote,
+          dietary_restrictions: dietaryRestrictions,
+        }),
+      });
+      if (!res.ok) throw new Error('RSVP submit failed');
 
-      // Derive the overall rsvp_status from the per-event responses so every
-      // existing couple-facing surface (RSVPChart, InvitationsTab, GuestList)
-      // that only reads this legacy field — not event_responses — still
-      // reflects reality. "attending" wins if any invited event is a yes;
-      // "declined" only if every invited event is a no; otherwise "pending".
-      const invitedResponses = nextEventResponses.filter(r => r.invited);
-      const anyYes = invitedResponses.some(r => r.status === 'yes');
-      const allNo = invitedResponses.length > 0 && invitedResponses.every(r => r.status === 'no');
-      const derivedRsvpStatus = anyYes ? 'attending' : allNo ? 'declined' : 'pending';
-
-      await base44.entities.Guest.update(guest.id, {
-        event_responses: nextEventResponses,
-        rsvp_status: derivedRsvpStatus,
+      // Optimistic local merge for the "done"/anyAttending display below —
+      // the server is the source of truth for what actually persisted.
+      const existingByEventId = new Map((guest.event_responses || []).map(r => [r.event_id, r]));
+      for (const r of submittedResponses) existingByEventId.set(r.event_id, { ...r, invited: true });
+      setGuest(prev => ({
+        ...prev,
+        event_responses: Array.from(existingByEventId.values()),
         song_request: songRequest,
         rsvp_note: rsvpNote,
         dietary_restrictions: dietaryRestrictions,
-        rsvp_date: now.split('T')[0],
-      });
-      setGuest(prev => ({ ...prev, event_responses: nextEventResponses, rsvp_status: derivedRsvpStatus, song_request: songRequest, rsvp_note: rsvpNote, dietary_restrictions: dietaryRestrictions }));
+      }));
       // Advance to polls if any active, otherwise straight to done
       setStep(activePolls.length > 0 ? 'polls' : 'done');
     } catch (err) {
@@ -327,36 +324,22 @@ export default function RSVPPage() {
   const handleSubmitPolls = async () => {
     setPollSubmitting(true);
     try {
-      const currentPolls = wedding?.polls || [];
       const existingVotes = guest?.poll_votes || {};
       const mergedVotes = { ...existingVotes, ...guestVotes };
-
-      // Build updated polls array — adjust vote counts for changed votes only
-      const updatedPolls = currentPolls.map(poll => {
-        const newVote = guestVotes[poll.id];
-        const oldVote = existingVotes[poll.id];
-        // No selection made for this poll, or no change
-        if (!newVote || newVote === oldVote) return poll;
-        return {
-          ...poll,
-          options: poll.options.map(opt => {
-            if (opt.id === newVote) return { ...opt, votes: (opt.votes || 0) + 1 };
-            if (opt.id === oldVote) return { ...opt, votes: Math.max(0, (opt.votes || 0) - 1) };
-            return opt;
-          }),
-        };
-      });
-
       const hasNewVotes = Object.entries(guestVotes).some(
         ([pollId, optId]) => optId && existingVotes[pollId] !== optId
       );
 
-      if (hasNewVotes && wedding?.id) {
-        await Promise.all([
-          base44.entities.WeddingDetails.update(wedding.id, { polls: updatedPolls }),
-          base44.entities.Guest.update(guest.id, { poll_votes: mergedVotes }),
-        ]);
-        setWedding(prev => ({ ...prev, polls: updatedPolls }));
+      if (hasNewVotes) {
+        // Server re-fetches the wedding/guest fresh and computes the vote-count
+        // deltas itself — never trusts a client-cached polls array, which
+        // could be stale relative to other guests voting concurrently.
+        const res = await fetch('/api/rsvp-poll-vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, votes: guestVotes }),
+        });
+        if (!res.ok) throw new Error('Poll vote failed');
         setGuest(prev => ({ ...prev, poll_votes: mergedVotes }));
       }
       setStep('done');

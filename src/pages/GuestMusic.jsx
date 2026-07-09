@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { Turnstile } from '@marsidev/react-turnstile';
+import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft, Music } from 'lucide-react';
+
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 export default function GuestMusic() {
   const { weddingSlug } = useParams();
@@ -14,12 +17,16 @@ export default function GuestMusic() {
   const [guestNote, setGuestNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const turnstileRef = useRef(null);
+  const tsTokenRef = useRef('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const all = await base44.entities.WeddingDetails.filter({ slug: weddingSlug });
-        if (all.length > 0) setDetails(all[0]);
+        const wedding = await fetchWeddingBySlug(weddingSlug);
+        if (wedding) setDetails(wedding);
       } finally {
         setLoading(false);
       }
@@ -48,23 +55,38 @@ export default function GuestMusic() {
 
   const submitRequest = async () => {
     if (!guestName.trim() || !selectedTrack) return;
+    if (!tsTokenRef.current) { setSubmitError('Security check still loading — please try again in a moment.'); return; }
+    setSubmitError('');
     setSubmitting(true);
     try {
-      await base44.entities.SongRequest.create({
-        spotifyTrackId: selectedTrack.id,
-        title: selectedTrack.title,
-        artist: selectedTrack.artist,
-        album: selectedTrack.album || '',
-        albumArt: selectedTrack.albumArt || '',
-        duration: selectedTrack.duration || 0,
-        explicit: selectedTrack.explicit || false,
-        spotifyUrl: selectedTrack.spotifyUrl || '',
-        submittedBy: guestName,
-        guestNote: guestNote,
-        status: music.requestsRequireApproval ? 'pending' : 'approved',
-        playlist: 'general',
+      const res = await fetch('/api/song-request-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          weddingSlug,
+          spotifyTrackId: selectedTrack.id,
+          title: selectedTrack.title,
+          artist: selectedTrack.artist,
+          album: selectedTrack.album || '',
+          albumArt: selectedTrack.albumArt || '',
+          duration: selectedTrack.duration || 0,
+          explicit: selectedTrack.explicit || false,
+          spotifyUrl: selectedTrack.spotifyUrl || '',
+          submittedBy: guestName,
+          guestNote: guestNote,
+          turnstileToken: tsTokenRef.current,
+        }),
       });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSubmitError(data.error || 'Something went wrong. Please try again.');
+        tsTokenRef.current = '';
+        turnstileRef.current?.reset();
+        return;
+      }
       setSubmitted(true);
+    } catch {
+      setSubmitError('Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -168,6 +190,19 @@ export default function GuestMusic() {
 
               <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="Your name" style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: 16, outline: 'none', marginBottom: 10, boxSizing: 'border-box' }} />
               <textarea value={guestNote} onChange={e => setGuestNote(e.target.value)} placeholder="Add a note (optional)" rows={3} style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: 16, outline: 'none', resize: 'none', marginBottom: 20, boxSizing: 'border-box' }} />
+
+              {submitError && (
+                <p style={{ fontSize: 13, color: '#E03553', marginBottom: 16 }}>{submitError}</p>
+              )}
+
+              {/* Invisible Turnstile — execution="render" auto-generates a token on mount */}
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={TURNSTILE_SITE_KEY}
+                onSuccess={(token) => { tsTokenRef.current = token; }}
+                onExpire={() => { tsTokenRef.current = ''; }}
+                options={{ appearance: 'execute', execution: 'render' }}
+              />
 
               <button
                 onClick={submitRequest}
