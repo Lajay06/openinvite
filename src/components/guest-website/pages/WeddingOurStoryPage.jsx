@@ -1,7 +1,8 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import SectionReveal from '../SectionReveal';
+import { isMotionEnabled } from '@/lib/universeStyling';
 
-export default function WeddingOurStoryPage({ weddingDetails, theme, typography }) {
+export default function WeddingOurStoryPage({ weddingDetails, theme, typography, universeConfig }) {
   const content = weddingDetails.ourStoryContent || {};
   const storyText = content.storyText || '';
   const photos = content.photos || [];
@@ -12,10 +13,8 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography 
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         {/* Story text */}
         {storyText && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+          <SectionReveal
+            universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
             style={{
               fontFamily: typography.bodyFont,
               fontSize: 'clamp(1rem, 2vw, 1.125rem)',
@@ -25,7 +24,7 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography 
             }}
           >
             {storyText}
-          </motion.div>
+          </SectionReveal>
         )}
 
         {/* Photo gallery */}
@@ -44,15 +43,13 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography 
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
               {photos.map((photo, i) => (
-                <motion.img
-                  key={i}
-                  src={photo}
-                  alt="Wedding moment"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
-                  style={{ width: '100%', height: '300px', objectFit: 'cover', borderRadius: '4px' }}
-                />
+                <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+                  <img
+                    src={photo}
+                    alt="Wedding moment"
+                    style={{ width: '100%', height: '300px', objectFit: 'cover', borderRadius: '4px' }}
+                  />
+                </SectionReveal>
               ))}
             </div>
           </div>
@@ -74,11 +71,9 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography 
             </h2>
             <div style={{ maxWidth: '500px', margin: '0 auto' }}>
               {milestones.map((milestone, i) => (
-                <motion.div
+                <SectionReveal
                   key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
+                  universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
                   style={{
                     display: 'flex',
                     gap: '24px',
@@ -122,7 +117,7 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography 
                       {milestone.text}
                     </div>
                   </div>
-                </motion.div>
+                </SectionReveal>
               ))}
             </div>
           </div>

@@ -450,12 +450,25 @@ export const WEDDING_PAGES = [
   { slug: 'experience', label: 'Guide', icon: 'Compass' },
   { slug: 'guestbook', label: 'Guestbook', icon: 'Heart' },
 ];
-// ── Universe identity configs — texture + motion per universe ─────────────────
+// ── Universe identity configs — typography + texture + motion per universe ────
 // Static, code-defined (not stored in DB — these are per-universe constants).
-// Only AMAN has real values for now; others get undefined (flat behaviour).
-// Later phases: each universe declares its own texture + motion philosophy.
+// One data-driven config per universe, all resolved through the same renderer
+// (MultiPageWeddingWebsite.jsx / StudioWebsite.jsx / SectionReveal.jsx) —
+// no per-universe forked CSS or components. `typography` follows the same
+// shape TYPOGRAPHY_PAIRINGS derives (headingFont/bodyFont/googleFonts) so one
+// font-loading + CSS-var mechanism serves both systems. `texture.type` is a
+// TEXTURE_REGISTRY id (src/lib/textures.js); `motion` and `pageTransition`
+// use the same shape as Aman's original config. All 10 use the same fade+
+// translate reveal *type* (per the "no per-universe forked CSS" rule) —
+// only the calibration (duration/yOffset) varies per universe personality.
 export const UNIVERSE_CONFIGS = {
   aman: {
+    // Quiet luxury — unchanged from the original C1/Aman-only config.
+    typography: {
+      headingFont: '"Cormorant Garamond", serif',
+      bodyFont:    '"Jost", sans-serif',
+      googleFonts: 'Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500',
+    },
     texture: {
       type:    'grain',   // SVG feTurbulence fractalNoise overlay on dark sections
       opacity: 0.025,     // 2.5% — barely-there; visible on close inspection, not at a glance
@@ -472,6 +485,105 @@ export const UNIVERSE_CONFIGS = {
       duration: 0.65,    // 650ms — clearly a deliberate soft fade (exit+enter = ~1.3s total)
     },
   },
-  // tulum, kyoto, capri, tokyo, marrakech, paris, amalfi, sedona, aspen, santorini:
-  // not yet defined — they inherit flat/default behaviour until their phase.
+  tulum: {
+    // Organic luxury — warm, sun-baked, unhurried.
+    typography: {
+      headingFont: '"Fraunces", serif',
+      bodyFont:    '"Karla", sans-serif',
+      googleFonts: 'Fraunces:ital,wght@0,300;0,600;1,400&family=Karla:wght@300;400;500',
+    },
+    texture: { type: 'canvas', opacity: 0.02 },
+    motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
+  },
+  kyoto: {
+    // Japanese minimalism — restrained, precise, quiet.
+    typography: {
+      headingFont: '"Shippori Mincho", serif',
+      bodyFont:    '"Zen Kaku Gothic New", sans-serif',
+      googleFonts: 'Shippori+Mincho:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@300;400;500',
+    },
+    texture: { type: 'paper', opacity: 0.02 },
+    motion: { sectionReveal: 'fade', duration: 0.6, yOffset: 12, ease: 'easeOut', intensity: 'subtle' },
+  },
+  capri: {
+    // Mediterranean summer — bright, breezy, crisp.
+    typography: {
+      headingFont: '"Italiana", serif',
+      bodyFont:    '"Poppins", sans-serif',
+      googleFonts: 'Italiana&family=Poppins:wght@300;400;500',
+    },
+    texture: { type: 'linen', opacity: 0.015 },
+    motion: { sectionReveal: 'fade', duration: 0.65, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
+  },
+  marrakech: {
+    // Desert opulence — rich, ornate, warm.
+    typography: {
+      headingFont: '"Marcellus", serif',
+      bodyFont:    '"Nunito Sans", sans-serif',
+      googleFonts: 'Marcellus&family=Nunito+Sans:wght@300;400;500',
+    },
+    texture: { type: 'plaster', opacity: 0.03 },
+    motion: { sectionReveal: 'fade', duration: 0.75, yOffset: 20, ease: 'easeOut', intensity: 'subtle' },
+  },
+  brooklyn: {
+    // Urban industrial — gritty, direct, unfussy.
+    typography: {
+      headingFont: '"Bebas Neue", sans-serif',
+      bodyFont:    '"IBM Plex Sans", sans-serif',
+      googleFonts: 'Bebas+Neue&family=IBM+Plex+Sans:wght@300;400;500',
+    },
+    texture: { type: 'grain', opacity: 0.035 },
+    motion: { sectionReveal: 'fade', duration: 0.5, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
+  },
+  bali: {
+    // Tropical spirit — lush, languid, alive.
+    typography: {
+      headingFont: '"Prata", serif',
+      bodyFont:    '"Mulish", sans-serif',
+      googleFonts: 'Prata&family=Mulish:wght@300;400;500',
+    },
+    texture: { type: 'canvas', opacity: 0.02 },
+    motion: { sectionReveal: 'fade', duration: 0.8, yOffset: 18, ease: 'easeOut', intensity: 'subtle' },
+  },
+  paris: {
+    // French romance — elegant, classic, tender.
+    typography: {
+      headingFont: '"Playfair Display", serif',
+      bodyFont:    '"Lato", sans-serif',
+      googleFonts: 'Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700',
+    },
+    texture: { type: 'linen', opacity: 0.02 },
+    motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
+  },
+  capetown: {
+    // Safari chic — earthy, adventurous, warm.
+    typography: {
+      headingFont: '"Bitter", serif',
+      bodyFont:    '"Josefin Sans", sans-serif',
+      googleFonts: 'Bitter:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@300;400;500',
+    },
+    texture: { type: 'paper', opacity: 0.025 },
+    motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
+  },
+  mykonos: {
+    // Aegean blue — crisp, whitewashed, coastal.
+    typography: {
+      headingFont: '"Cinzel", serif',
+      bodyFont:    '"Montserrat", sans-serif',
+      googleFonts: 'Cinzel:wght@400;500;600&family=Montserrat:wght@300;400;500',
+    },
+    texture: { type: 'plaster', opacity: 0.02 },
+    motion: { sectionReveal: 'fade', duration: 0.65, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
+  },
 };
+
+/** Case-insensitive, whitespace-tolerant universe key lookup — 'Aman'/'aman'/' AMAN ' all resolve the same config. */
+export function normalizeUniverseKey(activeUniverse) {
+  return typeof activeUniverse === 'string' ? activeUniverse.trim().toLowerCase() : null;
+}
+
+/** @returns the UNIVERSE_CONFIGS entry for weddingDetails.activeUniverse, or null if unset/unknown. */
+export function resolveUniverseConfig(weddingDetails) {
+  const key = normalizeUniverseKey(weddingDetails?.activeUniverse);
+  return key ? (UNIVERSE_CONFIGS[key] ?? null) : null;
+}

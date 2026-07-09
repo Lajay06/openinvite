@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
-import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, UNIVERSE_CONFIGS } from '@/lib/websiteThemes';
+import { WEBSITE_THEMES, resolveUniverseConfig } from '@/lib/websiteThemes';
+import { resolveTypography, googleFontsHref } from '@/lib/universeStyling';
 import WBSectionRenderer from '@/components/website-builder/WBSectionRenderer';
+import TextureOverlay from './TextureOverlay';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 
 function PasswordGateSimple({ slug, onUnlock }) {
@@ -90,13 +92,37 @@ export default function MultiPageWeddingWebsite() {
   // Must be called before any early return — React rules of hooks
   const prefersReduced = useReducedMotion();
 
-  // Inject Google Font for the selected typography pairing via a <link> in <head>.
-  // CSS @import inside a body <style> tag is unreliable — browsers often ignore it.
+  // Inject Google Fonts for the resolved typography (universe pairing takes
+  // priority over the generic activeTypography picker — resolveTypography
+  // handles that precedence) via <link> tags in <head>. CSS @import inside a
+  // body <style> tag is unreliable — browsers often ignore it.
+  //
+  // Only ONE stylesheet link ever exists at a time (same id, href swapped in
+  // place) — so only the active universe's fonts ever load, never the whole
+  // library. Preconnect hints shave the DNS/TLS handshake off the font
+  // request's critical path; display=swap (baked into googleFontsHref) means
+  // text is never invisible while the font loads (no FOIT). A small, brief
+  // reflow when the webfont swaps in for the fallback is an accepted
+  // trade-off of display=swap — there is no zero-shift way to use a real
+  // custom font without either FOIT or a metrics-matched fallback font per
+  // pairing, which is out of scope here.
   useEffect(() => {
-    const pairing = TYPOGRAPHY_PAIRINGS.find(t => t.id === weddingDetails?.activeTypography)
-      || TYPOGRAPHY_PAIRINGS[0];
-    if (!pairing.googleFonts) return;
-    const href = `https://fonts.googleapis.com/css2?family=${pairing.googleFonts}&display=swap`;
+    const typography = resolveTypography(weddingDetails);
+    const href = googleFontsHref(typography);
+
+    const ensurePreconnect = (url, crossOrigin) => {
+      if (document.querySelector(`link[rel="preconnect"][href="${url}"]`)) return;
+      const l = document.createElement('link');
+      l.rel = 'preconnect';
+      l.href = url;
+      if (crossOrigin) l.crossOrigin = 'anonymous';
+      document.head.appendChild(l);
+    };
+
+    if (!href) return;
+    ensurePreconnect('https://fonts.googleapis.com');
+    ensurePreconnect('https://fonts.gstatic.com', true);
+
     let link = document.getElementById('wf-typo-pairing');
     if (link) {
       if (link.href !== href) link.href = href;
@@ -107,7 +133,7 @@ export default function MultiPageWeddingWebsite() {
     link.rel = 'stylesheet';
     link.href = href;
     document.head.appendChild(link);
-  }, [weddingDetails?.activeTypography]);
+  }, [weddingDetails?.activeTypography, weddingDetails?.activeUniverse]);
 
   useEffect(() => {
     const loadWeddingDetails = async () => {
@@ -132,15 +158,10 @@ export default function MultiPageWeddingWebsite() {
   }
 
   const theme = WEBSITE_THEMES.find(t => t.id === weddingDetails.activeTheme) || WEBSITE_THEMES[0];
-  const typography = TYPOGRAPHY_PAIRINGS.find(t => t.id === weddingDetails.activeTypography) || TYPOGRAPHY_PAIRINGS[0];
+  const typography = resolveTypography(weddingDetails);
   const enabledPages = weddingDetails.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'];
   const PageComponent = PAGE_COMPONENTS[page] || WeddingHomePage;
-
-  // Case-insensitive, whitespace-tolerant lookup so 'Aman'/'aman'/'AMAN' all activate
-  const universeKey = typeof weddingDetails.activeUniverse === 'string'
-    ? weddingDetails.activeUniverse.trim().toLowerCase()
-    : null;
-  const universeConfig = universeKey ? (UNIVERSE_CONFIGS[universeKey] ?? null) : null;
+  const universeConfig = resolveUniverseConfig(weddingDetails);
 
   const getTransitionVariants = (transitionType) => {
     switch (transitionType) {
@@ -176,14 +197,20 @@ export default function MultiPageWeddingWebsite() {
     <div
       className="wb-guest-root"
       style={{
+        position: 'relative',
         '--wb-heading-font': typography.headingFont,
         '--wb-body-font': typography.bodyFont,
-        '--texture-id': universeConfig?.texture?.type,
         '--texture-opacity': universeConfig?.texture?.opacity,
         backgroundColor: theme.darkBg,
         color: theme.darkText,
       }}
     >
+      {/* Site-wide texture overlay — one instance covers every page (not just
+          the home hero), switches with the active universe, single paint
+          layer per TEXTURE_LIBRARY_SPEC.md's performance budget. */}
+      {universeConfig?.texture && (
+        <TextureOverlay textureId={universeConfig.texture.type} opacity={universeConfig.texture.opacity} />
+      )}
 
       {/* Navigation */}
       <WeddingWebsiteNav
