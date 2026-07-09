@@ -101,28 +101,40 @@ export default function MusicPage() {
   }, [details]);
 
   // ── Detect Spotify OAuth callback ─────────────────────────────────────────
+  // api/spotify-callback.js never puts token material in the redirect URL —
+  // only a generic ?spotify=connected flag. The actual bundle is fetched
+  // from api/spotify-session-fetch, which reads it from a short-lived
+  // HttpOnly cookie the callback set, so it never appears in the browser's
+  // address bar or history.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const raw = params.get('spotify');
+    const connected = params.get('spotify');
     const err = params.get('spotify_error');
 
     if (err) {
-      toast.error('Could not connect to Spotify. Please try again.');
+      const message = err === 'state_mismatch'
+        ? 'Spotify connection could not be verified — please try connecting again.'
+        : 'Could not connect to Spotify. Please try again.';
+      toast.error(message);
       const url = new URL(window.location.href);
       url.searchParams.delete('spotify_error');
       window.history.replaceState({}, '', url.toString());
       return;
     }
-    if (!raw) return;
+    if (connected !== 'connected') return;
 
     const url = new URL(window.location.href);
     url.searchParams.delete('spotify');
     window.history.replaceState({}, '', url.toString());
 
-    try {
-      const data = JSON.parse(atob(decodeURIComponent(raw)));
-      setPendingSpotifyData(data);
-    } catch { /* malformed payload */ }
+    fetch('/api/spotify-session-fetch', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data?.connected) {
+          setPendingSpotifyData(data);
+        }
+      })
+      .catch(() => { /* non-fatal — connection just won't be saved this load */ });
   }, []);
 
   // ── Save pending Spotify connection once WeddingDetails have loaded ────────
@@ -170,8 +182,11 @@ export default function MusicPage() {
     }
     const redirectUri = 'https://www.openinvite.com.au/api/spotify-callback';
     const scope       = 'playlist-modify-public playlist-modify-private user-read-private';
-    const state       = Math.random().toString(36).slice(2, 10);
-    sessionStorage.setItem('spotify_oauth_state', state);
+    const state       = crypto.randomUUID();
+    // A cookie, not sessionStorage — api/spotify-callback.js validates the
+    // state Spotify sends back against THIS value, and only a cookie is
+    // sent back to our server automatically on that redirect.
+    document.cookie = `spotify_oauth_state=${state}; path=/; max-age=600; samesite=lax; secure`;
     const params = new URLSearchParams({
       client_id:     clientId,
       response_type: 'code',

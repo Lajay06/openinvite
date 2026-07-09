@@ -1,9 +1,15 @@
 /**
  * GET /api/spotify-callback
  *
- * Spotify Authorization Code callback. Exchanges the `code` param for access +
- * refresh tokens, fetches the user's Spotify profile, then redirects back to
- * the Music page with the token bundle encoded as base64 in a query param.
+ * Spotify Authorization Code callback. Validates the `state` param against
+ * the value the browser sent when the flow started (via cookie — Vercel
+ * functions are stateless across invocations, so a server-side session
+ * store can't reliably survive from the authorize-start request to this
+ * one, but a cookie the browser holds and resends can). Exchanges `code`
+ * for access + refresh tokens, fetches the user's Spotify profile, then
+ * hands the token bundle to the browser via a short-lived HttpOnly cookie
+ * — never via a redirect URL query param, which would land in the browser
+ * address bar and history.
  *
  * Required env vars:
  *   SPOTIFY_CLIENT_ID      – from Spotify Developer Dashboard
@@ -14,6 +20,11 @@
  *                            Falls back to deriving from request headers.
  */
 
+import { parseCookies, serializeCookie, expireCookie } from './_lib/security.js';
+
+const STATE_COOKIE = 'spotify_oauth_state';
+const PENDING_COOKIE = 'spotify_pending_connection';
+
 export default async function handler(req, res) {
   const { code, error, state } = req.query;
 
@@ -23,9 +34,28 @@ export default async function handler(req, res) {
   const APP_URL = process.env.APP_URL || `${proto}://${host}`;
   const REDIRECT_URI = 'https://www.openinvite.com.au/api/spotify-callback';
 
+  // The state cookie is single-use regardless of outcome — clear it now.
+  res.setHeader('Set-Cookie', expireCookie(STATE_COOKIE));
+
   if (error) {
     console.warn('[spotify-callback] Spotify returned error:', error);
     return res.redirect(`${APP_URL}/Music?spotify_error=${encodeURIComponent(error)}`);
+  }
+
+  // ── Validate state before doing anything else ───────────────────────────
+  // Rejects on both a missing state (someone hitting this endpoint directly)
+  // and a mismatched one (the classic OAuth login-CSRF: an attacker starts
+  // their OWN authorization flow, gets a valid code for their OWN Spotify
+  // account, then tricks a victim into visiting this callback with that
+  // code — without state validation, the victim's browser would silently
+  // save the attacker's Spotify connection as if it were their own).
+  const cookies = parseCookies(req);
+  const expectedState = cookies[STATE_COOKIE];
+  if (!state || !expectedState || state !== expectedState) {
+    console.warn('[spotify-callback] state mismatch or missing — rejecting', {
+      hasState: !!state, hasExpected: !!expectedState, matched: state === expectedState,
+    });
+    return res.redirect(`${APP_URL}/Music?spotify_error=state_mismatch`);
   }
 
   if (!code) {
@@ -80,14 +110,23 @@ export default async function handler(req, res) {
     console.warn('[spotify-callback] Could not fetch Spotify profile:', err.message);
   }
 
-  // ── Encode and redirect ───────────────────────────────────────────────────
-  const payload = Buffer.from(JSON.stringify({
+  // ── Hand off via a short-lived HttpOnly cookie, never the URL ──────────────
+  // The redirect target carries only a generic "connected" flag — no token
+  // material ever appears in the browser's address bar or history. The
+  // client fetches api/spotify-session-fetch immediately to retrieve the
+  // actual bundle from the response body, and that endpoint clears this
+  // cookie on first read so it can't be replayed.
+  const payload = JSON.stringify({
     at:   tokens.access_token,
     rt:   tokens.refresh_token,
     exp:  Date.now() + (tokens.expires_in || 3600) * 1000,
     name: displayName,
     img:  imageUrl,
-  })).toString('base64');
+  });
+  res.setHeader('Set-Cookie', [
+    expireCookie(STATE_COOKIE),
+    serializeCookie(PENDING_COOKIE, Buffer.from(payload).toString('base64'), { maxAge: 120, httpOnly: true }),
+  ]);
 
-  return res.redirect(`${APP_URL}/Music?spotify=${encodeURIComponent(payload)}`);
+  return res.redirect(`${APP_URL}/Music?spotify=connected`);
 }
