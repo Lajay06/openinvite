@@ -12,6 +12,7 @@ import ScheduleForm from "../components/schedule/ScheduleForm";
 import CalendarPage from "./Calendar";
 import SchedulePage from "./Schedule";
 import { base44 } from "@/api/base44Client";
+import { getMyRecords } from "@/lib/resolveMyWedding";
 import toast from "react-hot-toast";
 
 const Schedule = base44.entities.Schedule;
@@ -80,7 +81,7 @@ export default function ScheduleHub() {
   const loadItems = async () => {
     setLoadingStats(true);
     try {
-      const data = await Schedule.list("start_time");
+      const data = await getMyRecords('Schedule', "start_time");
       setScheduleItems(data);
     } catch {
       toast.error("Failed to load schedule");

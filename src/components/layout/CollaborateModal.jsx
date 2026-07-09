@@ -1,12 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
-import { Collaborator } from '@/entities/Collaborator';
+import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge"; // Added this import
 import { X, Users, Send, Edit, Trash2, Eye, PenSquare } from 'lucide-react';
+
+const Collaborator = base44.entities.Collaborator;
 
 const pages = [
   "Dashboard", "Guests", "Budget", "Schedule", "Music", 
@@ -34,7 +37,7 @@ export default function CollaborateModal({ onClose }) {
   const fetchCollaborators = async () => {
     setLoading(true);
     try {
-      const data = await Collaborator.list('-created_date');
+      const data = await getMyRecords('Collaborator', '-created_date');
       setCollaborators(data);
     } catch (error) {
       console.error("Failed to fetch collaborators:", error);

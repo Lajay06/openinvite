@@ -12,7 +12,7 @@ import PhotographerForm from "../components/photography/PhotographerForm";
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 const Photographer = base44.entities.Photographer;
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -67,7 +67,7 @@ export default function PhotographyPage() {
     setLoading(true);
     try {
       const [photographersData, detailsData] = await Promise.all([
-        Photographer.list('-created_date'),
+        getMyRecords('Photographer', '-created_date'),
         getMyWeddingDetails().catch(() => null),
       ]);
       setPhotographers(photographersData);

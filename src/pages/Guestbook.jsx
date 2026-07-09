@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 const GuestbookEntry = base44.entities.GuestbookEntry;
-const WeddingDetails = base44.entities.WeddingDetails;
+import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { Heart, Trash2 } from "lucide-react";
 import toast from 'react-hot-toast';
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
@@ -22,8 +22,7 @@ export default function Guestbook() {
 
   const loadWeddingAndEntries = async () => {
     try {
-      const rows = await WeddingDetails.list();
-      const wd = rows[0];
+      const wd = await getMyWeddingDetails();
       setWeddingId(wd?.id || null);
       if (wd?.id) {
         const rawEntries = await GuestbookEntry.filter({ wedding_id: wd.id }, '-created_date');

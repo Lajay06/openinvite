@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GuestMessage } from '@/entities/GuestMessage';
-import { Guest } from '@/entities/Guest';
+import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, Reply, Search, CheckCheck, Send, Heart, Mail, User, EyeOff, Eye, MessageSquare, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -10,6 +10,8 @@ import WhatsAppQRCode from "../components/messages/WhatsAppQRCode";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+
+const GuestMessage = base44.entities.GuestMessage;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -64,7 +66,7 @@ export default function MessagesPage() {
 
   const loadMessages = async () => {
     try {
-      const data = await GuestMessage.list('-created_date');
+      const data = await getMyRecords('GuestMessage', '-created_date');
       setMessages(data);
       const unread = data.filter(msg => !msg.read);
       for (const msg of unread) {

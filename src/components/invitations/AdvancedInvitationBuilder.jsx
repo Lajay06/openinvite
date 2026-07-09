@@ -11,8 +11,7 @@ import {
     AlignCenter, AlignRight, Save, Settings, Layers, Calendar, MapPin, Clock, 
     Loader2, Eye, Users
 } from 'lucide-react';
-import { GuestSuiteSettings } from '@/entities/GuestSuiteSettings';
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { InvokeLLM } from '@/integrations/Core';
 
 const GOOGLE_FONTS = [
@@ -97,7 +96,7 @@ const AdvancedInvitationBuilder = ({ invitationData, onSave }) => {
             try {
                 const [details, guestSettings] = await Promise.all([
                     getMyWeddingDetails(),
-                    GuestSuiteSettings.list()
+                    getMyRecords('GuestSuiteSettings')
                 ]);
                 if(details) setEventDetails(details);
                 if(guestSettings.length > 0) setGuestSuiteSettings(guestSettings[0]);

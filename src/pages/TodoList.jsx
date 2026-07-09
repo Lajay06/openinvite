@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, CheckSquare, Square, List, Columns } from 'lucide-react';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
@@ -35,7 +36,7 @@ export default function TodoList({ embedded = false }) {
   const loadTasks = async () => {
     setLoading(true);
     try {
-      const all = await Note.list('-created_date');
+      const all = await getMyRecords('Note', '-created_date');
       setTasks(all.filter(n => n.view_type === 'todo'));
     } catch { toast.error('Failed to load tasks'); }
     setLoading(false);

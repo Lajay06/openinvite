@@ -116,5 +116,62 @@ export async function runOwnership(token, weddingDetailsRecordId) {
     }
   }
 
+  // ── getMyRecords() mechanism — Guest ownership isolation (fix/dashboard-scoping) ──
+  // ~63 unscoped dashboard/builder queries (Guest, Budget, Vendor, Schedule,
+  // Photo, Note, Task, StoryMilestone, SongRequest, ReceivedGift, Hotel,
+  // Restaurant, RegistryItem, RegistryProduct, CustomGift, CustomEventPage,
+  // WebsiteTheme, Table, VenueAsset, Photographer, WeddingDetails) were
+  // migrated to the new getMyRecords(entityName, sort, limit) helper in
+  // src/lib/resolveMyWedding.js — every one of them resolves through the same
+  // base44.entities[entityName].filter({ created_by_id: me.id }) call, so
+  // proving the mechanism in isolation for one representative entity proves
+  // it for all of them. Guest is chosen because it has no server-side RLS
+  // (per base44/entities/Guest.jsonc) — getMyRecords() is its ONLY isolation
+  // boundary, unlike the ~26 entities the base44-builder[bot] RLS commit
+  // already backstops server-side.
+  console.log('\n  getMyRecords() mechanism — Guest ownership isolation:\n');
+  let guestId = null;
+  try {
+    const created = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
+      name: '__PERSISTENCE_TEST_GUEST_OWNERSHIP__',
+      email: 'ownership-sentinel@example.com',
+      is_test: true,
+    }, token);
+    guestId = created.id;
+    if (!guestId) throw new Error('No id on created Guest');
+
+    const me = await api('GET', `/apps/${APP_ID}/entities/User/me`, undefined, token);
+    const realUserId = me.id;
+    if (!realUserId) throw new Error('Could not resolve the test account\'s own user id');
+
+    const ownQuery = encodeURIComponent(JSON.stringify({ created_by_id: realUserId }));
+    const ownResults = await api('GET', `/apps/${APP_ID}/entities/Guest?q=${ownQuery}`, undefined, token);
+    const ownList = Array.isArray(ownResults) ? ownResults : (ownResults?.data || ownResults?.results || []);
+    const foundBySelf = ownList.some(g => g.id === guestId);
+    results.push(foundBySelf
+      ? pass('Guest.filter({created_by_id: <real owner>}) — getMyRecords() mechanism', 'sentinel found, as expected')
+      : fail('Guest.filter({created_by_id: <real owner>}) — getMyRecords() mechanism', guestId, ownList.map(g => g.id)));
+
+    // The exact bug class this migration fixed: a second user's dashboard
+    // (e.g. Guests.jsx, ImportGuestModal.jsx's dedup check, Seating.jsx,
+    // WeddingWebsite.jsx) must never see this sentinel guest.
+    const fakeUserId = `test-second-user-${Date.now()}-does-not-exist`;
+    const fakeQuery = encodeURIComponent(JSON.stringify({ created_by_id: fakeUserId }));
+    const fakeResults = await api('GET', `/apps/${APP_ID}/entities/Guest?q=${fakeQuery}`, undefined, token);
+    const fakeList = Array.isArray(fakeResults) ? fakeResults : (fakeResults?.data || fakeResults?.results || []);
+    const leakedToOther = fakeList.some(g => g.id === guestId);
+    results.push(!leakedToOther
+      ? pass('Guest.filter({created_by_id: <other user>}) — getMyRecords() mechanism', 'sentinel correctly absent')
+      : fail('Guest.filter({created_by_id: <other user>}) — ISOLATION BREACH', 'sentinel absent', 'sentinel present'));
+  } catch (err) {
+    console.log(`  ❌ FAIL  Guest ownership isolation — error: ${err.message}`);
+    results.push(false, false);
+  } finally {
+    if (guestId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
   return results;
 }

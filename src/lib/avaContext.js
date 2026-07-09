@@ -1,12 +1,11 @@
-import { base44 } from '@/api/base44Client';
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 
 export async function buildWeddingContext() {
   const [guestsResult, budgetResult, vendorsResult, scheduleResult, wdResult] = await Promise.allSettled([
-    base44.entities.Guest.list(),
-    base44.entities.Budget.list(),
-    base44.entities.Vendor.list(),
-    base44.entities.Schedule.list(),
+    getMyRecords('Guest'),
+    getMyRecords('Budget'),
+    getMyRecords('Vendor'),
+    getMyRecords('Schedule'),
     getMyWeddingDetails(),
   ]);
 

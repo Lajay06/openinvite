@@ -13,9 +13,7 @@ import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import TipsModal from "../components/dashboard/TipsModal";
-const Guest = base44.entities.Guest;
-const Budget = base44.entities.Budget;
-const Schedule = base44.entities.Schedule;
+import { getMyRecords } from "@/lib/resolveMyWedding";
 
 const QUICK_LINKS = [
   { label: "Guest list", url: "Guests" },
@@ -132,7 +130,7 @@ export default function Dashboard() {
       const tipsShown = localStorage.getItem('openinvite_tips_shown');
       if (!tipsShown) setShowTipsModal(true);
       const [guestData, budgetData, scheduleData] = await Promise.all([
-        Guest.list(), Budget.list(), Schedule.list(),
+        getMyRecords('Guest'), getMyRecords('Budget'), getMyRecords('Schedule'),
       ]);
       setGuests(guestData); setBudget(budgetData); setSchedule(scheduleData);
     } catch {}

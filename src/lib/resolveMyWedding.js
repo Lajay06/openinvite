@@ -51,3 +51,26 @@ export async function getMyLiveStream() {
   const rows = await base44.entities.LiveStream.filter({ created_by_id: me.id });
   return mostRecent(rows);
 }
+
+/**
+ * Same ownership scoping as the resolvers above, but for the many
+ * dashboard entities that are genuinely one-to-many per couple (guests,
+ * budget lines, vendors, schedule items, photos, notes, tasks…) rather
+ * than a singleton record. Replaces the unscoped `Entity.list(sort)` /
+ * `Entity.list(sort, limit)` calls those pages used to make, which
+ * returned every record of that type across every couple's account, not
+ * just the logged-in user's own.
+ *
+ * @param {string} entityName    e.g. 'Guest', 'Budget', 'Vendor'
+ * @param {string} [sort]        same syntax as .list()/.filter()'s own sort param, e.g. '-created_date'
+ * @param {number} [limit]       caps the result client-side after filtering, since
+ *                                the underlying .filter() call has no reliable limit arg
+ * @returns {Promise<object[]>}  the logged-in user's own records, excluding is_test
+ */
+export async function getMyRecords(entityName, sort, limit) {
+  const me = await base44.auth.me().catch(() => null);
+  if (!me?.id) return [];
+  const rows = await base44.entities[entityName].filter({ created_by_id: me.id }, sort);
+  const real = (rows || []).filter(r => !r.is_test);
+  return typeof limit === 'number' ? real.slice(0, limit) : real;
+}

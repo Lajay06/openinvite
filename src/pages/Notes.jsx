@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import SuggestionsModal from "../components/notes/SuggestionsModal";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
+import { getMyRecords } from "@/lib/resolveMyWedding";
 const Task = base44.entities.Task;
 
 const labelStyle = {
@@ -86,7 +87,7 @@ export default function ToDoListPage() {
 
   const loadTasks = async () => {
     try {
-      const data = await Task.list('-created_date');
+      const data = await getMyRecords('Task', '-created_date');
       setTasks(data);
     } catch (error) {
       console.error("Error loading tasks:", error);

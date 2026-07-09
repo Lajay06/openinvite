@@ -4,7 +4,9 @@ import { Eye, Share2,
   Save, Loader2, Smartphone, Monitor
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Invitation } from '@/entities/Invitation';
+import { base44 } from '@/api/base44Client';
+
+const Invitation = base44.entities.Invitation;
 
 import InvitationDesigner from './InvitationDesigner';
 import InvitationPreviewWithNav from './InvitationPreviewWithNav';

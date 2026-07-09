@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { MoodboardItem } from '@/entities/MoodboardItem';
+import { base44 } from '@/api/base44Client';
 import { InvokeLLM } from '@/integrations/Core';
 import { X, Search, Plus, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const MoodboardItem = base44.entities.MoodboardItem;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,

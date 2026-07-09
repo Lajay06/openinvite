@@ -3,8 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Hotel as HotelIcon, Star, MapPin, Loader2, ArrowRight, Plus, Heart, RefreshCw } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
-import { Hotel } from '@/entities/Hotel';
+import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
+
+const Hotel = base44.entities.Hotel;
 import HotelForm from './HotelForm';
 
 export default function HotelRecommendations({ weddingLocation, weddingCity }) {
@@ -24,7 +27,7 @@ export default function HotelRecommendations({ weddingLocation, weddingCity }) {
 
   const loadCustomHotels = async () => {
     try {
-      const data = await Hotel.list('-created_date');
+      const data = await getMyRecords('Hotel', '-created_date');
       setCustomHotels(data);
     } catch (error) {
       console.error('Error loading custom hotels:', error);

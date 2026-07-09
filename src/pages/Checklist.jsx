@@ -4,13 +4,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-
-const Guest = base44.entities.Guest;
-const Budget = base44.entities.Budget;
-const Vendor = base44.entities.Vendor;
-const Schedule = base44.entities.Schedule;
-const Note = base44.entities.Note;
+import { getMyRecords } from '@/lib/resolveMyWedding';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -196,11 +190,11 @@ function PlanningOverview() {
     (async () => {
       try {
         const [guests, budgets, vendors, schedules, notes] = await Promise.all([
-          Guest.list().catch(() => []),
-          Budget.list().catch(() => []),
-          Vendor.list().catch(() => []),
-          Schedule.list().catch(() => []),
-          Note.list().catch(() => []),
+          getMyRecords('Guest').catch(() => []),
+          getMyRecords('Budget').catch(() => []),
+          getMyRecords('Vendor').catch(() => []),
+          getMyRecords('Schedule').catch(() => []),
+          getMyRecords('Note').catch(() => []),
         ]);
         if (!cancelled) setStatus(evaluateStatus({ guests, budgets, vendors, schedules, notes }));
       } catch {

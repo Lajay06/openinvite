@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User } from '@/entities/User';
-import { Event } from '@/entities/Event';
+import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
@@ -75,9 +75,9 @@ export default function CouplesStudioPage() {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const currentUser = await User.me();
+                const currentUser = await base44.auth.me();
                 setUser(currentUser);
-                const userEvents = await Event.list('-created_date');
+                const userEvents = await getMyRecords('Event', '-created_date');
                 setEvents(userEvents);
             } catch (error) {
                 // Not logged in, redirect to home to start login flow

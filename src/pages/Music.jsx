@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Music2, Plus, Sparkles, Share2, Settings, X, Check, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -82,7 +82,7 @@ export default function MusicPage() {
 
   const { data: songRequests } = useQuery({
     queryKey: ['songRequests'],
-    queryFn: async () => { try { return await base44.entities.SongRequest.list(); } catch { return []; } },
+    queryFn: async () => { try { return await getMyRecords('SongRequest'); } catch { return []; } },
   });
 
   const updateMutation = useMutation({

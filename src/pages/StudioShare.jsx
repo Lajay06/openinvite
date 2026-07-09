@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { ChevronLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -39,7 +39,7 @@ export default function StudioShare() {
     const load = async () => {
       const [d, gList] = await Promise.all([
         getMyWeddingDetails(),
-        base44.entities.Guest.list(),
+        getMyRecords('Guest'),
       ]);
       if (d) { setDetails(d); setDetailsId(d.id); }
       setGuests(gList);

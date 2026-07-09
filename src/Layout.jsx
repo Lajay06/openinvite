@@ -13,8 +13,7 @@ import TipsModal from "./components/dashboard/TipsModal";
 import CollaborateModal from "./components/layout/CollaborateModal";
 import AvaChatPod from "./components/layout/AvaChatPod";
 import { base44 } from '@/api/base44Client';
-import { GuestMessage } from '@/entities/GuestMessage';
-import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -261,7 +260,7 @@ export default function Layout({ children, currentPageName }) {
         currency: currentUser.currency || 'USD',
       });
       try {
-        const messages = await GuestMessage.list();
+        const messages = await getMyRecords('GuestMessage');
         setUnreadMessagesCount(messages.filter(m => !m.read).length);
       } catch {}
       try {

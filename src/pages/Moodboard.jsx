@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MoodboardItem } from '@/entities/MoodboardItem';
+import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { UploadFile } from '@/integrations/Core';
 import { validateUploadFile } from '@/lib/uploadValidation';
 import { Plus, Search, Upload, Image as ImageIcon, Sparkles, Loader2 } from 'lucide-react';
@@ -11,6 +12,8 @@ import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+
+const MoodboardItem = base44.entities.MoodboardItem;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -61,7 +64,7 @@ export default function MoodboardPage() {
 
   const loadItems = async () => {
     try {
-      const data = await MoodboardItem.list('-created_date');
+      const data = await getMyRecords('MoodboardItem', '-created_date');
       setItems(data);
     } catch (e) {
       console.error(e);

@@ -10,7 +10,7 @@ import VendorForm from '../components/vendors/VendorForm';
 import VendorList from '../components/vendors/VendorList';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
+import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
 const WeddingDetails = base44.entities.WeddingDetails;
 const Vendor = base44.entities.Vendor;
 
@@ -101,7 +101,7 @@ export default function BeautyPage() {
     try {
       const [wd, vendorData] = await Promise.all([
         getMyWeddingDetails(),
-        Vendor.list(),
+        getMyRecords('Vendor'),
       ]);
       const r = wd || {};
       const bd = r.beauty || {};
@@ -219,7 +219,7 @@ export default function BeautyPage() {
       }
       setShowVendorForm(false);
       setEditingVendor(null);
-      const refreshed = await Vendor.list();
+      const refreshed = await getMyRecords('Vendor');
       setVendors(refreshed.filter(v => v.category === 'beauty'));
     } catch { toast.error('Failed to save vendor', { id: tid }); }
   };

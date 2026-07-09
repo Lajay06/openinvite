@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Utensils, Star, MapPin, ArrowRight, Loader2, Heart, RefreshCw } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
-import { Restaurant } from '@/entities/Restaurant';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 
 export default function RestaurantRecommendations({ weddingLocation, weddingCity }) {
@@ -21,7 +21,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
 
   const loadCustomRestaurants = async () => {
     try {
-      const data = await Restaurant.list('-created_date');
+      const data = await getMyRecords('Restaurant', '-created_date');
       setCustomRestaurants(data);
     } catch (error) {
       console.error('Error loading custom restaurants:', error);
