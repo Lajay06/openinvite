@@ -12,12 +12,25 @@
  * Required env var: GOOGLE_PLACES_API_KEY
  */
 
+import { checkRateLimit, getClientIp } from './_lib/security.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // ── Rate limiting: 20 requests/min per IP — text search, tighter than
+  // details/photo since it's the highest-cardinality call (fires per keystroke). ──
+  const ip = getClientIp(req);
+  const { limited, remaining } = checkRateLimit(ip, 'places-search', 20);
+  res.setHeader('X-RateLimit-Limit', '20');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    console.warn('[places-search] Rate limited:', ip);
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+  }
 
   const { q, location, lat, lng } = req.body || {};
   if (!q?.trim()) return res.status(400).json({ error: 'q is required' });

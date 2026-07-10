@@ -8,9 +8,23 @@
  *   - Places API (Legacy): ref = raw photo_reference string
  */
 
+import { checkRateLimit, getClientIp } from './_lib/security.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ── Rate limiting: 60 requests/min per IP — a single results page can
+  // request many photos at once (one per venue card), so this needs the
+  // highest limit of the four Places proxies. ──
+  const ip = getClientIp(req);
+  const { limited, remaining } = checkRateLimit(ip, 'places-photo', 60);
+  res.setHeader('X-RateLimit-Limit', '60');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    console.warn('[places-photo] Rate limited:', ip);
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+  }
 
   const { ref, maxwidth = '600' } = req.query || {};
   if (!ref) return res.status(400).json({ error: 'ref is required' });

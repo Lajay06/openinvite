@@ -19,6 +19,8 @@
  *   SPOTIFY_CLIENT_SECRET
  */
 
+import { checkRateLimit, getClientIp } from './_lib/security.js';
+
 let cachedAppToken = null; // { token, expires }
 
 async function getAppToken(clientId, clientSecret) {
@@ -61,6 +63,17 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // ── Rate limiting: 20 requests/min per IP — search-as-you-type, same
+  // tier as the Places search proxies. ──
+  const ip = getClientIp(req);
+  const { limited, remaining } = checkRateLimit(ip, 'spotify-search', 20);
+  res.setHeader('X-RateLimit-Limit', '20');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    console.warn('[spotify-search] Rate limited:', ip);
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+  }
 
   const { q, accessToken, refreshToken, expiresAt } = req.body || {};
   if (!q?.trim()) return res.status(400).json({ error: 'q is required' });
