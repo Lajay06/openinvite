@@ -17,7 +17,13 @@
  * Required env vars (for app-token fallback):
  *   SPOTIFY_CLIENT_ID
  *   SPOTIFY_CLIENT_SECRET
+ *   BASE44_ADMIN_KEY — used by isKnownSpotifyRefreshToken (api/_lib/
+ *     spotifyAuth.js) to verify a presented refreshToken is tied to a real
+ *     wedding's stored Spotify connection before silently exchanging it.
  */
+
+import { checkRateLimit, getClientIp } from './_lib/security.js';
+import { isKnownSpotifyRefreshToken } from './_lib/spotifyAuth.js';
 
 let cachedAppToken = null; // { token, expires }
 
@@ -62,6 +68,17 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // ── Rate limiting: 20 requests/min per IP — search-as-you-type, same
+  // tier as the Places search proxies. ──
+  const ip = getClientIp(req);
+  const { limited, remaining } = checkRateLimit(ip, 'spotify-search', 20);
+  res.setHeader('X-RateLimit-Limit', '20');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    console.warn('[spotify-search] Rate limited:', ip);
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+  }
+
   const { q, accessToken, refreshToken, expiresAt } = req.body || {};
   if (!q?.trim()) return res.status(400).json({ error: 'q is required' });
 
@@ -75,12 +92,22 @@ export default async function handler(req, res) {
     // Use the user's token; refresh silently if expired
     const expired = expiresAt && Date.now() > expiresAt - 60_000;
     if (expired && refreshToken && clientId && clientSecret) {
-      try {
-        const refreshed = await refreshUserToken(refreshToken, clientId, clientSecret);
-        token    = refreshed.accessToken;
-        newToken = refreshed;
-      } catch {
-        // Refresh failed — fall through to app token
+      // Same ownership check as spotify-refresh.js — a refresh token not
+      // tied to any known wedding's Spotify connection is never exchanged,
+      // even silently here. Falls through to the app-token path exactly as
+      // a failed refresh already does, so an unknown/leaked token gets no
+      // different treatment than "refresh unavailable."
+      const known = await isKnownSpotifyRefreshToken(refreshToken, '[spotify-search]');
+      if (known) {
+        try {
+          const refreshed = await refreshUserToken(refreshToken, clientId, clientSecret);
+          token    = refreshed.accessToken;
+          newToken = refreshed;
+        } catch {
+          // Refresh failed — fall through to app token
+        }
+      } else {
+        console.warn('[spotify-search] Refresh token not tied to any known wedding record — skipping silent refresh');
       }
     } else {
       token = accessToken;

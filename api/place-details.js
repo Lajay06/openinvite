@@ -7,12 +7,25 @@
  * Response: { place }
  */
 
+import { checkRateLimit, getClientIp } from './_lib/security.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+  // ── Rate limiting: 40 requests/min per IP — one call per user selection
+  // (much lower-cardinality than search), so a generous limit is safe. ──
+  const ip = getClientIp(req);
+  const { limited, remaining } = checkRateLimit(ip, 'place-details', 40);
+  res.setHeader('X-RateLimit-Limit', '40');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    console.warn('[place-details] Rate limited:', ip);
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+  }
 
   const { place_id } = req.query || {};
   if (!place_id) return res.status(400).json({ error: 'place_id is required' });

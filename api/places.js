@@ -8,6 +8,8 @@
  * Required env var: GOOGLE_PLACES_API_KEY
  */
 
+import { checkRateLimit, getClientIp } from './_lib/security.js';
+
 const MOCK_PLACES = [
   { place_id: 'mock_1', name: 'Golden Hour Photography Studio', address: '12 Clarence St, Sydney NSW 2000', rating: 4.9, user_ratings_total: 312, price_level: 3, photo_reference: null, maps_url: 'https://maps.google.com/?q=Golden+Hour+Photography+Sydney', types: ['photographer'] },
   { place_id: 'mock_2', name: 'Bloom & Wild Florals',           address: '88 Bourke St, Melbourne VIC 3000', rating: 4.8, user_ratings_total: 189, price_level: 2, photo_reference: null, maps_url: 'https://maps.google.com/?q=Bloom+Wild+Florals+Melbourne', types: ['florist'] },
@@ -35,6 +37,17 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+  // ── Rate limiting: 20 requests/min per IP — text search, tighter than
+  // details/photo since it's the highest-cardinality call (fires per keystroke). ──
+  const ip = getClientIp(req);
+  const { limited, remaining } = checkRateLimit(ip, 'places', 20);
+  res.setHeader('X-RateLimit-Limit', '20');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    console.warn('[places] Rate limited:', ip);
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+  }
 
   const { q, location } = req.query || {};
   if (!q?.trim()) return res.status(400).json({ error: 'q is required' });

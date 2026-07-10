@@ -88,9 +88,15 @@ function gcRateLimitStore() {
  * the rolling `windowMs` window. Mutates the store.
  *
  * Rate limit buckets:
- *   'checkout'  — 10 req/min  (create-checkout-session)
- *   'email'     — 5 req/min   (send-email)
- *   'signup'    — 5 req/hour  (verify-signup)
+ *   'checkout'        — 10 req/min  (create-checkout-session)
+ *   'email'           — 5 req/min   (send-email)
+ *   'signup'          — 5 req/hour  (verify-signup)
+ *   'places'          — 20 req/min  (places.js — text search)
+ *   'places-search'   — 20 req/min  (places-search.js — text search)
+ *   'place-details'   — 40 req/min  (place-details.js — one call per selection)
+ *   'places-photo'    — 60 req/min  (places-photo.js — several photos per page load)
+ *   'spotify-search'  — 20 req/min  (spotify-search.js — search-as-you-type)
+ *   'spotify-refresh' — 10 req/min  (spotify-refresh.js — infrequent, security-sensitive)
  *
  * @param {string} ip
  * @param {string} bucket

@@ -694,6 +694,27 @@
               }
             }
           }
+        },
+        "spotifyConnection": {
+          "type": "object",
+          "description": "The couple's connected Spotify OAuth tokens, written by api/spotify-callback.js after a successful connect and read by api/spotify-refresh.js / api/spotify-search.js.",
+          "properties": {
+            "accessToken": {
+              "type": "string"
+            },
+            "refreshToken": {
+              "type": "string"
+            },
+            "expiresAt": {
+              "type": "number"
+            },
+            "displayName": {
+              "type": "string"
+            },
+            "imageUrl": {
+              "type": "string"
+            }
+          }
         }
       }
     },
