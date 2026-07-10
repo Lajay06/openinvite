@@ -2,14 +2,22 @@
  * POST /api/wedding-poll-vote
  *
  * Public, unauthenticated endpoint backing WeddingPollsPage.jsx — the
- * fully anonymous, identity-less guest polls page (no rsvp_link_id token;
- * "already voted" is tracked only in the visitor's own localStorage).
- * Resolves the wedding by slug using the server-side admin key,
- * increments the vote count for the given poll option, and writes with
- * the admin key — replacing the previous direct client-side
- * base44.entities.WeddingDetails.update() call.
+ * fully anonymous, identity-less guest polls page (no rsvp_link_id token).
+ * Resolves the wedding by slug using the server-side admin key, then
+ * writes a PollVote record — replacing the previous direct
+ * WeddingDetails.polls[].options[].votes increment, which required an
+ * admin-key UPDATE on the couple's own WeddingDetails record and broke
+ * outright once WeddingDetails gained an owner-scoped update RLS rule the
+ * admin key structurally cannot satisfy. PollVote's create:null RLS has
+ * no such problem — same pattern already proven by GuestbookEntry/
+ * SongRequest.
  *
- * Body: { weddingSlug: string, pollId: string, optionId: string, turnstileToken: string }
+ * Body: { weddingSlug: string, pollId: string, optionId: string,
+ *         turnstileToken: string, voterId?: string }
+ *   voterId — a client-generated anonymous id (localStorage, stable per
+ *   browser) used only for de-dup when aggregating counts (a guest who
+ *   votes twice should have only their latest choice counted) — hashed
+ *   server-side before storage, never stored raw.
  * Response: 200 { ok: true }
  *        or 404 { error: 'Wedding not found.' }
  *
@@ -23,6 +31,7 @@ import {
   sanitizeString,
   verifyTurnstileToken,
 } from './_lib/security.js';
+import { hashGuestIdentifier } from './_lib/pollAuth.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -54,6 +63,7 @@ export default async function handler(req, res) {
   const pollId = sanitizeString(req.body?.pollId || '');
   const optionId = sanitizeString(req.body?.optionId || '');
   const turnstileToken = req.body?.turnstileToken;
+  const voterId = typeof req.body?.voterId === 'string' ? req.body.voterId : null;
 
   if (!weddingSlug || !pollId || !optionId) {
     return res.status(400).json({ error: 'weddingSlug, pollId, and optionId are required.' });
@@ -92,25 +102,19 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Wedding not found.' });
     }
 
-    const currentPolls = wedding.polls || [];
-    const updatedPolls = currentPolls.map(poll => {
-      if (poll.id !== pollId) return poll;
-      return {
-        ...poll,
-        options: (poll.options || []).map(opt =>
-          opt.id === optionId ? { ...opt, votes: (opt.votes || 0) + 1 } : opt
-        ),
-      };
-    });
-
-    const updateRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails/${wedding.id}`, {
-      method: 'PUT',
+    const createRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/PollVote`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
-      body: JSON.stringify({ polls: updatedPolls }),
+      body: JSON.stringify({
+        wedding_id: wedding.id,
+        poll_id: pollId,
+        option_id: optionId,
+        guest_identifier: hashGuestIdentifier(voterId),
+      }),
     });
-    if (!updateRes.ok) {
-      const body = await updateRes.text().catch(() => '');
-      throw new Error(`Base44 WeddingDetails update failed (${updateRes.status}): ${body.slice(0, 200)}`);
+    if (!createRes.ok) {
+      const body = await createRes.text().catch(() => '');
+      throw new Error(`Base44 PollVote create failed (${createRes.status}): ${body.slice(0, 200)}`);
     }
 
     return res.status(200).json({ ok: true });

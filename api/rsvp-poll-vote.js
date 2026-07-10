@@ -3,11 +3,20 @@
  *
  * Public, unauthenticated endpoint backing RSVPPage.jsx's post-RSVP poll
  * step. Validates the rsvp_link_id token server-side (resolving the guest
- * exactly as api/rsvp-lookup.js does), re-fetches the guest's wedding
- * fresh (never trusting a client-cached polls array, which could be stale
- * relative to other guests' votes), recomputes the per-option vote-count
- * deltas, and writes both WeddingDetails.polls and Guest.poll_votes with
- * the server-side admin key.
+ * exactly as api/rsvp-lookup.js does), then writes one PollVote record per
+ * submitted answer — replacing the previous dual write of
+ * WeddingDetails.polls (vote-count increment/decrement) and
+ * Guest.poll_votes (this guest's current answers), both of which required
+ * an admin-key UPDATE on records the admin key doesn't own and broke
+ * outright once WeddingDetails/Guest gained owner-scoped update RLS rules
+ * the admin key structurally cannot satisfy. PollVote's create:null RLS
+ * has no such problem — same pattern already proven by GuestbookEntry/
+ * SongRequest.
+ *
+ * The append-only PollVote model means a guest changing their vote simply
+ * writes a new row; aggregation (src/lib/pollAggregation.js) keeps only
+ * each voter's latest row per poll, so there's no need to look up or
+ * compare against a guest's previous answer before writing.
  *
  * Body: { token: string, votes: { [pollId]: optionId } }
  * Response: 200 { ok: true }
@@ -17,8 +26,11 @@
  */
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
-import { resolveGuestByToken, updateGuest, updateWeddingDetails } from './_lib/rsvpAuth.js';
+import { resolveGuestByToken } from './_lib/rsvpAuth.js';
+import { hashGuestIdentifier } from './_lib/pollAuth.js';
 
+const BASE44_API = 'https://base44.app/api';
+const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 
 export default async function handler(req, res) {
@@ -55,38 +67,26 @@ export default async function handler(req, res) {
     }
     const { guest, wedding } = resolved;
 
-    const currentPolls = wedding.polls || [];
-    const existingVotes = guest.poll_votes || {};
-    const mergedVotes = { ...existingVotes, ...votes };
+    const guestIdentifier = hashGuestIdentifier(guest.id);
+    const entries = Object.entries(votes).filter(([, optionId]) => !!optionId);
 
-    // Adjust vote counts only for polls where this guest's vote actually
-    // changed — mirrors RSVPPage.jsx's prior client-side logic exactly,
-    // just against a freshly-fetched wedding record instead of a
-    // potentially-stale client-cached one.
-    const updatedPolls = currentPolls.map(poll => {
-      const newVote = votes[poll.id];
-      const oldVote = existingVotes[poll.id];
-      if (!newVote || newVote === oldVote) return poll;
-      return {
-        ...poll,
-        options: (poll.options || []).map(opt => {
-          if (opt.id === newVote) return { ...opt, votes: (opt.votes || 0) + 1 };
-          if (opt.id === oldVote) return { ...opt, votes: Math.max(0, (opt.votes || 0) - 1) };
-          return opt;
+    await Promise.all(entries.map(([pollId, optionId]) =>
+      fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/PollVote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
+        body: JSON.stringify({
+          wedding_id: wedding.id,
+          poll_id: pollId,
+          option_id: optionId,
+          guest_identifier: guestIdentifier,
         }),
-      };
-    });
-
-    const hasNewVotes = Object.entries(votes).some(
-      ([pollId, optId]) => optId && existingVotes[pollId] !== optId
-    );
-
-    if (hasNewVotes) {
-      await Promise.all([
-        updateWeddingDetails(wedding.id, { polls: updatedPolls }),
-        updateGuest(guest.id, { poll_votes: mergedVotes }),
-      ]);
-    }
+      }).then(async (r) => {
+        if (!r.ok) {
+          const body = await r.text().catch(() => '');
+          throw new Error(`Base44 PollVote create failed (${r.status}): ${body.slice(0, 200)}`);
+        }
+      })
+    ));
 
     return res.status(200).json({ ok: true });
   } catch (err) {

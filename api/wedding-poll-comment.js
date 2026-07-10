@@ -3,9 +3,13 @@
  *
  * Public, unauthenticated endpoint backing WeddingPollsPage.jsx's poll
  * comment box. Resolves the wedding by slug using the server-side admin
- * key, appends the comment to the given poll, and writes with the admin
- * key — replacing the previous direct client-side
- * base44.entities.WeddingDetails.update() call.
+ * key, then writes a PollComment record — replacing the previous
+ * WeddingDetails.polls[].comments[] append, which required an admin-key
+ * UPDATE on the couple's own WeddingDetails record and broke outright
+ * once WeddingDetails gained an owner-scoped update RLS rule the admin
+ * key structurally cannot satisfy. PollComment's create:null RLS has no
+ * such problem — same pattern already proven by GuestbookEntry/
+ * SongRequest.
  *
  * Body: { weddingSlug: string, pollId: string, comment: string, turnstileToken: string }
  * Response: 200 { ok: true }
@@ -91,21 +95,14 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Wedding not found.' });
     }
 
-    const currentPolls = wedding.polls || [];
-    const updatedPolls = currentPolls.map(poll => {
-      if (poll.id !== pollId) return poll;
-      const nextComments = [...(poll.comments || []), { text: comment, timestamp: new Date().toISOString() }];
-      return { ...poll, comments: nextComments };
-    });
-
-    const updateRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails/${wedding.id}`, {
-      method: 'PUT',
+    const createRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/PollComment`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
-      body: JSON.stringify({ polls: updatedPolls }),
+      body: JSON.stringify({ wedding_id: wedding.id, poll_id: pollId, text: comment }),
     });
-    if (!updateRes.ok) {
-      const body = await updateRes.text().catch(() => '');
-      throw new Error(`Base44 WeddingDetails update failed (${updateRes.status}): ${body.slice(0, 200)}`);
+    if (!createRes.ok) {
+      const body = await createRes.text().catch(() => '');
+      throw new Error(`Base44 PollComment create failed (${createRes.status}): ${body.slice(0, 200)}`);
     }
 
     return res.status(200).json({ ok: true });

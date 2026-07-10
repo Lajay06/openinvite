@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
+import { aggregateVotes } from "@/lib/pollAggregation";
 import { Loader2, Trash2, Share2, Plus, X, ChevronLeft } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
@@ -259,6 +260,43 @@ export default function Polls() {
 
   useEffect(() => { load(); }, []);
 
+  // Live aggregate counts/comments from PollVote/PollComment — the static
+  // weddingDetails.polls[].options[].votes/.comments[] snapshot no longer
+  // changes once a vote/comment is cast, since those now write to their own
+  // entities. Uses the couple's own session token (read: null on both).
+  const mergeLiveResults = async (weddingId, pollList) => {
+    try {
+      const [votes, comments] = await Promise.all([
+        base44.entities.PollVote.filter({ wedding_id: weddingId }),
+        base44.entities.PollComment.filter({ wedding_id: weddingId }),
+      ]);
+      const realVotes = (votes || []).filter(v => !v.is_test);
+      const realComments = (comments || []).filter(c => !c.is_test);
+
+      const votesByPoll = new Map();
+      for (const v of realVotes) {
+        if (!votesByPoll.has(v.poll_id)) votesByPoll.set(v.poll_id, []);
+        votesByPoll.get(v.poll_id).push(v);
+      }
+      const commentsByPoll = new Map();
+      for (const c of realComments.slice().sort((a, b) => new Date(a.created_date) - new Date(b.created_date))) {
+        if (!commentsByPoll.has(c.poll_id)) commentsByPoll.set(c.poll_id, []);
+        commentsByPoll.get(c.poll_id).push(c.text);
+      }
+
+      return pollList.map(p => {
+        const counts = aggregateVotes(votesByPoll.get(p.id) || []);
+        return {
+          ...p,
+          options: p.options.map(o => ({ ...o, votes: counts[o.id] || 0 })),
+          comments: commentsByPoll.get(p.id) || [],
+        };
+      });
+    } catch {
+      return pollList;
+    }
+  };
+
   const load = async () => {
     try {
       const r = (await getMyWeddingDetails()) || {};
@@ -266,10 +304,14 @@ export default function Polls() {
       setRecordId(r.id || null);
       const loadedPolls = Array.isArray(r.polls) ? r.polls : [];
       setPolls(loadedPolls);
+
+      const merged = r.id ? await mergeLiveResults(r.id, loadedPolls) : loadedPolls;
+      setPolls(merged);
+
       // Generate Ava insights for polls that need them
       if (!insightRunRef.current) {
         insightRunRef.current = true;
-        generateInsights(loadedPolls, r.id);
+        generateInsights(merged, r.id, loadedPolls);
       }
     } catch {}
     setLoading(false);
@@ -286,7 +328,11 @@ export default function Polls() {
     } catch {}
   };
 
-  const generateInsights = async (pollList, recId) => {
+  // pollList carries live (merged) vote counts, used to decide which polls
+  // qualify and what the insight text says. rawPolls is the unmerged
+  // WeddingDetails.polls snapshot — only avaInsight is written back onto it,
+  // so the old nested field's vote counts stay untouched (frozen, unused).
+  const generateInsights = async (pollList, recId, rawPolls) => {
     if (!recId) return;
     const needsInsight = pollList.filter(p => {
       const total = p.options.reduce((s, o) => s + (o.votes || 0), 0);
@@ -295,6 +341,7 @@ export default function Polls() {
     if (!needsInsight.length) return;
 
     let updated = [...pollList];
+    let updatedRaw = [...rawPolls];
     for (const poll of needsInsight) {
       try {
         const insight = await base44.integrations.Core.InvokeLLM({
@@ -308,12 +355,13 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
         const insightText = typeof insight === 'string' ? insight.trim() : null;
         if (insightText) {
           updated = updated.map(p => p.id === poll.id ? { ...p, avaInsight: insightText } : p);
+          updatedRaw = updatedRaw.map(p => p.id === poll.id ? { ...p, avaInsight: insightText } : p);
         }
       } catch {}
     }
     if (updated !== pollList) {
       setPolls(updated);
-      await base44.entities.WeddingDetails.update(recId, { polls: updated }).catch(() => {});
+      await base44.entities.WeddingDetails.update(recId, { polls: updatedRaw }).catch(() => {});
     }
   };
 

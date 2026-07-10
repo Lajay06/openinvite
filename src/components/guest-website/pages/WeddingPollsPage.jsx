@@ -5,6 +5,7 @@ import { BarChart2, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 const VOTE_KEY = 'oi_poll_votes';
+const VOTER_ID_KEY = 'oi_poll_voter_id';
 
 function getVotes() {
   try { return JSON.parse(localStorage.getItem(VOTE_KEY) || '{}'); } catch { return {}; }
@@ -14,6 +15,26 @@ function saveVote(pollId, optionId) {
   const v = getVotes();
   v[pollId] = optionId;
   localStorage.setItem(VOTE_KEY, JSON.stringify(v));
+}
+
+/**
+ * A stable, anonymous, per-browser id — generated once and reused for
+ * every vote this visitor casts. Sent to the server so PollVote's
+ * aggregation can de-dup a visitor who changes their vote (keep only their
+ * latest choice) — hashed server-side before storage, never stored raw,
+ * and never used for anything beyond that de-dup.
+ */
+function getVoterId() {
+  try {
+    let id = localStorage.getItem(VOTER_ID_KEY);
+    if (!id) {
+      id = (crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      localStorage.setItem(VOTER_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return null; // localStorage unavailable — vote still works, just never de-duped
+  }
 }
 
 function totalVotes(poll) {
@@ -275,6 +296,34 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography }) 
     setPolls(active);
   }, [weddingDetails]);
 
+  // Live aggregate counts/comments from PollVote/PollComment — the static
+  // weddingDetails.polls[].options[].votes/.comments[] snapshot above no
+  // longer changes once votes/comments moved to their own entities.
+  useEffect(() => {
+    if (!weddingDetails?.slug) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/wedding-poll-results?weddingSlug=${encodeURIComponent(weddingDetails.slug)}`);
+        if (!res.ok) return;
+        const { polls: results } = await res.json();
+        if (cancelled || !results) return;
+        setPolls(prev => prev.map(p => {
+          const r = results[p.id];
+          if (!r) return p;
+          return {
+            ...p,
+            options: p.options.map(o => ({ ...o, votes: r.counts?.[o.id] || 0 })),
+            comments: r.comments || [],
+          };
+        }));
+      } catch {
+        // Non-fatal — falls back to the static snapshot already in state.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [weddingDetails?.slug]);
+
   const handleVote = useCallback(async (pollId, optionId) => {
     if (!weddingDetails?.slug) return;
     const turnstileToken = tsTokenRef.current;
@@ -287,12 +336,12 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography }) 
         : p
     ));
     try {
-      // Server re-resolves the wedding by slug and increments the vote
-      // count with the admin key — never a direct client-side write.
+      // Server re-resolves the wedding by slug and writes a PollVote row
+      // with the admin key — never a direct client-side write.
       await fetch('/api/wedding-poll-vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ weddingSlug: weddingDetails.slug, pollId, optionId, turnstileToken }),
+        body: JSON.stringify({ weddingSlug: weddingDetails.slug, pollId, optionId, turnstileToken, voterId: getVoterId() }),
       });
     } catch {
       // Non-fatal — the visitor's own vote is already reflected optimistically

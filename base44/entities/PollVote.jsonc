@@ -1,0 +1,38 @@
+{
+  "name": "PollVote",
+  "type": "object",
+  "properties": {
+    "wedding_id": {
+      "type": "string",
+      "description": "WeddingDetails id the poll belongs to"
+    },
+    "poll_id": {
+      "type": "string",
+      "description": "The poll's id within WeddingDetails.polls[]"
+    },
+    "option_id": {
+      "type": "string",
+      "description": "The chosen option's id"
+    },
+    "guest_identifier": {
+      "type": "string",
+      "description": "HMAC-SHA256 digest (keyed with BASE44_ADMIN_KEY, computed server-side, never the raw value) of: the Guest.id for the RSVP-token-scoped flow (rsvp-poll-vote.js), or a client-generated anonymous id for the fully-anonymous flow (wedding-poll-vote.js). Used only to keep each voter's latest vote when aggregating counts (group by poll_id+guest_identifier, keep latest created_date) — never reversible to a real identity, never an auth mechanism."
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
