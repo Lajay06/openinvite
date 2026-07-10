@@ -17,6 +17,9 @@ import weddingBySlugHandler from '../../api/wedding-by-slug.js';
 import rsvpLookupHandler from '../../api/rsvp-lookup.js';
 import songRequestSubmitHandler from '../../api/song-request-submit.js';
 import weddingPollVoteHandler from '../../api/wedding-poll-vote.js';
+import weddingPollCommentHandler from '../../api/wedding-poll-comment.js';
+import rsvpPollVoteHandler from '../../api/rsvp-poll-vote.js';
+import weddingPollResultsHandler from '../../api/wedding-poll-results.js';
 import weddingGuestbookHandler from '../../api/wedding-guestbook.js';
 
 // Cloudflare's official "always passes" Turnstile test keypair — documented
@@ -227,20 +230,23 @@ export async function runAnonymousEndpoints() {
     }
   }
 
-  // ── wedding-poll-vote.js increments the correct wedding's poll ──────────────
-  console.log('\n  wedding-poll-vote.js — scoped vote increment:\n');
+  // ── wedding-poll-vote.js writes a PollVote record (fix/poll-entities-migration) ──
+  // Votes/comments no longer live on WeddingDetails.polls (its owner-scoped
+  // update RLS structurally can't be satisfied by the admin key) — they're
+  // separate entities with create:null RLS, same pattern as GuestbookEntry.
+  console.log('\n  wedding-poll-vote.js — writes a scoped PollVote record:\n');
   let pollWeddingId = null;
+  const pollVoteIdsToClean = [];
   try {
     const wedding = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
       couple1Name: 'Alex', couple2Name: 'Sam',
       slug: `test-poll-wedding-${Date.now()}`,
-      polls: [{ id: 'poll-1', title: 'Test poll', isActive: true, options: [{ id: 'opt-a', label: 'A', votes: 0 }, { id: 'opt-b', label: 'B', votes: 0 }] }],
     }, token);
     pollWeddingId = wedding.id;
 
     const { req, res } = mockReqRes({
       method: 'POST',
-      body: { weddingSlug: wedding.slug, pollId: 'poll-1', optionId: 'opt-a', turnstileToken: TURNSTILE_TEST_TOKEN },
+      body: { weddingSlug: wedding.slug, pollId: 'poll-1', optionId: 'opt-a', turnstileToken: TURNSTILE_TEST_TOKEN, voterId: 'sentinel-voter-anon' },
     });
     await withTurnstileFailOpen(() => weddingPollVoteHandler(req, res));
 
@@ -248,17 +254,197 @@ export async function runAnonymousEndpoints() {
       ? pass('wedding-poll-vote.js — accepts a valid vote', `200 ${JSON.stringify(res._json)}`)
       : fail('wedding-poll-vote.js — accepts a valid vote', 200, `${res._status} ${JSON.stringify(res._json)}`));
 
-    const after = await api('GET', `/apps/${APP_ID}/entities/WeddingDetails/${pollWeddingId}`, undefined, token);
-    const votedOption = after.polls?.[0]?.options?.find(o => o.id === 'opt-a');
-    results.push(votedOption?.votes === 1
-      ? pass('wedding-poll-vote.js — increments the correct option on the correct wedding', String(votedOption?.votes))
-      : fail('wedding-poll-vote.js — increments the correct option on the correct wedding', 1, votedOption?.votes));
+    const votesQuery = encodeURIComponent(JSON.stringify({ wedding_id: pollWeddingId, poll_id: 'poll-1' }));
+    const votes = await api('GET', `/apps/${APP_ID}/entities/PollVote?q=${votesQuery}`, undefined, token);
+    const voteList = Array.isArray(votes) ? votes : (votes?.data || votes?.results || []);
+    pollVoteIdsToClean.push(...voteList.map(v => v.id));
+    const persisted = voteList.find(v => v.option_id === 'opt-a');
+    results.push(!!persisted
+      ? pass('wedding-poll-vote.js — PollVote persists with the correct wedding_id/poll_id/option_id', JSON.stringify(persisted))
+      : fail('wedding-poll-vote.js — PollVote persists with the correct wedding_id/poll_id/option_id', 'a PollVote row for opt-a', JSON.stringify(voteList)));
   } catch (err) {
     console.log(`  ❌ FAIL  wedding-poll-vote.js test — error: ${err.message}`);
     results.push(false, false);
   } finally {
+    for (const id of pollVoteIdsToClean) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/PollVote/${id}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
     if (pollWeddingId) {
       try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${pollWeddingId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
+  // ── wedding-poll-comment.js writes a PollComment record ─────────────────────
+  console.log('\n  wedding-poll-comment.js — writes a scoped PollComment record:\n');
+  let commentWeddingId = null;
+  let pollCommentIdToClean = null;
+  try {
+    const wedding = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
+      couple1Name: 'Alex', couple2Name: 'Sam',
+      slug: `test-poll-comment-wedding-${Date.now()}`,
+    }, token);
+    commentWeddingId = wedding.id;
+
+    const { req, res } = mockReqRes({
+      method: 'POST',
+      body: { weddingSlug: wedding.slug, pollId: 'poll-1', comment: 'A sentinel test comment', turnstileToken: TURNSTILE_TEST_TOKEN },
+    });
+    await withTurnstileFailOpen(() => weddingPollCommentHandler(req, res));
+
+    results.push(res._status === 200
+      ? pass('wedding-poll-comment.js — accepts a valid comment', `200 ${JSON.stringify(res._json)}`)
+      : fail('wedding-poll-comment.js — accepts a valid comment', 200, `${res._status} ${JSON.stringify(res._json)}`));
+
+    const commentsQuery = encodeURIComponent(JSON.stringify({ wedding_id: commentWeddingId, poll_id: 'poll-1' }));
+    const comments = await api('GET', `/apps/${APP_ID}/entities/PollComment?q=${commentsQuery}`, undefined, token);
+    const commentList = Array.isArray(comments) ? comments : (comments?.data || comments?.results || []);
+    const persisted = commentList.find(c => c.text === 'A sentinel test comment');
+    pollCommentIdToClean = persisted?.id || null;
+    results.push(!!persisted
+      ? pass('wedding-poll-comment.js — PollComment persists on the correct wedding\'s poll', JSON.stringify(persisted))
+      : fail('wedding-poll-comment.js — PollComment persists on the correct wedding\'s poll', 'present', JSON.stringify(commentList)));
+  } catch (err) {
+    console.log(`  ❌ FAIL  wedding-poll-comment.js test — error: ${err.message}`);
+    results.push(false, false);
+  } finally {
+    if (pollCommentIdToClean) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/PollComment/${pollCommentIdToClean}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+    if (commentWeddingId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${commentWeddingId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
+  // ── rsvp-poll-vote.js — token-scoped PollVote, privacy-preserving identifier ──
+  console.log('\n  rsvp-poll-vote.js — token-scoped PollVote with hashed guest_identifier:\n');
+  let rsvpPollWeddingId = null;
+  let rsvpPollGuestId = null;
+  const rsvpPollVoteIdsToClean = [];
+  try {
+    const wedding = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
+      couple1Name: 'Alex', couple2Name: 'Sam',
+      slug: `test-rsvp-poll-wedding-${Date.now()}`,
+    }, token);
+    rsvpPollWeddingId = wedding.id;
+
+    const rsvpToken = `test-rsvp-poll-token-${Date.now()}`;
+    const guest = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
+      name: '__PERSISTENCE_TEST_RSVP_POLL_GUEST__', rsvp_link_id: rsvpToken,
+    }, token);
+    rsvpPollGuestId = guest.id;
+
+    const { req, res } = mockReqRes({
+      method: 'POST',
+      body: { token: rsvpToken, votes: { 'poll-1': 'opt-a' } },
+    });
+    await rsvpPollVoteHandler(req, res);
+
+    results.push(res._status === 200
+      ? pass('rsvp-poll-vote.js — accepts a valid vote', `200 ${JSON.stringify(res._json)}`)
+      : fail('rsvp-poll-vote.js — accepts a valid vote', 200, `${res._status} ${JSON.stringify(res._json)}`));
+
+    const votesQuery = encodeURIComponent(JSON.stringify({ wedding_id: rsvpPollWeddingId, poll_id: 'poll-1' }));
+    const votes = await api('GET', `/apps/${APP_ID}/entities/PollVote?q=${votesQuery}`, undefined, token);
+    const voteList = Array.isArray(votes) ? votes : (votes?.data || votes?.results || []);
+    rsvpPollVoteIdsToClean.push(...voteList.map(v => v.id));
+    const persisted = voteList.find(v => v.option_id === 'opt-a');
+    results.push(!!persisted
+      ? pass('rsvp-poll-vote.js — PollVote persists with the correct wedding_id/poll_id/option_id', JSON.stringify(persisted))
+      : fail('rsvp-poll-vote.js — PollVote persists with the correct wedding_id/poll_id/option_id', 'a PollVote row for opt-a', JSON.stringify(voteList)));
+
+    // guest_identifier must never be the raw Guest.id — PollVote's read is
+    // unrestricted (read: null, same structural reason as its create), so an
+    // unhashed identifier would let anyone tie a vote back to a named guest.
+    results.push(!!persisted && persisted.guest_identifier && persisted.guest_identifier !== guest.id && /^[0-9a-f]{64}$/.test(persisted.guest_identifier)
+      ? pass('rsvp-poll-vote.js — guest_identifier is a non-reversible hash, never the raw Guest.id', persisted.guest_identifier)
+      : fail('rsvp-poll-vote.js — guest_identifier is a non-reversible hash, never the raw Guest.id', '64-char hex digest ≠ guest.id', persisted?.guest_identifier));
+  } catch (err) {
+    console.log(`  ❌ FAIL  rsvp-poll-vote.js test — error: ${err.message}`);
+    results.push(false, false, false);
+  } finally {
+    for (const id of rsvpPollVoteIdsToClean) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/PollVote/${id}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+    if (rsvpPollGuestId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${rsvpPollGuestId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+    if (rsvpPollWeddingId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${rsvpPollWeddingId}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+  }
+
+  // ── wedding-poll-results.js — deterministic latest-wins aggregation ─────────
+  // A guest who changes their vote must have only their LATEST choice
+  // counted, never both — src/lib/pollAggregation.js's whole reason to exist.
+  console.log('\n  wedding-poll-results.js — latest-wins aggregation on vote change:\n');
+  let aggWeddingId = null;
+  const aggVoteIdsToClean = [];
+  try {
+    const wedding = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
+      couple1Name: 'Alex', couple2Name: 'Sam',
+      slug: `test-poll-agg-wedding-${Date.now()}`,
+    }, token);
+    aggWeddingId = wedding.id;
+
+    // Same voterId votes for opt-a, then changes their mind to opt-b.
+    const firstVote = mockReqRes({
+      method: 'POST',
+      body: { weddingSlug: wedding.slug, pollId: 'poll-1', optionId: 'opt-a', turnstileToken: TURNSTILE_TEST_TOKEN, voterId: 'sentinel-voter-switcher' },
+    });
+    await withTurnstileFailOpen(() => weddingPollVoteHandler(firstVote.req, firstVote.res));
+
+    // A different voter votes opt-a — this vote must still count, since it's
+    // not a duplicate from the same voter.
+    const otherVote = mockReqRes({
+      method: 'POST',
+      body: { weddingSlug: wedding.slug, pollId: 'poll-1', optionId: 'opt-a', turnstileToken: TURNSTILE_TEST_TOKEN, voterId: 'sentinel-voter-other' },
+    });
+    await withTurnstileFailOpen(() => weddingPollVoteHandler(otherVote.req, otherVote.res));
+
+    // Ensure the second vote from the switching voter has a strictly later
+    // created_date than their first (Base44 timestamps are second-resolution).
+    await new Promise(r => setTimeout(r, 1100));
+
+    const secondVote = mockReqRes({
+      method: 'POST',
+      body: { weddingSlug: wedding.slug, pollId: 'poll-1', optionId: 'opt-b', turnstileToken: TURNSTILE_TEST_TOKEN, voterId: 'sentinel-voter-switcher' },
+    });
+    await withTurnstileFailOpen(() => weddingPollVoteHandler(secondVote.req, secondVote.res));
+
+    const votesQuery = encodeURIComponent(JSON.stringify({ wedding_id: aggWeddingId, poll_id: 'poll-1' }));
+    const votes = await api('GET', `/apps/${APP_ID}/entities/PollVote?q=${votesQuery}`, undefined, token);
+    const voteList = Array.isArray(votes) ? votes : (votes?.data || votes?.results || []);
+    aggVoteIdsToClean.push(...voteList.map(v => v.id));
+    results.push(voteList.length === 3
+      ? pass('wedding-poll-results.js setup — all 3 append-only PollVote rows persisted', voteList.length)
+      : fail('wedding-poll-results.js setup — all 3 append-only PollVote rows persisted', 3, voteList.length));
+
+    const { req: resReq, res: resRes } = mockReqRes({ method: 'GET', query: { weddingSlug: wedding.slug } });
+    await weddingPollResultsHandler(resReq, resRes);
+    const counts = resRes._json?.polls?.['poll-1']?.counts || {};
+    results.push(counts['opt-b'] === 1
+      ? pass('wedding-poll-results.js — a changed vote counts only the latest choice', JSON.stringify(counts))
+      : fail('wedding-poll-results.js — a changed vote counts only the latest choice', '{"opt-a":1,"opt-b":1}', JSON.stringify(counts)));
+    results.push(counts['opt-a'] === 1
+      ? pass('wedding-poll-results.js — a different voter\'s vote for the same option is still counted', JSON.stringify(counts))
+      : fail('wedding-poll-results.js — a different voter\'s vote for the same option is still counted', '{"opt-a":1,"opt-b":1}', JSON.stringify(counts)));
+  } catch (err) {
+    console.log(`  ❌ FAIL  wedding-poll-results.js aggregation test — error: ${err.message}`);
+    results.push(false, false, false);
+  } finally {
+    for (const id of aggVoteIdsToClean) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/PollVote/${id}`, undefined, token); }
+      catch { /* non-fatal */ }
+    }
+    if (aggWeddingId) {
+      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${aggWeddingId}`, undefined, token); }
       catch { /* non-fatal */ }
     }
   }
