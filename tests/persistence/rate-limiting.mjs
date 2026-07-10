@@ -8,9 +8,13 @@
  * per-endpoint limit tuned to real usage (search-tier endpoints lower,
  * details/photo higher since they're called less per user action).
  *
- * Also covers spotify-refresh.js's new ownership check: a refresh token not
- * tied to any wedding's stored music.spotifyConnection is rejected before
- * ever exchanging it with Spotify — a leaked/guessed token can't be replayed.
+ * Also covers the shared refresh-token ownership check (api/_lib/
+ * spotifyAuth.js's isKnownSpotifyRefreshToken): a refresh token not tied to
+ * any wedding's stored music.spotifyConnection is rejected before ever
+ * exchanging it with Spotify — a leaked/guessed token can't be replayed.
+ * Used by BOTH spotify-refresh.js (rejects outright, 401) and
+ * spotify-search.js's silent-refresh path (skips the refresh and falls
+ * through to the app-token search, same as a failed refresh already did).
  *
  * Handler-level tests (same pattern as endpoint-auth.mjs / spotify-oauth.mjs)
  * — imports the real handler, invokes it directly with a minimal mock
@@ -32,6 +36,7 @@ import placeDetailsHandler from '../../api/place-details.js';
 import placesPhotoHandler from '../../api/places-photo.js';
 import spotifySearchHandler from '../../api/spotify-search.js';
 import spotifyRefreshHandler from '../../api/spotify-refresh.js';
+import { isKnownSpotifyRefreshToken } from '../../api/_lib/spotifyAuth.js';
 
 /** Minimal Vercel-shaped req/res mock — handlers only touch this surface. */
 function mockReqRes({ method = 'GET', ip, query = {}, body = {} } = {}) {
@@ -159,6 +164,39 @@ export async function runRateLimiting() {
     results.push(res._status === 400
       ? pass('spotify-refresh.js — missing refreshToken → 400 (not 401)', res._status)
       : fail('spotify-refresh.js — missing refreshToken → 400 (not 401)', 400, res._status));
+  }
+
+  console.log('\n  spotify-search.js — same ownership check on its silent-refresh path:\n');
+
+  {
+    // The shared check itself, direct: an unknown token is never "known."
+    const known = await isKnownSpotifyRefreshToken(`unknown-shared-check-${Date.now()}`, '[test]');
+    results.push(known === false
+      ? pass('isKnownSpotifyRefreshToken — unknown token resolves false', 'false')
+      : fail('isKnownSpotifyRefreshToken — unknown token resolves false', false, known));
+  }
+
+  {
+    // An expired accessToken + an unknown refreshToken must never reach
+    // Spotify's token endpoint to attempt a silent refresh — the response
+    // must never carry a newToken (which only appears when a refresh
+    // actually succeeded). Whatever happens next (a real app-token search,
+    // or a 503 if Spotify creds aren't configured in this environment) is
+    // fine — the only thing under test is that the refresh was skipped.
+    const { req, res } = mockReqRes({
+      method: 'POST',
+      ip: '203.0.113.52',
+      body: {
+        q: 'test song',
+        accessToken: 'stale-access-token',
+        refreshToken: `unknown-search-path-${Date.now()}-does-not-exist`,
+        expiresAt: Date.now() - 60_000, // already expired, forces the refresh branch
+      },
+    });
+    await spotifySearchHandler(req, res);
+    results.push(!res._json?.newToken
+      ? pass('spotify-search.js — unknown refresh token is never silently exchanged', `${res._status}, no newToken in response`)
+      : fail('spotify-search.js — unknown refresh token is never silently exchanged', 'no newToken', JSON.stringify(res._json)));
   }
 
   return results;

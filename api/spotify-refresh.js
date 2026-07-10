@@ -11,44 +11,14 @@
  * Required env vars:
  *   SPOTIFY_CLIENT_ID
  *   SPOTIFY_CLIENT_SECRET
- *   BASE44_ADMIN_KEY — server-side-only Base44 service token, used to
- *     verify the presented refresh token is actually tied to a real
- *     wedding's stored Spotify connection before spending a token exchange
- *     on it (see isKnownRefreshToken below).
+ *   BASE44_ADMIN_KEY — server-side-only Base44 service token, used by
+ *     isKnownSpotifyRefreshToken (api/_lib/spotifyAuth.js) to verify the
+ *     presented refresh token is actually tied to a real wedding's stored
+ *     Spotify connection before spending a token exchange on it.
  */
 
 import { checkRateLimit, getClientIp } from './_lib/security.js';
-
-const BASE44_API = 'https://base44.app/api';
-const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
-const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
-
-/**
- * Confirms the presented refresh token is tied to a real wedding's stored
- * Spotify connection (WeddingDetails.music.spotifyConnection.refreshToken,
- * written by api/spotify-callback.js after a successful OAuth connect) —
- * a leaked or guessed token with no matching record is rejected outright,
- * before we ever call Spotify's token endpoint, so it can't be replayed by
- * an arbitrary caller who merely knows the value.
- */
-async function isKnownRefreshToken(refreshToken) {
-  if (!BASE44_ADMIN_KEY) {
-    console.error('[spotify-refresh] BASE44_ADMIN_KEY env var is not set — cannot verify token ownership');
-    return false;
-  }
-  const query = encodeURIComponent(JSON.stringify({ 'music.spotifyConnection.refreshToken': refreshToken }));
-  const findRes = await fetch(
-    `${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${query}`,
-    { headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` } },
-  );
-  if (!findRes.ok) {
-    console.error('[spotify-refresh] Ownership lookup failed:', findRes.status);
-    return false;
-  }
-  const payload = await findRes.json();
-  const list = Array.isArray(payload) ? payload : (payload?.data || payload?.results || []);
-  return list.length > 0;
-}
+import { isKnownSpotifyRefreshToken } from './_lib/spotifyAuth.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin',  '*');
@@ -79,7 +49,7 @@ export default async function handler(req, res) {
   }
 
   // ── Ownership check — reject any refresh token not tied to a known wedding ──
-  const known = await isKnownRefreshToken(refreshToken);
+  const known = await isKnownSpotifyRefreshToken(refreshToken, '[spotify-refresh]');
   if (!known) {
     console.warn('[spotify-refresh] Rejected — refresh token not tied to any known wedding record');
     return res.status(401).json({ error: 'Unknown refresh token' });
