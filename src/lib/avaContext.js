@@ -1,8 +1,8 @@
-import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 
 export async function buildWeddingContext() {
   const [guestsResult, budgetResult, vendorsResult, scheduleResult, wdResult] = await Promise.allSettled([
-    getMyRecords('Guest'),
+    getMyGuestsWithRsvp(),
     getMyRecords('Budget'),
     getMyRecords('Vendor'),
     getMyRecords('Schedule'),

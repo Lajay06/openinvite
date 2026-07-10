@@ -1,0 +1,19 @@
+{
+  "name": "RsvpResponse",
+  "type": "object",
+  "properties": {
+    "wedding_id": { "type": "string", "description": "WeddingDetails id this response belongs to" },
+    "guest_id": { "type": "string", "description": "Guest.id (Base44 record id — never the raw rsvp_link_id token) this response is for" },
+    "event_id": { "type": "string", "description": "Stable event id from WeddingDetails' preWeddingEvents[]/postWeddingEvents[]/mainCeremony/reception this response is for. NULL marks this row as the whole-submission guest-level row (song_request/dietary_restrictions/note) — a row is either a per-event row (event_id set, status/meal_choice/plus_ones/plus_one_names populated) or a guest-level row (event_id null, song_request/dietary_restrictions/note populated); never both on the same row." },
+    "status": { "type": "string", "enum": ["pending", "yes", "no"], "default": "pending", "description": "Attendance response for this event. Only ever set on a per-event row (event_id non-null)." },
+    "meal_choice": { "type": "string", "description": "Menu option id/label for this event, null if not yet chosen. Only ever set on a per-event row." },
+    "plus_ones": { "type": "number", "description": "Count of plus-ones granted/used for this event. Only ever set on a per-event row." },
+    "plus_one_names": { "type": "array", "items": { "type": "string" }, "description": "Names of plus-ones attending this event. Only ever set on a per-event row." },
+    "note": { "type": "string", "description": "Free-text note the guest left with this submission — whole-submission, not per-event. Only ever set on the guest-level row (event_id null)." },
+    "song_request": { "type": "string", "description": "Guest's requested song for the reception — whole-submission, not per-event. Only ever set on the guest-level row (event_id null)." },
+    "dietary_restrictions": { "type": "string", "description": "Guest's dietary requirements — whole-submission, not per-event. Only ever set on the guest-level row (event_id null)." },
+    "is_test": { "type": "boolean", "default": false, "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails." }
+  },
+  "required": [],
+  "rls": { "create": null, "read": null, "update": { "created_by_id": "{{user.id}}" }, "delete": { "created_by_id": "{{user.id}}" } }
+}

@@ -6,7 +6,7 @@ import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
+import { getMyWeddingDetails, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -307,7 +307,7 @@ export default function WeddingPartyPage() {
     try {
       const [wd, guestData] = await Promise.all([
         getMyWeddingDetails(),
-        getMyRecords('Guest', '-created_date', 500),
+        getMyGuestsWithRsvp('-created_date', 500),
       ]);
       const r = wd || {};
       setData(r.weddingParty || {});

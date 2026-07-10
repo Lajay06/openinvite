@@ -21,6 +21,7 @@
  */
 
 import { base44 } from '@/api/base44Client';
+import { latestEventResponses, latestGuestLevel, deriveRsvpStatus, toEventResponsesShape } from '@/lib/rsvpAggregation';
 
 function mostRecent(records) {
   const real = (records || []).filter(r => !r.is_test);
@@ -73,4 +74,50 @@ export async function getMyRecords(entityName, sort, limit) {
   const rows = await base44.entities[entityName].filter({ created_by_id: me.id }, sort);
   const real = (rows || []).filter(r => !r.is_test);
   return typeof limit === 'number' ? real.slice(0, limit) : real;
+}
+
+/**
+ * Same as getMyRecords('Guest', sort, limit), but overlays each guest's
+ * live event_responses/rsvp_status/song_request/rsvp_note/dietary_restrictions
+ * from RsvpResponse (fix/rsvp-entities-migration) — the same fields on the
+ * Guest record itself are frozen forever the moment a guest RSVPs, since
+ * Guest's owner-scoped update RLS blocks the admin-key write that used to
+ * keep them current (api/rsvp-submit.js now writes RsvpResponse rows
+ * instead). A guest who has never submitted an RSVP has no RsvpResponse
+ * rows yet, so their Guest record's own (still-accurate, pre-migration
+ * default) fields pass through unchanged.
+ */
+export async function getMyGuestsWithRsvp(sort, limit) {
+  const guests = await getMyRecords('Guest', sort, limit);
+  if (guests.length === 0) return guests;
+
+  const wedding = await getMyWeddingDetails();
+  if (!wedding?.id) return guests;
+
+  const rows = (await base44.entities.RsvpResponse.filter({ wedding_id: wedding.id }))
+    .filter(r => !r.is_test);
+  if (rows.length === 0) return guests;
+
+  const eventsByGuest = new Map();
+  for (const r of latestEventResponses(rows)) {
+    if (!eventsByGuest.has(r.guest_id)) eventsByGuest.set(r.guest_id, []);
+    eventsByGuest.get(r.guest_id).push(r);
+  }
+  const guestLevelByGuest = new Map(latestGuestLevel(rows).map(r => [r.guest_id, r]));
+
+  return guests.map(g => {
+    const eventRows = eventsByGuest.get(g.id);
+    const guestLevel = guestLevelByGuest.get(g.id);
+    if (!eventRows && !guestLevel) return g;
+
+    const eventResponses = eventRows ? toEventResponsesShape(eventRows) : (g.event_responses || []);
+    return {
+      ...g,
+      event_responses: eventResponses,
+      rsvp_status: eventRows ? deriveRsvpStatus(eventResponses) : g.rsvp_status,
+      song_request: guestLevel?.song_request ?? g.song_request,
+      rsvp_note: guestLevel?.note ?? g.rsvp_note,
+      dietary_restrictions: guestLevel?.dietary_restrictions ?? g.dietary_restrictions,
+    };
+  });
 }

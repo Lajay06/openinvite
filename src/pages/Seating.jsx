@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { getMyRecords } from '@/lib/resolveMyWedding';
+import { getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 const Guest = base44.entities.Guest;
 const Table = base44.entities.Table;
 const VenueAsset = base44.entities.VenueAsset;
@@ -97,7 +97,7 @@ export default function SeatingPage() {
     setLoading(true);
     try {
       const [guestData, tableData, assetData] = await Promise.all([
-        getMyRecords('Guest', '-created_date', 500),
+        getMyGuestsWithRsvp('-created_date', 500),
         getMyRecords('Table', '-created_date'),
         getMyRecords('VenueAsset', '-created_date'),
       ]);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
+import { getMyWeddingDetails, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
 const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -102,7 +102,7 @@ export default function Guests() {
 
   const loadGuests = async () => {
     try {
-      const data = await getMyRecords('Guest', '-created_date');
+      const data = await getMyGuestsWithRsvp('-created_date');
       setGuests(data);
     } catch {
       toast.error("Failed to load guests");

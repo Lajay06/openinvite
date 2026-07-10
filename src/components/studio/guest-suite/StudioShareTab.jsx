@@ -1,7 +1,7 @@
 // Embeds the full StudioShare content directly as a tab (no separate page routing needed)
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { getMyRecords } from '@/lib/resolveMyWedding';
+import { getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 
 const sans = "'Plus Jakarta Sans', sans-serif";
@@ -29,7 +29,7 @@ export default function StudioShareTab({ details: propDetails }) {
   const [slugInput, setSlugInput] = useState('');
 
   useEffect(() => {
-    getMyRecords('Guest').then(setGuests).catch(() => {});
+    getMyGuestsWithRsvp().then(setGuests).catch(() => {});
   }, []);
 
   useEffect(() => {

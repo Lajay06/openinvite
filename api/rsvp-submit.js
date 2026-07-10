@@ -6,8 +6,17 @@
  * guest exactly as api/rsvp-lookup.js does — never a client-supplied guest
  * id), derives the overall rsvp_status from the submitted per-event
  * responses using the exact same rule RSVPPage.jsx used to apply
- * client-side, and writes event_responses/song_request/rsvp_note/
- * dietary_restrictions with the server-side admin key.
+ * client-side, and writes RsvpResponse rows with the server-side admin key
+ * — NOT Guest.update(), which 403s (Guest gained an owner-scoped update RLS
+ * rule the admin key structurally cannot satisfy — same root cause as the
+ * poll-vote breaks fixed in fix/poll-entities-migration). Per-event data
+ * (status/meal_choice/plus_ones/plus_one_names) writes one row per event_id;
+ * whole-submission data (song_request/rsvp_note/dietary_restrictions) writes
+ * one additional row with event_id: null. Append-only, same reason as
+ * PollVote — a guest resubmitting creates new rows; latest-wins aggregation
+ * (src/lib/rsvpAggregation.js) determines current state. SMART_RSVP_MODEL.md
+ * documents why this supersedes its original "leave Guest fields as-is"
+ * guidance.
  *
  * Body: {
  *   token: string,
@@ -21,8 +30,10 @@
  */
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
-import { resolveGuestByToken, updateGuest } from './_lib/rsvpAuth.js';
+import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 
+const BASE44_API = 'https://base44.app/api';
+const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 
 const MAX_TEXT_LENGTH = 1000;
@@ -51,12 +62,16 @@ function sanitizeEventResponses(input) {
     }));
 }
 
-/** Mirrors RSVPPage.jsx's prior client-side derivation exactly. */
-function deriveRsvpStatus(eventResponses) {
-  const invited = eventResponses.filter(r => r.invited);
-  const anyYes = invited.some(r => r.status === 'yes');
-  const allNo = invited.length > 0 && invited.every(r => r.status === 'no');
-  return anyYes ? 'attending' : allNo ? 'declined' : 'pending';
+async function createRsvpResponse(payload) {
+  const res = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/RsvpResponse`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Base44 RsvpResponse create failed (${res.status}): ${body.slice(0, 200)}`);
+  }
 }
 
 export default async function handler(req, res) {
@@ -91,27 +106,36 @@ export default async function handler(req, res) {
 
   try {
     const resolved = await resolveGuestByToken(token);
-    if (!resolved) {
+    if (!resolved || !resolved.wedding) {
       return res.status(404).json({ error: 'This link has expired or is invalid.' });
     }
-    const { guest } = resolved;
+    const { guest, wedding } = resolved;
 
-    // Merge onto the guest's EXISTING responses (by event_id) rather than
-    // replacing wholesale, so an event this submission didn't touch (e.g.
-    // one added to the invite set after this page loaded) isn't dropped.
-    const existingByEventId = new Map((guest.event_responses || []).map(r => [r.event_id, r]));
-    for (const r of eventResponses) existingByEventId.set(r.event_id, r);
-    const nextEventResponses = Array.from(existingByEventId.values());
-
-    const now = new Date().toISOString();
-    await updateGuest(guest.id, {
-      event_responses: nextEventResponses,
-      rsvp_status: deriveRsvpStatus(nextEventResponses),
-      song_request: songRequest,
-      rsvp_note: rsvpNote,
-      dietary_restrictions: dietaryRestrictions,
-      rsvp_date: now.split('T')[0],
-    });
+    // One row per submitted event (append-only — an event this submission
+    // didn't touch simply gets no new row, and its previous latest row still
+    // stands under latest-wins aggregation). Plus exactly one guest-level
+    // row (event_id: null) for the whole-submission text fields, written
+    // unconditionally (even if empty) so a guest clearing a previous song
+    // request/note/dietary entry is itself the new latest value.
+    await Promise.all([
+      ...eventResponses.map(r => createRsvpResponse({
+        wedding_id: wedding.id,
+        guest_id: guest.id,
+        event_id: r.event_id,
+        status: r.status,
+        meal_choice: r.meal_choice,
+        plus_ones: r.plus_ones,
+        plus_one_names: r.plus_one_names,
+      })),
+      createRsvpResponse({
+        wedding_id: wedding.id,
+        guest_id: guest.id,
+        event_id: null,
+        song_request: songRequest,
+        note: rsvpNote,
+        dietary_restrictions: dietaryRestrictions,
+      }),
+    ]);
 
     console.log('[rsvp-submit] RSVP recorded for token', token.slice(0, 8) + '…');
     return res.status(200).json({ ok: true });
