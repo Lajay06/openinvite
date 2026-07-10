@@ -65,7 +65,3 @@ export async function resolveGuestByToken(token) {
 
   return { guest, wedding };
 }
-
-export async function updateGuest(guestId, patch) {
-  return base44Fetch('PUT', `/apps/${BASE44_APP_ID}/entities/Guest/${guestId}`, patch);
-}

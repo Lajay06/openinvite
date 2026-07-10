@@ -13,7 +13,7 @@ import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import TipsModal from "../components/dashboard/TipsModal";
-import { getMyRecords } from "@/lib/resolveMyWedding";
+import { getMyRecords, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
 
 const QUICK_LINKS = [
   { label: "Guest list", url: "Guests" },
@@ -130,7 +130,7 @@ export default function Dashboard() {
       const tipsShown = localStorage.getItem('openinvite_tips_shown');
       if (!tipsShown) setShowTipsModal(true);
       const [guestData, budgetData, scheduleData] = await Promise.all([
-        getMyRecords('Guest'), getMyRecords('Budget'), getMyRecords('Schedule'),
+        getMyGuestsWithRsvp(), getMyRecords('Budget'), getMyRecords('Schedule'),
       ]);
       setGuests(guestData); setBudget(budgetData); setSchedule(scheduleData);
     } catch {}

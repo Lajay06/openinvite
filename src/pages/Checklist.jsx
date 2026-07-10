@@ -4,7 +4,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { useNavigate } from 'react-router-dom';
-import { getMyRecords } from '@/lib/resolveMyWedding';
+import { getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -190,7 +190,7 @@ function PlanningOverview() {
     (async () => {
       try {
         const [guests, budgets, vendors, schedules, notes] = await Promise.all([
-          getMyRecords('Guest').catch(() => []),
+          getMyGuestsWithRsvp().catch(() => []),
           getMyRecords('Budget').catch(() => []),
           getMyRecords('Vendor').catch(() => []),
           getMyRecords('Schedule').catch(() => []),

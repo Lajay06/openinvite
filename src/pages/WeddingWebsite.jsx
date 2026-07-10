@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyInvitation, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -308,7 +308,7 @@ export default function WeddingWebsite() {
       }
 
       if (guestId) {
-        const guests = await getMyRecords('Guest');
+        const guests = await getMyGuestsWithRsvp();
         const guestData = guests.find(g => g.id === guestId);
         if (guestData) {
           setGuest(guestData);

@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-07 update — storage layer moved off Guest (conceptual model unchanged)
+
+An unrelated, later change (bot commit `7df59c4`, "Apply RLS security recommendations") added an owner-scoped `update` RLS rule to `Guest` (`{"update": {"created_by_id": "{{user.id}}"}}`). Every guest-facing RSVP write goes through `BASE44_ADMIN_KEY` (an anonymous guest has no Base44 session/identity to authenticate as), and the admin key resolves to no `{{user.id}}` at all — so it can never satisfy this rule. The result: `api/rsvp-submit.js`'s `Guest.update()` call started 403ing in production for every guest RSVP submission. This is a storage/RLS problem, not a data-modeling problem — this doc's "evolve Guest, don't split into a join entity" reasoning (§ below) was correct for the reasons it gives and remains the intended design for `WeddingDetails`'s embedded events and the household/dietary model. It just can't be satisfied by a direct `Guest.update()` from an unauthenticated caller anymore.
+
+**Resolution:** a new `RsvpResponse` entity (`create: null` RLS, same proven pattern as `GuestbookEntry`/`PollVote`) now holds what `event_responses`/`song_request`/`rsvp_note`/`dietary_restrictions` would have held on `Guest`. It is append-only (the same RLS wall blocks admin-key *updates* to an existing row exactly as it blocks updates to Guest, so a guest changing their RSVP creates a new row rather than mutating one) — deterministic latest-wins aggregation (`src/lib/rsvpAggregation.js`) determines a guest's current per-event status. A row is either a per-event row (`event_id` set — status/meal_choice/plus_ones/plus_one_names) or the one guest-level row per submission (`event_id: null` — song_request/note/dietary_restrictions), never both.
+
+`Guest.event_responses`/`song_request`/`rsvp_note`/`dietary_restrictions` themselves are untouched and still exist on the schema — they're just frozen at whatever value they held before this change, no longer written by the guest-facing flow. `api/rsvp-lookup.js` (guest-facing pre-fill) and `src/lib/resolveMyWedding.js`'s `getMyGuestsWithRsvp()` (dashboard reads) overlay live `RsvpResponse` data on top of the Guest object before it reaches any consumer, so every existing call site that reads `guest.rsvp_status`/`guest.event_responses`/etc. keeps working unmodified.
+
+**This is a narrow, deliberate exception to this doc's "do not introduce a separate Invitation/RSVP entity" guidance (line ~11) — scoped specifically to where the *write* now lands, not a reversal of the per-event/wedding-level conceptual split below, which still holds.**
+
+---
+
 ## The one decision (resolved)
 
 **Question:** Where do per-event invitations and responses live, given events are embedded in WeddingDetails and RSVP data already lives on the Guest entity?

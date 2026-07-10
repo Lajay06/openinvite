@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Globe, Sparkles, Eye, ChevronRight, Camera, Map } from 'lucide-react';
-import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 
 export default function StudioHub() {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ export default function StudioHub() {
       try {
         const [details, guests] = await Promise.all([
           getMyWeddingDetails(),
-          getMyRecords('Guest'),
+          getMyGuestsWithRsvp(),
         ]);
         setWedding(details || null);
         setRsvpCount(guests.filter(g => g.rsvp_status === 'attending').length);
