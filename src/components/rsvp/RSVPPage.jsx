@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { getWeddingEvents, getGuestEventResponse } from '@/lib/weddingEvents';
+import { resolveColors, resolveTypography, resolveUniverseConfig, googleFontsHref, isMotionEnabled } from '@/lib/universeStyling';
+import SectionReveal from '@/components/guest-website/SectionReveal';
 
 const MEAL_OPTIONS = [
   { value: 'chicken', label: 'Chicken' },
@@ -10,30 +12,51 @@ const MEAL_OPTIONS = [
   { value: 'vegan', label: 'Vegan' },
 ];
 
-const F = { fontFamily: "'Plus Jakarta Sans', Helvetica, Arial, sans-serif" };
+// Matches this page's original, pre-universe hardcoded look exactly — used
+// when a wedding has no active universe, per BUILDER_UNIVERSE_AUDIT.md item
+// 1's "graceful fallback" requirement. Deliberately NOT resolveColors()'s own
+// internal default (which falls back to the Aman palette) — a wedding that
+// never chose a universe should see OpenInvite's own brand look, not a
+// phantom Aman theme it never selected.
+const FALLBACK_THEME = {
+  darkBg: '#FAFAFA', lightBg: '#FAFAFA', darkText: '#0A0A0A', lightText: '#0A0A0A',
+  accent: '#E03553', accentSecondary: '#E03553', navBg: '#FAFAFA',
+};
+const FALLBACK_TYPOGRAPHY = {
+  headingFont: "'Plus Jakarta Sans', Helvetica, Arial, sans-serif",
+  bodyFont: "'Plus Jakarta Sans', Helvetica, Arial, sans-serif",
+  headingWeight: 800, bodyWeight: 400, headingStyle: 'normal', googleFonts: '',
+};
 
 // ── Shared page shell ─────────────────────────────────────────────────────────
-function PageShell({ coupleName, dateStr, venue, children }) {
+function PageShell({ coupleName, dateStr, venue, theme, typography, universeConfig, wedding, children }) {
+  const F = { fontFamily: typography.bodyFont };
   return (
-    <div style={{ minHeight: '100vh', background: '#FAFAFA', ...F }}>
+    <div style={{ minHeight: '100vh', background: theme.lightBg, ...F }}>
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' }}>
-        <p style={{ fontSize: 13, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', marginBottom: 48 }}>
+        <p style={{ fontSize: 13, fontWeight: 800, color: theme.lightText, letterSpacing: '-0.02em', marginBottom: 48 }}>
           openinvite
         </p>
         {/* Wedding header */}
-        <div style={{ marginBottom: 36 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#E03553', letterSpacing: '0.12em', marginBottom: 8 }}>
-            YOU'RE INVITED
-          </p>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1.2, marginBottom: 10, margin: '0 0 10px' }}>
-            {coupleName || 'A Wedding'}
-          </h1>
-          {dateStr && <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.55)', marginBottom: 3 }}>{dateStr}</p>}
-          {venue && <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.55)', margin: 0 }}>{venue}</p>}
-        </div>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
+          <div style={{ marginBottom: 36 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: theme.accent, letterSpacing: '0.12em', marginBottom: 8, ...F }}>
+              YOU'RE INVITED
+            </p>
+            <h1 style={{
+              fontSize: 28, fontWeight: typography.headingWeight, fontStyle: typography.headingStyle,
+              color: theme.lightText, letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 10px',
+              fontFamily: typography.headingFont,
+            }}>
+              {coupleName || 'A Wedding'}
+            </h1>
+            {dateStr && <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.55)', marginBottom: 3, ...F }}>{dateStr}</p>}
+            {venue && <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.55)', margin: 0, ...F }}>{venue}</p>}
+          </div>
+        </SectionReveal>
         <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', marginBottom: 36 }} />
         {children}
-        <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(10,10,10,0.3)', marginTop: 48 }}>
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(10,10,10,0.3)', marginTop: 48, ...F }}>
           Powered by openinvite.com.au
         </p>
       </div>
@@ -42,13 +65,14 @@ function PageShell({ coupleName, dateStr, venue, children }) {
 }
 
 // ── Poll voting card ──────────────────────────────────────────────────────────
-function PollCard({ poll, selectedOptionId, onSelect }) {
+function PollCard({ poll, selectedOptionId, onSelect, theme, typography }) {
+  const F = { fontFamily: typography.bodyFont };
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.09)', background: '#FFFFFF', padding: '20px 20px 16px', marginBottom: 16 }}>
       {poll.emoji && (
         <span style={{ fontSize: 22, display: 'block', marginBottom: 8 }}>{poll.emoji}</span>
       )}
-      <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', lineHeight: 1.4, ...F }}>
+      <p style={{ fontSize: 15, fontWeight: 700, color: theme.lightText, margin: '0 0 16px', lineHeight: 1.4, ...F }}>
         {poll.title}
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -61,10 +85,10 @@ function PollCard({ poll, selectedOptionId, onSelect }) {
               onClick={() => onSelect(poll.id, selected ? null : opt.id)}
               style={{
                 padding: '10px 18px',
-                border: `1.5px solid ${selected ? '#E03553' : 'rgba(10,10,10,0.15)'}`,
+                border: `1.5px solid ${selected ? theme.accent : 'rgba(10,10,10,0.15)'}`,
                 borderRadius: 999,
-                background: selected ? '#E03553' : '#FFFFFF',
-                color: selected ? '#FFFFFF' : '#0A0A0A',
+                background: selected ? theme.accent : '#FFFFFF',
+                color: selected ? '#FFFFFF' : theme.lightText,
                 fontSize: 14, fontWeight: selected ? 700 : 500,
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
@@ -81,7 +105,8 @@ function PollCard({ poll, selectedOptionId, onSelect }) {
 }
 
 // ── Per-event RSVP card ────────────────────────────────────────────────────────
-function EventCard({ event, value, onChange, hasPlusOne, mealChoices }) {
+function EventCard({ event, value, onChange, hasPlusOne, mealChoices, theme, typography }) {
+  const F = { fontFamily: typography.bodyFont };
   const attending = value.status === 'yes';
   const dateStr = event.date
     ? new Date(event.date + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -89,7 +114,7 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices }) {
 
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.09)', background: '#FFFFFF', padding: '20px 20px 20px', marginBottom: 16 }}>
-      <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', ...F }}>
+      <p style={{ fontSize: 16, fontWeight: 700, color: theme.lightText, margin: '0 0 4px', ...F }}>
         {event.name}
       </p>
       {(dateStr || event.startTime) && (
@@ -109,9 +134,9 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices }) {
             onClick={() => onChange({ ...value, status: opt.value })}
             style={{
               flex: 1, padding: '10px 14px', border: '1px solid',
-              borderColor: value.status === opt.value ? '#E03553' : 'rgba(10,10,10,0.12)',
-              background: value.status === opt.value ? '#FFF0F3' : '#FFFFFF',
-              color: value.status === opt.value ? '#E03553' : '#0A0A0A',
+              borderColor: value.status === opt.value ? theme.accent : 'rgba(10,10,10,0.12)',
+              background: value.status === opt.value ? `${theme.accent}1A` : '#FFFFFF',
+              color: value.status === opt.value ? theme.accent : theme.lightText,
               fontSize: 13, fontWeight: 600, cursor: 'pointer', borderRadius: 999,
               transition: 'all 0.15s ease', ...F,
             }}
@@ -124,13 +149,13 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices }) {
       {attending && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: theme.lightText, marginBottom: 8, ...F }}>
               Meal preference
             </label>
             <select
               value={value.meal_choice || ''}
               onChange={e => onChange({ ...value, meal_choice: e.target.value })}
-              style={{ width: '100%', padding: '9px 10px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none' }}
+              style={{ width: '100%', padding: '9px 10px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none' }}
             >
               <option value="">Select a meal</option>
               {mealChoices.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
@@ -144,9 +169,9 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices }) {
                 id={`plusone-${event.event_id}`}
                 checked={!!value.plus_one_attending}
                 onChange={e => onChange({ ...value, plus_one_attending: e.target.checked })}
-                style={{ width: 16, height: 16, accentColor: '#E03553' }}
+                style={{ width: 16, height: 16, accentColor: theme.accent }}
               />
-              <label htmlFor={`plusone-${event.event_id}`} style={{ fontSize: 13, color: '#0A0A0A', cursor: 'pointer', ...F }}>
+              <label htmlFor={`plusone-${event.event_id}`} style={{ fontSize: 13, color: theme.lightText, cursor: 'pointer', ...F }}>
                 I'm bringing a plus-one to this event
               </label>
             </div>
@@ -158,7 +183,7 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices }) {
               value={value.plus_one_name || ''}
               onChange={e => onChange({ ...value, plus_one_name: e.target.value })}
               placeholder="Plus-one's name"
-              style={{ width: '100%', padding: '9px 10px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '9px 10px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
             />
           )}
         </div>
@@ -190,6 +215,45 @@ export default function RSVPPage() {
 
   // Per-event form state: { [event_id]: { status, meal_choice, plus_one_attending, plus_one_name } }
   const [eventForm, setEventForm] = useState({});
+
+  // A wedding with no active universe (or an unrecognised one) falls back to
+  // OpenInvite's own brand look rather than silently borrowing resolveColors'/
+  // resolveTypography's own internal default (the Aman palette) — see
+  // FALLBACK_THEME's comment.
+  const universeConfig = wedding ? resolveUniverseConfig(wedding) : null;
+  const theme = universeConfig ? resolveColors(wedding) : FALLBACK_THEME;
+  const typography = universeConfig ? resolveTypography(wedding) : FALLBACK_TYPOGRAPHY;
+
+  // This route is a standalone page (src/App.jsx), entirely outside
+  // MultiPageWeddingWebsite.jsx's render tree, so it must inject its own
+  // Google Fonts stylesheet for the resolved typography — same mechanism
+  // MultiPageWeddingWebsite.jsx uses (one swappable <link>, display=swap).
+  useEffect(() => {
+    const href = googleFontsHref(typography);
+    if (!href) return;
+
+    const ensurePreconnect = (url, crossOrigin) => {
+      if (document.querySelector(`link[rel="preconnect"][href="${url}"]`)) return;
+      const l = document.createElement('link');
+      l.rel = 'preconnect';
+      l.href = url;
+      if (crossOrigin) l.crossOrigin = 'anonymous';
+      document.head.appendChild(l);
+    };
+    ensurePreconnect('https://fonts.googleapis.com');
+    ensurePreconnect('https://fonts.gstatic.com', true);
+
+    let link = document.getElementById('wf-typo-pairing');
+    if (link) {
+      if (link.href !== href) link.href = href;
+      return;
+    }
+    link = document.createElement('link');
+    link.id = 'wf-typo-pairing';
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }, [typography.googleFonts]);
 
   // Derive active polls from loaded wedding data
   const activePolls = useMemo(
@@ -369,11 +433,13 @@ export default function RSVPPage() {
   const hasMealOptions = wedding?.mealOptions && wedding.mealOptions.length > 0;
   const mealChoices = hasMealOptions ? wedding.mealOptions : MEAL_OPTIONS;
 
+  const F = { fontFamily: typography.bodyFont };
+
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA', ...F }}>
-        <div style={{ width: 28, height: 28, border: '2px solid #EEE', borderTopColor: '#E03553', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.lightBg, ...F }}>
+        <div style={{ width: 28, height: 28, border: '2px solid #EEE', borderTopColor: theme.accent, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -382,10 +448,10 @@ export default function RSVPPage() {
   // ── Not found ──────────────────────────────────────────────────────────────
   if (notFound) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA', padding: '24px', ...F }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.lightBg, padding: '24px', ...F }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#E03553', letterSpacing: '0.1em', marginBottom: 12 }}>INVITATION NOT FOUND</p>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', marginBottom: 12, letterSpacing: '-0.02em' }}>This link has expired or is invalid</h1>
+          <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em', marginBottom: 12 }}>INVITATION NOT FOUND</p>
+          <h1 style={{ fontSize: 24, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, marginBottom: 12, letterSpacing: '-0.02em' }}>This link has expired or is invalid</h1>
           <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6 }}>Please contact the couple directly for a new invitation link.</p>
         </div>
       </div>
@@ -395,34 +461,36 @@ export default function RSVPPage() {
   // ── Done / thank you ───────────────────────────────────────────────────────
   if (step === 'done') {
     return (
-      <PageShell coupleName={coupleName} dateStr={dateStr} venue={venue}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 56, height: 56, background: anyAttending ? '#F0FDF4' : '#F5F5F5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 22 }}>
-            {anyAttending ? '✓' : '♥'}
+      <PageShell coupleName={coupleName} dateStr={dateStr} venue={venue} theme={theme} typography={typography} universeConfig={universeConfig} wedding={wedding}>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ width: 56, height: 56, background: anyAttending ? '#F0FDF4' : '#F5F5F5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 22 }}>
+              {anyAttending ? '✓' : '♥'}
+            </div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em', marginBottom: 10, ...F }}>
+              {anyAttending ? 'SEE YOU THERE' : 'RESPONSE RECEIVED'}
+            </p>
+            <h2 style={{ fontSize: 26, fontWeight: typography.headingWeight, color: theme.lightText, marginBottom: 14, letterSpacing: '-0.02em', fontFamily: typography.headingFont }}>
+              {anyAttending ? `We can't wait to celebrate with you!` : 'Thank you for letting us know'}
+            </h2>
+            {anyAttending && dateStr && (
+              <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, ...F }}>
+                Mark your calendar — {dateStr}.{venue ? ` We'll see you at ${venue}.` : ''}
+              </p>
+            )}
+            {!anyAttending && (
+              <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, ...F }}>
+                You'll be missed. Thank you for taking the time to respond.
+              </p>
+            )}
+            <button
+              onClick={() => setStep('rsvp')}
+              style={{ marginTop: 24, background: 'none', border: 'none', fontSize: 13, color: 'rgba(10,10,10,0.4)', cursor: 'pointer', ...F, textDecoration: 'underline' }}
+            >
+              Change my response
+            </button>
           </div>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#E03553', letterSpacing: '0.1em', marginBottom: 10, ...F }}>
-            {anyAttending ? 'SEE YOU THERE' : 'RESPONSE RECEIVED'}
-          </p>
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: '#0A0A0A', marginBottom: 14, letterSpacing: '-0.02em', ...F }}>
-            {anyAttending ? `We can't wait to celebrate with you!` : 'Thank you for letting us know'}
-          </h2>
-          {anyAttending && dateStr && (
-            <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, ...F }}>
-              Mark your calendar — {dateStr}.{venue ? ` We'll see you at ${venue}.` : ''}
-            </p>
-          )}
-          {!anyAttending && (
-            <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, ...F }}>
-              You'll be missed. Thank you for taking the time to respond.
-            </p>
-          )}
-          <button
-            onClick={() => setStep('rsvp')}
-            style={{ marginTop: 24, background: 'none', border: 'none', fontSize: 13, color: 'rgba(10,10,10,0.4)', cursor: 'pointer', ...F, textDecoration: 'underline' }}
-          >
-            Change my response
-          </button>
-        </div>
+        </SectionReveal>
       </PageShell>
     );
   }
@@ -430,19 +498,21 @@ export default function RSVPPage() {
   // ── Polls step ─────────────────────────────────────────────────────────────
   if (step === 'polls') {
     return (
-      <PageShell coupleName={coupleName} dateStr={dateStr} venue={venue}>
+      <PageShell coupleName={coupleName} dateStr={dateStr} venue={venue} theme={theme} typography={typography} universeConfig={universeConfig} wedding={wedding}>
         {/* Heading */}
-        <div style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#E03553', letterSpacing: '0.12em', marginBottom: 8, ...F }}>
-            ONE MORE THING…
-          </p>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', lineHeight: 1.2, marginBottom: 8, ...F }}>
-            {coupleName ? `A few questions from ${coupleName}` : 'A few questions'}
-          </h2>
-          <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', lineHeight: 1.6, margin: 0, ...F }}>
-            Help them plan your experience — takes less than a minute.
-          </p>
-        </div>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
+          <div style={{ marginBottom: 28 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: theme.accent, letterSpacing: '0.12em', marginBottom: 8, ...F }}>
+              ONE MORE THING…
+            </p>
+            <h2 style={{ fontSize: 22, fontWeight: typography.headingWeight, color: theme.lightText, letterSpacing: '-0.02em', lineHeight: 1.2, marginBottom: 8, fontFamily: typography.headingFont }}>
+              {coupleName ? `A few questions from ${coupleName}` : 'A few questions'}
+            </h2>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', lineHeight: 1.6, margin: 0, ...F }}>
+              Help them plan your experience — takes less than a minute.
+            </p>
+          </div>
+        </SectionReveal>
 
         {/* Poll cards */}
         {activePolls.map(poll => (
@@ -453,6 +523,8 @@ export default function RSVPPage() {
             onSelect={(pollId, optionId) =>
               setGuestVotes(prev => ({ ...prev, [pollId]: optionId || undefined }))
             }
+            theme={theme}
+            typography={typography}
           />
         ))}
 
@@ -462,7 +534,7 @@ export default function RSVPPage() {
             onClick={handleSubmitPolls}
             disabled={pollSubmitting}
             style={{
-              width: '100%', padding: '14px 24px', background: '#E03553', color: '#FFFFFF',
+              width: '100%', padding: '14px 24px', background: theme.accent, color: '#FFFFFF',
               border: 'none', borderRadius: 999, fontSize: 15, fontWeight: 700, cursor: 'pointer',
               opacity: pollSubmitting ? 0.6 : 1, transition: 'opacity 0.15s ease', ...F,
             }}
@@ -483,28 +555,30 @@ export default function RSVPPage() {
 
   // ── RSVP form (step === 'rsvp') — one card per invited event ───────────────
   return (
-    <div style={{ minHeight: '100vh', background: '#FAFAFA', ...F }}>
+    <div style={{ minHeight: '100vh', background: theme.lightBg, ...F }}>
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' }}>
 
         {/* Logo */}
-        <p style={{ fontSize: 13, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', marginBottom: 48 }}>openinvite</p>
+        <p style={{ fontSize: 13, fontWeight: 800, color: theme.lightText, letterSpacing: '-0.02em', marginBottom: 48 }}>openinvite</p>
 
         {/* Header */}
-        <div style={{ marginBottom: 40 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#E03553', letterSpacing: '0.12em', marginBottom: 10 }}>YOU'RE INVITED</p>
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 12 }}>
-            {coupleName || 'A Wedding'}
-          </h1>
-          {dateStr && <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', marginBottom: 4 }}>{dateStr}</p>}
-          {venue && <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)' }}>{venue}</p>}
-        </div>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
+          <div style={{ marginBottom: 40 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: theme.accent, letterSpacing: '0.12em', marginBottom: 10 }}>YOU'RE INVITED</p>
+            <h1 style={{ fontSize: 32, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 12 }}>
+              {coupleName || 'A Wedding'}
+            </h1>
+            {dateStr && <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', marginBottom: 4 }}>{dateStr}</p>}
+            {venue && <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)' }}>{venue}</p>}
+          </div>
+        </SectionReveal>
 
         {/* Divider */}
         <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', marginBottom: 40 }} />
 
         {/* Greeting */}
         {firstName && (
-          <p style={{ fontSize: 16, color: '#0A0A0A', marginBottom: 8 }}>Hi {firstName},</p>
+          <p style={{ fontSize: 16, color: theme.lightText, marginBottom: 8 }}>Hi {firstName},</p>
         )}
         <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.65)', lineHeight: 1.7, marginBottom: 28 }}>
           {coupleName || 'We'} would love to know if you can join {coupleName ? 'them' : 'us'} to celebrate. Please respond for each event below.
@@ -526,13 +600,15 @@ export default function RSVPPage() {
                 onChange={(value) => updateEvent(ev.event_id, value)}
                 hasPlusOne={!!guest?.plus_one}
                 mealChoices={mealChoices}
+                theme={theme}
+                typography={typography}
               />
             ))
           )}
 
           {/* Wedding-level fields — render once, not per event */}
           <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: theme.lightText, marginBottom: 8 }}>
               Dietary restrictions
               <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
             </label>
@@ -541,12 +617,12 @@ export default function RSVPPage() {
               value={dietaryRestrictions}
               onChange={e => setDietaryRestrictions(e.target.value)}
               placeholder="e.g. gluten free, nut allergy"
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
 
           <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: theme.lightText, marginBottom: 8 }}>
               Song request
               <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
             </label>
@@ -555,12 +631,12 @@ export default function RSVPPage() {
               value={songRequest}
               onChange={e => setSongRequest(e.target.value)}
               placeholder="What song will get you on the dance floor?"
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
 
           <div style={{ marginBottom: 32 }}>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 8 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: theme.lightText, marginBottom: 8 }}>
               Message for the couple
               <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
             </label>
@@ -569,7 +645,7 @@ export default function RSVPPage() {
               onChange={e => setRsvpNote(e.target.value)}
               placeholder="We're so excited to celebrate with you!"
               rows={3}
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: '#0A0A0A', background: '#FFFFFF', ...F, outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 }}
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 }}
             />
           </div>
 
@@ -578,7 +654,7 @@ export default function RSVPPage() {
             type="submit"
             disabled={!allEventsAnswered || submitting}
             style={{
-              width: '100%', padding: '14px 24px', background: '#E03553', color: '#FFFFFF',
+              width: '100%', padding: '14px 24px', background: theme.accent, color: '#FFFFFF',
               border: 'none', borderRadius: 999, fontSize: 15, fontWeight: 700, cursor: 'pointer',
               opacity: (!allEventsAnswered || submitting) ? 0.5 : 1, transition: 'opacity 0.15s ease', ...F,
             }}
