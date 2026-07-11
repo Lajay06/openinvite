@@ -26,7 +26,7 @@ export const GUEST_SAFE_WEDDING_FIELDS = [
   'coupleNames',
   'weddingDate',
   'coverPhoto',
-  'heroVideoFile',
+  'heroVideoUrl',
   'welcomeMessage',
   'mainCeremony',
   'reception',

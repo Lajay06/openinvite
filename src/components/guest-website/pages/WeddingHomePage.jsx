@@ -1,5 +1,95 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroVideo';
+
+// Fullscreen-"cover" CSS trick for 16:9 iframe embeds (YouTube/Vimeo) —
+// these players don't support object-fit, so the iframe is deliberately
+// oversized and centred to always fill the hero regardless of its own
+// aspect ratio, then clipped by the parent's overflow:hidden.
+const IFRAME_COVER_STYLE = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  width: '177.78vh',   // 16:9 aspect, sized off viewport height
+  height: '100vh',
+  minWidth: '100%',
+  minHeight: '56.25vw', // 16:9 aspect, sized off viewport width
+  transform: 'translate(-50%, -50%)',
+  border: 'none',
+  pointerEvents: 'none',
+};
+
+/**
+ * Renders the hero's background media: a real video (direct file or
+ * YouTube/Vimeo embed) when the couple has set one, falling back to the
+ * existing static cover-photo image otherwise — or if the video fails to
+ * load, or the visitor has data-saver/prefers-reduced-motion enabled, in
+ * which case autoplaying video is skipped entirely in favour of the image
+ * (never a broken player).
+ */
+function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
+  const [videoFailed, setVideoFailed] = useState(false);
+  const video = useMemo(() => detectHeroVideoType(heroVideoUrl), [heroVideoUrl]);
+
+  // Network Information API — not supported everywhere; absence just means
+  // this signal is skipped, not that data-saver mode is assumed off.
+  const saveData = typeof navigator !== 'undefined' && navigator.connection?.saveData === true;
+
+  const showVideo = !!video && !videoFailed && !prefersReduced && !saveData;
+
+  const imageFallback = (
+    <div
+      style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: coverPhoto ? `url(${coverPhoto})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    />
+  );
+
+  if (!showVideo) return imageFallback;
+
+  if (video.type === 'file') {
+    return (
+      <>
+        {/* Poster shows immediately; swapped for the playing video once it
+            can play, and shown again permanently if the video errors. */}
+        {imageFallback}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster={coverPhoto || undefined}
+          onError={() => setVideoFailed(true)}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        >
+          <source src={video.url} />
+        </video>
+      </>
+    );
+  }
+
+  // YouTube / Vimeo — privacy-friendly embed, no controls, autoplay muted
+  // loop. No reliable onError signal for cross-origin iframes, so a
+  // malformed embed just renders an empty/black frame over the image
+  // fallback rather than crashing.
+  const embedUrl = video.type === 'youtube' ? youtubeEmbedUrl(video.id) : vimeoEmbedUrl(video.id);
+  return (
+    <>
+      {imageFallback}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+        <iframe
+          src={embedUrl}
+          title="Wedding hero video"
+          allow="autoplay; encrypted-media"
+          style={IFRAME_COVER_STYLE}
+        />
+      </div>
+    </>
+  );
+}
 
 export default function WeddingHomePage({ weddingDetails, theme, typography, universeConfig }) {
   const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || 'We are overjoyed to celebrate with you.';
@@ -11,15 +101,19 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
       <div
         style={{
           height: '100vh',
-          backgroundImage: weddingDetails.heroVideoFile ? `url(${weddingDetails.heroVideoFile})` : `url(${weddingDetails.coverPhoto})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          position: 'relative'
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
+        <HeroBackground
+          coverPhoto={weddingDetails.coverPhoto}
+          heroVideoUrl={weddingDetails.heroVideoUrl}
+          prefersReduced={prefersReduced}
+        />
+
         <div
           style={{
             position: 'absolute',
