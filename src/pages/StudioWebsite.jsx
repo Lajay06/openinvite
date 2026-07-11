@@ -9,8 +9,8 @@ import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
 import SectionTemplatePicker from '@/components/website-builder/SectionTemplatePicker';
-import { WEBSITE_THEMES, FONT_OPTIONS, WEDDING_PAGES, UNIVERSE_CONFIGS, normalizeUniverseKey } from '@/lib/websiteThemes';
-import { resolveTypography, resolveUniverseConfig, googleFontsHref } from '@/lib/universeStyling';
+import { FONT_OPTIONS, WEDDING_PAGES, UNIVERSE_CONFIGS, normalizeUniverseKey } from '@/lib/websiteThemes';
+import { resolveTypography, resolveColors, resolveUniverseConfig, googleFontsHref } from '@/lib/universeStyling';
 import WeddingHomePage from '@/components/guest-website/pages/WeddingHomePage';
 import WeddingOurStoryPage from '@/components/guest-website/pages/WeddingOurStoryPage';
 import WeddingCelebrationPage from '@/components/guest-website/pages/WeddingCelebrationPage';
@@ -329,8 +329,24 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
     return [...sections].sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [details, currentPage]);
 
-  const theme = WEBSITE_THEMES.find(t => t.id === (details?.activeTheme || 'still')) || WEBSITE_THEMES[0];
-  const universeTheme = UNIVERSE_THEMES[normalizeUniverseKey(details?.activeUniverse)] || UNIVERSE_THEMES.aman;
+  // A universe's own colours take priority over the legacy activeTheme
+  // lookup — see resolveColors() (fix/universe-palettes), so this preview
+  // matches what actually publishes.
+  const theme = resolveColors(details);
+  // universeTheme's font fields (fontDisplay/fontBody/name/feeling) stay as
+  // this file's own hand-authored copy (unrelated to palette wiring — see
+  // BUILDER_UNIVERSE_AUDIT.md item 3 for that separate, still-open bug) but
+  // its colour fields are now derived from the same resolveColors() output
+  // as `theme` above, so the two objects can no longer drift out of sync.
+  const baseUniverseTheme = UNIVERSE_THEMES[normalizeUniverseKey(details?.activeUniverse)] || UNIVERSE_THEMES.aman;
+  const universeTheme = {
+    ...baseUniverseTheme,
+    primary: theme.navBg,
+    background: theme.lightBg,
+    text: theme.lightText,
+    accent: theme.accent,
+    secondary: theme.accentSecondary,
+  };
   // Derive typo through the same universe-aware resolver the published site
   // uses (resolveTypography) — a universe's own font pairing takes priority
   // over the generic activeTypography picker, so builder preview matches

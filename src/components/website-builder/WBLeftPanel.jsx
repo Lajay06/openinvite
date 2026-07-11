@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, CalendarCheck, Send, UtensilsCrossed, LayoutGrid, Clapperboard, Instagram, Signpost, Tag, Heart, Sparkles, BarChart2 } from 'lucide-react';
 import { WEDDING_PAGES, WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS } from '@/lib/websiteThemes';
+import { resolveColors } from '@/lib/universeStyling';
 import NewPageModal from './NewPageModal';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -109,7 +110,12 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
     if (currentPage === slug) onPageChange('home');
   };
 
-  const theme = WEBSITE_THEMES.find(t => t.id === (details.activeTheme || 'still')) || WEBSITE_THEMES[0];
+  // A universe's own colours take priority over the legacy activeTheme
+  // lookup — see resolveColors() (fix/universe-palettes).
+  const theme = resolveColors(details);
+  const themeLabel = details?.activeUniverse
+    ? details.activeUniverse.charAt(0).toUpperCase() + details.activeUniverse.slice(1)
+    : (WEBSITE_THEMES.find(t => t.id === (details.activeTheme || 'still')) || WEBSITE_THEMES[0]).name;
   const typo = TYPOGRAPHY_PAIRINGS.find(t => t.id === (details.activeTypography || 'classic')) || TYPOGRAPHY_PAIRINGS[0];
 
   return (
@@ -237,7 +243,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
             <div style={{ flex: 1, background: theme.darkBg }} />
             <div style={{ flex: 1, background: theme.lightBg }} />
           </div>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, fontFamily: PJS }}>{theme.name}</span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, fontFamily: PJS }}>{themeLabel}</span>
           <span
             onClick={() => navigate('/studio/universe')}
             onMouseEnter={e => e.currentTarget.style.color = '#E03553'}

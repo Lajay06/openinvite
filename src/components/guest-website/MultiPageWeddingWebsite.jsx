@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
-import { WEBSITE_THEMES, resolveUniverseConfig } from '@/lib/websiteThemes';
-import { resolveTypography, googleFontsHref } from '@/lib/universeStyling';
+import { resolveUniverseConfig } from '@/lib/websiteThemes';
+import { resolveTypography, resolveColors, googleFontsHref } from '@/lib/universeStyling';
 import WBSectionRenderer from '@/components/website-builder/WBSectionRenderer';
 import TextureOverlay from './TextureOverlay';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
@@ -157,7 +157,9 @@ export default function MultiPageWeddingWebsite() {
     return <PasswordGateSimple slug={weddingSlug} onUnlock={setWeddingDetails} />;
   }
 
-  const theme = WEBSITE_THEMES.find(t => t.id === weddingDetails.activeTheme) || WEBSITE_THEMES[0];
+  // A universe's own colours take priority over the legacy activeTheme/
+  // WEBSITE_THEMES lookup — see resolveColors() (fix/universe-palettes).
+  const theme = resolveColors(weddingDetails);
   const typography = resolveTypography(weddingDetails);
   const enabledPages = weddingDetails.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'];
   const PageComponent = PAGE_COMPONENTS[page] || WeddingHomePage;
