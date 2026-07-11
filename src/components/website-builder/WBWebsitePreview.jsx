@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
-import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, WEDDING_PAGES } from '@/lib/websiteThemes';
+import { TYPOGRAPHY_PAIRINGS, WEDDING_PAGES } from '@/lib/websiteThemes';
+import { resolveColors } from '@/lib/universeStyling';
 
 // Wraps a section in a clickable hover box in preview mode
 function PreviewSection({ id, label, selectedSection, onSectionClick, children, style = {} }) {
@@ -824,7 +825,10 @@ const PAGE_RENDERERS = {
 };
 
 export default function WBWebsitePreview({ details, currentPage = 'home', onSectionClick, selectedSection, isMobile = false }) {
-  const theme = WEBSITE_THEMES.find(t => t.id === (details.activeTheme || 'still')) || WEBSITE_THEMES[0];
+  // A universe's own colours take priority over the legacy activeTheme
+  // lookup — see resolveColors() (fix/universe-palettes), so this preview
+  // matches what actually publishes.
+  const theme = resolveColors(details);
   const typo = TYPOGRAPHY_PAIRINGS.find(t => t.id === (details.activeTypography || 'classic')) || TYPOGRAPHY_PAIRINGS[0];
   const Renderer = PAGE_RENDERERS[currentPage] || HomePreview;
 

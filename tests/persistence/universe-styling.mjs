@@ -16,10 +16,11 @@ import {
   resolveTypography,
   resolveTexture,
   resolveMotion,
+  resolveColors,
   googleFontsHref,
   isMotionEnabled,
 } from '../../src/lib/universeStyling.js';
-import { UNIVERSE_CONFIGS } from '../../src/lib/websiteThemes.js';
+import { UNIVERSE_CONFIGS, WEBSITE_THEMES } from '../../src/lib/websiteThemes.js';
 import { pass, fail } from './_shared.mjs';
 
 const UNIVERSES = ['aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
@@ -114,6 +115,49 @@ export async function runUniverseStyling() {
   results.push(new Set(resolvedMotions.map(m => `${m.duration}-${m.yOffset}`)).size > 1
     ? pass('resolveMotion — calibration (duration/yOffset) varies per universe personality', resolvedMotions.map(m => `${m.duration}s/${m.yOffset}px`).join(', '))
     : fail('resolveMotion — calibration (duration/yOffset) varies per universe personality', 'not all identical', 'all identical'));
+
+  console.log('\n  Colour resolution — distinct per universe, no fallback to Aman (fix/universe-palettes):\n');
+
+  const resolvedColors = UNIVERSES.map(id => resolveColors({ activeUniverse: id }));
+
+  results.push(resolvedColors.every(c => c != null && c.darkBg && c.accent)
+    ? pass('resolveColors — every universe declares a full palette', resolvedColors.map(c => c.darkBg).join(', '))
+    : fail('resolveColors — every universe declares a full palette', 'all non-null with darkBg/accent', JSON.stringify(resolvedColors)));
+
+  results.push(new Set(resolvedColors.map(c => c.darkBg)).size === 10
+    ? pass('resolveColors — darkBg is distinct across all 10 universes (none fall back to Aman)', resolvedColors.map(c => c.darkBg).join(', '))
+    : fail('resolveColors — darkBg is distinct across all 10 universes (none fall back to Aman)', '10 distinct', `${new Set(resolvedColors.map(c => c.darkBg)).size} distinct: ${resolvedColors.map(c => c.darkBg).join(', ')}`));
+
+  results.push(new Set(resolvedColors.map(c => c.accent)).size === 10
+    ? pass('resolveColors — accent is distinct across all 10 universes', resolvedColors.map(c => c.accent).join(', '))
+    : fail('resolveColors — accent is distinct across all 10 universes', '10 distinct', `${new Set(resolvedColors.map(c => c.accent)).size} distinct: ${resolvedColors.map(c => c.accent).join(', ')}`));
+
+  {
+    const amanColors = resolveColors({ activeUniverse: 'aman' });
+    const amanLegacyTheme = WEBSITE_THEMES.find(t => t.id === 'aman');
+    results.push(amanColors.darkBg === amanLegacyTheme.darkBg && amanColors.accent === amanLegacyTheme.accent
+      ? pass('resolveColors(\'aman\') — matches the legacy WEBSITE_THEMES aman entry exactly (already-correct universe unchanged)', amanColors.accent)
+      : fail('resolveColors(\'aman\') — matches the legacy WEBSITE_THEMES aman entry exactly (already-correct universe unchanged)', amanLegacyTheme.accent, amanColors.accent));
+  }
+
+  {
+    // No universe set → falls back to the legacy activeTheme/WEBSITE_THEMES
+    // lookup, same precedence pattern as resolveTypography's activeTypography
+    // fallback — a pre-universe wedding record must be unaffected.
+    const fallback = resolveColors({ activeUniverse: null, activeTheme: 'dusk' });
+    const duskTheme = WEBSITE_THEMES.find(t => t.id === 'dusk');
+    results.push(fallback.darkBg === duskTheme.darkBg
+      ? pass('resolveColors — falls back to activeTheme/WEBSITE_THEMES when no universe is set', fallback.darkBg)
+      : fail('resolveColors — falls back to activeTheme/WEBSITE_THEMES when no universe is set', duskTheme.darkBg, fallback.darkBg));
+  }
+
+  {
+    // No universe AND no activeTheme → WEBSITE_THEMES[0] (aman), not a crash.
+    const noSettings = resolveColors({});
+    results.push(noSettings.darkBg === WEBSITE_THEMES[0].darkBg
+      ? pass('resolveColors — no universe or activeTheme set → WEBSITE_THEMES[0] default, not a crash', noSettings.darkBg)
+      : fail('resolveColors — no universe or activeTheme set → WEBSITE_THEMES[0] default, not a crash', WEBSITE_THEMES[0].darkBg, noSettings.darkBg));
+  }
 
   console.log('\n  Google Fonts URL construction:\n');
 

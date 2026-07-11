@@ -12,7 +12,7 @@
  * No React, no DOM — safe to import from a plain Node test script.
  */
 
-import { UNIVERSE_CONFIGS, TYPOGRAPHY_PAIRINGS, resolveUniverseConfig } from './websiteThemes.js';
+import { UNIVERSE_CONFIGS, TYPOGRAPHY_PAIRINGS, WEBSITE_THEMES, resolveUniverseConfig } from './websiteThemes.js';
 
 /**
  * Resolves the heading/body font pairing + Google Fonts query for a wedding.
@@ -42,6 +42,24 @@ export function resolveTypography(weddingDetails) {
     bodyWeight: fallback.bodyWeight,
     headingStyle: fallback.headingStyle,
   };
+}
+
+/**
+ * Resolves the colour palette for a wedding's active universe — same
+ * precedence pattern as resolveTypography(): a universe's own colours take
+ * priority over the legacy activeTheme/WEBSITE_THEMES lookup, falling back
+ * to it only when the universe has none (or no universe is set at all), so
+ * any pre-universe wedding record is unaffected.
+ *
+ * @param {object} weddingDetails
+ * @returns {{ darkBg: string, lightBg: string, darkText: string, lightText: string, accent: string, accentSecondary: string, navBg: string }}
+ */
+export function resolveColors(weddingDetails) {
+  const universeConfig = resolveUniverseConfig(weddingDetails);
+  if (universeConfig?.colors) {
+    return universeConfig.colors;
+  }
+  return WEBSITE_THEMES.find(t => t.id === weddingDetails?.activeTheme) || WEBSITE_THEMES[0];
 }
 
 /**

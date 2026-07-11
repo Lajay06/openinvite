@@ -469,6 +469,13 @@ export const UNIVERSE_CONFIGS = {
       bodyFont:    '"Jost", sans-serif',
       googleFonts: 'Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500',
     },
+    // Matches the existing aman WEBSITE_THEMES entry exactly (unchanged) —
+    // this universe was already correctly wired end-to-end before this
+    // colour system existed for the other 9.
+    colors: {
+      darkBg: '#0A0A0A', lightBg: '#F8F7F5', darkText: '#F8F7F5', lightText: '#0A0A0A',
+      accent: '#C4956A', accentSecondary: '#8B6340', navBg: '#0A0A0A',
+    },
     texture: {
       type:    'grain',   // SVG feTurbulence fractalNoise overlay on dark sections
       opacity: 0.025,     // 2.5% — barely-there; visible on close inspection, not at a glance
@@ -493,6 +500,10 @@ export const UNIVERSE_CONFIGS = {
       googleFonts: 'Fraunces:ital,wght@0,300;0,600;1,400&family=Karla:wght@300;400;500',
     },
     texture: { type: 'canvas', opacity: 0.02 },
+    colors: {
+      darkBg: '#3D2B1F', lightBg: '#F5ECD7', darkText: '#F5ECD7', lightText: '#3D2B1F',
+      accent: '#D4845A', accentSecondary: '#C4956A', navBg: '#3D2B1F',
+    },
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
   },
   kyoto: {
@@ -503,6 +514,10 @@ export const UNIVERSE_CONFIGS = {
       googleFonts: 'Shippori+Mincho:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@300;400;500',
     },
     texture: { type: 'paper', opacity: 0.02 },
+    colors: {
+      darkBg: '#1A1A1A', lightBg: '#F5F2ED', darkText: '#F5F2ED', lightText: '#2C2C2C',
+      accent: '#6B6B5A', accentSecondary: '#8B7355', navBg: '#1A1A1A',
+    },
     motion: { sectionReveal: 'fade', duration: 0.6, yOffset: 12, ease: 'easeOut', intensity: 'subtle' },
   },
   capri: {
@@ -513,6 +528,10 @@ export const UNIVERSE_CONFIGS = {
       googleFonts: 'Italiana&family=Poppins:wght@300;400;500',
     },
     texture: { type: 'linen', opacity: 0.015 },
+    colors: {
+      darkBg: '#1B3A6B', lightBg: '#FEFBF3', darkText: '#FEFBF3', lightText: '#1B3A6B',
+      accent: '#E8C547', accentSecondary: '#7BA7C2', navBg: '#1B3A6B',
+    },
     motion: { sectionReveal: 'fade', duration: 0.65, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
   },
   marrakech: {
@@ -523,6 +542,10 @@ export const UNIVERSE_CONFIGS = {
       googleFonts: 'Marcellus&family=Nunito+Sans:wght@300;400;500',
     },
     texture: { type: 'plaster', opacity: 0.03 },
+    colors: {
+      darkBg: '#2C1810', lightBg: '#F2E8D9', darkText: '#F2E8D9', lightText: '#2C1810',
+      accent: '#8B2635', accentSecondary: '#C9A96E', navBg: '#2C1810',
+    },
     motion: { sectionReveal: 'fade', duration: 0.75, yOffset: 20, ease: 'easeOut', intensity: 'subtle' },
   },
   brooklyn: {
@@ -533,6 +556,10 @@ export const UNIVERSE_CONFIGS = {
       googleFonts: 'Bebas+Neue&family=IBM+Plex+Sans:wght@300;400;500',
     },
     texture: { type: 'grain', opacity: 0.035 },
+    colors: {
+      darkBg: '#1C1C1C', lightBg: '#F5F5F5', darkText: '#F5F5F5', lightText: '#1C1C1C',
+      accent: '#B85C38', accentSecondary: '#E5E5E5', navBg: '#1C1C1C',
+    },
     motion: { sectionReveal: 'fade', duration: 0.5, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
   },
   bali: {
@@ -543,6 +570,10 @@ export const UNIVERSE_CONFIGS = {
       googleFonts: 'Prata&family=Mulish:wght@300;400;500',
     },
     texture: { type: 'canvas', opacity: 0.02 },
+    colors: {
+      darkBg: '#2D5A27', lightBg: '#FAF7EF', darkText: '#FAF7EF', lightText: '#1A3318',
+      accent: '#F5E6CC', accentSecondary: '#F5E6CC', navBg: '#2D5A27',
+    },
     motion: { sectionReveal: 'fade', duration: 0.8, yOffset: 18, ease: 'easeOut', intensity: 'subtle' },
   },
   paris: {
@@ -553,6 +584,10 @@ export const UNIVERSE_CONFIGS = {
       googleFonts: 'Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700',
     },
     texture: { type: 'linen', opacity: 0.02 },
+    colors: {
+      darkBg: '#1A1A2E', lightBg: '#FAF7F2', darkText: '#FAF7F2', lightText: '#1A1A2E',
+      accent: '#C9A96E', accentSecondary: '#C9A96E', navBg: '#1A1A2E',
+    },
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
   },
   capetown: {
@@ -563,6 +598,10 @@ export const UNIVERSE_CONFIGS = {
       googleFonts: 'Bitter:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@300;400;500',
     },
     texture: { type: 'paper', opacity: 0.025 },
+    colors: {
+      darkBg: '#5C3D2E', lightBg: '#F5EEE3', darkText: '#F5EEE3', lightText: '#3D2818',
+      accent: '#C4A882', accentSecondary: '#C4A882', navBg: '#5C3D2E',
+    },
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
   },
   mykonos: {
@@ -573,6 +612,10 @@ export const UNIVERSE_CONFIGS = {
       googleFonts: 'Cinzel:wght@400;500;600&family=Montserrat:wght@300;400;500',
     },
     texture: { type: 'plaster', opacity: 0.02 },
+    colors: {
+      darkBg: '#1B4F8A', lightBg: '#F5FAFF', darkText: '#F5FAFF', lightText: '#0A2540',
+      accent: '#1B4F8A', accentSecondary: '#FFFFFF', navBg: '#1B4F8A',
+    },
     motion: { sectionReveal: 'fade', duration: 0.65, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
   },
 };
