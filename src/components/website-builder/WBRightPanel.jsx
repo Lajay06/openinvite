@@ -211,6 +211,31 @@ function DesignTab({ details, onChange, universeTheme }) {
         </div>
       </div>
       <Divider />
+      <SLabel>Hero media</SLabel>
+      <div style={{ marginBottom: 14 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Cover photo URL</p>
+        <input
+          type="text" value={details.coverPhoto || ''} onChange={e => onChange('coverPhoto', e.target.value)}
+          placeholder="https://..."
+          style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', padding: '8px', fontSize: 13, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit', background: 'rgba(255,255,255,0.08)', boxSizing: 'border-box', borderRadius: 0 }}
+          onFocus={e => e.target.style.borderColor = '#E03553'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+        />
+      </div>
+      <div style={{ marginBottom: 10 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Hero video URL</p>
+        <input
+          type="text" value={details.heroVideoUrl || ''} onChange={e => onChange('heroVideoUrl', e.target.value)}
+          placeholder="Direct .mp4 file, YouTube, or Vimeo URL"
+          style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', padding: '8px', fontSize: 13, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit', background: 'rgba(255,255,255,0.08)', boxSizing: 'border-box', borderRadius: 0 }}
+          onFocus={e => e.target.style.borderColor = '#E03553'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+        />
+        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '6px 0 0' }}>
+          Takes priority over the cover photo when set. Falls back to the cover photo if the video fails to load.
+        </p>
+      </div>
+      <Divider />
       <SLabel>Animations</SLabel>
       <div style={{ marginBottom: 10 }}>
         <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Page transition</p>

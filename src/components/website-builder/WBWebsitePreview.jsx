@@ -40,7 +40,12 @@ function HomePreview({ details, theme, typo, selectedSection, onSectionClick }) 
     ? new Date(details.weddingDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     : 'June 14, 2025';
   const tagline = details.homeContent?.tagline || details.welcomeMessage || 'We are overjoyed to celebrate with you.';
-  const hasBg = details.coverPhoto || details.heroVideoUrl;
+  // Only a cover photo renders as this compact preview's CSS background — a
+  // video-only hero (no coverPhoto) can't be represented as a background-
+  // image, so it falls back to the theme background instead of a broken
+  // url(undefined). The real video embed renders on the actual published
+  // site (WeddingHomePage.jsx), not in this simplified widget.
+  const hasCoverPhoto = !!details.coverPhoto;
 
   return (
     <div style={{ background: theme.darkBg }}>
@@ -48,9 +53,9 @@ function HomePreview({ details, theme, typo, selectedSection, onSectionClick }) 
         <div style={{
           minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
           position: 'relative',
-          background: hasBg ? `url(${details.coverPhoto}) center/cover no-repeat` : theme.darkBg,
+          background: hasCoverPhoto ? `url(${details.coverPhoto}) center/cover no-repeat` : theme.darkBg,
         }}>
-          {hasBg && <div style={{ position: 'absolute', inset: 0, background: `${theme.darkBg}88` }} />}
+          {hasCoverPhoto && <div style={{ position: 'absolute', inset: 0, background: `${theme.darkBg}88` }} />}
           <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: '60px 24px' }}>
             <h1 style={{ fontFamily: typo.headingFont + ',serif', fontSize: 'clamp(2.5rem,8vw,5rem)', fontWeight: typo.headingWeight, fontStyle: typo.headingStyle || 'normal', color: theme.darkText, margin: '0 0 16px', lineHeight: 1.1 }}>
               {names}
