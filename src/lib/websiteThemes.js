@@ -505,6 +505,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#D4845A', accentSecondary: '#C4956A', navBg: '#3D2B1F',
     },
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'dissolve', duration: 0.7 },
   },
   kyoto: {
     // Japanese minimalism — restrained, precise, quiet.
@@ -519,6 +520,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#6B6B5A', accentSecondary: '#8B7355', navBg: '#1A1A1A',
     },
     motion: { sectionReveal: 'fade', duration: 0.6, yOffset: 12, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'fade', duration: 0.5 },
   },
   capri: {
     // Mediterranean summer — bright, breezy, crisp.
@@ -533,6 +535,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#E8C547', accentSecondary: '#7BA7C2', navBg: '#1B3A6B',
     },
     motion: { sectionReveal: 'fade', duration: 0.65, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'slide', duration: 0.55 },
   },
   marrakech: {
     // Desert opulence — rich, ornate, warm.
@@ -547,6 +550,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#8B2635', accentSecondary: '#C9A96E', navBg: '#2C1810',
     },
     motion: { sectionReveal: 'fade', duration: 0.75, yOffset: 20, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'dissolve', duration: 0.8 },
   },
   brooklyn: {
     // Urban industrial — gritty, direct, unfussy.
@@ -561,6 +565,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#B85C38', accentSecondary: '#E5E5E5', navBg: '#1C1C1C',
     },
     motion: { sectionReveal: 'fade', duration: 0.5, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'slide', duration: 0.4 },
   },
   bali: {
     // Tropical spirit — lush, languid, alive.
@@ -569,12 +574,17 @@ export const UNIVERSE_CONFIGS = {
       bodyFont:    '"Mulish", sans-serif',
       googleFonts: 'Prata&family=Mulish:wght@300;400;500',
     },
-    texture: { type: 'canvas', opacity: 0.02 },
+    // texture opacity bumped 0.02 → 0.03 (fix/universe-cleanup): was
+    // identical to tulum's canvas/0.02, making the two indistinguishable.
+    // Bali's "lush, alive" mood reads as a touch more present than
+    // tulum's "unhurried" minimalism.
+    texture: { type: 'canvas', opacity: 0.03 },
     colors: {
       darkBg: '#2D5A27', lightBg: '#FAF7EF', darkText: '#FAF7EF', lightText: '#1A3318',
       accent: '#F5E6CC', accentSecondary: '#F5E6CC', navBg: '#2D5A27',
     },
     motion: { sectionReveal: 'fade', duration: 0.8, yOffset: 18, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'reveal', duration: 0.75 },
   },
   paris: {
     // French romance — elegant, classic, tender.
@@ -588,7 +598,12 @@ export const UNIVERSE_CONFIGS = {
       darkBg: '#1A1A2E', lightBg: '#FAF7F2', darkText: '#FAF7F2', lightText: '#1A1A2E',
       accent: '#C9A96E', accentSecondary: '#C9A96E', navBg: '#1A1A2E',
     },
-    motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
+    // duration/yOffset bumped slightly (fix/universe-cleanup): was
+    // identical to tulum's AND capetown's 0.7/16, a 3-way collision.
+    // A touch slower and further-travelled fits "elegant, tender" as
+    // marginally more lingering than tulum's "unhurried" baseline.
+    motion: { sectionReveal: 'fade', duration: 0.75, yOffset: 17, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'fade', duration: 0.75 },
   },
   capetown: {
     // Safari chic — earthy, adventurous, warm.
@@ -602,7 +617,11 @@ export const UNIVERSE_CONFIGS = {
       darkBg: '#5C3D2E', lightBg: '#F5EEE3', darkText: '#F5EEE3', lightText: '#3D2818',
       accent: '#C4A882', accentSecondary: '#C4A882', navBg: '#5C3D2E',
     },
-    motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
+    // duration/yOffset made quicker (fix/universe-cleanup): was part of
+    // the same 3-way collision as tulum/paris. "Adventurous" fits a
+    // slightly snappier reveal than tulum's/paris's calmer pacing.
+    motion: { sectionReveal: 'fade', duration: 0.6, yOffset: 15, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'slide', duration: 0.6 },
   },
   mykonos: {
     // Aegean blue — crisp, whitewashed, coastal.
@@ -617,6 +636,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#1B4F8A', accentSecondary: '#FFFFFF', navBg: '#1B4F8A',
     },
     motion: { sectionReveal: 'fade', duration: 0.65, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'reveal', duration: 0.55 },
   },
 };
 
