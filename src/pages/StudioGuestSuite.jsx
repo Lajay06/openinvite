@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, Crown } from 'lucide-react';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { useAuth } from '@/lib/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
@@ -97,10 +97,18 @@ export default function StudioGuestSuite() {
   const searchParams = new URLSearchParams(location.search);
   const triggerAutofill = searchParams.get('autofill') === 'true';
 
+  const queryClient = useQueryClient();
   const { data: details } = useQuery({
     queryKey: ['guestSuiteDetails'],
     queryFn: () => getMyWeddingDetails(),
   });
+
+  // Optimistic local update so an asset edit is reflected immediately
+  // (mini-preview, reopening the editor) without waiting on a refetch —
+  // the actual persist call happens in StudioAssetsTab itself.
+  const handleDetailsChange = (nextDetails) => {
+    queryClient.setQueryData(['guestSuiteDetails'], nextDetails);
+  };
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
@@ -183,7 +191,7 @@ export default function StudioGuestSuite() {
 
       {/* TAB CONTENT */}
       <div style={{ flex: 1, overflow: 'auto' }}>
-        {activeTab === 'assets'   && <StudioAssetsTab details={details} />}
+        {activeTab === 'assets'   && <StudioAssetsTab details={details} onDetailsChange={handleDetailsChange} />}
         {activeTab === 'policies' && <PoliciesTab details={details} />}
         {activeTab === 'share' && <StudioShareTab details={details} />}
       </div>

@@ -36,6 +36,7 @@ import { runUniverseStyling } from '../tests/persistence/universe-styling.mjs';
 import { runRateLimiting } from '../tests/persistence/rate-limiting.mjs';
 import { runHeroVideo } from '../tests/persistence/hero-video.mjs';
 import { runUniversePickerIntegrity } from '../tests/persistence/universe-picker-integrity.mjs';
+import { runAssetSystem } from '../tests/persistence/asset-system.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -83,6 +84,7 @@ async function run() {
   results.push(...await runRateLimiting());
   results.push(...await runHeroVideo());
   results.push(...await runUniversePickerIntegrity());
+  results.push(...await runAssetSystem());
 
   // ── Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;

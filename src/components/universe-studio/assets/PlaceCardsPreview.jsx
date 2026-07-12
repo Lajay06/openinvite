@@ -3,16 +3,25 @@ import React from 'react';
 const MEAL_SYMBOL = { beef: '◆', fish: '○', vegetarian: '☆', vegan: '☆', chicken: '△', default: '' };
 
 export default function PlaceCardsPreview({ universe, weddingDetails, guests }) {
-  const displayGuests = (guests || []).slice(0, 6);
-  const placeholders = [
-    { name: 'Elizabeth Hartley', table_assignment: '3', meal_choice: 'beef' },
-    { name: 'James Morrison', table_assignment: '1', meal_choice: 'fish' },
-    { name: 'Sophie Chen', table_assignment: '5', meal_choice: 'vegetarian' },
-    { name: 'Oliver Crane', table_assignment: '2', meal_choice: 'beef' },
-    { name: 'Amelia Grant', table_assignment: '4', meal_choice: 'chicken' },
-    { name: 'Noah Williams', table_assignment: '3', meal_choice: 'fish' },
-  ];
-  const cards = displayGuests.length > 0 ? displayGuests : placeholders;
+  // fix/asset-system: previously fell back to 6 hardcoded fake names
+  // (Elizabeth Hartley, James Morrison, ...) whenever there were no real
+  // guests yet — indistinguishable from real data at a glance. An honest
+  // empty state is shown instead; never fabricated names.
+  const cards = (guests || []).slice(0, 6);
+
+  if (cards.length === 0) {
+    return (
+      <div style={{
+        width: '100%', height: '100%', background: '#111111',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: 12, gap: 6, textAlign: 'center',
+      }}>
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No guests yet</p>
+        <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add guests to your Guest List first.</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -53,7 +62,7 @@ export default function PlaceCardsPreview({ universe, weddingDetails, guests }) 
       </div>
 
       <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 6, fontFamily: "'Plus Jakarta Sans', sans-serif", marginTop: 4 }}>
-        {(guests || []).length || 6} guests · Print all as PDF
+        {guests.length} guest{guests.length === 1 ? '' : 's'}
       </p>
     </div>
   );
