@@ -1,4 +1,11 @@
 import React from 'react';
+import { Crown } from 'lucide-react';
+
+// fix/universe-picker-integrity: preserves the Ultra-tier gating concept
+// that existed on the now-retired StudioUniverse.jsx picker (which also
+// gated marrakech/paris) — carried over here rather than silently dropped
+// when consolidating to this picker as the one canonical entry point.
+const PREMIUM_IDS = new Set(['marrakech', 'paris']);
 
 const UNIVERSES = [
   {
@@ -46,15 +53,17 @@ function AmanMiniPreview() {
   );
 }
 
-export default function UniverseSelector({ selectedUniverse, onSelect }) {
+export default function UniverseSelector({ selectedUniverse, onSelect, canAccessUltra = true, onLockedSelect }) {
   return (
     <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8 }}>
       {UNIVERSES.map((u) => {
         const isSelected = selectedUniverse === u.id;
+        const isPremium = PREMIUM_IDS.has(u.id);
+        const locked = isPremium && !canAccessUltra;
         return (
           <div
             key={u.id}
-            onClick={() => onSelect(u.id)}
+            onClick={() => locked ? onLockedSelect?.(u) : onSelect(u.id)}
             style={{
               flexShrink: 0,
               width: 200,
@@ -65,6 +74,7 @@ export default function UniverseSelector({ selectedUniverse, onSelect }) {
               overflow: 'hidden',
               transition: 'border-color 0.2s ease',
               background: u.bg,
+              opacity: locked ? 0.6 : 1,
             }}
           >
             {u.id === 'aman' ? (
@@ -80,16 +90,27 @@ export default function UniverseSelector({ selectedUniverse, onSelect }) {
               </div>
             )}
 
+            {isPremium && (
+              <div style={{
+                position: 'absolute', top: 8, left: 8,
+                background: 'linear-gradient(135deg, #FBBF24, #F59E0B)',
+                padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4,
+              }}>
+                <Crown size={8} color="#FFFFFF" />
+                <span style={{ fontSize: 8, color: '#FFFFFF', letterSpacing: '0.2em', fontWeight: 800 }}>ULTRA</span>
+              </div>
+            )}
+
             {/* Label */}
             <div style={{
               position: 'absolute', bottom: 0, left: 0, right: 0,
               background: 'rgba(0,0,0,0.7)', padding: '6px 10px'
             }}>
               <p style={{ color: '#FFFFFF', fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>{u.name}</p>
-              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9, letterSpacing: '0.1em' }}>{u.tagline}</p>
+              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9, letterSpacing: '0.1em' }}>{locked ? 'Upgrade to unlock' : u.tagline}</p>
             </div>
 
-            {isSelected && (
+            {isSelected && !locked && (
               <div style={{
                 position: 'absolute', top: 8, right: 8,
                 width: 16, height: 16, borderRadius: '50%',

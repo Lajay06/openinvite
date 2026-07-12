@@ -11,7 +11,14 @@ const UNIVERSES = [
   { id: 'brooklyn', name: 'BROOKLYN', tagline: 'Industrial Edge', number: '06', photo: 'https://static.wixstatic.com/media/d2df22_f0eef5788fdd4876a0a300e43228f919~mv2.jpg', available: true },
   { id: 'bali', name: 'BALI', tagline: 'Sacred Garden', number: '07', photo: 'https://static.wixstatic.com/media/d2df22_e30eff6d03424dd6baf63143722b2a3d~mv2.jpg', available: true },
   { id: 'paris', name: 'PARIS', tagline: 'Haussmann Romance', number: '08', photo: 'https://static.wixstatic.com/media/d2df22_6aab4aa83a3b40eabd571d355ed75c7c~mv2.jpg', available: true },
-  { id: 'cape-town', name: 'CAPE TOWN', tagline: 'Wild & Free', number: '09', photo: 'https://static.wixstatic.com/media/d2df22_2bbfee1f5b034379a76f063c2f97f653~mv2.jpg', available: true },
+  // fix/universe-picker-integrity: was 'cape-town' — UNIVERSE_CONFIGS' key
+  // is 'capetown' (no hyphen), and normalizeUniverseKey only lowercases/
+  // trims, it doesn't strip hyphens — so this never resolved any styling.
+  { id: 'capetown', name: 'CAPE TOWN', tagline: 'Wild & Free', number: '09', photo: 'https://static.wixstatic.com/media/d2df22_2bbfee1f5b034379a76f063c2f97f653~mv2.jpg', available: true },
+  // fix/universe-picker-integrity: mykonos was missing from this list
+  // entirely — one of the 10 canonical UNIVERSE_CONFIGS universes had no
+  // way to be chosen at onboarding at all.
+  { id: 'mykonos', name: 'MYKONOS', tagline: 'Aegean Blue', number: '10', photo: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg', available: true },
 ];
 
 function ComingSoonOverlay({ universe, onBack }) {
