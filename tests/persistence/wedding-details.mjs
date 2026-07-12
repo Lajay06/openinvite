@@ -253,6 +253,13 @@ const TEST_FIELDS = {
     photoBoothProvider: 'Test Photo Booth Co',
     entertainmentNotes: 'DJ to play until midnight',
   },
+  // fix/universe-picker-integrity: was undeclared on the schema entirely
+  // until this fix — every asset customisation a couple made was silently
+  // dropped on save.
+  assetContent: {
+    saveTheDate: { headerText: 'Test header', subtitle: 'Test subtitle', layout: 'centered' },
+    seatingChart: { title: 'Test seating chart', bgMode: 'light' },
+  },
 };
 
 export async function runWeddingDetails(token) {
@@ -598,7 +605,7 @@ export async function runWeddingDetails(token) {
   // ── Planning page fields — previously silently dropped, now registered ────────
   console.log('\n  Planning page field persistence tests (foodAndBeverage, photography, attire, flowers, decorations, beauty, entertainmentDetails):\n');
 
-  for (const field of ['foodAndBeverage', 'photography', 'attire', 'flowers', 'decorations', 'beauty', 'entertainmentDetails']) {
+  for (const field of ['foodAndBeverage', 'photography', 'attire', 'flowers', 'decorations', 'beauty', 'entertainmentDetails', 'assetContent']) {
     const written = TEST_FIELDS[field];
     const got     = record[field];
     results.push(writtenSubsetMatches(written, got)

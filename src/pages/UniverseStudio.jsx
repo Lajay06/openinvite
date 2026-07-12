@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import UniverseSelector from '@/components/universe-studio/UniverseSelector';
 import AssetGrid from '@/components/universe-studio/AssetGrid';
 import AssetEditorModal from '@/components/universe-studio/AssetEditorModal';
 
 export default function UniverseStudio() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const canAccessUltra = (user?.plan || 'free') === 'ultra';
   const [weddingDetails, setWeddingDetails] = useState(null);
   const [guests, setGuests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +49,11 @@ export default function UniverseStudio() {
     await handleSave({ activeUniverse: universeId });
   };
 
+  const handleLockedUniverse = () => {
+    toast.error('Premium themes require Ultra. Upgrade at Account & billing.');
+    navigate('/account');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -69,6 +80,8 @@ export default function UniverseStudio() {
         <UniverseSelector
           selectedUniverse={selectedUniverse}
           onSelect={handleUniverseChange}
+          canAccessUltra={canAccessUltra}
+          onLockedSelect={handleLockedUniverse}
         />
       </div>
 
