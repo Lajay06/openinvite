@@ -43,7 +43,6 @@ import Florals from './pages/Florals';
 import EntertainmentDetails from './pages/EntertainmentDetails';
 import Transport from './pages/Transport';
 import Accommodation from './pages/Accommodation';
-import GuestTransport from './pages/GuestTransport';
 import GuestAccommodation from './pages/GuestAccommodation';
 import GuestMusic from './pages/GuestMusic';
 import Music from './pages/Music';
@@ -65,7 +64,6 @@ import Admin from './pages/Admin';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import StudioGuestSuite from './pages/StudioGuestSuite';
-import ExperienceGuide from './pages/ExperienceGuide';
 import Features from './pages/Features';
 import Home from './pages/Home';
 
@@ -138,9 +136,7 @@ const AuthenticatedApp = () => {
         <Route path="/data-deletion" element={<DataDeletion />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
-        <Route path="/w/:weddingSlug/transport" element={<GuestTransport />} />
         <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
-        <Route path="/w/:weddingSlug/experience" element={<ExperienceGuide />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
         <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
         <Route path="/rsvp/:token" element={<RSVPPage />} />
@@ -188,9 +184,7 @@ const AuthenticatedApp = () => {
         <Route path="/scroll-morph" element={<ScrollMorph />} />
         <Route path="/universes" element={<Universes />} />
         <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
-        <Route path="/w/:weddingSlug/transport" element={<GuestTransport />} />
         <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
-        <Route path="/w/:weddingSlug/experience" element={<ExperienceGuide />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
         <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
         <Route path="/website-editor" element={<StudioWebsite />} />
