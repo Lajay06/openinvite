@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { BarChart2, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
+import SectionReveal from '../SectionReveal';
+import { isMotionEnabled } from '@/lib/universeStyling';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
@@ -285,7 +287,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
   );
 }
 
-export default function WeddingPollsPage({ weddingDetails, theme, typography }) {
+export default function WeddingPollsPage({ weddingDetails, theme, typography, universeConfig }) {
   const [polls, setPolls] = useState([]);
   const turnstileRef = useRef(null);
   const tsTokenRef = useRef('');
@@ -353,44 +355,47 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography }) 
   return (
     <div style={{ minHeight: '100vh', background: theme.darkBg }}>
       {/* Page header */}
-      <div style={{
-        padding: '80px 32px 40px',
-        borderBottom: `1px solid ${theme.darkText}10`,
-        maxWidth: 680,
-        margin: '0 auto',
-      }}>
-        <p style={{
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: '0.12em',
-          color: `${theme.darkText}40`,
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          margin: '0 0 12px',
+      <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+        <div style={{
+          padding: '80px 32px 40px',
+          borderBottom: `1px solid ${theme.darkText}10`,
+          maxWidth: 680,
+          margin: '0 auto',
         }}>
-          Guest polls
-        </p>
-        <h1 style={{
-          fontSize: 'clamp(32px, 5vw, 52px)',
-          fontWeight: 700,
-          color: theme.darkText,
-          fontFamily: typography.headingFont || "'Plus Jakarta Sans', sans-serif",
-          margin: '0 0 12px',
-          lineHeight: 1.1,
-        }}>
-          Have your say.
-        </h1>
-        <p style={{
-          fontSize: 15,
-          color: `${theme.darkText}50`,
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          margin: 0,
-          lineHeight: 1.6,
-        }}>
-          Help us make decisions that matter. Your answers shape the wedding.
-        </p>
-      </div>
+          <p style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            color: `${theme.darkText}40`,
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            margin: '0 0 12px',
+          }}>
+            Guest polls
+          </p>
+          <h1 style={{
+            fontSize: 'clamp(32px, 5vw, 52px)',
+            fontWeight: 700,
+            color: theme.darkText,
+            fontFamily: typography.headingFont || "'Plus Jakarta Sans', sans-serif",
+            margin: '0 0 12px',
+            lineHeight: 1.1,
+          }}>
+            Have your say.
+          </h1>
+          <p style={{
+            fontSize: 15,
+            color: `${theme.darkText}50`,
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            margin: 0,
+            lineHeight: 1.6,
+          }}>
+            Help us make decisions that matter. Your answers shape the wedding.
+          </p>
+        </div>
+      </SectionReveal>
 
       {/* Polls list */}
+      <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px 80px' }}>
         {polls.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
@@ -422,6 +427,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography }) 
           ))
         )}
       </div>
+      </SectionReveal>
 
       {/* Invisible Turnstile — execution="render" auto-generates a token on
           mount, shared across every poll card's vote/comment actions on this

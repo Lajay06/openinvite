@@ -104,6 +104,12 @@ export async function runUniverseStyling() {
     ? pass('resolveTexture — no universe set → null (no texture rendered)', 'null')
     : fail('resolveTexture — no universe set → null (no texture rendered)', 'null', JSON.stringify(resolveTexture({}))));
 
+  // fix/universe-cleanup: tulum/bali previously resolved the identical
+  // (type, opacity) pair (canvas/0.02), making the two indistinguishable.
+  results.push(new Set(resolvedTextures.map(t => `${t.type}-${t.opacity}`)).size === 10
+    ? pass('resolveTexture — (type, opacity) pair is distinct across all 10 universes', resolvedTextures.map(t => `${t.type}/${t.opacity}`).join(', '))
+    : fail('resolveTexture — (type, opacity) pair is distinct across all 10 universes', '10 distinct', `${new Set(resolvedTextures.map(t => `${t.type}-${t.opacity}`)).size} distinct: ${resolvedTextures.map(t => `${t.type}/${t.opacity}`).join(', ')}`));
+
   console.log('\n  Motion resolution — one consistent reveal type, calibrated per universe:\n');
 
   const resolvedMotions = UNIVERSES.map(id => resolveMotion({ activeUniverse: id }));
@@ -112,9 +118,23 @@ export async function runUniverseStyling() {
     ? pass('resolveMotion — every universe uses the same reveal type (fade — opacity+translate)', 'fade × 10')
     : fail('resolveMotion — every universe uses the same reveal type (fade — opacity+translate)', 'fade × 10', resolvedMotions.map(m => m?.sectionReveal).join(', ')));
 
-  results.push(new Set(resolvedMotions.map(m => `${m.duration}-${m.yOffset}`)).size > 1
-    ? pass('resolveMotion — calibration (duration/yOffset) varies per universe personality', resolvedMotions.map(m => `${m.duration}s/${m.yOffset}px`).join(', '))
-    : fail('resolveMotion — calibration (duration/yOffset) varies per universe personality', 'not all identical', 'all identical'));
+  // fix/universe-cleanup: tulum/paris/capetown previously all resolved the
+  // identical (duration, yOffset) pair (0.7/16), a 3-way collision.
+  results.push(new Set(resolvedMotions.map(m => `${m.duration}-${m.yOffset}`)).size === 10
+    ? pass('resolveMotion — (duration, yOffset) pair is distinct across all 10 universes', resolvedMotions.map(m => `${m.duration}s/${m.yOffset}px`).join(', '))
+    : fail('resolveMotion — (duration, yOffset) pair is distinct across all 10 universes', '10 distinct', `${new Set(resolvedMotions.map(m => `${m.duration}-${m.yOffset}`)).size} distinct: ${resolvedMotions.map(m => `${m.duration}s/${m.yOffset}px`).join(', ')}`));
+
+  console.log('\n  Page transition resolution — every universe declares one, distinct calibration:\n');
+
+  const resolvedTransitions = UNIVERSES.map(id => UNIVERSE_CONFIGS[id]?.pageTransition);
+
+  results.push(resolvedTransitions.every(t => t != null)
+    ? pass('UNIVERSE_CONFIGS — every universe declares a pageTransition (fix/universe-cleanup, was aman-only)', resolvedTransitions.map(t => t.type).join(', '))
+    : fail('UNIVERSE_CONFIGS — every universe declares a pageTransition (fix/universe-cleanup, was aman-only)', 'all non-null', resolvedTransitions.map(t => t?.type ?? 'MISSING').join(', ')));
+
+  results.push(new Set(resolvedTransitions.map(t => `${t.type}-${t.duration}`)).size === 10
+    ? pass('UNIVERSE_CONFIGS — pageTransition (type, duration) is distinct across all 10 universes', resolvedTransitions.map(t => `${t.type}/${t.duration}`).join(', '))
+    : fail('UNIVERSE_CONFIGS — pageTransition (type, duration) is distinct across all 10 universes', '10 distinct', `${new Set(resolvedTransitions.map(t => `${t.type}-${t.duration}`)).size} distinct: ${resolvedTransitions.map(t => `${t.type}/${t.duration}`).join(', ')}`));
 
   console.log('\n  Colour resolution — distinct per universe, no fallback to Aman (fix/universe-palettes):\n');
 

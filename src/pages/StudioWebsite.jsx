@@ -799,11 +799,14 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
   const bgIsDark = (bgR * 299 + parseInt(bgHex.slice(3, 5), 16) * 587 + parseInt(bgHex.slice(5, 7), 16) * 114) / 1000 < 128;
   const addBtnBorder = (showPlaceholders && !bgIsDark) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
   const addBtnColor = (showPlaceholders && !bgIsDark) ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
-  // Typography overrides universe fonts; universe fonts override system defaults
-  const effectiveHf = typo?.fontDisplay || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
-  const effectiveBf = typo?.fontBody || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
-
-  console.log('[typo] PreviewContent — hf:', effectiveHf, '| bf:', effectiveBf);
+  // Typography overrides universe fonts; universe fonts override system
+  // defaults. typo comes from resolveTypography() (universeStyling.js),
+  // whose actual keys are headingFont/bodyFont — not fontDisplay/fontBody
+  // (that shape only exists on the local UNIVERSE_THEMES object below).
+  // Reading the wrong keys meant this always fell through to
+  // universeTheme, silently diverging from what actually publishes.
+  const effectiveHf = typo?.headingFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
+  const effectiveBf = typo?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
 
   return (
     <div
