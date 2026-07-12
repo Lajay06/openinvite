@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
+import EditorialSectionKicker from '../layouts/EditorialSectionKicker';
 
 const STATUS = { idle: 'idle', sending: 'sending', sent: 'sent', error: 'error' };
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -15,6 +16,8 @@ export default function WeddingRSVPPage({ weddingDetails, theme, typography, uni
   const tsTokenRef = useRef('');
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isEditorial = universeConfig?.layout === 'editorial-masthead';
+  const copy = universeConfig?.copy || {};
 
   const handleSubmit = async () => {
     if (!isValidEmail || status === STATUS.sending) return;
@@ -37,12 +40,18 @@ export default function WeddingRSVPPage({ weddingDetails, theme, typography, uni
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '520px', margin: '0 auto' }}>
+        {isEditorial && (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <EditorialSectionKicker kicker={copy.rsvpKicker} theme={theme} typography={typography} align="center" />
+          </SectionReveal>
+        )}
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
           <h1
             style={{
               fontFamily: typography.headingFont,
               fontSize: 'clamp(2rem, 5vw, 3rem)',
               fontWeight: typography.headingWeight,
+              fontStyle: isEditorial ? 'italic' : 'normal',
               marginBottom: '12px',
               textAlign: 'center'
             }}
@@ -81,14 +90,12 @@ export default function WeddingRSVPPage({ weddingDetails, theme, typography, uni
             color: theme.darkText,
             opacity: 0.85,
           }}>
-            Each guest responds using their own personal invite link. If you can't find yours,
-            enter the email your invite was sent to and we'll send it straight to your inbox.
+            {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
           </p>
 
           {status === STATUS.sent ? (
             <p style={{ fontSize: '0.9375rem', lineHeight: 1.7, color: theme.darkText }}>
-              If that email is on the guest list, we've just sent your personal RSVP link —
-              check your inbox (and spam folder, just in case).
+              {copy.rsvpSent || "If that email is on the guest list, we've just sent your personal RSVP link — check your inbox (and spam folder, just in case)."}
             </p>
           ) : (
             <>
@@ -155,7 +162,7 @@ export default function WeddingRSVPPage({ weddingDetails, theme, typography, uni
                   marginTop: '4px'
                 }}
               >
-                {status === STATUS.sending ? 'Sending…' : 'Send me my RSVP link'}
+                {status === STATUS.sending ? 'Sending…' : (copy.rsvpCta || 'Send me my RSVP link')}
               </button>
             </>
           )}

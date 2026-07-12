@@ -1,24 +1,34 @@
 import React from 'react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
+import EditorialSectionKicker from '../layouts/EditorialSectionKicker';
 
 export default function WeddingOurStoryPage({ weddingDetails, theme, typography, universeConfig }) {
   const content = weddingDetails.ourStoryContent || {};
   const storyText = content.storyText || '';
   const photos = content.photos || [];
   const milestones = content.milestones || [];
+  const isEditorial = universeConfig?.layout === 'editorial-masthead';
+  const copy = universeConfig?.copy || {};
 
   return (
-    <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: isEditorial ? '90px 40px' : '60px 24px' }}>
+      <div style={{ maxWidth: isEditorial ? '900px' : '800px', margin: isEditorial ? '0 0 0 auto' : '0 auto' }}>
+        {isEditorial && (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <EditorialSectionKicker kicker={copy.storyKicker} theme={theme} typography={typography} />
+          </SectionReveal>
+        )}
+
         {/* Story text */}
         {storyText && (
           <SectionReveal
             universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
             style={{
-              fontFamily: typography.bodyFont,
-              fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-              lineHeight: 1.8,
+              fontFamily: isEditorial ? typography.headingFont : typography.bodyFont,
+              fontSize: isEditorial ? 'clamp(1.25rem, 2.6vw, 1.75rem)' : 'clamp(1rem, 2vw, 1.125rem)',
+              fontStyle: isEditorial ? 'italic' : 'normal',
+              lineHeight: isEditorial ? 1.55 : 1.8,
               marginBottom: '60px',
               whiteSpace: 'pre-wrap'
             }}
@@ -30,6 +40,13 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography,
         {/* Photo gallery */}
         {photos.length > 0 && (
           <div style={{ marginBottom: '60px' }}>
+            {isEditorial ? (
+              <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+                <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2rem, 5vw, 3.25rem)', marginBottom: 40, textAlign: 'left' }}>
+                  Moments
+                </h2>
+              </SectionReveal>
+            ) : (
             <h2
               style={{
                 fontFamily: typography.headingFont,
@@ -41,6 +58,7 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography,
             >
               Moments
             </h2>
+            )}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
               {photos.map((photo, i) => (
                 <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
@@ -58,6 +76,13 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography,
         {/* Timeline */}
         {milestones.length > 0 && (
           <div>
+            {isEditorial ? (
+              <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+                <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2rem, 5vw, 3.25rem)', marginBottom: 40, textAlign: 'left' }}>
+                  Our journey
+                </h2>
+              </SectionReveal>
+            ) : (
             <h2
               style={{
                 fontFamily: typography.headingFont,
@@ -69,7 +94,8 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography,
             >
               Our Journey
             </h2>
-            <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+            )}
+            <div style={{ maxWidth: '500px', margin: isEditorial ? '0' : '0 auto' }}>
               {milestones.map((milestone, i) => (
                 <SectionReveal
                   key={i}
