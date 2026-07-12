@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
 import { resolveUniverseConfig } from '@/lib/websiteThemes';
 import { resolveTypography, resolveColors, googleFontsHref } from '@/lib/universeStyling';
-import WBSectionRenderer from '@/components/website-builder/WBSectionRenderer';
 import TextureOverlay from './TextureOverlay';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 
@@ -271,40 +270,25 @@ export default function MultiPageWeddingWebsite() {
               : (universeConfig?.pageTransition?.duration ?? 0.6),
           }}
         >
-          {(() => {
-            // If the builder has authored sections for this page, render them.
-            // This makes the published site match the builder preview exactly.
-            const dynamicSections = weddingDetails.pageSections?.[page];
-            const sorted = dynamicSections?.length
-              ? [...dynamicSections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-              : [];
-            if (sorted.length > 0) {
-              return (
-                <div>
-                  {sorted.map(section => (
-                    <WBSectionRenderer
-                      key={section.id}
-                      section={section}
-                      theme={theme}
-                      typo={typography}
-                      universeTheme={null}
-                      masterData={weddingDetails}
-                    />
-                  ))}
-                </div>
-              );
-            }
-            // Fallback: data-driven pages (Stay, Transport, Experience) and any
-            // page where no sections have been authored yet.
-            return (
-              <PageComponent
-                weddingDetails={weddingDetails}
-                theme={theme}
-                typography={typography}
-                universeConfig={universeConfig}
-              />
-            );
-          })()}
+          {/* fix/published-render-tree: this used to fork onto
+              WBSectionRenderer whenever a page had builder-authored
+              pageSections — but WBSectionRenderer is the builder's own
+              live-editing CANVAS preview (src/pages/StudioWebsite.jsx),
+              never given motion/texture-context/universe theming, and
+              several of its "interactive" section types (RSVP, guest
+              book, song request) are static mockups with no onClick at
+              all. Real guests must always get the real, fully-wired,
+              interactive PageComponent (WeddingRSVPPage.jsx,
+              WeddingGuestbookPage.jsx, etc. — the same components every
+              motion/texture/theming/server-mediated-API fix this session
+              landed against) — never WBSectionRenderer, unconditionally.
+              See UNIVERSE_EXPERIENCE_DIAGNOSTIC.md. */}
+          <PageComponent
+            weddingDetails={weddingDetails}
+            theme={theme}
+            typography={typography}
+            universeConfig={universeConfig}
+          />
         </motion.div>
       </AnimatePresence>
     </div>
