@@ -1,6 +1,8 @@
 import React from 'react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
+import EditorialSectionKicker from '../layouts/EditorialSectionKicker';
+import ZelligeDivider from '../layouts/ZelligeDivider';
 
 function fmtTime(t) {
   if (!t) return '';
@@ -70,6 +72,8 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
   });
 
   const hasEvents = allEvents.length > 0;
+  const isEditorial = universeConfig?.layout === 'editorial-masthead';
+  const copy = universeConfig?.copy || {};
 
   const T   = typography;
   const hFont = T.headingFont;
@@ -99,15 +103,30 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: '80px 32px 120px' }}>
 
         {/* Page heading */}
-        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-          <h1 style={{
-            fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.025em',
-            fontSize: 'clamp(2.4rem, 6vw, 4rem)', lineHeight: 1.05,
-            color: lt, textAlign: 'center', margin: '0 0 96px',
-          }}>
-            The celebration
-          </h1>
-        </SectionReveal>
+        {isEditorial ? (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <div style={{ marginBottom: 96 }}>
+              <EditorialSectionKicker kicker={copy.celebrationKicker} theme={theme} typography={typography} />
+              <h1 style={{
+                fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.02em',
+                fontSize: 'clamp(2.6rem, 7vw, 4.5rem)', lineHeight: 1.02,
+                color: lt, textAlign: 'left', margin: 0,
+              }}>
+                The <span style={{ fontStyle: 'italic', opacity: 0.85 }}>celebration</span>
+              </h1>
+            </div>
+          </SectionReveal>
+        ) : (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <h1 style={{
+              fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.025em',
+              fontSize: 'clamp(2.4rem, 6vw, 4rem)', lineHeight: 1.05,
+              color: lt, textAlign: 'center', margin: '0 0 96px',
+            }}>
+              The celebration
+            </h1>
+          </SectionReveal>
+        )}
 
         {/* ── Day groups ─────────────────────────────────────────────────────── */}
         {hasEvents ? dayOrder.map((dateKey, gi) => {
@@ -128,15 +147,25 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
 
                 {/* Day header */}
                 {dateKey && (
-                  <div style={{ marginBottom: 64, paddingBottom: 28, borderBottom: `1px solid ${lt}14` }}>
+                  <div style={{ marginBottom: 64, paddingBottom: isEditorial ? 0 : 28, borderBottom: isEditorial ? 'none' : `1px solid ${lt}14` }}>
                     {dayOfWeek && (
-                      <p style={{ fontFamily: bFont, fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: acc, margin: '0 0 10px' }}>
+                      <p style={{
+                        fontFamily: isEditorial ? hFont : bFont,
+                        fontStyle: isEditorial ? 'italic' : 'normal',
+                        fontSize: isEditorial ? '1rem' : 11,
+                        fontWeight: isEditorial ? hWt : 600,
+                        letterSpacing: isEditorial ? '0.01em' : '0.1em',
+                        color: acc, margin: '0 0 10px',
+                      }}>
                         {dayOfWeek}
                       </p>
                     )}
                     <h2 style={{ fontFamily: hFont, fontWeight: hWt, fontSize: 'clamp(1.6rem, 3.5vw, 2.5rem)', letterSpacing: '-0.02em', color: lt, margin: 0, lineHeight: 1.1 }}>
                       {fullDate}
                     </h2>
+                    {isEditorial && (
+                      <ZelligeDivider color={lt} opacity={0.35} height={14} style={{ width: '100%', marginTop: 28 }} />
+                    )}
                   </div>
                 )}
 

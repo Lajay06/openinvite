@@ -1,6 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroVideo';
+import EditorialMasthead from '../layouts/EditorialMasthead';
+import EditorialGridFooter from '../layouts/EditorialGridFooter';
+
+/** Formats weddingDate for display, or null if unset/unparseable — never
+ * lets `new Date('')` render the literal text "Invalid Date" to a guest. */
+function formatWeddingDate(weddingDate, options) {
+  if (!weddingDate) return null;
+  const d = new Date(weddingDate);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('en-US', options);
+}
 
 // Fullscreen-"cover" CSS trick for 16:9 iframe embeds (YouTube/Vimeo) —
 // these players don't support object-fit, so the iframe is deliberately
@@ -94,6 +105,56 @@ function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
 export default function WeddingHomePage({ weddingDetails, theme, typography, universeConfig }) {
   const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || 'We are overjoyed to celebrate with you.';
   const prefersReduced = useReducedMotion();
+  const isEditorial = universeConfig?.layout === 'editorial-masthead';
+  const copy = universeConfig?.copy || {};
+  const formattedDate = formatWeddingDate(weddingDetails.weddingDate, { month: 'long', day: 'numeric', year: 'numeric' });
+
+  if (isEditorial) {
+    return (
+      <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <HeroBackground
+            coverPhoto={weddingDetails.coverPhoto}
+            heroVideoUrl={weddingDetails.heroVideoUrl}
+            prefersReduced={prefersReduced}
+          />
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}59` }} />
+
+          <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', padding: '120px 40px 60px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: prefersReduced ? 0 : 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.85) }}
+              style={{ width: '100%', maxWidth: 1100, margin: '0 auto' }}
+            >
+              <EditorialMasthead
+                coupleNames={weddingDetails.coupleNames}
+                kicker={copy.heroKicker}
+                theme={theme}
+                typography={typography}
+                textColor={theme.lightBg}
+              />
+            </motion.div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 40px 56px' }}>
+            <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+              <EditorialGridFooter
+                theme={theme}
+                typography={typography}
+                textColor={theme.lightBg}
+                columns={[
+                  { label: 'The date', value: formattedDate || 'To be announced' },
+                  { label: 'Join us in', value: weddingDetails.mainCeremony?.venueName || weddingDetails.mainCeremony?.address?.split(',')[0] || 'Marrakech' },
+                  { label: 'RSVP', value: 'View invitation →', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -159,11 +220,7 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
               opacity: 0.9
             }}
           >
-            {new Date(weddingDetails.weddingDate).toLocaleDateString('en-US', {
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric'
-            })}
+            {formattedDate || 'Date to be announced'}
           </p>
 
           <motion.div

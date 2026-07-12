@@ -538,19 +538,57 @@ export const UNIVERSE_CONFIGS = {
     pageTransition: { type: 'slide', duration: 0.55 },
   },
   marrakech: {
-    // Desert opulence — rich, ornate, warm.
+    // Desert opulence — editorial + woven pattern. Sophisticated/expensive,
+    // deliberately not literal-themepark: muted terracotta/espresso/brass
+    // rather than saturated "Moroccan lantern" colours, a real-presence
+    // Arabic-inspired serif (Amiri) rather than a generic display face, and
+    // its own editorial-masthead section layout (see `layout` below) rather
+    // than the shared centred stack every other universe still uses.
     typography: {
-      headingFont: '"Marcellus", serif',
+      headingFont: '"Amiri", serif',
       bodyFont:    '"Nunito Sans", sans-serif',
-      googleFonts: 'Marcellus&family=Nunito+Sans:wght@300;400;500',
+      googleFonts: 'Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Nunito+Sans:wght@300;400;500',
     },
     texture: { type: 'plaster', opacity: 0.03 },
     colors: {
-      darkBg: '#2C1810', lightBg: '#F2E8D9', darkText: '#F2E8D9', lightText: '#2C1810',
-      accent: '#8B2635', accentSecondary: '#C9A96E', navBg: '#2C1810',
+      // Muted terracotta accent (was a saturated maroon-red) + a deeper,
+      // more expensive espresso ground — "warm plaster, terracotta,
+      // brass/gold, deep espresso," never saturated.
+      darkBg: '#241811', lightBg: '#F1E6D6', darkText: '#F1E6D6', lightText: '#241811',
+      accent: '#B5654A', accentSecondary: '#B8945F', navBg: '#241811',
     },
-    motion: { sectionReveal: 'fade', duration: 0.75, yOffset: 20, ease: 'easeOut', intensity: 'subtle' },
+    // Considered, warm reveals — slower and further-travelled than the
+    // 0.7/16-18 baseline most other universes use, fitting an unhurried,
+    // "worth waiting for" personality. Still the same fade-up mechanism
+    // every universe uses (SectionReveal) — only calibration differs.
+    motion: { sectionReveal: 'fade', duration: 0.85, yOffset: 22, ease: 'easeOut', intensity: 'subtle' },
     pageTransition: { type: 'dissolve', duration: 0.8 },
+    // Per-universe SECTION LAYOUT (not just colour/type/motion) — an id
+    // resolved by each guest-site page component (WeddingHomePage.jsx,
+    // WeddingOurStoryPage.jsx, WeddingCelebrationPage.jsx,
+    // WeddingRSVPPage.jsx) to switch between the shared centred-stack
+    // layout (the implicit default when `layout` is unset — every other
+    // universe today) and a dedicated composition built from the
+    // components in src/components/guest-website/layouts/. This is the
+    // architecture future universes plug into: define your own `layout`
+    // id, either reuse EditorialMasthead/EditorialGridFooter with your own
+    // theme/typography/copy, or author new layout primitives in that same
+    // folder — never fork the page component itself per universe.
+    layout: 'editorial-masthead',
+    // Per-universe guest-facing microcopy — optional; every consumer falls
+    // back to the exact existing hardcoded string when `copy` (or a given
+    // key) is absent, so the other 9 universes are byte-for-byte
+    // unaffected. Establishes the same "declare it here, resolve it at the
+    // call site with a safe fallback" pattern as typography/texture/motion.
+    copy: {
+      heroKicker: 'Nº 01 — Marrakech',
+      storyKicker: 'Nº 02 — Our story',
+      celebrationKicker: 'Nº 03 — The celebration',
+      rsvpKicker: 'Nº 04 — With joy, yes',
+      rsvpIntro: 'Every guest carries an invitation woven just for them. If yours has gone astray, tell us where to send it and we’ll weave you another.',
+      rsvpCta: 'Reveal my invitation',
+      rsvpSent: 'Your invitation is on its way — look for it in your inbox (and your spam folder, just in case).',
+    },
   },
   brooklyn: {
     // Urban industrial — gritty, direct, unfussy.
