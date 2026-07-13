@@ -10,6 +10,13 @@ import VerticalRule from '../layouts/VerticalRule';
 import TicketStub from '../layouts/TicketStub';
 import BaliSectionMark from '../layouts/BaliSectionMark';
 import WaveDivider from '../layouts/WaveDivider';
+import ParisSectionMark from '../layouts/ParisSectionMark';
+import CapriSectionMark from '../layouts/CapriSectionMark';
+import CitrusScallop from '../layouts/CitrusScallop';
+import MykonosSectionMark from '../layouts/MykonosSectionMark';
+import CubeBlock from '../layouts/CubeBlock';
+import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
+import VineRule from '../layouts/VineRule';
 
 function fmtTime(t) {
   if (!t) return '';
@@ -84,6 +91,10 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
   const isKyoto = universeConfig?.layout === 'kyoto-vertical';
   const isBrooklyn = universeConfig?.layout === 'brooklyn-offgrid';
   const isBali = universeConfig?.layout === 'bali-organic';
+  const isParis = universeConfig?.layout === 'paris-couture';
+  const isCapri = universeConfig?.layout === 'capri-citrus';
+  const isMykonos = universeConfig?.layout === 'mykonos-whitewash';
+  const isCapeTown = universeConfig?.layout === 'capetown-estate';
   const copy = universeConfig?.copy || {};
 
   const T   = typography;
@@ -114,7 +125,43 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: '80px 32px 120px' }}>
 
         {/* Page heading */}
-        {isKyoto ? (
+        {isParis ? (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <div style={{ marginBottom: 88, textAlign: 'center' }}>
+              <ParisSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
+              <h1 style={{ fontFamily: hFont, fontWeight: hWt, fontSize: 'clamp(2.5rem, 6vw, 4rem)', lineHeight: 1.1, color: lt, margin: 0 }}>
+                The celebration
+              </h1>
+            </div>
+          </SectionReveal>
+        ) : isCapri ? (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <div style={{ marginBottom: 72 }}>
+              <CapriSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} accentColor={acc} />
+              <h1 style={{ fontFamily: hFont, fontWeight: hWt, fontSize: 'clamp(2.4rem, 6vw, 3.75rem)', lineHeight: 1.1, color: lt, margin: 0, textAlign: 'left' }}>
+                The celebration
+              </h1>
+            </div>
+          </SectionReveal>
+        ) : isMykonos ? (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <div style={{ marginBottom: 96 }}>
+              <MykonosSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} accentColor={acc} />
+              <h1 style={{ fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.01em', fontSize: 'clamp(2rem, 5.5vw, 3.5rem)', lineHeight: 1.1, color: lt, margin: 0, textAlign: 'left' }}>
+                The celebration
+              </h1>
+            </div>
+          </SectionReveal>
+        ) : isCapeTown ? (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <div style={{ marginBottom: 88 }}>
+              <CapeTownSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
+              <h1 style={{ fontFamily: hFont, fontWeight: hWt, fontSize: 'clamp(2.25rem, 5.5vw, 3.75rem)', lineHeight: 1.15, color: lt, margin: 0, textAlign: 'left' }}>
+                The celebration
+              </h1>
+            </div>
+          </SectionReveal>
+        ) : isKyoto ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 96 }}>
               <KyotoSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
@@ -217,9 +264,9 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
                 {dateKey && (
                   <div style={{
                     marginBottom: 64,
-                    paddingBottom: (isEditorial || isMinimal || isKyoto || isBali) ? 0 : 28,
-                    borderBottom: (isEditorial || isMinimal || isKyoto || isBali) ? 'none' : `1px solid ${lt}14`,
-                    textAlign: isMinimal ? 'center' : isBrooklyn ? 'right' : 'left',
+                    paddingBottom: (isEditorial || isMinimal || isKyoto || isBali || isParis || isCapri || isMykonos || isCapeTown) ? 0 : 28,
+                    borderBottom: (isEditorial || isMinimal || isKyoto || isBali || isParis || isCapri || isMykonos || isCapeTown) ? 'none' : `1px solid ${lt}14`,
+                    textAlign: (isMinimal || isParis) ? 'center' : isBrooklyn ? 'right' : 'left',
                     display: isKyoto ? 'flex' : 'block',
                     gap: isKyoto ? 20 : undefined,
                   }}>
@@ -227,12 +274,12 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
                     <div>
                       {dayOfWeek && (
                         <p style={{
-                          fontFamily: (isEditorial || isMinimal) ? hFont : bFont,
-                          fontStyle: (isEditorial || isMinimal) ? 'italic' : 'normal',
-                          fontSize: (isEditorial || isMinimal) ? '1rem' : isBrooklyn ? 12 : 11,
-                          fontWeight: (isEditorial || isMinimal) ? hWt : isBrooklyn ? 700 : 600,
-                          letterSpacing: (isEditorial || isMinimal) ? '0.01em' : isBrooklyn ? '0.18em' : '0.1em',
-                          textTransform: isBrooklyn ? 'uppercase' : 'none',
+                          fontFamily: (isEditorial || isMinimal || isParis || isCapeTown) ? hFont : bFont,
+                          fontStyle: (isEditorial || isMinimal || isParis || isCapeTown) ? 'italic' : 'normal',
+                          fontSize: (isEditorial || isMinimal) ? '1rem' : isBrooklyn ? 12 : isParis ? 12 : isCapeTown ? '1rem' : 11,
+                          fontWeight: (isEditorial || isMinimal || isCapeTown) ? hWt : isBrooklyn ? 700 : isCapri ? 700 : 600,
+                          letterSpacing: (isEditorial || isMinimal) ? '0.01em' : isBrooklyn ? '0.18em' : isParis ? '0.24em' : isMykonos ? '0.16em' : '0.1em',
+                          textTransform: (isBrooklyn || isParis || isMykonos) ? 'uppercase' : 'none',
                           color: acc, margin: '0 0 10px',
                         }}>
                           {dayOfWeek}
@@ -241,7 +288,7 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
                       <h2 style={{
                         fontFamily: hFont, fontWeight: hWt,
                         fontSize: isBrooklyn ? 'clamp(2.2rem, 5.5vw, 3.5rem)' : 'clamp(1.6rem, 3.5vw, 2.5rem)',
-                        letterSpacing: isBrooklyn ? '0.01em' : '-0.02em',
+                        letterSpacing: isBrooklyn ? '0.01em' : isMykonos ? '-0.01em' : '-0.02em',
                         color: lt, margin: 0, lineHeight: 1.1,
                       }}>
                         {fullDate}
@@ -257,6 +304,18 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
                       )}
                       {isBali && (
                         <WaveDivider color={lt} opacity={0.3} height={16} style={{ maxWidth: 140, marginTop: 24 }} />
+                      )}
+                      {isParis && (
+                        <HairlineRule color={lt} opacity={0.3} width={100} style={{ margin: '24px auto 0' }} />
+                      )}
+                      {isCapri && (
+                        <CitrusScallop color={acc} bumpSize={5} style={{ maxWidth: 90, marginTop: 20 }} />
+                      )}
+                      {isMykonos && (
+                        <CubeBlock color={acc} width={28} height={6} style={{ marginTop: 22 }} />
+                      )}
+                      {isCapeTown && (
+                        <VineRule color={lt} opacity={0.4} style={{ maxWidth: 130, marginTop: 24 }} />
                       )}
                     </div>
                   </div>

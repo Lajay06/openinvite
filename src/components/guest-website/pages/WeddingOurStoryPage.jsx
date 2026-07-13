@@ -8,6 +8,12 @@ import VerticalRule from '../layouts/VerticalRule';
 import BrooklynSectionMark from '../layouts/BrooklynSectionMark';
 import BaliSectionMark from '../layouts/BaliSectionMark';
 import WaveDivider from '../layouts/WaveDivider';
+import ParisSectionMark from '../layouts/ParisSectionMark';
+import CapriSectionMark from '../layouts/CapriSectionMark';
+import MykonosSectionMark from '../layouts/MykonosSectionMark';
+import CubeBlock from '../layouts/CubeBlock';
+import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
+import VineRule from '../layouts/VineRule';
 
 export default function WeddingOurStoryPage({ weddingDetails, theme, typography, universeConfig }) {
   const content = weddingDetails.ourStoryContent || {};
@@ -19,7 +25,187 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography,
   const isKyoto = universeConfig?.layout === 'kyoto-vertical';
   const isBrooklyn = universeConfig?.layout === 'brooklyn-offgrid';
   const isBali = universeConfig?.layout === 'bali-organic';
+  const isParis = universeConfig?.layout === 'paris-couture';
+  const isCapri = universeConfig?.layout === 'capri-citrus';
+  const isMykonos = universeConfig?.layout === 'mykonos-whitewash';
+  const isCapeTown = universeConfig?.layout === 'capetown-estate';
   const copy = universeConfig?.copy || {};
+
+  if (isParis) {
+    return (
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '110px 40px' }}>
+        <div style={{ maxWidth: 680, margin: '0 auto', textAlign: 'center' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <ParisSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} />
+          </SectionReveal>
+
+          {storyText && (
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1rem, 2vw, 1.1875rem)', lineHeight: 1.85, marginBottom: 72, whiteSpace: 'pre-wrap' }}>
+              {storyText}
+            </SectionReveal>
+          )}
+
+          {photos.length > 0 && (
+            <div style={{ marginBottom: 72 }}>
+              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Moments</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                {photos.map((photo, i) => (
+                  <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+                    <img src={photo} alt="Wedding moment" style={{ width: '100%', height: '290px', objectFit: 'cover' }} />
+                  </SectionReveal>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {milestones.length > 0 && (
+            <div style={{ textAlign: 'left', maxWidth: 480, margin: '0 auto' }}>
+              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40, textAlign: 'center' }}>Our journey</h2>
+              {milestones.map((milestone, i) => (
+                <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ marginBottom: 28, paddingBottom: 28, borderBottom: i < milestones.length - 1 ? `1px solid ${theme.lightText}14` : 'none' }}>
+                  <div style={{ fontFamily: typography.bodyFont, fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
+                  <div style={{ fontFamily: typography.bodyFont, fontSize: '1rem', lineHeight: 1.6 }}>{milestone.text}</div>
+                </SectionReveal>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (isCapri) {
+    return (
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '90px 32px' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <CapriSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} accentColor={theme.accent} />
+          </SectionReveal>
+
+          {storyText && (
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.15rem, 2.2vw, 1.375rem)', lineHeight: 1.7, marginBottom: 56, whiteSpace: 'pre-wrap' }}>
+              {storyText}
+            </SectionReveal>
+          )}
+
+          {photos.length > 0 && (
+            <div style={{ marginBottom: 56 }}>
+              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Moments</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '20px' }}>
+                {photos.map((photo, i) => (
+                  <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+                    <img src={photo} alt="Wedding moment" style={{ width: '100%', height: '280px', objectFit: 'cover' }} />
+                  </SectionReveal>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {milestones.length > 0 && (
+            <div>
+              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Our journey</h2>
+              {milestones.map((milestone, i) => (
+                <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ marginBottom: 28 }}>
+                  <div style={{ fontFamily: typography.bodyFont, fontSize: '0.875rem', fontWeight: 700, color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
+                  <div style={{ fontFamily: typography.bodyFont, fontSize: '1rem', lineHeight: 1.65 }}>{milestone.text}</div>
+                </SectionReveal>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (isMykonos) {
+    return (
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '130px 48px' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <MykonosSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} accentColor={theme.accent} />
+          </SectionReveal>
+
+          {storyText && (
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1rem, 2vw, 1.1875rem)', lineHeight: 1.8, marginBottom: 88, whiteSpace: 'pre-wrap' }}>
+              {storyText}
+            </SectionReveal>
+          )}
+
+          {photos.length > 0 && (
+            <div style={{ marginBottom: 88 }}>
+              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', letterSpacing: '-0.01em', marginBottom: 40 }}>Moments</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
+                {photos.map((photo, i) => (
+                  <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+                    <img src={photo} alt="Wedding moment" style={{ width: '100%', height: '300px', objectFit: 'cover' }} />
+                  </SectionReveal>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {milestones.length > 0 && (
+            <div>
+              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', letterSpacing: '-0.01em', marginBottom: 40 }}>Our journey</h2>
+              {milestones.map((milestone, i) => (
+                <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ display: 'flex', gap: 18, marginBottom: 36 }}>
+                  <CubeBlock color={theme.accent} width={8} height={8} style={{ marginTop: 6, flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontFamily: typography.bodyFont, fontSize: '0.8125rem', fontWeight: 600, color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
+                    <div style={{ fontFamily: typography.bodyFont, fontSize: '1rem', lineHeight: 1.7 }}>{milestone.text}</div>
+                  </div>
+                </SectionReveal>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (isCapeTown) {
+    return (
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '100px 48px' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <CapeTownSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} />
+          </SectionReveal>
+
+          {storyText && (
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', lineHeight: 1.85, marginBottom: 72, whiteSpace: 'pre-wrap' }}>
+              {storyText}
+            </SectionReveal>
+          )}
+
+          {photos.length > 0 && (
+            <div style={{ marginBottom: 72 }}>
+              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Moments</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
+                {photos.map((photo, i) => (
+                  <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+                    <img src={photo} alt="Wedding moment" style={{ width: '100%', height: '300px', objectFit: 'cover' }} />
+                  </SectionReveal>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {milestones.length > 0 && (
+            <div style={{ maxWidth: 520 }}>
+              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Our journey</h2>
+              {milestones.map((milestone, i) => (
+                <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+                  {i > 0 && <VineRule color={theme.lightText} opacity={0.35} style={{ maxWidth: 140, margin: '28px 0' }} />}
+                  <div style={{ fontFamily: typography.bodyFont, fontSize: '0.8125rem', fontWeight: 600, letterSpacing: '0.04em', color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
+                  <div style={{ fontFamily: typography.bodyFont, fontSize: '1rem', lineHeight: 1.7 }}>{milestone.text}</div>
+                </SectionReveal>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   if (isKyoto) {
     return (

@@ -11,6 +11,14 @@ import BrooklynMasthead from '../layouts/BrooklynMasthead';
 import BrooklynFooter from '../layouts/BrooklynFooter';
 import BaliMasthead from '../layouts/BaliMasthead';
 import BaliFooter from '../layouts/BaliFooter';
+import ParisMasthead from '../layouts/ParisMasthead';
+import ParisFooter from '../layouts/ParisFooter';
+import CapriMasthead from '../layouts/CapriMasthead';
+import CapriFooter from '../layouts/CapriFooter';
+import MykonosMasthead from '../layouts/MykonosMasthead';
+import MykonosFooter from '../layouts/MykonosFooter';
+import CapeTownMasthead from '../layouts/CapeTownMasthead';
+import CapeTownFooter from '../layouts/CapeTownFooter';
 
 /** Formats weddingDate for display, or null if unset/unparseable — never
  * lets `new Date('')` render the literal text "Invalid Date" to a guest. */
@@ -118,8 +126,145 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
   const isKyoto = universeConfig?.layout === 'kyoto-vertical';
   const isBrooklyn = universeConfig?.layout === 'brooklyn-offgrid';
   const isBali = universeConfig?.layout === 'bali-organic';
+  const isParis = universeConfig?.layout === 'paris-couture';
+  const isCapri = universeConfig?.layout === 'capri-citrus';
+  const isMykonos = universeConfig?.layout === 'mykonos-whitewash';
+  const isCapeTown = universeConfig?.layout === 'capetown-estate';
   const copy = universeConfig?.copy || {};
   const formattedDate = formatWeddingDate(weddingDetails.weddingDate, { month: 'long', day: 'numeric', year: 'numeric' });
+
+  if (isParis) {
+    return (
+      <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <HeroBackground coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}60` }} />
+
+          <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '140px 40px 80px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: prefersReduced ? 0 : (universeConfig?.motion?.yOffset ?? 12) }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.7), ease: universeConfig?.motion?.ease }}
+              style={{ width: '100%' }}
+            >
+              <ParisMasthead coupleNames={weddingDetails.coupleNames} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} />
+            </motion.div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 40px 64px' }}>
+            <div style={{ maxWidth: 680, margin: '0 auto' }}>
+              <ParisFooter
+                theme={theme} typography={typography} textColor={theme.lightBg}
+                columns={[
+                  { label: 'The date', value: formattedDate || 'To be announced' },
+                  { label: 'Join us in', value: weddingDetails.mainCeremony?.venueName || weddingDetails.mainCeremony?.address?.split(',')[0] || 'Paris' },
+                  { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isCapri) {
+    return (
+      <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <HeroBackground coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}45` }} />
+
+          <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 32px 60px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: prefersReduced ? 0 : (universeConfig?.motion?.yOffset ?? 14) }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.55), ease: universeConfig?.motion?.ease }}
+              style={{ width: '100%' }}
+            >
+              <CapriMasthead coupleNames={weddingDetails.coupleNames} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
+            </motion.div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 32px 56px' }}>
+            <div style={{ maxWidth: 720, margin: '0 auto' }}>
+              <CapriFooter
+                theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent}
+                columns={[
+                  { label: 'The date', value: formattedDate || 'To be announced' },
+                  { label: 'Join us in', value: weddingDetails.mainCeremony?.venueName || weddingDetails.mainCeremony?.address?.split(',')[0] || 'Capri' },
+                  { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isMykonos) {
+    return (
+      <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <HeroBackground coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}55` }} />
+
+          <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', padding: '150px 48px 90px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: prefersReduced ? 0 : (universeConfig?.motion?.yOffset ?? 8) }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.6), ease: universeConfig?.motion?.ease }}
+              style={{ width: '100%', maxWidth: 900 }}
+            >
+              <MykonosMasthead coupleNames={weddingDetails.coupleNames} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
+            </motion.div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 48px 80px' }}>
+            <MykonosFooter
+              theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent}
+              lines={[
+                { label: 'The date', value: formattedDate || 'To be announced' },
+                { label: 'RSVP', value: 'Send it over', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isCapeTown) {
+    return (
+      <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <HeroBackground coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}60` }} />
+
+          <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', padding: '140px 48px 80px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: prefersReduced ? 0 : (universeConfig?.motion?.yOffset ?? 18) }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.75), ease: universeConfig?.motion?.ease }}
+            >
+              <CapeTownMasthead coupleNames={weddingDetails.coupleNames} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} />
+            </motion.div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 48px 72px' }}>
+            <CapeTownFooter
+              theme={theme} typography={typography} textColor={theme.lightBg}
+              lines={[
+                { label: 'The date', value: formattedDate || 'To be announced' },
+                { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isKyoto) {
     return (

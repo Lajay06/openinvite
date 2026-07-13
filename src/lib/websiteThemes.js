@@ -587,19 +587,46 @@ export const UNIVERSE_CONFIGS = {
     },
   },
   capri: {
-    // Mediterranean summer — bright, breezy, crisp.
+    // Sun-drenched, warm, playful — deliberately NOT blue-coastal
+    // (UNIVERSE_DESIGN_SYSTEM.md §4): leans lemon/terracotta/warm white
+    // instead of Capri-blue-and-white. Heading font swapped from Italiana
+    // (thin, austere high-fashion) to Yeseva One, a warm, characterful
+    // display serif that actually reads "lively," not just "elegant."
     typography: {
-      headingFont: '"Italiana", serif',
+      headingFont: '"Yeseva One", serif',
       bodyFont:    '"Poppins", sans-serif',
-      googleFonts: 'Italiana&family=Poppins:wght@300;400;500',
+      googleFonts: 'Yeseva+One&family=Poppins:wght@300;400;500',
     },
     texture: { type: 'linen', opacity: 0.015 },
     colors: {
-      darkBg: '#1B3A6B', lightBg: '#FEFBF3', darkText: '#FEFBF3', lightText: '#1B3A6B',
-      accent: '#E8C547', accentSecondary: '#7BA7C2', navBg: '#1B3A6B',
+      // Previously a navy-and-lemon coastal palette (darkBg #1B3A6B,
+      // accentSecondary a sky-blue #7BA7C2) — rebuilt around warm white/
+      // terracotta instead. Accent muted from a saturated neon lemon
+      // (#E8C547) to a deeper, "expensive" golden-lemon; accentSecondary
+      // is now a genuine terracotta, not a second, unrelated blue.
+      darkBg: '#4A2E1C', lightBg: '#FBF6EA', darkText: '#FBF6EA', lightText: '#3D2415',
+      accent: '#C4A130', accentSecondary: '#C1633B', navBg: '#4A2E1C',
     },
-    motion: { sectionReveal: 'fade', duration: 0.65, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'slide', duration: 0.55 },
+    // Bright, buoyant — quicker and lighter than the original, fitting
+    // "sun-drenched, playful" rather than "crisp."
+    motion: { sectionReveal: 'fade', duration: 0.55, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'slide', duration: 0.45 },
+    // Per-universe SECTION LAYOUT — sun-drenched and centred, but bright
+    // and present rather than quiet: a CitrusScallop rule (a repeating
+    // row of semicircle bumps, like scalloped citrus pith) under the
+    // kicker and names. Primitives: CitrusScallop, CapriMasthead,
+    // CapriSectionMark, CapriFooter.
+    layout: 'capri-citrus',
+    // Joyful, breezy micro-copy.
+    copy: {
+      heroKicker: "You're invited!",
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: "Every guest gets their own little invitation. Can't find yours? Pop your email below and we'll send it straight over.",
+      rsvpCta: 'Send it my way',
+      rsvpSent: 'On its way! Check your inbox — and your spam folder, just in case.',
+    },
   },
   marrakech: {
     // Desert opulence — editorial + woven pattern. Sophisticated/expensive,
@@ -747,26 +774,56 @@ export const UNIVERSE_CONFIGS = {
     },
   },
   paris: {
-    // French romance — elegant, classic, tender.
+    // Fashion-plate restraint (UNIVERSE_DESIGN_SYSTEM.md §4) — chic,
+    // understated couture, deliberately NOT the Eiffel-tower-postcard
+    // cliché. Heading font swapped from Playfair Display (romantic,
+    // library-warm) to Bodoni Moda, a genuinely high-contrast Didot-like
+    // Didone that reads as a fashion magazine plate, not a novel.
     typography: {
-      headingFont: '"Playfair Display", serif',
+      headingFont: '"Bodoni Moda", serif',
       bodyFont:    '"Lato", sans-serif',
-      googleFonts: 'Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700',
+      googleFonts: 'Bodoni+Moda:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700',
     },
     texture: { type: 'linen', opacity: 0.02 },
     colors: {
+      // darkBg/lightBg (ivory/ink-navy) unchanged — already fitting.
+      // accent and accentSecondary were previously identical (a muted
+      // gold, #C9A96E, used for both) — replaced with the brief's actual
+      // two colours: an ink-black accent (used for thin rules/CTAs on
+      // the ivory ground) and one muted rose as accentSecondary.
       darkBg: '#1A1A2E', lightBg: '#FAF7F2', darkText: '#FAF7F2', lightText: '#1A1A2E',
-      accent: '#C9A96E', accentSecondary: '#C9A96E', navBg: '#1A1A2E',
+      accent: '#1A1816', accentSecondary: '#AD7F76', navBg: '#1A1A2E',
     },
-    // duration/yOffset bumped slightly (fix/universe-cleanup): was
-    // identical to tulum's AND capetown's 0.7/16, a 3-way collision.
-    // A touch slower and further-travelled fits "elegant, tender" as
-    // marginally more lingering than tulum's "unhurried" baseline.
-    motion: { sectionReveal: 'fade', duration: 0.75, yOffset: 17, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'fade', duration: 0.75 },
+    // Elegant, precise — shorter travel than the original for "precise"
+    // rather than "lingering," while staying unhurried.
+    motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 12, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'fade', duration: 0.6 },
+    // Per-universe SECTION LAYOUT — a fashion-plate caption card: a fine
+    // full-width HairlineRule above AND below the centred kicker/names
+    // (framed, not just a single quiet mark beneath), structured evenly-
+    // spaced whitespace. Reuses HairlineRule (Aman's own bare-line
+    // primitive) since "thin rules" is mechanically the same mark — the
+    // overall composition (framed caption card vs. Aman's vast unframed
+    // centre) is what keeps the two universes distinct. Primitives:
+    // ParisMasthead, ParisSectionMark, ParisFooter.
+    layout: 'paris-couture',
+    // Chic, understated micro-copy.
+    copy: {
+      heroKicker: 'Save the date',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: 'Each guest carries their own invitation. If yours has misplaced itself, simply share the email it was sent to, and we shall send it once more.',
+      rsvpCta: 'Retrieve my invitation',
+      rsvpSent: 'Avec plaisir — your invitation is on its way. Please look in your inbox, and your spam folder, just in case.',
+    },
   },
   capetown: {
-    // Safari chic — earthy, adventurous, warm.
+    // Winery/estate wedding — refined-rustic, serene luxury
+    // (UNIVERSE_DESIGN_SYSTEM.md §4), replacing the original "safari
+    // chic" framing entirely: a vineyard estate, not a farmhouse or a
+    // game lodge. Bitter (a grounded slab serif) already fits and is
+    // unchanged.
     typography: {
       headingFont: '"Bitter", serif',
       bodyFont:    '"Josefin Sans", sans-serif',
@@ -774,29 +831,89 @@ export const UNIVERSE_CONFIGS = {
     },
     texture: { type: 'paper', opacity: 0.025 },
     colors: {
-      darkBg: '#5C3D2E', lightBg: '#F5EEE3', darkText: '#F5EEE3', lightText: '#3D2818',
-      accent: '#C4A882', accentSecondary: '#C4A882', navBg: '#5C3D2E',
+      // darkBg deepened toward "oak" (was a paler safari-brown);
+      // accent/accentSecondary were previously identical (a khaki
+      // #C4A882 used for both) — replaced with the brief's actual two
+      // tones: a muted vineyard green and a wine-toned secondary.
+      darkBg: '#4A3226', lightBg: '#F0EBE0', darkText: '#F0EBE0', lightText: '#2E2015',
+      accent: '#6B7757', accentSecondary: '#7A3B42', navBg: '#4A3226',
     },
-    // duration/yOffset made quicker (fix/universe-cleanup): was part of
-    // the same 3-way collision as tulum/paris. "Adventurous" fits a
-    // slightly snappier reveal than tulum's/paris's calmer pacing.
-    motion: { sectionReveal: 'fade', duration: 0.6, yOffset: 15, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'slide', duration: 0.6 },
+    // Calm, warm — slower and more generously travelled than the
+    // original "adventurous, snappier" safari calibration, fitting
+    // "serene luxury, unhurried" instead.
+    motion: { sectionReveal: 'fade', duration: 0.75, yOffset: 18, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'dissolve', duration: 0.9 },
+    // Per-universe SECTION LAYOUT — left-aligned, generously spaced,
+    // grounded (not centred-formal, not dramatically asymmetric): a
+    // VineRule (a fine estate-stationery botanical rule) beneath the
+    // kicker, in place of a hairline, woven pattern, or any of the other
+    // universes' marks. Primitives: VineRule, CapeTownMasthead,
+    // CapeTownSectionMark, CapeTownFooter.
+    layout: 'capetown-estate',
+    // Gracious, unhurried micro-copy.
+    copy: {
+      heroKicker: 'You are warmly invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: 'Each guest carries their own invitation, sent with care. If yours has wandered off, simply share the email it was sent to, and we will happily send it again.',
+      rsvpCta: 'Have it sent to me',
+      rsvpSent: 'Your invitation is on its way, with our gratitude — please look for it in your inbox, and your spam folder, just in case.',
+    },
   },
   mykonos: {
-    // Aegean blue — crisp, whitewashed, coastal.
+    // Architectural, heavy negative space, cube-like blocks, whitewashed
+    // (UNIVERSE_DESIGN_SYSTEM.md §4) — Aegean architecture, not generic
+    // coastal minimal. FIXES the accent==darkBg bug: accent was
+    // literally identical to darkBg (#1B4F8A used for both), so any
+    // accent-coloured element placed on the dark background was
+    // invisible; accentSecondary was pure white, functionally invisible
+    // against the near-white lightBg too. Neither ever actually
+    // functioned as a visible accent.
     typography: {
-      headingFont: '"Cinzel", serif',
+      // Cinzel (a classical, Roman-column display face) swapped for a
+      // single clean sans family — Montserrat at two weights carries
+      // the heading/body hierarchy, a genuinely minimalist one-typeface
+      // system fitting "clean minimal" architecture rather than
+      // classical/imperial.
+      headingFont: '"Montserrat", sans-serif',
       bodyFont:    '"Montserrat", sans-serif',
-      googleFonts: 'Cinzel:wght@400;500;600&family=Montserrat:wght@300;400;500',
+      headingWeight: 700,
+      googleFonts: 'Montserrat:wght@300;400;500;700',
     },
     texture: { type: 'plaster', opacity: 0.02 },
     colors: {
-      darkBg: '#1B4F8A', lightBg: '#F5FAFF', darkText: '#F5FAFF', lightText: '#0A2540',
-      accent: '#1B4F8A', accentSecondary: '#FFFFFF', navBg: '#1B4F8A',
+      // lightBg is now genuinely bright white (was a pale blue-tinted
+      // near-white); darkBg deepened into a real architectural navy-
+      // cobalt "block" colour; accent is now a distinct, vivid cobalt —
+      // never equal to darkBg — that reads clearly against both the
+      // white ground and the dark block. accentSecondary is a lighter
+      // tint of the SAME cobalt (not an unrelated white), so it's "one
+      // deep cobalt accent," used at two values, per the brief.
+      darkBg: '#16324F', lightBg: '#FFFFFF', darkText: '#FFFFFF', lightText: '#17232D',
+      accent: '#2F6FCC', accentSecondary: '#6D93C7', navBg: '#16324F',
     },
-    motion: { sectionReveal: 'fade', duration: 0.65, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'reveal', duration: 0.55 },
+    // Crisp, calm — the shortest travel distance of the four rebuilt in
+    // this batch, reading as a precise architectural cut rather than a
+    // soft lift.
+    motion: { sectionReveal: 'fade', duration: 0.6, yOffset: 8, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'reveal', duration: 0.5 },
+    // Per-universe SECTION LAYOUT — a Bauhaus-flat colour-block
+    // composition: a solid CubeBlock (a plain rectangle, no line, no
+    // pattern — literal architecture) beside the kicker/names, vast
+    // surrounding whitespace. Primitives: CubeBlock, MykonosMasthead,
+    // MykonosSectionMark, MykonosFooter.
+    layout: 'mykonos-whitewash',
+    // Airy, minimal micro-copy.
+    copy: {
+      heroKicker: 'You are invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: "Every guest has a personal link. Can't find yours? Leave your email below and we'll send it over.",
+      rsvpCta: 'Send it over',
+      rsvpSent: 'Sent — check your inbox, and your spam folder just in case.',
+    },
   },
 };
 
