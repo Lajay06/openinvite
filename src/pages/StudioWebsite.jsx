@@ -10,23 +10,8 @@ import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
 import SectionTemplatePicker from '@/components/website-builder/SectionTemplatePicker';
 import { FONT_OPTIONS, WEDDING_PAGES, UNIVERSE_CONFIGS, normalizeUniverseKey } from '@/lib/websiteThemes';
-import { resolveTypography, resolveColors, resolveUniverseConfig, googleFontsHref } from '@/lib/universeStyling';
-import WeddingHomePage from '@/components/guest-website/pages/WeddingHomePage';
-import WeddingOurStoryPage from '@/components/guest-website/pages/WeddingOurStoryPage';
-import WeddingCelebrationPage from '@/components/guest-website/pages/WeddingCelebrationPage';
-import WeddingRSVPPage from '@/components/guest-website/pages/WeddingRSVPPage';
-import WeddingRegistryPage from '@/components/guest-website/pages/WeddingRegistryPage';
-import WeddingMusicPage from '@/components/guest-website/pages/WeddingMusicPage';
-import WeddingPhotosPage from '@/components/guest-website/pages/WeddingPhotosPage';
-import WeddingStylePage from '@/components/guest-website/pages/WeddingStylePage';
-import WeddingPollsPage from '@/components/guest-website/pages/WeddingPollsPage';
-import WeddingFAQPage from '@/components/guest-website/pages/WeddingFAQPage';
-import WeddingStayPage from '@/components/guest-website/pages/WeddingStayPage';
-import WeddingTransportPage from '@/components/guest-website/pages/WeddingTransportPage';
-import WeddingExperiencePage from '@/components/guest-website/pages/WeddingExperiencePage';
-import WeddingGuestbookPage from '@/components/guest-website/pages/WeddingGuestbookPage';
-import WeddingWebsiteNav from '@/components/guest-website/WeddingWebsiteNav';
-import TextureOverlay from '@/components/guest-website/TextureOverlay';
+import { resolveTypography, resolveColors, googleFontsHref } from '@/lib/universeStyling';
+import RealWebsitePreview from '@/components/website-builder/RealWebsitePreview';
 import WBSectionRenderer from '@/components/website-builder/WBSectionRenderer';
 import AvaAutoFillModal from '@/components/website-builder/AvaAutoFillModal';
 import PublishModal from '@/components/website-builder/PublishModal';
@@ -143,30 +128,6 @@ const UNIVERSE_THEMES = {
     fontDisplay: '"Cinzel", serif',
     fontBody: '"Montserrat", sans-serif',
     feeling: 'Aegean blue, crisp, whitewashed, coastal',
-  },
-};
-
-const PLACEHOLDER_PAGES = {
-  home: {
-    sections: [
-      { type: 'hero', heading: 'Sarah & James', subheading: '20 September 2025 · Amalfi Coast, Italy', body: 'Join us as we celebrate our love' },
-      { type: 'intro', heading: "We're getting married", body: "We can't wait to share this day with the people who matter most to us. Save the date and join us for an unforgettable celebration." },
-    ],
-  },
-  'our-story': {
-    sections: [
-      { type: 'story', heading: 'How it all began', body: "We met and knew from that moment on that something special had begun. We're so excited to celebrate this next chapter with the people we love most." },
-    ],
-  },
-  celebration: {
-    sections: [
-      { type: 'event', heading: 'The ceremony', body: 'Villa Rufolo, Ravello\n3:00 PM — Ceremony\n5:00 PM — Cocktail hour\n7:00 PM — Reception dinner' },
-    ],
-  },
-  rsvp: {
-    sections: [
-      { type: 'rsvp', heading: 'Will you join us?', body: "Please let us know by 1 August 2025 whether you'll be able to attend. We look forward to celebrating with you." },
-    ],
   },
 };
 
@@ -740,7 +701,7 @@ function PlaceholderSection({ section, universeTheme, effectiveHf, effectiveBf, 
   );
 }
 
-function PreviewContent({ theme, typo, universeTheme, details, currentPage, onPageChange }) {
+function PreviewContent({ universeTheme, details, currentPage, onPageChange }) {
   // Preload ALL typography fonts at mount so switching is instant (no loading
   // delay) — both the generic FONT_OPTIONS/TYPOGRAPHY_PAIRINGS set AND every
   // universe's font pairing, since the universe picker can switch fonts too.
@@ -792,96 +753,16 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, onPa
     console.log('[fonts] preloaded', needed.size, 'font URLs');
   }, [universeTheme?.fontDisplay, details?.displayFont, details?.bodyFont]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Typography overrides universe fonts; universe fonts override system
-  // defaults. typo comes from resolveTypography() (universeStyling.js),
-  // whose actual keys are headingFont/bodyFont — not fontDisplay/fontBody
-  // (that shape only exists on the local UNIVERSE_THEMES object below).
-  // Reading the wrong keys meant this always fell through to
-  // universeTheme, silently diverging from what actually publishes.
-  const effectiveHf = typo?.headingFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
-  const effectiveBf = typo?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
-
-  // fix/builder-preview-parity: this used to fork on whether the current
-  // page had builder-authored pageSections — rendering WBSectionRenderer's
-  // static canvas mockup (via SectionWrap) when they existed, and the real
-  // page component only when the page had none. That's the exact fork the
-  // published render tree (MultiPageWeddingWebsite.jsx) already stopped
-  // using — WBSectionRenderer is the builder's canvas widget, not the
-  // published site, and was never given motion/texture/universe-layout
-  // awareness. The builder preview must show exactly what a guest sees:
-  // the real PageComponent, the real nav, the real texture overlay, the
-  // real universe motion — driven by the in-memory draft `details` object
-  // already held in this component's state (no fetch, no iframe — this
-  // *is* the draft, live, with zero staleness as the couple types).
-  // WBSectionRenderer/SectionWrap/the section-canvas editing UI
-  // (WBRightPanel, SectionTemplatePicker) are unchanged and untouched —
-  // they're simply no longer what renders in this preview pane. See
-  // BUILDER_PREVIEW_PARITY notes in the PR description for the follow-up
-  // this leaves open (a proper per-field content editor to replace the
-  // section canvas as the actual editing surface).
-  const universeConfig = resolveUniverseConfig(details);
-  const typography = resolveTypography(details);
-  const enabledPages = details.enabledPages || ['home'];
-
-  const PAGE_COMPONENTS = {
-    'home':         WeddingHomePage,
-    'our-story':    WeddingOurStoryPage,
-    'celebration':  WeddingCelebrationPage,
-    'rsvp':         WeddingRSVPPage,
-    'registry':     WeddingRegistryPage,
-    'music':        WeddingMusicPage,
-    'photos':       WeddingPhotosPage,
-    'styling':      WeddingStylePage,
-    'polls':        WeddingPollsPage,
-    'faq':          WeddingFAQPage,
-    'stay':         WeddingStayPage,
-    'transport':    WeddingTransportPage,
-    'experience':   WeddingExperiencePage,
-    'guestbook':    WeddingGuestbookPage,
-  };
-  // Custom page slugs with no dedicated component fall back to
-  // WeddingHomePage — matching MultiPageWeddingWebsite.jsx's own
-  // `PAGE_COMPONENTS[page] || WeddingHomePage` fallback exactly, so this
-  // stays a faithful preview of what actually publishes rather than a
-  // builder-only placeholder.
-  const PageComponent = PAGE_COMPONENTS[currentPage] || WeddingHomePage;
-
-  return (
-    <div
-      className="wb-guest-root"
-      style={{ '--wb-heading-font': effectiveHf, '--wb-body-font': effectiveBf, position: 'relative' }}
-    >
-      {/* Same site-wide texture overlay every universe's published render
-          uses (MultiPageWeddingWebsite.jsx) — mounted once, behind nav +
-          content, switching with the active universe. */}
-      {universeConfig?.texture && (
-        <TextureOverlay textureId={universeConfig.texture.type} opacity={universeConfig.texture.opacity} />
-      )}
-
-      {/* The real guest-site nav component — same props the published
-          render tree passes it. */}
-      <WeddingWebsiteNav
-        weddingName={details.coupleNames}
-        theme={theme}
-        enabledPages={enabledPages}
-        currentPage={currentPage}
-        weddingSlug={details.slug}
-        hasTransport={!!details?.transport?.enabledModes?.length}
-        hasAccommodation={!!details?.accommodation?.manualProperties?.length}
-        hasMusic={!!details?.music?.guestRequestsEnabled}
-        hasExperience={!!details?.experienceGuide?.published}
-        onNavigate={onPageChange}
-      />
-
-      {/* Page content — the real, interactive PageComponent, with the
-          same universeConfig/theme/typography the published site
-          resolves — never the section-canvas mockup. */}
-      <PageComponent
-        weddingDetails={details}
-        theme={theme}
-        typography={typography}
-        universeConfig={universeConfig}
-      />
-    </div>
-  );
+  // fix/builder-preview-parity + fix/fullscreen-preview-parity: this used
+  // to fork on whether the current page had builder-authored pageSections
+  // — rendering WBSectionRenderer's static canvas mockup (via SectionWrap)
+  // when they existed. That's the exact fork the published render tree
+  // (MultiPageWeddingWebsite.jsx) already stopped using — WBSectionRenderer
+  // is the builder's canvas widget, not the published site. RealWebsitePreview
+  // is the single shared "render the real guest site off draft data"
+  // component, also used by FullScreenPreview.jsx's full-screen "Preview"
+  // — one implementation, not three. WBSectionRenderer/SectionWrap/the
+  // section-canvas editing UI (WBRightPanel, SectionTemplatePicker) are
+  // unchanged and untouched — they're simply no longer what renders here.
+  return <RealWebsitePreview details={details} currentPage={currentPage} onNavigate={onPageChange} />;
 }
