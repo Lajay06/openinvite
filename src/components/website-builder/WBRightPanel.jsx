@@ -302,6 +302,112 @@ function SettingsTab({ details, onChange }) {
   );
 }
 
+// ── CONTENT TAB ─────────────────────────────────────────────────
+// The real per-field content editor — writes directly to the exact
+// fields the published page components read (coupleNames, weddingDate,
+// homeContent.tagline, ourStoryContent.storyText), the same way
+// DesignTab's coverPhoto/heroVideoUrl fields already do. This replaces
+// the old section-content editor (WBRightPanel's per-section form,
+// reachable only by clicking a rendered section) as the actual editing
+// surface for this content — that editor became unreachable once the
+// builder preview stopped rendering pageSections (fix/builder-preview-
+// parity), and even before that, section edits wrote to
+// pageSections[page][i].content, a field the real guest-facing pages
+// have never read since the published render tree stopped consuming
+// pageSections. This is NOT a return to the section canvas: it writes
+// straight to homeContent/ourStoryContent/etc., not to pageSections.
+//
+// Ceremony/reception venue, times, dress code, and pre/post-wedding
+// events already have a real, working editor — EventDetails.jsx (the
+// /event-details planner page) — so those are surfaced here as a
+// read-only reference + link out, not rebuilt as a second, divergent
+// write path onto the same mainCeremony/reception fields.
+function ContentTab({ details, onChange }) {
+  const updateNested = (field, key, value) => {
+    onChange(field, { ...(details?.[field] || {}), [key]: value });
+  };
+
+  return (
+    <div>
+      <SLabel>The couple</SLabel>
+      <UInputDark
+        label="Couple names"
+        value={details?.coupleNames}
+        onChange={v => onChange('coupleNames', v)}
+        placeholder="Sarah &amp; James"
+      />
+      <UInputDark
+        label="Wedding date"
+        type="date"
+        value={details?.weddingDate}
+        onChange={v => onChange('weddingDate', v)}
+      />
+      <Divider />
+
+      <SLabel>Home page</SLabel>
+      <UTextarea
+        label="Tagline"
+        value={details?.homeContent?.tagline}
+        onChange={v => updateNested('homeContent', 'tagline', v)}
+        rows={2}
+        placeholder="We are overjoyed to celebrate with you."
+      />
+      <Divider />
+
+      <SLabel>Our story</SLabel>
+      <UTextarea
+        label="Story"
+        value={details?.ourStoryContent?.storyText}
+        onChange={v => updateNested('ourStoryContent', 'storyText', v)}
+        rows={6}
+        placeholder="How you met, your journey together..."
+      />
+      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: '-8px 0 14px' }}>
+        Photos and timeline milestones aren't editable here yet — coming soon.
+      </p>
+      <Divider />
+
+      <SLabel>Ceremony &amp; reception</SLabel>
+      <MasterDataReferenceDark
+        label="Venue"
+        value={details?.mainCeremony?.venueName}
+      />
+      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: '-6px 0 0' }}>
+        Venue, times, dress code, and other events are set in the wedding planner, not here.
+      </p>
+    </div>
+  );
+}
+
+function UInputDark({ label, value, onChange, type = 'text', placeholder = '' }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      {label && <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>{label}</p>}
+      <input
+        type={type} value={value || ''} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', padding: '8px', fontSize: 13, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit', background: 'rgba(255,255,255,0.08)', boxSizing: 'border-box', borderRadius: 0, colorScheme: 'dark' }}
+        onFocus={e => e.target.style.borderColor = '#E03553'}
+        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+      />
+    </div>
+  );
+}
+
+function MasterDataReferenceDark({ label, value }) {
+  return (
+    <div style={{ marginBottom: 8 }}>
+      {label && <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>{label}</p>}
+      <a
+        href="/event-details"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', textDecoration: 'none' }}
+      >
+        <span style={{ fontSize: 13, color: value ? '#FFFFFF' : 'rgba(255,255,255,0.35)' }}>{value || 'Not set yet'}</span>
+        <span style={{ fontSize: 11, color: '#E03553', fontWeight: 600, whiteSpace: 'nowrap' }}>Edit in Planner →</span>
+      </a>
+    </div>
+  );
+}
+
 // ── SECTION CONTENT EDITOR ────────────────────────────────────
 function SectionContentEditor({ section, onUpdateContent, masterData }) {
   const c = section.content || {};
@@ -749,9 +855,9 @@ export default function WBRightPanel({ details, universeTheme, onChange, selecte
           )
         ) : (
           <>
-            {/* Design / Settings tabs */}
+            {/* Design / Content / Settings tabs */}
             <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0, position: 'sticky', top: 0, background: '#1C1C1E', zIndex: 10 }}>
-              {[{ id: 'design', label: 'Design' }, { id: 'settings', label: 'Settings' }].map(tab => (
+              {[{ id: 'design', label: 'Design' }, { id: 'content', label: 'Content' }, { id: 'settings', label: 'Settings' }].map(tab => (
                 <button key={tab.id} onClick={() => onRightTabChange(tab.id)} style={{ flex: 1, height: 44, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: rightTab === tab.id ? '#FFFFFF' : 'rgba(255,255,255,0.35)', borderBottom: rightTab === tab.id ? '2px solid #FFFFFF' : '2px solid transparent', fontFamily: 'inherit' }}>
                   {tab.label}
                 </button>
@@ -760,15 +866,12 @@ export default function WBRightPanel({ details, universeTheme, onChange, selecte
             <div style={{ flex: 1, padding: 16, overflowY: 'auto' }}>
               {rightTab === 'design' ? (
                 <DesignTab details={details} onChange={onChange} universeTheme={universeTheme} />
+              ) : rightTab === 'content' ? (
+                <ContentTab details={details} onChange={onChange} />
               ) : (
                 <SettingsTab details={details} onChange={onChange} />
               )}
             </div>
-            {rightTab === 'design' && (
-              <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', textAlign: 'center', margin: 0 }}>Click any section in the preview to edit it</p>
-              </div>
-            )}
           </>
         )}
       </div>
