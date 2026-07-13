@@ -575,6 +575,33 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
           >
             {tagline}
           </motion.div>
+
+          {weddingDetails.slug && (
+            <motion.div
+              initial={{ opacity: 0, y: prefersReduced ? 0 : 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: prefersReduced ? 0 : 0.45, duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.8) }}
+              style={{ marginTop: '28px' }}
+            >
+              <a
+                href={`/w/${weddingDetails.slug}/rsvp`}
+                style={{
+                  display: 'inline-block',
+                  padding: '10px 28px',
+                  border: `1px solid ${theme.lightBg}60`,
+                  borderRadius: 999,
+                  color: theme.lightBg,
+                  fontFamily: typography.bodyFont,
+                  fontSize: '0.8125rem',
+                  fontWeight: typography.bodyWeight,
+                  letterSpacing: '0.04em',
+                  textDecoration: 'none',
+                }}
+              >
+                RSVP
+              </a>
+            </motion.div>
+          )}
         </motion.div>
       </div>
 
