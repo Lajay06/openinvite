@@ -3,6 +3,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroVideo';
 import EditorialMasthead from '../layouts/EditorialMasthead';
 import EditorialGridFooter from '../layouts/EditorialGridFooter';
+import MinimalMasthead from '../layouts/MinimalMasthead';
+import MinimalFooter from '../layouts/MinimalFooter';
 
 /** Formats weddingDate for display, or null if unset/unparseable — never
  * lets `new Date('')` render the literal text "Invalid Date" to a guest. */
@@ -106,8 +108,53 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
   const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || 'We are overjoyed to celebrate with you.';
   const prefersReduced = useReducedMotion();
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
+  const isMinimal = universeConfig?.layout === 'aman-minimal';
   const copy = universeConfig?.copy || {};
   const formattedDate = formatWeddingDate(weddingDetails.weddingDate, { month: 'long', day: 'numeric', year: 'numeric' });
+
+  if (isMinimal) {
+    return (
+      <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <HeroBackground
+            coverPhoto={weddingDetails.coverPhoto}
+            heroVideoUrl={weddingDetails.heroVideoUrl}
+            prefersReduced={prefersReduced}
+          />
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}66` }} />
+
+          <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '160px 40px 100px', textAlign: 'center' }}>
+            <motion.div
+              initial={{ opacity: 0, y: prefersReduced ? 0 : (universeConfig?.motion?.yOffset ?? 14) }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.95) }}
+              style={{ width: '100%' }}
+            >
+              <MinimalMasthead
+                coupleNames={weddingDetails.coupleNames}
+                kicker={copy.heroKicker}
+                theme={theme}
+                typography={typography}
+                textColor={theme.lightBg}
+              />
+            </motion.div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 40px 96px' }}>
+            <MinimalFooter
+              theme={theme}
+              typography={typography}
+              textColor={theme.lightBg}
+              lines={[
+                { label: 'The date', value: formattedDate || 'To be announced' },
+                { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isEditorial) {
     return (

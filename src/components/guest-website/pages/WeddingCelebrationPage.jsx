@@ -3,6 +3,8 @@ import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import EditorialSectionKicker from '../layouts/EditorialSectionKicker';
 import ZelligeDivider from '../layouts/ZelligeDivider';
+import MinimalSectionMark from '../layouts/MinimalSectionMark';
+import HairlineRule from '../layouts/HairlineRule';
 
 function fmtTime(t) {
   if (!t) return '';
@@ -73,6 +75,7 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
 
   const hasEvents = allEvents.length > 0;
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
+  const isMinimal = universeConfig?.layout === 'aman-minimal';
   const copy = universeConfig?.copy || {};
 
   const T   = typography;
@@ -103,7 +106,20 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: '80px 32px 120px' }}>
 
         {/* Page heading */}
-        {isEditorial ? (
+        {isMinimal ? (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <div style={{ marginBottom: 88 }}>
+              <MinimalSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
+              <h1 style={{
+                fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.005em',
+                fontSize: 'clamp(2.25rem, 5.5vw, 3.5rem)', lineHeight: 1.1,
+                color: lt, textAlign: 'center', margin: 0,
+              }}>
+                The celebration
+              </h1>
+            </div>
+          </SectionReveal>
+        ) : isEditorial ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 96 }}>
               <EditorialSectionKicker kicker={copy.celebrationKicker} theme={theme} typography={typography} />
@@ -147,14 +163,19 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
 
                 {/* Day header */}
                 {dateKey && (
-                  <div style={{ marginBottom: 64, paddingBottom: isEditorial ? 0 : 28, borderBottom: isEditorial ? 'none' : `1px solid ${lt}14` }}>
+                  <div style={{
+                    marginBottom: 64,
+                    paddingBottom: (isEditorial || isMinimal) ? 0 : 28,
+                    borderBottom: (isEditorial || isMinimal) ? 'none' : `1px solid ${lt}14`,
+                    textAlign: isMinimal ? 'center' : 'left',
+                  }}>
                     {dayOfWeek && (
                       <p style={{
-                        fontFamily: isEditorial ? hFont : bFont,
-                        fontStyle: isEditorial ? 'italic' : 'normal',
-                        fontSize: isEditorial ? '1rem' : 11,
-                        fontWeight: isEditorial ? hWt : 600,
-                        letterSpacing: isEditorial ? '0.01em' : '0.1em',
+                        fontFamily: (isEditorial || isMinimal) ? hFont : bFont,
+                        fontStyle: (isEditorial || isMinimal) ? 'italic' : 'normal',
+                        fontSize: (isEditorial || isMinimal) ? '1rem' : 11,
+                        fontWeight: (isEditorial || isMinimal) ? hWt : 600,
+                        letterSpacing: (isEditorial || isMinimal) ? '0.01em' : '0.1em',
                         color: acc, margin: '0 0 10px',
                       }}>
                         {dayOfWeek}
@@ -165,6 +186,9 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
                     </h2>
                     {isEditorial && (
                       <ZelligeDivider color={lt} opacity={0.35} height={14} style={{ width: '100%', marginTop: 28 }} />
+                    )}
+                    {isMinimal && (
+                      <HairlineRule color={lt} opacity={0.2} width={40} style={{ margin: '28px auto 0' }} />
                     )}
                   </div>
                 )}

@@ -463,33 +463,68 @@ export const WEDDING_PAGES = [
 // only the calibration (duration/yOffset) varies per universe personality.
 export const UNIVERSE_CONFIGS = {
   aman: {
-    // Quiet luxury — unchanged from the original C1/Aman-only config.
+    // Quiet luxury — the minimal pole, opposite Marrakech's ornamental
+    // editorial (UNIVERSE_DESIGN_SYSTEM.md §4): confident restraint, the
+    // luxury is what's removed. Typography/texture unchanged from the
+    // original C1/Aman-only config; ground/text warmed toward paper/
+    // espresso, motion slowed to the most reverent of all 10, and its own
+    // `layout`/`copy` added per the architecture PR #87 established.
     typography: {
       headingFont: '"Cormorant Garamond", serif',
       bodyFont:    '"Jost", sans-serif',
       googleFonts: 'Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500',
     },
-    // Matches the existing aman WEBSITE_THEMES entry exactly (unchanged) —
-    // this universe was already correctly wired end-to-end before this
-    // colour system existed for the other 9.
     colors: {
-      darkBg: '#0A0A0A', lightBg: '#F8F7F5', darkText: '#F8F7F5', lightText: '#0A0A0A',
+      // Warm paper/bone ground (was near-white #F8F7F5) + espresso text
+      // (was pure black #0A0A0A) — darkBg/darkText (the "deep black, warm
+      // linen" dark-section pairing) are the original identity and stay
+      // unchanged; accent/accentSecondary already read as one restrained
+      // gold family, so also unchanged.
+      darkBg: '#0A0A0A', lightBg: '#F3ECDD', darkText: '#F8F7F5', lightText: '#2B2118',
       accent: '#C4956A', accentSecondary: '#8B6340', navBg: '#0A0A0A',
     },
     texture: {
       type:    'grain',   // SVG feTurbulence fractalNoise overlay on dark sections
-      opacity: 0.025,     // 2.5% — barely-there; visible on close inspection, not at a glance
+      opacity: 0.025,     // 2.5% — barely-there; visible on close inspection, not at a glance — unchanged
     },
+    // Slow, reverent fades — the slowest duration and shortest travel
+    // distance of all 10 universes (a longer, barely-perceptible reveal
+    // reads quieter than a shorter, more obvious lift). Still the same
+    // SectionReveal fade-up mechanism every universe uses, and still
+    // fully skipped under prefers-reduced-motion / the builder's motion
+    // toggle (SectionReveal.jsx, unchanged).
     motion: {
-      sectionReveal: 'fade',   // type: fade-up on viewport entry
-      duration:      0.75,     // 750ms — gentle, unhurried
-      yOffset:       18,       // px rise — perceptible gentle lift on scroll entry
-      ease:          'easeOut',// soft stop
-      intensity:     'subtle', // semantic flag for future tuning
+      sectionReveal: 'fade',
+      duration:      0.95,     // 950ms — the slowest of all 10
+      yOffset:       14,       // px rise — the shortest travel of all 10: barely-there movement
+      ease:          'easeOut',
+      intensity:     'subtle',
     },
     pageTransition: {
       type:     'fade',
-      duration: 0.65,    // 650ms — clearly a deliberate soft fade (exit+enter = ~1.3s total)
+      duration: 0.9,     // slowed from 0.65s to match the reverent personality above
+    },
+    // Per-universe SECTION LAYOUT (see UNIVERSE_DESIGN_SYSTEM.md §1) — the
+    // minimal pole: deeply centred, symmetric, vast whitespace, a single
+    // bare hairline rule as the only divider (the anti-motif to
+    // Marrakech's woven zellige), content held to a narrow measure.
+    // Reuses the same opt-in mechanism PR #87 established — each page
+    // component branches on this id, using the primitives in
+    // src/components/guest-website/layouts/ (MinimalMasthead,
+    // MinimalSectionMark, MinimalFooter, HairlineRule).
+    layout: 'aman-minimal',
+    // Quiet, gracious micro-copy — same optional-key-with-fallback
+    // pattern Marrakech's `copy` established; every consumer falls back
+    // to the exact pre-existing string when a key (or `copy` itself) is
+    // absent, so the other 9 universes are unaffected.
+    copy: {
+      heroKicker: 'An invitation',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'With pleasure',
+      rsvpIntro: 'Each of our guests carries their own quiet invitation. If yours has slipped away, simply tell us where it was sent, and we will send it again.',
+      rsvpCta: 'Send my invitation',
+      rsvpSent: 'With pleasure — your invitation is on its way. Please check your inbox, and your spam folder, just in case.',
     },
   },
   tulum: {
