@@ -5,6 +5,12 @@ import EditorialMasthead from '../layouts/EditorialMasthead';
 import EditorialGridFooter from '../layouts/EditorialGridFooter';
 import MinimalMasthead from '../layouts/MinimalMasthead';
 import MinimalFooter from '../layouts/MinimalFooter';
+import KyotoMasthead from '../layouts/KyotoMasthead';
+import KyotoFooter from '../layouts/KyotoFooter';
+import BrooklynMasthead from '../layouts/BrooklynMasthead';
+import BrooklynFooter from '../layouts/BrooklynFooter';
+import BaliMasthead from '../layouts/BaliMasthead';
+import BaliFooter from '../layouts/BaliFooter';
 
 /** Formats weddingDate for display, or null if unset/unparseable — never
  * lets `new Date('')` render the literal text "Invalid Date" to a guest. */
@@ -109,8 +115,146 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
   const prefersReduced = useReducedMotion();
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
   const isMinimal = universeConfig?.layout === 'aman-minimal';
+  const isKyoto = universeConfig?.layout === 'kyoto-vertical';
+  const isBrooklyn = universeConfig?.layout === 'brooklyn-offgrid';
+  const isBali = universeConfig?.layout === 'bali-organic';
   const copy = universeConfig?.copy || {};
   const formattedDate = formatWeddingDate(weddingDetails.weddingDate, { month: 'long', day: 'numeric', year: 'numeric' });
+
+  if (isKyoto) {
+    return (
+      <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <HeroBackground
+            coverPhoto={weddingDetails.coverPhoto}
+            heroVideoUrl={weddingDetails.heroVideoUrl}
+            prefersReduced={prefersReduced}
+          />
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}70` }} />
+
+          <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', padding: '140px 48px 80px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: prefersReduced ? 0 : (universeConfig?.motion?.yOffset ?? 10) }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.8), ease: universeConfig?.motion?.ease }}
+            >
+              <KyotoMasthead
+                coupleNames={weddingDetails.coupleNames}
+                kicker={copy.heroKicker}
+                theme={theme}
+                typography={typography}
+                textColor={theme.lightBg}
+              />
+            </motion.div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 48px 72px' }}>
+            <KyotoFooter
+              theme={theme}
+              typography={typography}
+              textColor={theme.lightBg}
+              lines={[
+                { label: 'The date', value: formattedDate || 'To be announced' },
+                { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isBrooklyn) {
+    return (
+      <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <HeroBackground
+            coverPhoto={weddingDetails.coverPhoto}
+            heroVideoUrl={weddingDetails.heroVideoUrl}
+            prefersReduced={prefersReduced}
+          />
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}55` }} />
+
+          <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'flex-end', padding: '120px 32px 48px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: prefersReduced ? 0 : (universeConfig?.motion?.yOffset ?? 10) }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.4), ease: universeConfig?.motion?.ease }}
+              style={{ width: '100%' }}
+            >
+              <BrooklynMasthead
+                coupleNames={weddingDetails.coupleNames}
+                kicker={copy.heroKicker}
+                theme={theme}
+                typography={typography}
+                textColor={theme.lightBg}
+                accentColor={theme.accent}
+              />
+            </motion.div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 32px 56px' }}>
+            <BrooklynFooter
+              theme={theme}
+              typography={typography}
+              textColor={theme.lightBg}
+              accentColor={theme.accent}
+              lines={[
+                { label: 'The date', value: formattedDate || 'To be announced' },
+                { label: 'RSVP', value: 'Get my invite →', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isBali) {
+    return (
+      <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <HeroBackground
+            coverPhoto={weddingDetails.coverPhoto}
+            heroVideoUrl={weddingDetails.heroVideoUrl}
+            prefersReduced={prefersReduced}
+          />
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}50` }} />
+
+          <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', padding: '130px 40px 70px' }}>
+            <motion.div
+              initial={{ opacity: 0, y: prefersReduced ? 0 : (universeConfig?.motion?.yOffset ?? 20) }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.9), ease: universeConfig?.motion?.ease }}
+              style={{ width: '100%', maxWidth: 900, margin: '0 auto' }}
+            >
+              <BaliMasthead
+                coupleNames={weddingDetails.coupleNames}
+                kicker={copy.heroKicker}
+                theme={theme}
+                typography={typography}
+                textColor={theme.lightBg}
+              />
+            </motion.div>
+          </div>
+
+          <div style={{ position: 'relative', zIndex: 10, padding: '0 40px 64px' }}>
+            <div style={{ maxWidth: 900, margin: '0 auto' }}>
+              <BaliFooter
+                theme={theme}
+                typography={typography}
+                textColor={theme.lightBg}
+                lines={[
+                  { label: 'The date', value: formattedDate || 'To be announced' },
+                  { label: 'RSVP', value: 'Join us', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isMinimal) {
     return (

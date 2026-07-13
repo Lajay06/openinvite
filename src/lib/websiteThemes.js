@@ -543,7 +543,11 @@ export const UNIVERSE_CONFIGS = {
     pageTransition: { type: 'dissolve', duration: 0.7 },
   },
   kyoto: {
-    // Japanese minimalism — restrained, precise, quiet.
+    // Japanese minimalism — vertical rhythm, dominant negative space (ma),
+    // asymmetric restraint (UNIVERSE_DESIGN_SYSTEM.md §4). Typography/
+    // texture unchanged (already restrained and precise); accent/
+    // accentSecondary consolidated into one muted indigo family — "ma"
+    // reads quieter with one accent hue than two competing ones.
     typography: {
       headingFont: '"Shippori Mincho", serif',
       bodyFont:    '"Zen Kaku Gothic New", sans-serif',
@@ -551,11 +555,36 @@ export const UNIVERSE_CONFIGS = {
     },
     texture: { type: 'paper', opacity: 0.02 },
     colors: {
+      // Sumi ink / warm off-white unchanged; accent moved from two
+      // unrelated hues (moss-grey #6B6B5A + wood-brown #8B7355) to one
+      // muted indigo family (a deeper value for accentSecondary, not a
+      // second hue) — "one muted accent," per the brief.
       darkBg: '#1A1A1A', lightBg: '#F5F2ED', darkText: '#F5F2ED', lightText: '#2C2C2C',
-      accent: '#6B6B5A', accentSecondary: '#8B7355', navBg: '#1A1A1A',
+      accent: '#4B5A6E', accentSecondary: '#333E4C', navBg: '#1A1A1A',
     },
-    motion: { sectionReveal: 'fade', duration: 0.6, yOffset: 12, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'fade', duration: 0.5 },
+    // Slow, still, deliberate — a touch slower than the original, with
+    // the shortest travel distance outside Aman, fitting "spare and
+    // serene" rather than "gentle lift."
+    motion: { sectionReveal: 'fade', duration: 0.8, yOffset: 10, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'fade', duration: 0.7 },
+    // Per-universe SECTION LAYOUT (UNIVERSE_DESIGN_SYSTEM.md §1) —
+    // asymmetric, vertical-rhythm composition: a narrow column (couple
+    // names one per line, generous line-height) against vast negative
+    // space, a single ensō mark + vertical rule as the only ornament.
+    // Primitives: EnsoRing, VerticalRule, KyotoMasthead,
+    // KyotoSectionMark, KyotoFooter (src/components/guest-website/
+    // layouts/).
+    layout: 'kyoto-vertical',
+    // Spare, serene micro-copy.
+    copy: {
+      heroKicker: 'A quiet gathering',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'A response',
+      rsvpIntro: 'Each guest holds their own invitation. If yours has been misplaced, share the address it was sent to, and we will send it once more.',
+      rsvpCta: 'Send the invitation',
+      rsvpSent: 'It is sent. Please look for it in your inbox, and in your spam folder, just in case.',
+    },
   },
   capri: {
     // Mediterranean summer — bright, breezy, crisp.
@@ -626,7 +655,11 @@ export const UNIVERSE_CONFIGS = {
     },
   },
   brooklyn: {
-    // Urban industrial — gritty, direct, unfussy.
+    // Urban industrial — asymmetric, off-grid, editorial-industrial
+    // (UNIVERSE_DESIGN_SYSTEM.md §4). Type unchanged (Bebas Neue was
+    // already the strong condensed grotesque this idiom needs); accent
+    // deepened into one bold rust family (was rust + a near-invisible
+    // light grey that barely functioned as an accent at all).
     typography: {
       headingFont: '"Bebas Neue", sans-serif',
       bodyFont:    '"IBM Plex Sans", sans-serif',
@@ -634,30 +667,84 @@ export const UNIVERSE_CONFIGS = {
     },
     texture: { type: 'grain', opacity: 0.035 },
     colors: {
+      // accentSecondary was #E5E5E5 — nearly identical to lightBg
+      // #F5F5F5, so it read as background noise, not a second accent
+      // value. Replaced with a deep rust-brown tonal variant of the same
+      // accent family — "one bold accent," used at two values.
       darkBg: '#1C1C1C', lightBg: '#F5F5F5', darkText: '#F5F5F5', lightText: '#1C1C1C',
-      accent: '#B85C38', accentSecondary: '#E5E5E5', navBg: '#1C1C1C',
+      accent: '#C24A2E', accentSecondary: '#7A3A22', navBg: '#1C1C1C',
     },
-    motion: { sectionReveal: 'fade', duration: 0.5, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'slide', duration: 0.4 },
+    // Snappier, cut-like — quicker than the original, shortest travel of
+    // all 10, and a sharp deceleration curve (circOut) instead of the
+    // soft easeOut every other universe uses, reading as a hard stop
+    // rather than a gentle settle.
+    motion: { sectionReveal: 'fade', duration: 0.4, yOffset: 10, ease: 'circOut', intensity: 'subtle' },
+    pageTransition: { type: 'slide', duration: 0.3 },
+    // Per-universe SECTION LAYOUT — off-grid, asymmetric: a vertical
+    // sideways kicker, couple names shifted hard right (never centred),
+    // a bold TicketStub rule (a solid block with a perforated tear-line
+    // edge) in place of a hairline or woven pattern. Primitives:
+    // TicketStub, BrooklynMasthead, BrooklynSectionMark, BrooklynFooter.
+    layout: 'brooklyn-offgrid',
+    // Direct, confident micro-copy.
+    copy: {
+      heroKicker: 'The wedding',
+      storyKicker: 'The story',
+      celebrationKicker: 'The party',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: "Everyone gets their own invite link. Lost yours? Drop your email below and we'll fire it straight over.",
+      rsvpCta: 'Get my invite',
+      rsvpSent: "Sent. Check your inbox — and your spam folder, just in case it landed there.",
+    },
   },
   bali: {
-    // Tropical spirit — lush, languid, alive.
+    // Tropical spirit — flowing, organic, curved dividers and soft edges
+    // (UNIVERSE_DESIGN_SYSTEM.md §4). Heading font swapped from Prata
+    // (a formal, sharp-contrast display serif) to Lora, a softer
+    // humanist serif that actually reads "soft" rather than
+    // "architectural." Palette rebuilt around warm sand / terracotta-clay
+    // / muted jungle green — accent and accentSecondary were previously
+    // identical (#F5E6CC used for both), a real flatness fix, not just a
+    // refinement.
     typography: {
-      headingFont: '"Prata", serif',
+      headingFont: '"Lora", serif',
       bodyFont:    '"Mulish", sans-serif',
-      googleFonts: 'Prata&family=Mulish:wght@300;400;500',
+      googleFonts: 'Lora:ital,wght@0,400;0,600;1,400&family=Mulish:wght@300;400;500',
     },
-    // texture opacity bumped 0.02 → 0.03 (fix/universe-cleanup): was
-    // identical to tulum's canvas/0.02, making the two indistinguishable.
-    // Bali's "lush, alive" mood reads as a touch more present than
-    // tulum's "unhurried" minimalism.
     texture: { type: 'canvas', opacity: 0.03 },
     colors: {
-      darkBg: '#2D5A27', lightBg: '#FAF7EF', darkText: '#FAF7EF', lightText: '#1A3318',
-      accent: '#F5E6CC', accentSecondary: '#F5E6CC', navBg: '#2D5A27',
+      // lightBg warmed toward sand (was a paler, less sandy cream);
+      // accent is now a warm terracotta-clay, accentSecondary a genuinely
+      // distinct muted jungle green — two real accent hues, not one
+      // colour doing double duty.
+      darkBg: '#2E4A2A', lightBg: '#F2E9D3', darkText: '#F5EFE0', lightText: '#20301C',
+      accent: '#C97654', accentSecondary: '#7C9B6C', navBg: '#2E4A2A',
     },
-    motion: { sectionReveal: 'fade', duration: 0.8, yOffset: 18, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'reveal', duration: 0.75 },
+    // Gentle drift, water-like — slower than the original, and
+    // easeInOut (a smooth curve on both ends) instead of easeOut (a
+    // gentle-but-still-abrupt stop), reading as an unhurried drift
+    // rather than a settle.
+    motion: { sectionReveal: 'fade', duration: 0.9, yOffset: 20, ease: 'easeInOut', intensity: 'subtle' },
+    pageTransition: { type: 'reveal', duration: 0.85 },
+    // Per-universe SECTION LAYOUT — flowing and organic: relaxed
+    // left-aligned composition, a WaveDivider (a real generated SVG
+    // curve) in place of every other layout's straight rule, a small
+    // abstract LeafCurve accent. "Soft edges" is achieved entirely
+    // through curved dividers, not border-radius on content blocks —
+    // this project reserves rounded corners for buttons/pills.
+    // Primitives: WaveDivider, LeafCurve, BaliMasthead, BaliSectionMark,
+    // BaliFooter.
+    layout: 'bali-organic',
+    // Warm, easy micro-copy.
+    copy: {
+      heroKicker: 'Welcome, with love',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'Join us',
+      rsvpIntro: "Every guest has their own invitation waiting. Can't find yours? Just tell us the email it was sent to and we'll send it your way again.",
+      rsvpCta: 'Send my invitation',
+      rsvpSent: "It's on its way — take a look in your inbox, and your spam folder, just in case.",
+    },
   },
   paris: {
     // French romance — elegant, classic, tender.

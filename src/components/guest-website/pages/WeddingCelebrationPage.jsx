@@ -5,6 +5,11 @@ import EditorialSectionKicker from '../layouts/EditorialSectionKicker';
 import ZelligeDivider from '../layouts/ZelligeDivider';
 import MinimalSectionMark from '../layouts/MinimalSectionMark';
 import HairlineRule from '../layouts/HairlineRule';
+import KyotoSectionMark from '../layouts/KyotoSectionMark';
+import VerticalRule from '../layouts/VerticalRule';
+import TicketStub from '../layouts/TicketStub';
+import BaliSectionMark from '../layouts/BaliSectionMark';
+import WaveDivider from '../layouts/WaveDivider';
 
 function fmtTime(t) {
   if (!t) return '';
@@ -76,6 +81,9 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
   const hasEvents = allEvents.length > 0;
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
   const isMinimal = universeConfig?.layout === 'aman-minimal';
+  const isKyoto = universeConfig?.layout === 'kyoto-vertical';
+  const isBrooklyn = universeConfig?.layout === 'brooklyn-offgrid';
+  const isBali = universeConfig?.layout === 'bali-organic';
   const copy = universeConfig?.copy || {};
 
   const T   = typography;
@@ -106,7 +114,51 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: '80px 32px 120px' }}>
 
         {/* Page heading */}
-        {isMinimal ? (
+        {isKyoto ? (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <div style={{ marginBottom: 96 }}>
+              <KyotoSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
+              <h1 style={{
+                fontFamily: hFont, fontWeight: hWt, letterSpacing: '0.01em',
+                fontSize: 'clamp(2rem, 5vw, 3rem)', lineHeight: 1.3,
+                color: lt, textAlign: 'left', margin: 0,
+              }}>
+                The celebration
+              </h1>
+            </div>
+          </SectionReveal>
+        ) : isBrooklyn ? (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <div style={{ marginBottom: 80, display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <h1 style={{
+                fontFamily: hFont, fontWeight: hWt, letterSpacing: '0.01em',
+                fontSize: 'clamp(3rem, 9vw, 6rem)', lineHeight: 0.9,
+                color: lt, textAlign: 'right', margin: '0 0 20px',
+              }}>
+                The party
+              </h1>
+              <TicketStub color={acc} width={200} height={12} />
+              {copy.celebrationKicker && (
+                <p style={{ fontFamily: bFont, fontSize: 12, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: acc, opacity: 0.8, margin: '16px 0 0' }}>
+                  {copy.celebrationKicker}
+                </p>
+              )}
+            </div>
+          </SectionReveal>
+        ) : isBali ? (
+          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <div style={{ marginBottom: 88 }}>
+              <BaliSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
+              <h1 style={{
+                fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.005em',
+                fontSize: 'clamp(2.25rem, 5.5vw, 3.5rem)', lineHeight: 1.15,
+                color: lt, textAlign: 'left', margin: 0,
+              }}>
+                The celebration
+              </h1>
+            </div>
+          </SectionReveal>
+        ) : isMinimal ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 88 }}>
               <MinimalSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
@@ -165,31 +217,48 @@ export default function WeddingCelebrationPage({ weddingDetails, theme, typograp
                 {dateKey && (
                   <div style={{
                     marginBottom: 64,
-                    paddingBottom: (isEditorial || isMinimal) ? 0 : 28,
-                    borderBottom: (isEditorial || isMinimal) ? 'none' : `1px solid ${lt}14`,
-                    textAlign: isMinimal ? 'center' : 'left',
+                    paddingBottom: (isEditorial || isMinimal || isKyoto || isBali) ? 0 : 28,
+                    borderBottom: (isEditorial || isMinimal || isKyoto || isBali) ? 'none' : `1px solid ${lt}14`,
+                    textAlign: isMinimal ? 'center' : isBrooklyn ? 'right' : 'left',
+                    display: isKyoto ? 'flex' : 'block',
+                    gap: isKyoto ? 20 : undefined,
                   }}>
-                    {dayOfWeek && (
-                      <p style={{
-                        fontFamily: (isEditorial || isMinimal) ? hFont : bFont,
-                        fontStyle: (isEditorial || isMinimal) ? 'italic' : 'normal',
-                        fontSize: (isEditorial || isMinimal) ? '1rem' : 11,
-                        fontWeight: (isEditorial || isMinimal) ? hWt : 600,
-                        letterSpacing: (isEditorial || isMinimal) ? '0.01em' : '0.1em',
-                        color: acc, margin: '0 0 10px',
+                    {isKyoto && <VerticalRule color={acc} opacity={0.4} height={56} style={{ flexShrink: 0, marginTop: 4 }} />}
+                    <div>
+                      {dayOfWeek && (
+                        <p style={{
+                          fontFamily: (isEditorial || isMinimal) ? hFont : bFont,
+                          fontStyle: (isEditorial || isMinimal) ? 'italic' : 'normal',
+                          fontSize: (isEditorial || isMinimal) ? '1rem' : isBrooklyn ? 12 : 11,
+                          fontWeight: (isEditorial || isMinimal) ? hWt : isBrooklyn ? 700 : 600,
+                          letterSpacing: (isEditorial || isMinimal) ? '0.01em' : isBrooklyn ? '0.18em' : '0.1em',
+                          textTransform: isBrooklyn ? 'uppercase' : 'none',
+                          color: acc, margin: '0 0 10px',
+                        }}>
+                          {dayOfWeek}
+                        </p>
+                      )}
+                      <h2 style={{
+                        fontFamily: hFont, fontWeight: hWt,
+                        fontSize: isBrooklyn ? 'clamp(2.2rem, 5.5vw, 3.5rem)' : 'clamp(1.6rem, 3.5vw, 2.5rem)',
+                        letterSpacing: isBrooklyn ? '0.01em' : '-0.02em',
+                        color: lt, margin: 0, lineHeight: 1.1,
                       }}>
-                        {dayOfWeek}
-                      </p>
-                    )}
-                    <h2 style={{ fontFamily: hFont, fontWeight: hWt, fontSize: 'clamp(1.6rem, 3.5vw, 2.5rem)', letterSpacing: '-0.02em', color: lt, margin: 0, lineHeight: 1.1 }}>
-                      {fullDate}
-                    </h2>
-                    {isEditorial && (
-                      <ZelligeDivider color={lt} opacity={0.35} height={14} style={{ width: '100%', marginTop: 28 }} />
-                    )}
-                    {isMinimal && (
-                      <HairlineRule color={lt} opacity={0.2} width={40} style={{ margin: '28px auto 0' }} />
-                    )}
+                        {fullDate}
+                      </h2>
+                      {isEditorial && (
+                        <ZelligeDivider color={lt} opacity={0.35} height={14} style={{ width: '100%', marginTop: 28 }} />
+                      )}
+                      {isMinimal && (
+                        <HairlineRule color={lt} opacity={0.2} width={40} style={{ margin: '28px auto 0' }} />
+                      )}
+                      {isBrooklyn && (
+                        <TicketStub color={acc} width={120} height={10} style={{ marginTop: 20, marginLeft: 'auto' }} />
+                      )}
+                      {isBali && (
+                        <WaveDivider color={lt} opacity={0.3} height={16} style={{ maxWidth: 140, marginTop: 24 }} />
+                      )}
+                    </div>
                   </div>
                 )}
 
