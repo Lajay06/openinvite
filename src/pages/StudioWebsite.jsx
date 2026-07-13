@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink, Menu, X } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink } from 'lucide-react';
 import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
@@ -24,6 +24,9 @@ import WeddingFAQPage from '@/components/guest-website/pages/WeddingFAQPage';
 import WeddingStayPage from '@/components/guest-website/pages/WeddingStayPage';
 import WeddingTransportPage from '@/components/guest-website/pages/WeddingTransportPage';
 import WeddingExperiencePage from '@/components/guest-website/pages/WeddingExperiencePage';
+import WeddingGuestbookPage from '@/components/guest-website/pages/WeddingGuestbookPage';
+import WeddingWebsiteNav from '@/components/guest-website/WeddingWebsiteNav';
+import TextureOverlay from '@/components/guest-website/TextureOverlay';
 import WBSectionRenderer from '@/components/website-builder/WBSectionRenderer';
 import AvaAutoFillModal from '@/components/website-builder/AvaAutoFillModal';
 import PublishModal from '@/components/website-builder/PublishModal';
@@ -737,9 +740,7 @@ function PlaceholderSection({ section, universeTheme, effectiveHf, effectiveBf, 
   );
 }
 
-function PreviewContent({ theme, typo, universeTheme, details, currentPage, currentPageSections, allPageLabels, selectedSection, onPageChange, onSectionSelect, onMoveSection, onDeleteSection, onInsertAbove, onAddSection, isMobile }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+function PreviewContent({ theme, typo, universeTheme, details, currentPage, onPageChange }) {
   // Preload ALL typography fonts at mount so switching is instant (no loading
   // delay) — both the generic FONT_OPTIONS/TYPOGRAPHY_PAIRINGS set AND every
   // universe's font pairing, since the universe picker can switch fonts too.
@@ -791,14 +792,6 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
     console.log('[fonts] preloaded', needed.size, 'font URLs');
   }, [universeTheme?.fontDisplay, details?.displayFont, details?.bodyFont]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const placeholderData = PLACEHOLDER_PAGES[currentPage];
-  const showPlaceholders = currentPageSections.length === 0 && !!placeholderData;
-  // Detect dark universe backgrounds (e.g. Tokyo) so button/empty-state colours stay readable
-  const bgHex = universeTheme.background || '#F8F7F5';
-  const bgR = parseInt(bgHex.slice(1, 3), 16);
-  const bgIsDark = (bgR * 299 + parseInt(bgHex.slice(3, 5), 16) * 587 + parseInt(bgHex.slice(5, 7), 16) * 114) / 1000 < 128;
-  const addBtnBorder = (showPlaceholders && !bgIsDark) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
-  const addBtnColor = (showPlaceholders && !bgIsDark) ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
   // Typography overrides universe fonts; universe fonts override system
   // defaults. typo comes from resolveTypography() (universeStyling.js),
   // whose actual keys are headingFont/bodyFont — not fontDisplay/fontBody
@@ -808,131 +801,87 @@ function PreviewContent({ theme, typo, universeTheme, details, currentPage, curr
   const effectiveHf = typo?.headingFont || universeTheme?.fontDisplay || '"Plus Jakarta Sans", sans-serif';
   const effectiveBf = typo?.bodyFont || universeTheme?.fontBody || '"Plus Jakarta Sans", sans-serif';
 
+  // fix/builder-preview-parity: this used to fork on whether the current
+  // page had builder-authored pageSections — rendering WBSectionRenderer's
+  // static canvas mockup (via SectionWrap) when they existed, and the real
+  // page component only when the page had none. That's the exact fork the
+  // published render tree (MultiPageWeddingWebsite.jsx) already stopped
+  // using — WBSectionRenderer is the builder's canvas widget, not the
+  // published site, and was never given motion/texture/universe-layout
+  // awareness. The builder preview must show exactly what a guest sees:
+  // the real PageComponent, the real nav, the real texture overlay, the
+  // real universe motion — driven by the in-memory draft `details` object
+  // already held in this component's state (no fetch, no iframe — this
+  // *is* the draft, live, with zero staleness as the couple types).
+  // WBSectionRenderer/SectionWrap/the section-canvas editing UI
+  // (WBRightPanel, SectionTemplatePicker) are unchanged and untouched —
+  // they're simply no longer what renders in this preview pane. See
+  // BUILDER_PREVIEW_PARITY notes in the PR description for the follow-up
+  // this leaves open (a proper per-field content editor to replace the
+  // section canvas as the actual editing surface).
+  const universeConfig = resolveUniverseConfig(details);
+  const typography = resolveTypography(details);
+  const enabledPages = details.enabledPages || ['home'];
+
+  const PAGE_COMPONENTS = {
+    'home':         WeddingHomePage,
+    'our-story':    WeddingOurStoryPage,
+    'celebration':  WeddingCelebrationPage,
+    'rsvp':         WeddingRSVPPage,
+    'registry':     WeddingRegistryPage,
+    'music':        WeddingMusicPage,
+    'photos':       WeddingPhotosPage,
+    'styling':      WeddingStylePage,
+    'polls':        WeddingPollsPage,
+    'faq':          WeddingFAQPage,
+    'stay':         WeddingStayPage,
+    'transport':    WeddingTransportPage,
+    'experience':   WeddingExperiencePage,
+    'guestbook':    WeddingGuestbookPage,
+  };
+  // Custom page slugs with no dedicated component fall back to
+  // WeddingHomePage — matching MultiPageWeddingWebsite.jsx's own
+  // `PAGE_COMPONENTS[page] || WeddingHomePage` fallback exactly, so this
+  // stays a faithful preview of what actually publishes rather than a
+  // builder-only placeholder.
+  const PageComponent = PAGE_COMPONENTS[currentPage] || WeddingHomePage;
+
   return (
     <div
       className="wb-guest-root"
-      style={{ '--wb-heading-font': effectiveHf, '--wb-body-font': effectiveBf, display: 'contents' }}
+      style={{ '--wb-heading-font': effectiveHf, '--wb-body-font': effectiveBf, position: 'relative' }}
     >
-      {/* Nav bar inside preview */}
-      <div style={{ position: 'relative', flexShrink: 0 }}>
-        <div style={{ background: universeTheme.primary, padding: '0 20px', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.02em', color: '#FFFFFF', fontFamily: effectiveHf }}>
-            {details.coupleNames || 'Your Names'}
-          </span>
-          {isMobile ? (
-            <button onClick={() => setMobileMenuOpen(v => !v)} style={{ background: 'none', border: 'none', color: '#FFFFFF', cursor: 'pointer', padding: 8, display: 'flex', alignItems: 'center' }}>
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
-          ) : (
-            <div style={{ display: 'flex', gap: 20 }}>
-              {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
-                const label = allPageLabels[slug] || slug;
-                return (
-                  <span key={slug} onClick={() => onPageChange(slug)} style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: '#FFFFFF', opacity: currentPage === slug ? 1 : 0.4, cursor: 'pointer', paddingBottom: 2, borderBottom: currentPage === slug ? '1px solid #FFFFFF' : '1px solid transparent', fontFamily: effectiveBf }}>
-                    {label}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-        </div>
-        {isMobile && mobileMenuOpen && (
-          <div style={{ position: 'absolute', top: 48, left: 0, right: 0, background: universeTheme.primary, zIndex: 20, padding: '8px 0 16px' }}>
-            {(details.enabledPages || ['home']).slice(0, 5).map(slug => {
-              const label = allPageLabels[slug] || slug;
-              return (
-                <div key={slug} onClick={() => { onPageChange(slug); setMobileMenuOpen(false); }} style={{ padding: '12px 24px', color: '#FFFFFF', fontSize: 14, cursor: 'pointer', opacity: currentPage === slug ? 1 : 0.6, fontFamily: effectiveBf }}>
-                  {label}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {/* Same site-wide texture overlay every universe's published render
+          uses (MultiPageWeddingWebsite.jsx) — mounted once, behind nav +
+          content, switching with the active universe. */}
+      {universeConfig?.texture && (
+        <TextureOverlay textureId={universeConfig.texture.type} opacity={universeConfig.texture.opacity} />
+      )}
 
-      {/* Sections */}
-      <div style={{ flex: 1, overflowY: 'auto', background: universeTheme.background, fontFamily: effectiveBf }}>
-        {currentPageSections.length > 0 ? (
-          // Builder sections authored — render them
-          <>
-            {currentPageSections.map((section, index) => (
-              <SectionWrap
-                key={section.id}
-                section={section}
-                index={index}
-                isSelected={selectedSection?.id === section.id}
-                onSelect={() => onSectionSelect(section)}
-                onMoveUp={() => onMoveSection(index, 'up')}
-                onMoveDown={() => onMoveSection(index, 'down')}
-                onDelete={() => onDeleteSection(section.id)}
-                onInsertAbove={() => onInsertAbove(index)}
-                theme={theme}
-                typo={typo}
-                universeTheme={universeTheme}
-                masterData={details}
-                isMobile={isMobile}
-              />
-            ))}
-          </>
-        ) : (
-          // No sections yet — use the SAME published page components so the builder
-          // preview is a faithful mirror of the guest site (reads real data fields).
-          (() => {
-            const typography = resolveTypography(details);
-            const PAGE_FALLBACKS = {
-              'home':         WeddingHomePage,
-              'our-story':    WeddingOurStoryPage,
-              'celebration':  WeddingCelebrationPage,
-              'rsvp':         WeddingRSVPPage,
-              'registry':     WeddingRegistryPage,
-              'music':        WeddingMusicPage,
-              'photos':       WeddingPhotosPage,
-              'styling':      WeddingStylePage,
-              'polls':        WeddingPollsPage,
-              'faq':          WeddingFAQPage,
-              'stay':         WeddingStayPage,
-              'transport':    WeddingTransportPage,
-              'experience':   WeddingExperiencePage,
-            };
-            const FallbackPage = PAGE_FALLBACKS[currentPage];
-            if (FallbackPage) {
-              return (
-                <FallbackPage
-                  weddingDetails={details}
-                  theme={theme}
-                  typography={typography}
-                  universeConfig={resolveUniverseConfig(details)}
-                />
-              );
-            }
-            // Custom page with no sections yet
-            return (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 40 }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: bgIsDark ? 'rgba(255,255,255,0.08)' : 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 28, color: universeTheme.text }}>+</div>
-                <p style={{ fontSize: 18, fontWeight: 600, color: universeTheme.text, marginBottom: 8, fontFamily: effectiveBf }}>No sections yet</p>
-                <p style={{ fontSize: 14, color: bgIsDark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.4)', marginBottom: 24, fontFamily: effectiveBf }}>Add your first section to start building this page</p>
-                <button onClick={() => onAddSection(0)} style={{ padding: '12px 24px', background: universeTheme.primary, color: bgIsDark ? universeTheme.background : '#FFFFFF', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 999 }}>
-                  + Add first section
-                </button>
-              </div>
-            );
-          })()
-        )}
+      {/* The real guest-site nav component — same props the published
+          render tree passes it. */}
+      <WeddingWebsiteNav
+        weddingName={details.coupleNames}
+        theme={theme}
+        enabledPages={enabledPages}
+        currentPage={currentPage}
+        weddingSlug={details.slug}
+        hasTransport={!!details?.transport?.enabledModes?.length}
+        hasAccommodation={!!details?.accommodation?.manualProperties?.length}
+        hasMusic={!!details?.music?.guestRequestsEnabled}
+        hasExperience={!!details?.experienceGuide?.published}
+        onNavigate={onPageChange}
+      />
 
-        {/* Add section at bottom — hidden for auto-rendered Guest Suite pages */}
-        {currentPage !== 'stay' && currentPage !== 'transport' && currentPage !== 'experience' && (
-          <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}>
-            <button
-              onClick={() => onAddSection(currentPageSections.length)}
-              style={{ width: '100%', maxWidth: 500, height: 48, border: `2px dashed ${addBtnBorder}`, background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: addBtnColor, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = addBtnBorder; e.currentTarget.style.color = addBtnColor; }}
-            >
-              + Add section
-            </button>
-          </div>
-        )}
-      </div>
+      {/* Page content — the real, interactive PageComponent, with the
+          same universeConfig/theme/typography the published site
+          resolves — never the section-canvas mockup. */}
+      <PageComponent
+        weddingDetails={details}
+        theme={theme}
+        typography={typography}
+        universeConfig={universeConfig}
+      />
     </div>
   );
 }
