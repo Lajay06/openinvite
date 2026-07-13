@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Monitor, Tablet, Smartphone, X, ExternalLink } from 'lucide-react';
-import WBWebsitePreview from './WBWebsitePreview';
+import RealWebsitePreview from './RealWebsitePreview';
 import { WEDDING_PAGES } from '@/lib/websiteThemes';
 
 export default function FullScreenPreview({ details, onClose, initialPage = 'home' }) {
@@ -124,7 +124,7 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
             ),
           }}
         >
-          <WBWebsitePreview details={details} currentPage={currentPage} isMobile={device === 'mobile'} />
+          <RealWebsitePreview details={details} currentPage={currentPage} onNavigate={setCurrentPage} />
         </div>
       </div>
     </div>
