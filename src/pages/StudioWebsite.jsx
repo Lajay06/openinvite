@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
@@ -8,12 +8,9 @@ import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink } from 'lucide-r
 import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
-import SectionTemplatePicker from '@/components/website-builder/SectionTemplatePicker';
 import { FONT_OPTIONS, WEDDING_PAGES, UNIVERSE_CONFIGS, normalizeUniverseKey } from '@/lib/websiteThemes';
-import { resolveTypography, resolveColors, googleFontsHref } from '@/lib/universeStyling';
+import { resolveColors, googleFontsHref } from '@/lib/universeStyling';
 import RealWebsitePreview from '@/components/website-builder/RealWebsitePreview';
-import WBSectionRenderer from '@/components/website-builder/WBSectionRenderer';
-import AvaAutoFillModal from '@/components/website-builder/AvaAutoFillModal';
 import PublishModal from '@/components/website-builder/PublishModal';
 import { ASSET_PREVIEW_MAP, ASSET_ID_TO_KEY } from '@/components/website-builder/AssetPreviews';
 
@@ -158,10 +155,9 @@ const DEFAULT = {
   registryContent: { registryLinks: [], registryMessage: '', noGiftsPlease: false },
   musicContent: { spotifyPlaylistUrl: '', enableGuestRequests: false, customMessage: '' },
   qna: [],
-  pageSections: {},
 };
 
-export default function StudioWebsite({ initialOpenAutofill = false }) {
+export default function StudioWebsite() {
   const navigate = useNavigate();
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [publishModalTab, setPublishModalTab] = useState('website');
@@ -170,13 +166,9 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
   const [unsaved, setUnsaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
-  const [selectedSection, setSelectedSection] = useState(null);
   const [rightPanelTab, setRightPanelTab] = useState('design');
   const [previewDevice, setPreviewDevice] = useState('desktop');
   const [showFullPreview, setShowFullPreview] = useState(false);
-  const [sectionPickerOpen, setSectionPickerOpen] = useState(false);
-  const [insertAfterIndex, setInsertAfterIndex] = useState(null);
-  const [avaModalOpen, setAvaModalOpen] = useState(initialOpenAutofill);
   const detailsRef = useRef(null);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved'
   const autosaveTimerRef = useRef(null);
@@ -201,10 +193,8 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
 
   useEffect(() => {
     if (existing) {
-      const serverSections = existing.pageSections || {};
-      const hasServerSections = Object.values(serverSections).some(arr => Array.isArray(arr) && arr.length > 0);
       setDetails(prev => {
-        const merged = { ...DEFAULT, ...existing, pageSections: hasServerSections ? serverSections : (prev?.pageSections || {}) };
+        const merged = { ...DEFAULT, ...existing };
         detailsRef.current = merged;
         return merged;
       });
@@ -227,58 +217,6 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
     }
   }, [details?.coupleNames]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-populate home page with default sections on first open when empty
-  useEffect(() => {
-    if (!details) return;
-    const homeSections = details.pageSections?.home || [];
-    if (homeSections.length > 0) return;
-    const ts = Date.now();
-    const defaultSections = [
-      {
-        id: `sec_${ts}_0`, type: 'cinematic-hero', order: 0,
-        content: {
-          title: details.coupleNames || 'Our Wedding',
-          date: details.weddingDate || '',
-          location: details.mainCeremony?.venueName || '',
-          subtitle: 'Join us as we celebrate our love',
-        },
-      },
-      {
-        id: `sec_${ts}_1`, type: 'our-story', order: 1,
-        content: {
-          text: details.coupleStory || 'We met and knew from that moment on that something special had begun. We\'re so excited to celebrate this next chapter with the people we love most.',
-        },
-      },
-      {
-        id: `sec_${ts}_2`, type: 'event-details', order: 2,
-        content: {
-          ceremony: {
-            venue: details.mainCeremony?.venueName || 'Ceremony venue',
-            address: details.mainCeremony?.address || '',
-            time: details.mainCeremony?.startTime || '3:00 PM',
-            dressCode: details.mainCeremony?.dressCode || '',
-          },
-          reception: {
-            venue: details.reception?.venueName || 'Reception venue',
-            address: details.reception?.address || '',
-            time: details.reception?.startTime || '6:00 PM',
-          },
-        },
-      },
-      {
-        id: `sec_${ts}_3`, type: 'full-rsvp', order: 3,
-        content: {
-          deadline: details.rsvpContent?.rsvpDeadline || '',
-          closingMessage: 'We cannot wait to celebrate with you.',
-        },
-      },
-    ];
-    setDetailsAndMark(prev => ({
-      ...prev,
-      pageSections: { ...(prev.pageSections || {}), home: defaultSections },
-    }));
-  }, [details]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Autosave — debounced 2s after last change
   useEffect(() => {
     if (!unsaved || !details) return;
@@ -286,12 +224,6 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
     autosaveTimerRef.current = setTimeout(() => { doSave(false); }, 2000);
     return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current); };
   }, [unsaved]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const currentPageSections = useMemo(() => {
-    if (!details?.pageSections) return [];
-    const sections = details.pageSections[currentPage] || [];
-    return [...sections].sort((a, b) => (a.order || 0) - (b.order || 0));
-  }, [details, currentPage]);
 
   // A universe's own colours take priority over the legacy activeTheme
   // lookup — see resolveColors() (fix/universe-palettes), so this preview
@@ -311,12 +243,6 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
     accent: theme.accent,
     secondary: theme.accentSecondary,
   };
-  // Derive typo through the same universe-aware resolver the published site
-  // uses (resolveTypography) — a universe's own font pairing takes priority
-  // over the generic activeTypography picker, so builder preview matches
-  // exactly what publishes.
-  const typo = resolveTypography(details);
-
   const setDetailsAndMark = (updater) => {
     setDetails(prev => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
@@ -351,46 +277,6 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
     setIsSaving(false);
   };
 
-  const handleAddSection = (newSection) => {
-    setDetailsAndMark(prev => {
-      const currentSections = prev?.pageSections?.[currentPage] || [];
-      const withNew = [...currentSections, { ...newSection, order: typeof insertAfterIndex === 'number' ? insertAfterIndex + 0.5 : currentSections.length }];
-      const normalized = withNew.sort((a, b) => a.order - b.order).map((s, i) => ({ ...s, order: i }));
-      return { ...prev, pageSections: { ...(prev.pageSections || {}), [currentPage]: normalized } };
-    });
-    setSectionPickerOpen(false);
-    setSelectedSection(newSection);
-    setRightPanelTab('section-editor');
-  };
-
-  const deleteSection = (sectionId) => {
-    setDetailsAndMark(prev => {
-      const sections = (prev?.pageSections?.[currentPage] || []).filter(s => s.id !== sectionId).map((s, i) => ({ ...s, order: i }));
-      return { ...prev, pageSections: { ...(prev.pageSections || {}), [currentPage]: sections } };
-    });
-    if (selectedSection?.id === sectionId) { setSelectedSection(null); setRightPanelTab('design'); }
-  };
-
-  const moveSection = (index, direction) => {
-    setDetailsAndMark(prev => {
-      const sections = [...(prev?.pageSections?.[currentPage] || [])];
-      const newIdx = direction === 'up' ? index - 1 : index + 1;
-      if (newIdx < 0 || newIdx >= sections.length) return prev;
-      [sections[index], sections[newIdx]] = [sections[newIdx], sections[index]];
-      const updated = sections.map((s, i) => ({ ...s, order: i }));
-      return { ...prev, pageSections: { ...(prev.pageSections || {}), [currentPage]: updated } };
-    });
-  };
-
-  const handleSectionContentChange = (field, value) => {
-    updateField(field, value);
-    if (field === 'pageSections' && selectedSection) {
-      const updatedSec = (value[currentPage] || []).find(s => s.id === selectedSection.id);
-      if (updatedSec) setSelectedSection(updatedSec);
-    }
-  };
-
-  const frameWidth = previewDevice === 'desktop' ? '100%' : previewDevice === 'tablet' ? '768px' : '390px';
   const previewUrl = details?.slug ? `/w/${details.slug}?preview=true` : null;
 
   const allPageLabels = {
@@ -489,7 +375,7 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
           details={details}
           onChange={updateField}
           currentPage={currentPage}
-          onPageChange={(p) => { setCurrentPage(p); setSelectedSection(null); setRightPanelTab('design'); }}
+          onPageChange={(p) => { setCurrentPage(p); setRightPanelTab('design'); }}
           selectedAsset={selectedAsset}
           onAssetSelect={setSelectedAsset}
         />
@@ -539,14 +425,8 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
               display: 'flex', flexDirection: 'column',
             }}>
               <PreviewContent
-                theme={theme} typo={typo} universeTheme={universeTheme} details={details} currentPage={currentPage}
-                currentPageSections={currentPageSections} allPageLabels={allPageLabels} selectedSection={selectedSection}
-                onPageChange={(slug) => { setCurrentPage(slug); setSelectedSection(null); setRightPanelTab('design'); }}
-                onSectionSelect={(section) => { setSelectedSection(section); setRightPanelTab('section-editor'); }}
-                onMoveSection={moveSection} onDeleteSection={deleteSection}
-                onInsertAbove={(index) => { setInsertAfterIndex(index - 0.5); setSectionPickerOpen(true); }}
-                onAddSection={(index) => { setInsertAfterIndex(index); setSectionPickerOpen(true); }}
-                isMobile={previewDevice === 'mobile'}
+                universeTheme={universeTheme} details={details} currentPage={currentPage}
+                onPageChange={(slug) => { setCurrentPage(slug); setRightPanelTab('design'); }}
               />
             </div>
           </div>
@@ -557,12 +437,9 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
           <WBRightPanel
             details={details}
             universeTheme={universeTheme}
-            onChange={rightPanelTab === 'section-editor' ? handleSectionContentChange : updateField}
-            selectedSection={selectedSection?.id || null}
-            onClearSection={() => { setSelectedSection(null); setRightPanelTab('design'); }}
-            rightTab={rightPanelTab === 'section-editor' ? 'section' : rightPanelTab}
-            onRightTabChange={(tab) => setRightPanelTab(tab === 'section' ? 'section-editor' : tab)}
-            masterData={details}
+            onChange={updateField}
+            rightTab={rightPanelTab}
+            onRightTabChange={setRightPanelTab}
             selectedAsset={null}
             assetContent={{}}
             onAssetChange={updateAssetContent}
@@ -570,29 +447,6 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
           />
         </div>
       </div>
-
-      {/* Section picker modal */}
-      {sectionPickerOpen && (
-        <SectionTemplatePicker
-          theme={theme}
-          insertIndex={insertAfterIndex}
-          onSelect={(newSection) => handleAddSection(newSection)}
-          onClose={() => setSectionPickerOpen(false)}
-        />
-      )}
-
-      {avaModalOpen && (
-        <AvaAutoFillModal
-          onClose={() => setAvaModalOpen(false)}
-          weddingDetails={details}
-          onApply={(newPageSections) => {
-            setDetailsAndMark(prev => ({ ...prev, pageSections: newPageSections }));
-            setCurrentPage('home');
-            setSelectedSection(null);
-            setRightPanelTab('design');
-          }}
-        />
-      )}
 
       {showFullPreview && (
         <FullScreenPreview
@@ -610,92 +464,6 @@ export default function StudioWebsite({ initialOpenAutofill = false }) {
             setDetailsAndMark(prev => ({ ...prev, ...patch }));
           }}
         />
-      )}
-    </div>
-  );
-}
-
-// Section wrapper with hover toolbar
-function SectionWrap({ section, index, isSelected, onSelect, onMoveUp, onMoveDown, onDelete, onInsertAbove, theme, typo, universeTheme, masterData, isMobile }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div
-      style={{ position: 'relative', outline: isSelected ? '2px solid #E03553' : 'none', outlineOffset: -2, cursor: 'pointer' }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={onSelect}
-    >
-      <WBSectionRenderer section={section} theme={theme} typo={typo} universeTheme={universeTheme} masterData={masterData} isMobile={isMobile} />
-      {(hovered || isSelected) && (
-        <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 30, display: 'flex', gap: 4, background: isSelected ? '#E03553' : '#2563EB', borderRadius: 4, padding: '4px 8px' }}>
-          <ToolBtn onClick={e => { e.stopPropagation(); onMoveUp(); }} title="Move up">↑</ToolBtn>
-          <ToolBtn onClick={e => { e.stopPropagation(); onMoveDown(); }} title="Move down">↓</ToolBtn>
-          <ToolBtn onClick={e => { e.stopPropagation(); onSelect(); }} title="Edit" bold>Edit</ToolBtn>
-          <ToolBtn onClick={e => { e.stopPropagation(); onInsertAbove(); }} title="Add above">+</ToolBtn>
-          <ToolBtn onClick={e => { e.stopPropagation(); onDelete(); }} title="Delete">×</ToolBtn>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ToolBtn({ children, onClick, title, bold }) {
-  return (
-    <button onClick={onClick} title={title} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: bold ? 11 : 13, fontWeight: bold ? 700 : 400, padding: '2px 4px', fontFamily: 'inherit' }}>
-      {children}
-    </button>
-  );
-}
-
-function PlaceholderSection({ section, universeTheme, effectiveHf, effectiveBf, onCustomise }) {
-  const [hovered, setHovered] = useState(false);
-  const { text, accent, background } = universeTheme;
-  const hf = effectiveHf || universeTheme.fontDisplay;
-  const bf = effectiveBf || universeTheme.fontBody;
-  const muted = text + '80';
-  const divider = `1px solid ${text}14`;
-  const isHero = section.type === 'hero';
-  return (
-    <div
-      onClick={onCustomise}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ position: 'relative', cursor: 'pointer', background, borderTop: isHero ? 'none' : divider }}
-    >
-      {isHero ? (
-        <div style={{ padding: '80px 40px 64px', textAlign: 'center' }}>
-          <h1 style={{ fontFamily: hf, fontSize: 48, fontWeight: 400, color: text, margin: '0 0 16px', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-            {section.heading}
-          </h1>
-          {section.subheading && (
-            <p style={{ fontFamily: bf, fontSize: 13, color: accent, margin: '0 0 14px', letterSpacing: '0.05em' }}>
-              {section.subheading}
-            </p>
-          )}
-          {section.body && (
-            <p style={{ fontFamily: bf, fontSize: 14, color: muted, margin: 0, lineHeight: 1.6 }}>
-              {section.body}
-            </p>
-          )}
-        </div>
-      ) : (
-        <div style={{ padding: '48px 40px' }}>
-          <h2 style={{ fontFamily: hf, fontSize: 30, fontWeight: 400, color: text, margin: '0 0 16px', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-            {section.heading}
-          </h2>
-          {section.body && (
-            <p style={{ fontFamily: bf, fontSize: 14, color: muted, margin: 0, lineHeight: 1.75, maxWidth: 560, whiteSpace: 'pre-line' }}>
-              {section.body}
-            </p>
-          )}
-        </div>
-      )}
-      {hovered && (
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: 'rgba(255,255,255,0.92)', padding: '7px 16px', borderRadius: 999, fontSize: 11, fontWeight: 600, color: '#0A0A0A', border: '1px solid rgba(0,0,0,0.08)', backdropFilter: 'blur(4px)' }}>
-            Click to customise
-          </div>
-        </div>
       )}
     </div>
   );
@@ -753,16 +521,12 @@ function PreviewContent({ universeTheme, details, currentPage, onPageChange }) {
     console.log('[fonts] preloaded', needed.size, 'font URLs');
   }, [universeTheme?.fontDisplay, details?.displayFont, details?.bodyFont]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // fix/builder-preview-parity + fix/fullscreen-preview-parity: this used
-  // to fork on whether the current page had builder-authored pageSections
-  // — rendering WBSectionRenderer's static canvas mockup (via SectionWrap)
-  // when they existed. That's the exact fork the published render tree
-  // (MultiPageWeddingWebsite.jsx) already stopped using — WBSectionRenderer
-  // is the builder's canvas widget, not the published site. RealWebsitePreview
-  // is the single shared "render the real guest site off draft data"
-  // component, also used by FullScreenPreview.jsx's full-screen "Preview"
-  // — one implementation, not three. WBSectionRenderer/SectionWrap/the
-  // section-canvas editing UI (WBRightPanel, SectionTemplatePicker) are
-  // unchanged and untouched — they're simply no longer what renders here.
+  // RealWebsitePreview is the single shared "render the real guest site off
+  // draft data" component (fix/builder-preview-parity, fix/fullscreen-
+  // preview-parity) — also used by FullScreenPreview.jsx's full-screen
+  // "Preview" and, via the equivalent MultiPageWeddingWebsite.jsx, the
+  // published site. One implementation renders all three surfaces; blocks
+  // (feat/block-builder) render inside the real page components this
+  // resolves to, so that stays true.
   return <RealWebsitePreview details={details} currentPage={currentPage} onNavigate={onPageChange} />;
 }

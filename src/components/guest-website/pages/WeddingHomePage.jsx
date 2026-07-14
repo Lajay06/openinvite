@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroVideo';
+import UniverseBlocks from '../blocks/UniverseBlocks';
 import EditorialMasthead from '../layouts/EditorialMasthead';
 import EditorialGridFooter from '../layouts/EditorialGridFooter';
 import MinimalMasthead from '../layouts/MinimalMasthead';
@@ -118,7 +119,7 @@ function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
   );
 }
 
-export default function WeddingHomePage({ weddingDetails, theme, typography, universeConfig }) {
+function WeddingHomePageContent({ weddingDetails, theme, typography, universeConfig }) {
   const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || 'We are overjoyed to celebrate with you.';
   const prefersReduced = useReducedMotion();
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
@@ -622,5 +623,27 @@ export default function WeddingHomePage({ weddingDetails, theme, typography, uni
         ↓
       </motion.div>
     </div>
+  );
+}
+
+// Blocks (feat/block-builder) render as additional content appended after
+// the universe's fixed hero — same real component, same render pass, so it
+// appears identically on the published site, builder canvas, and full-
+// screen preview. Wrapping at the export boundary (rather than editing
+// every isXxx branch above) keeps this purely additive: nothing above is
+// touched, and a wedding with no homeContent.blocks renders exactly as
+// before.
+export default function WeddingHomePage(props) {
+  return (
+    <>
+      <WeddingHomePageContent {...props} />
+      <UniverseBlocks
+        blocks={props.weddingDetails?.homeContent?.blocks}
+        weddingDetails={props.weddingDetails}
+        theme={props.theme}
+        typography={props.typography}
+        universeConfig={props.universeConfig}
+      />
+    </>
   );
 }

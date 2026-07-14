@@ -301,25 +301,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
       })}
       </div>{/* end assets collapsible */}
 
-      {/* Spacer pushes Ava button to bottom */}
       <div style={{ flex: 1, minHeight: 12 }} />
-
-      {/* ── Ava auto-fill ── */}
-      <button
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          background: 'linear-gradient(135deg, #ec4899, #9333ea)',
-          color: '#FFFFFF', border: 'none', borderRadius: 999,
-          fontSize: 11, fontWeight: 600, cursor: 'pointer',
-          padding: '8px 16px',
-          margin: '8px 12px 12px',
-          width: 'calc(100% - 24px)',
-          fontFamily: PJS,
-        }}
-      >
-        <Sparkles size={12} />
-        Auto-fill with Ava
-      </button>
 
       {showNewPage && (
         <NewPageModal
