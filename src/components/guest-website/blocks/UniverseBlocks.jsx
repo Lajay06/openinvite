@@ -121,6 +121,19 @@ const headingStyle = (typography, theme, overrides = {}) => ({
   color: theme.lightText, margin: 0, lineHeight: 1.2, ...overrides,
 });
 
+// Curated size steps (feat/block-styling-curated) — preset clamp() bands,
+// never a free px value. 'M' in each row is the exact clamp() that block
+// type already hardcoded before per-block sizing existed, so an unset
+// size (the default for every existing block) looks byte-identical to
+// before.
+const SIZE_PRESETS = {
+  heading: { S: 'clamp(1.125rem, 2.6vw, 1.5rem)', M: 'clamp(1.5rem, 4vw, 2.25rem)', L: 'clamp(2rem, 5vw, 3rem)', XL: 'clamp(2.5rem, 6.5vw, 4rem)' },
+  subheading: { S: 'clamp(0.9375rem, 2vw, 1.25rem)', M: 'clamp(1.125rem, 2.6vw, 1.5rem)', L: 'clamp(1.375rem, 3.2vw, 1.875rem)', XL: 'clamp(1.75rem, 4vw, 2.25rem)' },
+  quote: { S: 'clamp(0.9375rem, 1.8vw, 1.25rem)', M: 'clamp(1.125rem, 2.4vw, 1.5rem)', L: 'clamp(1.375rem, 3vw, 1.875rem)', XL: 'clamp(1.75rem, 3.8vw, 2.25rem)' },
+  body: { S: 'clamp(0.8125rem, 1.3vw, 0.9375rem)', M: 'clamp(0.9375rem, 1.6vw, 1.0625rem)', L: 'clamp(1.0625rem, 1.9vw, 1.25rem)', XL: 'clamp(1.25rem, 2.4vw, 1.5rem)' },
+};
+const sizeStep = (style) => (style?.size && SIZE_PRESETS.heading[style.size] ? style.size : 'M');
+
 // Shown in place of a renderer's real output when the block is empty AND
 // we're in the builder's edit mode — never shown to guests (editable is
 // only ever true on the builder's own canvas).
@@ -133,71 +146,77 @@ function EmptyPlaceholder({ theme, typography, label }) {
 }
 
 // ── Text ──────────────────────────────────────────────────────────
-function HeadingBlock({ content, theme, typography, universeConfig, editable }) {
+function HeadingBlock({ content, theme, typography, universeConfig, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Heading — click to add text" />;
   }
+  const align = style?.align || 'center';
   return (
-    <div style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto' }}>
+    <div style={{ textAlign: align, maxWidth: 720, margin: align === 'center' ? '0 auto' : 0 }}>
       {content.kicker && <UniverseKicker text={content.kicker} universeConfig={universeConfig} theme={theme} typography={typography} />}
-      <h2 style={headingStyle(typography, theme, { fontSize: 'clamp(1.5rem, 4vw, 2.25rem)' })}>{content.text}</h2>
+      <h2 style={headingStyle(typography, theme, { fontSize: SIZE_PRESETS.heading[sizeStep(style)] })}>{content.text}</h2>
     </div>
   );
 }
 
-function SubheadingBlock({ content, theme, typography, editable }) {
+function SubheadingBlock({ content, theme, typography, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Subheading — click to add text" />;
   }
+  const align = style?.align || 'center';
   return (
-    <h3 style={{ ...headingStyle(typography, theme, { fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }), textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
+    <h3 style={{ ...headingStyle(typography, theme, { fontSize: SIZE_PRESETS.subheading[sizeStep(style)] }), textAlign: align, maxWidth: 640, margin: align === 'center' ? '0 auto' : 0 }}>
       {content.text}
     </h3>
   );
 }
 
-function ParagraphBlock({ content, theme, typography, editable }) {
+function ParagraphBlock({ content, theme, typography, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Paragraph — click to add text" />;
   }
-  return <p style={{ ...bodyStyle(typography, theme), maxWidth: 640, margin: '0 auto', whiteSpace: 'pre-wrap' }}>{content.text}</p>;
+  const align = style?.align || 'left';
+  return <p style={{ ...bodyStyle(typography, theme, { fontSize: SIZE_PRESETS.body[sizeStep(style)] }), maxWidth: 640, margin: align === 'center' ? '0 auto' : 0, textAlign: align, whiteSpace: 'pre-wrap' }}>{content.text}</p>;
 }
 
-function QuoteBlock({ content, theme, typography, editable }) {
+function QuoteBlock({ content, theme, typography, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Quote — click to add text" />;
   }
+  const align = style?.align || 'center';
   return (
-    <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
-      <p style={headingStyle(typography, theme, { fontStyle: 'italic', fontSize: 'clamp(1.125rem, 2.4vw, 1.5rem)', lineHeight: 1.5, marginBottom: 12 })}>“{content.text}”</p>
+    <div style={{ textAlign: align, maxWidth: 640, margin: align === 'center' ? '0 auto' : 0 }}>
+      <p style={headingStyle(typography, theme, { fontStyle: 'italic', fontSize: SIZE_PRESETS.quote[sizeStep(style)], lineHeight: 1.5, marginBottom: 12 })}>“{content.text}”</p>
       {content.attribution && <p style={{ fontFamily: typography.bodyFont, fontSize: 13, color: theme.accent, margin: 0 }}>— {content.attribution}</p>}
     </div>
   );
 }
 
-function TwoColumnTextBlock({ content, theme, typography, editable }) {
+function TwoColumnTextBlock({ content, theme, typography, editable, style }) {
   if (!content.left && !content.right && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Two-column text — click to add text" />;
   }
+  const align = style?.align || 'left';
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 32, maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 32, maxWidth: 900, margin: '0 auto', textAlign: align }}>
       <p style={{ ...bodyStyle(typography, theme), whiteSpace: 'pre-wrap' }}>{content.left}</p>
       <p style={{ ...bodyStyle(typography, theme), whiteSpace: 'pre-wrap' }}>{content.right}</p>
     </div>
   );
 }
 
-function ListBlock({ content, theme, typography, editable }) {
+function ListBlock({ content, theme, typography, editable, style }) {
   const items = content.items || [];
   if (items.length === 0 && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="List — click to add items" />;
   }
+  const align = style?.align || 'left';
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto' }}>
-      {content.title && <h3 style={{ ...headingStyle(typography, theme, { fontSize: 'clamp(1.125rem, 2.4vw, 1.5rem)' }), textAlign: 'center', marginBottom: 20 }}>{content.title}</h3>}
+    <div style={{ maxWidth: 560, margin: '0 auto', textAlign: align }}>
+      {content.title && <h3 style={{ ...headingStyle(typography, theme, { fontSize: 'clamp(1.125rem, 2.4vw, 1.5rem)' }), textAlign: align, marginBottom: 20 }}>{content.title}</h3>}
       <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
         {items.map((item, i) => (
-          <li key={i} style={{ ...bodyStyle(typography, theme), display: 'flex', gap: 10, marginBottom: 10, alignItems: 'baseline' }}>
+          <li key={i} style={{ ...bodyStyle(typography, theme), display: 'flex', gap: 10, marginBottom: 10, alignItems: 'baseline', justifyContent: align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start' }}>
             <span style={{ color: theme.accent, flexShrink: 0 }}>—</span>
             <span>{item}</span>
           </li>
@@ -347,12 +366,13 @@ function QuoteBannerBlock({ content, theme, typography, editable }) {
   );
 }
 
-function DressCodeBlock({ content, theme, typography, editable }) {
+function DressCodeBlock({ content, theme, typography, editable, style }) {
   if (!content.text) {
     return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Dress code — click to add text" /> : null;
   }
+  const align = style?.align || 'center';
   return (
-    <div style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center', border: `1px solid ${theme.accent}40`, padding: '24px 20px' }}>
+    <div style={{ maxWidth: 520, margin: align === 'center' ? '0 auto' : 0, textAlign: align, border: `1px solid ${theme.accent}40`, padding: '24px 20px' }}>
       <p style={{ fontFamily: typography.bodyFont, fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: theme.accent, margin: '0 0 8px' }}>Dress code</p>
       <p style={{ ...bodyStyle(typography, theme), margin: 0 }}>{content.text}</p>
     </div>
@@ -574,6 +594,22 @@ function BlockCanvasWrapper({ block, index, count, isSelected, onSelectBlock, on
   );
 }
 
+// Resolves a block's curated style overrides against the ACTIVE UNIVERSE's
+// own tokens — never a free colour/size. textColor becomes an "effective
+// theme" with `lightText` swapped, since every renderer already derives its
+// text colour from theme.lightText (never a hardcoded literal) — so
+// substituting it here changes the real rendered colour with zero changes
+// needed inside any individual renderer. background/align/size are passed
+// through to renderers that support them (see WBRightPanel.jsx's
+// ALIGN_CAPABLE_TYPES / SIZE_CAPABLE_TYPES / NO_TEXT_COLOR_TYPES — kept in
+// sync with which renderers actually read `style`).
+function resolveBlockStyle(style, theme) {
+  const s = style || {};
+  const textColor = s.textColor === 'secondary' ? `${theme.lightText}99` : s.textColor === 'accent' ? theme.accent : theme.lightText;
+  const backgroundColor = s.background === 'surface' ? `${theme.lightText}0d` : s.background === 'accent' ? `${theme.accent}18` : null;
+  return { effectiveTheme: { ...theme, lightText: textColor }, backgroundColor };
+}
+
 export default function UniverseBlocks({ blocks, weddingDetails, theme, typography, universeConfig, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId }) {
   const list = blocks || [];
   if (list.length === 0 && !editable) return null;
@@ -586,9 +622,12 @@ export default function UniverseBlocks({ blocks, weddingDetails, theme, typograp
       {sorted.map((block, i) => {
         const Renderer = RENDERERS[block.type];
         if (!Renderer) return null;
+        const { effectiveTheme, backgroundColor } = resolveBlockStyle(block.style, theme);
         const rendered = (
           <SectionReveal universeConfig={universeConfig} disabled={motionDisabled || editable}>
-            <Renderer content={block.content || {}} theme={theme} typography={typography} universeConfig={universeConfig} weddingDetails={weddingDetails} editable={editable} />
+            <div style={backgroundColor ? { background: backgroundColor, padding: '32px 24px', color: effectiveTheme.lightText } : { color: effectiveTheme.lightText }}>
+              <Renderer content={block.content || {}} theme={effectiveTheme} typography={typography} universeConfig={universeConfig} weddingDetails={weddingDetails} editable={editable} style={block.style} />
+            </div>
           </SectionReveal>
         );
         return (

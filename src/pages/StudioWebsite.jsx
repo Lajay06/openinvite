@@ -352,6 +352,23 @@ export default function StudioWebsite() {
     setPageBlocks(page, next);
   };
 
+  // feat/block-styling-curated: per-block curated style overrides
+  // (textColor/background/size/align — see WBRightPanel.jsx's
+  // BlockStylePanel and UniverseBlocks.jsx's resolveBlockStyle). Setting a
+  // key to undefined removes the override key entirely rather than storing
+  // an explicit "unset" value, so an untouched block's `style` stays absent
+  // and resolves to the type's own default look.
+  const updateBlockStyleOnPage = (page, id, key, value) => {
+    const next = getPageBlocks(page).map(b => {
+      if (b.id !== id) return b;
+      const style = { ...(b.style || {}) };
+      if (value === undefined) delete style[key];
+      else style[key] = value;
+      return { ...b, style };
+    });
+    setPageBlocks(page, next);
+  };
+
   const openLibrary = (page, index) => setLibraryTarget({ page, index });
   const closeLibrary = () => setLibraryTarget(null);
   const handleLibrarySelect = (catalogId) => {
@@ -370,6 +387,11 @@ export default function StudioWebsite() {
   const updateSelectedBlockContent = (key, value) => {
     if (!selectedBlockRef) return;
     updateBlockContentOnPage(selectedBlockRef.page, selectedBlockRef.blockId, key, value);
+  };
+
+  const updateSelectedBlockStyle = (key, value) => {
+    if (!selectedBlockRef) return;
+    updateBlockStyleOnPage(selectedBlockRef.page, selectedBlockRef.blockId, key, value);
   };
 
   const deleteSelectedBlock = () => {
@@ -591,6 +613,7 @@ export default function StudioWebsite() {
             onClearAsset={() => {}}
             selectedBlock={selectedBlock}
             onUpdateSelectedBlockContent={updateSelectedBlockContent}
+            onUpdateSelectedBlockStyle={updateSelectedBlockStyle}
             onDeleteSelectedBlock={deleteSelectedBlock}
             onClearSelectedBlock={clearSelectedBlock}
           />

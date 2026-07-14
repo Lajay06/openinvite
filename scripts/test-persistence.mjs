@@ -39,6 +39,7 @@ import { runUniversePickerIntegrity } from '../tests/persistence/universe-picker
 import { runAssetSystem } from '../tests/persistence/asset-system.mjs';
 import { runStripeWebhook } from '../tests/persistence/stripe-webhook.mjs';
 import { runComponentLibrary } from '../tests/persistence/component-library.mjs';
+import { runCuratedFonts } from '../tests/persistence/curated-fonts.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -89,6 +90,7 @@ async function run() {
   results.push(...await runAssetSystem());
   results.push(...await runStripeWebhook());
   results.push(...await runComponentLibrary());
+  results.push(...await runCuratedFonts());
 
   // ── Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;

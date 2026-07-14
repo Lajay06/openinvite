@@ -12,18 +12,27 @@
  * No React, no DOM — safe to import from a plain Node test script.
  */
 
-import { UNIVERSE_CONFIGS, TYPOGRAPHY_PAIRINGS, WEBSITE_THEMES, resolveUniverseConfig } from './websiteThemes.js';
+import { UNIVERSE_CONFIGS, TYPOGRAPHY_PAIRINGS, WEBSITE_THEMES, resolveUniverseConfig, normalizeUniverseKey } from './websiteThemes.js';
+import { CURATED_FONTS, UNIVERSE_DEFAULT_FONT_IDS } from './curatedFonts.js';
 
 /**
  * Resolves the heading/body font pairing + Google Fonts query for a wedding.
- * A universe's own typography takes priority over the generic activeTypography
- * picker (same precedence pattern already used for pageTransition) — falls
- * back to the generic TYPOGRAPHY_PAIRINGS lookup when the universe has none
- * (or no universe is set at all), so non-universe weddings are unaffected.
  *
- * Includes headingWeight/bodyWeight/headingStyle so this drop-in replaces the
- * raw TYPOGRAPHY_PAIRINGS lookup everywhere it was used — page components and
- * WBSectionRenderer read those fields too, not just the two font-family names.
+ * feat/block-styling-curated: previously, a universe's own `typography`
+ * field had unconditional priority over weddingDetails.activeTypography —
+ * and since every real wedding has an activeUniverse (defaults to 'aman'),
+ * the activeTypography picker was permanently dead code (confirmed root
+ * cause of "the Typography selector does nothing"). Fixed by reading a new
+ * per-wedding override, weddingDetails.fontOverride = { headingFontId,
+ * bodyFontId }, pointing at curatedFonts.js's CURATED_FONTS registry — a
+ * small, per-universe-appropriate set, never a free Google Fonts search.
+ * When no override is set (every wedding today, including John & Suzanne),
+ * this resolves the universe's OWN default font ids
+ * (UNIVERSE_DEFAULT_FONT_IDS), which reproduce the exact same family/
+ * googleFonts/weight output as before — verified byte-for-byte in
+ * tests/persistence/curated-fonts.mjs. Falls back further to the generic
+ * TYPOGRAPHY_PAIRINGS lookup only when no universe is set at all (unchanged
+ * from before).
  *
  * @param {object} weddingDetails
  * @returns {{ headingFont: string, bodyFont: string, googleFonts: string, headingWeight: number, bodyWeight: number, headingStyle: string }}
@@ -31,6 +40,27 @@ import { UNIVERSE_CONFIGS, TYPOGRAPHY_PAIRINGS, WEBSITE_THEMES, resolveUniverseC
 export function resolveTypography(weddingDetails) {
   const universeConfig = resolveUniverseConfig(weddingDetails);
   if (universeConfig?.typography) {
+    const universeKey = normalizeUniverseKey(weddingDetails?.activeUniverse);
+    const defaults = UNIVERSE_DEFAULT_FONT_IDS[universeKey];
+    const override = weddingDetails?.fontOverride;
+    const headingId = override?.headingFontId || defaults?.headingFontId;
+    const bodyId = override?.bodyFontId || defaults?.bodyFontId;
+    const headingFont = headingId && CURATED_FONTS[headingId];
+    const bodyFont = bodyId && CURATED_FONTS[bodyId];
+    if (headingFont && bodyFont) {
+      const fragments = [headingFont.googleFonts, bodyFont.googleFonts].filter(Boolean);
+      const uniqueFragments = [...new Set(fragments)];
+      return {
+        headingFont: headingFont.family,
+        bodyFont: bodyFont.family,
+        googleFonts: uniqueFragments.join('&family='),
+        headingWeight: headingFont.weight ?? 400,
+        bodyWeight: bodyFont.weight ?? 400,
+        headingStyle: universeConfig.typography.headingStyle || 'normal',
+      };
+    }
+    // Safety net for a universe missing curated font ids (shouldn't happen
+    // for the 10 canonical universes) — same behaviour as before this change.
     return { headingWeight: 400, bodyWeight: 400, headingStyle: 'normal', ...universeConfig.typography };
   }
   const fallback = TYPOGRAPHY_PAIRINGS.find(t => t.id === weddingDetails?.activeTypography) || TYPOGRAPHY_PAIRINGS[0];

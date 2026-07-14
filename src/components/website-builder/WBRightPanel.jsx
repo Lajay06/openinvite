@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, X, Trash2 } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
-import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS } from '@/lib/websiteThemes';
+import { WEBSITE_THEMES, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, normalizeUniverseKey } from '@/lib/websiteThemes';
+import { CURATED_FONTS, UNIVERSE_DEFAULT_FONT_IDS, UNIVERSE_FONT_OPTIONS, universePairingPresets } from '@/lib/curatedFonts';
 import toast from 'react-hot-toast';
 import {
   FLabel, UInput, MediaPicker,
@@ -96,18 +97,37 @@ function DesignTab({ details, onChange, universeTheme }) {
   const [themeOpen, setThemeOpen] = useState(false);
   const [typoOpen, setTypoOpen] = useState(false);
 
-  const activeTypoId = details.activeTypography || 'classic';
-  const activeTypo = TYPOGRAPHY_PAIRINGS.find(t => t.id === activeTypoId) || TYPOGRAPHY_PAIRINGS[0];
+  // feat/block-styling-curated: the universe (not the generic
+  // activeTypography picker) governs typography — see resolveTypography()
+  // in universeStyling.js. weddingDetails.fontOverride = { headingFontId,
+  // bodyFontId } lets a couple choose from that universe's OWN curated
+  // font options; unset falls back to the universe's default, unchanged.
+  const universeKey = normalizeUniverseKey(details.activeUniverse) || 'aman';
+  const fontOptions = UNIVERSE_FONT_OPTIONS[universeKey] || UNIVERSE_FONT_OPTIONS.aman;
+  const universeDefaults = UNIVERSE_DEFAULT_FONT_IDS[universeKey] || UNIVERSE_DEFAULT_FONT_IDS.aman;
+  const pairingPresets = universePairingPresets(universeKey);
 
-  // Load Google Fonts for the selected pairing so the Aa preview renders correctly
+  const activeHeadingId = details.fontOverride?.headingFontId || universeDefaults.headingFontId;
+  const activeBodyId = details.fontOverride?.bodyFontId || universeDefaults.bodyFontId;
+
+  const setHeadingFont = (id) => onChange('fontOverride', { headingFontId: id, bodyFontId: activeBodyId });
+  const setBodyFont = (id) => onChange('fontOverride', { headingFontId: activeHeadingId, bodyFontId: id });
+  const setPairing = (preset) => onChange('fontOverride', { headingFontId: preset.headingFontId, bodyFontId: preset.bodyFontId });
+
+  // Load Google Fonts for every curated option offered for this universe, so
+  // every "Aa" preview below renders in its real font, not a fallback.
   useEffect(() => {
-    if (!activeTypo.googleFonts) return;
-    const href = `https://fonts.googleapis.com/css2?family=${activeTypo.googleFonts}&display=swap`;
-    if (document.head.querySelector(`link[href="${href}"]`)) return;
-    const link = document.createElement('link');
-    link.rel = 'stylesheet'; link.href = href;
-    document.head.appendChild(link);
-  }, [activeTypo.googleFonts]);
+    const ids = new Set([...fontOptions.headingFontIds, ...fontOptions.bodyFontIds]);
+    ids.forEach(id => {
+      const gf = CURATED_FONTS[id]?.googleFonts;
+      if (!gf) return;
+      const href = `https://fonts.googleapis.com/css2?family=${gf}&display=swap`;
+      if (document.head.querySelector(`link[href="${href}"]`)) return;
+      const link = document.createElement('link');
+      link.rel = 'stylesheet'; link.href = href;
+      document.head.appendChild(link);
+    });
+  }, [universeKey]);
 
   const universeName    = universeTheme?.name    || 'Aman';
   const universeAccent  = universeTheme?.accent  || '#C4956A';
@@ -179,35 +199,66 @@ function DesignTab({ details, onChange, universeTheme }) {
       </div>
       <Divider />
       <SLabel onClick={() => setTypoOpen(o => !o)} isOpen={typoOpen}>
-        {`Typography · ${activeTypo.name}`}
+        {`Typography · ${CURATED_FONTS[activeHeadingId]?.label || 'Universe default'}`}
       </SLabel>
-      <div style={{ overflow: 'hidden', maxHeight: typoOpen ? '700px' : '0px', transition: 'max-height 0.2s ease' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 8 }}>
-          {TYPOGRAPHY_PAIRINGS.map(t => {
-            const sel = activeTypoId === t.id;
+      <div style={{ overflow: 'hidden', maxHeight: typoOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
+        {/* Pairing presets — one-click combos, always includes this
+            universe's own default as the first option. */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+          {pairingPresets.map(preset => {
+            const sel = activeHeadingId === preset.headingFontId && activeBodyId === preset.bodyFontId;
+            return (
+              <button
+                key={preset.id}
+                onClick={() => setPairing(preset)}
+                style={{ padding: '6px 12px', fontSize: 11, fontWeight: 600, cursor: 'pointer', borderRadius: 999, border: '1px solid ' + (sel ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.15)'), background: sel ? 'rgba(255,255,255,0.12)' : 'transparent', color: sel ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'inherit' }}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <FLabel>Heading font</FLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}>
+          {fontOptions.headingFontIds.map(id => {
+            const font = CURATED_FONTS[id];
+            if (!font) return null;
+            const sel = activeHeadingId === id;
             return (
               <div
-                key={t.id}
-                onClick={() => onChange('activeTypography', t.id)}
-                style={{
-                  border: sel ? '2px solid rgba(255,255,255,0.7)' : '1px solid rgba(255,255,255,0.1)',
-                  padding: '10px 12px', cursor: 'pointer',
-                  background: sel ? 'rgba(255,255,255,0.08)' : 'transparent',
-                  position: 'relative', transition: 'border-color 0.15s',
-                }}
+                key={id}
+                onClick={() => setHeadingFont(id)}
+                style={{ border: sel ? '2px solid rgba(255,255,255,0.7)' : '1px solid rgba(255,255,255,0.1)', padding: '10px 8px', cursor: 'pointer', background: sel ? 'rgba(255,255,255,0.08)' : 'transparent', textAlign: 'center' }}
               >
-                {sel && (
-                  <div style={{ position: 'absolute', top: 5, right: 5, width: 13, height: 13, borderRadius: '50%', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: '#0A0A0A', lineHeight: 1 }}>✓</span>
-                  </div>
-                )}
-                <p style={{ fontFamily: t.fontDisplay, fontSize: 18, fontWeight: 400, color: '#FFFFFF', margin: '0 0 2px', lineHeight: 1 }}>Aa</p>
-                <p style={{ fontSize: 10, fontWeight: 700, color: sel ? '#FFFFFF' : 'rgba(255,255,255,0.6)', margin: '0 0 1px', fontFamily: 'inherit' }}>{t.name}</p>
-                <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', margin: 0, fontFamily: 'inherit' }}>{t.description}</p>
+                <p style={{ fontFamily: font.family, fontSize: 20, fontWeight: font.weight || 400, color: '#FFFFFF', margin: '0 0 4px', lineHeight: 1 }}>Aa</p>
+                <p style={{ fontSize: 9, fontWeight: 600, color: sel ? '#FFFFFF' : 'rgba(255,255,255,0.5)', margin: 0, fontFamily: 'inherit' }}>{font.label}</p>
               </div>
             );
           })}
         </div>
+
+        <FLabel>Body font</FLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 }}>
+          {fontOptions.bodyFontIds.map(id => {
+            const font = CURATED_FONTS[id];
+            if (!font) return null;
+            const sel = activeBodyId === id;
+            return (
+              <div
+                key={id}
+                onClick={() => setBodyFont(id)}
+                style={{ border: sel ? '2px solid rgba(255,255,255,0.7)' : '1px solid rgba(255,255,255,0.1)', padding: '10px 8px', cursor: 'pointer', background: sel ? 'rgba(255,255,255,0.08)' : 'transparent', textAlign: 'center' }}
+              >
+                <p style={{ fontFamily: font.family, fontSize: 16, fontWeight: 400, color: '#FFFFFF', margin: '0 0 4px', lineHeight: 1 }}>Aa</p>
+                <p style={{ fontSize: 9, fontWeight: 600, color: sel ? '#FFFFFF' : 'rgba(255,255,255,0.5)', margin: 0, fontFamily: 'inherit' }}>{font.label}</p>
+              </div>
+            );
+          })}
+        </div>
+        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '0 0 8px' }}>
+          Curated for {universeTheme?.name || 'this universe'} — every option is chosen to fit its character.
+        </p>
       </div>
       <Divider />
       <SLabel>Animations</SLabel>
@@ -478,12 +529,118 @@ function MasterDataReferenceDark({ label, value, detail }) {
 }
 
 
+// ── PER-BLOCK STYLE PANEL ──────────────────────────────────────
+// feat/block-styling-curated: curated-only style controls for a selected
+// block. Every option resolves against the ACTIVE UNIVERSE's own tokens
+// (resolveColors output, read via universeTheme) — no free hex picker, no
+// arbitrary px size, no custom font. See UniverseBlocks.jsx's
+// resolveBlockStyle() for how these map back to real rendered styles, and
+// BUILDER_BLOCK_SCOPE.md for the "freedom within beauty" principle this
+// keeps intact at the per-block layer too.
+//
+// Alignment and size only apply to text-forward block types (a gallery or
+// countdown block has no meaningful "alignment" to change) — shown only
+// when the selected block's type actually uses them, so nothing here can
+// be clicked with no visible effect.
+const ALIGN_CAPABLE_TYPES = ['heading', 'subheading', 'paragraph', 'quote', 'list', 'two-column-text', 'dress-code'];
+const SIZE_CAPABLE_TYPES = ['heading', 'subheading', 'paragraph', 'quote'];
+// gallery/video/spacer have no meaningful text; button/quote-banner set
+// their own fixed-contrast colour deliberately (a coloured label on an
+// accent pill, pale text on a dark band) — a text-colour override on
+// theme.lightText would have no visible effect for any of these.
+const NO_TEXT_COLOR_TYPES = ['gallery', 'video', 'spacer', 'button', 'quote-banner'];
+
+export function blockSupportsAnyStyle(type) {
+  return !NO_TEXT_COLOR_TYPES.includes(type) || ALIGN_CAPABLE_TYPES.includes(type) || SIZE_CAPABLE_TYPES.includes(type);
+}
+
+function BlockStylePanel({ block, universeTheme, updateStyle }) {
+  const style = block.style || {};
+  const accent = universeTheme?.accent || '#C4956A';
+  const supportsAlign = ALIGN_CAPABLE_TYPES.includes(block.type);
+  const supportsSize = SIZE_CAPABLE_TYPES.includes(block.type);
+  const supportsTextColor = !NO_TEXT_COLOR_TYPES.includes(block.type);
+
+  const swatchRow = (options, activeValue, key) => (
+    <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+      {options.map(opt => {
+        // No fallback-to-first-option here: when the block has no style
+        // override for this property, NOTHING is shown selected — that
+        // honestly represents "using this block type's own default look"
+        // rather than implying a specific option (e.g. alignment defaults
+        // to 'center' for some block types, 'left' for others; text colour
+        // defaults to the theme's own text colour either way).
+        const sel = activeValue === opt.value;
+        return (
+          <button
+            key={opt.value}
+            onClick={() => updateStyle(key, sel ? undefined : opt.value)}
+            title={opt.label}
+            style={{
+              flex: 1, padding: '8px 6px', fontSize: 10, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
+              border: sel ? `2px solid ${accent}` : '1px solid rgba(255,255,255,0.12)',
+              background: opt.swatch || 'transparent', color: opt.swatch ? (opt.textOn || '#FFFFFF') : (sel ? '#FFFFFF' : 'rgba(255,255,255,0.5)'),
+            }}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  return (
+    <div>
+      {supportsTextColor && (
+        <>
+          <FLabel>Text colour</FLabel>
+          {swatchRow([
+            { value: 'primary', label: 'Text', swatch: universeTheme?.lightText, textOn: universeTheme?.lightBg },
+            { value: 'secondary', label: 'Muted', swatch: `${universeTheme?.lightText}99`, textOn: universeTheme?.lightBg },
+            { value: 'accent', label: 'Accent', swatch: accent, textOn: universeTheme?.darkBg },
+          ], style.textColor, 'textColor')}
+
+          <FLabel>Background</FLabel>
+          {swatchRow([
+            { value: 'none', label: 'None' },
+            { value: 'surface', label: 'Subtle tint' },
+            { value: 'accent', label: 'Accent tint' },
+          ], style.background, 'background')}
+        </>
+      )}
+
+      {supportsSize && (
+        <>
+          <FLabel>Size</FLabel>
+          {swatchRow([
+            { value: 'S', label: 'S' },
+            { value: 'M', label: 'M' },
+            { value: 'L', label: 'L' },
+            { value: 'XL', label: 'XL' },
+          ], style.size, 'size')}
+        </>
+      )}
+
+      {supportsAlign && (
+        <>
+          <FLabel>Alignment</FLabel>
+          {swatchRow([
+            { value: 'left', label: 'Left' },
+            { value: 'center', label: 'Center' },
+            { value: 'right', label: 'Right' },
+          ], style.align, 'align')}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── MAIN COMPONENT ────────────────────────────────────────────
 // MediaLibraryContext is provided by the parent (StudioWebsite.jsx), not
 // here — it now also needs to wrap the on-canvas block editor
 // (feat/component-library), which lives outside this panel, so ownership
 // moved up to the one place both can share it.
-export default function WBRightPanel({ details, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset, selectedBlock, onUpdateSelectedBlockContent, onDeleteSelectedBlock, onClearSelectedBlock }) {
+export default function WBRightPanel({ details, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock }) {
   const AssetEditorComp = selectedAsset ? ASSET_EDITOR_MAP[selectedAsset] : null;
 
   return (
@@ -501,6 +658,12 @@ export default function WBRightPanel({ details, universeTheme, onChange, rightTa
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
               <BlockFields block={selectedBlock} updateContent={onUpdateSelectedBlockContent} />
+              {blockSupportsAnyStyle(selectedBlock.type) && (
+                <>
+                  <Divider />
+                  <BlockStylePanel block={selectedBlock} universeTheme={universeTheme} updateStyle={onUpdateSelectedBlockStyle} />
+                </>
+              )}
             </div>
             <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
               <button
