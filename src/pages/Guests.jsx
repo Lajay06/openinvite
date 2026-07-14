@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/AuthContext";
 import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
 import ImportGuestModal from "../components/guests/ImportGuestModal";
-import BulkAddGuestModal from "../components/guests/BulkAddGuestModal";
+import BulkActionBar from "../components/guests/BulkActionBar";
 import SendInvitesModal from "../components/guests/SendInvitesModal";
 import SetEventsModal from "../components/guests/SetEventsModal";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
@@ -81,7 +81,6 @@ export default function Guests() {
   const [saving, setSaving] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [showBulkAdd, setShowBulkAdd] = useState(false);
   const [weddingParty, setWeddingParty] = useState({});
   const [weddingEvents, setWeddingEvents] = useState([]);
 
@@ -160,6 +159,80 @@ export default function Guests() {
     } catch (e) {
       toast.error('Failed to update');
       loadGuests(); // Rollback on failure
+    }
+  };
+
+  /* ── Quick add — the persistent bottom row in the editable table ────────
+     Same defaults as the full "+ Add guest" form (main-event invites via
+     defaultEventResponses), just skipping the modal for fast, repeated
+     name-then-Enter entry. Category/tags/dietary are left blank — set
+     afterwards via inline edit or bulk edit, same as an import. */
+  const handleQuickAdd = async (name) => {
+    try {
+      await Guest.create({ name, event_responses: defaultEventResponses(weddingEvents) });
+      loadGuests();
+    } catch (e) {
+      toast.error(e?.message || 'Failed to add guest');
+    }
+  };
+
+  /* ── Bulk edit — applies to every currently-selected guest ──────────────
+     Category/dietary are a uniform SET (same value for everyone selected —
+     "100 guests to friends" is one click here). Tags are additive/
+     subtractive per guest instead, since different guests may already
+     carry different tags of their own. */
+  const handleBulkUpdate = async (updates) => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setGuests(prev => prev.map(g => selectedIds.has(g.id) ? { ...g, ...updates } : g));
+    try {
+      await Promise.all(ids.map(id => Guest.update(id, updates)));
+      toast.success(`Updated ${ids.length} guest${ids.length !== 1 ? 's' : ''}`);
+    } catch {
+      toast.error('Some updates failed');
+      loadGuests();
+    }
+  };
+
+  const handleBulkAddTag = async (tag) => {
+    const targets = selectedGuests.filter(g => !(Array.isArray(g.tags) ? g.tags : []).includes(tag));
+    if (targets.length === 0) return;
+    setGuests(prev => prev.map(g => selectedIds.has(g.id) && !g.tags?.includes(tag) ? { ...g, tags: [...(g.tags || []), tag] } : g));
+    try {
+      await Promise.all(targets.map(g => Guest.update(g.id, { tags: [...(g.tags || []), tag] })));
+      toast.success(`Tagged ${targets.length} guest${targets.length !== 1 ? 's' : ''} "${tag}"`);
+    } catch {
+      toast.error('Failed to add tag to some guests');
+      loadGuests();
+    }
+  };
+
+  const handleBulkRemoveTag = async (tag) => {
+    const targets = selectedGuests.filter(g => (Array.isArray(g.tags) ? g.tags : []).includes(tag));
+    if (targets.length === 0) return;
+    setGuests(prev => prev.map(g => selectedIds.has(g.id) ? { ...g, tags: (g.tags || []).filter(t => t !== tag) } : g));
+    try {
+      await Promise.all(targets.map(g => Guest.update(g.id, { tags: (g.tags || []).filter(t => t !== tag) })));
+      toast.success(`Removed "${tag}" from ${targets.length} guest${targets.length !== 1 ? 's' : ''}`);
+    } catch {
+      toast.error('Failed to remove tag from some guests');
+      loadGuests();
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    if (!window.confirm(`Delete ${ids.length} guest${ids.length !== 1 ? 's' : ''}? This can't be undone.`)) return;
+    const tid = toast.loading(`Deleting ${ids.length} guest${ids.length !== 1 ? 's' : ''}…`);
+    try {
+      await Promise.all(ids.map(id => Guest.delete(id)));
+      toast.success('Deleted', { id: tid });
+      setSelectedIds(new Set());
+      loadGuests();
+    } catch {
+      toast.error('Some deletions failed', { id: tid });
+      loadGuests();
     }
   };
 
@@ -376,9 +449,6 @@ export default function Guests() {
           >
             Export CSV
           </button>
-          <button onClick={() => setShowBulkAdd(true)} className="btn-editorial-secondary">
-            Bulk add
-          </button>
           <button onClick={() => { setEditingGuest(null); setShowForm(true); setActiveTab('guests'); }} className="btn-editorial-secondary">
             + Add guest
           </button>
@@ -436,6 +506,15 @@ export default function Guests() {
                   {selectedIds.size} selected
                 </span>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <BulkActionBar
+                    count={selectedIds.size}
+                    selectedGuests={selectedGuests}
+                    onSetCategory={(category) => handleBulkUpdate({ category: category || null })}
+                    onSetDietary={(dietary) => handleBulkUpdate({ dietary_restrictions: dietary || null })}
+                    onAddTag={handleBulkAddTag}
+                    onRemoveTag={handleBulkRemoveTag}
+                    onDelete={handleBulkDelete}
+                  />
                   <button onClick={openSetEventsForSelection} className="btn-editorial-secondary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <CalendarCheck size={13} />
                     Set events
@@ -480,6 +559,7 @@ export default function Guests() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onUpdate={handleInlineUpdate}
+              onQuickAdd={handleQuickAdd}
               guestRoles={guestRoles}
               loading={loading}
               weddingEvents={weddingEvents}
@@ -512,13 +592,6 @@ export default function Guests() {
       {showImport && (
         <ImportGuestModal
           onClose={() => setShowImport(false)}
-          onImported={loadGuests}
-        />
-      )}
-
-      {showBulkAdd && (
-        <BulkAddGuestModal
-          onClose={() => setShowBulkAdd(false)}
           onImported={loadGuests}
         />
       )}

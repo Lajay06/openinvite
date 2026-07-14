@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,7 +15,7 @@ const CATEGORY_STYLES = {
   partners_friends: { background: 'transparent', color: '#803D81',         border: '1px solid #803D81' },
 };
 
-const CATEGORY_OPTIONS = [
+export const CATEGORY_OPTIONS = [
   { value: '',                label: '— none —' },
   { value: 'family',          label: 'Family' },
   { value: 'friends',         label: 'Friends' },
@@ -195,6 +195,33 @@ function DietaryCell({ value }) {
   );
 }
 
+/* ── Tags pill display ────────────────────────────────────────────────────── */
+const tagPillStyle = {
+  display: 'inline-block',
+  fontFamily: PJS,
+  fontSize: 10,
+  fontWeight: 600,
+  padding: '2px 8px',
+  borderRadius: 999,
+  whiteSpace: 'nowrap',
+  background: 'rgba(128,61,129,0.08)',
+  color: '#803D81',
+  border: '1px solid rgba(128,61,129,0.25)',
+};
+
+function TagsDisplay({ tags }) {
+  const items = Array.isArray(tags) ? tags.filter(Boolean) : [];
+  if (items.length === 0) return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>Add tags…</span>;
+  const first2 = items.slice(0, 2);
+  const rest = items.length - first2.length;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }} title={items.join(', ')}>
+      {first2.map(t => <span key={t} style={tagPillStyle}>{t}</span>)}
+      {rest > 0 && <span style={{ ...tagPillStyle, background: 'rgba(10,10,10,0.06)', color: '#444444', border: 'none' }}>+{rest}</span>}
+    </span>
+  );
+}
+
 const AVATAR_COLOURS = [
   '#E8B4B8', '#B4C8E8', '#B4E8C8', '#D4B4E8',
   '#E8D4B4', '#B4E8E8', '#E8C8B4', '#C8E8B4',
@@ -263,7 +290,7 @@ const selectStyle = {
   color: '#0A0A0A',
 };
 
-const COLUMN_COUNT = 10;
+const COLUMN_COUNT = 11;
 
 const SkeletonRows = () => (
   <>
@@ -279,6 +306,7 @@ const SkeletonRows = () => (
         <TableCell><div className="skeleton-row" style={{ width: 140, height: 12 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
+        <TableCell><div className="skeleton-row" style={{ width: 90, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 100, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 50, height: 14 }} /></TableCell>
@@ -409,9 +437,52 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents }) {
   );
 }
 
+/* ─── Persistent "add guest" row — Monday.com-style quick add ───────────────
+   Always present at the bottom of the table: type a name, press Enter, the
+   row saves and the input clears (staying focused) so a couple can add a
+   run of names back-to-back without touching the mouse. ─────────────────── */
+function AddGuestRow({ onQuickAdd, columnCount }) {
+  const [value, setValue] = useState('');
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef(null);
+
+  const commit = async () => {
+    const name = value.trim();
+    if (!name || saving) return;
+    setSaving(true);
+    try {
+      await onQuickAdd(name);
+      setValue('');
+    } finally {
+      setSaving(false);
+      requestAnimationFrame(() => inputRef.current?.focus());
+    }
+  };
+
+  return (
+    <TableRow style={{ background: 'rgba(224,53,83,0.02)' }}>
+      <TableCell />
+      <TableCell colSpan={columnCount - 1} style={{ paddingTop: 4, paddingBottom: 4 }}>
+        <input
+          ref={inputRef}
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } }}
+          placeholder="+ Type a name and press Enter to add a guest…"
+          disabled={saving}
+          style={{
+            width: '100%', border: 'none', background: 'transparent', outline: 'none',
+            fontSize: 13, fontFamily: PJS, color: '#0A0A0A', padding: '6px 4px',
+          }}
+        />
+      </TableCell>
+    </TableRow>
+  );
+}
+
 /* ─── Main component ─────────────────────────────────────────────────────── */
 export default function GuestList({
-  guests, onEdit, onDelete, onUpdate, guestRoles = {}, loading, weddingEvents = [],
+  guests, onEdit, onDelete, onUpdate, onQuickAdd, guestRoles = {}, loading, weddingEvents = [],
   selectedIds, onToggleSelect, onToggleSelectAll, onSetEventsAndSend, onEditEvents,
 }) {
   const [editCell, setEditCell] = useState(null); // { id, field }
@@ -515,7 +586,77 @@ export default function GuestList({
     );
   };
 
-  if (!loading && guests.length === 0) {
+  /* Dietary cell: plain string field like textCell, but displays via the
+     pill-parsing DietaryCell rather than raw text. */
+  const dietaryCell = (guest) => {
+    if (isEditing(guest.id, 'dietary_restrictions')) {
+      return (
+        <input
+          autoFocus
+          value={editValue}
+          onChange={e => setEditValue(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={handleKeyDown}
+          placeholder="e.g. Vegetarian, Nut allergy"
+          style={inputStyle}
+        />
+      );
+    }
+    return (
+      <HoverDiv
+        onClick={() => startEdit(guest.id, 'dietary_restrictions', guest.dietary_restrictions || '')}
+        pointer
+        title="Click to edit"
+      >
+        <DietaryCell value={guest.dietary_restrictions} />
+      </HoverDiv>
+    );
+  };
+
+  /* Tags cell: array field, edited as a comma-separated string (commitEdit's
+     generic string-field logic doesn't apply here since the stored value is
+     an array, not a string — same click-to-edit pattern, its own commit). */
+  const commitTagsEdit = (guestId) => {
+    const next = [...new Set(editValue.split(',').map(s => s.trim()).filter(Boolean))];
+    const guest = guests.find(g => g.id === guestId);
+    const prev = Array.isArray(guest?.tags) ? guest.tags : [];
+    const changed = next.length !== prev.length || next.some((t, i) => t !== prev[i]);
+    if (changed && onUpdate) onUpdate(guestId, { tags: next });
+    setEditCell(null);
+  };
+
+  const tagsCell = (guest) => {
+    if (isEditing(guest.id, 'tags')) {
+      return (
+        <input
+          autoFocus
+          value={editValue}
+          onChange={e => setEditValue(e.target.value)}
+          onBlur={() => commitTagsEdit(guest.id)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') { e.preventDefault(); commitTagsEdit(guest.id); }
+            if (e.key === 'Escape') setEditCell(null);
+          }}
+          placeholder="Comma-separated tags"
+          style={inputStyle}
+        />
+      );
+    }
+    return (
+      <HoverDiv
+        onClick={() => startEdit(guest.id, 'tags', Array.isArray(guest.tags) ? guest.tags.join(', ') : '')}
+        pointer
+        title="Click to edit tags (comma-separated)"
+      >
+        <TagsDisplay tags={guest.tags} />
+      </HoverDiv>
+    );
+  };
+
+  // With a quick-add row available, an empty list still shows the table
+  // (header + the persistent add row) rather than a dead-end message — the
+  // add row IS "add your first guest", not a separate empty state.
+  if (!loading && guests.length === 0 && !onQuickAdd) {
     return (
       <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
         <Users size={28} style={{ color: '#803D81', margin: '0 auto 12px' }} />
@@ -546,6 +687,7 @@ export default function GuestList({
               <TableHead>Contact</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Dietary</TableHead>
+              <TableHead>Tags</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Last sent</TableHead>
               <TableHead>Table</TableHead>
@@ -638,7 +780,12 @@ export default function GuestList({
 
                   {/* ── Dietary ── */}
                   <TableCell className="align-middle">
-                    <DietaryCell value={guest.dietary_restrictions} />
+                    {dietaryCell(guest)}
+                  </TableCell>
+
+                  {/* ── Tags ── */}
+                  <TableCell className="align-middle">
+                    {tagsCell(guest)}
                   </TableCell>
 
                   {/* ── Status — per-event chips (replaces RSVP + Invited to) ── */}
@@ -723,6 +870,9 @@ export default function GuestList({
 
               return rows;
             })}
+            {!loading && onQuickAdd && (
+              <AddGuestRow onQuickAdd={onQuickAdd} columnCount={COLUMN_COUNT} />
+            )}
           </TableBody>
         </Table>
       </div>
