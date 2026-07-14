@@ -127,12 +127,22 @@ const headingStyle = (typography, theme, overrides = {}) => ({
 // size (the default for every existing block) looks byte-identical to
 // before.
 const SIZE_PRESETS = {
-  heading: { S: 'clamp(1.125rem, 2.6vw, 1.5rem)', M: 'clamp(1.5rem, 4vw, 2.25rem)', L: 'clamp(2rem, 5vw, 3rem)', XL: 'clamp(2.5rem, 6.5vw, 4rem)' },
-  subheading: { S: 'clamp(0.9375rem, 2vw, 1.25rem)', M: 'clamp(1.125rem, 2.6vw, 1.5rem)', L: 'clamp(1.375rem, 3.2vw, 1.875rem)', XL: 'clamp(1.75rem, 4vw, 2.25rem)' },
-  quote: { S: 'clamp(0.9375rem, 1.8vw, 1.25rem)', M: 'clamp(1.125rem, 2.4vw, 1.5rem)', L: 'clamp(1.375rem, 3vw, 1.875rem)', XL: 'clamp(1.75rem, 3.8vw, 2.25rem)' },
-  body: { S: 'clamp(0.8125rem, 1.3vw, 0.9375rem)', M: 'clamp(0.9375rem, 1.6vw, 1.0625rem)', L: 'clamp(1.0625rem, 1.9vw, 1.25rem)', XL: 'clamp(1.25rem, 2.4vw, 1.5rem)' },
+  heading: { XS: 'clamp(0.9375rem, 2.2vw, 1.125rem)', S: 'clamp(1.125rem, 2.6vw, 1.5rem)', M: 'clamp(1.5rem, 4vw, 2.25rem)', L: 'clamp(2rem, 5vw, 3rem)', XL: 'clamp(2.5rem, 6.5vw, 4rem)' },
+  subheading: { XS: 'clamp(0.8125rem, 1.7vw, 1rem)', S: 'clamp(0.9375rem, 2vw, 1.25rem)', M: 'clamp(1.125rem, 2.6vw, 1.5rem)', L: 'clamp(1.375rem, 3.2vw, 1.875rem)', XL: 'clamp(1.75rem, 4vw, 2.25rem)' },
+  quote: { XS: 'clamp(0.8125rem, 1.5vw, 1rem)', S: 'clamp(0.9375rem, 1.8vw, 1.25rem)', M: 'clamp(1.125rem, 2.4vw, 1.5rem)', L: 'clamp(1.375rem, 3vw, 1.875rem)', XL: 'clamp(1.75rem, 3.8vw, 2.25rem)' },
+  body: { XS: 'clamp(0.75rem, 1.1vw, 0.8125rem)', S: 'clamp(0.8125rem, 1.3vw, 0.9375rem)', M: 'clamp(0.9375rem, 1.6vw, 1.0625rem)', L: 'clamp(1.0625rem, 1.9vw, 1.25rem)', XL: 'clamp(1.25rem, 2.4vw, 1.5rem)' },
 };
 const sizeStep = (style) => (style?.size && SIZE_PRESETS.heading[style.size] ? style.size : 'M');
+
+// feat/block-styling-v2: paragraph/two-column-text additionally accept
+// 'justify' for align — everything else (headings, quotes, lists) stays
+// left/center/right only, since justified short lines/headings looks broken.
+export const JUSTIFY_CAPABLE_TYPES = ['paragraph', 'two-column-text'];
+export function resolveAlign(style, blockType, fallback) {
+  const align = style?.align || fallback;
+  if (align === 'justify' && !JUSTIFY_CAPABLE_TYPES.includes(blockType)) return fallback;
+  return align;
+}
 
 // Shown in place of a renderer's real output when the block is empty AND
 // we're in the builder's edit mode — never shown to guests (editable is
@@ -175,7 +185,7 @@ function ParagraphBlock({ content, theme, typography, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Paragraph — click to add text" />;
   }
-  const align = style?.align || 'left';
+  const align = resolveAlign(style, 'paragraph', 'left');
   return <p style={{ ...bodyStyle(typography, theme, { fontSize: SIZE_PRESETS.body[sizeStep(style)] }), maxWidth: 640, margin: align === 'center' ? '0 auto' : 0, textAlign: align, whiteSpace: 'pre-wrap' }}>{content.text}</p>;
 }
 
@@ -196,7 +206,7 @@ function TwoColumnTextBlock({ content, theme, typography, editable, style }) {
   if (!content.left && !content.right && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Two-column text — click to add text" />;
   }
-  const align = style?.align || 'left';
+  const align = resolveAlign(style, 'two-column-text', 'left');
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 32, maxWidth: 900, margin: '0 auto', textAlign: align }}>
       <p style={{ ...bodyStyle(typography, theme), whiteSpace: 'pre-wrap' }}>{content.left}</p>
@@ -603,11 +613,60 @@ function BlockCanvasWrapper({ block, index, count, isSelected, onSelectBlock, on
 // through to renderers that support them (see WBRightPanel.jsx's
 // ALIGN_CAPABLE_TYPES / SIZE_CAPABLE_TYPES / NO_TEXT_COLOR_TYPES — kept in
 // sync with which renderers actually read `style`).
+// feat/block-styling-v2: textColor/background expand from 3 fixed values
+// to a full swatch grid of tints/shades of the universe's OWN tokens
+// (lightText, accent, accentSecondary) — still never a free hex value.
+// Hex alpha suffixes below are exact: FF/no-suffix=100%, B3=~70%, 66=~40%,
+// 30=~19%, 18=~9%, 0d=~5%.
+// Exported (with labels) so WBRightPanel.jsx's swatch grid renders the
+// EXACT same colours these renderers use — one source of truth, no drift.
+export const TEXT_COLOR_OPTIONS = [
+  { value: 'text-100', label: 'Text', resolve: (t) => t.lightText },
+  { value: 'text-70', label: 'Text · muted', resolve: (t) => `${t.lightText}B3` },
+  { value: 'text-40', label: 'Text · faint', resolve: (t) => `${t.lightText}66` },
+  { value: 'accent-100', label: 'Accent', resolve: (t) => t.accent },
+  { value: 'accent-70', label: 'Accent · muted', resolve: (t) => `${t.accent}B3` },
+  { value: 'accent-40', label: 'Accent · tint', resolve: (t) => `${t.accent}66` },
+  { value: 'accent2-100', label: 'Accent 2', resolve: (t) => t.accentSecondary || t.accent },
+  { value: 'accent2-70', label: 'Accent 2 · muted', resolve: (t) => `${t.accentSecondary || t.accent}B3` },
+  { value: 'accent2-40', label: 'Accent 2 · tint', resolve: (t) => `${t.accentSecondary || t.accent}66` },
+];
+export const BACKGROUND_OPTIONS = [
+  { value: 'none', label: 'None', resolve: () => null },
+  { value: 'text-subtle', label: 'Subtle tint', resolve: (t) => `${t.lightText}0d` },
+  { value: 'text-soft', label: 'Soft tint', resolve: (t) => `${t.lightText}1a` },
+  { value: 'accent-subtle', label: 'Accent · subtle', resolve: (t) => `${t.accent}18` },
+  { value: 'accent-soft', label: 'Accent · soft', resolve: (t) => `${t.accent}30` },
+  { value: 'accent2-subtle', label: 'Accent 2 · subtle', resolve: (t) => `${t.accentSecondary || t.accent}18` },
+  { value: 'accent2-soft', label: 'Accent 2 · soft', resolve: (t) => `${t.accentSecondary || t.accent}30` },
+];
+const TEXT_COLOR_TOKENS = Object.fromEntries(TEXT_COLOR_OPTIONS.map(o => [o.value, o.resolve]));
+const BACKGROUND_TOKENS = Object.fromEntries(BACKGROUND_OPTIONS.filter(o => o.value !== 'none').map(o => [o.value, o.resolve]));
+// PR #101 shipped a 3-value enum for each — these values may already be
+// saved on real weddings, so they're aliased forward rather than dropped.
+// The 'surface'/'accent' backgrounds and 'secondary'/'accent' text colours
+// alias to tokens that render the exact same hex, so existing blocks look
+// byte-identical after this upgrade.
+const LEGACY_TEXT_COLOR_ALIASES = { primary: 'text-100', secondary: 'text-70', accent: 'accent-100' };
+const LEGACY_BACKGROUND_ALIASES = { none: 'none', surface: 'text-subtle', accent: 'accent-subtle' };
+export const SPACING_OPTIONS = [
+  { value: 'tight', label: 'Tight', padding: '16px 24px' },
+  { value: 'normal', label: 'Normal', padding: '32px 24px' },
+  { value: 'roomy', label: 'Roomy', padding: '56px 24px' },
+];
+const SPACING_PRESETS = Object.fromEntries(SPACING_OPTIONS.map(o => [o.value, o.padding]));
+
 function resolveBlockStyle(style, theme) {
   const s = style || {};
-  const textColor = s.textColor === 'secondary' ? `${theme.lightText}99` : s.textColor === 'accent' ? theme.accent : theme.lightText;
-  const backgroundColor = s.background === 'surface' ? `${theme.lightText}0d` : s.background === 'accent' ? `${theme.accent}18` : null;
-  return { effectiveTheme: { ...theme, lightText: textColor }, backgroundColor };
+  const textColorKey = LEGACY_TEXT_COLOR_ALIASES[s.textColor] || s.textColor;
+  const textColor = (textColorKey && TEXT_COLOR_TOKENS[textColorKey]) ? TEXT_COLOR_TOKENS[textColorKey](theme) : theme.lightText;
+
+  const backgroundKey = s.background != null && LEGACY_BACKGROUND_ALIASES[s.background] !== undefined ? LEGACY_BACKGROUND_ALIASES[s.background] : s.background;
+  const backgroundColor = (backgroundKey && backgroundKey !== 'none' && BACKGROUND_TOKENS[backgroundKey]) ? BACKGROUND_TOKENS[backgroundKey](theme) : null;
+
+  const spacingPadding = (s.spacing && SPACING_PRESETS[s.spacing]) || null;
+
+  return { effectiveTheme: { ...theme, lightText: textColor }, backgroundColor, spacingPadding };
 }
 
 export default function UniverseBlocks({ blocks, weddingDetails, theme, typography, universeConfig, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId }) {
@@ -622,10 +681,17 @@ export default function UniverseBlocks({ blocks, weddingDetails, theme, typograp
       {sorted.map((block, i) => {
         const Renderer = RENDERERS[block.type];
         if (!Renderer) return null;
-        const { effectiveTheme, backgroundColor } = resolveBlockStyle(block.style, theme);
+        const { effectiveTheme, backgroundColor, spacingPadding } = resolveBlockStyle(block.style, theme);
+        const wrapperStyle = { color: effectiveTheme.lightText };
+        if (backgroundColor) wrapperStyle.background = backgroundColor;
+        // Unset spacing preserves the pre-existing behaviour exactly: padding
+        // only appeared when a background was also set. An explicit spacing
+        // choice now applies regardless of background.
+        if (spacingPadding) wrapperStyle.padding = spacingPadding;
+        else if (backgroundColor) wrapperStyle.padding = '32px 24px';
         const rendered = (
           <SectionReveal universeConfig={universeConfig} disabled={motionDisabled || editable}>
-            <div style={backgroundColor ? { background: backgroundColor, padding: '32px 24px', color: effectiveTheme.lightText } : { color: effectiveTheme.lightText }}>
+            <div style={wrapperStyle}>
               <Renderer content={block.content || {}} theme={effectiveTheme} typography={typography} universeConfig={universeConfig} weddingDetails={weddingDetails} editable={editable} style={block.style} />
             </div>
           </SectionReveal>

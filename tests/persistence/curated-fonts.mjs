@@ -16,7 +16,7 @@
  */
 import { resolveTypography } from '../../src/lib/universeStyling.js';
 import { UNIVERSE_CONFIGS } from '../../src/lib/websiteThemes.js';
-import { CURATED_FONTS, UNIVERSE_DEFAULT_FONT_IDS, UNIVERSE_FONT_OPTIONS, universePairingPresets } from '../../src/lib/curatedFonts.js';
+import { CURATED_FONTS, UNIVERSE_DEFAULT_FONT_IDS, UNIVERSE_FONT_OPTIONS, FONT_CATALOG, universePairingPresets } from '../../src/lib/curatedFonts.js';
 import { pass, fail } from './_shared.mjs';
 
 const UNIVERSES = ['aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
@@ -87,6 +87,50 @@ export async function runCuratedFonts() {
     results.push(allValid
       ? pass(`universePairingPresets('${key}') — every preset resolves real fonts`, presets.map(p => p.label).join(', '))
       : fail(`universePairingPresets('${key}') — every preset resolves real fonts`, 'all valid', JSON.stringify(presets)));
+  }
+
+  console.log('\n  feat/block-styling-v2 — FONT_CATALOG (the flat 30-font heading/body dropdown):\n');
+
+  {
+    results.push(FONT_CATALOG.length === 30
+      ? pass('FONT_CATALOG has exactly 30 entries', String(FONT_CATALOG.length))
+      : fail('FONT_CATALOG has exactly 30 entries', '30', String(FONT_CATALOG.length)));
+
+    const ids = FONT_CATALOG.map(f => f.id);
+    results.push(new Set(ids).size === ids.length
+      ? pass('FONT_CATALOG — every id is unique', `${ids.length} unique ids`)
+      : fail('FONT_CATALOG — every id is unique', 'all unique', `${new Set(ids).size} unique of ${ids.length}`));
+
+    const labels = FONT_CATALOG.map(f => f.label);
+    results.push(new Set(labels).size === labels.length
+      ? pass('FONT_CATALOG — every label is unique', `${labels.length} unique labels`)
+      : fail('FONT_CATALOG — every label is unique', 'all unique', `${new Set(labels).size} unique of ${labels.length}`));
+
+    const allComplete = FONT_CATALOG.every(f => f.id && f.label && f.family && f.googleFonts);
+    results.push(allComplete
+      ? pass('FONT_CATALOG — every entry has id/label/family/googleFonts', 'all complete')
+      : fail('FONT_CATALOG — every entry has id/label/family/googleFonts', 'all complete', JSON.stringify(FONT_CATALOG.find(f => !f.id || !f.label || !f.family || !f.googleFonts))));
+
+    // Every FONT_CATALOG entry must be a real, resolvable CURATED_FONTS
+    // registration — a catalog id with no matching registry entry would
+    // render the browser's fallback font with no visible error.
+    const allInRegistry = FONT_CATALOG.every(f => CURATED_FONTS[f.id]);
+    results.push(allInRegistry
+      ? pass('FONT_CATALOG — every id resolves a real CURATED_FONTS entry', 'all resolve')
+      : fail('FONT_CATALOG — every id resolves a real CURATED_FONTS entry', 'all resolve', JSON.stringify(FONT_CATALOG.filter(f => !CURATED_FONTS[f.id]).map(f => f.id))));
+  }
+
+  console.log('\n  feat/block-styling-v2 — fontOverride can select ANY FONT_CATALOG entry for either role:\n');
+
+  {
+    const arbitraryHeading = FONT_CATALOG[FONT_CATALOG.length - 1].id;
+    const arbitraryBody = FONT_CATALOG[0].id;
+    const resolved = resolveTypography({ activeUniverse: 'aman', fontOverride: { headingFontId: arbitraryHeading, bodyFontId: arbitraryBody } });
+    const expectedHeadingFont = CURATED_FONTS[arbitraryHeading].family;
+    const expectedBodyFont = CURATED_FONTS[arbitraryBody].family;
+    results.push(resolved.headingFont === expectedHeadingFont && resolved.bodyFont === expectedBodyFont
+      ? pass('resolveTypography — fontOverride accepts a FONT_CATALOG id outside the universe\'s own curated alternates', `${resolved.headingFont} / ${resolved.bodyFont}`)
+      : fail('resolveTypography — fontOverride accepts a FONT_CATALOG id outside the universe\'s own curated alternates', `${expectedHeadingFont} / ${expectedBodyFont}`, `${resolved.headingFont} / ${resolved.bodyFont}`));
   }
 
   return results;
