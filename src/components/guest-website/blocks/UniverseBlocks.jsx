@@ -16,18 +16,27 @@
  * ../layouts — never a hardcoded block style, and never a couple-chosen
  * manual override.
  *
- * feat/component-library: `editable` + `onRequestInsert` are optional and
- * OFF by default — the published site (MultiPageWeddingWebsite.jsx) and the
- * full-screen preview (FullScreenPreview.jsx) never pass them, so guests
- * never see editing chrome. Only the builder's own live inline canvas
- * (StudioWebsite.jsx → RealWebsitePreview) passes `editable=true` +
- * `onRequestInsert`, which reveals hover "+" insert affordances between/
- * around blocks — the SAME content renderers run either way; only this
- * extra overlay is conditional, so the hard render-parity constraint holds
- * (grep-confirmed in the PR: one PAGE_COMPONENTS map, one UniverseBlocks).
+ * feat/canvas-builder: `editable` is optional and OFF by default — the
+ * published site (MultiPageWeddingWebsite.jsx) never passes it, so guests
+ * never see editing chrome. The builder's inline canvas
+ * (StudioWebsite.jsx -> RealWebsitePreview) passes `editable` bound to its
+ * own Edit/Preview toggle; the full-screen "Preview" always renders with it
+ * off. The SAME content renderers run in every case; only this extra
+ * overlay (dotted outlines, insert points, selection) is conditional, so the
+ * hard render-parity constraint holds (grep-confirmed in the PR: one
+ * PAGE_COMPONENTS map, one UniverseBlocks).
+ *
+ * Root-caused bug this rebuild fixes: a couple could add a new block from
+ * the library, but many renderers return null on empty content (correct
+ * guest-facing behaviour — never show a broken empty photo/gallery/etc. to
+ * a guest) — a freshly-inserted block starts with empty content, so on the
+ * canvas it silently rendered nothing, looking exactly like "adding did
+ * nothing." Every renderer that can return null now takes `editable` and
+ * renders a visible placeholder instead when editable and empty, so a
+ * couple can always see what they added and click it to fill it in.
  */
-import React, { useState } from 'react';
-import { Plus, ChevronUp, ChevronDown, Pencil, Trash2 } from 'lucide-react';
+import React from 'react';
+import { Plus, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroVideo';
@@ -112,8 +121,22 @@ const headingStyle = (typography, theme, overrides = {}) => ({
   color: theme.lightText, margin: 0, lineHeight: 1.2, ...overrides,
 });
 
+// Shown in place of a renderer's real output when the block is empty AND
+// we're in the builder's edit mode — never shown to guests (editable is
+// only ever true on the builder's own canvas).
+function EmptyPlaceholder({ theme, typography, label }) {
+  return (
+    <div style={{ maxWidth: 480, margin: '0 auto', padding: '20px', border: `1px dashed ${theme.lightText}35`, textAlign: 'center' }}>
+      <p style={{ fontFamily: typography.bodyFont, fontSize: 13, color: `${theme.lightText}80`, margin: 0 }}>{label}</p>
+    </div>
+  );
+}
+
 // ── Text ──────────────────────────────────────────────────────────
-function HeadingBlock({ content, theme, typography, universeConfig }) {
+function HeadingBlock({ content, theme, typography, universeConfig, editable }) {
+  if (!content.text && editable) {
+    return <EmptyPlaceholder theme={theme} typography={typography} label="Heading — click to add text" />;
+  }
   return (
     <div style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto' }}>
       {content.kicker && <UniverseKicker text={content.kicker} universeConfig={universeConfig} theme={theme} typography={typography} />}
@@ -122,7 +145,10 @@ function HeadingBlock({ content, theme, typography, universeConfig }) {
   );
 }
 
-function SubheadingBlock({ content, theme, typography }) {
+function SubheadingBlock({ content, theme, typography, editable }) {
+  if (!content.text && editable) {
+    return <EmptyPlaceholder theme={theme} typography={typography} label="Subheading — click to add text" />;
+  }
   return (
     <h3 style={{ ...headingStyle(typography, theme, { fontSize: 'clamp(1.125rem, 2.6vw, 1.5rem)' }), textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
       {content.text}
@@ -130,11 +156,17 @@ function SubheadingBlock({ content, theme, typography }) {
   );
 }
 
-function ParagraphBlock({ content, theme, typography }) {
+function ParagraphBlock({ content, theme, typography, editable }) {
+  if (!content.text && editable) {
+    return <EmptyPlaceholder theme={theme} typography={typography} label="Paragraph — click to add text" />;
+  }
   return <p style={{ ...bodyStyle(typography, theme), maxWidth: 640, margin: '0 auto', whiteSpace: 'pre-wrap' }}>{content.text}</p>;
 }
 
-function QuoteBlock({ content, theme, typography }) {
+function QuoteBlock({ content, theme, typography, editable }) {
+  if (!content.text && editable) {
+    return <EmptyPlaceholder theme={theme} typography={typography} label="Quote — click to add text" />;
+  }
   return (
     <div style={{ textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
       <p style={headingStyle(typography, theme, { fontStyle: 'italic', fontSize: 'clamp(1.125rem, 2.4vw, 1.5rem)', lineHeight: 1.5, marginBottom: 12 })}>“{content.text}”</p>
@@ -143,7 +175,10 @@ function QuoteBlock({ content, theme, typography }) {
   );
 }
 
-function TwoColumnTextBlock({ content, theme, typography }) {
+function TwoColumnTextBlock({ content, theme, typography, editable }) {
+  if (!content.left && !content.right && editable) {
+    return <EmptyPlaceholder theme={theme} typography={typography} label="Two-column text — click to add text" />;
+  }
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 32, maxWidth: 900, margin: '0 auto' }}>
       <p style={{ ...bodyStyle(typography, theme), whiteSpace: 'pre-wrap' }}>{content.left}</p>
@@ -152,8 +187,11 @@ function TwoColumnTextBlock({ content, theme, typography }) {
   );
 }
 
-function ListBlock({ content, theme, typography }) {
+function ListBlock({ content, theme, typography, editable }) {
   const items = content.items || [];
+  if (items.length === 0 && editable) {
+    return <EmptyPlaceholder theme={theme} typography={typography} label="List — click to add items" />;
+  }
   return (
     <div style={{ maxWidth: 560, margin: '0 auto' }}>
       {content.title && <h3 style={{ ...headingStyle(typography, theme, { fontSize: 'clamp(1.125rem, 2.4vw, 1.5rem)' }), textAlign: 'center', marginBottom: 20 }}>{content.title}</h3>}
@@ -170,8 +208,10 @@ function ListBlock({ content, theme, typography }) {
 }
 
 // ── Media ─────────────────────────────────────────────────────────
-function PhotoBlock({ content, theme }) {
-  if (!content.url) return null;
+function PhotoBlock({ content, theme, typography, editable }) {
+  if (!content.url) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Image — click to choose a photo" /> : null;
+  }
   return (
     <figure style={{ margin: 0, maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' }}>
       <img src={content.url} alt={content.caption || ''} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
@@ -180,8 +220,10 @@ function PhotoBlock({ content, theme }) {
   );
 }
 
-function FullWidthImageBlock({ content }) {
-  if (!content.url) return null;
+function FullWidthImageBlock({ content, theme, typography, editable }) {
+  if (!content.url) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Full-width image — click to choose a photo" /> : null;
+  }
   return (
     <figure style={{ margin: '0 -24px' }}>
       <img src={content.url} alt={content.caption || ''} style={{ width: '100%', height: 'auto', maxHeight: 560, display: 'block', objectFit: 'cover' }} />
@@ -190,8 +232,10 @@ function FullWidthImageBlock({ content }) {
   );
 }
 
-function ImageWithTextBlock({ content, theme, typography }) {
-  if (!content.url && !content.text) return null;
+function ImageWithTextBlock({ content, theme, typography, editable }) {
+  if (!content.url && !content.text) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Image + text — click to add a photo and text" /> : null;
+  }
   const imageFirst = (content.imageSide || 'left') === 'left';
   const image = content.url && (
     <div style={{ flex: 1, minWidth: 240 }}>
@@ -210,9 +254,11 @@ function ImageWithTextBlock({ content, theme, typography }) {
   );
 }
 
-function GalleryBlock({ content }) {
+function GalleryBlock({ content, theme, typography, editable }) {
   const photos = content.photos || [];
-  if (photos.length === 0) return null;
+  if (photos.length === 0) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Gallery grid — click to add photos" /> : null;
+  }
   // auto-fit + a minmax derived from the chosen column count: approximates
   // that count on wide viewports, but naturally collapses to fewer columns
   // on mobile instead of squeezing a fixed column count into a narrow
@@ -230,10 +276,11 @@ function GalleryBlock({ content }) {
   );
 }
 
-function VideoBlock({ content }) {
-  if (!content.url) return null;
-  const video = detectHeroVideoType(content.url);
-  if (!video) return null;
+function VideoBlock({ content, theme, typography, editable }) {
+  const video = content.url ? detectHeroVideoType(content.url) : null;
+  if (!video) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Video — click to add a YouTube, Vimeo, or .mp4 URL" /> : null;
+  }
   if (video.type === 'file') {
     return (
       <video controls playsInline style={{ width: '100%', maxWidth: 900, display: 'block', margin: '0 auto' }}>
@@ -255,9 +302,12 @@ function SpacerBlock({ content, theme, universeConfig }) {
   return <div style={{ height: content.height || 40 }} />;
 }
 
-function ColumnsBlock({ content, theme, typography }) {
+function ColumnsBlock({ content, theme, typography, editable }) {
   const columns = content.columns || [];
-  if (columns.length === 0) return null;
+  const hasText = columns.some(c => c.text);
+  if (columns.length === 0 || (!hasText && editable)) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Columns — click to add text" /> : null;
+  }
   return (
     <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${Math.max(180, Math.round(720 / columns.length))}px, 1fr))`, gap: 28, maxWidth: 900, margin: '0 auto' }}>
       {columns.map((col, i) => (
@@ -267,8 +317,10 @@ function ColumnsBlock({ content, theme, typography }) {
   );
 }
 
-function ButtonBlock({ content, theme, typography }) {
-  if (!content.label) return null;
+function ButtonBlock({ content, theme, typography, editable }) {
+  if (!content.label) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Button — click to set the text and link" /> : null;
+  }
   return (
     <div style={{ textAlign: 'center' }}>
       <a
@@ -281,7 +333,10 @@ function ButtonBlock({ content, theme, typography }) {
   );
 }
 
-function QuoteBannerBlock({ content, theme, typography }) {
+function QuoteBannerBlock({ content, theme, typography, editable }) {
+  if (!content.text && editable) {
+    return <EmptyPlaceholder theme={theme} typography={typography} label="Quote banner — click to add text" />;
+  }
   return (
     <div style={{ background: theme.darkBg, padding: '48px 24px', textAlign: 'center', margin: '0 -24px' }}>
       <p style={headingStyle(typography, theme, { color: theme.darkText, fontStyle: 'italic', fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' })}>
@@ -292,8 +347,10 @@ function QuoteBannerBlock({ content, theme, typography }) {
   );
 }
 
-function DressCodeBlock({ content, theme, typography }) {
-  if (!content.text) return null;
+function DressCodeBlock({ content, theme, typography, editable }) {
+  if (!content.text) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Dress code — click to add text" /> : null;
+  }
   return (
     <div style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center', border: `1px solid ${theme.accent}40`, padding: '24px 20px' }}>
       <p style={{ fontFamily: typography.bodyFont, fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: theme.accent, margin: '0 0 8px' }}>Dress code</p>
@@ -303,11 +360,12 @@ function DressCodeBlock({ content, theme, typography }) {
 }
 
 // ── Wedding ───────────────────────────────────────────────────────
-function CountdownBlock({ theme, typography, weddingDetails }) {
+function CountdownBlock({ theme, typography, weddingDetails, editable }) {
   const weddingDate = weddingDetails?.weddingDate;
-  if (!weddingDate) return null;
-  const target = new Date(weddingDate + 'T00:00:00');
-  if (isNaN(target.getTime())) return null;
+  const target = weddingDate ? new Date(weddingDate + 'T00:00:00') : null;
+  if (!target || isNaN(target.getTime())) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Countdown — set your wedding date in the Content tab to activate" /> : null;
+  }
   const daysLeft = Math.ceil((target.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   const label = daysLeft > 0 ? `${daysLeft} day${daysLeft === 1 ? '' : 's'} to go` : daysLeft === 0 ? 'Today is the day!' : 'We got married!';
   return (
@@ -317,9 +375,11 @@ function CountdownBlock({ theme, typography, weddingDetails }) {
   );
 }
 
-function TimelineBlock({ content, theme, typography }) {
+function TimelineBlock({ content, theme, typography, editable }) {
   const items = content.items || [];
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Timeline — click to add events" /> : null;
+  }
   return (
     <div style={{ maxWidth: 560, margin: '0 auto' }}>
       {items.map((item, i) => (
@@ -342,10 +402,12 @@ function TimelineBlock({ content, theme, typography }) {
 // place-id data comes from a Google Places lookup that only exists in the
 // planner (EventDetails.jsx), so a block-level free-text duplicate would
 // risk drifting out of sync.
-function EventDetailsBlock({ theme, typography, weddingDetails }) {
+function EventDetailsBlock({ theme, typography, weddingDetails, editable }) {
   const ceremony = weddingDetails?.mainCeremony || {};
   const reception = weddingDetails?.reception || {};
-  if (!ceremony.venueName && !reception.venueName) return null;
+  if (!ceremony.venueName && !reception.venueName) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Event details — add your ceremony/reception venue in the wedding planner to activate" /> : null;
+  }
   const Row = ({ label, venue }) => venue.venueName ? (
     <div style={{ marginBottom: 16 }}>
       <p style={{ fontFamily: typography.bodyFont, fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: theme.accent, margin: '0 0 4px' }}>{label}</p>
@@ -362,9 +424,11 @@ function EventDetailsBlock({ theme, typography, weddingDetails }) {
   );
 }
 
-function FaqBlock({ content, theme, typography }) {
+function FaqBlock({ content, theme, typography, editable }) {
   const items = content.items || [];
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="FAQ — click to add questions" /> : null;
+  }
   return (
     <div style={{ maxWidth: 640, margin: '0 auto' }}>
       {items.map((item, i) => (
@@ -393,10 +457,12 @@ function PersonCard({ name, role, bio, photoUrl, theme, typography }) {
   );
 }
 
-function CoupleIntroBlock({ content, theme, typography }) {
+function CoupleIntroBlock({ content, theme, typography, editable }) {
   const p1 = content.partner1 || {};
   const p2 = content.partner2 || {};
-  if (!p1.name && !p2.name) return null;
+  if (!p1.name && !p2.name) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Couple intro — click to add names, bios, and photos" /> : null;
+  }
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 48 }}>
       <PersonCard name={p1.name} bio={p1.bio} photoUrl={p1.photoUrl} theme={theme} typography={typography} />
@@ -405,8 +471,10 @@ function CoupleIntroBlock({ content, theme, typography }) {
   );
 }
 
-function SinglePersonBlock({ content, theme, typography }) {
-  if (!content.name) return null;
+function SinglePersonBlock({ content, theme, typography, editable }) {
+  if (!content.name) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Single person — click to add a name and photo" /> : null;
+  }
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <PersonCard name={content.name} role={content.role} bio={content.bio} photoUrl={content.photoUrl} theme={theme} typography={typography} />
@@ -414,9 +482,11 @@ function SinglePersonBlock({ content, theme, typography }) {
   );
 }
 
-function WeddingPartyBlock({ content, theme, typography }) {
+function WeddingPartyBlock({ content, theme, typography, editable }) {
   const people = content.people || [];
-  if (people.length === 0) return null;
+  if (people.length === 0) {
+    return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Wedding party — click to add people" /> : null;
+  }
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 32 }}>
       {people.map((p, i) => <PersonCard key={i} name={p.name} role={p.role} photoUrl={p.photoUrl} theme={theme} typography={typography} />)}
@@ -450,55 +520,53 @@ export const RENDERERS = {
   'wedding-party': WeddingPartyBlock,
 };
 
-// Hover-revealed "+" insert affordance — only rendered when `editable` is
-// true (the builder's own inline canvas). Clicking calls onRequestInsert
-// with the exact index to insert at; the actual library modal lives in the
-// builder (StudioWebsite.jsx), not here — this stays a pure content
-// renderer plus an optional, inert-by-default overlay hook.
+// Always-visible insert affordance (feat/canvas-builder — no longer
+// hover-only) sitting on the dotted boundary between/around blocks. Clicking
+// calls onRequestInsert with the exact index to insert at; the actual
+// library modal lives in the builder (StudioWebsite.jsx), not here — this
+// stays a pure content renderer plus an optional, inert-by-default overlay
+// hook.
 function InsertPoint({ index, onRequestInsert, theme }) {
-  const [hover, setHover] = useState(false);
   return (
-    <div
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{ position: 'relative', height: hover ? 32 : 12, transition: 'height 0.12s' }}
-    >
-      {hover && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: `1px dashed ${theme.accent}80` }} />
-          <button
-            onClick={() => onRequestInsert(index)}
-            style={{ position: 'relative', zIndex: 1, width: 26, height: 26, borderRadius: '50%', border: 'none', background: theme.accent, color: theme.darkBg, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-            title="Add a section"
-          >
-            <Plus size={15} />
-          </button>
-        </div>
-      )}
+    <div style={{ position: 'relative', height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: `1px dashed ${theme.lightText}30` }} />
+      <button
+        onClick={() => onRequestInsert(index)}
+        style={{ position: 'relative', zIndex: 1, width: 26, height: 26, borderRadius: '50%', border: 'none', background: theme.accent, color: theme.darkBg, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }}
+        title="Add a section"
+      >
+        <Plus size={15} />
+      </button>
     </div>
   );
 }
 
-// Hover toolbar over a rendered block — reorder/edit/delete, all directly
-// on the canvas, per feat/component-library's requirement that editing not
-// require leaving the canvas. "Edit" doesn't render its own form here (that
-// would mean this render-path component owning builder-chrome/import from
-// website-builder/); it just tells the builder which block to edit via
-// onRequestEdit — StudioWebsite.jsx owns the actual edit popover.
-function BlockOverlay({ block, index, count, onMoveBlock, onDeleteBlock, onRequestEdit, theme, children }) {
-  const [hover, setHover] = useState(false);
+// A block's canvas wrapper in edit mode: always shows a dim dotted outline;
+// clicking it selects the block (onSelectBlock), which is how the right
+// panel's block editor opens (WBRightPanel.jsx) — this component only ever
+// emits the selection event, it doesn't render a form of its own. The
+// currently-selected block gets a solid accent outline plus its own
+// always-visible move-up/move-down/delete controls (feat/canvas-builder —
+// no longer hover-only, and no longer a hover-revealed edit icon since
+// clicking the block itself is what edits it).
+function BlockCanvasWrapper({ block, index, count, isSelected, onSelectBlock, onMoveBlock, onDeleteBlock, theme, children }) {
   return (
     <div
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{ position: 'relative', outline: hover ? `1px dashed ${theme.accent}80` : 'none', outlineOffset: -1 }}
+      onClick={() => onSelectBlock(block.id)}
+      style={{
+        position: 'relative', cursor: 'pointer',
+        outline: isSelected ? `2px solid ${theme.accent}` : `1px dashed ${theme.lightText}30`,
+        outlineOffset: -1,
+      }}
     >
       {children}
-      {hover && (
-        <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 5, display: 'flex', gap: 2, background: theme.darkBg, borderRadius: 4, padding: 3 }}>
+      {isSelected && (
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{ position: 'absolute', top: 8, right: 8, zIndex: 5, display: 'flex', gap: 2, background: theme.darkBg, borderRadius: 4, padding: 3 }}
+        >
           <button onClick={() => onMoveBlock(block.id, 'up')} disabled={index === 0} title="Move up" style={{ background: 'none', border: 'none', cursor: index === 0 ? 'default' : 'pointer', color: index === 0 ? `${theme.darkText}40` : theme.darkText, padding: 4, display: 'flex' }}><ChevronUp size={13} /></button>
           <button onClick={() => onMoveBlock(block.id, 'down')} disabled={index === count - 1} title="Move down" style={{ background: 'none', border: 'none', cursor: index === count - 1 ? 'default' : 'pointer', color: index === count - 1 ? `${theme.darkText}40` : theme.darkText, padding: 4, display: 'flex' }}><ChevronDown size={13} /></button>
-          <button onClick={() => onRequestEdit(block.id)} title="Edit" style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.darkText, padding: 4, display: 'flex' }}><Pencil size={13} /></button>
           <button onClick={() => onDeleteBlock(block.id)} title="Delete" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 4, display: 'flex' }}><Trash2 size={13} /></button>
         </div>
       )}
@@ -506,7 +574,7 @@ function BlockOverlay({ block, index, count, onMoveBlock, onDeleteBlock, onReque
   );
 }
 
-export default function UniverseBlocks({ blocks, weddingDetails, theme, typography, universeConfig, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onRequestEdit }) {
+export default function UniverseBlocks({ blocks, weddingDetails, theme, typography, universeConfig, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId }) {
   const list = blocks || [];
   if (list.length === 0 && !editable) return null;
   const sorted = [...list].sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -519,17 +587,22 @@ export default function UniverseBlocks({ blocks, weddingDetails, theme, typograp
         const Renderer = RENDERERS[block.type];
         if (!Renderer) return null;
         const rendered = (
-          <SectionReveal universeConfig={universeConfig} disabled={motionDisabled}>
-            <Renderer content={block.content || {}} theme={theme} typography={typography} universeConfig={universeConfig} weddingDetails={weddingDetails} />
+          <SectionReveal universeConfig={universeConfig} disabled={motionDisabled || editable}>
+            <Renderer content={block.content || {}} theme={theme} typography={typography} universeConfig={universeConfig} weddingDetails={weddingDetails} editable={editable} />
           </SectionReveal>
         );
         return (
           <React.Fragment key={block.id}>
-            <div style={{ margin: editable ? '20px 0' : 0 }}>
+            <div style={{ margin: editable ? '4px 0' : 0 }}>
               {editable ? (
-                <BlockOverlay block={block} index={i} count={sorted.length} onMoveBlock={onMoveBlock} onDeleteBlock={onDeleteBlock} onRequestEdit={onRequestEdit} theme={theme}>
+                <BlockCanvasWrapper
+                  block={block} index={i} count={sorted.length}
+                  isSelected={selectedBlockId === block.id}
+                  onSelectBlock={onSelectBlock} onMoveBlock={onMoveBlock} onDeleteBlock={onDeleteBlock}
+                  theme={theme}
+                >
                   {rendered}
-                </BlockOverlay>
+                </BlockCanvasWrapper>
               ) : rendered}
             </div>
             {editable && <InsertPoint index={i + 1} onRequestInsert={onRequestInsert} theme={theme} />}

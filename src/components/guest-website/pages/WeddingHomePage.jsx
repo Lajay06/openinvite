@@ -647,7 +647,8 @@ export default function WeddingHomePage(props) {
         onRequestInsert={props.onRequestInsert}
         onMoveBlock={props.onMoveBlock}
         onDeleteBlock={props.onDeleteBlock}
-        onRequestEdit={props.onRequestEdit}
+        onSelectBlock={props.onSelectBlock}
+        selectedBlockId={props.selectedBlockId}
       />
     </>
   );

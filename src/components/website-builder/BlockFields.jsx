@@ -1,19 +1,17 @@
 /**
- * BlockList — the couple-facing edit/reorder/delete UI for a page's content
- * blocks, plus the side-panel trigger for adding one (feat/block-builder,
- * fix/block-builder-add-ui, feat/component-library).
+ * BlockFields — the per-type content editing form for a single block.
+ * Used by WBRightPanel.jsx's block-editor view, shown when a block is
+ * selected on the canvas (feat/canvas-builder) — the canvas itself has no
+ * separate editing UI of its own; this is the one implementation of "how
+ * do you edit a heading/photo/quote/...".
  *
- * feat/component-library: adding a block no longer opens its own small
- * inline picker here — it calls `onRequestInsert(index)`, which the parent
- * (WBRightPanel.jsx → StudioWebsite.jsx) uses to open the SAME
- * ComponentLibraryModal the on-canvas "+" insert points open (see
- * UniverseBlocks.jsx's InsertPoint). One add-block experience, two
- * entry points, not two different pickers.
+ * feat/canvas-builder removed the side-panel's block list/add control
+ * entirely (BlockList.jsx, from feat/block-builder + feat/component-library)
+ * — adding now only happens on the canvas via ComponentLibraryModal. This
+ * file keeps just the reusable per-type fields that used to live there.
  */
 import React from 'react';
-import { ChevronUp, ChevronDown, Trash2, Plus } from 'lucide-react';
 import { MediaPicker, FLabel } from './SectionEditorFields';
-import { blockLabel } from '@/components/guest-website/blocks/blockTypes';
 
 function DarkInput({ value, onChange, placeholder }) {
   return (
@@ -70,9 +68,6 @@ function ListEditor({ items, onChange, placeholder }) {
   );
 }
 
-// Exported so StudioWebsite.jsx can reuse the exact same per-type content
-// form for the on-canvas "Edit" popover (feat/component-library) — one
-// implementation of "how do you edit a heading/photo/quote/...", not two.
 export function BlockFields({ block, updateContent }) {
   const c = block.content || {};
   switch (block.type) {
@@ -188,7 +183,7 @@ export function BlockFields({ block, updateContent }) {
     case 'dress-code':
       return <DarkTextarea value={c.text} onChange={v => updateContent('text', v)} placeholder="e.g. Black tie, garden formal..." rows={3} />;
     case 'countdown':
-      return <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Counts down to your wedding date automatically — set the date under "The couple" above.</p>;
+      return <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Counts down to your wedding date automatically — set the date under "The couple" in the Content tab.</p>;
     case 'timeline': {
       const items = c.items || [];
       return (
@@ -262,61 +257,4 @@ export function BlockFields({ block, updateContent }) {
     default:
       return null;
   }
-}
-
-function InsertSlot({ onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', padding: '9px 0', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', background: 'transparent', border: '1px dashed rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: 'inherit', marginBottom: 8, transition: 'color 0.15s, border-color 0.15s' }}
-      onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'; }}
-      onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; }}
-    >
-      <Plus size={13} /> Add block
-    </button>
-  );
-}
-
-export default function BlockList({ blocks = [], onChange, onRequestInsert }) {
-  const sorted = [...blocks].sort((a, b) => (a.order || 0) - (b.order || 0));
-
-  const commit = (next) => {
-    onChange(next.map((b, i) => ({ ...b, order: i })));
-  };
-
-  const updateBlock = (id, updater) => {
-    commit(sorted.map(b => b.id === id ? updater(b) : b));
-  };
-
-  const move = (index, dir) => {
-    const newIdx = dir === 'up' ? index - 1 : index + 1;
-    if (newIdx < 0 || newIdx >= sorted.length) return;
-    const next = [...sorted];
-    [next[index], next[newIdx]] = [next[newIdx], next[index]];
-    commit(next);
-  };
-
-  const remove = (id) => commit(sorted.filter(b => b.id !== id));
-
-  return (
-    <div>
-      <InsertSlot onClick={() => onRequestInsert(0)} />
-      {sorted.map((block, i) => (
-        <React.Fragment key={block.id}>
-          <div style={{ border: '1px solid rgba(255,255,255,0.08)', padding: 10, marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.4)' }}>{blockLabel(block.type)}</span>
-              <div style={{ display: 'flex', gap: 2 }}>
-                <button onClick={() => move(i, 'up')} disabled={i === 0} style={{ background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', color: i === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.5)', padding: 3, display: 'flex' }}><ChevronUp size={14} /></button>
-                <button onClick={() => move(i, 'down')} disabled={i === sorted.length - 1} style={{ background: 'none', border: 'none', cursor: i === sorted.length - 1 ? 'default' : 'pointer', color: i === sorted.length - 1 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.5)', padding: 3, display: 'flex' }}><ChevronDown size={14} /></button>
-                <button onClick={() => remove(block.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(224,53,83,0.7)', padding: 3, display: 'flex' }}><Trash2 size={14} /></button>
-              </div>
-            </div>
-            <BlockFields block={block} updateContent={(key, val) => updateBlock(block.id, b => ({ ...b, content: { ...(b.content || {}), [key]: val } }))} />
-          </div>
-          <InsertSlot onClick={() => onRequestInsert(i + 1)} />
-        </React.Fragment>
-      ))}
-    </div>
-  );
 }

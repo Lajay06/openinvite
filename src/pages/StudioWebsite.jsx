@@ -16,7 +16,6 @@ import { ASSET_PREVIEW_MAP, ASSET_ID_TO_KEY } from '@/components/website-builder
 import { MediaLibraryContext } from '@/components/website-builder/SectionEditorFields';
 import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import ComponentLibraryModal from '@/components/website-builder/ComponentLibraryModal';
-import { BlockFields } from '@/components/website-builder/BlockList';
 import { newBlock } from '@/components/guest-website/blocks/blockTypes';
 
 const UNIVERSE_THEMES = {
@@ -178,19 +177,26 @@ export default function StudioWebsite() {
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved'
   const autosaveTimerRef = useRef(null);
 
-  // feat/component-library: the "Add a section" modal target ({ page, index })
-  // and the on-canvas "Edit" popover target ({ page, blockId }) — one modal/
-  // popover instance shared by both the on-canvas "+"/edit controls
-  // (UniverseBlocks.jsx, only rendered when editable=true) and the side-panel
-  // Content tab (WBRightPanel -> BlockList), so there's one add/edit
-  // experience with two entry points, not two different ones.
+  // feat/canvas-builder: adding only happens on the canvas now (the
+  // side-panel's block list/add control, from feat/block-builder +
+  // feat/component-library, was removed entirely). `libraryTarget` is the
+  // "Add a section" modal's insert position ({ page, index }); `selectedBlock`
+  // is which block is currently click-selected on the canvas ({ page,
+  // blockId }) — selecting one switches WBRightPanel's right panel over to
+  // that block's edit fields (BlockFields), replacing the Design/Content/
+  // Settings tabs until cleared. `canvasMode` toggles the inline canvas
+  // between 'edit' (dotted outlines + insert/select controls, editable=true)
+  // and 'preview' (renders byte-for-byte like the published site,
+  // editable=false) — see the device-switcher toolbar below.
   const [libraryTarget, setLibraryTarget] = useState(null); // { page, index } | null
-  const [editPopover, setEditPopover] = useState(null); // { page, blockId } | null
+  const [selectedBlockRef, setSelectedBlockRef] = useState(null); // { page, blockId } | null
+  const [canvasMode, setCanvasMode] = useState('edit'); // 'edit' | 'preview'
 
   // MediaLibraryContext lives here (not inside WBRightPanel) because the
-  // on-canvas block editor (the edit popover below) also renders MediaPicker
-  // fields (photo/gallery/couple-intro/etc. block types) and needs the same
-  // upload/library state WBRightPanel's Content tab already relies on.
+  // on-canvas block editor (the right-panel block editor below) also
+  // renders MediaPicker fields (photo/gallery/couple-intro/etc. block
+  // types) and needs the same upload/library state WBRightPanel's Content
+  // tab already relies on.
   const [mediaLibrary, setMediaLibrary] = useState([]);
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   const [mediaCallback, setMediaCallback] = useState(null);
@@ -354,9 +360,23 @@ export default function StudioWebsite() {
     closeLibrary();
   };
 
-  const editingBlock = editPopover
-    ? getPageBlocks(editPopover.page).find(b => b.id === editPopover.blockId)
+  const selectBlock = (page, blockId) => setSelectedBlockRef({ page, blockId });
+  const clearSelectedBlock = () => setSelectedBlockRef(null);
+
+  const selectedBlock = selectedBlockRef
+    ? getPageBlocks(selectedBlockRef.page).find(b => b.id === selectedBlockRef.blockId) || null
     : null;
+
+  const updateSelectedBlockContent = (key, value) => {
+    if (!selectedBlockRef) return;
+    updateBlockContentOnPage(selectedBlockRef.page, selectedBlockRef.blockId, key, value);
+  };
+
+  const deleteSelectedBlock = () => {
+    if (!selectedBlockRef) return;
+    deleteBlockOnPage(selectedBlockRef.page, selectedBlockRef.blockId);
+    clearSelectedBlock();
+  };
 
   const doSave = async (showToast = true) => {
     setIsSaving(true);
@@ -495,17 +515,33 @@ export default function StudioWebsite() {
                 openinvite.com.au/w/{details.slug || 'your-wedding'}/{currentPage !== 'home' ? currentPage : ''}
               </span>
             </div>
-            {/* Device pill */}
-            <div style={{ display: 'inline-flex', background: 'rgba(0,0,0,0.3)', borderRadius: 999, padding: 3 }}>
-              {[{ id: 'desktop', Icon: Monitor }, { id: 'tablet', Icon: Tablet }, { id: 'mobile', Icon: Smartphone }].map(({ id, Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setPreviewDevice(id)}
-                  style={{ padding: '5px 12px', borderRadius: 999, background: previewDevice === id ? 'rgba(255,255,255,0.1)' : 'transparent', color: previewDevice === id ? '#FFFFFF' : 'rgba(255,255,255,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.15s' }}
-                >
-                  <Icon size={13} strokeWidth={1.5} />
-                </button>
-              ))}
+            {/* Device + Edit/Preview pills */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'inline-flex', background: 'rgba(0,0,0,0.3)', borderRadius: 999, padding: 3 }}>
+                {[{ id: 'desktop', Icon: Monitor }, { id: 'tablet', Icon: Tablet }, { id: 'mobile', Icon: Smartphone }].map(({ id, Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => setPreviewDevice(id)}
+                    style={{ padding: '5px 12px', borderRadius: 999, background: previewDevice === id ? 'rgba(255,255,255,0.1)' : 'transparent', color: previewDevice === id ? '#FFFFFF' : 'rgba(255,255,255,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.15s' }}
+                  >
+                    <Icon size={13} strokeWidth={1.5} />
+                  </button>
+                ))}
+              </div>
+              {/* feat/canvas-builder: edit mode (dotted outlines + insert/
+                  select controls) vs a clean preview that looks exactly like
+                  the published site — same canvas, editable prop toggled. */}
+              <div style={{ display: 'inline-flex', background: 'rgba(0,0,0,0.3)', borderRadius: 999, padding: 3 }}>
+                {[{ id: 'edit', label: 'Edit' }, { id: 'preview', label: 'Preview' }].map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => { setCanvasMode(opt.id); if (opt.id === 'preview') clearSelectedBlock(); }}
+                    style={{ padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, fontFamily: 'inherit', background: canvasMode === opt.id ? 'rgba(255,255,255,0.1)' : 'transparent', color: canvasMode === opt.id ? '#FFFFFF' : 'rgba(255,255,255,0.4)', border: 'none', cursor: 'pointer', transition: 'all 0.15s' }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
             {/* Page label — right */}
             <span style={{ position: 'absolute', right: 16, fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>
@@ -529,11 +565,13 @@ export default function StudioWebsite() {
             }}>
               <PreviewContent
                 universeTheme={universeTheme} details={details} currentPage={currentPage}
-                onPageChange={(slug) => { setCurrentPage(slug); setRightPanelTab('design'); }}
+                onPageChange={(slug) => { setCurrentPage(slug); setRightPanelTab('design'); clearSelectedBlock(); }}
+                editable={canvasMode === 'edit'}
                 onRequestInsert={index => openLibrary(currentPage, index)}
                 onMoveBlock={(id, dir) => moveBlockOnPage(currentPage, id, dir)}
-                onDeleteBlock={id => deleteBlockOnPage(currentPage, id)}
-                onRequestEdit={id => setEditPopover({ page: currentPage, blockId: id })}
+                onDeleteBlock={id => { deleteBlockOnPage(currentPage, id); if (selectedBlockRef?.blockId === id) clearSelectedBlock(); }}
+                onSelectBlock={id => selectBlock(currentPage, id)}
+                selectedBlockId={selectedBlockRef?.page === currentPage ? selectedBlockRef.blockId : null}
               />
             </div>
           </div>
@@ -551,7 +589,10 @@ export default function StudioWebsite() {
             assetContent={{}}
             onAssetChange={updateAssetContent}
             onClearAsset={() => {}}
-            onRequestInsert={openLibrary}
+            selectedBlock={selectedBlock}
+            onUpdateSelectedBlockContent={updateSelectedBlockContent}
+            onDeleteSelectedBlock={deleteSelectedBlock}
+            onClearSelectedBlock={clearSelectedBlock}
           />
         </div>
       </div>
@@ -593,31 +634,12 @@ export default function StudioWebsite() {
         />
       )}
 
-      {editingBlock && (
-        <div
-          style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-          onClick={e => { if (e.target === e.currentTarget) setEditPopover(null); }}
-        >
-          <div style={{ width: '100%', maxWidth: 420, maxHeight: '80vh', background: '#1C1C1E', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#FFFFFF', fontFamily: 'inherit' }}>Edit block</p>
-              <button onClick={() => setEditPopover(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}>Done</button>
-            </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: 18 }}>
-              <BlockFields
-                block={editingBlock}
-                updateContent={(key, val) => updateBlockContentOnPage(editPopover.page, editPopover.blockId, key, val)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
     </MediaLibraryContext.Provider>
   );
 }
 
-function PreviewContent({ universeTheme, details, currentPage, onPageChange, onRequestInsert, onMoveBlock, onDeleteBlock, onRequestEdit }) {
+function PreviewContent({ universeTheme, details, currentPage, onPageChange, editable, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId }) {
   // Preload ALL typography fonts at mount so switching is instant (no loading
   // delay) — both the generic FONT_OPTIONS/TYPOGRAPHY_PAIRINGS set AND every
   // universe's font pairing, since the universe picker can switch fonts too.
@@ -681,11 +703,12 @@ function PreviewContent({ universeTheme, details, currentPage, onPageChange, onR
       details={details}
       currentPage={currentPage}
       onNavigate={onPageChange}
-      editable
+      editable={editable}
       onRequestInsert={onRequestInsert}
       onMoveBlock={onMoveBlock}
       onDeleteBlock={onDeleteBlock}
-      onRequestEdit={onRequestEdit}
+      onSelectBlock={onSelectBlock}
+      selectedBlockId={selectedBlockId}
     />
   );
 }

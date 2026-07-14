@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, X, Trash2 } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
 import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS } from '@/lib/websiteThemes';
 import toast from 'react-hot-toast';
@@ -8,7 +8,8 @@ import {
   FLabel, UInput, MediaPicker,
   Toggle, Divider, AddBtn,
 } from './SectionEditorFields';
-import BlockList from './BlockList';
+import { BlockFields } from './BlockFields';
+import { blockLabel } from '@/components/guest-website/blocks/blockTypes';
 
 // ── Extra primitives used only here ───────────────────────────
 function SLabel({ children, onClick, isOpen }) {
@@ -295,7 +296,7 @@ function SettingsTab({ details, onChange }) {
 // /event-details planner page) — so those are surfaced here as a
 // read-only reference + link out, not rebuilt as a second, divergent
 // write path onto the same mainCeremony/reception fields.
-function ContentTab({ details, onChange, onRequestInsert }) {
+function ContentTab({ details, onChange }) {
   const updateNested = (field, key, value) => {
     onChange(field, { ...(details?.[field] || {}), [key]: value });
   };
@@ -354,12 +355,6 @@ function ContentTab({ details, onChange, onRequestInsert }) {
         rows={2}
         placeholder="We are overjoyed to celebrate with you."
       />
-      <FLabel>Extra content blocks</FLabel>
-      <BlockList
-        blocks={details?.homeContent?.blocks}
-        onChange={next => updateNested('homeContent', 'blocks', next)}
-        onRequestInsert={index => onRequestInsert('home', index)}
-      />
       <Divider />
 
       <SLabel>Our story</SLabel>
@@ -374,26 +369,7 @@ function ContentTab({ details, onChange, onRequestInsert }) {
       <PhotoGrid photos={storyPhotos} onChange={setStoryPhotos} />
       <div style={{ marginBottom: 14 }} />
       <MilestoneEditor milestones={milestones} onChange={setMilestones} />
-      <FLabel>Extra content blocks</FLabel>
-      <BlockList
-        blocks={details?.ourStoryContent?.blocks}
-        onChange={next => updateNested('ourStoryContent', 'blocks', next)}
-        onRequestInsert={index => onRequestInsert('our-story', index)}
-      />
       <Divider />
-
-      {enabledPages.includes('celebration') && (
-        <>
-          <SLabel>Celebration page</SLabel>
-          <FLabel>Extra content blocks</FLabel>
-          <BlockList
-            blocks={details?.celebrationContent?.blocks}
-            onChange={next => updateNested('celebrationContent', 'blocks', next)}
-            onRequestInsert={index => onRequestInsert('celebration', index)}
-          />
-          <Divider />
-        </>
-      )}
 
       {enabledPages.includes('photos') && (
         <>
@@ -507,14 +483,35 @@ function MasterDataReferenceDark({ label, value, detail }) {
 // here — it now also needs to wrap the on-canvas block editor
 // (feat/component-library), which lives outside this panel, so ownership
 // moved up to the one place both can share it.
-export default function WBRightPanel({ details, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset, onRequestInsert }) {
+export default function WBRightPanel({ details, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset, selectedBlock, onUpdateSelectedBlockContent, onDeleteSelectedBlock, onClearSelectedBlock }) {
   const AssetEditorComp = selectedAsset ? ASSET_EDITOR_MAP[selectedAsset] : null;
 
   return (
     <>
-      <div style={{ width: '100%', flexShrink: 0, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: selectedAsset ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
+      <div style={{ width: '100%', flexShrink: 0, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: (selectedAsset || selectedBlock) ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
 
-        {selectedAsset ? (
+        {selectedBlock ? (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <div>
+                <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)' }}>Editing block</p>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#FFFFFF' }}>{blockLabel(selectedBlock.type)}</p>
+              </div>
+              <button onClick={onClearSelectedBlock} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}><X size={16} /></button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+              <BlockFields block={selectedBlock} updateContent={onUpdateSelectedBlockContent} />
+            </div>
+            <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+              <button
+                onClick={onDeleteSelectedBlock}
+                style={{ width: '100%', padding: '8px', border: '1px solid rgba(224,53,83,0.4)', background: 'transparent', color: '#E03553', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              >
+                <Trash2 size={13} /> Delete block
+              </button>
+            </div>
+          </div>
+        ) : selectedAsset ? (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <button onClick={onClearAsset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 2, display: 'flex', alignItems: 'center' }}><ChevronLeft size={16} /></button>
@@ -545,7 +542,7 @@ export default function WBRightPanel({ details, universeTheme, onChange, rightTa
               {rightTab === 'design' ? (
                 <DesignTab details={details} onChange={onChange} universeTheme={universeTheme} />
               ) : rightTab === 'content' ? (
-                <ContentTab details={details} onChange={onChange} onRequestInsert={onRequestInsert} />
+                <ContentTab details={details} onChange={onChange} />
               ) : (
                 <SettingsTab details={details} onChange={onChange} />
               )}
