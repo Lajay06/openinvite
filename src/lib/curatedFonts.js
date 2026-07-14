@@ -53,7 +53,38 @@ export const CURATED_FONTS = {
   // reproducing the universe's original single-fragment googleFonts query
   // exactly (see resolveTypography in universeStyling.js).
   'montserrat-body': { label: 'Montserrat', family: '"Montserrat", sans-serif', googleFonts: 'Montserrat:wght@300;400;500;700', weight: 400 },
+
+  // ── feat/block-styling-v2: additional fonts for the 30-font catalog ──
+  // (FONT_CATALOG below) — not referenced by any UNIVERSE_DEFAULT_FONT_IDS
+  // / UNIVERSE_FONT_OPTIONS entry, purely available via the free heading/
+  // body dropdowns.
+  'inter': { label: 'Inter', family: '"Inter", sans-serif', googleFonts: 'Inter:wght@300;400;500;600;700', weight: 400 },
+  'work-sans': { label: 'Work Sans', family: '"Work Sans", sans-serif', googleFonts: 'Work+Sans:wght@300;400;500;600', weight: 400 },
+  'dm-sans': { label: 'DM Sans', family: '"DM Sans", sans-serif', googleFonts: 'DM+Sans:wght@400;500;700', weight: 400 },
+  'space-grotesk': { label: 'Space Grotesk', family: '"Space Grotesk", sans-serif', googleFonts: 'Space+Grotesk:wght@400;500;600;700', weight: 400 },
+  'raleway': { label: 'Raleway', family: '"Raleway", sans-serif', googleFonts: 'Raleway:wght@300;400;500;600', weight: 400 },
+  'nunito': { label: 'Nunito', family: '"Nunito", sans-serif', googleFonts: 'Nunito:wght@300;400;600;700', weight: 400 },
+  'cormorant': { label: 'Cormorant', family: '"Cormorant", serif', googleFonts: 'Cormorant:ital,wght@0,400;0,500;0,600;1,400', weight: 400 },
+  'cinzel': { label: 'Cinzel', family: '"Cinzel", serif', googleFonts: 'Cinzel:wght@400;500;600;700', weight: 400 },
+  'libre-baskerville': { label: 'Libre Baskerville', family: '"Libre Baskerville", serif', googleFonts: 'Libre+Baskerville:ital,wght@0,400;0,700;1,400', weight: 400 },
 };
+
+/**
+ * The 30-font catalog for the free heading/body dropdowns (feat/block-
+ * styling-v2, item 7) — one entry per unique family (Montserrat appears
+ * once here even though CURATED_FONTS has it twice for the Mykonos-default
+ * weight split above). Still a fixed, curated list — not the full Google
+ * Fonts catalogue — but no longer filtered per universe: any of the 30 can
+ * be picked as either the heading or the body font, for any universe.
+ * Per-universe curation now lives only in the one-click pairing presets
+ * (universePairingPresets), not in which fonts are selectable at all.
+ */
+export const FONT_CATALOG = [
+  'playfair-display', 'cormorant-garamond', 'cormorant', 'fraunces', 'bodoni-moda', 'eb-garamond',
+  'libre-baskerville', 'lora', 'bitter', 'amiri', 'shippori-mincho', 'yeseva-one', 'cinzel', 'bebas-neue',
+  'inter', 'montserrat-heading', 'work-sans', 'dm-sans', 'space-grotesk', 'raleway', 'nunito', 'nunito-sans',
+  'poppins', 'lato', 'karla', 'jost', 'josefin-sans', 'mulish', 'ibm-plex-sans', 'zen-kaku-gothic-new',
+].map(id => ({ id, ...CURATED_FONTS[id] }));
 
 /** Each universe's own default heading/body font, expressed as CURATED_FONTS ids. */
 export const UNIVERSE_DEFAULT_FONT_IDS = {

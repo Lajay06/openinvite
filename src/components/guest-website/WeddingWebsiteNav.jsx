@@ -1,10 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import { WEDDING_PAGES } from '@/lib/websiteThemes';
+
+// fix/builder-polish: with many pages enabled (up to 14 in WEDDING_PAGES,
+// plus up to 4 sub-page links — transport/accommodation/music/experience —
+// that aren't part of `enabledPages` at all), the desktop nav had no wrap or
+// overflow handling: a plain `display:flex` row with a fixed gap just grows
+// past the viewport, clipping or crowding the couple names on the left.
+// Fixed by showing a bounded number of direct links and tucking the rest
+// into a "More" dropdown — the nav's width is now capped regardless of how
+// many pages a couple enables.
+const MAX_VISIBLE_LINKS = 5;
 
 export default function WeddingWebsiteNav({ weddingName, theme, enabledPages, currentPage, weddingSlug, hasTransport, hasAccommodation, hasMusic, hasExperience, onNavigate }) {
    const [scrolled, setScrolled] = useState(false);
    const [mobileOpen, setMobileOpen] = useState(false);
+   const [moreOpen, setMoreOpen] = useState(false);
+   const moreRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,6 +25,13 @@ export default function WeddingWebsiteNav({ weddingName, theme, enabledPages, cu
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const handleClick = (e) => { if (moreRef.current && !moreRef.current.contains(e.target)) setMoreOpen(false); };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [moreOpen]);
 
   const navStyle = {
     position: 'sticky',
@@ -30,13 +49,52 @@ export default function WeddingWebsiteNav({ weddingName, theme, enabledPages, cu
     fontFamily: 'Plus Jakarta Sans, sans-serif'
   };
 
+  // Sentence case, no text-transform:uppercase (house rule) — labels are
+  // already written in their natural case ("Getting Here", "Stay", ...).
   const navTextStyle = {
-    fontSize: '12px',
+    fontSize: '11px',
     fontWeight: 600,
-    letterSpacing: '0.15em',
-    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
     color: theme.darkText,
-    cursor: 'pointer'
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  };
+
+  const subLinks = [
+    hasTransport && { key: 'transport', label: 'Getting here', href: `/w/${weddingSlug}/transport` },
+    hasAccommodation && { key: 'accommodation', label: 'Stay', href: `/w/${weddingSlug}/accommodation` },
+    hasMusic && { key: 'music', label: 'Music', href: `/w/${weddingSlug}/music` },
+    hasExperience && { key: 'experience', label: 'Guide', href: `/w/${weddingSlug}/experience` },
+  ].filter(Boolean);
+
+  const pageLinks = enabledPages.map(pageSlug => ({
+    key: pageSlug,
+    label: WEDDING_PAGES.find(p => p.slug === pageSlug)?.label,
+    isPage: true,
+    slug: pageSlug,
+  }));
+
+  const allLinks = [...pageLinks, ...subLinks];
+  const visibleLinks = allLinks.slice(0, MAX_VISIBLE_LINKS);
+  const overflowLinks = allLinks.slice(MAX_VISIBLE_LINKS);
+
+  const renderLink = (link, { forMobile = false } = {}) => {
+    const isActive = link.isPage && (currentPage === link.slug || (link.slug === 'home' && !currentPage));
+    const style = forMobile
+      ? { ...navTextStyle, color: isActive ? theme.accent : navTextStyle.color, textAlign: 'left', paddingBottom: '8px', borderBottom: isActive ? `2px solid ${theme.accent}` : 'none', background: 'none', border: 'none', display: 'block', width: '100%' }
+      : { ...navTextStyle, borderBottom: isActive ? `2px solid ${theme.accent}` : '2px solid transparent', paddingBottom: '2px', transition: 'border-color 0.3s ease', background: 'none', border: 'none' };
+    if (link.isPage) {
+      return (
+        <button key={link.key} onClick={() => { onNavigate(link.slug); setMobileOpen(false); setMoreOpen(false); }} style={style}>
+          {link.label}
+        </button>
+      );
+    }
+    return (
+      <a key={link.key} href={link.href} onClick={() => { setMobileOpen(false); setMoreOpen(false); }} style={{ ...style, textDecoration: 'none' }} className="hover:opacity-70 transition-opacity">
+        {link.label}
+      </a>
+    );
   };
 
   return (
@@ -45,95 +103,40 @@ export default function WeddingWebsiteNav({ weddingName, theme, enabledPages, cu
         {/* Couple names */}
         <button
           onClick={() => onNavigate('home')}
-          style={{ ...navTextStyle, flex: 1 }}
+          style={{ ...navTextStyle, letterSpacing: '0.15em', flexShrink: 0, marginRight: 16 }}
           className="hover:opacity-70 transition-opacity text-left"
         >
           {weddingName}
         </button>
 
-        {/* Desktop nav */}
-         <div className="hidden md:flex items-center gap-8">
-           {enabledPages.map(pageSlug => {
-             const pageDef = WEDDING_PAGES.find(p => p.slug === pageSlug);
-             const isActive = currentPage === pageSlug || (pageSlug === 'home' && !currentPage);
-             return (
-               <button
-                 key={pageSlug}
-                 onClick={() => onNavigate(pageSlug)}
-                 style={{
-                   ...navTextStyle,
-                   borderBottom: isActive ? `2px solid ${theme.accent}` : '2px solid transparent',
-                   paddingBottom: '2px',
-                   transition: 'border-color 0.3s ease'
-                 }}
-               >
-                 {pageDef?.label}
-               </button>
-             );
-           })}
+        {/* Desktop nav — bounded width regardless of how many pages are enabled */}
+        <div className="hidden md:flex items-center" style={{ gap: 20, minWidth: 0 }}>
+          {visibleLinks.map(link => renderLink(link))}
 
-           {/* Sub-page links */}
-           {hasTransport && (
-             <a
-               href={`/w/${weddingSlug}/transport`}
-               style={{
-                 ...navTextStyle,
-                 borderBottom: '2px solid transparent',
-                 paddingBottom: '2px',
-                 transition: 'border-color 0.3s ease',
-                 textDecoration: 'none'
-               }}
-               className="hover:opacity-70 transition-opacity"
-             >
-               Getting Here
-             </a>
-           )}
-           {hasAccommodation && (
-             <a
-               href={`/w/${weddingSlug}/accommodation`}
-               style={{
-                 ...navTextStyle,
-                 borderBottom: '2px solid transparent',
-                 paddingBottom: '2px',
-                 transition: 'border-color 0.3s ease',
-                 textDecoration: 'none'
-               }}
-               className="hover:opacity-70 transition-opacity"
-             >
-               Stay
-             </a>
-           )}
-           {hasMusic && (
-             <a
-               href={`/w/${weddingSlug}/music`}
-               style={{
-                 ...navTextStyle,
-                 borderBottom: '2px solid transparent',
-                 paddingBottom: '2px',
-                 transition: 'border-color 0.3s ease',
-                 textDecoration: 'none'
-               }}
-               className="hover:opacity-70 transition-opacity"
-             >
-               Music
-             </a>
-           )}
-           {hasExperience && (
-             <a
-               href={`/w/${weddingSlug}/experience`}
-               style={{
-                 ...navTextStyle,
-                 borderBottom: '2px solid transparent',
-                 paddingBottom: '2px',
-                 transition: 'border-color 0.3s ease',
-                 textDecoration: 'none'
-               }}
-               className="hover:opacity-70 transition-opacity"
-             >
-               Guide
-             </a>
-           )}
-         </div>
+          {overflowLinks.length > 0 && (
+            <div ref={moreRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setMoreOpen(o => !o)}
+                style={{ ...navTextStyle, display: 'flex', alignItems: 'center', gap: 3, background: 'none', border: 'none' }}
+              >
+                More <ChevronDown size={12} style={{ transform: moreOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+              </button>
+              {moreOpen && (
+                <div style={{
+                  position: 'absolute', top: '100%', right: 0, marginTop: 10,
+                  background: theme.navBg, border: `1px solid ${theme.accent}30`,
+                  padding: '10px 0', minWidth: 160, display: 'flex', flexDirection: 'column', gap: 2,
+                }}>
+                  {overflowLinks.map(link => (
+                    <div key={link.key} style={{ padding: '6px 16px' }}>
+                      {renderLink(link, { forMobile: true })}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Mobile menu button */}
         <button
@@ -145,7 +148,8 @@ export default function WeddingWebsiteNav({ weddingName, theme, enabledPages, cu
         </button>
       </nav>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — a plain scrollable vertical list already handles any
+          number of pages cleanly, no overflow menu needed here. */}
       {mobileOpen && (
         <div
           style={{
@@ -154,93 +158,12 @@ export default function WeddingWebsiteNav({ weddingName, theme, enabledPages, cu
             padding: '16px 24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px'
+            gap: '12px',
+            maxHeight: '70vh',
+            overflowY: 'auto',
           }}
         >
-          {enabledPages.map(pageSlug => {
-            const pageDef = WEDDING_PAGES.find(p => p.slug === pageSlug);
-            const isActive = currentPage === pageSlug || (pageSlug === 'home' && !currentPage);
-            return (
-              <button
-                key={pageSlug}
-                onClick={() => {
-                  onNavigate(pageSlug);
-                  setMobileOpen(false);
-                }}
-                style={{
-                  ...navTextStyle,
-                  color: isActive ? theme.accent : theme.darkText,
-                  textAlign: 'left',
-                  paddingBottom: '8px',
-                  borderBottom: isActive ? `2px solid ${theme.accent}` : 'none'
-                }}
-              >
-                {pageDef?.label}
-              </button>
-            );
-          })}
-
-          {/* Sub-page links */}
-          {hasTransport && (
-            <a
-              href={`/w/${weddingSlug}/transport`}
-              onClick={() => setMobileOpen(false)}
-              style={{
-                ...navTextStyle,
-                textAlign: 'left',
-                paddingBottom: '8px',
-                borderBottom: 'none',
-                textDecoration: 'none'
-              }}
-            >
-              Getting Here
-            </a>
-          )}
-          {hasAccommodation && (
-            <a
-              href={`/w/${weddingSlug}/accommodation`}
-              onClick={() => setMobileOpen(false)}
-              style={{
-                ...navTextStyle,
-                textAlign: 'left',
-                paddingBottom: '8px',
-                borderBottom: 'none',
-                textDecoration: 'none'
-              }}
-            >
-              Stay
-            </a>
-          )}
-          {hasMusic && (
-            <a
-              href={`/w/${weddingSlug}/music`}
-              onClick={() => setMobileOpen(false)}
-              style={{
-                ...navTextStyle,
-                textAlign: 'left',
-                paddingBottom: '8px',
-                borderBottom: 'none',
-                textDecoration: 'none'
-              }}
-            >
-              Music
-            </a>
-          )}
-          {hasExperience && (
-            <a
-              href={`/w/${weddingSlug}/experience`}
-              onClick={() => setMobileOpen(false)}
-              style={{
-                ...navTextStyle,
-                textAlign: 'left',
-                paddingBottom: '8px',
-                borderBottom: 'none',
-                textDecoration: 'none'
-              }}
-            >
-              Guide
-            </a>
-          )}
+          {allLinks.map(link => renderLink(link, { forMobile: true }))}
         </div>
       )}
     </>
