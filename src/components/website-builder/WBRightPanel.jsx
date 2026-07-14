@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, X, Trash2 } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
-import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS } from '@/lib/websiteThemes';
-import { getMyRecords } from '@/lib/resolveMyWedding';
+import { TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, normalizeUniverseKey } from '@/lib/websiteThemes';
+import { CURATED_FONTS, FONT_CATALOG, UNIVERSE_DEFAULT_FONT_IDS, universePairingPresets } from '@/lib/curatedFonts';
 import toast from 'react-hot-toast';
 import {
-  FLabel, UInput, MediaPicker, MediaLibraryContext,
+  FLabel, UInput, MediaPicker,
   Toggle, Divider, AddBtn,
 } from './SectionEditorFields';
-import MediaLibraryModal from './MediaLibraryModal';
-import BlockList from './BlockList';
+import { BlockFields } from './BlockFields';
+import { blockLabel } from '@/components/guest-website/blocks/blockTypes';
+import { TEXT_COLOR_OPTIONS, BACKGROUND_OPTIONS, SPACING_OPTIONS, JUSTIFY_CAPABLE_TYPES } from '@/components/guest-website/blocks/UniverseBlocks';
 
 // ── Extra primitives used only here ───────────────────────────
 function SLabel({ children, onClick, isOpen }) {
@@ -89,26 +90,129 @@ const selectStyle = {
   boxSizing: 'border-box',
 };
 
-// ── DESIGN TAB ────────────────────────────────────────────────
-function DesignTab({ details, onChange, universeTheme }) {
-  const navigate = useNavigate();
-
-  // Theme starts collapsed — it's a secondary refinement, not the headline choice
-  const [themeOpen, setThemeOpen] = useState(false);
-  const [typoOpen, setTypoOpen] = useState(false);
-
-  const activeTypoId = details.activeTypography || 'classic';
-  const activeTypo = TYPOGRAPHY_PAIRINGS.find(t => t.id === activeTypoId) || TYPOGRAPHY_PAIRINGS[0];
-
-  // Load Google Fonts for the selected pairing so the Aa preview renders correctly
-  useEffect(() => {
-    if (!activeTypo.googleFonts) return;
-    const href = `https://fonts.googleapis.com/css2?family=${activeTypo.googleFonts}&display=swap`;
+// Loads every font in FONT_CATALOG on demand (only when the picker is
+// actually opened), so a visitor to the published site never pays for
+// fonts the couple didn't choose — see DesignTab's own effect for the
+// eager, always-on load of just the 2 active fonts.
+function loadCatalogFontsOnce() {
+  if (loadCatalogFontsOnce._done) return;
+  loadCatalogFontsOnce._done = true;
+  const seen = new Set();
+  FONT_CATALOG.forEach(font => {
+    if (!font.googleFonts || seen.has(font.googleFonts)) return;
+    seen.add(font.googleFonts);
+    const href = `https://fonts.googleapis.com/css2?family=${font.googleFonts}&display=swap`;
     if (document.head.querySelector(`link[href="${href}"]`)) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet'; link.href = href;
     document.head.appendChild(link);
-  }, [activeTypo.googleFonts]);
+  });
+}
+
+// A single custom dropdown shared by the heading/body pickers — a native
+// <select> can't render each option in its own font on most platforms, so
+// this renders each option's own label set in its own font instead. Kept
+// deliberately compact (small previewSize, tight row padding, ellipsis
+// overflow) — a couple is scanning 30 options, not admiring a single big
+// specimen.
+function FontDropdown({ value, onChange, previewSize = 14 }) {
+  const [open, setOpen] = useState(false);
+  const active = CURATED_FONTS[value];
+  const labelStyle = { display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' };
+
+  const toggle = () => {
+    if (!open) loadCatalogFontsOnce();
+    setOpen(o => !o);
+  };
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={toggle}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          padding: '7px 10px', border: '1px solid rgba(255,255,255,0.15)', background: open ? 'rgba(255,255,255,0.08)' : 'transparent',
+          cursor: 'pointer', color: '#FFFFFF', fontFamily: 'inherit', minWidth: 0,
+        }}
+      >
+        <span style={{ ...labelStyle, fontFamily: active?.family, fontSize: previewSize, lineHeight: 1.3 }}>
+          {active?.label || 'Universe default'}
+        </span>
+        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}>{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div
+          style={{
+            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, marginTop: 4,
+            maxHeight: 220, overflowY: 'auto', background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.15)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+          }}
+        >
+          {FONT_CATALOG.map(font => {
+            const sel = font.id === value;
+            return (
+              <div
+                key={font.id}
+                onClick={() => { onChange(font.id); setOpen(false); }}
+                style={{
+                  padding: '6px 10px', cursor: 'pointer',
+                  background: sel ? 'rgba(255,255,255,0.1)' : 'transparent',
+                }}
+                onMouseEnter={e => { if (!sel) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                onMouseLeave={e => { if (!sel) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <span style={{ ...labelStyle, fontFamily: font.family, fontWeight: font.weight || 400, fontSize: previewSize, color: '#FFFFFF', lineHeight: 1.3 }}>
+                  {font.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── DESIGN TAB ────────────────────────────────────────────────
+function DesignTab({ details, onChange, universeTheme }) {
+  const navigate = useNavigate();
+
+  const [typoOpen, setTypoOpen] = useState(false);
+
+  // feat/block-styling-curated + feat/block-styling-v2: the universe (not
+  // the generic activeTypography picker) governs typography by default —
+  // see resolveTypography() in universeStyling.js. weddingDetails.
+  // fontOverride = { headingFontId, bodyFontId } lets a couple choose ANY
+  // of the 30 fonts in FONT_CATALOG for either role individually; unset
+  // falls back to the universe's own default, unchanged. Pairing presets
+  // stay per-universe curated shortcuts (universePairingPresets), not a
+  // restriction on what the dropdowns themselves offer.
+  const universeKey = normalizeUniverseKey(details.activeUniverse) || 'aman';
+  const universeDefaults = UNIVERSE_DEFAULT_FONT_IDS[universeKey] || UNIVERSE_DEFAULT_FONT_IDS.aman;
+  const pairingPresets = universePairingPresets(universeKey);
+
+  const activeHeadingId = details.fontOverride?.headingFontId || universeDefaults.headingFontId;
+  const activeBodyId = details.fontOverride?.bodyFontId || universeDefaults.bodyFontId;
+
+  const setHeadingFont = (id) => onChange('fontOverride', { headingFontId: id, bodyFontId: activeBodyId });
+  const setBodyFont = (id) => onChange('fontOverride', { headingFontId: activeHeadingId, bodyFontId: id });
+  const setPairing = (preset) => onChange('fontOverride', { headingFontId: preset.headingFontId, bodyFontId: preset.bodyFontId });
+
+  // Load Google Fonts for the two ACTIVE fonts only — not all 30 — so this
+  // stays cheap regardless of catalog size (item 9: "load efficiently, only
+  // selected fonts").
+  useEffect(() => {
+    [activeHeadingId, activeBodyId].forEach(id => {
+      const gf = CURATED_FONTS[id]?.googleFonts;
+      if (!gf) return;
+      const href = `https://fonts.googleapis.com/css2?family=${gf}&display=swap`;
+      if (document.head.querySelector(`link[href="${href}"]`)) return;
+      const link = document.createElement('link');
+      link.rel = 'stylesheet'; link.href = href;
+      document.head.appendChild(link);
+    });
+  }, [activeHeadingId, activeBodyId]);
 
   const universeName    = universeTheme?.name    || 'Aman';
   const universeAccent  = universeTheme?.accent  || '#C4956A';
@@ -152,63 +256,38 @@ function DesignTab({ details, onChange, universeTheme }) {
         </div>
       </div>
 
-      {/* ── Fine-tune palette — collapsed by default, secondary ─ */}
-      <SLabel onClick={() => setThemeOpen(o => !o)} isOpen={themeOpen}>Fine-tune palette</SLabel>
-      <div style={{ overflow: 'hidden', maxHeight: themeOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 8 }}>
-        {WEBSITE_THEMES.map(t => {
-          const sel = (details.activeTheme || 'still') === t.id;
-          return (
-            <div key={t.id} onClick={() => onChange('activeTheme', t.id)} style={{ cursor: 'pointer' }}>
-              <div
-                style={{ overflow: 'hidden', position: 'relative', aspectRatio: '3/2', border: sel ? '2px solid #FFFFFF' : '1px solid rgba(255,255,255,0.1)', transition: 'transform 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <div style={{ height: '65%', background: t.darkBg }} />
-                <div style={{ height: '35%', background: t.lightBg }} />
-                <div style={{ position: 'absolute', bottom: 4, right: 4, width: 8, height: 8, borderRadius: '50%', background: t.accent, border: '1px solid rgba(0,0,0,0.15)' }} />
-                {sel && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ width: 16, height: 16, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700 }}>✓</span>
-                </div>}
-              </div>
-              <p style={{ fontSize: 10, fontWeight: 600, textAlign: 'center', margin: '3px 0 0', color: 'rgba(255,255,255,0.4)' }}>{t.name}</p>
-            </div>
-          );
-        })}
-      </div>
-      </div>
-      <Divider />
       <SLabel onClick={() => setTypoOpen(o => !o)} isOpen={typoOpen}>
-        {`Typography · ${activeTypo.name}`}
+        {`Typography · ${CURATED_FONTS[activeHeadingId]?.label || 'Universe default'}`}
       </SLabel>
-      <div style={{ overflow: 'hidden', maxHeight: typoOpen ? '700px' : '0px', transition: 'max-height 0.2s ease' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 8 }}>
-          {TYPOGRAPHY_PAIRINGS.map(t => {
-            const sel = activeTypoId === t.id;
+      <div style={{ overflow: 'hidden', maxHeight: typoOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
+        {/* Pairing presets — one-click combos, always includes this
+            universe's own default as the first option. */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+          {pairingPresets.map(preset => {
+            const sel = activeHeadingId === preset.headingFontId && activeBodyId === preset.bodyFontId;
             return (
-              <div
-                key={t.id}
-                onClick={() => onChange('activeTypography', t.id)}
-                style={{
-                  border: sel ? '2px solid rgba(255,255,255,0.7)' : '1px solid rgba(255,255,255,0.1)',
-                  padding: '10px 12px', cursor: 'pointer',
-                  background: sel ? 'rgba(255,255,255,0.08)' : 'transparent',
-                  position: 'relative', transition: 'border-color 0.15s',
-                }}
+              <button
+                key={preset.id}
+                onClick={() => setPairing(preset)}
+                style={{ padding: '6px 12px', fontSize: 11, fontWeight: 600, cursor: 'pointer', borderRadius: 999, border: '1px solid ' + (sel ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.15)'), background: sel ? 'rgba(255,255,255,0.12)' : 'transparent', color: sel ? '#fff' : 'rgba(255,255,255,0.5)', fontFamily: 'inherit' }}
               >
-                {sel && (
-                  <div style={{ position: 'absolute', top: 5, right: 5, width: 13, height: 13, borderRadius: '50%', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: '#0A0A0A', lineHeight: 1 }}>✓</span>
-                  </div>
-                )}
-                <p style={{ fontFamily: t.fontDisplay, fontSize: 18, fontWeight: 400, color: '#FFFFFF', margin: '0 0 2px', lineHeight: 1 }}>Aa</p>
-                <p style={{ fontSize: 10, fontWeight: 700, color: sel ? '#FFFFFF' : 'rgba(255,255,255,0.6)', margin: '0 0 1px', fontFamily: 'inherit' }}>{t.name}</p>
-                <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', margin: 0, fontFamily: 'inherit' }}>{t.description}</p>
-              </div>
+                {preset.label}
+              </button>
             );
           })}
         </div>
+
+        <FLabel>Heading font</FLabel>
+        <FontDropdown value={activeHeadingId} onChange={setHeadingFont} previewSize={15} />
+
+        <div style={{ marginTop: 14 }}>
+          <FLabel>Body font</FLabel>
+          <FontDropdown value={activeBodyId} onChange={setBodyFont} previewSize={13} />
+        </div>
+
+        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '10px 0 8px' }}>
+          Choose from 30 curated fonts — every option stays within {universeTheme?.name || 'this universe'}'s palette and mood.
+        </p>
       </div>
       <Divider />
       <SLabel>Animations</SLabel>
@@ -356,11 +435,6 @@ function ContentTab({ details, onChange }) {
         rows={2}
         placeholder="We are overjoyed to celebrate with you."
       />
-      <FLabel>Extra content blocks</FLabel>
-      <BlockList
-        blocks={details?.homeContent?.blocks}
-        onChange={next => updateNested('homeContent', 'blocks', next)}
-      />
       <Divider />
 
       <SLabel>Our story</SLabel>
@@ -375,24 +449,7 @@ function ContentTab({ details, onChange }) {
       <PhotoGrid photos={storyPhotos} onChange={setStoryPhotos} />
       <div style={{ marginBottom: 14 }} />
       <MilestoneEditor milestones={milestones} onChange={setMilestones} />
-      <FLabel>Extra content blocks</FLabel>
-      <BlockList
-        blocks={details?.ourStoryContent?.blocks}
-        onChange={next => updateNested('ourStoryContent', 'blocks', next)}
-      />
       <Divider />
-
-      {enabledPages.includes('celebration') && (
-        <>
-          <SLabel>Celebration page</SLabel>
-          <FLabel>Extra content blocks</FLabel>
-          <BlockList
-            blocks={details?.celebrationContent?.blocks}
-            onChange={next => updateNested('celebrationContent', 'blocks', next)}
-          />
-          <Divider />
-        </>
-      )}
 
       {enabledPages.includes('photos') && (
         <>
@@ -501,41 +558,182 @@ function MasterDataReferenceDark({ label, value, detail }) {
 }
 
 
+// ── PER-BLOCK STYLE PANEL ──────────────────────────────────────
+// feat/block-styling-v2: curated-only style controls for a selected block.
+// Every option resolves against the ACTIVE UNIVERSE's own tokens
+// (resolveColors output, read via universeTheme) — no free hex picker, no
+// arbitrary px size, no custom font. TEXT_COLOR_OPTIONS/BACKGROUND_OPTIONS/
+// SPACING_OPTIONS are imported from UniverseBlocks.jsx (not redefined here)
+// so the swatch a couple clicks and the colour that actually renders can
+// never drift apart. See resolveBlockStyle() there for how these map back
+// to real rendered styles, and BUILDER_BLOCK_SCOPE.md for the "freedom
+// within beauty" principle this keeps intact at the per-block layer.
+//
+// Alignment and size only apply to text-forward block types (a gallery or
+// countdown block has no meaningful "alignment" to change) — shown only
+// when the selected block's type actually uses them, so nothing here can
+// be clicked with no visible effect. Spacing, by contrast, is meaningful
+// breathing room for EVERY block type, so it always shows.
+const ALIGN_CAPABLE_TYPES = ['heading', 'subheading', 'paragraph', 'quote', 'list', 'two-column-text', 'dress-code'];
+const SIZE_CAPABLE_TYPES = ['heading', 'subheading', 'paragraph', 'quote'];
+// gallery/video/spacer have no meaningful text; button/quote-banner set
+// their own fixed-contrast colour deliberately (a coloured label on an
+// accent pill, pale text on a dark band) — a text-colour override on
+// theme.lightText would have no visible effect for any of these.
+const NO_TEXT_COLOR_TYPES = ['gallery', 'video', 'spacer', 'button', 'quote-banner'];
+const SIZE_STEPS = ['XS', 'S', 'M', 'L', 'XL'];
+
+// Spacing now applies to every block type, so there's always at least one
+// style control to show.
+export function blockSupportsAnyStyle() {
+  return true;
+}
+
+function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
+  const style = block.style || {};
+  const accent = universeTheme?.accent || '#C4956A';
+  const supportsAlign = ALIGN_CAPABLE_TYPES.includes(block.type);
+  const supportsJustify = JUSTIFY_CAPABLE_TYPES.includes(block.type);
+  const supportsSize = SIZE_CAPABLE_TYPES.includes(block.type);
+  const supportsTextColor = !NO_TEXT_COLOR_TYPES.includes(block.type);
+
+  // No fallback-to-first-option in any of these: when the block has no
+  // style override for a property, NOTHING is shown selected — that
+  // honestly represents "using this block type's own default look" rather
+  // than implying a specific option.
+  const pillRow = (options, activeValue, key) => (
+    <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
+      {options.map(opt => {
+        const sel = activeValue === opt.value;
+        return (
+          <button
+            key={opt.value}
+            onClick={() => updateStyle(key, sel ? undefined : opt.value)}
+            title={opt.label}
+            style={{
+              flex: '1 0 auto', padding: '8px 10px', fontSize: 10, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
+              border: sel ? `2px solid ${accent}` : '1px solid rgba(255,255,255,0.12)',
+              background: sel ? 'rgba(255,255,255,0.08)' : 'transparent', color: sel ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
+            }}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const colorSwatchGrid = (options, activeValue, key) => (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6, marginBottom: 14 }}>
+      {options.map(opt => {
+        const sel = activeValue === opt.value;
+        // theme (resolveColors output: darkBg/lightBg/lightText/accent/
+        // accentSecondary), NOT universeTheme — universeTheme is a
+        // separate, legacy-shaped object (StudioWebsite.jsx) that renames
+        // these same values to text/secondary/background/primary for its
+        // own font-preview purposes. Passing universeTheme here silently
+        // produced undefined for every text-*/accent2-* swatch, which is
+        // why the grid looked identical (mostly blank) across universes —
+        // only the 3 accent-* swatches happened to resolve at all, since
+        // universeTheme.accent (not .lightText/.accentSecondary) is one of
+        // the few fields it does carry over.
+        const hex = opt.resolve(theme || {});
+        return (
+          <button
+            key={opt.value}
+            onClick={() => updateStyle(key, sel ? undefined : opt.value)}
+            title={opt.label}
+            style={{
+              aspectRatio: '1', padding: 0, cursor: 'pointer',
+              border: sel ? `2px solid ${accent}` : '1px solid rgba(255,255,255,0.15)',
+              background: hex || 'transparent',
+              backgroundImage: !hex
+                ? 'linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.3) 40%, rgba(255,255,255,0.3) 60%, transparent 60%)'
+                : undefined,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+
+  return (
+    <div>
+      {supportsTextColor && (
+        <>
+          <FLabel>Text colour</FLabel>
+          {colorSwatchGrid(TEXT_COLOR_OPTIONS, style.textColor, 'textColor')}
+
+          <FLabel>Background</FLabel>
+          {colorSwatchGrid(BACKGROUND_OPTIONS, style.background, 'background')}
+        </>
+      )}
+
+      {supportsSize && (
+        <>
+          <FLabel>Size</FLabel>
+          {pillRow(SIZE_STEPS.map(s => ({ value: s, label: s })), style.size, 'size')}
+        </>
+      )}
+
+      {supportsAlign && (
+        <>
+          <FLabel>Alignment</FLabel>
+          {pillRow([
+            { value: 'left', label: 'Left' },
+            { value: 'center', label: 'Center' },
+            { value: 'right', label: 'Right' },
+            ...(supportsJustify ? [{ value: 'justify', label: 'Justify' }] : []),
+          ], style.align, 'align')}
+        </>
+      )}
+
+      <FLabel>Spacing</FLabel>
+      {pillRow(SPACING_OPTIONS, style.spacing, 'spacing')}
+    </div>
+  );
+}
+
 // ── MAIN COMPONENT ────────────────────────────────────────────
-export default function WBRightPanel({ details, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset }) {
-  const [mediaLibrary, setMediaLibrary] = useState([]);
-  const [mediaModalOpen, setMediaModalOpen] = useState(false);
-  const [mediaCallback, setMediaCallback] = useState(null);
-
-  useEffect(() => {
-    getMyRecords('Photo', '-created_date', 100).then(photos => {
-      setMediaLibrary(photos.map(p => ({
-        id: p.id,
-        url: p.url || p.photo_url || p.imageUrl || '',
-        thumbnail: p.url || p.photo_url || p.imageUrl || '',
-        type: 'photo',
-        name: p.caption || p.title || 'Photo',
-      })).filter(p => p.url));
-    }).catch(() => {});
-  }, []);
-
-  const openMediaLibrary = (callback) => {
-    setMediaCallback(() => callback);
-    setMediaModalOpen(true);
-  };
-
-  const handleUploaded = (item) => {
-    const newItem = { id: Date.now() + '', ...item };
-    setMediaLibrary(prev => [newItem, ...prev]);
-  };
-
+// MediaLibraryContext is provided by the parent (StudioWebsite.jsx), not
+// here — it now also needs to wrap the on-canvas block editor
+// (feat/component-library), which lives outside this panel, so ownership
+// moved up to the one place both can share it.
+export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock }) {
   const AssetEditorComp = selectedAsset ? ASSET_EDITOR_MAP[selectedAsset] : null;
 
   return (
-    <MediaLibraryContext.Provider value={{ open: openMediaLibrary }}>
-      <div style={{ width: '100%', flexShrink: 0, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: selectedAsset ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
+    <>
+      <div style={{ width: '100%', flexShrink: 0, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: (selectedAsset || selectedBlock) ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
 
-        {selectedAsset ? (
+        {selectedBlock ? (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <div>
+                <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)' }}>Editing block</p>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#FFFFFF' }}>{blockLabel(selectedBlock.type)}</p>
+              </div>
+              <button onClick={onClearSelectedBlock} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}><X size={16} /></button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+              <BlockFields block={selectedBlock} updateContent={onUpdateSelectedBlockContent} />
+              {blockSupportsAnyStyle(selectedBlock.type) && (
+                <>
+                  <Divider />
+                  <BlockStylePanel block={selectedBlock} theme={theme} universeTheme={universeTheme} updateStyle={onUpdateSelectedBlockStyle} />
+                </>
+              )}
+            </div>
+            <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+              <button
+                onClick={onDeleteSelectedBlock}
+                style={{ width: '100%', padding: '8px', border: '1px solid rgba(224,53,83,0.4)', background: 'transparent', color: '#E03553', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              >
+                <Trash2 size={13} /> Delete block
+              </button>
+            </div>
+          </div>
+        ) : selectedAsset ? (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <button onClick={onClearAsset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 2, display: 'flex', alignItems: 'center' }}><ChevronLeft size={16} /></button>
@@ -574,15 +772,6 @@ export default function WBRightPanel({ details, universeTheme, onChange, rightTa
           </>
         )}
       </div>
-
-      {mediaModalOpen && (
-        <MediaLibraryModal
-          library={mediaLibrary}
-          onClose={() => setMediaModalOpen(false)}
-          onSelect={(url) => { if (mediaCallback) mediaCallback(url); }}
-          onUploaded={handleUploaded}
-        />
-      )}
-    </MediaLibraryContext.Provider>
+    </>
   );
 }

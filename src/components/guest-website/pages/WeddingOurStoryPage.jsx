@@ -532,6 +532,12 @@ export default function WeddingOurStoryPage(props) {
         theme={props.theme}
         typography={props.typography}
         universeConfig={props.universeConfig}
+        editable={props.editable}
+        onRequestInsert={props.onRequestInsert}
+        onMoveBlock={props.onMoveBlock}
+        onDeleteBlock={props.onDeleteBlock}
+        onSelectBlock={props.onSelectBlock}
+        selectedBlockId={props.selectedBlockId}
       />
     </>
   );
