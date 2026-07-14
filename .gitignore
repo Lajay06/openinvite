@@ -33,3 +33,4 @@ dist-ssr
 
 # Claude Code local config — machine-specific, causes PR conflicts when tracked
 .claude/settings.local.json
+base44/.app.jsonc
