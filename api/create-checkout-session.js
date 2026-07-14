@@ -5,6 +5,7 @@ import {
   getClientIp,
   isValidPriceId,
 } from './_lib/security.js';
+import { resolvePlanFromPriceId } from './_lib/planPricing.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -29,10 +30,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { priceId } = req.body || {};
+    const { priceId, userId, userEmail, email } = req.body || {};
+    const customerEmail = (userEmail || email || '').trim();
 
     if (!priceId) {
       return res.status(400).json({ error: 'priceId is required' });
+    }
+
+    // Required — this is the only reliable, tamper-resistant link between
+    // the Stripe session and the Base44 User record the webhook must credit.
+    // Without it, a completed payment would have no way to reach a plan.
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
     }
 
     // ── Validate priceId format ────────────────────────────────────────────
@@ -41,8 +50,18 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid priceId format' });
     }
 
-    const plan = priceId === process.env.VITE_STRIPE_PRO_PRICE_ID ? 'pro' : 'ultra';
+    // ── Resolve to a known plan — reject anything else outright. Silently
+    // defaulting an unrecognised priceId to a plan (the previous behaviour:
+    // "anything that isn't the Pro price is Ultra") would let a forged or
+    // stale price ID buy the wrong tier.
+    const plan = resolvePlanFromPriceId(priceId);
+    if (!plan) {
+      console.warn('[checkout] priceId does not match a known plan:', priceId);
+      return res.status(400).json({ error: 'priceId does not match a configured plan' });
+    }
     console.log('[checkout] resolved plan:', plan, '| priceId:', priceId);
+
+    const appUrl = process.env.VITE_APP_URL || 'https://openinvite.com.au';
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -54,8 +73,14 @@ export default async function handler(req, res) {
       ],
       line_items: [{ price: priceId, quantity: 1 }],
       metadata: { plan },
-      success_url: `${process.env.VITE_APP_URL || 'https://openinvite.com.au'}/dashboard?checkout=success`,
-      cancel_url: `${process.env.VITE_APP_URL || 'https://openinvite.com.au'}/pricing?checkout=cancelled`,
+      // client_reference_id is how the webhook knows WHOSE User record to
+      // credit — Stripe echoes it back untouched on the completed session,
+      // so it can't be tampered with in transit the way a client-trusted
+      // field could be.
+      ...(userId ? { client_reference_id: userId } : {}),
+      ...(customerEmail ? { customer_email: customerEmail } : {}),
+      success_url: `${appUrl}/payment-success?plan=${plan}&checkout=success`,
+      cancel_url: `${appUrl}/pricing?checkout=cancelled`,
     });
 
     return res.status(200).json({ url: session.url });

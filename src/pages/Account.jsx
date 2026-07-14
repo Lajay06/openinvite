@@ -42,9 +42,13 @@ const PLAN_FEATURES = {
   ],
 };
 
+// Same env vars (+ fallback literals) as src/pages/Pricing.jsx / PlanSelection.jsx —
+// keeping one source per plan avoids a hardcoded price ID silently drifting
+// from whatever VITE_STRIPE_*_PRICE_ID is actually configured (e.g. test vs
+// live mode), which would send a priceId the server-side resolver rejects.
 const PRICE_IDS = {
-  pro: 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
-  ultra: 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
+  pro: import.meta.env.VITE_STRIPE_PRO_PRICE_ID || 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
+  ultra: import.meta.env.VITE_STRIPE_ULTRA_PRICE_ID || 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
 };
 
 const PLAN_LABELS = { free: 'Free trial', pro: 'Pro', ultra: 'Ultra' };
@@ -115,9 +119,8 @@ export default function AccountPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           priceId: PRICE_IDS[planKey],
-          email: user?.email || '',
-          successUrl: window.location.origin + '/payment-success?plan=' + planKey,
-          cancelUrl: window.location.href,
+          userId: user?.id || '',
+          userEmail: user?.email || '',
         }),
       });
       const data = await res.json();
