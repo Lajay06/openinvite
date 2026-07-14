@@ -52,7 +52,7 @@ const PAGE_COMPONENTS = {
   'guestbook':    WeddingGuestbookPage,
 };
 
-export default function RealWebsitePreview({ details, currentPage = 'home', onNavigate }) {
+export default function RealWebsitePreview({ details, currentPage = 'home', onNavigate, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onRequestEdit }) {
   const theme = resolveColors(details);
   const typography = resolveTypography(details);
   const universeConfig = resolveUniverseConfig(details);
@@ -89,6 +89,11 @@ export default function RealWebsitePreview({ details, currentPage = 'home', onNa
         theme={theme}
         typography={typography}
         universeConfig={universeConfig}
+        editable={editable}
+        onRequestInsert={onRequestInsert}
+        onMoveBlock={onMoveBlock}
+        onDeleteBlock={onDeleteBlock}
+        onRequestEdit={onRequestEdit}
       />
     </div>
   );

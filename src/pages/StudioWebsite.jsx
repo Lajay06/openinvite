@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink } from 'lucide-react';
@@ -9,10 +9,15 @@ import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
 import { FONT_OPTIONS, WEDDING_PAGES, UNIVERSE_CONFIGS, normalizeUniverseKey } from '@/lib/websiteThemes';
-import { resolveColors, googleFontsHref } from '@/lib/universeStyling';
+import { resolveColors, resolveTypography, googleFontsHref } from '@/lib/universeStyling';
 import RealWebsitePreview from '@/components/website-builder/RealWebsitePreview';
 import PublishModal from '@/components/website-builder/PublishModal';
 import { ASSET_PREVIEW_MAP, ASSET_ID_TO_KEY } from '@/components/website-builder/AssetPreviews';
+import { MediaLibraryContext } from '@/components/website-builder/SectionEditorFields';
+import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
+import ComponentLibraryModal from '@/components/website-builder/ComponentLibraryModal';
+import { BlockFields } from '@/components/website-builder/BlockList';
+import { newBlock } from '@/components/guest-website/blocks/blockTypes';
 
 const UNIVERSE_THEMES = {
   aman: {
@@ -173,6 +178,45 @@ export default function StudioWebsite() {
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved'
   const autosaveTimerRef = useRef(null);
 
+  // feat/component-library: the "Add a section" modal target ({ page, index })
+  // and the on-canvas "Edit" popover target ({ page, blockId }) — one modal/
+  // popover instance shared by both the on-canvas "+"/edit controls
+  // (UniverseBlocks.jsx, only rendered when editable=true) and the side-panel
+  // Content tab (WBRightPanel -> BlockList), so there's one add/edit
+  // experience with two entry points, not two different ones.
+  const [libraryTarget, setLibraryTarget] = useState(null); // { page, index } | null
+  const [editPopover, setEditPopover] = useState(null); // { page, blockId } | null
+
+  // MediaLibraryContext lives here (not inside WBRightPanel) because the
+  // on-canvas block editor (the edit popover below) also renders MediaPicker
+  // fields (photo/gallery/couple-intro/etc. block types) and needs the same
+  // upload/library state WBRightPanel's Content tab already relies on.
+  const [mediaLibrary, setMediaLibrary] = useState([]);
+  const [mediaModalOpen, setMediaModalOpen] = useState(false);
+  const [mediaCallback, setMediaCallback] = useState(null);
+
+  useEffect(() => {
+    getMyRecords('Photo', '-created_date', 100).then(photos => {
+      setMediaLibrary(photos.map(p => ({
+        id: p.id,
+        url: p.url || p.photo_url || p.imageUrl || '',
+        thumbnail: p.url || p.photo_url || p.imageUrl || '',
+        type: 'photo',
+        name: p.caption || p.title || 'Photo',
+      })).filter(p => p.url));
+    }).catch(() => {});
+  }, []);
+
+  const openMediaLibrary = (callback) => {
+    setMediaCallback(() => callback);
+    setMediaModalOpen(true);
+  };
+
+  const handleMediaUploaded = (item) => {
+    const newItem = { id: Date.now() + '', ...item };
+    setMediaLibrary(prev => [newItem, ...prev]);
+  };
+
   const updateAssetContent = (assetKey, field, value) => {
     setDetailsAndMark(prev => ({
       ...prev,
@@ -256,6 +300,64 @@ export default function StudioWebsite() {
     setDetailsAndMark(prev => ({ ...prev, [field]: value }));
   };
 
+  // feat/component-library: page-scoped block mutation helpers backing the
+  // on-canvas insert/reorder/delete/edit controls. These write to the exact
+  // same {page}Content.blocks fields BlockList.jsx's side-panel editor
+  // already writes to (via updateNested in WBRightPanel.jsx) — same data,
+  // same Save/autosave path, just a second entry point.
+  const PAGE_CONTENT_FIELD = { home: 'homeContent', 'our-story': 'ourStoryContent', celebration: 'celebrationContent' };
+
+  const getPageBlocks = (page) => {
+    const field = PAGE_CONTENT_FIELD[page];
+    return field ? (detailsRef.current?.[field]?.blocks || []) : [];
+  };
+
+  const setPageBlocks = (page, nextBlocks) => {
+    const field = PAGE_CONTENT_FIELD[page];
+    if (!field) return;
+    setDetailsAndMark(prev => ({
+      ...prev,
+      [field]: { ...(prev[field] || {}), blocks: nextBlocks.map((b, i) => ({ ...b, order: i })) },
+    }));
+  };
+
+  const insertBlockAt = (page, index, catalogId) => {
+    const sorted = [...getPageBlocks(page)].sort((a, b) => (a.order || 0) - (b.order || 0));
+    sorted.splice(index, 0, newBlock(catalogId));
+    setPageBlocks(page, sorted);
+  };
+
+  const moveBlockOnPage = (page, id, dir) => {
+    const sorted = [...getPageBlocks(page)].sort((a, b) => (a.order || 0) - (b.order || 0));
+    const idx = sorted.findIndex(b => b.id === id);
+    if (idx === -1) return;
+    const newIdx = dir === 'up' ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= sorted.length) return;
+    [sorted[idx], sorted[newIdx]] = [sorted[newIdx], sorted[idx]];
+    setPageBlocks(page, sorted);
+  };
+
+  const deleteBlockOnPage = (page, id) => {
+    setPageBlocks(page, getPageBlocks(page).filter(b => b.id !== id));
+  };
+
+  const updateBlockContentOnPage = (page, id, key, value) => {
+    const next = getPageBlocks(page).map(b => b.id === id ? { ...b, content: { ...(b.content || {}), [key]: value } } : b);
+    setPageBlocks(page, next);
+  };
+
+  const openLibrary = (page, index) => setLibraryTarget({ page, index });
+  const closeLibrary = () => setLibraryTarget(null);
+  const handleLibrarySelect = (catalogId) => {
+    if (!libraryTarget) return;
+    insertBlockAt(libraryTarget.page, libraryTarget.index, catalogId);
+    closeLibrary();
+  };
+
+  const editingBlock = editPopover
+    ? getPageBlocks(editPopover.page).find(b => b.id === editPopover.blockId)
+    : null;
+
   const doSave = async (showToast = true) => {
     setIsSaving(true);
     setSaveStatus('saving');
@@ -292,6 +394,7 @@ export default function StudioWebsite() {
   );
 
   return (
+    <MediaLibraryContext.Provider value={{ open: openMediaLibrary }}>
     <div style={{ height: '100vh', overflow: 'hidden', fontFamily: "'Plus Jakarta Sans',sans-serif", background: '#1C1C1E', display: 'flex', flexDirection: 'column' }}>
 
       {/* TOP BAR */}
@@ -427,6 +530,10 @@ export default function StudioWebsite() {
               <PreviewContent
                 universeTheme={universeTheme} details={details} currentPage={currentPage}
                 onPageChange={(slug) => { setCurrentPage(slug); setRightPanelTab('design'); }}
+                onRequestInsert={index => openLibrary(currentPage, index)}
+                onMoveBlock={(id, dir) => moveBlockOnPage(currentPage, id, dir)}
+                onDeleteBlock={id => deleteBlockOnPage(currentPage, id)}
+                onRequestEdit={id => setEditPopover({ page: currentPage, blockId: id })}
               />
             </div>
           </div>
@@ -444,6 +551,7 @@ export default function StudioWebsite() {
             assetContent={{}}
             onAssetChange={updateAssetContent}
             onClearAsset={() => {}}
+            onRequestInsert={openLibrary}
           />
         </div>
       </div>
@@ -465,11 +573,51 @@ export default function StudioWebsite() {
           }}
         />
       )}
+
+      {mediaModalOpen && (
+        <MediaLibraryModal
+          library={mediaLibrary}
+          onClose={() => setMediaModalOpen(false)}
+          onSelect={(url) => { if (mediaCallback) mediaCallback(url); }}
+          onUploaded={handleMediaUploaded}
+        />
+      )}
+
+      {libraryTarget && (
+        <ComponentLibraryModal
+          theme={theme}
+          typography={resolveTypography(details)}
+          activeUniverse={details?.activeUniverse}
+          onSelect={handleLibrarySelect}
+          onClose={closeLibrary}
+        />
+      )}
+
+      {editingBlock && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          onClick={e => { if (e.target === e.currentTarget) setEditPopover(null); }}
+        >
+          <div style={{ width: '100%', maxWidth: 420, maxHeight: '80vh', background: '#1C1C1E', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#FFFFFF', fontFamily: 'inherit' }}>Edit block</p>
+              <button onClick={() => setEditPopover(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}>Done</button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: 18 }}>
+              <BlockFields
+                block={editingBlock}
+                updateContent={(key, val) => updateBlockContentOnPage(editPopover.page, editPopover.blockId, key, val)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    </MediaLibraryContext.Provider>
   );
 }
 
-function PreviewContent({ universeTheme, details, currentPage, onPageChange }) {
+function PreviewContent({ universeTheme, details, currentPage, onPageChange, onRequestInsert, onMoveBlock, onDeleteBlock, onRequestEdit }) {
   // Preload ALL typography fonts at mount so switching is instant (no loading
   // delay) — both the generic FONT_OPTIONS/TYPOGRAPHY_PAIRINGS set AND every
   // universe's font pairing, since the universe picker can switch fonts too.
@@ -528,5 +676,16 @@ function PreviewContent({ universeTheme, details, currentPage, onPageChange }) {
   // published site. One implementation renders all three surfaces; blocks
   // (feat/block-builder) render inside the real page components this
   // resolves to, so that stays true.
-  return <RealWebsitePreview details={details} currentPage={currentPage} onNavigate={onPageChange} />;
+  return (
+    <RealWebsitePreview
+      details={details}
+      currentPage={currentPage}
+      onNavigate={onPageChange}
+      editable
+      onRequestInsert={onRequestInsert}
+      onMoveBlock={onMoveBlock}
+      onDeleteBlock={onDeleteBlock}
+      onRequestEdit={onRequestEdit}
+    />
+  );
 }

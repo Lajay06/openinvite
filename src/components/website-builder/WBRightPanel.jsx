@@ -3,13 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
 import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS } from '@/lib/websiteThemes';
-import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 import {
-  FLabel, UInput, MediaPicker, MediaLibraryContext,
+  FLabel, UInput, MediaPicker,
   Toggle, Divider, AddBtn,
 } from './SectionEditorFields';
-import MediaLibraryModal from './MediaLibraryModal';
 import BlockList from './BlockList';
 
 // ── Extra primitives used only here ───────────────────────────
@@ -297,7 +295,7 @@ function SettingsTab({ details, onChange }) {
 // /event-details planner page) — so those are surfaced here as a
 // read-only reference + link out, not rebuilt as a second, divergent
 // write path onto the same mainCeremony/reception fields.
-function ContentTab({ details, onChange }) {
+function ContentTab({ details, onChange, onRequestInsert }) {
   const updateNested = (field, key, value) => {
     onChange(field, { ...(details?.[field] || {}), [key]: value });
   };
@@ -360,6 +358,7 @@ function ContentTab({ details, onChange }) {
       <BlockList
         blocks={details?.homeContent?.blocks}
         onChange={next => updateNested('homeContent', 'blocks', next)}
+        onRequestInsert={index => onRequestInsert('home', index)}
       />
       <Divider />
 
@@ -379,6 +378,7 @@ function ContentTab({ details, onChange }) {
       <BlockList
         blocks={details?.ourStoryContent?.blocks}
         onChange={next => updateNested('ourStoryContent', 'blocks', next)}
+        onRequestInsert={index => onRequestInsert('our-story', index)}
       />
       <Divider />
 
@@ -389,6 +389,7 @@ function ContentTab({ details, onChange }) {
           <BlockList
             blocks={details?.celebrationContent?.blocks}
             onChange={next => updateNested('celebrationContent', 'blocks', next)}
+            onRequestInsert={index => onRequestInsert('celebration', index)}
           />
           <Divider />
         </>
@@ -502,37 +503,15 @@ function MasterDataReferenceDark({ label, value, detail }) {
 
 
 // ── MAIN COMPONENT ────────────────────────────────────────────
-export default function WBRightPanel({ details, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset }) {
-  const [mediaLibrary, setMediaLibrary] = useState([]);
-  const [mediaModalOpen, setMediaModalOpen] = useState(false);
-  const [mediaCallback, setMediaCallback] = useState(null);
-
-  useEffect(() => {
-    getMyRecords('Photo', '-created_date', 100).then(photos => {
-      setMediaLibrary(photos.map(p => ({
-        id: p.id,
-        url: p.url || p.photo_url || p.imageUrl || '',
-        thumbnail: p.url || p.photo_url || p.imageUrl || '',
-        type: 'photo',
-        name: p.caption || p.title || 'Photo',
-      })).filter(p => p.url));
-    }).catch(() => {});
-  }, []);
-
-  const openMediaLibrary = (callback) => {
-    setMediaCallback(() => callback);
-    setMediaModalOpen(true);
-  };
-
-  const handleUploaded = (item) => {
-    const newItem = { id: Date.now() + '', ...item };
-    setMediaLibrary(prev => [newItem, ...prev]);
-  };
-
+// MediaLibraryContext is provided by the parent (StudioWebsite.jsx), not
+// here — it now also needs to wrap the on-canvas block editor
+// (feat/component-library), which lives outside this panel, so ownership
+// moved up to the one place both can share it.
+export default function WBRightPanel({ details, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset, onRequestInsert }) {
   const AssetEditorComp = selectedAsset ? ASSET_EDITOR_MAP[selectedAsset] : null;
 
   return (
-    <MediaLibraryContext.Provider value={{ open: openMediaLibrary }}>
+    <>
       <div style={{ width: '100%', flexShrink: 0, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: selectedAsset ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
 
         {selectedAsset ? (
@@ -566,7 +545,7 @@ export default function WBRightPanel({ details, universeTheme, onChange, rightTa
               {rightTab === 'design' ? (
                 <DesignTab details={details} onChange={onChange} universeTheme={universeTheme} />
               ) : rightTab === 'content' ? (
-                <ContentTab details={details} onChange={onChange} />
+                <ContentTab details={details} onChange={onChange} onRequestInsert={onRequestInsert} />
               ) : (
                 <SettingsTab details={details} onChange={onChange} />
               )}
@@ -574,15 +553,6 @@ export default function WBRightPanel({ details, universeTheme, onChange, rightTa
           </>
         )}
       </div>
-
-      {mediaModalOpen && (
-        <MediaLibraryModal
-          library={mediaLibrary}
-          onClose={() => setMediaModalOpen(false)}
-          onSelect={(url) => { if (mediaCallback) mediaCallback(url); }}
-          onUploaded={handleUploaded}
-        />
-      )}
-    </MediaLibraryContext.Provider>
+    </>
   );
 }
