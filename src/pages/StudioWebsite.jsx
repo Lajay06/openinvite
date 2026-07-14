@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, ChevronLeft, ExternalLink, Sparkles } from 'lucide-react';
 import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
@@ -172,6 +172,11 @@ export default function StudioWebsite() {
   const [rightPanelTab, setRightPanelTab] = useState('design');
   const [previewDevice, setPreviewDevice] = useState('desktop');
   const [showFullPreview, setShowFullPreview] = useState(false);
+  // feat/entrance-moment: 0 = never replayed this session. Bumping it
+  // remounts EntranceMoment fresh (via `key`) inside RealWebsitePreview —
+  // it otherwise never auto-mounts in the builder, so normal editing never
+  // replays it.
+  const [replayEntranceKey, setReplayEntranceKey] = useState(0);
   const detailsRef = useRef(null);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved'
   const autosaveTimerRef = useRef(null);
@@ -564,10 +569,19 @@ export default function StudioWebsite() {
                 ))}
               </div>
             </div>
-            {/* Page label — right */}
-            <span style={{ position: 'absolute', right: 16, fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>
-              {allPageLabels[currentPage] || currentPage}
-            </span>
+            {/* Page label + replay-entrance — right */}
+            <div style={{ position: 'absolute', right: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button
+                onClick={() => setReplayEntranceKey(k => k + 1)}
+                title="Replay entrance animation"
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.6)', fontFamily: 'inherit' }}
+              >
+                <Sparkles size={12} strokeWidth={1.5} /> Replay entrance
+              </button>
+              <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>
+                {allPageLabels[currentPage] || currentPage}
+              </span>
+            </div>
           </div>
 
           {/* Website Frame */}
@@ -588,6 +602,7 @@ export default function StudioWebsite() {
                 universeTheme={universeTheme} details={details} currentPage={currentPage}
                 onPageChange={(slug) => { setCurrentPage(slug); setRightPanelTab('design'); clearSelectedBlock(); }}
                 editable={canvasMode === 'edit'}
+                replayEntranceKey={replayEntranceKey}
                 onRequestInsert={index => openLibrary(currentPage, index)}
                 onMoveBlock={(id, dir) => moveBlockOnPage(currentPage, id, dir)}
                 onDeleteBlock={id => { deleteBlockOnPage(currentPage, id); if (selectedBlockRef?.blockId === id) clearSelectedBlock(); }}
@@ -662,7 +677,7 @@ export default function StudioWebsite() {
   );
 }
 
-function PreviewContent({ universeTheme, details, currentPage, onPageChange, editable, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId }) {
+function PreviewContent({ universeTheme, details, currentPage, onPageChange, editable, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId, replayEntranceKey }) {
   // Preload ALL typography fonts at mount so switching is instant (no loading
   // delay) — both the generic FONT_OPTIONS/TYPOGRAPHY_PAIRINGS set AND every
   // universe's font pairing, since the universe picker can switch fonts too.
@@ -732,6 +747,7 @@ function PreviewContent({ universeTheme, details, currentPage, onPageChange, edi
       onDeleteBlock={onDeleteBlock}
       onSelectBlock={onSelectBlock}
       selectedBlockId={selectedBlockId}
+      replayEntranceKey={replayEntranceKey}
     />
   );
 }

@@ -19,6 +19,7 @@
 import React from 'react';
 import { resolveTypography, resolveColors, resolveUniverseConfig } from '@/lib/universeStyling';
 import TextureOverlay from '@/components/guest-website/TextureOverlay';
+import EntranceMoment from '@/components/guest-website/EntranceMoment';
 import WeddingWebsiteNav from '@/components/guest-website/WeddingWebsiteNav';
 import WeddingHomePage from '@/components/guest-website/pages/WeddingHomePage';
 import WeddingOurStoryPage from '@/components/guest-website/pages/WeddingOurStoryPage';
@@ -52,7 +53,7 @@ const PAGE_COMPONENTS = {
   'guestbook':    WeddingGuestbookPage,
 };
 
-export default function RealWebsitePreview({ details, currentPage = 'home', onNavigate, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId }) {
+export default function RealWebsitePreview({ details, currentPage = 'home', onNavigate, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId, replayEntranceKey }) {
   const theme = resolveColors(details);
   const typography = resolveTypography(details);
   const universeConfig = resolveUniverseConfig(details);
@@ -67,6 +68,23 @@ export default function RealWebsitePreview({ details, currentPage = 'home', onNa
       className="wb-guest-root"
       style={{ '--wb-heading-font': typography.headingFont, '--wb-body-font': typography.bodyFont, position: 'relative' }}
     >
+      {/* feat/entrance-moment: never auto-mounts here — only when the
+          builder's own "Replay entrance" button bumps replayEntranceKey.
+          `key` forces a fresh mount (fresh internal state) each replay;
+          forcePlay bypasses the localStorage "already seen" gate but still
+          respects prefers-reduced-motion. */}
+      {replayEntranceKey ? (
+        <EntranceMoment
+          key={replayEntranceKey}
+          weddingSlug={details?.slug}
+          weddingDetails={details}
+          theme={theme}
+          typography={typography}
+          universeConfig={universeConfig}
+          forcePlay
+        />
+      ) : null}
+
       {universeConfig?.texture && (
         <TextureOverlay textureId={universeConfig.texture.type} opacity={universeConfig.texture.opacity} />
       )}
