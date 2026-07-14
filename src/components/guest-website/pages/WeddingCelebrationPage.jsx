@@ -17,6 +17,7 @@ import MykonosSectionMark from '../layouts/MykonosSectionMark';
 import CubeBlock from '../layouts/CubeBlock';
 import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
 import VineRule from '../layouts/VineRule';
+import UniverseBlocks from '../blocks/UniverseBlocks';
 
 function fmtTime(t) {
   if (!t) return '';
@@ -25,7 +26,7 @@ function fmtTime(t) {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'pm' : 'am'}`;
 }
 
-export default function WeddingCelebrationPage({ weddingDetails, theme, typography, universeConfig }) {
+function WeddingCelebrationPageContent({ weddingDetails, theme, typography, universeConfig }) {
   const weddingDate = weddingDetails.weddingDate || '';
   const ceremony   = weddingDetails.mainCeremony || {};
   const reception  = weddingDetails.reception    || {};
@@ -461,5 +462,22 @@ function EventDetails({ ev, timeStr, lt, acc, hFont, bFont, hWt, noPhoto, style:
         </p>
       )}
     </div>
+  );
+}
+
+// See WeddingHomePage.jsx for why this wraps at the export boundary rather
+// than editing every isXxx branch above.
+export default function WeddingCelebrationPage(props) {
+  return (
+    <>
+      <WeddingCelebrationPageContent {...props} />
+      <UniverseBlocks
+        blocks={props.weddingDetails?.celebrationContent?.blocks}
+        weddingDetails={props.weddingDetails}
+        theme={props.theme}
+        typography={props.typography}
+        universeConfig={props.universeConfig}
+      />
+    </>
   );
 }

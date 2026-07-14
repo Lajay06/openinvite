@@ -14,8 +14,9 @@ import MykonosSectionMark from '../layouts/MykonosSectionMark';
 import CubeBlock from '../layouts/CubeBlock';
 import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
 import VineRule from '../layouts/VineRule';
+import UniverseBlocks from '../blocks/UniverseBlocks';
 
-export default function WeddingOurStoryPage({ weddingDetails, theme, typography, universeConfig }) {
+function WeddingOurStoryPageContent({ weddingDetails, theme, typography, universeConfig }) {
   const content = weddingDetails.ourStoryContent || {};
   const storyText = content.storyText || '';
   const photos = content.photos || [];
@@ -516,5 +517,22 @@ export default function WeddingOurStoryPage({ weddingDetails, theme, typography,
         )}
       </div>
     </div>
+  );
+}
+
+// See WeddingHomePage.jsx for why this wraps at the export boundary rather
+// than editing every isXxx branch above.
+export default function WeddingOurStoryPage(props) {
+  return (
+    <>
+      <WeddingOurStoryPageContent {...props} />
+      <UniverseBlocks
+        blocks={props.weddingDetails?.ourStoryContent?.blocks}
+        weddingDetails={props.weddingDetails}
+        theme={props.theme}
+        typography={props.typography}
+        universeConfig={props.universeConfig}
+      />
+    </>
   );
 }
