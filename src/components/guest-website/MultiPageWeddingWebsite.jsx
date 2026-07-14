@@ -291,6 +291,20 @@ export default function MultiPageWeddingWebsite() {
           />
         </motion.div>
       </AnimatePresence>
+
+      {/* fix/builder-polish: quiet, universe-styled marketing footer on
+          every guest-facing page (not just home/RSVP) — present but never
+          loud, sentence case (no text-transform:uppercase). */}
+      <div style={{ padding: '20px 24px', textAlign: 'center', borderTop: `1px solid ${theme.accent}15` }}>
+        <a
+          href="https://openinvite.com.au"
+          target="_blank"
+          rel="noreferrer"
+          style={{ fontFamily: typography.bodyFont, fontSize: 11, letterSpacing: '0.04em', color: theme.darkText, opacity: 0.4, textDecoration: 'none' }}
+        >
+          Powered by Openinvite
+        </a>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
-import { WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS } from '@/lib/websiteThemes';
+import { TYPOGRAPHY_PAIRINGS, TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS } from '@/lib/websiteThemes';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 import {
@@ -93,8 +93,6 @@ const selectStyle = {
 function DesignTab({ details, onChange, universeTheme }) {
   const navigate = useNavigate();
 
-  // Theme starts collapsed — it's a secondary refinement, not the headline choice
-  const [themeOpen, setThemeOpen] = useState(false);
   const [typoOpen, setTypoOpen] = useState(false);
 
   const activeTypoId = details.activeTypography || 'classic';
@@ -152,33 +150,6 @@ function DesignTab({ details, onChange, universeTheme }) {
         </div>
       </div>
 
-      {/* ── Fine-tune palette — collapsed by default, secondary ─ */}
-      <SLabel onClick={() => setThemeOpen(o => !o)} isOpen={themeOpen}>Fine-tune palette</SLabel>
-      <div style={{ overflow: 'hidden', maxHeight: themeOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 8 }}>
-        {WEBSITE_THEMES.map(t => {
-          const sel = (details.activeTheme || 'still') === t.id;
-          return (
-            <div key={t.id} onClick={() => onChange('activeTheme', t.id)} style={{ cursor: 'pointer' }}>
-              <div
-                style={{ overflow: 'hidden', position: 'relative', aspectRatio: '3/2', border: sel ? '2px solid #FFFFFF' : '1px solid rgba(255,255,255,0.1)', transition: 'transform 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <div style={{ height: '65%', background: t.darkBg }} />
-                <div style={{ height: '35%', background: t.lightBg }} />
-                <div style={{ position: 'absolute', bottom: 4, right: 4, width: 8, height: 8, borderRadius: '50%', background: t.accent, border: '1px solid rgba(0,0,0,0.15)' }} />
-                {sel && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ width: 16, height: 16, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700 }}>✓</span>
-                </div>}
-              </div>
-              <p style={{ fontSize: 10, fontWeight: 600, textAlign: 'center', margin: '3px 0 0', color: 'rgba(255,255,255,0.4)' }}>{t.name}</p>
-            </div>
-          );
-        })}
-      </div>
-      </div>
-      <Divider />
       <SLabel onClick={() => setTypoOpen(o => !o)} isOpen={typoOpen}>
         {`Typography · ${activeTypo.name}`}
       </SLabel>
