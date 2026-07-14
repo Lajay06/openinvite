@@ -211,31 +211,6 @@ function DesignTab({ details, onChange, universeTheme }) {
         </div>
       </div>
       <Divider />
-      <SLabel>Hero media</SLabel>
-      <div style={{ marginBottom: 14 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Cover photo URL</p>
-        <input
-          type="text" value={details.coverPhoto || ''} onChange={e => onChange('coverPhoto', e.target.value)}
-          placeholder="https://..."
-          style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', padding: '8px', fontSize: 13, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit', background: 'rgba(255,255,255,0.08)', boxSizing: 'border-box', borderRadius: 0 }}
-          onFocus={e => e.target.style.borderColor = '#E03553'}
-          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
-        />
-      </div>
-      <div style={{ marginBottom: 10 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Hero video URL</p>
-        <input
-          type="text" value={details.heroVideoUrl || ''} onChange={e => onChange('heroVideoUrl', e.target.value)}
-          placeholder="Direct .mp4 file, YouTube, or Vimeo URL"
-          style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', padding: '8px', fontSize: 13, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit', background: 'rgba(255,255,255,0.08)', boxSizing: 'border-box', borderRadius: 0 }}
-          onFocus={e => e.target.style.borderColor = '#E03553'}
-          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
-        />
-        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '6px 0 0' }}>
-          Takes priority over the cover photo when set. Falls back to the cover photo if the video fails to load.
-        </p>
-      </div>
-      <Divider />
       <SLabel>Animations</SLabel>
       <div style={{ marginBottom: 10 }}>
         <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Page transition</p>
@@ -326,6 +301,16 @@ function ContentTab({ details, onChange }) {
   const updateNested = (field, key, value) => {
     onChange(field, { ...(details?.[field] || {}), [key]: value });
   };
+  const enabledPages = details?.enabledPages || ['home'];
+
+  const storyPhotos = details?.ourStoryContent?.photos || [];
+  const setStoryPhotos = (photos) => updateNested('ourStoryContent', 'photos', photos);
+
+  const milestones = details?.ourStoryContent?.milestones || [];
+  const setMilestones = (next) => updateNested('ourStoryContent', 'milestones', next);
+
+  const gallery = details?.photosContent?.gallery || [];
+  const setGallery = (photos) => updateNested('photosContent', 'gallery', photos);
 
   return (
     <div>
@@ -345,6 +330,25 @@ function ContentTab({ details, onChange }) {
       <Divider />
 
       <SLabel>Home page</SLabel>
+      <MediaPicker
+        label="Hero photo"
+        value={details?.coverPhoto}
+        onChange={v => onChange('coverPhoto', v)}
+        aspectRatio="16/9"
+      />
+      <div style={{ marginBottom: 14 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Hero video URL</p>
+        <input
+          type="text" value={details?.heroVideoUrl || ''} onChange={e => onChange('heroVideoUrl', e.target.value)}
+          placeholder="Direct .mp4 file, YouTube, or Vimeo URL"
+          style={{ width: '100%', border: '1px solid rgba(255,255,255,0.08)', padding: '8px', fontSize: 13, color: '#FFFFFF', outline: 'none', fontFamily: 'inherit', background: 'rgba(255,255,255,0.08)', boxSizing: 'border-box', borderRadius: 0 }}
+          onFocus={e => e.target.style.borderColor = '#E03553'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+        />
+        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '6px 0 0' }}>
+          Takes priority over the hero photo when set. Falls back to the photo if the video fails to load.
+        </p>
+      </div>
       <UTextarea
         label="Tagline"
         value={details?.homeContent?.tagline}
@@ -362,19 +366,83 @@ function ContentTab({ details, onChange }) {
         rows={6}
         placeholder="How you met, your journey together..."
       />
-      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: '-8px 0 14px' }}>
-        Photos and timeline milestones aren't editable here yet — coming soon.
-      </p>
+      <FLabel>Story photos</FLabel>
+      <PhotoGrid photos={storyPhotos} onChange={setStoryPhotos} />
+      <div style={{ marginBottom: 14 }} />
+      <MilestoneEditor milestones={milestones} onChange={setMilestones} />
       <Divider />
+
+      {enabledPages.includes('photos') && (
+        <>
+          <SLabel>Photos page</SLabel>
+          <FLabel>Gallery</FLabel>
+          <PhotoGrid photos={gallery} onChange={setGallery} />
+          <Divider />
+        </>
+      )}
 
       <SLabel>Ceremony &amp; reception</SLabel>
       <MasterDataReferenceDark
-        label="Venue"
+        label="Ceremony venue"
         value={details?.mainCeremony?.venueName}
+        detail={formatWhen(details?.mainCeremony)}
+      />
+      <MasterDataReferenceDark
+        label="Reception venue"
+        value={details?.reception?.venueName}
+        detail={formatWhen(details?.reception)}
       />
       <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: '-6px 0 0' }}>
-        Venue, times, dress code, and other events are set in the wedding planner, not here.
+        Venue, times, dress code, and other events are set in the wedding planner (with address lookup and maps) — not duplicated here to avoid two places to keep in sync.
       </p>
+    </div>
+  );
+}
+
+function formatWhen(eventLike) {
+  const time = eventLike?.startTime || eventLike?.time;
+  return time || null;
+}
+
+// Add/remove grid of photos backed by the shared media library +
+// upload flow (base44.integrations.Core.UploadFile under the hood via
+// MediaPicker's MediaLibraryContext) — same upload path used everywhere
+// else in the builder, not a separate integration.
+function PhotoGrid({ photos, onChange }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      {photos.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 10 }}>
+          {photos.map((p, i) => (
+            <div key={i} style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', background: 'rgba(255,255,255,0.08)' }}>
+              <img src={p} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+              <button onClick={() => onChange(photos.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 2, right: 2, width: 18, height: 18, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: 11, cursor: 'pointer' }}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+      <MediaPicker label="" value="" onChange={v => v && onChange([...photos, v])} aspectRatio="1/1" />
+    </div>
+  );
+}
+
+function MilestoneEditor({ milestones, onChange }) {
+  const update = (i, key, val) => {
+    const next = [...milestones];
+    next[i] = { ...next[i], [key]: val };
+    onChange(next);
+  };
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <FLabel>Timeline milestones</FLabel>
+      {milestones.map((m, i) => (
+        <div key={i} style={{ border: '1px solid rgba(255,255,255,0.08)', padding: 10, marginBottom: 8, position: 'relative' }}>
+          <button onClick={() => onChange(milestones.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 16 }}>×</button>
+          <UInputDark label="Date" value={m.date} onChange={v => update(i, 'date', v)} placeholder="e.g. June 2021" />
+          <UInputDark label="What happened" value={m.text} onChange={v => update(i, 'text', v)} placeholder="e.g. Our first date" />
+        </div>
+      ))}
+      <AddBtn onClick={() => onChange([...milestones, { date: '', text: '' }])}>Add milestone</AddBtn>
     </div>
   );
 }
@@ -393,7 +461,7 @@ function UInputDark({ label, value, onChange, type = 'text', placeholder = '' })
   );
 }
 
-function MasterDataReferenceDark({ label, value }) {
+function MasterDataReferenceDark({ label, value, detail }) {
   return (
     <div style={{ marginBottom: 8 }}>
       {label && <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>{label}</p>}
@@ -401,7 +469,9 @@ function MasterDataReferenceDark({ label, value }) {
         href="/event-details"
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', textDecoration: 'none' }}
       >
-        <span style={{ fontSize: 13, color: value ? '#FFFFFF' : 'rgba(255,255,255,0.35)' }}>{value || 'Not set yet'}</span>
+        <span style={{ fontSize: 13, color: value ? '#FFFFFF' : 'rgba(255,255,255,0.35)' }}>
+          {value || 'Not set yet'}{detail ? ` · ${detail}` : ''}
+        </span>
         <span style={{ fontSize: 11, color: '#E03553', fontWeight: 600, whiteSpace: 'nowrap' }}>Edit in Planner →</span>
       </a>
     </div>
