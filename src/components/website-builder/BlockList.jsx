@@ -1,15 +1,23 @@
 /**
  * BlockList — the couple-facing add/reorder/edit/delete UI for a page's
- * content blocks (feat/block-builder). Lives in the builder's Content tab
- * (WBRightPanel.jsx's ContentTab), writing to `{page}Content.blocks` via the
- * same onChange(field, value) pattern every other field in that tab already
- * uses. No style/colour controls here by design — a block's look always
- * comes from the active universe (UniverseBlocks.jsx), never a per-block
- * override, so there's nothing to expose here but content.
+ * content blocks (feat/block-builder, fix/block-builder-add-ui). Lives in
+ * the builder's Content tab (WBRightPanel.jsx's ContentTab), writing to
+ * `{page}Content.blocks` via the same onChange(field, value) pattern every
+ * other field in that tab already uses. No style/colour controls here by
+ * design — a block's look always comes from the active universe
+ * (UniverseBlocks.jsx), never a per-block override, so there's nothing to
+ * expose here but content.
+ *
+ * fix/block-builder-add-ui: the previous version only appended a new block
+ * to the end, via a row of small pill buttons easy to miss at the bottom of
+ * an already-long form. This version puts a clear, full-width "+ Add block"
+ * affordance at every insert position — above the first block, between
+ * every pair of blocks, and after the last — so a couple can insert
+ * anywhere, not just at the end, and the control itself is unmistakable
+ * rather than buried.
  */
-import React from 'react';
-import { ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
-import { Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronUp, ChevronDown, Trash2, Plus, X } from 'lucide-react';
 import { MediaPicker, FLabel } from './SectionEditorFields';
 import { BLOCK_TYPES, blockLabel, newBlock } from '@/components/guest-website/blocks/blockTypes';
 
@@ -103,6 +111,49 @@ function BlockFields({ block, updateContent }) {
   }
 }
 
+// A clear, always-visible "+ Add block" affordance. Clicking it reveals a
+// picker of the 6 block types right in place; picking one inserts a new
+// block at exactly this position and closes the picker. Rendered above the
+// first block, between every pair, and after the last — so both
+// insert-between and add-at-end are the same mechanism, not two different
+// ones a couple has to learn separately.
+function InsertSlot({ onInsert }) {
+  const [open, setOpen] = useState(false);
+
+  if (open) {
+    return (
+      <div style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.04)', padding: 10, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.5)' }}>Add a block</span>
+          <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: 2, display: 'flex' }}><X size={14} /></button>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {BLOCK_TYPES.map(t => (
+            <button
+              key={t.type}
+              onClick={() => { onInsert(t.type); setOpen(false); }}
+              style={{ padding: '7px 14px', fontSize: 12, fontWeight: 600, color: '#FFFFFF', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setOpen(true)}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', padding: '9px 0', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', background: 'transparent', border: '1px dashed rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: 'inherit', marginBottom: 8, transition: 'color 0.15s, border-color 0.15s' }}
+      onMouseEnter={e => { e.currentTarget.style.color = '#FFFFFF'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'; }}
+      onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; }}
+    >
+      <Plus size={13} /> Add block
+    </button>
+  );
+}
+
 export default function BlockList({ blocks = [], onChange }) {
   const sorted = [...blocks].sort((a, b) => (a.order || 0) - (b.order || 0));
 
@@ -124,35 +175,33 @@ export default function BlockList({ blocks = [], onChange }) {
 
   const remove = (id) => commit(sorted.filter(b => b.id !== id));
 
-  const add = (type) => commit([...sorted, newBlock(type)]);
+  // Inserts at `index` — 0 is before the first block, sorted.length is
+  // after the last (i.e. add-at-end), any value between is insert-between.
+  const insertAt = (index, type) => {
+    const next = [...sorted];
+    next.splice(index, 0, newBlock(type));
+    commit(next);
+  };
 
   return (
     <div>
+      <InsertSlot onInsert={type => insertAt(0, type)} />
       {sorted.map((block, i) => (
-        <div key={block.id} style={{ border: '1px solid rgba(255,255,255,0.08)', padding: 10, marginBottom: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.4)' }}>{blockLabel(block.type)}</span>
-            <div style={{ display: 'flex', gap: 2 }}>
-              <button onClick={() => move(i, 'up')} disabled={i === 0} style={{ background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', color: i === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.5)', padding: 3, display: 'flex' }}><ChevronUp size={14} /></button>
-              <button onClick={() => move(i, 'down')} disabled={i === sorted.length - 1} style={{ background: 'none', border: 'none', cursor: i === sorted.length - 1 ? 'default' : 'pointer', color: i === sorted.length - 1 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.5)', padding: 3, display: 'flex' }}><ChevronDown size={14} /></button>
-              <button onClick={() => remove(block.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(224,53,83,0.7)', padding: 3, display: 'flex' }}><Trash2 size={14} /></button>
+        <React.Fragment key={block.id}>
+          <div style={{ border: '1px solid rgba(255,255,255,0.08)', padding: 10, marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.4)' }}>{blockLabel(block.type)}</span>
+              <div style={{ display: 'flex', gap: 2 }}>
+                <button onClick={() => move(i, 'up')} disabled={i === 0} style={{ background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', color: i === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.5)', padding: 3, display: 'flex' }}><ChevronUp size={14} /></button>
+                <button onClick={() => move(i, 'down')} disabled={i === sorted.length - 1} style={{ background: 'none', border: 'none', cursor: i === sorted.length - 1 ? 'default' : 'pointer', color: i === sorted.length - 1 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.5)', padding: 3, display: 'flex' }}><ChevronDown size={14} /></button>
+                <button onClick={() => remove(block.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(224,53,83,0.7)', padding: 3, display: 'flex' }}><Trash2 size={14} /></button>
+              </div>
             </div>
+            <BlockFields block={block} updateContent={(key, val) => updateBlock(block.id, b => ({ ...b, content: { ...(b.content || {}), [key]: val } }))} />
           </div>
-          <BlockFields block={block} updateContent={(key, val) => updateBlock(block.id, b => ({ ...b, content: { ...(b.content || {}), [key]: val } }))} />
-        </div>
+          <InsertSlot onInsert={type => insertAt(i + 1, type)} />
+        </React.Fragment>
       ))}
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-        {BLOCK_TYPES.map(t => (
-          <button
-            key={t.type}
-            onClick={() => add(t.type)}
-            style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.5)', background: 'transparent', border: '1px dashed rgba(255,255,255,0.2)', padding: '6px 10px', cursor: 'pointer', fontFamily: 'inherit' }}
-          >
-            <Plus size={11} /> {t.label}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
