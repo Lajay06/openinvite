@@ -40,6 +40,7 @@ import { runAssetSystem } from '../tests/persistence/asset-system.mjs';
 import { runStripeWebhook } from '../tests/persistence/stripe-webhook.mjs';
 import { runComponentLibrary } from '../tests/persistence/component-library.mjs';
 import { runCuratedFonts } from '../tests/persistence/curated-fonts.mjs';
+import { runBlockStylingUniverse } from '../tests/persistence/block-styling-universe.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -91,6 +92,7 @@ async function run() {
   results.push(...await runStripeWebhook());
   results.push(...await runComponentLibrary());
   results.push(...await runCuratedFonts());
+  results.push(...await runBlockStylingUniverse());
 
   // ── Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;

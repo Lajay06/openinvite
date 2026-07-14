@@ -111,10 +111,14 @@ function loadCatalogFontsOnce() {
 
 // A single custom dropdown shared by the heading/body pickers — a native
 // <select> can't render each option in its own font on most platforms, so
-// this renders an "Aa" preview per row instead.
-function FontDropdown({ value, onChange, previewSize = 18 }) {
+// this renders each option's own label set in its own font instead. Kept
+// deliberately compact (small previewSize, tight row padding, ellipsis
+// overflow) — a couple is scanning 30 options, not admiring a single big
+// specimen.
+function FontDropdown({ value, onChange, previewSize = 14 }) {
   const [open, setOpen] = useState(false);
   const active = CURATED_FONTS[value];
+  const labelStyle = { display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' };
 
   const toggle = () => {
     if (!open) loadCatalogFontsOnce();
@@ -127,21 +131,21 @@ function FontDropdown({ value, onChange, previewSize = 18 }) {
         type="button"
         onClick={toggle}
         style={{
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '10px 12px', border: '1px solid rgba(255,255,255,0.15)', background: open ? 'rgba(255,255,255,0.08)' : 'transparent',
-          cursor: 'pointer', color: '#FFFFFF', fontFamily: 'inherit',
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+          padding: '7px 10px', border: '1px solid rgba(255,255,255,0.15)', background: open ? 'rgba(255,255,255,0.08)' : 'transparent',
+          cursor: 'pointer', color: '#FFFFFF', fontFamily: 'inherit', minWidth: 0,
         }}
       >
-        <span style={{ fontFamily: active?.family, fontSize: previewSize, lineHeight: 1 }}>
+        <span style={{ ...labelStyle, fontFamily: active?.family, fontSize: previewSize, lineHeight: 1.3 }}>
           {active?.label || 'Universe default'}
         </span>
-        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{open ? '▲' : '▼'}</span>
+        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}>{open ? '▲' : '▼'}</span>
       </button>
       {open && (
         <div
           style={{
             position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20, marginTop: 4,
-            maxHeight: 260, overflowY: 'auto', background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.15)',
+            maxHeight: 220, overflowY: 'auto', background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.15)',
             boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
           }}
         >
@@ -152,13 +156,13 @@ function FontDropdown({ value, onChange, previewSize = 18 }) {
                 key={font.id}
                 onClick={() => { onChange(font.id); setOpen(false); }}
                 style={{
-                  padding: '9px 12px', cursor: 'pointer',
+                  padding: '6px 10px', cursor: 'pointer',
                   background: sel ? 'rgba(255,255,255,0.1)' : 'transparent',
                 }}
                 onMouseEnter={e => { if (!sel) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                 onMouseLeave={e => { if (!sel) e.currentTarget.style.background = 'transparent'; }}
               >
-                <span style={{ fontFamily: font.family, fontWeight: font.weight || 400, fontSize: previewSize, color: '#FFFFFF', lineHeight: 1 }}>
+                <span style={{ ...labelStyle, fontFamily: font.family, fontWeight: font.weight || 400, fontSize: previewSize, color: '#FFFFFF', lineHeight: 1.3 }}>
                   {font.label}
                 </span>
               </div>
@@ -274,11 +278,11 @@ function DesignTab({ details, onChange, universeTheme }) {
         </div>
 
         <FLabel>Heading font</FLabel>
-        <FontDropdown value={activeHeadingId} onChange={setHeadingFont} previewSize={20} />
+        <FontDropdown value={activeHeadingId} onChange={setHeadingFont} previewSize={15} />
 
         <div style={{ marginTop: 14 }}>
           <FLabel>Body font</FLabel>
-          <FontDropdown value={activeBodyId} onChange={setBodyFont} previewSize={16} />
+          <FontDropdown value={activeBodyId} onChange={setBodyFont} previewSize={13} />
         </div>
 
         <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '10px 0 8px' }}>
@@ -585,7 +589,7 @@ export function blockSupportsAnyStyle() {
   return true;
 }
 
-function BlockStylePanel({ block, universeTheme, updateStyle }) {
+function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
   const style = block.style || {};
   const accent = universeTheme?.accent || '#C4956A';
   const supportsAlign = ALIGN_CAPABLE_TYPES.includes(block.type);
@@ -623,7 +627,17 @@ function BlockStylePanel({ block, universeTheme, updateStyle }) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6, marginBottom: 14 }}>
       {options.map(opt => {
         const sel = activeValue === opt.value;
-        const hex = opt.resolve(universeTheme || {});
+        // theme (resolveColors output: darkBg/lightBg/lightText/accent/
+        // accentSecondary), NOT universeTheme — universeTheme is a
+        // separate, legacy-shaped object (StudioWebsite.jsx) that renames
+        // these same values to text/secondary/background/primary for its
+        // own font-preview purposes. Passing universeTheme here silently
+        // produced undefined for every text-*/accent2-* swatch, which is
+        // why the grid looked identical (mostly blank) across universes —
+        // only the 3 accent-* swatches happened to resolve at all, since
+        // universeTheme.accent (not .lightText/.accentSecondary) is one of
+        // the few fields it does carry over.
+        const hex = opt.resolve(theme || {});
         return (
           <button
             key={opt.value}
@@ -685,7 +699,7 @@ function BlockStylePanel({ block, universeTheme, updateStyle }) {
 // here — it now also needs to wrap the on-canvas block editor
 // (feat/component-library), which lives outside this panel, so ownership
 // moved up to the one place both can share it.
-export default function WBRightPanel({ details, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock }) {
+export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock }) {
   const AssetEditorComp = selectedAsset ? ASSET_EDITOR_MAP[selectedAsset] : null;
 
   return (
@@ -706,7 +720,7 @@ export default function WBRightPanel({ details, universeTheme, onChange, rightTa
               {blockSupportsAnyStyle(selectedBlock.type) && (
                 <>
                   <Divider />
-                  <BlockStylePanel block={selectedBlock} universeTheme={universeTheme} updateStyle={onUpdateSelectedBlockStyle} />
+                  <BlockStylePanel block={selectedBlock} theme={theme} universeTheme={universeTheme} updateStyle={onUpdateSelectedBlockStyle} />
                 </>
               )}
             </div>

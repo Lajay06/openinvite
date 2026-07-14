@@ -12,7 +12,6 @@ import { FONT_OPTIONS, WEDDING_PAGES, UNIVERSE_CONFIGS, normalizeUniverseKey } f
 import { resolveColors, resolveTypography, googleFontsHref } from '@/lib/universeStyling';
 import RealWebsitePreview from '@/components/website-builder/RealWebsitePreview';
 import PublishModal from '@/components/website-builder/PublishModal';
-import { ASSET_PREVIEW_MAP, ASSET_ID_TO_KEY } from '@/components/website-builder/AssetPreviews';
 import { MediaLibraryContext } from '@/components/website-builder/SectionEditorFields';
 import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import ComponentLibraryModal from '@/components/website-builder/ComponentLibraryModal';
@@ -603,6 +602,7 @@ export default function StudioWebsite() {
         <div style={{ width: 280, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
           <WBRightPanel
             details={details}
+            theme={theme}
             universeTheme={universeTheme}
             onChange={updateField}
             rightTab={rightPanelTab}
