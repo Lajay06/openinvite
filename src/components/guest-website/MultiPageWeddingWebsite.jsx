@@ -4,6 +4,7 @@ import { useReducedMotion } from 'framer-motion';
 import { resolveUniverseConfig } from '@/lib/websiteThemes';
 import { resolveTypography, resolveColors, googleFontsHref } from '@/lib/universeStyling';
 import TextureOverlay from './TextureOverlay';
+import EntranceMoment from './EntranceMoment';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 
 function PasswordGateSimple({ slug, onUnlock }) {
@@ -205,6 +206,18 @@ export default function MultiPageWeddingWebsite() {
         color: theme.darkText,
       }}
     >
+      {/* feat/entrance-moment: a fixed-position overlay OVER the page that's
+          already mounting/loading below it — never blocks or delays
+          content. First-visit-only (localStorage-gated inside the
+          component itself), reduced-motion skips straight past it. */}
+      <EntranceMoment
+        weddingSlug={weddingSlug}
+        weddingDetails={weddingDetails}
+        theme={theme}
+        typography={typography}
+        universeConfig={universeConfig}
+      />
+
       {/* Site-wide texture overlay — one instance covers every page (not just
           the home hero), switches with the active universe, single paint
           layer per TEXTURE_LIBRARY_SPEC.md's performance budget. */}
