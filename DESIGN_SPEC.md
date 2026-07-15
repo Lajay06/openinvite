@@ -29,6 +29,9 @@
 - Default: 0px (sharp corners everywhere)
 - Pills/badges: 999px
 - Buttons: 999px (pill shape)
+- Exception — onboarding/tips carousel cards (e.g. TipsModal): 16px. A
+  deliberate, narrow exception for soft, welcoming first-run UI; does not
+  apply to dashboard cards, which stay 0px.
 
 ## Layout
 - Top bar: fixed, full width, 48px height, background #0A0A0A, z-index 50
