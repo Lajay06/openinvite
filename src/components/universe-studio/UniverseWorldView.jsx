@@ -66,6 +66,11 @@ import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
 import SaveTheDatePreview from '@/components/universe-studio/assets/SaveTheDatePreview';
 import MenuCardPreview from '@/components/universe-studio/assets/MenuCardPreview';
 import SeatingChartPreview from '@/components/universe-studio/assets/SeatingChartPreview';
+import PlaceCardsPreview from '@/components/universe-studio/assets/PlaceCardsPreview';
+import WelcomeSignagePreview from '@/components/universe-studio/assets/WelcomeSignagePreview';
+import ThankYouPreview from '@/components/universe-studio/assets/ThankYouPreview';
+import InstagramKitPreview from '@/components/universe-studio/assets/InstagramKitPreview';
+import MotionGraphicPreview from '@/components/universe-studio/assets/MotionGraphicPreview';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -206,7 +211,7 @@ function Chapter({ background, children, minHeight = '60vh' }) {
   );
 }
 
-function HeroChapter({ universe, coupleNames, isCurrent, prefersReducedMotion }) {
+function HeroChapter({ universe, isCurrent, prefersReducedMotion }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const parallaxY = useTransform(scrollYProgress, [0, 1], ['0%', '22%']);
@@ -232,8 +237,14 @@ function HeroChapter({ universe, coupleNames, isCurrent, prefersReducedMotion })
       <div style={{ position: 'absolute', inset: 0, background: universe.imageUrl ? 'rgba(0,0,0,0.38)' : 'transparent' }} />
 
       <div style={{ position: 'relative', textAlign: 'center', padding: '0 24px' }}>
+        {/* This is the world's own showcase, not the couple's real wedding
+            site — the hero shows the universe's own name (reusing the
+            Masthead's coupleNames slot, since every Masthead just renders
+            whatever string it's given) + tagline. The couple's real names
+            appear in the "your wedding in this world" chapter below,
+            where their actual pieces are shown. */}
         <Masthead
-          coupleNames={coupleNames}
+          coupleNames={universe.name}
           kicker={universe.copy.heroKicker}
           theme={universe.colors}
           typography={universe.typography}
@@ -334,7 +345,7 @@ export default function UniverseWorldView({
       )}
 
       {/* Chapter 1 — hero, full-bleed, parallax */}
-      <HeroChapter universe={universe} coupleNames={coupleNames} isCurrent={isCurrent} prefersReducedMotion={prefersReducedMotion} />
+      <HeroChapter universe={universe} isCurrent={isCurrent} prefersReducedMotion={prefersReducedMotion} />
 
       {/* Chapter 2 — the world's story */}
       <Chapter background={colors.lightBg} minHeight="50vh">
@@ -415,18 +426,25 @@ export default function UniverseWorldView({
         </Reveal>
       </Chapter>
 
-      {/* Chapter 6 — your wedding in this world */}
+      {/* Chapter 6 — your wedding in this world. This is where the
+          couple's real names belong (per the hero-title consistency
+          fix — the hero above always shows the universe's own name, this
+          chapter is where their actual pieces, in their actual names,
+          are shown). Every asset type the product has, not a subset. */}
       <Chapter background={colors.lightBg} minHeight="70vh">
         <Reveal prefersReducedMotion={prefersReducedMotion}>
-          <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 32px', textAlign: 'center' }}>
+          <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 12px', textAlign: 'center' }}>
             Nº 05 — Your wedding in this world
+          </p>
+          <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.4rem, 3vw, 2rem)', color: colors.lightText, margin: '0 0 40px', textAlign: 'center' }}>
+            {coupleNames}
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 18, maxWidth: 1040, margin: '0 auto' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
                 <SaveTheDatePreview universe={universe.id} weddingDetails={weddingDetails} />
               </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Invitation</span>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Save the date</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
@@ -451,6 +469,36 @@ export default function UniverseWorldView({
                 <SeatingChartPreview universe={universe.id} weddingDetails={weddingDetails} guests={guests} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Seating chart</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <PlaceCardsPreview universe={universe.id} weddingDetails={weddingDetails} guests={guests} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Place cards</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <WelcomeSignagePreview universe={universe.id} weddingDetails={weddingDetails} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Welcome sign</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <ThankYouPreview universe={universe.id} weddingDetails={weddingDetails} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Thank you card</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <InstagramKitPreview universe={universe.id} weddingDetails={weddingDetails} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Instagram kit</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <MotionGraphicPreview universe={universe.id} weddingDetails={weddingDetails} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Motion graphic</span>
             </div>
           </div>
         </Reveal>

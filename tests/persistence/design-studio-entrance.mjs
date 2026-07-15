@@ -370,5 +370,26 @@ export async function runDesignStudioEntrance() {
     ? pass('World page back button portals to document.body, escaping .page-content\'s stacking context (was invisible behind the sidebar)', 'found')
     : fail('World page back button portals to document.body, escaping .page-content\'s stacking context (was invisible behind the sidebar)', 'found', 'not found'));
 
+  console.log('\n  Design Studio — world hero shows the universe (not the couple), asset chapter shows every asset type:\n');
+
+  results.push(/coupleNames=\{universe\.name\}/.test(worldViewSource)
+    ? pass('World hero masthead shows the universe\'s own name, not the couple\'s', 'found')
+    : fail('World hero masthead shows the universe\'s own name, not the couple\'s', 'found', 'not found'));
+  results.push(/\{universe\.tagline\}/.test(worldViewSource)
+    ? pass('World hero shows the universe\'s tagline alongside its name', 'found')
+    : fail('World hero shows the universe\'s tagline alongside its name', 'found', 'not found'));
+
+  const ASSET_COMPONENTS = [
+    'SaveTheDatePreview', 'MenuCardPreview', 'SeatingChartPreview',
+    'PlaceCardsPreview', 'WelcomeSignagePreview', 'ThankYouPreview', 'InstagramKitPreview', 'MotionGraphicPreview',
+  ];
+  const missingAssetComponents = ASSET_COMPONENTS.filter(name => !new RegExp(`<${name} `).test(worldViewSource));
+  results.push(missingAssetComponents.length === 0
+    ? pass(`World page's "your wedding in this world" chapter renders all ${ASSET_COMPONENTS.length} real asset preview components (+ website/RSVP links)`, `${ASSET_COMPONENTS.length} found`)
+    : fail(`World page's "your wedding in this world" chapter renders all ${ASSET_COMPONENTS.length} real asset preview components (+ website/RSVP links)`, `${ASSET_COMPONENTS.length} found`, `missing: ${missingAssetComponents.join(', ')}`));
+  results.push(/\{coupleNames\}/.test(worldViewSource.slice(worldViewSource.indexOf('your wedding in this world')))
+    ? pass('The couple\'s real names appear in the asset-preview chapter, not the hero', 'found')
+    : fail('The couple\'s real names appear in the asset-preview chapter, not the hero', 'found', 'not found'));
+
   return results;
 }
