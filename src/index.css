@@ -810,6 +810,18 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   .skeleton { animation: skeletonShimmer 1.5s ease-in-out infinite; }
 }
 
+/* ── Seating: selected-table pulse ────────────────────────────
+   fix/seating-polish — a gentle glow pulse on top of the static ring/scale
+   already set inline, so a selected table is unmistakable even glanced at
+   in peripheral vision, not just a border-colour change. */
+@keyframes seatingTablePulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(224,53,83,0.16), 0 4px 16px rgba(224,53,83,0.25); }
+  50%      { box-shadow: 0 0 0 7px rgba(224,53,83,0.22), 0 4px 20px rgba(224,53,83,0.35); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .seating-table-selected { animation: seatingTablePulse 1.8s ease-in-out infinite; }
+}
+
 /* ── Page fade-in ──────────────────────────────────────────── */
 .page-content {
   animation: none;

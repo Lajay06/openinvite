@@ -4,7 +4,7 @@ import { getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 const Guest = base44.entities.Guest;
 const Table = base44.entities.Table;
 const VenueAsset = base44.entities.VenueAsset;
-import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users } from 'lucide-react';
+import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users, Pencil } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 import { validateUploadFile } from '@/lib/uploadValidation';
@@ -75,6 +75,8 @@ export default function SeatingPage() {
 
   const [selectedTableId, setSelectedTableId] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
+  const [renamingTableId, setRenamingTableId] = useState(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const [guestFilter, setGuestFilter] = useState('all');
   const [guestSearch, setGuestSearch] = useState('');
@@ -177,6 +179,21 @@ export default function SeatingPage() {
       setShowAddTable(false);
       toast.success('Table added');
     } catch { toast.error('Failed to add table'); }
+  };
+
+  const handleRenameTable = async (tableId, name) => {
+    const trimmed = name.trim();
+    if (!trimmed) { setRenamingTableId(null); return; }
+    const prevName = tables.find(t => t.id === tableId)?.name;
+    setRenamingTableId(null);
+    if (trimmed === prevName) return;
+    setTables(prev => prev.map(t => t.id === tableId ? { ...t, name: trimmed } : t));
+    try {
+      await Table.update(tableId, { name: trimmed });
+    } catch {
+      toast.error('Failed to rename table');
+      setTables(prev => prev.map(t => t.id === tableId ? { ...t, name: prevName } : t)); // rollback
+    }
   };
 
   const handleAddAsset = async (cfg) => {
@@ -532,8 +549,41 @@ export default function SeatingPage() {
               <>
                 {/* Table header */}
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{selectedTable.name}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
+                    {renamingTableId === selectedTable.id ? (
+                      <input
+                        autoFocus
+                        value={renameValue}
+                        onChange={e => setRenameValue(e.target.value)}
+                        onBlur={() => handleRenameTable(selectedTable.id, renameValue)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') { e.preventDefault(); handleRenameTable(selectedTable.id, renameValue); }
+                          if (e.key === 'Escape') setRenamingTableId(null);
+                        }}
+                        style={{
+                          flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, color: '#0A0A0A',
+                          fontFamily: "'Plus Jakarta Sans', sans-serif", border: 'none',
+                          borderBottom: '1.5px solid #E03553', background: 'transparent', outline: 'none', padding: '0 0 1px',
+                        }}
+                      />
+                    ) : (
+                      <button
+                        onClick={() => { setRenamingTableId(selectedTable.id); setRenameValue(selectedTable.name); }}
+                        title="Click to rename"
+                        style={{
+                          flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 5, textAlign: 'left',
+                          background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', margin: '-2px -4px',
+                          borderRadius: 3,
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.04)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                      >
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {selectedTable.name}
+                        </span>
+                        <Pencil size={11} style={{ color: 'rgba(10,10,10,0.3)', flexShrink: 0 }} />
+                      </button>
+                    )}
                     <button onClick={() => setSelectedTableId(null)}
                       style={{ fontSize: 10, fontWeight: 600, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 999, background: 'rgba(10,10,10,0.06)' }}>
                       ← Back

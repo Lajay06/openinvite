@@ -62,23 +62,30 @@ export default function VisualTable({ table, guests, onSeatClick, selected }) {
 
   return (
     <div style={{ width: containerW, height: containerH, position: 'relative', userSelect: 'none' }}>
-      {/* Table body */}
-      <div style={{
-        position: 'absolute',
-        left: cx - tableW / 2,
-        top: cy - tableH / 2,
-        width: tableW,
-        height: tableH,
-        borderRadius: isRound ? '50%' : 0,
-        background: selected ? 'rgba(224,53,83,0.06)' : '#FFFFFF',
-        border: selected ? '2px solid #E03553' : '2px solid rgba(10,10,10,0.15)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'border-color 0.15s, background 0.15s',
-        zIndex: 2,
-      }}>
+      {/* Table body — selected gets an accent ring/glow + a gentle pulse
+          (fix/seating-polish: "selected table is visually obvious"), not
+          just a border-colour swap that's easy to miss at a glance. */}
+      <div
+        className={selected ? 'seating-table-selected' : undefined}
+        style={{
+          position: 'absolute',
+          left: cx - tableW / 2,
+          top: cy - tableH / 2,
+          width: tableW,
+          height: tableH,
+          borderRadius: isRound ? '50%' : 0,
+          background: selected ? 'rgba(224,53,83,0.06)' : '#FFFFFF',
+          border: selected ? '2px solid #E03553' : '2px solid rgba(10,10,10,0.15)',
+          boxShadow: selected ? '0 0 0 4px rgba(224,53,83,0.16), 0 4px 16px rgba(224,53,83,0.25)' : 'none',
+          transform: selected ? 'scale(1.045)' : 'scale(1)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.15s',
+          zIndex: 2,
+        }}
+      >
         <span style={{
           color: selected ? '#E03553' : '#0A0A0A',
           fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -110,8 +117,13 @@ export default function VisualTable({ table, guests, onSeatClick, selected }) {
               width: SEAT,
               height: SEAT,
               borderRadius: '50%',
+              // Assigned seats: solid navy fill + a white ring so they read
+              // as "occupied" at a glance, not just a colour swap. Empty
+              // seats: dashed outline only, no fill — the two states can't
+              // be confused even at a small size (fix/seating-polish).
               background: guest ? '#0A1930' : 'transparent',
-              border: guest ? 'none' : '1.5px dashed rgba(10,10,10,0.22)',
+              border: guest ? '2px solid #FFFFFF' : '1.5px dashed rgba(10,10,10,0.3)',
+              boxShadow: guest ? '0 1px 4px rgba(10,10,10,0.35)' : 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
