@@ -44,6 +44,7 @@ import { runBlockStylingUniverse } from '../tests/persistence/block-styling-univ
 import { runEntranceMoment } from '../tests/persistence/entrance-moment.mjs';
 import { runGuestlistEditable } from '../tests/persistence/guestlist-editable.mjs';
 import { runModalViewportCentering } from '../tests/persistence/modal-viewport-centering.mjs';
+import { runSeatingPolish } from '../tests/persistence/seating-polish.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -99,6 +100,7 @@ async function run() {
   results.push(...await runEntranceMoment());
   results.push(...await runGuestlistEditable(token));
   results.push(...await runModalViewportCentering());
+  results.push(...await runSeatingPolish(token));
 
   // ── Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;
