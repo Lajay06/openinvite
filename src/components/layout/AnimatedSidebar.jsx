@@ -10,7 +10,7 @@ import {
   Store, ShoppingBag,
   Clock, Heart, Radio, UtensilsCrossed,
   Plane, Hotel, Car, Phone, Globe,
-  Settings, UserPlus, LogOut, HelpCircle, Lightbulb, CreditCard,
+  UserPlus, LogOut, HelpCircle, Lightbulb, CreditCard,
   Sparkles,
   BarChart2,
   MapPin,
@@ -325,7 +325,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
 
 // ── Mobile sidebar content (used inside Sheet) ────────────────────────────────
 
-export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, onCollaborate }) {
+export function MobileSidebarContent({ weddingName, onClose, onCollaborate }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -499,11 +499,10 @@ export function MobileSidebarContent({ weddingName, onClose, onAccountSettings, 
           </div>
         </div>
         <div style={{ height: 1, background: "rgba(10,10,10,0.08)", margin: "0 16px" }} />
-        {/* Account settings + Collaborate */}
+        {/* Account + Collaborate */}
         {[
-          { icon: CreditCard, label: "Account & billing", action: () => { onClose?.(); navigate("/account"); } },
-          { icon: Settings,   label: "Account settings",  action: () => { onClose?.(); onAccountSettings?.(); } },
-          { icon: UserPlus,   label: "Collaborate",        action: () => { onClose?.(); onCollaborate?.(); } },
+          { icon: CreditCard, label: "Account",      action: () => { onClose?.(); navigate("/account"); } },
+          { icon: UserPlus,   label: "Collaborate",   action: () => { onClose?.(); onCollaborate?.(); } },
         ].map((item, i) => (
           <div
             key={i}
