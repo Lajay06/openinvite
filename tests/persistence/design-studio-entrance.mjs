@@ -79,7 +79,13 @@ export async function runDesignStudioEntrance() {
   console.log('\n  Design Studio — real photography wired for exactly 3 universes, optimised (fix/design-studio-banners):\n');
 
   const PHOTO_UNIVERSES = { marrakech: '/universes/marrakech.jpg', bali: '/universes/bali.jpg', capetown: '/universes/cape-town.jpg' };
-  const NO_PHOTO_UNIVERSES = ['aman', 'tulum', 'kyoto', 'capri', 'brooklyn', 'paris', 'mykonos'];
+  const NO_PHOTO_UNIVERSES = [
+    'aman', 'tulum', 'kyoto', 'capri', 'brooklyn', 'paris', 'mykonos',
+    // feat/universes-expansion-10 — no real photography exists yet for
+    // any of the 10 new universes; all use the designed no-photo
+    // composition treatment, same as the 7 above.
+    'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
+  ];
 
   for (const [id, expectedPath] of Object.entries(PHOTO_UNIVERSES)) {
     const m = websiteThemesSource.match(new RegExp(`${id}: \\{[\\s\\S]*?\\n  \\},`));

@@ -15,7 +15,13 @@ import { ENTRANCE_CONFIGS, DEFAULT_ENTRANCE_CONFIG, BESPOKE_ENTRANCE_UNIVERSES, 
 import { pass, fail } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const ALL_UNIVERSES = ['aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
+// feat/universes-expansion-10 added 10 more, all deliberately non-bespoke
+// here (relying on DEFAULT_ENTRANCE_CONFIG) — included below to confirm
+// the fallback resolves a complete, valid config for them too.
+const ALL_UNIVERSES = [
+  'aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos',
+  'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
+];
 // The brief explicitly named these five for bespoke treatment.
 const REQUIRED_BESPOKE = ['aman', 'marrakech', 'brooklyn', 'bali', 'kyoto'];
 

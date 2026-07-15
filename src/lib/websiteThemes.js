@@ -1018,7 +1018,7 @@ export const UNIVERSE_CONFIGS = {
     typography: {
       headingFont: '"Cormorant", serif',
       bodyFont:    '"Work Sans", sans-serif',
-      googleFonts: 'Cormorant:ital,wght@0,400;0,500;0,600;1,400&family=Work+Sans:wght@300;400;500',
+      googleFonts: 'Cormorant:ital,wght@0,400;0,500;0,600;1,400&family=Work+Sans:wght@300;400;500;600',
     },
     texture: { type: 'paper', opacity: 0.018 },
     colors: {
@@ -1189,7 +1189,7 @@ export const UNIVERSE_CONFIGS = {
     typography: {
       headingFont: '"EB Garamond", serif',
       bodyFont:    '"Source Sans 3", sans-serif',
-      googleFonts: 'EB+Garamond:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@300;400;500',
+      googleFonts: 'EB+Garamond:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@300;400;500;600',
     },
     texture: { type: 'canvas', opacity: 0.025 },
     colors: {
@@ -1223,7 +1223,7 @@ export const UNIVERSE_CONFIGS = {
     typography: {
       headingFont: '"Antic Didone", serif',
       bodyFont:    '"Manrope", sans-serif',
-      googleFonts: 'Antic+Didone&family=Manrope:wght@300;400;500',
+      googleFonts: 'Antic+Didone&family=Manrope:wght@300;400;500;600',
     },
     texture: { type: 'paper', opacity: 0.022 },
     colors: {
@@ -1293,7 +1293,7 @@ export const UNIVERSE_CONFIGS = {
     typography: {
       headingFont: '"Outfit", sans-serif',
       bodyFont:    '"Noto Sans KR", sans-serif',
-      googleFonts: 'Outfit:wght@300;400;500;600&family=Noto+Sans+KR:wght@300;400;500',
+      googleFonts: 'Outfit:wght@300;400;500;600&family=Noto+Sans+KR:wght@300;400;500;700',
     },
     texture: { type: 'grain', opacity: 0.015 },
     colors: {
@@ -1330,7 +1330,7 @@ export const UNIVERSE_CONFIGS = {
     typography: {
       headingFont: '"Playfair Display", serif',
       bodyFont:    '"Noto Sans SC", sans-serif',
-      googleFonts: 'Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500',
+      googleFonts: 'Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500;700',
     },
     texture: { type: 'linen', opacity: 0.018 },
     colors: {

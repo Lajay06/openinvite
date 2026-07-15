@@ -19,7 +19,9 @@ import { UNIVERSE_CONFIGS } from '../../src/lib/websiteThemes.js';
 import { CURATED_FONTS, UNIVERSE_DEFAULT_FONT_IDS, UNIVERSE_FONT_OPTIONS, FONT_CATALOG, universePairingPresets } from '../../src/lib/curatedFonts.js';
 import { pass, fail } from './_shared.mjs';
 
-const UNIVERSES = ['aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
+// feat/universes-expansion-10: derived from UNIVERSE_CONFIGS itself rather
+// than a hardcoded id array, so a future universe is covered automatically.
+const UNIVERSES = Object.keys(UNIVERSE_CONFIGS);
 
 export async function runCuratedFonts() {
   const results = [];
