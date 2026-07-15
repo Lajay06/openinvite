@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Star, Heart, Globe, Camera, Video, UtensilsCrossed, Flower, Palette, Scissors, Music2, Sparkles, Building2, Car, FileText, Cake, Award, MoreHorizontal, Bookmark } from 'lucide-react';
+import { MapPin, Star, Heart, Camera, Video, UtensilsCrossed, Flower, Palette, Scissors, Music2, Sparkles, Building2, Car, FileText, Cake, Award, MoreHorizontal, Bookmark } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -33,31 +33,54 @@ function StarRow({ rating }) {
   );
 }
 
-export default function VendorCard({ vendor, onViewProfile, onGetQuote, onSave, isSaved, isSaving }) {
-  const cfg = CATEGORY_CONFIG[vendor.category] || CATEGORY_CONFIG['Other'];
+function VendorThumbnail({ vendor, cfg }) {
   const Icon = cfg.icon;
+  const [failed, setFailed] = React.useState(false);
+  if (vendor.photoReference && !failed) {
+    return (
+      <img
+        src={`/api/places-photo?ref=${encodeURIComponent(vendor.photoReference)}&maxwidth=120`}
+        alt={vendor.name}
+        onError={() => setFailed(true)}
+        style={{ width: 56, height: 56, objectFit: 'cover', flexShrink: 0, marginTop: 2 }}
+      />
+    );
+  }
+  return (
+    <div style={{ width: 56, height: 56, borderRadius: '50%', background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+      <Icon size={20} style={{ color: cfg.color }} />
+    </div>
+  );
+}
+
+export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isSaving }) {
+  const cfg = CATEGORY_CONFIG[vendor.category] || CATEGORY_CONFIG['Other'];
 
   return (
     <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', padding: '20px 0', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
-      {/* Category icon circle */}
-      <div style={{ width: 44, height: 44, borderRadius: '50%', background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-        <Icon size={18} style={{ color: cfg.color }} />
-      </div>
+      <VendorThumbnail vendor={vendor} cfg={cfg} />
 
       {/* Main content */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{vendor.name}</span>
           <span style={{ fontSize: 11, fontWeight: 600, color: cfg.color, background: cfg.bg, padding: '2px 9px', borderRadius: 999, fontFamily: PJS }}>{vendor.category}</span>
-          {vendor.online && (
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#10B981', background: 'rgba(16,185,129,0.1)', padding: '2px 9px', borderRadius: 999, fontFamily: PJS }}>Online</span>
-          )}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-          <StarRow rating={vendor.rating} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{vendor.rating}</span>
-          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>({vendor.reviewCount} reviews)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, flexWrap: 'wrap' }}>
+          {vendor.rating != null && (
+            <>
+              <StarRow rating={vendor.rating} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{vendor.rating}</span>
+              <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>({vendor.reviewCount} reviews)</span>
+            </>
+          )}
+          {vendor.priceRange && (
+            <>
+              <span style={{ color: 'rgba(10,10,10,0.2)', fontSize: 11 }}>·</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{vendor.priceRange}</span>
+            </>
+          )}
           {vendor.location && (
             <>
               <span style={{ color: 'rgba(10,10,10,0.2)', fontSize: 11 }}>·</span>
@@ -66,43 +89,18 @@ export default function VendorCard({ vendor, onViewProfile, onGetQuote, onSave, 
             </>
           )}
         </div>
-
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, lineHeight: 1.5, marginBottom: 8, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-          {vendor.description}
-        </p>
-
-        {vendor.tags?.length > 0 && (
-          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-            {vendor.tags.slice(0, 4).map(tag => (
-              <span key={tag} style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', background: 'rgba(10,10,10,0.04)', padding: '2px 8px', borderRadius: 999, fontFamily: PJS }}>
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Right side */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.01em' }}>{vendor.priceRange}</div>
-        <div style={{ display: 'flex', gap: 6 }}>
-          <button
-            onClick={() => onViewProfile(vendor)}
-            style={{ padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: '1.5px solid rgba(10,10,10,0.15)', background: 'none', color: '#0A0A0A', transition: 'all 0.12s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#0A0A0A'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(10,10,10,0.15)'; }}
-          >
-            View profile
-          </button>
-          <button
-            onClick={() => onGetQuote(vendor)}
-            style={{ padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: 'none', background: '#E03553', color: '#FFFFFF', transition: 'all 0.12s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#c42d47'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#E03553'; }}
-          >
-            Get quote
-          </button>
-        </div>
+        <button
+          onClick={() => onViewProfile(vendor)}
+          style={{ padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: '1.5px solid rgba(10,10,10,0.15)', background: 'none', color: '#0A0A0A', transition: 'all 0.12s' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#0A0A0A'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(10,10,10,0.15)'; }}
+        >
+          View profile
+        </button>
         <button
           onClick={() => onSave(vendor)}
           disabled={isSaved || isSaving}
