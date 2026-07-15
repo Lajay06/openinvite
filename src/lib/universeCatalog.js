@@ -11,9 +11,19 @@
  */
 import { UNIVERSE_CONFIGS } from './websiteThemes.js';
 
-export const ULTRA_UNIVERSE_IDS = new Set(['marrakech', 'paris']);
+// Gating is config-driven: a universe is Ultra iff its own UNIVERSE_CONFIGS
+// entry declares tier: 'ultra' (feat/universes-expansion-10 — previously a
+// hardcoded id Set here, independent of config, that someone would have to
+// remember to update by hand every time a universe's tier changed or a new
+// universe shipped).
+export const ULTRA_UNIVERSE_IDS = new Set(
+  Object.keys(UNIVERSE_CONFIGS).filter(id => UNIVERSE_CONFIGS[id]?.tier === 'ultra')
+);
 
-export const STYLE_TAGS = ['minimal', 'luxury', 'tropical', 'coastal', 'romantic', 'classic', 'desert', 'urban'];
+export const STYLE_TAGS = [
+  'minimal', 'luxury', 'tropical', 'coastal', 'romantic', 'classic', 'desert', 'urban',
+  'natural', 'premium', 'ornamental', 'retro', 'heritage', 'fashion', 'editorial', 'contemporary', 'glamour',
+];
 
 const DISPLAY_NAME = {
   aman: 'Aman',

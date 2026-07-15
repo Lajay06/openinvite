@@ -205,9 +205,23 @@ export async function runDesignStudioEntrance() {
   results.push(/\{isUltra && \(/.test(bannerSource) && /<Crown size=\{10\} \/> Ultra/.test(bannerSource)
     ? pass('UniverseBanner.jsx renders the Ultra badge conditionally on isUltra', 'found')
     : fail('UniverseBanner.jsx renders the Ultra badge conditionally on isUltra', 'found', 'not found'));
-  results.push(/ULTRA_UNIVERSE_IDS = new Set\(\['marrakech', 'paris'\]\)/.test(catalogSource)
-    ? pass('universeCatalog.js gates exactly marrakech + paris behind Ultra', "['marrakech', 'paris']")
-    : fail('universeCatalog.js gates exactly marrakech + paris behind Ultra', "['marrakech', 'paris']", 'not found / different set'));
+  // Gating is config-driven (feat/universes-expansion-10) — verify the
+  // mechanism (every tier:'ultra' config entry is gated, and only those)
+  // rather than a hardcoded id list, which is exactly the anti-pattern
+  // this replaced.
+  {
+    const { UNIVERSE_CONFIGS } = await import('../../src/lib/websiteThemes.js');
+    const { ULTRA_UNIVERSE_IDS } = await import('../../src/lib/universeCatalog.js');
+    const expectedUltra = new Set(Object.keys(UNIVERSE_CONFIGS).filter(id => UNIVERSE_CONFIGS[id]?.tier === 'ultra'));
+    const setsMatch = expectedUltra.size === ULTRA_UNIVERSE_IDS.size
+      && [...expectedUltra].every(id => ULTRA_UNIVERSE_IDS.has(id));
+    results.push(setsMatch
+      ? pass('universeCatalog.js ULTRA_UNIVERSE_IDS derives exactly from tier: \'ultra\' configs, no hardcoded list', [...ULTRA_UNIVERSE_IDS].join(', '))
+      : fail('universeCatalog.js ULTRA_UNIVERSE_IDS derives exactly from tier: \'ultra\' configs, no hardcoded list', [...expectedUltra].join(', '), [...ULTRA_UNIVERSE_IDS].join(', ')));
+    results.push(!/new Set\(\[.*'marrakech'.*\]\)/.test(catalogSource)
+      ? pass('universeCatalog.js no longer hardcodes the Ultra id list as a literal array', 'not found')
+      : fail('universeCatalog.js no longer hardcodes the Ultra id list as a literal array', 'not found', 'still present'));
+  }
   results.push(/showUpgrade = universe\.isUltra && !canAccessUltra && !isCurrent/.test(worldViewSource)
     ? pass('UniverseWorldView.jsx shows the upgrade path (not a locked-out door) for gated worlds', 'found')
     : fail('UniverseWorldView.jsx shows the upgrade path (not a locked-out door) for gated worlds', 'found', 'not found'));

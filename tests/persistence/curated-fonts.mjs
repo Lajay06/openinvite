@@ -92,9 +92,11 @@ export async function runCuratedFonts() {
   console.log('\n  feat/block-styling-v2 — FONT_CATALOG (the flat 30-font heading/body dropdown):\n');
 
   {
-    results.push(FONT_CATALOG.length === 30
-      ? pass('FONT_CATALOG has exactly 30 entries', String(FONT_CATALOG.length))
-      : fail('FONT_CATALOG has exactly 30 entries', '30', String(FONT_CATALOG.length)));
+    // feat/universes-expansion-10 added 9 new faces (incl. the two CJK
+    // faces for Seoul/Shanghai) — 30 + 9 = 39.
+    results.push(FONT_CATALOG.length === 39
+      ? pass('FONT_CATALOG has exactly 39 entries (30 original + 9 for the new universes)', String(FONT_CATALOG.length))
+      : fail('FONT_CATALOG has exactly 39 entries (30 original + 9 for the new universes)', '39', String(FONT_CATALOG.length)));
 
     const ids = FONT_CATALOG.map(f => f.id);
     results.push(new Set(ids).size === ids.length

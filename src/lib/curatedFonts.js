@@ -67,6 +67,21 @@ export const CURATED_FONTS = {
   'cormorant': { label: 'Cormorant', family: '"Cormorant", serif', googleFonts: 'Cormorant:ital,wght@0,400;0,500;0,600;1,400', weight: 400 },
   'cinzel': { label: 'Cinzel', family: '"Cinzel", serif', googleFonts: 'Cinzel:wght@400;500;600;700', weight: 400 },
   'libre-baskerville': { label: 'Libre Baskerville', family: '"Libre Baskerville", serif', googleFonts: 'Libre+Baskerville:ital,wght@0,400;0,700;1,400', weight: 400 },
+
+  // ── feat/universes-expansion-10: new heading/body faces for the 10 new
+  // Ultra universes. Noto Sans KR/SC are CJK faces — Google's css2 endpoint
+  // subsets these into many small per-script @font-face blocks with their
+  // own unicode-range automatically (no extra config needed here); a page
+  // only ever downloads the glyph ranges its own text actually uses.
+  'prata': { label: 'Prata', family: '"Prata", serif', googleFonts: 'Prata', weight: 400 },
+  'abril-fatface': { label: 'Abril Fatface', family: '"Abril Fatface", serif', googleFonts: 'Abril+Fatface', weight: 400 },
+  'sora': { label: 'Sora', family: '"Sora", sans-serif', googleFonts: 'Sora:wght@300;400;500;600', weight: 400 },
+  'hind': { label: 'Hind', family: '"Hind", sans-serif', googleFonts: 'Hind:wght@300;400;500;600', weight: 400 },
+  'source-sans-3': { label: 'Source Sans 3', family: '"Source Sans 3", sans-serif', googleFonts: 'Source+Sans+3:wght@300;400;500;600', weight: 400 },
+  'manrope': { label: 'Manrope', family: '"Manrope", sans-serif', googleFonts: 'Manrope:wght@300;400;500;600', weight: 400 },
+  'outfit': { label: 'Outfit', family: '"Outfit", sans-serif', googleFonts: 'Outfit:wght@300;400;500;600', weight: 400 },
+  'noto-sans-kr': { label: 'Noto Sans KR', family: '"Noto Sans KR", sans-serif', googleFonts: 'Noto+Sans+KR:wght@300;400;500;700', weight: 400 },
+  'noto-sans-sc': { label: 'Noto Sans SC', family: '"Noto Sans SC", sans-serif', googleFonts: 'Noto+Sans+SC:wght@300;400;500;700', weight: 400 },
 };
 
 /**
@@ -84,6 +99,7 @@ export const FONT_CATALOG = [
   'libre-baskerville', 'lora', 'bitter', 'amiri', 'shippori-mincho', 'yeseva-one', 'cinzel', 'bebas-neue',
   'inter', 'montserrat-heading', 'work-sans', 'dm-sans', 'space-grotesk', 'raleway', 'nunito', 'nunito-sans',
   'poppins', 'lato', 'karla', 'jost', 'josefin-sans', 'mulish', 'ibm-plex-sans', 'zen-kaku-gothic-new',
+  'prata', 'abril-fatface', 'sora', 'hind', 'source-sans-3', 'manrope', 'outfit', 'noto-sans-kr', 'noto-sans-sc',
 ].map(id => ({ id, ...CURATED_FONTS[id] }));
 
 /** Each universe's own default heading/body font, expressed as CURATED_FONTS ids. */

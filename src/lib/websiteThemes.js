@@ -537,6 +537,7 @@ export const UNIVERSE_CONFIGS = {
     motifNote: 'Fine cross-hatch linen-weave grain, barely visible on dark sections.',
     worldStory: 'Aman is the art of subtraction. Every surface is quiet enough to hear your own thoughts, every material honest enough to age well. This is a wedding that trusts silence.',
     imageUrl: null,
+    tier: 'free',
   },
   tulum: {
     // Organic luxury — warm, sun-baked, unhurried.
@@ -560,6 +561,7 @@ export const UNIVERSE_CONFIGS = {
     motifNote: 'Concentric sun-ray arcs rising off a horizon line — a quiet sunrise, never a literal sun icon.',
     worldStory: "Tulum runs on sun and salt air, on mornings that start late and nights that don't rush to end. Paper feels sun-bleached, ink feels sand-warmed. This is a wedding for bare feet.",
     imageUrl: null,
+    tier: 'free',
   },
   kyoto: {
     // Japanese minimalism — vertical rhythm, dominant negative space (ma),
@@ -610,6 +612,7 @@ export const UNIVERSE_CONFIGS = {
     motifNote: 'Fine washi-paper grain, with a single ensō ring as the only ornament.',
     worldStory: 'Kyoto holds space the way a garden holds silence — deliberately, with nothing wasted. One mark, drawn once, says more than a page of ornament. This is a wedding built on restraint.',
     imageUrl: null,
+    tier: 'free',
   },
   capri: {
     // Sun-drenched, warm, playful — deliberately NOT blue-coastal
@@ -658,6 +661,7 @@ export const UNIVERSE_CONFIGS = {
     motifNote: 'A scalloped citrus-pith rule — repeating semicircle bumps — under kickers and names.',
     worldStory: "Capri tastes like citrus and salt, sounds like laughter carrying across water. Warm stone, warm light, a joy loud enough to fill a piazza. This is a wedding that doesn't hold back.",
     imageUrl: null,
+    tier: 'free',
   },
   marrakech: {
     // Desert opulence — editorial + woven pattern. Sophisticated/expensive,
@@ -722,6 +726,7 @@ export const UNIVERSE_CONFIGS = {
     // description for the exact pipeline. -800.jpg is the same image at
     // 800px wide for the responsive srcset.
     imageUrl: '/universes/marrakech.jpg',
+    tier: 'ultra',
   },
   brooklyn: {
     // Urban industrial — asymmetric, off-grid, editorial-industrial
@@ -771,6 +776,7 @@ export const UNIVERSE_CONFIGS = {
     motifNote: 'A bold ticket-stub rule — a solid block with a perforated tear-line edge.',
     worldStory: "Brooklyn doesn't dress up what's already good. A gig-poster rule, a name set hard right, ink that means it. This is a wedding that shows up as it is.",
     imageUrl: null,
+    tier: 'free',
   },
   bali: {
     // Tropical spirit — flowing, organic, curved dividers and soft edges
@@ -827,6 +833,7 @@ export const UNIVERSE_CONFIGS = {
     worldStory: 'Bali moves like water finds its level — soft edges, wide welcomes, a canopy overhead instead of a ceiling. This is a wedding with its arms open.',
     // Real photography (fix/design-studio-banners) — optimised (552KB → ~226KB full / ~39KB @800w).
     imageUrl: '/universes/bali.jpg',
+    tier: 'free',
   },
   paris: {
     // Fashion-plate restraint (UNIVERSE_DESIGN_SYSTEM.md §4) — chic,
@@ -878,6 +885,11 @@ export const UNIVERSE_CONFIGS = {
     motifNote: 'A fine framed hairline rule above and below the kicker, like a fashion-plate caption card.',
     worldStory: "Paris is a fashion plate, not a postcard — fine rules, considered proportion, nothing shouted. Ink and rose, held at arm's length. This is a wedding with real taste.",
     imageUrl: null,
+    // Gating tier — source of truth for universeCatalog.js's Ultra check
+    // (feat/universes-expansion-10: previously a hardcoded id Set living
+    // in universeCatalog.js itself, independent of config and easy to
+    // forget to update; now every universe declares its own tier here).
+    tier: 'ultra',
   },
   capetown: {
     // Winery/estate wedding — refined-rustic, serene luxury
@@ -928,6 +940,7 @@ export const UNIVERSE_CONFIGS = {
     worldStory: 'Cape Town gathers around long tables and longer evenings, vineyard light turning everything gold. Nothing is rushed here. This is a wedding built for lingering.',
     // Real photography (fix/design-studio-banners) — optimised (1.77MB → ~294KB full / ~55KB @800w).
     imageUrl: '/universes/cape-town.jpg',
+    tier: 'free',
   },
   mykonos: {
     // Architectural, heavy negative space, cube-like blocks, whitewashed
@@ -988,6 +1001,7 @@ export const UNIVERSE_CONFIGS = {
     motifNote: 'A solid cube block — plain rectangular architecture, no line, no pattern.',
     worldStory: 'Mykonos is architecture as decoration — whitewash and cobalt, cut clean against an impossibly blue sky. Nothing extra, everything considered. This is a wedding with real edges.',
     imageUrl: null,
+    tier: 'free',
   },
 };
 
