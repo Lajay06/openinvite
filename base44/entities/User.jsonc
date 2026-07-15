@@ -16,6 +16,16 @@
       "type": "boolean",
       "default": false,
       "description": "Whether the user has completed the onboarding process"
+    },
+    "tempUnit": {
+      "type": "string",
+      "enum": ["C", "F"],
+      "default": "C",
+      "description": "Preferred temperature unit for the wedding-day weather banner"
+    },
+    "deletionRequestedAt": {
+      "type": "string",
+      "description": "ISO timestamp set when the user submits an in-app account deletion request (see DataDeletion.jsx policy) — actual deletion is manual, verified via customercare@openinvite.com.au"
     }
   },
   "required": []

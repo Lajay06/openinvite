@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { X, Loader2, Bell, Search, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from "lucide-react";
+import { X, Bell, Search, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from "lucide-react";
 import { getWeddingWeather } from '@/lib/weather';
 import { track, reset as analyticsReset } from '@/lib/analytics';
 import { resetSession as crispReset } from '@/lib/crisp';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import CurrencyModal from './components/layout/CurrencyModal';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AnimatedSidebar, MobileSidebarContent } from "./components/layout/AnimatedSidebar";
@@ -16,7 +13,7 @@ import AvaChatPod from "./components/layout/AvaChatPod";
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 const SIDEBAR_WIDTH = 200;
 const TOP_BAR_H = 48;
@@ -26,21 +23,6 @@ const noLayoutPages = [
   "Onboarding", "PaymentWall",
 ];
 
-const LANGUAGES = [
-  { code: 'en', name: 'English' }, { code: 'es', name: 'Español' }, { code: 'fr', name: 'Français' },
-  { code: 'de', name: 'Deutsch' }, { code: 'it', name: 'Italiano' }, { code: 'pt', name: 'Português' },
-  { code: 'zh', name: '中文' }, { code: 'ja', name: '日本語' }, { code: 'ko', name: '한국어' },
-  { code: 'ar', name: 'العربية' }, { code: 'hi', name: 'हिन्दी' }, { code: 'ru', name: 'Русский' },
-];
-
-const CURRENCIES = [
-  { code: 'USD', symbol: '$', name: 'US Dollar' }, { code: 'EUR', symbol: '€', name: 'Euro' },
-  { code: 'GBP', symbol: '£', name: 'British Pound' }, { code: 'JPY', symbol: '¥', name: 'Yen' },
-  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' }, { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
-  { code: 'CHF', symbol: 'CHF', name: 'Swiss Franc' }, { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
-  { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
-];
-
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 function getStoredUser() {
@@ -48,11 +30,9 @@ function getStoredUser() {
 }
 
 // ── Full-width top navigation bar ────────────────────────────────────────────
-function TopBar({ weddingDetails, unreadCount, onAccountSettings, onCollaborate }) {
+function TopBar({ weddingDetails, unreadCount, onCollaborate }) {
   const navigate = useNavigate();
   const [weather, setWeather] = useState(null);
-  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
-  const { currencyCode } = useCurrency();
 
   // Derive couple name from entity fields
   const couple1 = weddingDetails?.couple1Name || '';
@@ -83,10 +63,14 @@ function TopBar({ weddingDetails, unreadCount, onAccountSettings, onCollaborate 
 
   const WEATHER_ICONS = { Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning };
   const WeatherIcon = weather ? (WEATHER_ICONS[weather.icon] || Cloud) : null;
+  // weather.js always fetches Celsius (Open-Meteo default) — the °F toggle in
+  // Account → Settings only affects this display conversion, not the fetch.
+  const tempUnit = storedUser.tempUnit === 'F' ? 'F' : 'C';
+  const toDisplayTemp = (c) => tempUnit === 'F' ? Math.round(c * 9 / 5 + 32) : Math.round(c);
   const weatherText = weather
     ? weather.mode === 'current'
-      ? `${weather.temp}°C${weather.label ? ` · ${weather.label}` : ''}`
-      : `${weather.high}°/${weather.low}°${weather.label ? ` · ${weather.label}` : ''}`
+      ? `${toDisplayTemp(weather.temp)}°${tempUnit}${weather.label ? ` · ${weather.label}` : ''}`
+      : `${toDisplayTemp(weather.high)}°/${toDisplayTemp(weather.low)}°${tempUnit}${weather.label ? ` · ${weather.label}` : ''}`
     : '';
 
   const handleLogout = () => {
@@ -205,16 +189,10 @@ function TopBar({ weddingDetails, unreadCount, onAccountSettings, onCollaborate 
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate('/account')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
-              Account &amp; billing
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onAccountSettings} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
-              Account settings
+              Account
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onCollaborate} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
               Collaborate
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setShowCurrencyModal(true)} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
-              Currency · {currencyCode}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer', color: '#E03553' }}>
@@ -223,7 +201,6 @@ function TopBar({ weddingDetails, unreadCount, onAccountSettings, onCollaborate 
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      {showCurrencyModal && <CurrencyModal onClose={() => setShowCurrencyModal(false)} />}
     </div>
   );
 }
@@ -231,7 +208,6 @@ function TopBar({ weddingDetails, unreadCount, onAccountSettings, onCollaborate 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const [showAccountSettings, setShowAccountSettings] = React.useState(false);
   const [showCollaborateModal, setShowCollaborateModal] = React.useState(false);
   const [showTipsModal, setShowTipsModal] = React.useState(false);
   const [chatOpen, setChatOpen] = React.useState(false);
@@ -239,8 +215,6 @@ export default function Layout({ children, currentPageName }) {
   const [unreadMessagesCount, setUnreadMessagesCount] = React.useState(0);
   const [weddingName, setWeddingName] = React.useState('');
   const [weddingDetails, setWeddingDetails] = React.useState(null);
-  const [userSettings, setUserSettings] = React.useState({ full_name: '', language: 'en', currency: 'USD' });
-  const [savingSettings, setSavingSettings] = React.useState(false);
 
   React.useEffect(() => {
     const handler = () => setChatOpen(true);
@@ -252,11 +226,6 @@ export default function Layout({ children, currentPageName }) {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-      setUserSettings({
-        full_name: currentUser.full_name || '',
-        language: currentUser.language || 'en',
-        currency: currentUser.currency || 'USD',
-      });
       try {
         const messages = await getMyRecords('GuestMessage');
         setUnreadMessagesCount(messages.filter(m => !m.read).length);
@@ -277,24 +246,6 @@ export default function Layout({ children, currentPageName }) {
     window.addEventListener('weddingDetailsSaved', fetchData);
     return () => window.removeEventListener('weddingDetailsSaved', fetchData);
   }, [fetchData]);
-
-  const handleSaveSettings = async () => {
-    setSavingSettings(true);
-    const tid = toast.loading('Saving…');
-    try {
-      await base44.auth.updateMe({
-        full_name: userSettings.full_name,
-        language: userSettings.language,
-        currency: userSettings.currency,
-      });
-      setUser(prev => ({ ...prev, ...userSettings }));
-      toast.success('Saved.', { id: tid });
-      setShowAccountSettings(false);
-    } catch {
-      toast.error('Failed to save.', { id: tid });
-    }
-    setSavingSettings(false);
-  };
 
   // Trial banner: show only when user is on trial (no paid plan) and trial hasn't expired
   const trialBanner = React.useMemo(() => {
@@ -333,7 +284,6 @@ export default function Layout({ children, currentPageName }) {
       <TopBar
         weddingDetails={weddingDetails}
         unreadCount={unreadMessagesCount}
-        onAccountSettings={() => setShowAccountSettings(true)}
         onCollaborate={() => setShowCollaborateModal(true)}
       />
 
@@ -382,7 +332,6 @@ export default function Layout({ children, currentPageName }) {
       <div className="hidden lg:block">
         <AnimatedSidebar
           weddingName={weddingName}
-          onAccountSettings={() => setShowAccountSettings(true)}
           onCollaborate={() => setShowCollaborateModal(true)}
           onOpenTips={() => setShowTipsModal(true)}
           topOffset={TOP_BAR_H + (trialBanner ? 36 : 0)}
@@ -429,98 +378,10 @@ export default function Layout({ children, currentPageName }) {
           <MobileSidebarContent
             weddingName={weddingName}
             onClose={() => setMobileMenuOpen(false)}
-            onAccountSettings={() => { setMobileMenuOpen(false); setShowAccountSettings(true); }}
             onCollaborate={() => { setMobileMenuOpen(false); setShowCollaborateModal(true); }}
           />
         </SheetContent>
       </Sheet>
-
-      {/* ── Account settings modal ───────────────────────── */}
-      {showAccountSettings && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-6">
-          <div
-            style={{ background: '#FFFFFF', border: '1px solid #EEEEEE' }}
-            className="w-full max-w-md max-h-[90vh] overflow-y-auto animate-fade-in"
-          >
-            <div className="flex items-center justify-between px-8 py-6 border-b border-[#E8E8E8]">
-              <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', letterSpacing: '-0.01em' }}>
-                Account
-              </h2>
-              <button
-                onClick={() => setShowAccountSettings(false)}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#666', padding: 4, borderRadius: 999 }}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="px-8 py-6 space-y-6">
-              <div>
-                <label className="form-label">Full name</label>
-                <input
-                  type="text"
-                  className="input-editorial"
-                  placeholder="Your name"
-                  value={userSettings.full_name || ''}
-                  onChange={e => setUserSettings(p => ({ ...p, full_name: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="form-label">Email</label>
-                <input
-                  className="input-editorial"
-                  value={user?.email || ''}
-                  disabled
-                  style={{ color: '#AAAAAA', cursor: 'not-allowed' }}
-                />
-              </div>
-              <div>
-                <label className="form-label" style={{ marginBottom: 12 }}>Language</label>
-                <Select
-                  value={userSettings.language}
-                  onValueChange={v => setUserSettings(p => ({ ...p, language: v }))}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map(l => (
-                      <SelectItem key={l.code} value={l.code}>{l.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="form-label" style={{ marginBottom: 12 }}>Currency</label>
-                <Select
-                  value={userSettings.currency}
-                  onValueChange={v => setUserSettings(p => ({ ...p, currency: v }))}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CURRENCIES.map(c => (
-                      <SelectItem key={c.code} value={c.code}>{c.symbol} {c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={handleSaveSettings}
-                  disabled={savingSettings}
-                  className="btn-primary flex items-center justify-center gap-2 flex-1"
-                >
-                  {savingSettings && <Loader2 className="w-3 h-3 animate-spin" />}
-                  Save changes
-                </button>
-                <button
-                  onClick={() => setShowAccountSettings(false)}
-                  className="btn-editorial-secondary flex-1 justify-center"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showCollaborateModal && <CollaborateModal onClose={() => setShowCollaborateModal(false)} />}
       {showTipsModal && <TipsModal onClose={() => setShowTipsModal(false)} />}
