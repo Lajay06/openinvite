@@ -92,14 +92,13 @@ export async function runCuratedFonts() {
   console.log('\n  feat/block-styling-v2 — FONT_CATALOG (the flat 30-font heading/body dropdown):\n');
 
   {
-    // feat/universes-expansion-10 added 11 new faces (9 for the 10 new
+    // feat/universes-expansion-10 added 12 new faces (9 for the 10 new
     // universes' initial pairings, incl. the two CJK faces for Seoul/
-    // Shanghai, + 2 more — Spectral, Antic Didone — added when Aspen's and
-    // Monaco's first heading-font picks turned out to collide with fonts
-    // the existing 10 already use) — 30 + 11 = 41.
-    results.push(FONT_CATALOG.length === 41
-      ? pass('FONT_CATALOG has exactly 41 entries (30 original + 11 for the new universes)', String(FONT_CATALOG.length))
-      : fail('FONT_CATALOG has exactly 41 entries (30 original + 11 for the new universes)', '41', String(FONT_CATALOG.length)));
+    // Shanghai, + Spectral/Antic Didone after a font-collision fix, +
+    // Plus Jakarta Sans for Aspen's curated-picker entry) — 30 + 12 = 42.
+    results.push(FONT_CATALOG.length === 42
+      ? pass('FONT_CATALOG has exactly 42 entries (30 original + 12 for the new universes)', String(FONT_CATALOG.length))
+      : fail('FONT_CATALOG has exactly 42 entries (30 original + 12 for the new universes)', '42', String(FONT_CATALOG.length)));
 
     const ids = FONT_CATALOG.map(f => f.id);
     results.push(new Set(ids).size === ids.length
