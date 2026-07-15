@@ -8,12 +8,12 @@ import { X, Loader2 } from "lucide-react";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const COMMON_TAGS = [
+export const COMMON_TAGS = [
   "Family", "Work", "College friends", "High school",
   "Neighbors", "Close friends", "Extended family", "Bride's side", "Groom's side",
 ];
 
-const DIETARY_OPTIONS = [
+export const DIETARY_OPTIONS = [
   'None', 'Vegetarian', 'Vegan', 'Gluten free', 'Dairy free',
   'Halal', 'Kosher', 'Nut allergy', 'Shellfish allergy', 'Other',
 ];

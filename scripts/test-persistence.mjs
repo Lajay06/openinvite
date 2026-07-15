@@ -42,6 +42,7 @@ import { runComponentLibrary } from '../tests/persistence/component-library.mjs'
 import { runCuratedFonts } from '../tests/persistence/curated-fonts.mjs';
 import { runBlockStylingUniverse } from '../tests/persistence/block-styling-universe.mjs';
 import { runEntranceMoment } from '../tests/persistence/entrance-moment.mjs';
+import { runGuestlistEditable } from '../tests/persistence/guestlist-editable.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -95,6 +96,7 @@ async function run() {
   results.push(...await runCuratedFonts());
   results.push(...await runBlockStylingUniverse());
   results.push(...await runEntranceMoment());
+  results.push(...await runGuestlistEditable(token));
 
   // ── Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;

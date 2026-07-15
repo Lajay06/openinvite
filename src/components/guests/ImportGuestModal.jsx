@@ -8,33 +8,36 @@ import toast from 'react-hot-toast';
 const Guest = base44.entities.Guest;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const TEMPLATE_HEADERS = [
-  'Name', 'Email', 'Phone',
-  'Category', 'RSVP', 'Table', 'Plus one', 'Plus one name', 'Dietary requirements',
-];
+// feat/guestlist-editable: simplified to exactly what a couple needs to get
+// guests in fast — category, RSVP, table, and dietary are all editable
+// in-place afterwards (single cell, or bulk-edit for many at once), so
+// they're no longer import-time fields at all.
+const TEMPLATE_HEADERS = ['Name', 'Email', 'Phone', 'Plus one (Y/blank)'];
 
-const VALID_CATEGORIES = ['family', 'friends', 'colleagues', 'partners_family', 'partners_friends'];
 const VALID_RSVP = ['attending', 'declined', 'pending', 'maybe'];
 
 function rowToGuest(row) {
   const name = String(row['Name'] ?? '').trim();
   if (!name) throw new Error('Name is required');
 
-  // Support both 'Plus one' (new template) and '+1' (old template)
-  const plusOneRaw = String(row['Plus one'] ?? row['+1'] ?? '').toLowerCase().trim();
+  // Support the current 'Plus one (Y/blank)' header and older exports'
+  // 'Plus one' / '+1'.
+  const plusOneRaw = String(row['Plus one (Y/blank)'] ?? row['Plus one'] ?? row['+1'] ?? '').toLowerCase().trim();
   const plusOne = ['yes', 'true', '1', 'x', 'y'].includes(plusOneRaw);
 
+  // RSVP/table/dietary are tolerated from an older-format file for backward
+  // compatibility, but are no longer part of the template. Category is
+  // deliberately NEVER read from any import — an imported guest's category
+  // is always blank, set afterwards via inline or bulk edit, never guessed
+  // or defaulted (was silently landing on the schema's old 'family'
+  // default; that default has been removed).
   const rsvpRaw = String(row['RSVP'] ?? '').toLowerCase().trim();
   const rsvpStatus = VALID_RSVP.includes(rsvpRaw) ? rsvpRaw : 'pending';
-
-  const categoryRaw = String(row['Category'] ?? '').toLowerCase().trim().replace(/\s+/g, '_');
-  const category = VALID_CATEGORIES.includes(categoryRaw) ? categoryRaw : undefined;
 
   return {
     name,
     email: String(row['Email'] ?? '').trim() || undefined,
     phone: String(row['Phone'] ?? '').trim() || undefined,
-    category,
     rsvp_status: rsvpStatus,
     table_assignment: String(row['Table'] ?? '').trim() || undefined,
     plus_one: plusOne,
@@ -233,7 +236,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: PJS }}>
                   <thead style={{ position: 'sticky', top: 0 }}>
                     <tr style={{ background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-                      {['Name', 'Email', 'Category', 'RSVP', 'Table', '+1', 'Status'].map(h => (
+                      {['Name', 'Email', 'Phone', '+1', 'Status'].map(h => (
                         <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 700, fontSize: 11, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', whiteSpace: 'nowrap' }}>{h}</th>
                       ))}
                     </tr>
@@ -243,9 +246,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
                       <tr key={i} style={{ borderBottom: '1px solid rgba(10,10,10,0.05)', background: row._error ? 'rgba(224,53,83,0.04)' : 'transparent' }}>
                         <td style={{ padding: '8px 12px', color: '#0A0A0A', fontWeight: 600, verticalAlign: 'middle' }}>{row.name || '—'}</td>
                         <td style={{ padding: '8px 12px', color: '#444', verticalAlign: 'middle' }}>{row.email || '—'}</td>
-                        <td style={{ padding: '8px 12px', color: '#444', verticalAlign: 'middle' }}>{row.category || '—'}</td>
-                        <td style={{ padding: '8px 12px', color: '#444', verticalAlign: 'middle' }}>{row.rsvp_status || '—'}</td>
-                        <td style={{ padding: '8px 12px', color: '#444', verticalAlign: 'middle' }}>{row.table_assignment || '—'}</td>
+                        <td style={{ padding: '8px 12px', color: '#444', verticalAlign: 'middle' }}>{row.phone || '—'}</td>
                         <td style={{ padding: '8px 12px', color: '#444', verticalAlign: 'middle' }}>{row.plus_one ? 'Yes' : 'No'}</td>
                         <td style={{ padding: '8px 12px', verticalAlign: 'middle' }}>
                           {row._error
