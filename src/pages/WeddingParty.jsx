@@ -290,10 +290,14 @@ function AvaModal({ onClose }) {
   );
 }
 
-/* ── Page ── */
+/* ── Page ──
+   "Key roles" and "Wedding party" used to be separate tabs, but deciding
+   who's in the wedding party and what role each person has is really one
+   job — splitting it made people bounce between tabs. Merged into a
+   single "Key roles" tab: the key-roles pickers/notes first, then the
+   full member roster below. "Notes" stays separate. */
 const TABS = [
   { key: 'keyRoles', label: 'Key roles' },
-  { key: 'party',    label: 'Wedding party' },
   { key: 'notes',    label: 'Notes' },
 ];
 
@@ -416,8 +420,11 @@ export default function WeddingPartyPage() {
       </div>
 
       <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
-        {/* Key roles */}
+        {/* Key roles — merged tab: key-role pickers/notes first, then the
+            full member roster below, one continuous flow instead of two
+            separate tabs a couple used to have to bounce between. */}
         {activeTab === 'keyRoles' && (
+        <>
         <DetailsSection title="Key roles" icon={Crown} defaultOpen>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -441,12 +448,23 @@ export default function WeddingPartyPage() {
           </div>
           <SectionInput label="Key role notes" isTextarea value={data.keyRoleNotes} onChange={e => update({ keyRoleNotes: e.target.value })} placeholder="Any notes about key roles and responsibilities…" />
         </DetailsSection>
-        )}
 
-        {/* Wedding party — every role group visible together (not an
-            accordion-of-accordions), so comparing rosters across roles
-            never requires opening/closing several collapsed sections. */}
-        {activeTab === 'party' && ROLES.map(role => (
+        {/* Section break — a heading rather than a card, so the two groups
+            read as one flat flow (per DESIGN_SPEC: no cards-within-cards),
+            just clearly labelled where "who's in the wedding party" starts. */}
+        <div style={{ marginTop: 32, marginBottom: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
+            Wedding party members
+          </span>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '4px 0 0' }}>
+            Bridesmaids, groomsmen, and everyone else standing with you on the day.
+          </p>
+        </div>
+
+        {/* Every role group visible together (not an accordion-of-
+            accordions), so comparing rosters across roles never requires
+            opening/closing several collapsed sections. */}
+        {ROLES.map(role => (
           <DetailsSection key={role.key} title={role.label} icon={Users} defaultOpen>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(data[role.key] || []).length > 0 && (
@@ -474,6 +492,8 @@ export default function WeddingPartyPage() {
             </div>
           </DetailsSection>
         ))}
+        </>
+        )}
 
         {/* Notes */}
         {activeTab === 'notes' && (

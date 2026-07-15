@@ -100,5 +100,28 @@ export async function runDashboardStructure() {
       : fail(`${label} — every declared tab gates real content`, 'all tab keys gate content', `ungated: ${ungatedKeys.join(', ') || '(no TABS found)'}`));
   }
 
+  console.log('\n  Dashboard structure — Wedding party: "Key roles" and "Wedding party" tabs merged into one (fix/wedding-party-merge-tabs):\n');
+
+  const weddingPartySource = read('src/pages/WeddingParty.jsx');
+  results.push(!/key:\s*'party'/.test(weddingPartySource)
+    ? pass('WeddingParty.jsx — the separate "party" tab key is gone', 'not found')
+    : fail('WeddingParty.jsx — the separate "party" tab key is gone', 'not found', 'still present — tabs were not actually merged'));
+  results.push(/const TABS = \[\s*\{ key: 'keyRoles', label: 'Key roles' \},\s*\{ key: 'notes',\s*label: 'Notes' \},\s*\];/.test(weddingPartySource)
+    ? pass('WeddingParty.jsx — TABS is now exactly Key roles + Notes', 'found')
+    : fail('WeddingParty.jsx — TABS is now exactly Key roles + Notes', 'found', 'not found — TABS shape unexpected'));
+  results.push(/Wedding party members/.test(weddingPartySource)
+    ? pass('WeddingParty.jsx — the merged tab has a section heading separating the two groups', 'found "Wedding party members"')
+    : fail('WeddingParty.jsx — the merged tab has a section heading separating the two groups', 'found', 'not found'));
+
+  // The role-roster block (bridesmaids, groomsmen, etc.) must now live
+  // inside the same activeTab === 'keyRoles' branch as the key-roles
+  // pickers, not gated separately — that's the actual merge, not just a
+  // TABS-array edit that leaves the content still split.
+  const keyRolesBlockMatch = weddingPartySource.match(/\{activeTab === 'keyRoles' && \([\s\S]*?\n {8}\)\}/);
+  const keyRolesBlockBody = keyRolesBlockMatch ? keyRolesBlockMatch[0] : '';
+  results.push(/Maid of honour \/ best person/.test(keyRolesBlockBody) && /ROLES\.map\(role =>/.test(keyRolesBlockBody)
+    ? pass('WeddingParty.jsx — key-roles pickers AND the full role roster render in the same tab branch', 'both found in the keyRoles block')
+    : fail('WeddingParty.jsx — key-roles pickers AND the full role roster render in the same tab branch', 'both present', `maidOfHonour picker=${/Maid of honour \/ best person/.test(keyRolesBlockBody)} roleRoster=${/ROLES\.map\(role =>/.test(keyRolesBlockBody)}`));
+
   return results;
 }
