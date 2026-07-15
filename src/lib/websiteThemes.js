@@ -560,7 +560,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'A sun-bleached journal page for a day spent barefoot and unhurried.',
     motifNote: 'Concentric sun-ray arcs rising off a horizon line — a quiet sunrise, never a literal sun icon.',
     worldStory: "Tulum runs on sun and salt air, on mornings that start late and nights that don't rush to end. Paper feels sun-bleached, ink feels sand-warmed. This is a wedding for bare feet.",
-    imageUrl: null,
+    imageUrl: '/universes/tulum.jpg',
     tier: 'free',
   },
   kyoto: {
@@ -611,7 +611,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Vast quiet, one perfect mark — restraint as its own kind of beauty.',
     motifNote: 'Fine washi-paper grain, with a single ensō ring as the only ornament.',
     worldStory: 'Kyoto holds space the way a garden holds silence — deliberately, with nothing wasted. One mark, drawn once, says more than a page of ornament. This is a wedding built on restraint.',
-    imageUrl: null,
+    imageUrl: '/universes/kyoto.jpg',
     tier: 'free',
   },
   capri: {
@@ -660,7 +660,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: "Sun on warm stone, citrus at the table, joy that doesn't apologise for itself.",
     motifNote: 'A scalloped citrus-pith rule — repeating semicircle bumps — under kickers and names.',
     worldStory: "Capri tastes like citrus and salt, sounds like laughter carrying across water. Warm stone, warm light, a joy loud enough to fill a piazza. This is a wedding that doesn't hold back.",
-    imageUrl: null,
+    imageUrl: '/universes/capri.jpg',
     tier: 'free',
   },
   marrakech: {
@@ -775,7 +775,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Unfussy and direct, cut like a gig poster — this is the wedding, come as you are.',
     motifNote: 'A bold ticket-stub rule — a solid block with a perforated tear-line edge.',
     worldStory: "Brooklyn doesn't dress up what's already good. A gig-poster rule, a name set hard right, ink that means it. This is a wedding that shows up as it is.",
-    imageUrl: null,
+    imageUrl: '/universes/brooklyn.jpg',
     tier: 'free',
   },
   bali: {
@@ -884,7 +884,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'A fashion-plate hush — fine rules, ink and rose, nothing overstated.',
     motifNote: 'A fine framed hairline rule above and below the kicker, like a fashion-plate caption card.',
     worldStory: "Paris is a fashion plate, not a postcard — fine rules, considered proportion, nothing shouted. Ink and rose, held at arm's length. This is a wedding with real taste.",
-    imageUrl: null,
+    imageUrl: '/universes/paris.jpg',
     // Gating tier — source of truth for universeCatalog.js's Ultra check
     // (feat/universes-expansion-10: previously a hardcoded id Set living
     // in universeCatalog.js itself, independent of config and easy to
@@ -1000,7 +1000,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Whitewash and cobalt, cut clean against the sky — architecture as the decoration.',
     motifNote: 'A solid cube block — plain rectangular architecture, no line, no pattern.',
     worldStory: 'Mykonos is architecture as decoration — whitewash and cobalt, cut clean against an impossibly blue sky. Nothing extra, everything considered. This is a wedding with real edges.',
-    imageUrl: null,
+    imageUrl: '/universes/mykonos.jpg',
     tier: 'free',
   },
 
@@ -1042,7 +1042,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Cliffside citrus groves and sea light — bright, unhurried, wide open.',
     motifNote: 'A gentle sine-curve wave with a small round citrus accent riding its peak.',
     worldStory: 'Amalfi is light on water, groves on a cliffside, mornings that stretch long. Nothing here is heavy. This is a wedding held in open air.',
-    imageUrl: null,
+    imageUrl: '/universes/amalfi.jpg',
     tier: 'ultra',
   },
 
@@ -1076,7 +1076,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Rust and sandstone, ritual pace — a wedding grounded in real rock.',
     motifNote: 'Nested horizon-line arcs, like mesa strata or a topographic contour line.',
     worldStory: "Sedona is red rock and ritual pace — nothing rushed, nothing artificial. Layers of stone, layers of ceremony. This is a wedding that's been here a long time.",
-    imageUrl: null,
+    imageUrl: '/universes/sedona.jpg',
     tier: 'ultra',
   },
 
@@ -1110,7 +1110,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Snow, pine and quiet luxury — a lodge dressed for black tie.',
     motifNote: 'A single-stroke pine-branch line, minimal and geometric, never a literal illustrated tree.',
     worldStory: 'Aspen is snow outside and warmth within — pine and silver, black tie under low light. Nothing about it is rustic. This is a wedding dressed for winter properly.',
-    imageUrl: null,
+    imageUrl: '/universes/aspen.jpg',
     tier: 'ultra',
   },
 
@@ -1145,7 +1145,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Ruby, gold and ivory framed in a single quiet arch — luxurious, never loud.',
     motifNote: 'A thin ogee (Mughal) arch outline, used to frame the masthead rather than decorate it.',
     worldStory: 'Taj is a pavilion at rest — ruby and gold held inside one quiet arch, ivory catching the last light. Nothing here needs to shout. This is a wedding built like a court.',
-    imageUrl: null,
+    imageUrl: '/universes/taj.jpg',
     tier: 'ultra',
   },
 
@@ -1179,7 +1179,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Coral, teal and mustard — a film-poster glamour, warm and unhurried.',
     motifNote: 'A thin Art Deco fan of straight rays from a single base point.',
     worldStory: "Havana moves like an old film reel — coral light, salt air, a little static in the frame. Nothing here is polished flat. This is a wedding with real warmth in it.",
-    imageUrl: null,
+    imageUrl: '/universes/havana.jpg',
     tier: 'ultra',
   },
 
@@ -1213,7 +1213,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Forest and burgundy, a slow estate hour — considered, unhurried, real.',
     motifNote: 'A single-line stylised thistle, quiet enough to read as a heritage-crest flourish.',
     worldStory: 'Edinburgh keeps a slow hour — forest green, burgundy, gold catching low light. Nothing here is rushed toward. This is a wedding held like an old estate holds its grounds.',
-    imageUrl: null,
+    imageUrl: '/universes/edinburgh.jpg',
     tier: 'ultra',
   },
 
@@ -1247,7 +1247,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Black, white and gold, cut like a marina evening — precise, never loud.',
     motifNote: 'A thin triangular sail/mast outline over a single waterline rule.',
     worldStory: 'Monaco is black and gold under evening light, a marina at rest. Every line is precise. This is a wedding with real polish, not gloss.',
-    imageUrl: null,
+    imageUrl: '/universes/monaco.jpg',
     tier: 'ultra',
   },
 
@@ -1281,7 +1281,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Olive and terracotta, sketched rather than printed — a vineyard held loosely.',
     motifNote: 'A loose, sketch-like vine curl with small leaf accents — closer to a fresco sketch than a printed border.',
     worldStory: 'Florence reads like a sketchbook left open — olive and terracotta, ink that hasn\'t quite dried. Nothing here is over-finished. This is a wedding with real hand in it.',
-    imageUrl: null,
+    imageUrl: '/universes/florence.jpg',
     tier: 'ultra',
   },
 
@@ -1317,7 +1317,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Lavender and blush behind frosted glass — soft, modern, quietly precise.',
     motifNote: 'Soft layered concentric rings — a frosted-glass orb reduced to line art.',
     worldStory: 'Seoul feels like frosted glass — lavender and blush behind a soft blur, everything precise underneath. Nothing here is loud. This is a wedding built like modern architecture.',
-    imageUrl: null,
+    imageUrl: '/universes/seoul.jpg',
     tier: 'ultra',
   },
 
@@ -1354,7 +1354,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Jade and gold against black lacquer — a Bund evening, cinematic and precise.',
     motifNote: 'A stylised "auspicious cloud" (ruyi) swirl, drawn from real Chinese lattice/cornice decorative art.',
     worldStory: 'Shanghai is jade and gold against black lacquer, a skyline caught at dusk. Every surface has real craft in it. This is a wedding with real glamour, not gloss.',
-    imageUrl: null,
+    imageUrl: '/universes/shanghai.jpg',
     tier: 'ultra',
   },
 };

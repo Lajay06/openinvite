@@ -7,12 +7,13 @@
  * universeCatalog.js) — no hardcoded palette.
  *
  * Universes with a real photo (imageUrl set) get the full-bleed treatment
- * with a bottom-only scrim. Universes without one (imageUrl null — 7 of
- * 10 today) get a designed composition instead of a flat block: a
- * gradient wash in the universe's own palette, oversized type in its own
- * display face, and its actual documented signature motif (not a fake
- * illustration) as a real accent element — reusing the same primitives
- * the guest-facing site itself renders.
+ * with a bottom-only scrim. Universes without one (imageUrl null — just
+ * Aman today, the only universe with no source photo yet) get a designed
+ * composition instead of a flat block: a gradient wash in the universe's
+ * own palette, oversized type in its own display face, and its actual
+ * documented signature motif (not a fake illustration) as a real accent
+ * element — reusing the same primitives the guest-facing site itself
+ * renders.
  */
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';

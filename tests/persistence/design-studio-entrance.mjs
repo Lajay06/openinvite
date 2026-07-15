@@ -76,16 +76,22 @@ export async function runDesignStudioEntrance() {
     ? pass("UNIVERSE_CONFIGS.capri.accent is the corrected muted gold, not the old flagged neon lemon", '#C4A130')
     : fail("UNIVERSE_CONFIGS.capri.accent is the corrected muted gold, not the old flagged neon lemon", '#C4A130', 'not found / regressed'));
 
-  console.log('\n  Design Studio — real photography wired for exactly 3 universes, optimised (fix/design-studio-banners):\n');
+  console.log('\n  Design Studio — real photography wired for 19 of 20 universes, optimised:\n');
 
-  const PHOTO_UNIVERSES = { marrakech: '/universes/marrakech.jpg', bali: '/universes/bali.jpg', capetown: '/universes/cape-town.jpg' };
-  const NO_PHOTO_UNIVERSES = [
-    'aman', 'tulum', 'kyoto', 'capri', 'brooklyn', 'paris', 'mykonos',
-    // feat/universes-expansion-10 — no real photography exists yet for
-    // any of the 10 new universes; all use the designed no-photo
-    // composition treatment, same as the 7 above.
-    'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
-  ];
+  // feat/universe-experience-fixes — real photography now covers every
+  // universe except Aman (no source photo exists for it yet). Marrakech/
+  // Bali/Capetown were already wired in an earlier PR; this round added
+  // photos for the remaining 16.
+  const PHOTO_UNIVERSES = {
+    marrakech: '/universes/marrakech.jpg', bali: '/universes/bali.jpg', capetown: '/universes/cape-town.jpg',
+    tulum: '/universes/tulum.jpg', kyoto: '/universes/kyoto.jpg', capri: '/universes/capri.jpg',
+    brooklyn: '/universes/brooklyn.jpg', paris: '/universes/paris.jpg', mykonos: '/universes/mykonos.jpg',
+    amalfi: '/universes/amalfi.jpg', sedona: '/universes/sedona.jpg', aspen: '/universes/aspen.jpg',
+    taj: '/universes/taj.jpg', havana: '/universes/havana.jpg', edinburgh: '/universes/edinburgh.jpg',
+    monaco: '/universes/monaco.jpg', florence: '/universes/florence.jpg', seoul: '/universes/seoul.jpg',
+    shanghai: '/universes/shanghai.jpg',
+  };
+  const NO_PHOTO_UNIVERSES = ['aman'];
 
   for (const [id, expectedPath] of Object.entries(PHOTO_UNIVERSES)) {
     const m = websiteThemesSource.match(new RegExp(`${id}: \\{[\\s\\S]*?\\n  \\},`));
@@ -106,9 +112,14 @@ export async function runDesignStudioEntrance() {
   // Real file-size guard, not just a path check — this is the actual
   // "don't ship multi-MB originals" requirement, checked against the
   // files that will really be served.
-  const MAX_FULL_BYTES = 700 * 1024; // 700KB — generous ceiling for a 1600px-wide hero photo at web quality
+  const MAX_FULL_BYTES = 700 * 1024; // 700KB — generous ceiling for a 2400px-wide hero photo at web quality
   const MAX_SMALL_BYTES = 150 * 1024; // 150KB — the 800w responsive variant
-  for (const file of ['marrakech.jpg', 'bali.jpg', 'cape-town.jpg']) {
+  for (const file of [
+    'marrakech.jpg', 'bali.jpg', 'cape-town.jpg',
+    'tulum.jpg', 'kyoto.jpg', 'capri.jpg', 'brooklyn.jpg', 'paris.jpg', 'mykonos.jpg',
+    'amalfi.jpg', 'sedona.jpg', 'aspen.jpg', 'taj.jpg', 'havana.jpg', 'edinburgh.jpg',
+    'monaco.jpg', 'florence.jpg', 'seoul.jpg', 'shanghai.jpg',
+  ]) {
     const fullPath = resolve(repoRoot, 'public/universes', file);
     const smallPath = resolve(repoRoot, 'public/universes', file.replace(/\.jpg$/, '-800.jpg'));
     try {
