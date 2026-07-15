@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Plus, Music, Beer, Mic, DoorOpen, Crown, Users, Square, Circle, Image } from 'lucide-react';
+import { LayoutGrid, Plus, Music, Beer, Mic, DoorOpen, Crown, Users, Square, Circle } from 'lucide-react';
 
 const VENUE_ASSETS = [
   { name: 'Dance floor',  type: 'dance-floor',  Icon: Music,  width: 150, height: 150 },
@@ -84,32 +84,13 @@ export default function VenueAssetLibrary({ onAddTable, onAddAsset, onImportLayo
         ))}
       </div>
 
-      {/* Import layout — pinned to bottom */}
-      <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(10,10,10,0.06)', padding: '12px 16px', flexShrink: 0 }}>
-        <label
-          style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '8px 16px', borderRadius: 999,
-            border: '1px solid #E5E5E5', background: '#FFFFFF',
-            fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 500, color: '#0A0A0A',
-            cursor: uploadingImage ? 'not-allowed' : 'pointer',
-            opacity: uploadingImage ? 0.5 : 1,
-            transition: 'background 0.12s',
-          }}
-          onMouseEnter={e => { if (!uploadingImage) e.currentTarget.style.background = 'rgba(10,10,10,0.04)'; }}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-        >
-          <Image size={11} />
-          {uploadingImage ? 'Uploading…' : 'Import layout'}
-          <input
-            type="file"
-            style={{ display: 'none' }}
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            onChange={onImportLayout}
-            disabled={uploadingImage}
-          />
-        </label>
-      </div>
+      {/* Import layout: intentionally hidden pre-launch
+          (fix/seating-select-import-cleanup) — future feature, not launch
+          scope. The upload handler (handleImportLayout in Seating.jsx) and
+          uploadingImage state are left intact; onImportLayout/uploadingImage
+          are still threaded through as props below. Re-add the entry point
+          here (it used to be pinned to the bottom via marginTop: 'auto') to
+          bring the feature back — no other wiring needs to change. */}
     </div>
   );
 }

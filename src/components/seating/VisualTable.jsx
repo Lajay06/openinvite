@@ -39,7 +39,7 @@ function getSeatPositions(shape, tableW, tableH, capacity, cx, cy) {
   return positions;
 }
 
-export default function VisualTable({ table, guests, onSeatClick, selected }) {
+export default function VisualTable({ table, guests, onSeatClick, selected, selectedSeatIndex }) {
   const isRound = table.shape !== 'rectangle';
   const tableW = isRound ? 100 : 130;
   const tableH = isRound ? 100 : 60;
@@ -105,9 +105,11 @@ export default function VisualTable({ table, guests, onSeatClick, selected }) {
       {/* Seats */}
       {seatPositions.map((pos, i) => {
         const guest = findGuest(i);
+        const isSeatSelected = selectedSeatIndex === i;
         return (
           <div
             key={i}
+            className={isSeatSelected ? 'seating-seat-selected' : undefined}
             onClick={(e) => { e.stopPropagation(); onSeatClick && onSeatClick(table.id, i, guest?.id); }}
             title={guest ? guest.name : 'Empty seat'}
             style={{
@@ -121,9 +123,17 @@ export default function VisualTable({ table, guests, onSeatClick, selected }) {
               // as "occupied" at a glance, not just a colour swap. Empty
               // seats: dashed outline only, no fill — the two states can't
               // be confused even at a small size (fix/seating-polish).
-              background: guest ? '#0A1930' : 'transparent',
-              border: guest ? '2px solid #FFFFFF' : '1.5px dashed rgba(10,10,10,0.3)',
-              boxShadow: guest ? '0 1px 4px rgba(10,10,10,0.35)' : 'none',
+              // Selected seat: the same accent ring/glow/pulse pattern as a
+              // selected table (fix/seating-select-import-cleanup), scaled
+              // down for a 20px circle — layered on top of the
+              // assigned/empty look so all three states (selected, assigned,
+              // empty) stay visually distinct even in combination.
+              background: guest ? '#0A1930' : (isSeatSelected ? 'rgba(224,53,83,0.14)' : 'transparent'),
+              border: isSeatSelected ? '2px solid #E03553' : (guest ? '2px solid #FFFFFF' : '1.5px dashed rgba(10,10,10,0.3)'),
+              boxShadow: isSeatSelected
+                ? '0 0 0 3px rgba(224,53,83,0.22), 0 2px 10px rgba(224,53,83,0.35)'
+                : (guest ? '0 1px 4px rgba(10,10,10,0.35)' : 'none'),
+              transform: isSeatSelected ? 'scale(1.2)' : 'scale(1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

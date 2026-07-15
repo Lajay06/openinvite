@@ -74,6 +74,7 @@ export default function SeatingPage() {
   useEffect(() => { venueAssetsRef.current = venueAssets; }, [venueAssets]);
 
   const [selectedTableId, setSelectedTableId] = useState(null);
+  const [selectedSeatIndex, setSelectedSeatIndex] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
   const [renamingTableId, setRenamingTableId] = useState(null);
   const [renameValue, setRenameValue] = useState('');
@@ -94,6 +95,15 @@ export default function SeatingPage() {
   const MAX_ZOOM = 2;
 
   useEffect(() => { loadData(); }, []);
+
+  // Escape clears the seat selection (leaves the table itself selected —
+  // clicking empty canvas or the panel's "Deselect table" button is the
+  // way to clear the table too).
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') setSelectedSeatIndex(null); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
@@ -166,7 +176,10 @@ export default function SeatingPage() {
         } catch {}
       }
     } else if (type === 'table') {
+      // A table-body click (not a seat click) — no specific seat was
+      // targeted, so any existing seat selection no longer applies.
       setSelectedTableId(prev => prev === id ? null : id);
+      setSelectedSeatIndex(null);
     }
     setDraggingItem(null);
   };
@@ -209,7 +222,7 @@ export default function SeatingPage() {
       if (type === 'table') {
         await Table.delete(id);
         setTables(prev => prev.filter(t => t.id !== id));
-        if (selectedTableId === id) setSelectedTableId(null);
+        if (selectedTableId === id) { setSelectedTableId(null); setSelectedSeatIndex(null); }
       } else {
         await VenueAsset.delete(id);
         setVenueAssets(prev => prev.filter(a => a.id !== id));
@@ -248,9 +261,14 @@ export default function SeatingPage() {
     setUploadingImage(false);
   };
 
-  /* ── Seat interactions ── */
+  /* ── Seat interactions ──
+     Clicking a seat selects it (exactly one seat selected at a time —
+     clicking another seat, even at a different table, moves the
+     selection here). Assigning a guest from the right panel while a seat
+     is selected fills that specific seat, not just "next empty seat". */
   const handleSeatClick = (tableId, seatIndex, guestId) => {
     setSelectedTableId(tableId);
+    setSelectedSeatIndex(seatIndex);
     if (guestId && window.confirm('Unassign this guest from their seat?')) {
       handleUnassignGuest(tableId, seatIndex, guestId);
     }
@@ -300,13 +318,20 @@ export default function SeatingPage() {
     const elsewhere = allAssignments.find(a => a.guest_id === guest.id && a.tableId !== selectedTableId);
     if (elsewhere) { toast.error(`${guest.name} is already at ${elsewhere.tableName}`); return; }
 
-    // find next empty seat
+    // Prefer the specifically selected seat, if one is selected and still
+    // empty — assigning from the panel with a seat selected fills that
+    // seat. Otherwise (no seat selected, or it filled up in the meantime)
+    // fall back to the first empty seat.
     const usedSeats = new Set((table.assigned_guests || []).map(a => a.seat_index));
-    let nextSeat = null;
-    for (let i = 0; i < table.capacity; i++) { if (!usedSeats.has(i)) { nextSeat = i; break; } }
-    if (nextSeat === null) { toast.error(`${table.name} is full`); return; }
+    let seatToFill = null;
+    if (selectedSeatIndex !== null && selectedSeatIndex < table.capacity && !usedSeats.has(selectedSeatIndex)) {
+      seatToFill = selectedSeatIndex;
+    } else {
+      for (let i = 0; i < table.capacity; i++) { if (!usedSeats.has(i)) { seatToFill = i; break; } }
+    }
+    if (seatToFill === null) { toast.error(`${table.name} is full`); return; }
 
-    await handleAssignGuest(selectedTableId, nextSeat, guest.id);
+    await handleAssignGuest(selectedTableId, seatToFill, guest.id);
   };
 
   /* ── AI seating apply ── */
@@ -461,7 +486,7 @@ export default function SeatingPage() {
                   : { backgroundImage: 'radial-gradient(circle, rgba(10,10,10,0.13) 1.5px, transparent 1.5px)', backgroundSize: '24px 24px', backgroundColor: '#FAFAFA' }
                 ),
               }}
-              onClick={(e) => { if (e.target === e.currentTarget) setSelectedTableId(null); }}
+              onClick={(e) => { if (e.target === e.currentTarget) { setSelectedTableId(null); setSelectedSeatIndex(null); } }}
             >
               {/* Semi-transparent overlay when venue image loaded */}
               {venueImageUrl && (
@@ -482,6 +507,7 @@ export default function SeatingPage() {
                     guests={guests}
                     onSeatClick={handleSeatClick}
                     selected={selectedTableId === table.id}
+                    selectedSeatIndex={selectedTableId === table.id ? selectedSeatIndex : null}
                   />
                   {/* Delete button on hover */}
                   {hoveredId === `t-${table.id}` && (
@@ -584,7 +610,7 @@ export default function SeatingPage() {
                         <Pencil size={11} style={{ color: 'rgba(10,10,10,0.3)', flexShrink: 0 }} />
                       </button>
                     )}
-                    <button onClick={() => setSelectedTableId(null)}
+                    <button onClick={() => { setSelectedTableId(null); setSelectedSeatIndex(null); }}
                       style={{ fontSize: 10, fontWeight: 600, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 999, background: 'rgba(10,10,10,0.06)' }}>
                       ← Back
                     </button>
@@ -596,6 +622,13 @@ export default function SeatingPage() {
                   <div style={{ height: 3, background: 'rgba(10,10,10,0.08)', marginTop: 8 }}>
                     <div style={{ height: '100%', width: `${Math.min(100, ((selectedTable.assigned_guests || []).length / (selectedTable.capacity || 1)) * 100)}%`, background: 'linear-gradient(90deg, #E03553, #803D81)', transition: 'width 0.3s' }} />
                   </div>
+                  {/* Explicit canvas ↔ panel connection while a seat is selected —
+                      assigning a guest below fills this exact seat. */}
+                  {selectedSeatIndex !== null && (
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '8px 0 0' }}>
+                      Assigning seat {selectedSeatIndex + 1} of {selectedTable.capacity} — {selectedTable.name}
+                    </p>
+                  )}
                 </div>
 
                 {/* Assigned guests list */}
