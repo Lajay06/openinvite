@@ -190,7 +190,7 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disable
 
 // ── Desktop sidebar ───────────────────────────────────────────────────────────
 
-export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
+export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOffset = 48 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -301,6 +301,25 @@ export function AnimatedSidebar({ weddingName, onOpenTips, topOffset = 48 }) {
             Help centre
           </span>
         </div>
+
+        {/* Collaborate */}
+        {onCollaborate && (
+          <div
+            onClick={onCollaborate}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "7px 12px", cursor: "pointer",
+              transition: "background 0.15s ease",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(10,10,10,0.04)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+          >
+            <UserPlus size={14} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.45)", flexShrink: 0 }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#0A0A0A", fontFamily: PJS }}>
+              Collaborate
+            </span>
+          </div>
+        )}
 
         {/* Leave Dashboard */}
         <div
