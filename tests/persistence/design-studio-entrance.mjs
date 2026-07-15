@@ -135,6 +135,60 @@ export async function runDesignStudioEntrance() {
     ? pass('All 10 universes have tagline + tags + tileDescription + motifNote + worldStory', 'found on all 10')
     : fail('All 10 universes have tagline + tags + tileDescription + motifNote + worldStory', 'found on all 10', `missing on: ${missingMeta.join(', ')}`));
 
+  // feat/universes-expansion-10 — a real runtime completeness gate, not a
+  // hardcoded id list: derives the universe list from
+  // Object.keys(UNIVERSE_CONFIGS) itself, so a *future* 21st universe is
+  // checked automatically the moment it's added to config, with no test
+  // file to remember to update. Covers exactly the fields the brief named
+  // as required: palette, type, motif, description, tags, tier.
+  console.log('\n  Design Studio — every universe in UNIVERSE_CONFIGS has all required fields (future-proof, no hardcoded id list):\n');
+
+  {
+    const { UNIVERSE_CONFIGS } = await import('../../src/lib/websiteThemes.js');
+    const REQUIRED_FIELD_CHECKS = {
+      'palette (colors.darkBg/lightBg/accent/accentSecondary)': (cfg) =>
+        !!cfg.colors?.darkBg && !!cfg.colors?.lightBg && !!cfg.colors?.accent && !!cfg.colors?.accentSecondary,
+      'type (typography.headingFont/bodyFont/googleFonts)': (cfg) =>
+        !!cfg.typography?.headingFont && !!cfg.typography?.bodyFont && !!cfg.typography?.googleFonts,
+      'motif (motifNote)': (cfg) => !!cfg.motifNote && cfg.motifNote.length > 0,
+      'description (tileDescription + worldStory)': (cfg) => !!cfg.tileDescription && !!cfg.worldStory,
+      'tags (non-empty array)': (cfg) => Array.isArray(cfg.tags) && cfg.tags.length > 0,
+      'tier (\'free\' or \'ultra\')': (cfg) => cfg.tier === 'free' || cfg.tier === 'ultra',
+    };
+
+    const allIds = Object.keys(UNIVERSE_CONFIGS);
+    results.push(allIds.length >= 20
+      ? pass(`UNIVERSE_CONFIGS has at least the 20 expected universes`, String(allIds.length))
+      : fail(`UNIVERSE_CONFIGS has at least the 20 expected universes`, '>= 20', String(allIds.length)));
+
+    for (const [label, check] of Object.entries(REQUIRED_FIELD_CHECKS)) {
+      const missing = allIds.filter(id => !check(UNIVERSE_CONFIGS[id]));
+      results.push(missing.length === 0
+        ? pass(`Every universe declares ${label}`, `found on all ${allIds.length}`)
+        : fail(`Every universe declares ${label}`, `found on all ${allIds.length}`, `missing on: ${missing.join(', ')}`));
+    }
+
+    // MOTIF_LARGE (the world page's Motifs chapter) is a hand-maintained
+    // map keyed by universe id with a graceful "no dedicated motif yet"
+    // fallback (see UniverseWorldView.jsx) — exactly the kind of map that
+    // let Tulum/Marrakech silently ship with no motif earlier this
+    // project. Checking every id has a real entry here catches that class
+    // of gap for any future universe too, not just missing config fields.
+    const missingMotifLarge = allIds.filter(id => !new RegExp(`\\b${id}: \\(color\\) =>`).test(worldViewSource));
+    results.push(missingMotifLarge.length === 0
+      ? pass('Every universe has a MOTIF_LARGE entry in UniverseWorldView.jsx (no silent "no motif yet" fallback)', `found on all ${allIds.length}`)
+      : fail('Every universe has a MOTIF_LARGE entry in UniverseWorldView.jsx (no silent "no motif yet" fallback)', `found on all ${allIds.length}`, `missing on: ${missingMotifLarge.join(', ')}`));
+
+    // MASTHEAD_BY_LAYOUT is keyed by `layout`, not universe id directly —
+    // every universe that declares a `layout` should have a real masthead
+    // wired, or its world-page hero silently falls back to GenericMasthead.
+    const idsWithLayout = allIds.filter(id => !!UNIVERSE_CONFIGS[id]?.layout);
+    const missingMasthead = idsWithLayout.filter(id => !new RegExp(`'${UNIVERSE_CONFIGS[id].layout}':`).test(worldViewSource.slice(0, worldViewSource.indexOf('MOTIF_LARGE'))));
+    results.push(missingMasthead.length === 0
+      ? pass('Every universe with a layout id has a MASTHEAD_BY_LAYOUT entry', `found on all ${idsWithLayout.length}`)
+      : fail('Every universe with a layout id has a MASTHEAD_BY_LAYOUT entry', `found on all ${idsWithLayout.length}`, `missing on: ${missingMasthead.join(', ')}`));
+  }
+
   console.log('\n  Design Studio — reduced-motion gates (entrance overlay, banner, world view hero):\n');
 
   const overlaySource = read('src/components/universe-studio/UniverseEntranceOverlay.jsx');
