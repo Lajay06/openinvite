@@ -44,7 +44,7 @@ const PAGE_LABELS = {
   'home': 'Home', 'our-story': 'Our Story', 'celebration': 'Celebration',
   'rsvp': 'RSVP', 'registry': 'Registry',
   'music': 'Music', 'photos': 'Photos', 'styling': 'Styling', 'polls': 'Polls', 'faq': 'FAQ',
-  'stay': 'Stay', 'transport': 'Getting here', 'experience': 'Guide', 'guestbook': 'Guestbook',
+  'stay': 'Stay', 'transport': 'Getting here', 'experience': 'Guide',
 };
 import { motion, AnimatePresence } from 'framer-motion';
 import WeddingWebsiteNav from './WeddingWebsiteNav';
@@ -61,7 +61,6 @@ import WeddingPollsPage from './pages/WeddingPollsPage';
 import WeddingStayPage from './pages/WeddingStayPage';
 import WeddingTransportPage from './pages/WeddingTransportPage';
 import WeddingExperiencePage from './pages/WeddingExperiencePage';
-import WeddingGuestbookPage from './pages/WeddingGuestbookPage';
 
 const PAGE_COMPONENTS = {
   home: WeddingHomePage,
@@ -77,7 +76,6 @@ const PAGE_COMPONENTS = {
   'stay': WeddingStayPage,
   'transport': WeddingTransportPage,
   'experience': WeddingExperiencePage,
-  'guestbook': WeddingGuestbookPage,
 };
 
 export default function MultiPageWeddingWebsite() {
@@ -290,8 +288,8 @@ export default function MultiPageWeddingWebsite() {
               several of its "interactive" section types (RSVP, guest
               book, song request) are static mockups with no onClick at
               all. Real guests must always get the real, fully-wired,
-              interactive PageComponent (WeddingRSVPPage.jsx,
-              WeddingGuestbookPage.jsx, etc. — the same components every
+              interactive PageComponent (WeddingRSVPPage.jsx, etc. — the
+              same components every
               motion/texture/theming/server-mediated-API fix this session
               landed against) — never WBSectionRenderer, unconditionally.
               See UNIVERSE_EXPERIENCE_DIAGNOSTIC.md. */}

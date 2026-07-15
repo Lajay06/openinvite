@@ -124,12 +124,20 @@ function AvaModal({ onClose }) {
   );
 }
 
+const TABS = [
+  { key: 'music', label: 'Music & DJ' },
+  { key: 'mc',    label: 'MC & host' },
+  { key: 'extras',label: 'Entertainment extras' },
+  { key: 'notes', label: 'Notes' },
+];
+
 export default function EntertainmentDetailsPage() {
   const [data, setData] = useState({});
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [showAva, setShowAva] = useState(false);
+  const [activeTab, setActiveTab] = useState('music');
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
 
@@ -181,19 +189,33 @@ export default function EntertainmentDetailsPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Entertainment" subtitle="Plan your music, performances, and wedding atmosphere" />
 
-      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
-            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
-            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
-          </div>
+      {/* Ava button + save indicator */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+          {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+          {saveStatus === 'saved' && <><Check size={12} />Saved</>}
         </div>
+      </div>
 
+      {/* Tab bar */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer',
+              color: activeTab === tab.key ? '#E03553' : '#444444',
+              borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Music & DJ */}
-          <DetailsSection title="Music & DJ" icon={Music4}>
+          {activeTab === 'music' && (
+          <DetailsSection title="Music & DJ" icon={Music4} defaultOpen>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <GoogleField label="Band / DJ name" value={data.bandDjName} onChange={e => update({ bandDjName: e.target.value })} placeholder="e.g. The Groove Masters" />
               <SectionInput label="Contact / booking" value={data.bandDjContact} onChange={e => update({ bandDjContact: e.target.value })} />
@@ -207,18 +229,22 @@ export default function EntertainmentDetailsPage() {
             </div>
             <SectionInput label="Songs to avoid / do-not-play list" isTextarea value={data.doNotPlayList} onChange={e => update({ doNotPlayList: e.target.value })} placeholder="Songs you absolutely do not want played…" />
           </DetailsSection>
+          )}
 
           {/* MC & Host */}
-          <DetailsSection title="MC & host" icon={Mic2}>
+          {activeTab === 'mc' && (
+          <DetailsSection title="MC & host" icon={Mic2} defaultOpen>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="MC / host name" value={data.mcName} onChange={e => update({ mcName: e.target.value })} placeholder="Name of your MC or host" />
               <SectionInput label="MC contact" value={data.mcContact} onChange={e => update({ mcContact: e.target.value })} />
             </div>
             <SectionInput label="MC briefing notes" isTextarea value={data.mcNotes} onChange={e => update({ mcNotes: e.target.value })} placeholder="Announcements, tone, key moments to introduce…" />
           </DetailsSection>
+          )}
 
           {/* Extra entertainment */}
-          <DetailsSection title="Entertainment extras" icon={Sparkles}>
+          {activeTab === 'extras' && (
+          <DetailsSection title="Entertainment extras" icon={Sparkles} defaultOpen>
             <PillToggle label="Photo booth" value={data.photoBooth || false} onChange={v => update({ photoBooth: v })} />
             {data.photoBooth && (
               <SectionInput label="Photo booth details" isTextarea value={data.photoBoothDetails} onChange={e => update({ photoBoothDetails: e.target.value })} placeholder="Provider, props, backdrop, print style…" />
@@ -226,11 +252,14 @@ export default function EntertainmentDetailsPage() {
             <SectionInput label="Special performances" isTextarea value={data.specialPerformances} onChange={e => update({ specialPerformances: e.target.value })} placeholder="Live performers, surprise acts, fireworks…" />
             <SectionInput label="Other entertainment" isTextarea value={data.otherEntertainment} onChange={e => update({ otherEntertainment: e.target.value })} placeholder="Lawn games, casino tables, magician…" />
           </DetailsSection>
+          )}
 
           {/* Notes */}
-          <DetailsSection title="Notes" icon={FileText}>
+          {activeTab === 'notes' && (
+          <DetailsSection title="Notes" icon={FileText} defaultOpen>
             <SectionInput label="Additional notes" isTextarea value={data.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else about entertainment…" />
           </DetailsSection>
+          )}
         </div>
       </div>
 

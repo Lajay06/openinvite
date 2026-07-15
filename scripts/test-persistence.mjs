@@ -27,7 +27,6 @@ import { runGuest } from '../tests/persistence/guest.mjs';
 import { runRsvp } from '../tests/persistence/rsvp.mjs';
 import { runOwnership } from '../tests/persistence/ownership.mjs';
 import { runEmails } from '../tests/persistence/emails.mjs';
-import { runGuestbook } from '../tests/persistence/guestbook.mjs';
 import { runOnboarding } from '../tests/persistence/onboarding.mjs';
 import { runEndpointAuth } from '../tests/persistence/endpoint-auth.mjs';
 import { runSpotifyOAuth } from '../tests/persistence/spotify-oauth.mjs';
@@ -45,6 +44,8 @@ import { runEntranceMoment } from '../tests/persistence/entrance-moment.mjs';
 import { runGuestlistEditable } from '../tests/persistence/guestlist-editable.mjs';
 import { runModalViewportCentering } from '../tests/persistence/modal-viewport-centering.mjs';
 import { runSeatingPolish } from '../tests/persistence/seating-polish.mjs';
+import { runDashboardStructure } from '../tests/persistence/dashboard-structure.mjs';
+import { runGuestbookRemoval } from '../tests/persistence/guestbook-removal.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -83,7 +84,6 @@ async function run() {
   results.push(...await runRsvp(token, recordId));
   results.push(...await runOwnership(token, recordId));
   results.push(...await runEmails());
-  results.push(...await runGuestbook(token));
   results.push(...await runOnboarding(token));
   results.push(...await runEndpointAuth());
   results.push(...await runSpotifyOAuth());
@@ -101,6 +101,8 @@ async function run() {
   results.push(...await runGuestlistEditable(token));
   results.push(...await runModalViewportCentering());
   results.push(...await runSeatingPolish(token));
+  results.push(...await runDashboardStructure());
+  results.push(...await runGuestbookRemoval());
 
   // ── Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;

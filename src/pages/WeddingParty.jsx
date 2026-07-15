@@ -291,6 +291,12 @@ function AvaModal({ onClose }) {
 }
 
 /* ── Page ── */
+const TABS = [
+  { key: 'keyRoles', label: 'Key roles' },
+  { key: 'party',    label: 'Wedding party' },
+  { key: 'notes',    label: 'Notes' },
+];
+
 export default function WeddingPartyPage() {
   const [data, setData] = useState({});
   const [guests, setGuests] = useState([]);
@@ -298,6 +304,7 @@ export default function WeddingPartyPage() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [showAva, setShowAva] = useState(false);
+  const [activeTab, setActiveTab] = useState('keyRoles');
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
 
@@ -386,22 +393,32 @@ export default function WeddingPartyPage() {
         ))}
       </div>
 
-      {/* Ava button */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      {/* Ava button + save indicator */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <AvaButton label="Ask Ava about your wedding party" onClick={() => setShowAva(true)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+          {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+          {saveStatus === 'saved' && <><Check size={12} />Saved</>}
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer',
+              color: activeTab === tab.key ? '#E03553' : '#444444',
+              borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
+            }}>
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
-        {/* Save status */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
-            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
-            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
-          </div>
-        </div>
-
         {/* Key roles */}
-        <DetailsSection title="Key roles" icon={Crown}>
+        {activeTab === 'keyRoles' && (
+        <DetailsSection title="Key roles" icon={Crown} defaultOpen>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <span style={labelStyle}>Maid of honour / best person</span>
@@ -424,10 +441,13 @@ export default function WeddingPartyPage() {
           </div>
           <SectionInput label="Key role notes" isTextarea value={data.keyRoleNotes} onChange={e => update({ keyRoleNotes: e.target.value })} placeholder="Any notes about key roles and responsibilities…" />
         </DetailsSection>
+        )}
 
-        {/* Role groups */}
-        {ROLES.map(role => (
-          <DetailsSection key={role.key} title={role.label} icon={Users}>
+        {/* Wedding party — every role group visible together (not an
+            accordion-of-accordions), so comparing rosters across roles
+            never requires opening/closing several collapsed sections. */}
+        {activeTab === 'party' && ROLES.map(role => (
+          <DetailsSection key={role.key} title={role.label} icon={Users} defaultOpen>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(data[role.key] || []).length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 12, marginBottom: 4 }}>
@@ -456,9 +476,11 @@ export default function WeddingPartyPage() {
         ))}
 
         {/* Notes */}
-        <DetailsSection title="Notes" icon={FileText}>
+        {activeTab === 'notes' && (
+        <DetailsSection title="Notes" icon={FileText} defaultOpen>
           <SectionInput label="Additional notes" isTextarea value={data.notes} onChange={e => update({ notes: e.target.value })} placeholder="Attire details, group photos, rehearsal dinner notes…" />
         </DetailsSection>
+        )}
       </div>
 
       {showAva && <AvaModal onClose={() => setShowAva(false)} />}

@@ -107,12 +107,20 @@ function AvaModal({ onClose }) {
   );
 }
 
+const TABS = [
+  { key: 'florist', label: 'Florist' },
+  { key: 'flowers', label: 'Flowers' },
+  { key: 'decor',   label: 'Décor' },
+  { key: 'notes',   label: 'Notes' },
+];
+
 export default function FloralsPage() {
   const [data, setData] = useState({});
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [showAva, setShowAva] = useState(false);
+  const [activeTab, setActiveTab] = useState('florist');
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
 
@@ -164,19 +172,33 @@ export default function FloralsPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Florals & décor" subtitle="Plan your flowers, centrepieces, and décor vision" />
 
-      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
-            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
-            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
-          </div>
+      {/* Ava button + save indicator */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+          {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+          {saveStatus === 'saved' && <><Check size={12} />Saved</>}
         </div>
+      </div>
 
+      {/* Tab bar */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer',
+              color: activeTab === tab.key ? '#E03553' : '#444444',
+              borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Florist */}
-          <DetailsSection title="Florist" icon={Flower2}>
+          {activeTab === 'florist' && (
+          <DetailsSection title="Florist" icon={Flower2} defaultOpen>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <GoogleField label="Florist name" value={data.floristName} onChange={e => update({ floristName: e.target.value })} placeholder="e.g. Bloom & Co." />
               <SectionInput label="Contact person" value={data.floristContact} onChange={e => update({ floristContact: e.target.value })} />
@@ -186,9 +208,11 @@ export default function FloralsPage() {
               <SectionInput label="Email" value={data.floristEmail} onChange={e => update({ floristEmail: e.target.value })} />
             </div>
           </DetailsSection>
+          )}
 
           {/* Flowers */}
-          <DetailsSection title="Flowers" icon={Flower2}>
+          {activeTab === 'flowers' && (
+          <DetailsSection title="Flowers" icon={Flower2} defaultOpen>
             <SectionInput label="Floral style notes" isTextarea value={data.floralStyleNotes} onChange={e => update({ floralStyleNotes: e.target.value })} placeholder="Flower preferences, bouquet style, overall look…" />
             <SectionInput label="Colour palette" value={data.floralColourPalette} onChange={e => update({ floralColourPalette: e.target.value })} placeholder="e.g. blush, ivory, sage green" />
             <SectionInput label="Bridal bouquet notes" isTextarea value={data.bridalBouquetNotes} onChange={e => update({ bridalBouquetNotes: e.target.value })} placeholder="Style, flowers, size, ribbons…" />
@@ -196,19 +220,24 @@ export default function FloralsPage() {
             <SectionInput label="Centrepiece notes" isTextarea value={data.centrepieceNotes} onChange={e => update({ centrepieceNotes: e.target.value })} placeholder="Table centrepiece style, size, type…" />
             <SectionInput label="Ceremony flowers" isTextarea value={data.ceremonyFlowers} onChange={e => update({ ceremonyFlowers: e.target.value })} placeholder="Arch, aisle, altar flowers…" />
           </DetailsSection>
+          )}
 
           {/* Décor */}
-          <DetailsSection title="Décor" icon={Palette}>
+          {activeTab === 'decor' && (
+          <DetailsSection title="Décor" icon={Palette} defaultOpen>
             <SectionInput label="Décor theme notes" isTextarea value={data.decorThemeNotes} onChange={e => update({ decorThemeNotes: e.target.value })} placeholder="Overall décor vision, furniture, props…" />
             <SectionInput label="Lighting preferences" isTextarea value={data.lightingPreferences} onChange={e => update({ lightingPreferences: e.target.value })} placeholder="String lights, candles, uplighting, LED…" />
             <SectionInput label="Table settings notes" isTextarea value={data.tableSettingsNotes} onChange={e => update({ tableSettingsNotes: e.target.value })} placeholder="Linens, tableware, place settings, charger plates…" />
             <SectionInput label="Signage & stationery" isTextarea value={data.signageNotes} onChange={e => update({ signageNotes: e.target.value })} placeholder="Welcome signs, table numbers, menus…" />
           </DetailsSection>
+          )}
 
           {/* Notes */}
-          <DetailsSection title="Notes" icon={FileText}>
+          {activeTab === 'notes' && (
+          <DetailsSection title="Notes" icon={FileText} defaultOpen>
             <SectionInput label="Additional notes" isTextarea value={data.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Any other décor or floral details…" />
           </DetailsSection>
+          )}
         </div>
       </div>
 

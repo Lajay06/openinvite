@@ -67,12 +67,18 @@ export default function WeddingWebsiteNav({ weddingName, theme, enabledPages, cu
     hasExperience && { key: 'experience', label: 'Guide', href: `/w/${weddingSlug}/experience` },
   ].filter(Boolean);
 
-  const pageLinks = enabledPages.map(pageSlug => ({
-    key: pageSlug,
-    label: WEDDING_PAGES.find(p => p.slug === pageSlug)?.label,
-    isPage: true,
-    slug: pageSlug,
-  }));
+  // A wedding's stored enabledPages may still list a slug for a page that
+  // no longer exists (e.g. Guestbook, retired) — filter those out instead
+  // of rendering a dead, blank-label nav link. WEDDING_PAGES is the single
+  // source of truth for which page slugs are real.
+  const pageLinks = enabledPages
+    .map(pageSlug => ({
+      key: pageSlug,
+      label: WEDDING_PAGES.find(p => p.slug === pageSlug)?.label,
+      isPage: true,
+      slug: pageSlug,
+    }))
+    .filter(link => !!link.label);
 
   const allLinks = [...pageLinks, ...subLinks];
   const visibleLinks = allLinks.slice(0, MAX_VISIBLE_LINKS);

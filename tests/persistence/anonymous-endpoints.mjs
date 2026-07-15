@@ -20,7 +20,6 @@ import weddingPollVoteHandler from '../../api/wedding-poll-vote.js';
 import weddingPollCommentHandler from '../../api/wedding-poll-comment.js';
 import rsvpPollVoteHandler from '../../api/rsvp-poll-vote.js';
 import weddingPollResultsHandler from '../../api/wedding-poll-results.js';
-import weddingGuestbookHandler from '../../api/wedding-guestbook.js';
 import rsvpSubmitHandler from '../../api/rsvp-submit.js';
 import { aggregateEventTallies, latestEventResponses } from '../../src/lib/rsvpAggregation.js';
 
@@ -447,52 +446,6 @@ export async function runAnonymousEndpoints() {
     }
     if (aggWeddingId) {
       try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${aggWeddingId}`, undefined, token); }
-      catch { /* non-fatal */ }
-    }
-  }
-
-  // ── wedding-guestbook.js returns only this wedding's entries ────────────────
-  console.log('\n  wedding-guestbook.js — scoped read:\n');
-  let gbWeddingId = null;
-  let gbOwnEntryId = null;
-  let gbOtherEntryId = null;
-  try {
-    const wedding = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
-      couple1Name: 'Alex', couple2Name: 'Sam', slug: `test-gb-wedding-${Date.now()}`,
-    }, token);
-    gbWeddingId = wedding.id;
-
-    const ownEntry = await api('POST', `/apps/${APP_ID}/entities/GuestbookEntry`, {
-      wedding_id: gbWeddingId, guest_name: 'Own Guest', message: 'This wedding\'s message',
-    }, token);
-    gbOwnEntryId = ownEntry.id;
-
-    const otherEntry = await api('POST', `/apps/${APP_ID}/entities/GuestbookEntry`, {
-      wedding_id: 'a-completely-different-wedding-id', guest_name: 'Other Guest', message: 'A different wedding\'s message',
-    }, token);
-    gbOtherEntryId = otherEntry.id;
-
-    const { req, res } = mockReqRes({ query: { slug: wedding.slug } });
-    await weddingGuestbookHandler(req, res);
-
-    const entries = res._json?.entries || [];
-    results.push(res._status === 200 && entries.some(e => e.guest_name === 'Own Guest')
-      ? pass('wedding-guestbook.js — includes this wedding\'s own entry', entries.length)
-      : fail('wedding-guestbook.js — includes this wedding\'s own entry', 'present', JSON.stringify(entries)));
-    results.push(!entries.some(e => e.guest_name === 'Other Guest')
-      ? pass('wedding-guestbook.js — never includes a different wedding\'s entry', 'absent')
-      : fail('wedding-guestbook.js — never includes a different wedding\'s entry', 'absent', 'present'));
-  } catch (err) {
-    console.log(`  ❌ FAIL  wedding-guestbook.js test — error: ${err.message}`);
-    results.push(false, false);
-  } finally {
-    for (const id of [gbOwnEntryId, gbOtherEntryId]) {
-      if (!id) continue;
-      try { await api('DELETE', `/apps/${APP_ID}/entities/GuestbookEntry/${id}`, undefined, token); }
-      catch { /* non-fatal */ }
-    }
-    if (gbWeddingId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${gbWeddingId}`, undefined, token); }
       catch { /* non-fatal */ }
     }
   }

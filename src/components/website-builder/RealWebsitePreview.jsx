@@ -34,7 +34,6 @@ import WeddingFAQPage from '@/components/guest-website/pages/WeddingFAQPage';
 import WeddingStayPage from '@/components/guest-website/pages/WeddingStayPage';
 import WeddingTransportPage from '@/components/guest-website/pages/WeddingTransportPage';
 import WeddingExperiencePage from '@/components/guest-website/pages/WeddingExperiencePage';
-import WeddingGuestbookPage from '@/components/guest-website/pages/WeddingGuestbookPage';
 
 const PAGE_COMPONENTS = {
   'home':         WeddingHomePage,
@@ -50,7 +49,6 @@ const PAGE_COMPONENTS = {
   'stay':         WeddingStayPage,
   'transport':    WeddingTransportPage,
   'experience':   WeddingExperiencePage,
-  'guestbook':    WeddingGuestbookPage,
 };
 
 export default function RealWebsitePreview({ details, currentPage = 'home', onNavigate, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId, replayEntranceKey }) {

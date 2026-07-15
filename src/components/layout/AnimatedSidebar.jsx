@@ -33,7 +33,6 @@ const NAV_SECTIONS = [
     label: "Guests",
     items: [
       { icon: Users,         label: "Guest list",    url: createPageUrl("Guests") },
-      { icon: Heart,         label: "Guestbook",     url: createPageUrl("Guestbook") },
       { icon: BarChart2,     label: "Guest polls",   url: createPageUrl("Polls") },
       { icon: MessageCircle, label: "Messages",      url: createPageUrl("Messages") },
       { icon: LayoutGrid,    label: "Seating",       url: createPageUrl("Seating") },

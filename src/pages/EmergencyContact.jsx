@@ -87,6 +87,12 @@ function AvaModal({ onClose }) {
   );
 }
 
+const TABS = [
+  { key: 'contacts', label: 'Contacts' },
+  { key: 'vendors',  label: 'Vendors' },
+  { key: 'notes',    label: 'Notes' },
+];
+
 export default function EmergencyContactPage() {
   const [data, setData] = useState({});
   const [vendorContacts, setVendorContacts] = useState([]);
@@ -94,6 +100,7 @@ export default function EmergencyContactPage() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [showAva, setShowAva] = useState(false);
+  const [activeTab, setActiveTab] = useState('contacts');
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
 
@@ -172,19 +179,34 @@ export default function EmergencyContactPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Emergency contacts" subtitle="Key contacts and vendor numbers for the wedding day" />
 
-      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
-            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
-            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
-          </div>
+      {/* Ava button + save indicator */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+          {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+          {saveStatus === 'saved' && <><Check size={12} />Saved</>}
         </div>
+      </div>
 
+      {/* Tab bar */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer',
+              color: activeTab === tab.key ? '#E03553' : '#444444',
+              borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {/* Primary contact */}
-          <DetailsSection title="On-the-day contact" icon={Phone}>
+          {/* Contacts tab: primary + backup + venue */}
+          {activeTab === 'contacts' && (
+          <>
+          <DetailsSection title="On-the-day contact" icon={Phone} defaultOpen>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Name" value={primary.name} onChange={e => updateNested('primary', { name: e.target.value })} placeholder="Full name" />
               <SectionInput label="Phone" value={primary.phone} onChange={e => updateNested('primary', { phone: e.target.value })} placeholder="+1 555 000 0000" />
@@ -192,8 +214,7 @@ export default function EmergencyContactPage() {
             <SectionInput label="Role / relationship" value={primary.role} onChange={e => updateNested('primary', { role: e.target.value })} placeholder="e.g. Maid of honour, wedding planner" />
           </DetailsSection>
 
-          {/* Backup contact */}
-          <DetailsSection title="Backup contact" icon={Users}>
+          <DetailsSection title="Backup contact" icon={Users} defaultOpen>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Name" value={backup.name} onChange={e => updateNested('backup', { name: e.target.value })} placeholder="Full name" />
               <SectionInput label="Phone" value={backup.phone} onChange={e => updateNested('backup', { phone: e.target.value })} placeholder="+1 555 000 0000" />
@@ -201,16 +222,18 @@ export default function EmergencyContactPage() {
             <SectionInput label="Role / relationship" value={backup.role} onChange={e => updateNested('backup', { role: e.target.value })} placeholder="e.g. Best man, parent" />
           </DetailsSection>
 
-          {/* Venue contact */}
-          <DetailsSection title="Venue contact" icon={Building2}>
+          <DetailsSection title="Venue contact" icon={Building2} defaultOpen>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Venue coordinator name" value={venue.name} onChange={e => updateNested('venue', { name: e.target.value })} />
               <SectionInput label="Phone" value={venue.phone} onChange={e => updateNested('venue', { phone: e.target.value })} placeholder="+1 555 000 0000" />
             </div>
           </DetailsSection>
+          </>
+          )}
 
           {/* Vendor contacts */}
-          <DetailsSection title="Key vendors on the day" icon={Phone}>
+          {activeTab === 'vendors' && (
+          <DetailsSection title="Key vendors on the day" icon={Phone} defaultOpen>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {vendorContacts.map((v, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 12, alignItems: 'flex-end' }}>
@@ -231,11 +254,14 @@ export default function EmergencyContactPage() {
               </button>
             </div>
           </DetailsSection>
+          )}
 
           {/* Notes */}
-          <DetailsSection title="Notes" icon={FileText}>
+          {activeTab === 'notes' && (
+          <DetailsSection title="Notes" icon={FileText} defaultOpen>
             <SectionInput label="Other emergency notes" isTextarea value={data.otherNotes} onChange={e => update({ otherNotes: e.target.value })} placeholder="Medical contacts, allergy kit location, nearby hospital…" />
           </DetailsSection>
+          )}
         </div>
       </div>
 
