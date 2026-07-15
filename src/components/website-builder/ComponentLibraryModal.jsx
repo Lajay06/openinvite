@@ -18,11 +18,7 @@
 import React, { useState } from 'react';
 import { X, Search } from 'lucide-react';
 import { BLOCK_TYPES, CATEGORIES } from '@/components/guest-website/blocks/blockTypes';
-
-const UNIVERSE_NAMES = {
-  aman: 'Aman', tulum: 'Tulum', kyoto: 'Kyoto', capri: 'Capri', marrakech: 'Marrakech',
-  brooklyn: 'Brooklyn', bali: 'Bali', paris: 'Paris', capetown: 'Cape Town', mykonos: 'Mykonos',
-};
+import { getUniverse } from '@/lib/universeCatalog';
 
 const THUMB_KIND = {
   heading: 'text-lines-2', subheading: 'text-lines-1', paragraph: 'text-lines-3', quote: 'quote',
@@ -115,7 +111,7 @@ export default function ComponentLibraryModal({ onSelect, onClose, theme, typogr
     return matchesCategory && matchesSearch;
   });
 
-  const universeName = UNIVERSE_NAMES[activeUniverse] || 'Your universe';
+  const universeName = getUniverse(activeUniverse)?.name || 'Your universe';
 
   return (
     <div

@@ -20,6 +20,26 @@ import MykonosMasthead from '../layouts/MykonosMasthead';
 import MykonosFooter from '../layouts/MykonosFooter';
 import CapeTownMasthead from '../layouts/CapeTownMasthead';
 import CapeTownFooter from '../layouts/CapeTownFooter';
+import AmalfiMasthead from '../layouts/AmalfiMasthead';
+import AmalfiFooter from '../layouts/AmalfiFooter';
+import SedonaMasthead from '../layouts/SedonaMasthead';
+import SedonaFooter from '../layouts/SedonaFooter';
+import AspenMasthead from '../layouts/AspenMasthead';
+import AspenFooter from '../layouts/AspenFooter';
+import TajMasthead from '../layouts/TajMasthead';
+import TajFooter from '../layouts/TajFooter';
+import HavanaMasthead from '../layouts/HavanaMasthead';
+import HavanaFooter from '../layouts/HavanaFooter';
+import EdinburghMasthead from '../layouts/EdinburghMasthead';
+import EdinburghFooter from '../layouts/EdinburghFooter';
+import MonacoMasthead from '../layouts/MonacoMasthead';
+import MonacoFooter from '../layouts/MonacoFooter';
+import FlorenceMasthead from '../layouts/FlorenceMasthead';
+import FlorenceFooter from '../layouts/FlorenceFooter';
+import SeoulMasthead from '../layouts/SeoulMasthead';
+import SeoulFooter from '../layouts/SeoulFooter';
+import ShanghaiMasthead from '../layouts/ShanghaiMasthead';
+import ShanghaiFooter from '../layouts/ShanghaiFooter';
 
 /** Formats weddingDate for display, or null if unset/unparseable — never
  * lets `new Date('')` render the literal text "Invalid Date" to a guest. */
@@ -119,6 +139,54 @@ function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
   );
 }
 
+/**
+ * GenericMastheadHero (feat/universes-expansion-10) — the shared hero
+ * composition for the 10 new universes: full-bleed hero background + a
+ * scrim, the universe's own Masthead centred, its own Footer (date/venue/
+ * RSVP columns) beneath. This is the exact same shape Capri/Mykonos/Cape
+ * Town/Kyoto's own dedicated branches below already use — per the design
+ * system's own rule ("reuse primitives with a universe's own theme/
+ * typography/copy, never fork the page component"), the 10 new universes
+ * share this one composition rather than each hand-writing a near-
+ * identical 35-line branch; what makes each one look genuinely different
+ * is its own Masthead/Footer (arch framing, sunburst, thistle, etc.), not
+ * a bespoke DOM shape.
+ */
+function GenericMastheadHero({ Masthead, Footer, weddingDetails, theme, typography, universeConfig, copy, prefersReduced, formattedDate, venueFallback }) {
+  return (
+    <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <HeroBackground coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}45` }} />
+
+        <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 32px 60px' }}>
+          <motion.div
+            initial={{ opacity: 0, y: prefersReduced ? 0 : (universeConfig?.motion?.yOffset ?? 14) }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.55), ease: universeConfig?.motion?.ease }}
+            style={{ width: '100%' }}
+          >
+            <Masthead coupleNames={weddingDetails.coupleNames} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
+          </motion.div>
+        </div>
+
+        <div style={{ position: 'relative', zIndex: 10, padding: '0 32px 56px' }}>
+          <div style={{ maxWidth: 720, margin: '0 auto' }}>
+            <Footer
+              theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent}
+              columns={[
+                { label: 'The date', value: formattedDate || 'To be announced' },
+                { label: 'Join us in', value: weddingDetails.mainCeremony?.venueName || weddingDetails.mainCeremony?.address?.split(',')[0] || venueFallback },
+                { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function WeddingHomePageContent({ weddingDetails, theme, typography, universeConfig }) {
   const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || 'We are overjoyed to celebrate with you.';
   const prefersReduced = useReducedMotion();
@@ -131,8 +199,30 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
   const isCapri = universeConfig?.layout === 'capri-citrus';
   const isMykonos = universeConfig?.layout === 'mykonos-whitewash';
   const isCapeTown = universeConfig?.layout === 'capetown-estate';
+  const isAmalfi = universeConfig?.layout === 'amalfi-citrus';
+  const isSedona = universeConfig?.layout === 'sedona-mesa';
+  const isAspen = universeConfig?.layout === 'aspen-lodge';
+  const isTaj = universeConfig?.layout === 'taj-pavilion';
+  const isHavana = universeConfig?.layout === 'havana-deco';
+  const isEdinburgh = universeConfig?.layout === 'edinburgh-estate';
+  const isMonaco = universeConfig?.layout === 'monaco-marina';
+  const isFlorence = universeConfig?.layout === 'florence-editorial';
+  const isSeoul = universeConfig?.layout === 'seoul-glass';
+  const isShanghai = universeConfig?.layout === 'shanghai-glamour';
   const copy = universeConfig?.copy || {};
   const formattedDate = formatWeddingDate(weddingDetails.weddingDate, { month: 'long', day: 'numeric', year: 'numeric' });
+
+  const genericHeroProps = { weddingDetails, theme, typography, universeConfig, copy, prefersReduced, formattedDate };
+  if (isAmalfi) return <GenericMastheadHero Masthead={AmalfiMasthead} Footer={AmalfiFooter} venueFallback="Amalfi" {...genericHeroProps} />;
+  if (isSedona) return <GenericMastheadHero Masthead={SedonaMasthead} Footer={SedonaFooter} venueFallback="Sedona" {...genericHeroProps} />;
+  if (isAspen) return <GenericMastheadHero Masthead={AspenMasthead} Footer={AspenFooter} venueFallback="Aspen" {...genericHeroProps} />;
+  if (isTaj) return <GenericMastheadHero Masthead={TajMasthead} Footer={TajFooter} venueFallback="the pavilion" {...genericHeroProps} />;
+  if (isHavana) return <GenericMastheadHero Masthead={HavanaMasthead} Footer={HavanaFooter} venueFallback="Havana" {...genericHeroProps} />;
+  if (isEdinburgh) return <GenericMastheadHero Masthead={EdinburghMasthead} Footer={EdinburghFooter} venueFallback="the estate" {...genericHeroProps} />;
+  if (isMonaco) return <GenericMastheadHero Masthead={MonacoMasthead} Footer={MonacoFooter} venueFallback="Monaco" {...genericHeroProps} />;
+  if (isFlorence) return <GenericMastheadHero Masthead={FlorenceMasthead} Footer={FlorenceFooter} venueFallback="Florence" {...genericHeroProps} />;
+  if (isSeoul) return <GenericMastheadHero Masthead={SeoulMasthead} Footer={SeoulFooter} venueFallback="Seoul" {...genericHeroProps} />;
+  if (isShanghai) return <GenericMastheadHero Masthead={ShanghaiMasthead} Footer={ShanghaiFooter} venueFallback="Shanghai" {...genericHeroProps} />;
 
   if (isParis) {
     return (

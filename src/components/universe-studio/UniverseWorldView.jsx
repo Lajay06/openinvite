@@ -22,6 +22,7 @@
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Crown, ExternalLink } from 'lucide-react';
+import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 import MinimalMasthead from '@/components/guest-website/layouts/MinimalMasthead';
 import KyotoMasthead from '@/components/guest-website/layouts/KyotoMasthead';
 import CapriMasthead from '@/components/guest-website/layouts/CapriMasthead';
@@ -41,6 +42,26 @@ import WaveDivider from '@/components/guest-website/layouts/WaveDivider';
 import LeafCurve from '@/components/guest-website/layouts/LeafCurve';
 import SunRayArc from '@/components/guest-website/layouts/SunRayArc';
 import ZelligeDivider from '@/components/guest-website/layouts/ZelligeDivider';
+import AmalfiMasthead from '@/components/guest-website/layouts/AmalfiMasthead';
+import AmalfiWave from '@/components/guest-website/layouts/AmalfiWave';
+import SedonaMasthead from '@/components/guest-website/layouts/SedonaMasthead';
+import SedonaContour from '@/components/guest-website/layouts/SedonaContour';
+import AspenMasthead from '@/components/guest-website/layouts/AspenMasthead';
+import AspenPine from '@/components/guest-website/layouts/AspenPine';
+import TajMasthead from '@/components/guest-website/layouts/TajMasthead';
+import TajArch from '@/components/guest-website/layouts/TajArch';
+import HavanaMasthead from '@/components/guest-website/layouts/HavanaMasthead';
+import HavanaSunburst from '@/components/guest-website/layouts/HavanaSunburst';
+import EdinburghMasthead from '@/components/guest-website/layouts/EdinburghMasthead';
+import EdinburghThistle from '@/components/guest-website/layouts/EdinburghThistle';
+import MonacoMasthead from '@/components/guest-website/layouts/MonacoMasthead';
+import MonacoMast from '@/components/guest-website/layouts/MonacoMast';
+import FlorenceMasthead from '@/components/guest-website/layouts/FlorenceMasthead';
+import FlorenceVine from '@/components/guest-website/layouts/FlorenceVine';
+import SeoulMasthead from '@/components/guest-website/layouts/SeoulMasthead';
+import SeoulOrb from '@/components/guest-website/layouts/SeoulOrb';
+import ShanghaiMasthead from '@/components/guest-website/layouts/ShanghaiMasthead';
+import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
 import SaveTheDatePreview from '@/components/universe-studio/assets/SaveTheDatePreview';
 import MenuCardPreview from '@/components/universe-studio/assets/MenuCardPreview';
 import SeatingChartPreview from '@/components/universe-studio/assets/SeatingChartPreview';
@@ -57,6 +78,16 @@ const MASTHEAD_BY_LAYOUT = {
   'paris-couture': ParisMasthead,
   'capetown-estate': CapeTownMasthead,
   'mykonos-whitewash': MykonosMasthead,
+  'amalfi-citrus': AmalfiMasthead,
+  'sedona-mesa': SedonaMasthead,
+  'aspen-lodge': AspenMasthead,
+  'taj-pavilion': TajMasthead,
+  'havana-deco': HavanaMasthead,
+  'edinburgh-estate': EdinburghMasthead,
+  'monaco-marina': MonacoMasthead,
+  'florence-editorial': FlorenceMasthead,
+  'seoul-glass': SeoulMasthead,
+  'shanghai-glamour': ShanghaiMasthead,
 };
 
 // The large-format motif treatment per universe for the Motifs chapter —
@@ -85,6 +116,16 @@ const MOTIF_LARGE = {
   capetown: (color) => <VineRule color={color} opacity={0.75} height={24} style={{ width: 260 }} />,
   mykonos: (color) => <CubeBlock color={color} width={110} height={110} />,
   marrakech: (color) => <ZelligeDivider color={color} opacity={0.6} style={{ width: 260 }} />,
+  amalfi: (color) => <AmalfiWave color={color} opacity={0.55} width={260} height={52} />,
+  sedona: (color) => <SedonaContour color={color} opacity={0.55} width={280} height={60} />,
+  aspen: (color) => <AspenPine color={color} opacity={0.6} size={90} />,
+  taj: (color) => <TajArch color={color} opacity={0.55} width={140} height={116} />,
+  havana: (color) => <HavanaSunburst color={color} opacity={0.5} width={220} height={110} />,
+  edinburgh: (color) => <EdinburghThistle color={color} opacity={0.6} size={80} />,
+  monaco: (color) => <MonacoMast color={color} opacity={0.55} width={110} height={78} />,
+  florence: (color) => <FlorenceVine color={color} opacity={0.5} width={260} height={56} />,
+  seoul: (color) => <SeoulOrb color={color} opacity={0.5} size={120} />,
+  shanghai: (color) => <ShanghaiCloud color={color} opacity={0.55} width={240} height={86} />,
 };
 
 function GenericMasthead({ coupleNames, kicker, typography, textColor }) {
@@ -222,6 +263,13 @@ export default function UniverseWorldView({
   const showUpgrade = universe.isUltra && !canAccessUltra && !isCurrent;
   const motifLarge = MOTIF_LARGE[universe.id];
   const { colors, typography } = universe;
+
+  // Opening a world is a deliberate, immediate need for its real font (not
+  // a "might scroll into view" case like the banner wall) — load it as
+  // soon as this view mounts, deduped against whatever's already loaded.
+  useEffect(() => {
+    loadUniverseFont(universe);
+  }, [universe]);
 
   // The world view mounts wherever the banner wall happened to be
   // scrolled to (entering a world is a same-page conditional swap, not a

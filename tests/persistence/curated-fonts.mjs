@@ -19,7 +19,9 @@ import { UNIVERSE_CONFIGS } from '../../src/lib/websiteThemes.js';
 import { CURATED_FONTS, UNIVERSE_DEFAULT_FONT_IDS, UNIVERSE_FONT_OPTIONS, FONT_CATALOG, universePairingPresets } from '../../src/lib/curatedFonts.js';
 import { pass, fail } from './_shared.mjs';
 
-const UNIVERSES = ['aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
+// feat/universes-expansion-10: derived from UNIVERSE_CONFIGS itself rather
+// than a hardcoded id array, so a future universe is covered automatically.
+const UNIVERSES = Object.keys(UNIVERSE_CONFIGS);
 
 export async function runCuratedFonts() {
   const results = [];
@@ -92,9 +94,13 @@ export async function runCuratedFonts() {
   console.log('\n  feat/block-styling-v2 — FONT_CATALOG (the flat 30-font heading/body dropdown):\n');
 
   {
-    results.push(FONT_CATALOG.length === 30
-      ? pass('FONT_CATALOG has exactly 30 entries', String(FONT_CATALOG.length))
-      : fail('FONT_CATALOG has exactly 30 entries', '30', String(FONT_CATALOG.length)));
+    // feat/universes-expansion-10 added 12 new faces (9 for the 10 new
+    // universes' initial pairings, incl. the two CJK faces for Seoul/
+    // Shanghai, + Spectral/Antic Didone after a font-collision fix, +
+    // Plus Jakarta Sans for Aspen's curated-picker entry) — 30 + 12 = 42.
+    results.push(FONT_CATALOG.length === 42
+      ? pass('FONT_CATALOG has exactly 42 entries (30 original + 12 for the new universes)', String(FONT_CATALOG.length))
+      : fail('FONT_CATALOG has exactly 42 entries (30 original + 12 for the new universes)', '42', String(FONT_CATALOG.length)));
 
     const ids = FONT_CATALOG.map(f => f.id);
     results.push(new Set(ids).size === ids.length

@@ -16,6 +16,7 @@
  */
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 import { Crown } from 'lucide-react';
 import HairlineRule from '@/components/guest-website/layouts/HairlineRule';
 import EnsoRing from '@/components/guest-website/layouts/EnsoRing';
@@ -23,6 +24,16 @@ import CitrusScallop from '@/components/guest-website/layouts/CitrusScallop';
 import TicketStub from '@/components/guest-website/layouts/TicketStub';
 import CubeBlock from '@/components/guest-website/layouts/CubeBlock';
 import SunRayArc from '@/components/guest-website/layouts/SunRayArc';
+import AmalfiWave from '@/components/guest-website/layouts/AmalfiWave';
+import SedonaContour from '@/components/guest-website/layouts/SedonaContour';
+import AspenPine from '@/components/guest-website/layouts/AspenPine';
+import TajArch from '@/components/guest-website/layouts/TajArch';
+import HavanaSunburst from '@/components/guest-website/layouts/HavanaSunburst';
+import EdinburghThistle from '@/components/guest-website/layouts/EdinburghThistle';
+import MonacoMast from '@/components/guest-website/layouts/MonacoMast';
+import FlorenceVine from '@/components/guest-website/layouts/FlorenceVine';
+import SeoulOrb from '@/components/guest-website/layouts/SeoulOrb';
+import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -38,6 +49,16 @@ const MOTIF_ACCENT = {
   brooklyn: (color) => <TicketStub color={color} width={120} height={16} notchSize={7} />,
   paris: (color) => <HairlineRule color={color} opacity={0.6} width={140} thickness={1} />,
   mykonos: (color) => <CubeBlock color={color} width={44} height={44} />,
+  amalfi: (color) => <AmalfiWave color={color} opacity={0.5} width={140} height={28} />,
+  sedona: (color) => <SedonaContour color={color} opacity={0.5} width={160} height={32} />,
+  aspen: (color) => <AspenPine color={color} opacity={0.55} size={40} />,
+  taj: (color) => <TajArch color={color} opacity={0.5} width={70} height={58} />,
+  havana: (color) => <HavanaSunburst color={color} opacity={0.45} width={130} height={64} />,
+  edinburgh: (color) => <EdinburghThistle color={color} opacity={0.55} size={38} />,
+  monaco: (color) => <MonacoMast color={color} opacity={0.5} width={60} height={42} />,
+  florence: (color) => <FlorenceVine color={color} opacity={0.45} width={140} height={30} />,
+  seoul: (color) => <SeoulOrb color={color} opacity={0.45} size={52} />,
+  shanghai: (color) => <ShanghaiCloud color={color} opacity={0.5} width={120} height={42} />,
 };
 
 function ImageBanner({ universe, isCurrent, prefersReducedMotion }) {
@@ -130,6 +151,7 @@ export default function UniverseBanner({ universe, isCurrent, onClick }) {
       initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
+      onViewportEnter={() => loadUniverseFont(universe)}
       transition={{ duration: 0.5, ease: 'easeOut' }}
       style={{
         display: 'block', width: '100%', height: 'clamp(280px, 30vw, 460px)',

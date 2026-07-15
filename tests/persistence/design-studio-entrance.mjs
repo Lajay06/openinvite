@@ -79,7 +79,13 @@ export async function runDesignStudioEntrance() {
   console.log('\n  Design Studio — real photography wired for exactly 3 universes, optimised (fix/design-studio-banners):\n');
 
   const PHOTO_UNIVERSES = { marrakech: '/universes/marrakech.jpg', bali: '/universes/bali.jpg', capetown: '/universes/cape-town.jpg' };
-  const NO_PHOTO_UNIVERSES = ['aman', 'tulum', 'kyoto', 'capri', 'brooklyn', 'paris', 'mykonos'];
+  const NO_PHOTO_UNIVERSES = [
+    'aman', 'tulum', 'kyoto', 'capri', 'brooklyn', 'paris', 'mykonos',
+    // feat/universes-expansion-10 — no real photography exists yet for
+    // any of the 10 new universes; all use the designed no-photo
+    // composition treatment, same as the 7 above.
+    'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
+  ];
 
   for (const [id, expectedPath] of Object.entries(PHOTO_UNIVERSES)) {
     const m = websiteThemesSource.match(new RegExp(`${id}: \\{[\\s\\S]*?\\n  \\},`));
@@ -134,6 +140,60 @@ export async function runDesignStudioEntrance() {
   results.push(missingMeta.length === 0
     ? pass('All 10 universes have tagline + tags + tileDescription + motifNote + worldStory', 'found on all 10')
     : fail('All 10 universes have tagline + tags + tileDescription + motifNote + worldStory', 'found on all 10', `missing on: ${missingMeta.join(', ')}`));
+
+  // feat/universes-expansion-10 — a real runtime completeness gate, not a
+  // hardcoded id list: derives the universe list from
+  // Object.keys(UNIVERSE_CONFIGS) itself, so a *future* 21st universe is
+  // checked automatically the moment it's added to config, with no test
+  // file to remember to update. Covers exactly the fields the brief named
+  // as required: palette, type, motif, description, tags, tier.
+  console.log('\n  Design Studio — every universe in UNIVERSE_CONFIGS has all required fields (future-proof, no hardcoded id list):\n');
+
+  {
+    const { UNIVERSE_CONFIGS } = await import('../../src/lib/websiteThemes.js');
+    const REQUIRED_FIELD_CHECKS = {
+      'palette (colors.darkBg/lightBg/accent/accentSecondary)': (cfg) =>
+        !!cfg.colors?.darkBg && !!cfg.colors?.lightBg && !!cfg.colors?.accent && !!cfg.colors?.accentSecondary,
+      'type (typography.headingFont/bodyFont/googleFonts)': (cfg) =>
+        !!cfg.typography?.headingFont && !!cfg.typography?.bodyFont && !!cfg.typography?.googleFonts,
+      'motif (motifNote)': (cfg) => !!cfg.motifNote && cfg.motifNote.length > 0,
+      'description (tileDescription + worldStory)': (cfg) => !!cfg.tileDescription && !!cfg.worldStory,
+      'tags (non-empty array)': (cfg) => Array.isArray(cfg.tags) && cfg.tags.length > 0,
+      'tier (\'free\' or \'ultra\')': (cfg) => cfg.tier === 'free' || cfg.tier === 'ultra',
+    };
+
+    const allIds = Object.keys(UNIVERSE_CONFIGS);
+    results.push(allIds.length >= 20
+      ? pass(`UNIVERSE_CONFIGS has at least the 20 expected universes`, String(allIds.length))
+      : fail(`UNIVERSE_CONFIGS has at least the 20 expected universes`, '>= 20', String(allIds.length)));
+
+    for (const [label, check] of Object.entries(REQUIRED_FIELD_CHECKS)) {
+      const missing = allIds.filter(id => !check(UNIVERSE_CONFIGS[id]));
+      results.push(missing.length === 0
+        ? pass(`Every universe declares ${label}`, `found on all ${allIds.length}`)
+        : fail(`Every universe declares ${label}`, `found on all ${allIds.length}`, `missing on: ${missing.join(', ')}`));
+    }
+
+    // MOTIF_LARGE (the world page's Motifs chapter) is a hand-maintained
+    // map keyed by universe id with a graceful "no dedicated motif yet"
+    // fallback (see UniverseWorldView.jsx) — exactly the kind of map that
+    // let Tulum/Marrakech silently ship with no motif earlier this
+    // project. Checking every id has a real entry here catches that class
+    // of gap for any future universe too, not just missing config fields.
+    const missingMotifLarge = allIds.filter(id => !new RegExp(`\\b${id}: \\(color\\) =>`).test(worldViewSource));
+    results.push(missingMotifLarge.length === 0
+      ? pass('Every universe has a MOTIF_LARGE entry in UniverseWorldView.jsx (no silent "no motif yet" fallback)', `found on all ${allIds.length}`)
+      : fail('Every universe has a MOTIF_LARGE entry in UniverseWorldView.jsx (no silent "no motif yet" fallback)', `found on all ${allIds.length}`, `missing on: ${missingMotifLarge.join(', ')}`));
+
+    // MASTHEAD_BY_LAYOUT is keyed by `layout`, not universe id directly —
+    // every universe that declares a `layout` should have a real masthead
+    // wired, or its world-page hero silently falls back to GenericMasthead.
+    const idsWithLayout = allIds.filter(id => !!UNIVERSE_CONFIGS[id]?.layout);
+    const missingMasthead = idsWithLayout.filter(id => !new RegExp(`'${UNIVERSE_CONFIGS[id].layout}':`).test(worldViewSource.slice(0, worldViewSource.indexOf('MOTIF_LARGE'))));
+    results.push(missingMasthead.length === 0
+      ? pass('Every universe with a layout id has a MASTHEAD_BY_LAYOUT entry', `found on all ${idsWithLayout.length}`)
+      : fail('Every universe with a layout id has a MASTHEAD_BY_LAYOUT entry', `found on all ${idsWithLayout.length}`, `missing on: ${missingMasthead.join(', ')}`));
+  }
 
   console.log('\n  Design Studio — reduced-motion gates (entrance overlay, banner, world view hero):\n');
 
@@ -205,9 +265,23 @@ export async function runDesignStudioEntrance() {
   results.push(/\{isUltra && \(/.test(bannerSource) && /<Crown size=\{10\} \/> Ultra/.test(bannerSource)
     ? pass('UniverseBanner.jsx renders the Ultra badge conditionally on isUltra', 'found')
     : fail('UniverseBanner.jsx renders the Ultra badge conditionally on isUltra', 'found', 'not found'));
-  results.push(/ULTRA_UNIVERSE_IDS = new Set\(\['marrakech', 'paris'\]\)/.test(catalogSource)
-    ? pass('universeCatalog.js gates exactly marrakech + paris behind Ultra', "['marrakech', 'paris']")
-    : fail('universeCatalog.js gates exactly marrakech + paris behind Ultra', "['marrakech', 'paris']", 'not found / different set'));
+  // Gating is config-driven (feat/universes-expansion-10) — verify the
+  // mechanism (every tier:'ultra' config entry is gated, and only those)
+  // rather than a hardcoded id list, which is exactly the anti-pattern
+  // this replaced.
+  {
+    const { UNIVERSE_CONFIGS } = await import('../../src/lib/websiteThemes.js');
+    const { ULTRA_UNIVERSE_IDS } = await import('../../src/lib/universeCatalog.js');
+    const expectedUltra = new Set(Object.keys(UNIVERSE_CONFIGS).filter(id => UNIVERSE_CONFIGS[id]?.tier === 'ultra'));
+    const setsMatch = expectedUltra.size === ULTRA_UNIVERSE_IDS.size
+      && [...expectedUltra].every(id => ULTRA_UNIVERSE_IDS.has(id));
+    results.push(setsMatch
+      ? pass('universeCatalog.js ULTRA_UNIVERSE_IDS derives exactly from tier: \'ultra\' configs, no hardcoded list', [...ULTRA_UNIVERSE_IDS].join(', '))
+      : fail('universeCatalog.js ULTRA_UNIVERSE_IDS derives exactly from tier: \'ultra\' configs, no hardcoded list', [...expectedUltra].join(', '), [...ULTRA_UNIVERSE_IDS].join(', ')));
+    results.push(!/new Set\(\[.*'marrakech'.*\]\)/.test(catalogSource)
+      ? pass('universeCatalog.js no longer hardcodes the Ultra id list as a literal array', 'not found')
+      : fail('universeCatalog.js no longer hardcodes the Ultra id list as a literal array', 'not found', 'still present'));
+  }
   results.push(/showUpgrade = universe\.isUltra && !canAccessUltra && !isCurrent/.test(worldViewSource)
     ? pass('UniverseWorldView.jsx shows the upgrade path (not a locked-out door) for gated worlds', 'found')
     : fail('UniverseWorldView.jsx shows the upgrade path (not a locked-out door) for gated worlds', 'found', 'not found'));

@@ -23,33 +23,37 @@ import {
 import { UNIVERSE_CONFIGS, WEBSITE_THEMES } from '../../src/lib/websiteThemes.js';
 import { pass, fail } from './_shared.mjs';
 
-const UNIVERSES = ['aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
+// feat/universes-expansion-10 added 10 more (all Ultra-gated) — 20 total.
+const UNIVERSES = [
+  'aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos',
+  'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
+];
 
 export async function runUniverseStyling() {
   const results = [];
 
-  console.log('\n  Universe styling — all 10 universes declared:\n');
+  console.log('\n  Universe styling — all 20 universes declared:\n');
 
   results.push(UNIVERSES.every(id => !!UNIVERSE_CONFIGS[id])
-    ? pass('UNIVERSE_CONFIGS declares all 10 canonical universes', UNIVERSES.join(', '))
-    : fail('UNIVERSE_CONFIGS declares all 10 canonical universes', UNIVERSES.join(', '), Object.keys(UNIVERSE_CONFIGS).join(', ')));
+    ? pass('UNIVERSE_CONFIGS declares all 20 canonical universes', UNIVERSES.join(', '))
+    : fail('UNIVERSE_CONFIGS declares all 20 canonical universes', UNIVERSES.join(', '), Object.keys(UNIVERSE_CONFIGS).join(', ')));
 
-  results.push(Object.keys(UNIVERSE_CONFIGS).length === 10
-    ? pass('UNIVERSE_CONFIGS has exactly 10 entries (no stray/leftover keys)', '10')
-    : fail('UNIVERSE_CONFIGS has exactly 10 entries (no stray/leftover keys)', '10', Object.keys(UNIVERSE_CONFIGS).length));
+  results.push(Object.keys(UNIVERSE_CONFIGS).length === 20
+    ? pass('UNIVERSE_CONFIGS has exactly 20 entries (no stray/leftover keys)', '20')
+    : fail('UNIVERSE_CONFIGS has exactly 20 entries (no stray/leftover keys)', '20', Object.keys(UNIVERSE_CONFIGS).length));
 
   console.log('\n  Font resolution — resolved font family differs per universe:\n');
 
   const resolvedHeadingFonts = UNIVERSES.map(id => resolveTypography({ activeUniverse: id }).headingFont);
   const resolvedBodyFonts = UNIVERSES.map(id => resolveTypography({ activeUniverse: id }).bodyFont);
 
-  results.push(new Set(resolvedHeadingFonts).size === 10
-    ? pass('resolveTypography — heading font is distinct across all 10 universes', resolvedHeadingFonts.join(' | '))
-    : fail('resolveTypography — heading font is distinct across all 10 universes', '10 distinct', `${new Set(resolvedHeadingFonts).size} distinct: ${resolvedHeadingFonts.join(', ')}`));
+  results.push(new Set(resolvedHeadingFonts).size === 20
+    ? pass('resolveTypography — heading font is distinct across all 20 universes', resolvedHeadingFonts.join(' | '))
+    : fail('resolveTypography — heading font is distinct across all 20 universes', '20 distinct', `${new Set(resolvedHeadingFonts).size} distinct: ${resolvedHeadingFonts.join(', ')}`));
 
-  results.push(new Set(resolvedBodyFonts).size === 10
-    ? pass('resolveTypography — body font is distinct across all 10 universes', resolvedBodyFonts.join(' | '))
-    : fail('resolveTypography — body font is distinct across all 10 universes', '10 distinct', `${new Set(resolvedBodyFonts).size} distinct: ${resolvedBodyFonts.join(', ')}`));
+  results.push(new Set(resolvedBodyFonts).size === 20
+    ? pass('resolveTypography — body font is distinct across all 20 universes', resolvedBodyFonts.join(' | '))
+    : fail('resolveTypography — body font is distinct across all 20 universes', '20 distinct', `${new Set(resolvedBodyFonts).size} distinct: ${resolvedBodyFonts.join(', ')}`));
 
   // Every universe must declare its own googleFonts query — otherwise its
   // fonts silently never load on the published site.
@@ -106,23 +110,23 @@ export async function runUniverseStyling() {
 
   // fix/universe-cleanup: tulum/bali previously resolved the identical
   // (type, opacity) pair (canvas/0.02), making the two indistinguishable.
-  results.push(new Set(resolvedTextures.map(t => `${t.type}-${t.opacity}`)).size === 10
-    ? pass('resolveTexture — (type, opacity) pair is distinct across all 10 universes', resolvedTextures.map(t => `${t.type}/${t.opacity}`).join(', '))
-    : fail('resolveTexture — (type, opacity) pair is distinct across all 10 universes', '10 distinct', `${new Set(resolvedTextures.map(t => `${t.type}-${t.opacity}`)).size} distinct: ${resolvedTextures.map(t => `${t.type}/${t.opacity}`).join(', ')}`));
+  results.push(new Set(resolvedTextures.map(t => `${t.type}-${t.opacity}`)).size === 20
+    ? pass('resolveTexture — (type, opacity) pair is distinct across all 20 universes', resolvedTextures.map(t => `${t.type}/${t.opacity}`).join(', '))
+    : fail('resolveTexture — (type, opacity) pair is distinct across all 20 universes', '20 distinct', `${new Set(resolvedTextures.map(t => `${t.type}-${t.opacity}`)).size} distinct: ${resolvedTextures.map(t => `${t.type}/${t.opacity}`).join(', ')}`));
 
   console.log('\n  Motion resolution — one consistent reveal type, calibrated per universe:\n');
 
   const resolvedMotions = UNIVERSES.map(id => resolveMotion({ activeUniverse: id }));
 
   results.push(resolvedMotions.every(m => m?.sectionReveal === 'fade')
-    ? pass('resolveMotion — every universe uses the same reveal type (fade — opacity+translate)', 'fade × 10')
-    : fail('resolveMotion — every universe uses the same reveal type (fade — opacity+translate)', 'fade × 10', resolvedMotions.map(m => m?.sectionReveal).join(', ')));
+    ? pass('resolveMotion — every universe uses the same reveal type (fade — opacity+translate)', 'fade × 20')
+    : fail('resolveMotion — every universe uses the same reveal type (fade — opacity+translate)', 'fade × 20', resolvedMotions.map(m => m?.sectionReveal).join(', ')));
 
   // fix/universe-cleanup: tulum/paris/capetown previously all resolved the
   // identical (duration, yOffset) pair (0.7/16), a 3-way collision.
-  results.push(new Set(resolvedMotions.map(m => `${m.duration}-${m.yOffset}`)).size === 10
-    ? pass('resolveMotion — (duration, yOffset) pair is distinct across all 10 universes', resolvedMotions.map(m => `${m.duration}s/${m.yOffset}px`).join(', '))
-    : fail('resolveMotion — (duration, yOffset) pair is distinct across all 10 universes', '10 distinct', `${new Set(resolvedMotions.map(m => `${m.duration}-${m.yOffset}`)).size} distinct: ${resolvedMotions.map(m => `${m.duration}s/${m.yOffset}px`).join(', ')}`));
+  results.push(new Set(resolvedMotions.map(m => `${m.duration}-${m.yOffset}`)).size === 20
+    ? pass('resolveMotion — (duration, yOffset) pair is distinct across all 20 universes', resolvedMotions.map(m => `${m.duration}s/${m.yOffset}px`).join(', '))
+    : fail('resolveMotion — (duration, yOffset) pair is distinct across all 20 universes', '20 distinct', `${new Set(resolvedMotions.map(m => `${m.duration}-${m.yOffset}`)).size} distinct: ${resolvedMotions.map(m => `${m.duration}s/${m.yOffset}px`).join(', ')}`));
 
   console.log('\n  Page transition resolution — every universe declares one, distinct calibration:\n');
 
@@ -132,9 +136,9 @@ export async function runUniverseStyling() {
     ? pass('UNIVERSE_CONFIGS — every universe declares a pageTransition (fix/universe-cleanup, was aman-only)', resolvedTransitions.map(t => t.type).join(', '))
     : fail('UNIVERSE_CONFIGS — every universe declares a pageTransition (fix/universe-cleanup, was aman-only)', 'all non-null', resolvedTransitions.map(t => t?.type ?? 'MISSING').join(', ')));
 
-  results.push(new Set(resolvedTransitions.map(t => `${t.type}-${t.duration}`)).size === 10
-    ? pass('UNIVERSE_CONFIGS — pageTransition (type, duration) is distinct across all 10 universes', resolvedTransitions.map(t => `${t.type}/${t.duration}`).join(', '))
-    : fail('UNIVERSE_CONFIGS — pageTransition (type, duration) is distinct across all 10 universes', '10 distinct', `${new Set(resolvedTransitions.map(t => `${t.type}-${t.duration}`)).size} distinct: ${resolvedTransitions.map(t => `${t.type}/${t.duration}`).join(', ')}`));
+  results.push(new Set(resolvedTransitions.map(t => `${t.type}-${t.duration}`)).size === 20
+    ? pass('UNIVERSE_CONFIGS — pageTransition (type, duration) is distinct across all 20 universes', resolvedTransitions.map(t => `${t.type}/${t.duration}`).join(', '))
+    : fail('UNIVERSE_CONFIGS — pageTransition (type, duration) is distinct across all 20 universes', '20 distinct', `${new Set(resolvedTransitions.map(t => `${t.type}-${t.duration}`)).size} distinct: ${resolvedTransitions.map(t => `${t.type}/${t.duration}`).join(', ')}`));
 
   console.log('\n  Colour resolution — distinct per universe, no fallback to Aman (fix/universe-palettes):\n');
 
@@ -144,13 +148,13 @@ export async function runUniverseStyling() {
     ? pass('resolveColors — every universe declares a full palette', resolvedColors.map(c => c.darkBg).join(', '))
     : fail('resolveColors — every universe declares a full palette', 'all non-null with darkBg/accent', JSON.stringify(resolvedColors)));
 
-  results.push(new Set(resolvedColors.map(c => c.darkBg)).size === 10
-    ? pass('resolveColors — darkBg is distinct across all 10 universes (none fall back to Aman)', resolvedColors.map(c => c.darkBg).join(', '))
-    : fail('resolveColors — darkBg is distinct across all 10 universes (none fall back to Aman)', '10 distinct', `${new Set(resolvedColors.map(c => c.darkBg)).size} distinct: ${resolvedColors.map(c => c.darkBg).join(', ')}`));
+  results.push(new Set(resolvedColors.map(c => c.darkBg)).size === 20
+    ? pass('resolveColors — darkBg is distinct across all 20 universes (none fall back to Aman)', resolvedColors.map(c => c.darkBg).join(', '))
+    : fail('resolveColors — darkBg is distinct across all 20 universes (none fall back to Aman)', '20 distinct', `${new Set(resolvedColors.map(c => c.darkBg)).size} distinct: ${resolvedColors.map(c => c.darkBg).join(', ')}`));
 
-  results.push(new Set(resolvedColors.map(c => c.accent)).size === 10
-    ? pass('resolveColors — accent is distinct across all 10 universes', resolvedColors.map(c => c.accent).join(', '))
-    : fail('resolveColors — accent is distinct across all 10 universes', '10 distinct', `${new Set(resolvedColors.map(c => c.accent)).size} distinct: ${resolvedColors.map(c => c.accent).join(', ')}`));
+  results.push(new Set(resolvedColors.map(c => c.accent)).size === 20
+    ? pass('resolveColors — accent is distinct across all 20 universes', resolvedColors.map(c => c.accent).join(', '))
+    : fail('resolveColors — accent is distinct across all 20 universes', '20 distinct', `${new Set(resolvedColors.map(c => c.accent)).size} distinct: ${resolvedColors.map(c => c.accent).join(', ')}`));
 
   {
     const amanColors = resolveColors({ activeUniverse: 'aman' });

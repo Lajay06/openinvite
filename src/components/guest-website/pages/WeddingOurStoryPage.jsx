@@ -15,6 +15,67 @@ import CubeBlock from '../layouts/CubeBlock';
 import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
 import VineRule from '../layouts/VineRule';
 import UniverseBlocks from '../blocks/UniverseBlocks';
+import AmalfiSectionMark from '../layouts/AmalfiSectionMark';
+import SedonaSectionMark from '../layouts/SedonaSectionMark';
+import AspenSectionMark from '../layouts/AspenSectionMark';
+import TajSectionMark from '../layouts/TajSectionMark';
+import HavanaSectionMark from '../layouts/HavanaSectionMark';
+import EdinburghSectionMark from '../layouts/EdinburghSectionMark';
+import MonacoSectionMark from '../layouts/MonacoSectionMark';
+import FlorenceSectionMark from '../layouts/FlorenceSectionMark';
+import SeoulSectionMark from '../layouts/SeoulSectionMark';
+import ShanghaiSectionMark from '../layouts/ShanghaiSectionMark';
+
+/**
+ * GenericStoryComposition (feat/universes-expansion-10) — the shared
+ * single-column story composition Capri/Mykonos already use: SectionMark
+ * → story text → photo grid → milestones. Same rationale as
+ * GenericMastheadHero in WeddingHomePage.jsx — the universe's own
+ * SectionMark carries the visual distinctness, not a bespoke DOM shape.
+ */
+function GenericStoryComposition({ SectionMark, weddingDetails, theme, typography, universeConfig, copy, storyText, photos, milestones }) {
+  const motionEnabled = isMotionEnabled(weddingDetails);
+  return (
+    <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '90px 32px' }}>
+      <div style={{ maxWidth: 760, margin: '0 auto' }}>
+        <SectionReveal universeConfig={universeConfig} disabled={!motionEnabled}>
+          <SectionMark kicker={copy.storyKicker} theme={theme} typography={typography} accentColor={theme.accent} />
+        </SectionReveal>
+
+        {storyText && (
+          <SectionReveal universeConfig={universeConfig} disabled={!motionEnabled} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.15rem, 2.2vw, 1.375rem)', lineHeight: 1.7, marginBottom: 56, whiteSpace: 'pre-wrap' }}>
+            {storyText}
+          </SectionReveal>
+        )}
+
+        {photos.length > 0 && (
+          <div style={{ marginBottom: 56 }}>
+            <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Moments</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '20px' }}>
+              {photos.map((photo, i) => (
+                <SectionReveal key={i} universeConfig={universeConfig} disabled={!motionEnabled}>
+                  <img src={photo} alt="Wedding moment" style={{ width: '100%', height: '280px', objectFit: 'cover' }} />
+                </SectionReveal>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {milestones.length > 0 && (
+          <div>
+            <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Our journey</h2>
+            {milestones.map((milestone, i) => (
+              <SectionReveal key={i} universeConfig={universeConfig} disabled={!motionEnabled} style={{ marginBottom: 28 }}>
+                <div style={{ fontFamily: typography.bodyFont, fontSize: '0.875rem', fontWeight: 700, color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
+                <div style={{ fontFamily: typography.bodyFont, fontSize: '1rem', lineHeight: 1.65 }}>{milestone.text}</div>
+              </SectionReveal>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function WeddingOurStoryPageContent({ weddingDetails, theme, typography, universeConfig }) {
   const content = weddingDetails.ourStoryContent || {};
@@ -30,7 +91,29 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
   const isCapri = universeConfig?.layout === 'capri-citrus';
   const isMykonos = universeConfig?.layout === 'mykonos-whitewash';
   const isCapeTown = universeConfig?.layout === 'capetown-estate';
+  const isAmalfi = universeConfig?.layout === 'amalfi-citrus';
+  const isSedona = universeConfig?.layout === 'sedona-mesa';
+  const isAspen = universeConfig?.layout === 'aspen-lodge';
+  const isTaj = universeConfig?.layout === 'taj-pavilion';
+  const isHavana = universeConfig?.layout === 'havana-deco';
+  const isEdinburgh = universeConfig?.layout === 'edinburgh-estate';
+  const isMonaco = universeConfig?.layout === 'monaco-marina';
+  const isFlorence = universeConfig?.layout === 'florence-editorial';
+  const isSeoul = universeConfig?.layout === 'seoul-glass';
+  const isShanghai = universeConfig?.layout === 'shanghai-glamour';
   const copy = universeConfig?.copy || {};
+
+  const genericStoryProps = { weddingDetails, theme, typography, universeConfig, copy, storyText, photos, milestones };
+  if (isAmalfi) return <GenericStoryComposition SectionMark={AmalfiSectionMark} {...genericStoryProps} />;
+  if (isSedona) return <GenericStoryComposition SectionMark={SedonaSectionMark} {...genericStoryProps} />;
+  if (isAspen) return <GenericStoryComposition SectionMark={AspenSectionMark} {...genericStoryProps} />;
+  if (isTaj) return <GenericStoryComposition SectionMark={TajSectionMark} {...genericStoryProps} />;
+  if (isHavana) return <GenericStoryComposition SectionMark={HavanaSectionMark} {...genericStoryProps} />;
+  if (isEdinburgh) return <GenericStoryComposition SectionMark={EdinburghSectionMark} {...genericStoryProps} />;
+  if (isMonaco) return <GenericStoryComposition SectionMark={MonacoSectionMark} {...genericStoryProps} />;
+  if (isFlorence) return <GenericStoryComposition SectionMark={FlorenceSectionMark} {...genericStoryProps} />;
+  if (isSeoul) return <GenericStoryComposition SectionMark={SeoulSectionMark} {...genericStoryProps} />;
+  if (isShanghai) return <GenericStoryComposition SectionMark={ShanghaiSectionMark} {...genericStoryProps} />;
 
   if (isParis) {
     return (

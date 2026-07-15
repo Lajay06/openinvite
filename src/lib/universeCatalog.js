@@ -11,9 +11,19 @@
  */
 import { UNIVERSE_CONFIGS } from './websiteThemes.js';
 
-export const ULTRA_UNIVERSE_IDS = new Set(['marrakech', 'paris']);
+// Gating is config-driven: a universe is Ultra iff its own UNIVERSE_CONFIGS
+// entry declares tier: 'ultra' (feat/universes-expansion-10 — previously a
+// hardcoded id Set here, independent of config, that someone would have to
+// remember to update by hand every time a universe's tier changed or a new
+// universe shipped).
+export const ULTRA_UNIVERSE_IDS = new Set(
+  Object.keys(UNIVERSE_CONFIGS).filter(id => UNIVERSE_CONFIGS[id]?.tier === 'ultra')
+);
 
-export const STYLE_TAGS = ['minimal', 'luxury', 'tropical', 'coastal', 'romantic', 'classic', 'desert', 'urban'];
+export const STYLE_TAGS = [
+  'minimal', 'luxury', 'tropical', 'coastal', 'romantic', 'classic', 'desert', 'urban',
+  'natural', 'premium', 'ornamental', 'retro', 'heritage', 'fashion', 'editorial', 'contemporary', 'glamour',
+];
 
 const DISPLAY_NAME = {
   aman: 'Aman',
@@ -26,11 +36,27 @@ const DISPLAY_NAME = {
   paris: 'Paris',
   capetown: 'Cape Town',
   mykonos: 'Mykonos',
+  amalfi: 'Amalfi',
+  sedona: 'Sedona',
+  aspen: 'Aspen',
+  taj: 'Taj',
+  havana: 'Havana',
+  edinburgh: 'Edinburgh',
+  monaco: 'Monaco',
+  florence: 'Florence',
+  seoul: 'Seoul',
+  shanghai: 'Shanghai',
 };
 
 // Fixed display order — stable across renders/filters so tiles never
-// visibly reshuffle when a filter changes which ones are shown.
-const ORDER = ['aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
+// visibly reshuffle when a filter changes which ones are shown. The
+// original 10 keep their order; the 10 new Ultra universes
+// (feat/universes-expansion-10) are appended after, not interleaved, so
+// existing weddings' sense of "where their universe sits" never shifts.
+const ORDER = [
+  'aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos',
+  'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
+];
 
 export const UNIVERSE_CATALOG = ORDER.map(id => {
   const cfg = UNIVERSE_CONFIGS[id] || {};
