@@ -33,7 +33,7 @@ export default async function handler(req, res) {
   const key = process.env.GOOGLE_PLACES_API_KEY;
   if (!key) return res.status(503).json({ error: 'Google Places API not configured' });
 
-  const fields = 'place_id,name,formatted_address,rating,user_ratings_total,price_level,formatted_phone_number,website,photos,opening_hours,types,geometry';
+  const fields = 'place_id,name,formatted_address,rating,user_ratings_total,price_level,formatted_phone_number,website,photos,opening_hours,types,geometry,reviews';
   const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(place_id)}&fields=${fields}&key=${key}`;
 
   try {
@@ -58,6 +58,12 @@ export default async function handler(req, res) {
         photo_reference:    p.photos?.[0]?.photo_reference || null,
         maps_url:           `https://www.google.com/maps/place/?q=place_id:${p.place_id}`,
         types:              p.types || [],
+        reviews: (p.reviews || []).slice(0, 5).map(r => ({
+          author_name: r.author_name || 'Anonymous',
+          rating: r.rating || null,
+          relative_time_description: r.relative_time_description || '',
+          text: r.text || '',
+        })),
       },
     });
   } catch (err) {
