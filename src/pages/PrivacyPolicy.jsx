@@ -127,7 +127,6 @@ export default function PrivacyPolicy() {
             ['Stripe', "Couple's email, payment method, plan and price details", 'Processes one-time plan payments; manages the billing portal'],
             ['PostHog', "Couple's email and name (once logged in), pages visited, feature usage", 'Product analytics, so we can see what to improve'],
             ['Sentry', 'Error reports and, for a sample of sessions, a masked session replay', 'Error monitoring, to find and fix bugs'],
-            ['Crisp', "Couple's email and name (once logged in)", 'Live chat support widget'],
             ['Cloudinary', 'No personal data — hosts static marketing images only', 'Serves images on our public marketing pages'],
             ['Google Places', 'Venue and vendor search terms a couple types', 'Powers venue/vendor location search and suggestions'],
             ['Spotify', "Couple's Spotify profile (display name, photo) and song search terms", 'Music playlist and song-request features'],
