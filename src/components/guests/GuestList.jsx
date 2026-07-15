@@ -290,7 +290,7 @@ const selectStyle = {
   color: '#0A0A0A',
 };
 
-const COLUMN_COUNT = 11;
+const COLUMN_COUNT = 10;
 
 const SkeletonRows = () => (
   <>
@@ -304,7 +304,6 @@ const SkeletonRows = () => (
           </div>
         </TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 140, height: 12 }} /></TableCell>
-        <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 70, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 90, height: 18 }} /></TableCell>
         <TableCell><div className="skeleton-row" style={{ width: 100, height: 18 }} /></TableCell>
@@ -344,13 +343,61 @@ function fmtRespondedAt(iso) {
 const STATUS_LABELS = { yes: 'Attending', no: 'Declined', pending: 'Pending' };
 const STATUS_COLORS = { yes: '#166534', no: '#991b1b', pending: 'rgba(10,10,10,0.4)' };
 
+/* ── Dietary requirements — lives in the expanded detail row now, not its own
+   table column (moved out to give the remaining columns more room; most rows
+   had nothing here). Self-contained editing state, independent of the main
+   table's shared editCell — same field (dietary_restrictions), same
+   Guest.update path via onUpdate, just a different place to edit it. */
+function DietaryField({ guest, onUpdate }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(guest.dietary_restrictions || '');
+
+  useEffect(() => { setValue(guest.dietary_restrictions || ''); }, [guest.dietary_restrictions]);
+
+  const commit = () => {
+    setEditing(false);
+    const next = value.trim();
+    if (next !== (guest.dietary_restrictions || '')) {
+      onUpdate && onUpdate(guest.id, { dietary_restrictions: next || null });
+    }
+  };
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, display: 'block', marginBottom: 6 }}>
+        Dietary requirements
+      </span>
+      {editing ? (
+        <input
+          autoFocus
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onBlur={commit}
+          onKeyDown={e => {
+            if (e.key === 'Enter') { e.preventDefault(); commit(); }
+            if (e.key === 'Escape') { setValue(guest.dietary_restrictions || ''); setEditing(false); }
+          }}
+          placeholder="e.g. Vegetarian, Nut allergy"
+          style={{ ...inputStyle, maxWidth: 320 }}
+        />
+      ) : (
+        <HoverDiv onClick={() => setEditing(true)} pointer title="Click to edit">
+          <DietaryCell value={guest.dietary_restrictions} />
+        </HoverDiv>
+      )}
+    </div>
+  );
+}
+
 /* ── Per-event RSVP detail sub-row — shows what a guest actually answered ── */
-function RsvpDetailRow({ guest, weddingEvents, onEditEvents }) {
+function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate }) {
   const hasNote = !!(guest.rsvp_note || guest.song_request);
 
   return (
     <TableRow style={{ background: 'rgba(10,10,10,0.015)' }}>
       <TableCell colSpan={COLUMN_COUNT} style={{ padding: '12px 16px 16px 52px' }}>
+        <DietaryField guest={guest} onUpdate={onUpdate} />
+
         {weddingEvents.length === 0 ? (
           <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No events set up for this wedding yet.</span>
         ) : (
@@ -483,11 +530,13 @@ function AddGuestRow({ onQuickAdd, columnCount }) {
 /* ─── Main component ─────────────────────────────────────────────────────── */
 export default function GuestList({
   guests, onEdit, onDelete, onUpdate, onQuickAdd, guestRoles = {}, loading, weddingEvents = [],
-  selectedIds, onToggleSelect, onToggleSelectAll, onSetEventsAndSend, onEditEvents,
+  selectedIds, onToggleSelect, onToggleSelectAll, onSetEventsAndSend, onEditEvents, scrollToGuestId,
 }) {
   const [editCell, setEditCell] = useState(null); // { id, field }
   const [editValue, setEditValue] = useState('');
   const [expandedGuestIds, setExpandedGuestIds] = useState(() => new Set());
+  const rowRefs = useRef(new Map());
+  const scrolledForId = useRef(null);
 
   const toggleExpanded = (guestId) => {
     setExpandedGuestIds(prev => {
@@ -497,6 +546,20 @@ export default function GuestList({
       return next;
     });
   };
+
+  // Scrolls a freshly-added guest's row into view once it actually exists in
+  // `guests` (the row won't be there yet on the render right after creation —
+  // the parent's loadGuests() fetch is still in flight). Only fires once per
+  // scrollToGuestId so later, unrelated re-renders (e.g. an inline edit
+  // elsewhere in the table) don't keep re-scrolling back to it.
+  useEffect(() => {
+    if (!scrollToGuestId || scrolledForId.current === scrollToGuestId) return;
+    const el = rowRefs.current.get(scrollToGuestId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scrolledForId.current = scrollToGuestId;
+    }
+  }, [scrollToGuestId, guests]);
 
   // Close edit cell on Escape at document level
   useEffect(() => {
@@ -586,33 +649,6 @@ export default function GuestList({
     );
   };
 
-  /* Dietary cell: plain string field like textCell, but displays via the
-     pill-parsing DietaryCell rather than raw text. */
-  const dietaryCell = (guest) => {
-    if (isEditing(guest.id, 'dietary_restrictions')) {
-      return (
-        <input
-          autoFocus
-          value={editValue}
-          onChange={e => setEditValue(e.target.value)}
-          onBlur={commitEdit}
-          onKeyDown={handleKeyDown}
-          placeholder="e.g. Vegetarian, Nut allergy"
-          style={inputStyle}
-        />
-      );
-    }
-    return (
-      <HoverDiv
-        onClick={() => startEdit(guest.id, 'dietary_restrictions', guest.dietary_restrictions || '')}
-        pointer
-        title="Click to edit"
-      >
-        <DietaryCell value={guest.dietary_restrictions} />
-      </HoverDiv>
-    );
-  };
-
   /* Tags cell: array field, edited as a comma-separated string (commitEdit's
      generic string-field logic doesn't apply here since the stored value is
      an array, not a string — same click-to-edit pattern, its own commit). */
@@ -686,7 +722,6 @@ export default function GuestList({
               <TableHead>Guest</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Dietary</TableHead>
               <TableHead>Tags</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Last sent</TableHead>
@@ -701,7 +736,10 @@ export default function GuestList({
               const isExpanded = expandedGuestIds.has(guest.id);
 
               rows.push(
-                <TableRow key={guest.id}>
+                <TableRow
+                  key={guest.id}
+                  ref={el => { if (el) rowRefs.current.set(guest.id, el); else rowRefs.current.delete(guest.id); }}
+                >
                   {/* ── Checkbox ── */}
                   <TableCell className="align-middle">
                     <input
@@ -776,11 +814,6 @@ export default function GuestList({
                         <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
                       )
                     )}
-                  </TableCell>
-
-                  {/* ── Dietary ── */}
-                  <TableCell className="align-middle">
-                    {dietaryCell(guest)}
                   </TableCell>
 
                   {/* ── Tags ── */}
@@ -864,7 +897,7 @@ export default function GuestList({
               /* ── RSVP detail sub-row (per-event answers + note/song) ── */
               if (isExpanded) {
                 rows.push(
-                  <RsvpDetailRow key={`${guest.id}-rsvp`} guest={guest} weddingEvents={weddingEvents} onEditEvents={onEditEvents} />
+                  <RsvpDetailRow key={`${guest.id}-rsvp`} guest={guest} weddingEvents={weddingEvents} onEditEvents={onEditEvents} onUpdate={onUpdate} />
                 );
               }
 
