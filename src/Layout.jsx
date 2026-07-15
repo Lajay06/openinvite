@@ -30,7 +30,7 @@ function getStoredUser() {
 }
 
 // ── Full-width top navigation bar ────────────────────────────────────────────
-function TopBar({ weddingDetails, unreadCount, onCollaborate }) {
+function TopBar({ weddingDetails, unreadCount }) {
   const navigate = useNavigate();
   const [weather, setWeather] = useState(null);
 
@@ -191,9 +191,6 @@ function TopBar({ weddingDetails, unreadCount, onCollaborate }) {
             <DropdownMenuItem onClick={() => navigate('/account')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
               Account
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onCollaborate} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
-              Collaborate
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer', color: '#E03553' }}>
               Log out
@@ -284,7 +281,6 @@ export default function Layout({ children, currentPageName }) {
       <TopBar
         weddingDetails={weddingDetails}
         unreadCount={unreadMessagesCount}
-        onCollaborate={() => setShowCollaborateModal(true)}
       />
 
       {/* ── Trial banner (desktop only, below top bar) ───────── */}
