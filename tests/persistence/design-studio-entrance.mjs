@@ -76,16 +76,22 @@ export async function runDesignStudioEntrance() {
     ? pass("UNIVERSE_CONFIGS.capri.accent is the corrected muted gold, not the old flagged neon lemon", '#C4A130')
     : fail("UNIVERSE_CONFIGS.capri.accent is the corrected muted gold, not the old flagged neon lemon", '#C4A130', 'not found / regressed'));
 
-  console.log('\n  Design Studio — real photography wired for exactly 3 universes, optimised (fix/design-studio-banners):\n');
+  console.log('\n  Design Studio — real photography wired for 19 of 20 universes, optimised:\n');
 
-  const PHOTO_UNIVERSES = { marrakech: '/universes/marrakech.jpg', bali: '/universes/bali.jpg', capetown: '/universes/cape-town.jpg' };
-  const NO_PHOTO_UNIVERSES = [
-    'aman', 'tulum', 'kyoto', 'capri', 'brooklyn', 'paris', 'mykonos',
-    // feat/universes-expansion-10 — no real photography exists yet for
-    // any of the 10 new universes; all use the designed no-photo
-    // composition treatment, same as the 7 above.
-    'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
-  ];
+  // feat/universe-experience-fixes — real photography now covers every
+  // universe except Aman (no source photo exists for it yet). Marrakech/
+  // Bali/Capetown were already wired in an earlier PR; this round added
+  // photos for the remaining 16.
+  const PHOTO_UNIVERSES = {
+    marrakech: '/universes/marrakech.jpg', bali: '/universes/bali.jpg', capetown: '/universes/cape-town.jpg',
+    tulum: '/universes/tulum.jpg', kyoto: '/universes/kyoto.jpg', capri: '/universes/capri.jpg',
+    brooklyn: '/universes/brooklyn.jpg', paris: '/universes/paris.jpg', mykonos: '/universes/mykonos.jpg',
+    amalfi: '/universes/amalfi.jpg', sedona: '/universes/sedona.jpg', aspen: '/universes/aspen.jpg',
+    taj: '/universes/taj.jpg', havana: '/universes/havana.jpg', edinburgh: '/universes/edinburgh.jpg',
+    monaco: '/universes/monaco.jpg', florence: '/universes/florence.jpg', seoul: '/universes/seoul.jpg',
+    shanghai: '/universes/shanghai.jpg',
+  };
+  const NO_PHOTO_UNIVERSES = ['aman'];
 
   for (const [id, expectedPath] of Object.entries(PHOTO_UNIVERSES)) {
     const m = websiteThemesSource.match(new RegExp(`${id}: \\{[\\s\\S]*?\\n  \\},`));
@@ -106,9 +112,14 @@ export async function runDesignStudioEntrance() {
   // Real file-size guard, not just a path check — this is the actual
   // "don't ship multi-MB originals" requirement, checked against the
   // files that will really be served.
-  const MAX_FULL_BYTES = 700 * 1024; // 700KB — generous ceiling for a 1600px-wide hero photo at web quality
+  const MAX_FULL_BYTES = 700 * 1024; // 700KB — generous ceiling for a 2400px-wide hero photo at web quality
   const MAX_SMALL_BYTES = 150 * 1024; // 150KB — the 800w responsive variant
-  for (const file of ['marrakech.jpg', 'bali.jpg', 'cape-town.jpg']) {
+  for (const file of [
+    'marrakech.jpg', 'bali.jpg', 'cape-town.jpg',
+    'tulum.jpg', 'kyoto.jpg', 'capri.jpg', 'brooklyn.jpg', 'paris.jpg', 'mykonos.jpg',
+    'amalfi.jpg', 'sedona.jpg', 'aspen.jpg', 'taj.jpg', 'havana.jpg', 'edinburgh.jpg',
+    'monaco.jpg', 'florence.jpg', 'seoul.jpg', 'shanghai.jpg',
+  ]) {
     const fullPath = resolve(repoRoot, 'public/universes', file);
     const smallPath = resolve(repoRoot, 'public/universes', file.replace(/\.jpg$/, '-800.jpg'));
     try {
@@ -201,6 +212,16 @@ export async function runDesignStudioEntrance() {
   results.push(/import \{ motion, AnimatePresence \} from 'framer-motion'/.test(overlaySource)
     ? pass('UniverseEntranceOverlay.jsx uses framer-motion (same library the real EntranceMoment.jsx uses)', 'found')
     : fail('UniverseEntranceOverlay.jsx uses framer-motion (same library the real EntranceMoment.jsx uses)', 'found', 'not found'));
+  // feat/universe-experience-fixes — real root cause of the transition-name
+  // centring bug: .page-content's forwards-filled opacity animation
+  // creates a stacking context that trapped this overlay's zIndex below
+  // the sibling TopBar, visually cropping the top of the dark canvas.
+  // Portalling to document.body escapes it entirely — confirmed with a
+  // real browser measurement (getBoundingClientRect), not just a source
+  // check, but this guards the source-level fix from regressing.
+  results.push(/import \{ createPortal \} from 'react-dom'/.test(overlaySource) && /createPortal\(/.test(overlaySource) && /document\.body/.test(overlaySource)
+    ? pass('UniverseEntranceOverlay.jsx portals to document.body, escaping .page-content\'s stacking context', 'found')
+    : fail('UniverseEntranceOverlay.jsx portals to document.body, escaping .page-content\'s stacking context', 'found', 'not found'));
   results.push(/prefersReducedMotion \? 0\.08 : /.test(overlaySource)
     ? pass('Reduced motion collapses the wash duration to a near-instant value', 'found')
     : fail('Reduced motion collapses the wash duration to a near-instant value', 'found', 'not found'));
@@ -337,6 +358,65 @@ export async function runDesignStudioEntrance() {
   results.push(/if \(e\.key === 'Escape'\) onBack\(\);/.test(worldViewSource)
     ? pass('World page listens for Escape to go back, in addition to the button', 'found')
     : fail('World page listens for Escape to go back, in addition to the button', 'found', 'not found'));
+  // feat/universe-experience-fixes — real root cause of the button
+  // rendering invisible: it lived inside .page-content, whose forwards-
+  // filled opacity animation traps it in a stacking context that loses
+  // to the sidebar (zIndex:40, its own stacking context via `contain:
+  // layout`) — confirmed with a real browser: elementFromPoint at the
+  // button's centre returned the sidebar div, not the button, before
+  // this fix. Portalling to document.body escapes it, same as the
+  // entrance overlay fix just above.
+  results.push(/createPortal\(\s*\n\s*<button/.test(worldViewSource) && /<\/button>,\s*\n\s*document\.body\s*\n\s*\)\}/.test(worldViewSource)
+    ? pass('World page back button portals to document.body, escaping .page-content\'s stacking context (was invisible behind the sidebar)', 'found')
+    : fail('World page back button portals to document.body, escaping .page-content\'s stacking context (was invisible behind the sidebar)', 'found', 'not found'));
+
+  console.log('\n  Design Studio — world hero shows the universe (not the couple), asset chapter shows every asset type:\n');
+
+  results.push(/coupleNames=\{universe\.name\}/.test(worldViewSource)
+    ? pass('World hero masthead shows the universe\'s own name, not the couple\'s', 'found')
+    : fail('World hero masthead shows the universe\'s own name, not the couple\'s', 'found', 'not found'));
+  results.push(/\{universe\.tagline\}/.test(worldViewSource)
+    ? pass('World hero shows the universe\'s tagline alongside its name', 'found')
+    : fail('World hero shows the universe\'s tagline alongside its name', 'found', 'not found'));
+
+  const ASSET_COMPONENTS = [
+    'SaveTheDatePreview', 'MenuCardPreview', 'SeatingChartPreview',
+    'PlaceCardsPreview', 'WelcomeSignagePreview', 'ThankYouPreview', 'InstagramKitPreview', 'MotionGraphicPreview',
+  ];
+  const missingAssetComponents = ASSET_COMPONENTS.filter(name => !new RegExp(`<${name} `).test(worldViewSource));
+  results.push(missingAssetComponents.length === 0
+    ? pass(`World page's "your wedding in this world" chapter renders all ${ASSET_COMPONENTS.length} real asset preview components (+ website/RSVP links)`, `${ASSET_COMPONENTS.length} found`)
+    : fail(`World page's "your wedding in this world" chapter renders all ${ASSET_COMPONENTS.length} real asset preview components (+ website/RSVP links)`, `${ASSET_COMPONENTS.length} found`, `missing: ${missingAssetComponents.join(', ')}`));
+  results.push(/\{coupleNames\}/.test(worldViewSource.slice(worldViewSource.indexOf('your wedding in this world')))
+    ? pass('The couple\'s real names appear in the asset-preview chapter, not the hero', 'found')
+    : fail('The couple\'s real names appear in the asset-preview chapter, not the hero', 'found', 'not found'));
+
+  console.log('\n  Design Studio — universe copy has no em dashes and no "x, not y" construction:\n');
+
+  // feat/universe-experience-fixes — a real content-quality gate, not
+  // just a one-time cleanup: checks the narrative copy fields at runtime
+  // (tagline/tileDescription/motifNote/worldStory) for every universe,
+  // so a future universe (or a future edit to an existing one) can't
+  // silently reintroduce either banned pattern.
+  {
+    const { UNIVERSE_CONFIGS } = await import('../../src/lib/websiteThemes.js');
+    const COPY_FIELDS = ['tagline', 'tileDescription', 'motifNote', 'worldStory'];
+    const emDashOffenders = [];
+    const notConstructionOffenders = [];
+    for (const [id, cfg] of Object.entries(UNIVERSE_CONFIGS)) {
+      for (const field of COPY_FIELDS) {
+        const val = cfg[field] || '';
+        if (val.includes('—')) emDashOffenders.push(`${id}.${field}`);
+        if (val.includes(', not ')) notConstructionOffenders.push(`${id}.${field}`);
+      }
+    }
+    results.push(emDashOffenders.length === 0
+      ? pass('No universe\'s tagline/tileDescription/motifNote/worldStory contains an em dash', 'none found')
+      : fail('No universe\'s tagline/tileDescription/motifNote/worldStory contains an em dash', 'none found', emDashOffenders.join(', ')));
+    results.push(notConstructionOffenders.length === 0
+      ? pass('No universe\'s tagline/tileDescription/motifNote/worldStory uses the "x, not y" construction', 'none found')
+      : fail('No universe\'s tagline/tileDescription/motifNote/worldStory uses the "x, not y" construction', 'none found', notConstructionOffenders.join(', ')));
+  }
 
   return results;
 }

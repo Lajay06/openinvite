@@ -34,6 +34,21 @@ export async function getMyWeddingDetails() {
   const me = await base44.auth.me().catch(() => null);
   if (!me?.id) return null;
   const rows = await base44.entities.WeddingDetails.filter({ created_by_id: me.id });
+  // An account should only ever own one real (non-test) WeddingDetails
+  // record. If it owns more than one, `mostRecent` still resolves
+  // silently to the newest — but that's exactly the "Alex & Sam" incident
+  // (an incomplete onboarding run against a preview, which shares this
+  // same production backend, created a second record for an account that
+  // already had a real wedding, and the newer one silently won on every
+  // surface that calls this function). Cheap telemetry: warn so the next
+  // occurrence shows up in logs instead of just looking like the wrong
+  // wedding is displaying everywhere.
+  const real = (rows || []).filter(r => !r.is_test);
+  if (real.length > 1) {
+    console.warn(
+      `[getMyWeddingDetails] user ${me.id} owns ${real.length} non-test WeddingDetails records — resolving to the most recent. ids: ${real.map(r => r.id).join(', ')}`
+    );
+  }
   return mostRecent(rows);
 }
 

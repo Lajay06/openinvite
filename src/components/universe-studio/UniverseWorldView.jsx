@@ -20,6 +20,7 @@
  * differs (upgrade path instead of a locked door).
  */
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Crown, ExternalLink } from 'lucide-react';
 import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
@@ -65,6 +66,11 @@ import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
 import SaveTheDatePreview from '@/components/universe-studio/assets/SaveTheDatePreview';
 import MenuCardPreview from '@/components/universe-studio/assets/MenuCardPreview';
 import SeatingChartPreview from '@/components/universe-studio/assets/SeatingChartPreview';
+import PlaceCardsPreview from '@/components/universe-studio/assets/PlaceCardsPreview';
+import WelcomeSignagePreview from '@/components/universe-studio/assets/WelcomeSignagePreview';
+import ThankYouPreview from '@/components/universe-studio/assets/ThankYouPreview';
+import InstagramKitPreview from '@/components/universe-studio/assets/InstagramKitPreview';
+import MotionGraphicPreview from '@/components/universe-studio/assets/MotionGraphicPreview';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -205,7 +211,7 @@ function Chapter({ background, children, minHeight = '60vh' }) {
   );
 }
 
-function HeroChapter({ universe, coupleNames, isCurrent, prefersReducedMotion }) {
+function HeroChapter({ universe, isCurrent, prefersReducedMotion }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const parallaxY = useTransform(scrollYProgress, [0, 1], ['0%', '22%']);
@@ -231,8 +237,14 @@ function HeroChapter({ universe, coupleNames, isCurrent, prefersReducedMotion })
       <div style={{ position: 'absolute', inset: 0, background: universe.imageUrl ? 'rgba(0,0,0,0.38)' : 'transparent' }} />
 
       <div style={{ position: 'relative', textAlign: 'center', padding: '0 24px' }}>
+        {/* This is the world's own showcase, not the couple's real wedding
+            site — the hero shows the universe's own name (reusing the
+            Masthead's coupleNames slot, since every Masthead just renders
+            whatever string it's given) + tagline. The couple's real names
+            appear in the "your wedding in this world" chapter below,
+            where their actual pieces are shown. */}
         <Masthead
-          coupleNames={coupleNames}
+          coupleNames={universe.name}
           kicker={universe.copy.heroKicker}
           theme={universe.colors}
           typography={universe.typography}
@@ -295,26 +307,45 @@ export default function UniverseWorldView({
 
   return (
     <div>
-      <button
-        onClick={onBack}
-        style={{
-          // top clears the app's fixed 48px top bar (plus the 36px trial
-          // banner, when present) with room to spare — 20px collided with
-          // both. A dark scrim + blur (rather than a light pill) reads
-          // legibly over every chapter background, light or dark, without
-          // needing to know which chapter is currently in view.
-          position: 'fixed', top: 96, left: 32, zIndex: 60,
-          display: 'flex', alignItems: 'center', gap: 6,
-          background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px',
-          cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#FFFFFF',
-        }}
-      >
-        ← All universes
-      </button>
+      {/* Portalled to document.body — root cause of it rendering
+          invisible/unclickable: this button lives inside .page-content,
+          which (per the same fix applied to UniverseEntranceOverlay.jsx)
+          gets its own stacking context the moment any animation with
+          animation-fill-mode:forwards is applied to it (pageFadeIn is
+          opacity-only, but that's still enough to trigger this). Trapped
+          inside that context, this button's zIndex:60 was never compared
+          directly against the sidebar (zIndex:40, a sibling outside
+          .page-content, promoted to its own stacking context by its own
+          `contain: layout` CSS) — the sidebar's outer-level effective
+          zIndex beat .page-content's (which has none set, so effectively
+          0), and its opaque white background painted straight over this
+          button, which sits at left:32 — inside the sidebar's own 0-200px
+          width. Confirmed via a real browser: before this fix,
+          elementFromPoint at the button's centre returned the sidebar div;
+          after portalling, it returns the button itself. */}
+      {createPortal(
+        <button
+          onClick={onBack}
+          style={{
+            // top clears the app's fixed 48px top bar (plus the 36px trial
+            // banner, when present) with room to spare — 20px collided with
+            // both. A dark scrim + blur (rather than a light pill) reads
+            // legibly over every chapter background, light or dark, without
+            // needing to know which chapter is currently in view.
+            position: 'fixed', top: 96, left: 32, zIndex: 60,
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px',
+            cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+          }}
+        >
+          ← All universes
+        </button>,
+        document.body
+      )}
 
       {/* Chapter 1 — hero, full-bleed, parallax */}
-      <HeroChapter universe={universe} coupleNames={coupleNames} isCurrent={isCurrent} prefersReducedMotion={prefersReducedMotion} />
+      <HeroChapter universe={universe} isCurrent={isCurrent} prefersReducedMotion={prefersReducedMotion} />
 
       {/* Chapter 2 — the world's story */}
       <Chapter background={colors.lightBg} minHeight="50vh">
@@ -395,18 +426,25 @@ export default function UniverseWorldView({
         </Reveal>
       </Chapter>
 
-      {/* Chapter 6 — your wedding in this world */}
+      {/* Chapter 6 — your wedding in this world. This is where the
+          couple's real names belong (per the hero-title consistency
+          fix — the hero above always shows the universe's own name, this
+          chapter is where their actual pieces, in their actual names,
+          are shown). Every asset type the product has, not a subset. */}
       <Chapter background={colors.lightBg} minHeight="70vh">
         <Reveal prefersReducedMotion={prefersReducedMotion}>
-          <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 32px', textAlign: 'center' }}>
+          <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 12px', textAlign: 'center' }}>
             Nº 05 — Your wedding in this world
+          </p>
+          <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.4rem, 3vw, 2rem)', color: colors.lightText, margin: '0 0 40px', textAlign: 'center' }}>
+            {coupleNames}
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 18, maxWidth: 1040, margin: '0 auto' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
                 <SaveTheDatePreview universe={universe.id} weddingDetails={weddingDetails} />
               </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Invitation</span>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Save the date</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
@@ -431,6 +469,36 @@ export default function UniverseWorldView({
                 <SeatingChartPreview universe={universe.id} weddingDetails={weddingDetails} guests={guests} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Seating chart</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <PlaceCardsPreview universe={universe.id} weddingDetails={weddingDetails} guests={guests} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Place cards</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <WelcomeSignagePreview universe={universe.id} weddingDetails={weddingDetails} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Welcome sign</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <ThankYouPreview universe={universe.id} weddingDetails={weddingDetails} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Thank you card</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <InstagramKitPreview universe={universe.id} weddingDetails={weddingDetails} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Instagram kit</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <MotionGraphicPreview universe={universe.id} weddingDetails={weddingDetails} />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Motion graphic</span>
             </div>
           </div>
         </Reveal>
