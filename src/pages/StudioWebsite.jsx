@@ -129,6 +129,51 @@ const UNIVERSE_THEMES = {
     fontBody: '"Montserrat", sans-serif',
     feeling: 'Aegean blue, crisp, whitewashed, coastal',
   },
+  // feat/universes-expansion-10 — colour fields below are overridden by
+  // resolveColors() at the call site (see the comment above where
+  // baseUniverseTheme is resolved); name/feeling/fontDisplay/fontBody are
+  // this file's own values, matching the pattern every universe above
+  // already follows.
+  amalfi: {
+    name: 'Amalfi', primary: '#1B5E6B', secondary: '#D9A441', background: '#FBFAF6', text: '#1B5E6B', accent: '#D9A441',
+    fontDisplay: '"Cormorant", serif', fontBody: '"Work Sans", sans-serif', feeling: 'Amalfi light — bright, airy, unhurried',
+  },
+  sedona: {
+    name: 'Sedona', primary: '#3B2A1E', secondary: '#B5522A', background: '#EFDDC8', text: '#3B2A1E', accent: '#B5522A',
+    fontDisplay: '"Cinzel", serif', fontBody: '"Sora", sans-serif', feeling: 'Red rock ritual — organic, grounded',
+  },
+  aspen: {
+    name: 'Aspen', primary: '#2A2E31', secondary: '#3D5A46', background: '#F7F9FA', text: '#2A2E31', accent: '#3D5A46',
+    fontDisplay: '"Spectral", serif', fontBody: '"Plus Jakarta Sans", sans-serif', feeling: 'Black tie winter — premium, quiet',
+  },
+  taj: {
+    name: 'Taj', primary: '#5C1626', secondary: '#C9922E', background: '#FBF6EA', text: '#3A1116', accent: '#C9922E',
+    fontDisplay: '"Prata", serif', fontBody: '"Hind", sans-serif', feeling: 'Pavilion in gold — rich, ornamental',
+  },
+  havana: {
+    name: 'Havana', primary: '#16324A', secondary: '#D9713C', background: '#F3E7CF', text: '#16324A', accent: '#D9713C',
+    fontDisplay: '"Abril Fatface", serif', fontBody: '"Raleway", sans-serif', feeling: 'Retro luxury — warm, film-poster',
+  },
+  edinburgh: {
+    name: 'Edinburgh', primary: '#2E3B2A', secondary: '#6B2333', background: '#F2ECDD', text: '#2E3B2A', accent: '#6B2333',
+    fontDisplay: '"EB Garamond", serif', fontBody: '"Source Sans 3", sans-serif', feeling: 'Heritage estate — slow, cinematic',
+  },
+  monaco: {
+    name: 'Monaco', primary: '#0D0D10', secondary: '#B8963E', background: '#FFFFFF', text: '#0D0D10', accent: '#B8963E',
+    fontDisplay: '"Antic Didone", serif', fontBody: '"Manrope", sans-serif', feeling: 'Marina fashion-plate — precise, cool',
+  },
+  florence: {
+    name: 'Florence', primary: '#5C2A2E', secondary: '#B5643A', background: '#F2E9DC', text: '#5C2A2E', accent: '#B5643A',
+    fontDisplay: '"Libre Baskerville", serif', fontBody: '"DM Sans", sans-serif', feeling: 'Tuscan editorial — sketched, unfussy',
+  },
+  seoul: {
+    name: 'Seoul', primary: '#2B2E33', secondary: '#9B8AC4', background: '#F7F3F8', text: '#2B2E33', accent: '#9B8AC4',
+    fontDisplay: '"Outfit", sans-serif', fontBody: '"Noto Sans KR", sans-serif', feeling: 'Contemporary calm — modern, precise',
+  },
+  shanghai: {
+    name: 'Shanghai', primary: '#0F1B14', secondary: '#C9A227', background: '#F5F0E8', text: '#0F1B14', accent: '#C9A227',
+    fontDisplay: '"Playfair Display", serif', fontBody: '"Noto Sans SC", sans-serif', feeling: 'Modern glamour — jade, gold, lacquer',
+  },
 };
 
 const DEFAULT = {
