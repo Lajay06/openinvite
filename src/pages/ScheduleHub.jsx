@@ -71,7 +71,7 @@ export default function ScheduleHub() {
   const [avaOpen, setAvaOpen] = useState(false);
 
   // ── Active tab state ──────────────────────────────────────────────────────
-  const [runsheetView, setRunsheetView] = useState("visual");
+  const [runsheetView, setRunsheetView] = useState("calendar");
   const isCalendar = location.pathname === "/Calendar";
   const activeTab  = isCalendar ? "calendar" : runsheetView;
 

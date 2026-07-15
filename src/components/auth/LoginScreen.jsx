@@ -5,7 +5,6 @@ import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { ImageSlider } from "@/components/ui/ImageSlider";
 import { track, identify } from "@/lib/analytics";
-import { identifyUser as crispIdentify } from "@/lib/crisp";
 
 // Cloudflare Turnstile site key — must be set via VITE_TURNSTILE_SITE_KEY env var.
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -230,7 +229,6 @@ export default function LoginScreen({ initialMode = "login" }) {
       const me = await base44.auth.loginViaEmailPassword(email, password);
       track('user_logged_in', { method: 'email' });
       if (me?.id) identify(me.id, { email: me.email, name: me.full_name });
-      crispIdentify(me?.email, me?.full_name);
 
       // Decide: /onboarding vs /Dashboard.
       // Route to /onboarding only when BOTH are true:
@@ -352,7 +350,6 @@ export default function LoginScreen({ initialMode = "login" }) {
         console.log("[signup] ✅ Registration complete — redirecting to /onboarding");
         base44.auth.setToken(access_token);
         track("user_signed_up", { method: "email" });
-        crispIdentify(email, fullName);
         window.location.href = "/onboarding";
       } else {
         // OTP email sent — show verify screen
@@ -429,7 +426,6 @@ export default function LoginScreen({ initialMode = "login" }) {
         await base44.auth.loginViaEmailPassword(email, password);
       }
       track('user_signed_up', { method: 'email_otp' });
-      crispIdentify(email, fullName);
       window.location.href = "/onboarding";
     } catch (err) {
       setError(err?.message || "Invalid or expired code. Please try again.");

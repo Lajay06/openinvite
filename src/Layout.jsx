@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { X, Bell, Search, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from "lucide-react";
 import { getWeddingWeather } from '@/lib/weather';
 import { track, reset as analyticsReset } from '@/lib/analytics';
-import { resetSession as crispReset } from '@/lib/crisp';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AnimatedSidebar, MobileSidebarContent } from "./components/layout/AnimatedSidebar";
@@ -76,7 +75,6 @@ function TopBar({ weddingDetails, unreadCount }) {
   const handleLogout = () => {
     track('user_logged_out');
     analyticsReset();
-    crispReset();
     localStorage.removeItem('oi_auth');
     localStorage.removeItem('oi_user');
     localStorage.removeItem('base44_access_token');

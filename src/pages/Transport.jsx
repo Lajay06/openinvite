@@ -159,18 +159,11 @@ export default function TransportPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Transport" subtitle="Help your guests get to and from your wedding" />
-
-      {/* Guest Suite visibility banner */}
-      <div style={{ padding: '8px 32px', background: 'rgba(10,10,10,0.02)', borderBottom: '1px solid rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS }}>
-          ✨ This information is visible to guests in your Guest Suite
-        </span>
-      </div>
+      <DashboardPageHeader title="Transport" subtitle="Organise transport for your wedding party on the day" />
 
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <AvaButton label="Ask Ava about guest transport" onClick={() => setAvaOpen(true)} />
+        <AvaButton label="Ask Ava about wedding party transport" onClick={() => setAvaOpen(true)} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
           {saveStatus === 'saved' && <><Check size={12} />Saved</>}
@@ -352,8 +345,8 @@ export default function TransportPage() {
                       </div>
                     </div>
                     <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <label style={labelStyle}>Notes to guests</label>
-                      <textarea style={{ ...inputStyle, minHeight: 60, resize: 'vertical' }} value={shuttle.notes || ''} onChange={e => updateShuttle(i, 'notes', e.target.value)} placeholder="Any instructions for guests boarding this transport" />
+                      <label style={labelStyle}>Notes for the wedding party</label>
+                      <textarea style={{ ...inputStyle, minHeight: 60, resize: 'vertical' }} value={shuttle.notes || ''} onChange={e => updateShuttle(i, 'notes', e.target.value)} placeholder="Any instructions for the wedding party boarding this transport" />
                     </div>
                   </div>
                 ))}
@@ -370,7 +363,7 @@ export default function TransportPage() {
         {activeTab === 'notes' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <DetailsSection title="Notes" icon={FileText} defaultOpen>
-              <SectionInput label="Additional transport notes" isTextarea value={transport.freeTextNotes} onChange={e => update({ freeTextNotes: e.target.value })} placeholder="Any other transport details for guests…" />
+              <SectionInput label="Additional transport notes" isTextarea value={transport.freeTextNotes} onChange={e => update({ freeTextNotes: e.target.value })} placeholder="Any other transport details for your wedding party…" />
             </DetailsSection>
           </div>
         )}
@@ -380,8 +373,8 @@ export default function TransportPage() {
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Transport advisor"
-        systemPrompt="You are Ava, a wedding transport advisor. Help plan guest transport, parking, shuttles and logistics."
-        quickActions={["What transport should I arrange for wedding guests?", "How do I coordinate guest transport to a remote venue?", "Tips for organising a shuttle bus service", "How much does wedding guest transport typically cost?"]}
+        systemPrompt="You are Ava, a wedding transport advisor. Help plan wedding party transport, parking, shuttles and logistics for the day."
+        quickActions={["What transport should I arrange for my wedding party?", "How do I coordinate wedding party transport to a remote venue?", "Tips for organising a shuttle bus service", "How much does wedding party transport typically cost?"]}
       />
     </div>
   );
