@@ -7,6 +7,7 @@
  * diluted version of the same animation.
  */
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 
@@ -21,7 +22,28 @@ export default function UniverseEntranceOverlay({ universe, active, muted, prefe
   if (!universe) return null;
   const duration = prefersReducedMotion ? 0.08 : (universe.motion?.duration || 0.7);
 
-  return (
+  // Portal straight to <body>, escaping .page-content entirely. Root cause
+  // of the centring bug: .page-content's own pageFadeIn animation
+  // (opacity-only, deliberately never transform — see the fix/modal-
+  // viewport-centering comment in index.css) still establishes a *stacking
+  // context* for .page-content itself the moment any animation with
+  // animation-fill-mode:forwards is applied to it, even though it does NOT
+  // establish a new *containing block* (that part of the earlier fix holds
+  // — this overlay's own position:fixed math was always correct, measured
+  // at exactly 0,0 / full viewport). But being trapped inside that
+  // stacking context meant this overlay's zIndex:2000 was only ever
+  // compared against .page-content's own descendants — never directly
+  // against TopBar (zIndex:50), a sibling OUTSIDE .page-content, which won
+  // the outer comparison and visually painted over the overlay's top ~48px
+  // (84px with an active trial banner). The name itself was always
+  // mathematically centred on the true viewport; what was actually
+  // off-centre was the *visible* dark canvas beneath the topbar sliver,
+  // making the text read as sitting too high. Confirmed via a real
+  // browser measurement harness: before this fix, elementFromPoint at the
+  // top strip returned the topbar; after portalling, it returns the
+  // overlay itself, and the measured name-centre-to-viewport-centre delta
+  // is 0,0 in every case tested (desktop, mobile, reduced motion).
+  return createPortal(
     <AnimatePresence>
       {active && (
         <motion.div
@@ -63,6 +85,7 @@ export default function UniverseEntranceOverlay({ universe, active, muted, prefe
           )}
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

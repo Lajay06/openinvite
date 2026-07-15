@@ -212,6 +212,16 @@ export async function runDesignStudioEntrance() {
   results.push(/import \{ motion, AnimatePresence \} from 'framer-motion'/.test(overlaySource)
     ? pass('UniverseEntranceOverlay.jsx uses framer-motion (same library the real EntranceMoment.jsx uses)', 'found')
     : fail('UniverseEntranceOverlay.jsx uses framer-motion (same library the real EntranceMoment.jsx uses)', 'found', 'not found'));
+  // feat/universe-experience-fixes — real root cause of the transition-name
+  // centring bug: .page-content's forwards-filled opacity animation
+  // creates a stacking context that trapped this overlay's zIndex below
+  // the sibling TopBar, visually cropping the top of the dark canvas.
+  // Portalling to document.body escapes it entirely — confirmed with a
+  // real browser measurement (getBoundingClientRect), not just a source
+  // check, but this guards the source-level fix from regressing.
+  results.push(/import \{ createPortal \} from 'react-dom'/.test(overlaySource) && /createPortal\(/.test(overlaySource) && /document\.body/.test(overlaySource)
+    ? pass('UniverseEntranceOverlay.jsx portals to document.body, escaping .page-content\'s stacking context', 'found')
+    : fail('UniverseEntranceOverlay.jsx portals to document.body, escaping .page-content\'s stacking context', 'found', 'not found'));
   results.push(/prefersReducedMotion \? 0\.08 : /.test(overlaySource)
     ? pass('Reduced motion collapses the wash duration to a near-instant value', 'found')
     : fail('Reduced motion collapses the wash duration to a near-instant value', 'found', 'not found'));
