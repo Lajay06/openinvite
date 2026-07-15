@@ -32,6 +32,14 @@ export function buildWeddingDetailsPayload(data) {
     activeUniverse: data.activeUniverse || 'aman',
     websiteMode: data.websiteMode || 'dark',
     activeTheme: (data.websiteMode || 'dark') === 'light' ? 'ivory' : 'still',
+    // culturalNotes (OnboardingPathACultural's free-text "any cultural or
+    // religious traditions?" question) had no home in the payload before —
+    // silently discarded on save. Event Details' ThemeSection.jsx uses the
+    // structured theme.culture[]/theme.cultureOther fields instead, which is
+    // what buildWeddingContext() (src/lib/avaContext.js) reads for Ava's
+    // prompts — routing it there means an onboarding-only couple's answer
+    // still reaches Ava instead of vanishing.
+    ...(data.culturalNotes ? { theme: { cultureOther: data.culturalNotes } } : {}),
   };
 }
 
