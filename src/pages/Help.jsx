@@ -26,7 +26,7 @@ const ARTICLES = {
         <li style={S.li}><strong>Wedding style</strong> — Select as many style tags as apply: Traditional, Modern, Bohemian, Luxury, and so on. These inform Ava's suggestions throughout.</li>
         <li style={S.li}><strong>What matters most</strong> — Choose the features most important to you: Guest Management, Budget, Invitations, Music, Vendors, or All of it. Openinvite prioritises these in your dashboard.</li>
         <li style={S.li}><strong>Meet Ava</strong> — Your AI wedding specialist is introduced. Ava uses everything you've shared to personalise your experience from this point on.</li>
-        <li style={S.li}><strong>Choose your universe</strong> — Select the aesthetic for your entire Guest Suite. AMAN (Quiet Luxury) is currently available. Tap the card to preview the full experience before selecting.</li>
+        <li style={S.li}><strong>Choose your universe</strong> — Select the aesthetic for your entire Guest Suite from 10 fully designed universes. Tap any card to preview the full experience before selecting.</li>
         <li style={S.li}><strong>Path A or B</strong> — Choose "Tell us more" to add guests, budget, vendors, and inspiration now, or "Get started" to go straight to your dashboard.</li>
       </ol>
       <div style={S.tip}><p style={S.tipText}><strong>Tip from Ava:</strong> You can update any of these details at any time from Event Details in the sidebar.</p></div>
@@ -67,28 +67,29 @@ const ARTICLES = {
       <p style={S.p}>The dashboard (Overall) gives you a live snapshot of your wedding planning status.</p>
       <h3 style={S.h3}>What you'll see</h3>
       <ul style={S.ul}>
-        <li style={S.li}><strong>Total Guests / Attending / Declined / Awaiting</strong> — pulled live from your Guest List</li>
-        <li style={S.li}><strong>Budget Used</strong> — your spend as a percentage of your total budget</li>
-        <li style={S.li}><strong>Events Planned</strong> — calendar events count</li>
+        <li style={S.li}><strong>Total guests / Attending</strong> — pulled live from your Guest List</li>
+        <li style={S.li}><strong>Budget used</strong> — your spend as a percentage of your total budget</li>
+        <li style={S.li}><strong>Events planned</strong> — calendar events count</li>
       </ul>
-      <p style={S.p}>The tab bar below the stats lets you jump directly to Guest List, Budget, Schedule, Vendors, Registry, and Seating without leaving the dashboard.</p>
-      <h3 style={S.h3}>The left panel shows</h3>
+      <p style={S.p}>A row of quick links below the stats takes you straight to Guest List, Budget, Schedule, Vendors, Registry, or Seating.</p>
+      <h3 style={S.h3}>Below that</h3>
       <ul style={S.ul}>
-        <li style={S.li}>Guest Response breakdown (attending, declined, awaiting)</li>
-        <li style={S.li}>Upcoming Events from your Calendar</li>
-        <li style={S.li}>Checklist progress</li>
+        <li style={S.li}><strong>Left:</strong> your RSVP chart and budget summary</li>
+        <li style={S.li}><strong>Right:</strong> upcoming tasks and recent activity</li>
       </ul>
       <h3 style={S.h3}>The sidebar organises everything into groups</h3>
       <ul style={S.ul}>
-        <li style={S.li}><strong>STUDIO:</strong> Design Studio (website, Guest Suite, Ava's Studio)</li>
-        <li style={S.li}><strong>PLANNING:</strong> Overall, Calendar, Checklist, To Do List, plus dedicated pages for Food & Beverage, Photography, Florals & Décor, Entertainment, Transport, and Accommodation</li>
-        <li style={S.li}><strong>GUESTS:</strong> Guest List, Seating, Messages</li>
-        <li style={S.li}><strong>FINANCES:</strong> Budget, Registry</li>
-        <li style={S.li}><strong>CREATIVE:</strong> Styling, Music, Schedule, Vows & Speeches, Moodboard</li>
-        <li style={S.li}><strong>VENDORS:</strong> Vendors</li>
-        <li style={S.li}><strong>OTHER:</strong> Ceremony Details, Honeymoon, Emergency Contact, Live Stream, Policies</li>
+        <li style={S.li}><strong>Design studio</strong> — a standalone link at the top: your website, Guest Suite, and Ava's Studio</li>
+        <li style={S.li}><strong>Planning:</strong> Daily update, Overall, Schedule, To do</li>
+        <li style={S.li}><strong>Guests:</strong> Guest list, Guest polls, Messages, Seating, Wedding party</li>
+        <li style={S.li}><strong>Style & experience:</strong> Moodboard, Styling, Beauty, Food & beverage, Music, Photography, Vows & speeches, Guest gifts</li>
+        <li style={S.li}><strong>Vendors:</strong> My vendors, Marketplace</li>
+        <li style={S.li}><strong>On the day:</strong> Ceremony details, Transport, Accommodation, Emergency contact</li>
+        <li style={S.li}><strong>Finances:</strong> Budget, Registry</li>
+        <li style={S.li}><strong>Guest Suite:</strong> Overview, Schedule, Q&A, Registry, Accommodation, Transport, Live stream, Experience guide, Policies, Guest polls</li>
+        <li style={S.li}><strong>Extras:</strong> Honeymoon, Considerations</li>
       </ul>
-      <p style={S.p}>At the bottom of the sidebar: Account Settings, Collaborate, Quick Tips (?), Help Centre, Leave Dashboard.</p>
+      <p style={S.p}>At the bottom of the sidebar: Account settings, Collaborate, Quick tips, Help centre, Leave dashboard.</p>
     </div>
   ),
   'Inviting a collaborator': (
@@ -169,11 +170,11 @@ const ARTICLES = {
         <li style={S.li}>"Let Ava decide what's next" — Ava analyses your progress and recommends the next action</li>
       </ul>
       <h3 style={S.h3}>Building your website with Ava</h3>
-      <p style={S.p}>The guided flow has 12 steps, one at a time: cover photo, welcome message, love story, milestone moments, ceremony details (auto-filled from Event Details), reception details (auto-filled), day timeline, RSVP settings, travel and hotels, registry, music and song requests, and FAQ.</p>
+      <p style={S.p}>The guided flow has 10 steps, one at a time: cover photo, welcome message, love story, ceremony details (auto-filled from Event Details), reception details (auto-filled), RSVP settings, travel and accommodation, registry, music, and FAQ.</p>
       <p style={S.p}>At each step: Ava gives you a prompt and a hint; a live mini-preview shows your changes in real time; "✦ Use Ava's suggestion" fills the field with a smart default; "Skip for now" moves forward without filling; "← Previous" goes back without losing progress.</p>
       <h3 style={S.h3}>Creating assets with Ava</h3>
       <p style={S.p}>The asset flow covers all 10 Guest Suite pieces one at a time. Same pattern — one question, live preview, Ava's suggestion available at each step.</p>
-      <div style={S.tip}><p style={S.tipText}><strong>Light/Dark mode toggle:</strong> available in the top-right of every Ava's Studio screen.</p></div>
+      <div style={S.tip}><p style={S.tipText}><strong>Light/Dark mode toggle:</strong> available on the Ava's Studio home screen.</p></div>
     </div>
   ),
   'Auto-filling your website with Ava': (
@@ -227,33 +228,30 @@ const ARTICLES = {
   ),
   'Adding sections to your website': (
     <div>
-      <p style={S.p}>Your wedding website is built from sections — individual content blocks you add, reorder, and customise for each page. There are 32 section templates across 8 categories.</p>
-      <h3 style={S.h3}>How to add a section</h3>
+      <p style={S.p}>Your wedding website is built from blocks — individual content pieces you add, reorder, and customise for each page. There are 24 block types across 5 categories.</p>
+      <h3 style={S.h3}>How to add a block</h3>
       <ol style={S.ol}>
         <li style={S.li}>Open Design Studio → Guest Suite → Website tab</li>
         <li style={S.li}>Select a page from the left panel (Home, Our Story, Celebration, etc.)</li>
-        <li style={S.li}>Click "+ Add Section" at the bottom of the preview, or hover between existing sections to insert in between</li>
-        <li style={S.li}>The Section Template Picker opens — browse 32 templates across categories</li>
-        <li style={S.li}>Click a template to add it — it appears in the preview immediately with default content</li>
-        <li style={S.li}>The right panel opens automatically to edit that section's content</li>
+        <li style={S.li}>Click "+ Add block" at the bottom of the preview, or hover between existing blocks to insert in between</li>
+        <li style={S.li}>The component library opens — browse block types across categories</li>
+        <li style={S.li}>Click a block to add it — it appears in the preview immediately with default content</li>
+        <li style={S.li}>The right panel opens automatically to edit that block's content</li>
       </ol>
-      <h3 style={S.h3}>The 32 section templates by category</h3>
+      <h3 style={S.h3}>The 24 block types by category</h3>
       <ul style={S.ul}>
-        <li style={S.li}><strong>Hero/Opening:</strong> Cinematic Hero, Split Hero, Minimal Text Hero, Full Screen Gallery</li>
-        <li style={S.li}><strong>Couple:</strong> Our Story, Love Letter, Meet The Couple, How We Met</li>
-        <li style={S.li}><strong>Celebration:</strong> Event Details, Day Timeline, Venue Showcase, Countdown Timer</li>
-        <li style={S.li}><strong>Gallery:</strong> Photo Grid, Photo Strip, Featured Photo</li>
-        <li style={S.li}><strong>RSVP:</strong> Full RSVP Form, Simple RSVP, RSVP + Meal</li>
-        <li style={S.li}><strong>Practical:</strong> Travel & Stay, Registry Links, FAQ Accordion, Map & Directions</li>
-        <li style={S.li}><strong>Music:</strong> Spotify Playlist, Song Request, Music & Playlist</li>
-        <li style={S.li}><strong>Social:</strong> Guest Book, Photo Upload, Hashtag Wall</li>
-        <li style={S.li}><strong>Closing:</strong> Thank You Note, Save The Date, Quote, Spacer</li>
+        <li style={S.li}><strong>Text:</strong> Heading, Subheading, Paragraph, Quote, Two-column text, List</li>
+        <li style={S.li}><strong>Media:</strong> Image, Image + text, Gallery, Full-width image, Video</li>
+        <li style={S.li}><strong>Layout:</strong> Divider, Spacer, Columns, Button/CTA, Quote banner, Dress code</li>
+        <li style={S.li}><strong>Wedding:</strong> Countdown, Timeline/schedule, Event details, FAQ</li>
+        <li style={S.li}><strong>People:</strong> Couple intro, Single person/bio, Wedding party</li>
       </ul>
-      <h3 style={S.h3}>Managing sections</h3>
-      <p style={S.p}>In the Guest Suite → Website tab, hover over any section in the preview to reveal the action toolbar: ↑ Move Up · ↓ Move Down · Edit · + Add Below · × Delete. Click any section to open its editor in the right panel.</p>
+      <p style={S.p}>RSVP is its own page (see "Setting up your RSVP page"), not a block you add to another page.</p>
+      <h3 style={S.h3}>Managing blocks</h3>
+      <p style={S.p}>In the Guest Suite → Website tab, hover over any block in the preview to reveal the action toolbar: ↑ Move up · ↓ Move down · Edit · + Add below · × Delete. Click any block to open its editor in the right panel.</p>
       <h3 style={S.h3}>The right panel tabs</h3>
       <ul style={S.ul}>
-        <li style={S.li}><strong>Content:</strong> all text, photo, and data fields for that section</li>
+        <li style={S.li}><strong>Content:</strong> all text, photo, and data fields for that block</li>
         <li style={S.li}><strong>Style:</strong> background (dark/light/custom colour), padding size, text alignment, content width</li>
       </ul>
     </div>
@@ -261,15 +259,15 @@ const ARTICLES = {
   'Choosing a theme and typography': (
     <div>
       <p style={S.p}>Your theme and typography define the visual identity of your wedding website. Changes apply instantly across all pages in the preview.</p>
-      <h3 style={S.h3}>Themes (20 available)</h3>
-      <p style={S.p}>Themes control your colour palette — dark background, light background, and accent colour. Notable themes include: STILL (Obsidian dark, Linen light — AMAN default), DUSK (Deep brown, Warm cream, Gold), SAGE (Dark green, Sage, Forest), BLUSH (Dark plum, Blush, Rose), NOIR (Black, Pure white, Red), plus IVORY, MIDNIGHT, TERRA, FOREST, CORAL, LAVENDER, BRONZE, ARCTIC, DESERT, PLUM, JADE, CHARCOAL, CHAMPAGNE, OBSIDIAN.</p>
+      <h3 style={S.h3}>Themes (21 available)</h3>
+      <p style={S.p}>Themes control your colour palette — dark background, light background, and accent colour. Notable themes include: AMAN, STILL (Obsidian dark, Linen light — AMAN's default), DUSK (Deep brown, Warm cream, Gold), SAGE (Dark green, Sage, Forest), BLUSH (Dark plum, Blush, Rose), NOIR (Black, Pure white, Red), plus SLATE, IVORY, MIDNIGHT, TERRA, FOREST, CORAL, LAVENDER, BRONZE, ARCTIC, DESERT, PLUM, JADE, CHARCOAL, CHAMPAGNE, and OBSIDIAN.</p>
       <h3 style={S.h3}>How to change theme</h3>
       <ol style={S.ol}>
         <li style={S.li}>In the Guest Suite → Website tab, click the Design tab in the right panel (when nothing is selected)</li>
         <li style={S.li}>Click any theme swatch — preview updates instantly</li>
         <li style={S.li}>Save to apply permanently</li>
       </ol>
-      <h3 style={S.h3}>Typography (10 pairings)</h3>
+      <h3 style={S.h3}>Typography (15 pairings)</h3>
       <ul style={S.ul}>
         <li style={S.li}><strong>Classic:</strong> Cormorant Garamond 300 + Plus Jakarta Sans (timeless, elegant)</li>
         <li style={S.li}><strong>Modern:</strong> Playfair Display + Plus Jakarta Sans (contemporary romance)</li>
@@ -281,6 +279,7 @@ const ARTICLES = {
         <li style={S.li}><strong>Bold:</strong> Montserrat 800 + Montserrat (statement, modern)</li>
         <li style={S.li}><strong>Handcrafted:</strong> Lora + Source Sans 3 (warm, artisan)</li>
         <li style={S.li}><strong>Luxe:</strong> Cinzel + Raleway (opulent, ceremonial)</li>
+        <li style={S.li}><strong>Vintage, Ethereal, Cinematic, Garden, High fashion:</strong> five more curated pairings — browse them all directly in the Design tab</li>
       </ul>
       <h3 style={S.h3}>Animation options</h3>
       <ul style={S.ul}>
@@ -297,10 +296,9 @@ const ARTICLES = {
       <h3 style={S.h3}>How to set up RSVP</h3>
       <ol style={S.ol}>
         <li style={S.li}>In the Guest Suite → Website tab, select "RSVP" from the left panel page list (toggle it on if off)</li>
-        <li style={S.li}>Click "+ Add Section" and choose one of three RSVP templates: Full RSVP Form, Simple RSVP, or RSVP + Meal</li>
-        <li style={S.li}>Click the RSVP section to open its editor: set your RSVP deadline date, add meal options (type and press Enter), toggle plus ones / dietary field / song requests / guest message</li>
+        <li style={S.li}>Open its editor: set your RSVP deadline date, add meal options (type and press Enter), toggle plus ones, dietary field, and song requests</li>
         <li style={S.li}>Add a closing message: "We cannot wait to celebrate with you."</li>
-        <li style={S.li}>Save — your RSVP form is live at openinvite.com.au/w/[your-slug]/rsvp</li>
+        <li style={S.li}>Save — your RSVP page is live at openinvite.com.au/w/[your-slug]</li>
       </ol>
       <h3 style={S.h3}>How responses work</h3>
       <ul style={S.ul}>
@@ -319,19 +317,19 @@ const ARTICLES = {
       <p style={S.p}>Publishing makes your wedding website live at openinvite.com.au/w/[your-slug] so guests can visit it.</p>
       <h3 style={S.h3}>How to publish</h3>
       <ol style={S.ol}>
-        <li style={S.li}>Open the Guest Suite</li>
+        <li style={S.li}>Open the Guest Suite website builder</li>
         <li style={S.li}>Click "Publish" in the top-right corner</li>
         <li style={S.li}>The Publish modal opens — click "Publish Now"</li>
         <li style={S.li}>Your site is immediately live</li>
       </ol>
       <h3 style={S.h3}>Your website URL</h3>
-      <p style={S.p}>Your default URL is openinvite.com.au/w/[your-name-slug]. To customise it: in the Publish modal → Website tab → edit the slug field (e.g. "john-and-sarah-2026") → Save. Your new URL is active immediately.</p>
-      <h3 style={S.h3}>Sharing options (Guest Suite → Share tab)</h3>
+      <p style={S.p}>Your default URL is openinvite.com.au/w/[your-name-slug]. To customise it: in the Publish modal → Website tab → edit the slug field (e.g. "john-and-sarah-2026") → Save. Changing your slug after you've already sent invitations breaks those links — you'll see a warning before it's applied.</p>
+      <h3 style={S.h3}>The Publish modal's tabs</h3>
       <ul style={S.ul}>
-        <li style={S.li}><strong>Copy link:</strong> one click to copy your full URL</li>
-        <li style={S.li}><strong>WhatsApp:</strong> opens WhatsApp with a pre-written message and your link</li>
-        <li style={S.li}><strong>Email guests:</strong> full email composer targeting your guest list — select All Guests, Not Yet RSVP'd, Attending, or Declined</li>
-        <li style={S.li}><strong>QR Code:</strong> download PNG or SVG — print it on your Save the Dates, menus, or welcome signage</li>
+        <li style={S.li}><strong>Website:</strong> publish toggle, URL/slug, password protection</li>
+        <li style={S.li}><strong>Share:</strong> social sharing options</li>
+        <li style={S.li}><strong>Email:</strong> send your link straight to your guest list</li>
+        <li style={S.li}><strong>QR:</strong> download a QR code as PNG — print it on your Save the Dates, menus, or welcome signage</li>
       </ul>
       <h3 style={S.h3}>Password protection</h3>
       <p style={S.p}>Enable in Publish modal → Website tab. Guests see a password entry screen before your site loads. The ?preview=true URL parameter bypasses this for your own previewing.</p>
@@ -368,10 +366,18 @@ const ARTICLES = {
   'Choosing and switching universes': (
     <div>
       <p style={S.p}>Your universe defines the complete aesthetic of all 10 Guest Suite pieces — colours, typography, layout style, and mood. You choose one universe that applies across everything.</p>
-      <h3 style={S.h3}>Available universes</h3>
+      <h3 style={S.h3}>Available universes (all 10 are live)</h3>
       <ul style={S.ul}>
-        <li style={S.li}><strong>AMAN (available now):</strong> Quiet Luxury. Deep black, warm linen, Cormorant Garamond typography. Inspired by Aman Resorts. Palette: Obsidian, Linen, Sand, Pure.</li>
-        <li style={S.li}><strong>Coming soon:</strong> TULUM (Desert Bloom), KYOTO (Zen & Ceremony), CAPRI (Italian Coast), MARRAKECH (Spice & Gold), BROOKLYN (Industrial Edge), BALI (Sacred Garden), PARIS (Haussmann Romance), CAPE TOWN (Wild & Free)</li>
+        <li style={S.li}><strong>AMAN</strong> — Quiet Luxury. Deep black, warm linen, Cormorant Garamond typography. Inspired by Aman Resorts.</li>
+        <li style={S.li}><strong>TULUM</strong> — Desert Bloom</li>
+        <li style={S.li}><strong>KYOTO</strong> — Zen & Ceremony</li>
+        <li style={S.li}><strong>CAPRI</strong> — Italian Coast</li>
+        <li style={S.li}><strong>MARRAKECH</strong> — Spice & Gold</li>
+        <li style={S.li}><strong>BROOKLYN</strong> — Industrial Edge</li>
+        <li style={S.li}><strong>BALI</strong> — Sacred Garden</li>
+        <li style={S.li}><strong>PARIS</strong> — Haussmann Romance</li>
+        <li style={S.li}><strong>CAPE TOWN</strong> — Wild & Free</li>
+        <li style={S.li}><strong>MYKONOS</strong> — Aegean Blue</li>
       </ul>
       <h3 style={S.h3}>How to choose your universe</h3>
       <p style={S.p}>During onboarding: the universe selection step is built into the flow. Click any card to preview the full universe experience, then click "Select [Universe]" to choose it.</p>
@@ -420,9 +426,8 @@ const ARTICLES = {
       <p style={S.p}>Every asset in your Guest Suite can be downloaded for digital sharing or professional printing.</p>
       <h3 style={S.h3}>Download formats</h3>
       <ul style={S.ul}>
-        <li style={S.li}><strong>PNG:</strong> high resolution (300dpi equivalent), suitable for digital sharing and most print providers</li>
-        <li style={S.li}><strong>PDF:</strong> available for print-optimised assets (Menu Card, Welcome Signage, Guest Tags, Save the Date)</li>
-        <li style={S.li}><strong>SVG:</strong> available for the QR code</li>
+        <li style={S.li}><strong>PDF:</strong> print-ready, real physical size — Save the Date, Digital Invitation, Menu Card, Seating Chart, RSVP Card, Welcome Signage, Guest Tags, Thank You Notes</li>
+        <li style={S.li}><strong>PNG:</strong> digital-only, sized for their platform — Instagram Story Kit, Motion Graphic</li>
       </ul>
       <h3 style={S.h3}>How to download</h3>
       <ol style={S.ol}>
@@ -447,38 +452,34 @@ const ARTICLES = {
   ),
   'Importing guests from a spreadsheet': (
     <div>
-      <p style={S.p}>Instead of adding guests one by one, you can import your entire guest list from a CSV or Excel file in seconds.</p>
+      <p style={S.p}>Instead of adding guests one by one, you can import your guest list from a CSV or Excel file in seconds.</p>
       <h3 style={S.h3}>How to import</h3>
       <ol style={S.ol}>
         <li style={S.li}>Go to Guest List in the sidebar</li>
-        <li style={S.li}>Click "Import CSV" in the top-right action buttons</li>
+        <li style={S.li}>Click "Import" in the top-right action buttons</li>
         <li style={S.li}>Download the template file to see the expected column format</li>
         <li style={S.li}>Fill in your spreadsheet with your guest data</li>
         <li style={S.li}>Upload the completed file</li>
       </ol>
-      <h3 style={S.h3}>Required columns</h3>
+      <h3 style={S.h3}>Template columns</h3>
       <ul style={S.ul}>
-        <li style={S.li}>first_name</li>
-        <li style={S.li}>last_name</li>
+        <li style={S.li}><strong>Name</strong> — required</li>
+        <li style={S.li}><strong>Email</strong> — optional</li>
+        <li style={S.li}><strong>Phone</strong> — optional</li>
+        <li style={S.li}><strong>Plus one</strong> — optional, "Y" or leave blank</li>
       </ul>
-      <h3 style={S.h3}>Optional columns</h3>
-      <ul style={S.ul}>
-        <li style={S.li}>email, phone, address, dietary_requirements</li>
-        <li style={S.li}>rsvp_status (attending / declined / awaiting)</li>
-        <li style={S.li}>table_name or table_number</li>
-        <li style={S.li}>plus_one (true/false)</li>
-        <li style={S.li}>notes, group (e.g. "Bride's Family", "Groom's Uni Friends")</li>
-      </ul>
+      <p style={S.p}>That's it — the import is deliberately minimal. RSVP status, table assignment, dietary requirements, and guest category aren't part of the import; you set those afterward, either by opening a guest's record or by selecting several guests and using the bulk actions bar.</p>
       <h3 style={S.h3}>Tips for a clean import</h3>
       <ul style={S.ul}>
         <li style={S.li}>One row per guest (not per couple — add each person as a separate row)</li>
-        <li style={S.li}>RSVP status values must be exactly: attending, declined, or awaiting</li>
         <li style={S.li}>If a cell is empty, leave it blank — don't type "N/A"</li>
         <li style={S.li}>Remove any formatting (bold, colour) from your spreadsheet before uploading</li>
       </ul>
+      <h3 style={S.h3}>Adding a single guest instead</h3>
+      <p style={S.p}>Click "+ Add guest" in Guest List for a one-off addition — useful for late invites you don't want to re-run the whole import for.</p>
       <h3 style={S.h3}>After importing</h3>
-      <p style={S.p}>All imported guests appear in your Guest List instantly. The dashboard stats update immediately. If a guest with the same name already exists, you'll be prompted to skip or overwrite.</p>
-      <div style={S.tip}><p style={S.tipText}><strong>Tip from Ava:</strong> Ask me to help you set up your guest groups. Type "Help me organise my guest list by group" in the Ava chat.</p></div>
+      <p style={S.p}>All imported guests appear in your Guest List instantly, and the dashboard stats update immediately.</p>
+      <div style={S.tip}><p style={S.tipText}><strong>Tip from Ava:</strong> Once imported, select multiple guests and use the bulk actions bar to set RSVP status, table, or category for the whole group at once.</p></div>
     </div>
   ),
   'Tracking RSVPs and responses': (
@@ -581,8 +582,8 @@ const ARTICLES = {
         <li style={S.li}>Fill in: vendor/item name, category, amount, date paid, payment method, and notes</li>
         <li style={S.li}>Save — the category spend updates immediately</li>
       </ol>
-      <h3 style={S.h3}>Tracking paid vs pending</h3>
-      <p style={S.p}>Each expense has a status: Paid / Pending / Deposit Paid. The budget overview shows your total committed spend (all expenses) vs total paid.</p>
+      <h3 style={S.h3}>Tracking paid vs unpaid</h3>
+      <p style={S.p}>Each expense has a paid/unpaid toggle. The budget overview shows your total committed spend (all expenses) vs total actually paid.</p>
       <h3 style={S.h3}>Budget warnings</h3>
       <p style={S.p}>Ava monitors your budget and surfaces alerts when a category exceeds its allocation, your total committed spend exceeds your budget, or a payment date is approaching.</p>
       <div style={S.tip}><p style={S.tipText}><strong>Exporting:</strong> Budget → Export CSV — useful for sharing with your partner or financial advisor.</p></div>
@@ -697,7 +698,7 @@ const helpCategories = [
   },
   {
     icon: 'Globe',
-    title: 'Guest Suite',
+    title: 'Website builder',
     description: 'Build and publish your wedding website',
     articles: [
       { title: 'Adding sections to your website', time: '3 min read' },
