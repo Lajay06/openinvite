@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, MapPin, Globe, Phone, Star, ExternalLink, Bookmark, Loader2, Map } from 'lucide-react';
+import { X, MapPin, Globe, Phone, Star, ExternalLink, Bookmark, Loader2, Map as MapIcon } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -114,7 +114,7 @@ function ContactTab({ vendor, details, onSave, isSaved }) {
             style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}
             onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
             onMouseLeave={e => e.currentTarget.style.color = '#0A0A0A'}>
-            <Map size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />
+            <MapIcon size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />
             View on Google Maps
             <ExternalLink size={11} style={{ color: 'rgba(10,10,10,0.3)' }} />
           </a>
