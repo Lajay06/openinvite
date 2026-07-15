@@ -106,7 +106,6 @@ export async function runGuestlistEditable(token) {
   const listChecks = [
     { name: 'GuestList.jsx has a Tags column header', re: /<TableHead>Tags<\/TableHead>/ },
     { name: 'GuestList.jsx has an inline-editable tags cell (tagsCell)', re: /const tagsCell = /},
-    { name: 'GuestList.jsx has an inline-editable dietary cell (dietaryCell)', re: /const dietaryCell = / },
     { name: 'GuestList.jsx has the persistent AddGuestRow component', re: /function AddGuestRow\(/ },
     { name: 'GuestList.jsx accepts an onQuickAdd prop for the add row', re: /onQuickAdd/ },
     { name: 'CATEGORY_OPTIONS is exported for reuse by the bulk-edit bar', re: /export const CATEGORY_OPTIONS/ },
@@ -114,6 +113,28 @@ export async function runGuestlistEditable(token) {
   for (const c of listChecks) {
     results.push(c.re.test(guestListSource) ? pass(c.name, 'found') : fail(c.name, 'found', 'not found'));
   }
+
+  console.log('\n  Guest list — Dietary moved out of its own table column, into the expanded detail row (fix/guest-list-order-dietary):\n');
+
+  results.push(!/<TableHead>Dietary<\/TableHead>/.test(guestListSource)
+    ? pass('GuestList.jsx no longer has a Dietary column header', 'not found')
+    : fail('GuestList.jsx no longer has a Dietary column header', 'not found', 'still present'));
+
+  results.push(/function DietaryField\(/.test(guestListSource)
+    ? pass('GuestList.jsx has a DietaryField component', 'found')
+    : fail('GuestList.jsx has a DietaryField component', 'found', 'not found'));
+
+  // Wired into the expanded RSVP detail row, not just defined — a component
+  // that exists but is never rendered would silently make dietary uneditable.
+  const rsvpDetailRowMatch = guestListSource.match(/function RsvpDetailRow\([\s\S]*?\n\}/);
+  const rsvpDetailRowBody = rsvpDetailRowMatch ? rsvpDetailRowMatch[0] : '';
+  results.push(/<DietaryField\b/.test(rsvpDetailRowBody)
+    ? pass('RsvpDetailRow renders <DietaryField> (dietary is reachable from the expand chevron)', 'found')
+    : fail('RsvpDetailRow renders <DietaryField> (dietary is reachable from the expand chevron)', 'found', 'not found'));
+
+  results.push(/COLUMN_COUNT = 10/.test(guestListSource)
+    ? pass('COLUMN_COUNT updated to 10 after removing the Dietary column', '10')
+    : fail('COLUMN_COUNT updated to 10 after removing the Dietary column', '10', 'not found/stale'));
 
   console.log('\n  Guest list editable — multi-select bulk edit bar (Category/Tags/Dietary/Delete):\n');
 
@@ -164,6 +185,59 @@ export async function runGuestlistEditable(token) {
   results.push(rowToGuestBody && !/category:/.test(rowToGuestBody)
     ? pass('rowToGuest() never sets category (imported guests get no category)', 'no category key in returned object')
     : fail('rowToGuest() never sets category (imported guests get no category)', 'no category key', 'category key present'));
+
+  console.log('\n  Guest list — new guests default to the bottom of the list, not the top (fix/guest-list-order-dietary):\n');
+
+  results.push(/getMyGuestsWithRsvp\('created_date'\)/.test(guestsPageSource)
+    ? pass('Guests.jsx loads with ascending created_date (oldest first, newest last)', "getMyGuestsWithRsvp('created_date')")
+    : fail('Guests.jsx loads with ascending created_date (oldest first, newest last)', "getMyGuestsWithRsvp('created_date')", 'not found — may still be descending'));
+
+  results.push(/setScrollToGuestId\(created\.id\)/.test(guestsPageSource)
+    ? pass('Guests.jsx scrolls a newly-created guest into view (handleSubmit + handleQuickAdd)', 'setScrollToGuestId(created.id) found')
+    : fail('Guests.jsx scrolls a newly-created guest into view (handleSubmit + handleQuickAdd)', 'found', 'not found'));
+
+  results.push(/scrollToGuestId/.test(guestListSource)
+    ? pass('GuestList.jsx accepts and acts on a scrollToGuestId prop', 'found')
+    : fail('GuestList.jsx accepts and acts on a scrollToGuestId prop', 'found', 'not found'));
+
+  // Live proof of the actual mechanism, not just the source text: create two
+  // sentinel guests 1.1s apart (long enough to guarantee different
+  // created_date timestamps) and fetch them the same way Guests.jsx now does
+  // — sort=created_date, ascending — confirming Base44 really does return
+  // the earlier-created one first, not just that our code asks it to.
+  let orderAId = null, orderBId = null;
+  try {
+    const me = await api('GET', `/apps/${APP_ID}/entities/User/me`, undefined, token);
+    if (!me?.id) throw new Error("Could not resolve the test account's own user id");
+
+    const a = await api('POST', `/apps/${APP_ID}/entities/Guest`,
+      { name: '__PERSISTENCE_TEST_ORDER_A__', is_test: true }, token);
+    orderAId = a.id;
+    await new Promise(r => setTimeout(r, 1100));
+    const b = await api('POST', `/apps/${APP_ID}/entities/Guest`,
+      { name: '__PERSISTENCE_TEST_ORDER_B__', is_test: true }, token);
+    orderBId = b.id;
+    if (!orderAId || !orderBId) throw new Error('Missing id on one of the sentinel guests');
+
+    const ownQuery = encodeURIComponent(JSON.stringify({ created_by_id: me.id }));
+    const listResult = await api('GET', `/apps/${APP_ID}/entities/Guest?q=${ownQuery}&sort=created_date`, undefined, token);
+    const list = Array.isArray(listResult) ? listResult : (listResult?.data || listResult?.results || []);
+
+    const indexA = list.findIndex(g => g.id === orderAId);
+    const indexB = list.findIndex(g => g.id === orderBId);
+    const bothFound = indexA !== -1 && indexB !== -1;
+    const aBeforeB = bothFound && indexA < indexB;
+
+    results.push(bothFound && aBeforeB
+      ? pass("Base44 .filter(query, 'created_date') returns the earlier-created guest first", `A at index ${indexA}, B at index ${indexB}`)
+      : fail("Base44 .filter(query, 'created_date') returns the earlier-created guest first", 'A before B', bothFound ? `A at index ${indexA}, B at index ${indexB}` : 'one or both sentinels missing from the list'));
+  } catch (err) {
+    console.log(`  ❌ FAIL  guest list ordering — error: ${err.message}`);
+    results.push(false);
+  } finally {
+    if (orderAId) { try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${orderAId}`, undefined, token); } catch { /* non-fatal */ } }
+    if (orderBId) { try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${orderBId}`, undefined, token); } catch { /* non-fatal */ } }
+  }
 
   return results;
 }

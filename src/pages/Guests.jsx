@@ -89,6 +89,7 @@ export default function Guests() {
   const [setEventsGuests, setSetEventsGuests] = useState(null); // array of guests, or null
   const [autoSendAfterSetEvents, setAutoSendAfterSetEvents] = useState(null); // guestId
   const [editingEventsGuestId, setEditingEventsGuestId] = useState(null); // guestId, for the "edit events" (not auto-send) flow
+  const [scrollToGuestId, setScrollToGuestId] = useState(null); // set right after a guest is added, so its row scrolls into view once it lands at the bottom
 
   useEffect(() => { loadGuests(); }, []);
   useEffect(() => {
@@ -101,7 +102,11 @@ export default function Guests() {
 
   const loadGuests = async () => {
     try {
-      const data = await getMyGuestsWithRsvp('-created_date');
+      // Ascending — oldest first, newest last — so a newly added guest
+      // lands at the bottom of the list instead of jumping to the top.
+      // There's no explicit sort control on this page today; if one is
+      // added later, this default should only apply while it's unset.
+      const data = await getMyGuestsWithRsvp('created_date');
       setGuests(data);
     } catch {
       toast.error("Failed to load guests");
@@ -123,8 +128,9 @@ export default function Guests() {
         const payload = guestData.event_responses
           ? guestData
           : { ...guestData, event_responses: defaultEventResponses(weddingEvents) };
-        await Guest.create(payload);
+        const created = await Guest.create(payload);
         toast.success('Guest added', { id: tid });
+        setScrollToGuestId(created.id);
       }
       setShowForm(false);
       setEditingGuest(null);
@@ -169,7 +175,8 @@ export default function Guests() {
      afterwards via inline edit or bulk edit, same as an import. */
   const handleQuickAdd = async (name) => {
     try {
-      await Guest.create({ name, event_responses: defaultEventResponses(weddingEvents) });
+      const created = await Guest.create({ name, event_responses: defaultEventResponses(weddingEvents) });
+      setScrollToGuestId(created.id);
       loadGuests();
     } catch (e) {
       toast.error(e?.message || 'Failed to add guest');
@@ -568,6 +575,7 @@ export default function Guests() {
               onToggleSelectAll={toggleSelectAll}
               onSetEventsAndSend={handleSetEventsAndSend}
               onEditEvents={handleEditEvents}
+              scrollToGuestId={scrollToGuestId}
             />
           </TabsContent>
 
