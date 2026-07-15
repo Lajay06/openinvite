@@ -525,6 +525,17 @@ export const UNIVERSE_CONFIGS = {
       rsvpCta: 'Send my invitation',
       rsvpSent: 'With pleasure — your invitation is on its way. Please check your inbox, and your spam folder, just in case.',
     },
+    // Design Studio tile metadata (fix/design-studio-entrance) — the
+    // single source for the universe picker's poster tiles, style filter,
+    // and world-view copy. tags drive the style-filter pills;
+    // tileDescription is a one-line, in-voice line for the tile itself;
+    // imageUrl is an optional per-universe photography slot, unset until
+    // real photography exists — never faked.
+    tags: ['minimal', 'luxury'],
+    tagline: 'Quiet luxury',
+    tileDescription: "The luxury is in what's left out — quiet rooms, warm paper, nothing shouting for attention.",
+    motifNote: 'Fine cross-hatch linen-weave grain, barely visible on dark sections.',
+    imageUrl: null,
   },
   tulum: {
     // Organic luxury — warm, sun-baked, unhurried.
@@ -540,6 +551,13 @@ export const UNIVERSE_CONFIGS = {
     },
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
     pageTransition: { type: 'dissolve', duration: 0.7 },
+    // Design Studio tile metadata (fix/design-studio-entrance) — see aman's
+    // tags/tileDescription/imageUrl comment above for what these do.
+    tags: ['tropical', 'coastal'],
+    tagline: 'Organic luxury',
+    tileDescription: 'A sun-bleached journal page for a day spent barefoot and unhurried.',
+    motifNote: 'Warm canvas-weave texture across section grounds.',
+    imageUrl: null,
   },
   kyoto: {
     // Japanese minimalism — vertical rhythm, dominant negative space (ma),
@@ -584,6 +602,11 @@ export const UNIVERSE_CONFIGS = {
       rsvpCta: 'Send the invitation',
       rsvpSent: 'It is sent. Please look for it in your inbox, and in your spam folder, just in case.',
     },
+    tags: ['minimal', 'classic'],
+    tagline: 'Japanese minimalism',
+    tileDescription: 'Vast quiet, one perfect mark — restraint as its own kind of beauty.',
+    motifNote: 'Fine washi-paper grain, with a single ensō ring as the only ornament.',
+    imageUrl: null,
   },
   capri: {
     // Sun-drenched, warm, playful — deliberately NOT blue-coastal
@@ -626,6 +649,11 @@ export const UNIVERSE_CONFIGS = {
       rsvpCta: 'Send it my way',
       rsvpSent: 'On its way! Check your inbox — and your spam folder, just in case.',
     },
+    tags: ['coastal', 'romantic'],
+    tagline: 'Mediterranean summer',
+    tileDescription: "Sun on warm stone, citrus at the table, joy that doesn't apologise for itself.",
+    motifNote: 'A scalloped citrus-pith rule — repeating semicircle bumps — under kickers and names.',
+    imageUrl: null,
   },
   marrakech: {
     // Desert opulence — editorial + woven pattern. Sophisticated/expensive,
@@ -679,6 +707,11 @@ export const UNIVERSE_CONFIGS = {
       rsvpCta: 'Reveal my invitation',
       rsvpSent: 'Your invitation is on its way — look for it in your inbox (and your spam folder, just in case).',
     },
+    tags: ['desert', 'luxury'],
+    tagline: 'Desert opulence',
+    tileDescription: 'Woven patterns and warm plaster — an invitation carried, never just sent.',
+    motifNote: 'A zellige interlocking-star weave, woven into rules and borders at low opacity.',
+    imageUrl: null,
   },
   brooklyn: {
     // Urban industrial — asymmetric, off-grid, editorial-industrial
@@ -722,6 +755,11 @@ export const UNIVERSE_CONFIGS = {
       rsvpCta: 'Get my invite',
       rsvpSent: "Sent. Check your inbox — and your spam folder, just in case it landed there.",
     },
+    tags: ['urban'],
+    tagline: 'Urban industrial',
+    tileDescription: 'Unfussy and direct, cut like a gig poster — this is the wedding, come as you are.',
+    motifNote: 'A bold ticket-stub rule — a solid block with a perforated tear-line edge.',
+    imageUrl: null,
   },
   bali: {
     // Tropical spirit — flowing, organic, curved dividers and soft edges
@@ -771,6 +809,11 @@ export const UNIVERSE_CONFIGS = {
       rsvpCta: 'Send my invitation',
       rsvpSent: "It's on its way — take a look in your inbox, and your spam folder, just in case.",
     },
+    tags: ['tropical'],
+    tagline: 'Tropical spirit',
+    tileDescription: 'Open arms under a jungle canopy, every edge soft, every welcome wide.',
+    motifNote: 'A generated wave-divider curve in place of every straight rule, with a small leaf-curve accent.',
+    imageUrl: null,
   },
   paris: {
     // Fashion-plate restraint (UNIVERSE_DESIGN_SYSTEM.md §4) — chic,
@@ -816,6 +859,11 @@ export const UNIVERSE_CONFIGS = {
       rsvpCta: 'Retrieve my invitation',
       rsvpSent: 'Avec plaisir — your invitation is on its way. Please look in your inbox, and your spam folder, just in case.',
     },
+    tags: ['romantic', 'classic'],
+    tagline: 'Fashion-plate romance',
+    tileDescription: 'A fashion-plate hush — fine rules, ink and rose, nothing overstated.',
+    motifNote: 'A fine framed hairline rule above and below the kicker, like a fashion-plate caption card.',
+    imageUrl: null,
   },
   capetown: {
     // Winery/estate wedding — refined-rustic, serene luxury
@@ -859,6 +907,11 @@ export const UNIVERSE_CONFIGS = {
       rsvpCta: 'Have it sent to me',
       rsvpSent: 'Your invitation is on its way, with our gratitude — please look for it in your inbox, and your spam folder, just in case.',
     },
+    tags: ['luxury', 'classic'],
+    tagline: 'Vineyard estate',
+    tileDescription: 'Long tables, vineyard light, the kind of gathering that lingers past dessert.',
+    motifNote: 'A vine rule — a fine estate-stationery botanical rule beneath the kicker.',
+    imageUrl: null,
   },
   mykonos: {
     // Architectural, heavy negative space, cube-like blocks, whitewashed
@@ -913,6 +966,11 @@ export const UNIVERSE_CONFIGS = {
       rsvpCta: 'Send it over',
       rsvpSent: 'Sent — check your inbox, and your spam folder just in case.',
     },
+    tags: ['minimal', 'coastal'],
+    tagline: 'Aegean architecture',
+    tileDescription: 'Whitewash and cobalt, cut clean against the sky — architecture as the decoration.',
+    motifNote: 'A solid cube block — plain rectangular architecture, no line, no pattern.',
+    imageUrl: null,
   },
 };
 
