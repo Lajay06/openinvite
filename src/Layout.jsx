@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { X, Loader2, Bell, Search, Sparkles } from "lucide-react";
+import { X, Loader2, Bell, Search, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from "lucide-react";
+import { getWeddingWeather } from '@/lib/weather';
 import { track, reset as analyticsReset } from '@/lib/analytics';
 import { resetSession as crispReset } from '@/lib/crisp';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -65,37 +66,28 @@ function TopBar({ weddingDetails, unreadCount, onAccountSettings, onCollaborate 
     ? new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     : '';
 
-  // mainCeremony.city was never written (VenueSearch embeds city into address); weather widget disabled.
-  const venueCity = '';
-
   // User info
   const storedUser = getStoredUser();
   const initials = coupleName
     ? coupleName.split(/\s*[&+,]\s*/).map(n => n.trim()[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
     : (storedUser.email || 'U').slice(0, 2).toUpperCase();
 
-  // Weather via venue city geocoding (hidden when no city saved)
+  // Wedding-day weather: seasonal summary if far out, real forecast if within
+  // range, current conditions on/near the day. Never throws — a failure at
+  // any stage (no address, geocoding miss, API error) just leaves it unset.
   useEffect(() => {
-    if (!venueCity) { setWeather(null); return; }
-    const cacheKey = `oi_weather_${venueCity}`;
-    try {
-      const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
-      if (cached && Date.now() - cached.ts < 30 * 60 * 1000) { setWeather(cached.data); return; }
-    } catch {}
-    (async () => {
-      try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(venueCity)}&count=1&language=en&format=json`);
-        const geoData = await geoRes.json();
-        const loc = geoData.results?.[0];
-        if (!loc) { setWeather(null); return; }
-        const wxRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current_weather=true`);
-        const wxData = await wxRes.json();
-        const w = { temp: Math.round(wxData.current_weather.temperature), code: wxData.current_weather.weathercode };
-        setWeather(w);
-        localStorage.setItem(cacheKey, JSON.stringify({ data: w, ts: Date.now() }));
-      } catch { setWeather(null); }
-    })();
-  }, [venueCity]);
+    let cancelled = false;
+    getWeddingWeather(weddingDetails).then(w => { if (!cancelled) setWeather(w); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [weddingDetails?.mainCeremony?.address, weddingDetails?.reception?.address, weddingDetails?.weddingDate]);
+
+  const WEATHER_ICONS = { Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning };
+  const WeatherIcon = weather ? (WEATHER_ICONS[weather.icon] || Cloud) : null;
+  const weatherText = weather
+    ? weather.mode === 'current'
+      ? `${weather.temp}°C${weather.label ? ` · ${weather.label}` : ''}`
+      : `${weather.high}°/${weather.low}°${weather.label ? ` · ${weather.label}` : ''}`
+    : '';
 
   const handleLogout = () => {
     track('user_logged_out');
@@ -141,6 +133,12 @@ function TopBar({ weddingDetails, unreadCount, onAccountSettings, onCollaborate 
                   : 'Your wedding day has arrived!'
                 : coupleName}
             </span>
+            {weather && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.4)', fontFamily: PJS, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <WeatherIcon size={12} strokeWidth={1.8} style={{ flexShrink: 0 }} />
+                {weatherText}
+              </span>
+            )}
           </>
         )}
       </div>
