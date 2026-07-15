@@ -231,14 +231,7 @@ export default function AccommodationPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Accommodation" subtitle="Recommend places to stay for your out-of-town guests" />
-
-      {/* Guest Suite visibility banner */}
-      <div style={{ padding: '8px 32px', background: 'rgba(10,10,10,0.02)', borderBottom: '1px solid rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS }}>
-          ✨ This information is visible to guests in your Guest Suite
-        </span>
-      </div>
+      <DashboardPageHeader title="Accommodation" subtitle="Plan and organise accommodation options for your wedding weekend" />
 
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -267,7 +260,7 @@ export default function AccommodationPage() {
         {/* Properties tab */}
         {activeTab === 'properties' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Our recommendations" icon={MapPin} defaultOpen>
+            <DetailsSection title="Accommodation options" icon={MapPin} defaultOpen>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {properties.length === 0 && (
                   <div style={{ padding: '32px 0', textAlign: 'center', border: '1px dashed rgba(10,10,10,0.15)' }}>

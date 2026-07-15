@@ -108,12 +108,20 @@ function AvaModal({ onClose }) {
   );
 }
 
+const TABS = [
+  { key: 'celebrant', label: 'Celebrant' },
+  { key: 'legal',     label: 'Legal' },
+  { key: 'ceremony',  label: 'Ceremony' },
+  { key: 'notes',     label: 'Notes' },
+];
+
 export default function CeremonyDetailsPage() {
   const [data, setData] = useState({});
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [showAva, setShowAva] = useState(false);
+  const [activeTab, setActiveTab] = useState('celebrant');
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
 
@@ -182,19 +190,33 @@ export default function CeremonyDetailsPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Ceremony details" subtitle="Plan your celebrant, legal requirements, and ceremony order" />
 
-      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
-            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
-            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
-          </div>
+      {/* Ava button + save indicator */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+          {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+          {saveStatus === 'saved' && <><Check size={12} />Saved</>}
         </div>
+      </div>
 
+      {/* Tab bar */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer',
+              color: activeTab === tab.key ? '#E03553' : '#444444',
+              borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Celebrant */}
-          <DetailsSection title="Celebrant" icon={UserCheck}>
+          {activeTab === 'celebrant' && (
+          <DetailsSection title="Celebrant" icon={UserCheck} defaultOpen>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <GoogleField label="Celebrant name" value={cel.name} onChange={e => updateNested('celebrant', { name: e.target.value })} placeholder="e.g. Rev. Sarah Connelly" />
               <SectionInput label="Title" value={cel.title} onChange={e => updateNested('celebrant', { title: e.target.value })} placeholder="e.g. Rev., Dr., Mx." />
@@ -217,9 +239,11 @@ export default function CeremonyDetailsPage() {
             </div>
             <SectionInput label="Celebrant notes" isTextarea value={cel.notes} onChange={e => updateNested('celebrant', { notes: e.target.value })} placeholder="Meeting notes, preferences, requirements…" />
           </DetailsSection>
+          )}
 
           {/* Legal */}
-          <DetailsSection title="Legal" icon={Scale}>
+          {activeTab === 'legal' && (
+          <DetailsSection title="Legal" icon={Scale} defaultOpen>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Marriage licence issuing office" value={lic.issuingOffice} onChange={e => updateNested('license', { issuingOffice: e.target.value })} placeholder="Registry office name" />
               <SectionInput label="Licence number" value={lic.licenseNumber} onChange={e => updateNested('license', { licenseNumber: e.target.value })} />
@@ -244,9 +268,11 @@ export default function CeremonyDetailsPage() {
             </div>
             <SectionInput label="Legal notes" isTextarea value={lic.notes} onChange={e => updateNested('license', { notes: e.target.value })} placeholder="Anything else about licences, witnesses, legal requirements…" />
           </DetailsSection>
+          )}
 
           {/* Ceremony */}
-          <DetailsSection title="Ceremony" icon={Heart}>
+          {activeTab === 'ceremony' && (
+          <DetailsSection title="Ceremony" icon={Heart} defaultOpen>
             <SectionInput label="Ceremony type" value={data.ceremonyType} onChange={e => update({ ceremonyType: e.target.value })} placeholder="e.g. religious, civil, humanist, unity ceremony" />
             <SectionInput label="Ceremony music" isTextarea value={data.ceremonyMusic} onChange={e => update({ ceremonyMusic: e.target.value })} placeholder="Processional, recessional, interlude songs, live band or DJ…" />
             <SectionInput label="Ceremony readings" isTextarea value={data.ceremonyReadings} onChange={e => update({ ceremonyReadings: e.target.value })} placeholder="Readers, passages, poems, scripture…" />
@@ -257,11 +283,14 @@ export default function CeremonyDetailsPage() {
             </div>
             <SectionInput label="Order of service notes" isTextarea value={data.orderOfServiceNotes} onChange={e => update({ orderOfServiceNotes: e.target.value })} placeholder="Full order of ceremony events from start to finish…" />
           </DetailsSection>
+          )}
 
           {/* Notes */}
-          <DetailsSection title="Notes" icon={FileText}>
+          {activeTab === 'notes' && (
+          <DetailsSection title="Notes" icon={FileText} defaultOpen>
             <SectionInput label="Additional ceremony notes" isTextarea value={data.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else about the ceremony…" />
           </DetailsSection>
+          )}
         </div>
       </div>
 

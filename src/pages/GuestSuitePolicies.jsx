@@ -65,6 +65,18 @@ const EMPTY = {
   stylingQuestionnaire: { enabled: false },
 };
 
+const TABS = [
+  { key: 'photography', label: 'Photography' },
+  { key: 'socialMedia',  label: 'Social media' },
+  { key: 'children',     label: 'Children' },
+  { key: 'dietary',      label: 'Dietary' },
+  { key: 'gifts',        label: 'Gifts' },
+  { key: 'dressCode',    label: 'Dress code' },
+  { key: 'styling',      label: 'Styling quiz' },
+  { key: 'lateArrival',  label: 'Late arrival' },
+  { key: 'other',        label: 'Other' },
+];
+
 export default function GuestSuitePolicies() {
   const [details, setDetails] = useState(null);
   const [policies, setPolicies] = useState(EMPTY);
@@ -72,6 +84,7 @@ export default function GuestSuitePolicies() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [avaOpen, setAvaOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('photography');
 
   useEffect(() => {
     getMyWeddingDetails()
@@ -115,21 +128,35 @@ export default function GuestSuitePolicies() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Policies" subtitle="Set clear expectations for your guests" />
 
-      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
-
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <AvaButton label="Ask Ava" onClick={() => setAvaOpen(true)} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
-            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
-            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
-          </div>
+      {/* Ava button + save indicator */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <AvaButton label="Ask Ava" onClick={() => setAvaOpen(true)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+          {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+          {saveStatus === 'saved' && <><Check size={12} />Saved</>}
         </div>
+      </div>
+
+      {/* Tab bar */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px', flexWrap: 'wrap' }}>
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            style={{ padding: '14px 0', marginRight: 24, fontSize: 13, fontWeight: 700, fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer',
+              color: activeTab === tab.key ? '#E03553' : '#444444',
+              borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
 
           {/* Photography */}
-          <DetailsSection title="Photography policy" icon={Camera}>
+          {activeTab === 'photography' && (
+          <DetailsSection title="Photography policy" icon={Camera} defaultOpen>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
               <Toggle value={policies.photography.unplugged} onChange={v => set('photography', 'unplugged', v)} />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Unplugged ceremony (no phones during ceremony)</span>
@@ -140,9 +167,11 @@ export default function GuestSuitePolicies() {
             </div>
             <DisplayToggle value={policies.photography.display} onChange={v => set('photography', 'display', v)} />
           </DetailsSection>
+          )}
 
           {/* Social media */}
-          <DetailsSection title="Social media policy" icon={Share2}>
+          {activeTab === 'socialMedia' && (
+          <DetailsSection title="Social media policy" icon={Share2} defaultOpen>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
               <Toggle value={policies.socialMedia.noCeremony} onChange={v => set('socialMedia', 'noCeremony', v)} />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>No social media during ceremony</span>
@@ -163,9 +192,11 @@ export default function GuestSuitePolicies() {
             </div>
             <DisplayToggle value={policies.socialMedia.display} onChange={v => set('socialMedia', 'display', v)} />
           </DetailsSection>
+          )}
 
           {/* Children */}
-          <DetailsSection title="Children policy" icon={Baby}>
+          {activeTab === 'children' && (
+          <DetailsSection title="Children policy" icon={Baby} defaultOpen>
             <div>
               <label style={fieldLabel}>Policy</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 4 }}>
@@ -187,9 +218,11 @@ export default function GuestSuitePolicies() {
             </div>
             <DisplayToggle value={policies.children.display} onChange={v => set('children', 'display', v)} />
           </DetailsSection>
+          )}
 
           {/* Dietary */}
-          <DetailsSection title="Dietary & allergies" icon={Utensils}>
+          {activeTab === 'dietary' && (
+          <DetailsSection title="Dietary & allergies" icon={Utensils} defaultOpen>
             <div>
               <label style={fieldLabel}>Available options</label>
               <textarea style={textareaStyle} value={policies.dietary.description} onChange={e => set('dietary', 'description', e.target.value)} placeholder="We offer vegetarian, vegan, and gluten-free options…" rows={2} />
@@ -206,9 +239,11 @@ export default function GuestSuitePolicies() {
             </div>
             <DisplayToggle value={policies.dietary.display} onChange={v => set('dietary', 'display', v)} />
           </DetailsSection>
+          )}
 
           {/* Gift */}
-          <DetailsSection title="Gift policy" icon={Gift}>
+          {activeTab === 'gifts' && (
+          <DetailsSection title="Gift policy" icon={Gift} defaultOpen>
             <div>
               <label style={fieldLabel}>Policy</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 4 }}>
@@ -237,9 +272,11 @@ export default function GuestSuitePolicies() {
             </div>
             <DisplayToggle value={policies.gifts.display} onChange={v => set('gifts', 'display', v)} />
           </DetailsSection>
+          )}
 
           {/* Dress code */}
-          <DetailsSection title="Dress code" icon={Shirt}>
+          {activeTab === 'dressCode' && (
+          <DetailsSection title="Dress code" icon={Shirt} defaultOpen>
             <div>
               <label style={fieldLabel}>From event details</label>
               <input style={{ ...inputStyle, color: 'rgba(10,10,10,0.45)' }} value={details?.mainCeremony?.dressCode || ''} readOnly placeholder="Set in Event Details" />
@@ -254,9 +291,11 @@ export default function GuestSuitePolicies() {
             </div>
             <DisplayToggle value={policies.dressCode.display} onChange={v => set('dressCode', 'display', v)} />
           </DetailsSection>
+          )}
 
           {/* Guest styling questionnaire */}
-          <DetailsSection title="Guest styling questionnaire" icon={ClipboardList}>
+          {activeTab === 'styling' && (
+          <DetailsSection title="Guest styling questionnaire" icon={ClipboardList} defaultOpen>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
               <Toggle value={policies.stylingQuestionnaire.enabled} onChange={v => set('stylingQuestionnaire', 'enabled', v)} />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Show a quick "what to wear" questionnaire on the Styling page</span>
@@ -265,23 +304,28 @@ export default function GuestSuitePolicies() {
               Guests pick the events they're attending, their style, and their budget — we instantly suggest an outfit based on your dress codes. No account needed, nothing is saved.
             </p>
           </DetailsSection>
+          )}
 
           {/* Late arrival */}
-          <DetailsSection title="Late arrival" icon={Clock}>
+          {activeTab === 'lateArrival' && (
+          <DetailsSection title="Late arrival" icon={Clock} defaultOpen>
             <div>
               <label style={fieldLabel}>Policy</label>
               <textarea style={textareaStyle} value={policies.lateArrival.policy} onChange={e => set('lateArrival', 'policy', e.target.value)} placeholder="Our ceremony begins promptly at 3:00 PM. Please arrive by 2:45 PM." rows={2} />
             </div>
             <DisplayToggle value={policies.lateArrival.display} onChange={v => set('lateArrival', 'display', v)} />
           </DetailsSection>
+          )}
 
           {/* Other */}
-          <DetailsSection title="Other policies" icon={FileText}>
+          {activeTab === 'other' && (
+          <DetailsSection title="Other policies" icon={FileText} defaultOpen>
             <div>
               <textarea style={textareaStyle} value={policies.other.text} onChange={e => set('other', 'text', e.target.value)} placeholder="Any additional policies or information for your guests…" rows={4} />
             </div>
             <DisplayToggle value={policies.other.display} onChange={v => set('other', 'display', v)} />
           </DetailsSection>
+          )}
 
         </div>
 

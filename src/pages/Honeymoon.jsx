@@ -125,12 +125,20 @@ function AvaModal({ onClose }) {
   );
 }
 
+const TABS = [
+  { key: 'travel',       label: 'Travel' },
+  { key: 'accommodation',label: 'Accommodation' },
+  { key: 'planning',     label: 'Planning' },
+  { key: 'notes',        label: 'Notes' },
+];
+
 export default function HoneymoonPage() {
   const [data, setData] = useState({});
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [showAva, setShowAva] = useState(false);
+  const [activeTab, setActiveTab] = useState('travel');
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
 
@@ -187,19 +195,33 @@ export default function HoneymoonPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Honeymoon" subtitle="Plan your post-wedding trip, accommodation, and activities" />
 
-      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
-            {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
-            {saveStatus === 'saved' && <><Check size={12} />Saved</>}
-          </div>
+      {/* Ava button + save indicator */}
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+          {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
+          {saveStatus === 'saved' && <><Check size={12} />Saved</>}
         </div>
+      </div>
 
+      {/* Tab bar */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer',
+              color: activeTab === tab.key ? '#E03553' : '#444444',
+              borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Travel */}
-          <DetailsSection title="Travel" icon={Plane}>
+          {activeTab === 'travel' && (
+          <DetailsSection title="Travel" icon={Plane} defaultOpen>
             <GoogleField label="Destination" value={data.destination} onChange={e => update({ destination: e.target.value })} placeholder="e.g. Bali, Maldives, Tuscany" />
             <SectionInput label="Departure airport" value={data.departureAirport} onChange={e => update({ departureAirport: e.target.value })} placeholder="e.g. LHR, JFK, SYD" />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -219,9 +241,11 @@ export default function HoneymoonPage() {
             )}
             <SectionInput label="Flight / booking reference" value={data.flightReference} onChange={e => update({ flightReference: e.target.value })} placeholder="e.g. ABC123" />
           </DetailsSection>
+          )}
 
           {/* Accommodation */}
-          <DetailsSection title="Accommodation" icon={Hotel}>
+          {activeTab === 'accommodation' && (
+          <DetailsSection title="Accommodation" icon={Hotel} defaultOpen>
             <GoogleField label="Hotel / resort name" value={data.hotelName} onChange={e => update({ hotelName: e.target.value })} placeholder="e.g. Four Seasons Bali" />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Booking reference" value={data.bookingReference} onChange={e => update({ bookingReference: e.target.value })} />
@@ -238,9 +262,11 @@ export default function HoneymoonPage() {
               </div>
             </div>
           </DetailsSection>
+          )}
 
           {/* Planning */}
-          <DetailsSection title="Planning" icon={Map}>
+          {activeTab === 'planning' && (
+          <DetailsSection title="Planning" icon={Map} defaultOpen>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={labelStyle}>Budget</label>
               <input type="number" value={data.budget || ''} onChange={e => update({ budget: e.target.value })}
@@ -253,11 +279,14 @@ export default function HoneymoonPage() {
               <SectionInput label="Insurance details" isTextarea value={data.travelInsuranceDetails} onChange={e => update({ travelInsuranceDetails: e.target.value })} placeholder="Provider, policy number, coverage, emergency number…" />
             )}
           </DetailsSection>
+          )}
 
           {/* Notes */}
-          <DetailsSection title="Notes" icon={FileText}>
+          {activeTab === 'notes' && (
+          <DetailsSection title="Notes" icon={FileText} defaultOpen>
             <SectionInput label="Additional notes" isTextarea value={data.notes} onChange={e => update({ notes: e.target.value })} placeholder="Anything else about the honeymoon…" />
           </DetailsSection>
+          )}
         </div>
       </div>
 
