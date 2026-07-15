@@ -25,9 +25,12 @@ export async function buildWeddingContext() {
     ? `Expected guest count: ~${expectedCount}${expectedTier ? ` (${expectedTier})` : ''}`
     : '';
 
-  const coupleName  = localStorage.getItem('oi_couple_name') || 'the couple';
-  const weddingDate = localStorage.getItem('oi_wedding_date');
-  const city        = localStorage.getItem('oi_wedding_city');
+  const coupleName  = wd.coupleNames || localStorage.getItem('oi_couple_name') || 'the couple';
+  const weddingDate = wd.weddingDate || localStorage.getItem('oi_wedding_date');
+  const city        = wd.mainCeremony?.address || localStorage.getItem('oi_wedding_city');
+  const universe    = wd.activeUniverse || '';
+  const ceremonyVenue  = wd.mainCeremony?.venueName || '';
+  const receptionVenue = wd.reception?.venueName || '';
 
   let user = {};
   try { user = JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch {}
@@ -61,11 +64,17 @@ export async function buildWeddingContext() {
     ? `\nWEDDING THEME:\n${themeLines.join('\n')}`
     : '';
 
+  const venueLines = [
+    ceremonyVenue  ? `Ceremony venue: ${ceremonyVenue}`   : '',
+    receptionVenue && receptionVenue !== ceremonyVenue ? `Reception venue: ${receptionVenue}` : '',
+  ].filter(Boolean).join('\n');
+
   const ctx = `WEDDING CONTEXT:
 Couple: ${coupleName}
 Planner: ${user.full_name || 'Unknown'} (${user.email || ''})
 Wedding date: ${weddingDate || 'Not set'}${daysUntil !== null ? ` (${daysUntil} days away)` : ''}
-Location: ${city || 'Not set'}${themeBlock}
+Location: ${city || 'Not set'}
+Style universe: ${universe || 'Not set'}${venueLines ? `\n${venueLines}` : ''}${themeBlock}
 
 ${expectedGuestLine ? expectedGuestLine + '\n' : ''}GUESTS (actual RSVPs):
 Total: ${guests.length} | Confirmed: ${confirmed} | Pending: ${pending}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { buildWeddingContext } from '@/lib/avaContext';
 
 function AvaChatPod({ onClose }) {
   const [messages, setMessages] = useState([
@@ -11,8 +12,13 @@ function AvaChatPod({ onClose }) {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [weddingContext, setWeddingContext] = useState('');
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+
+  useEffect(() => {
+    buildWeddingContext().then(setWeddingContext).catch(() => {});
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -37,9 +43,12 @@ function AvaChatPod({ onClose }) {
 
     try {
       const currentPage = window.location.pathname;
+      const systemPrompt = `You are Ava, the AI wedding specialist built into Openinvite — a premium wedding planning platform. You are warm, knowledgeable, concise, and personal. You help couples with wedding planning advice, timelines, their Openinvite dashboard, Guest Suite (website builder and invitation assets), guest management, budget, vendor management, vow writing, and RSVP management. The Guest Suite is where couples build their wedding website, invitation assets (Save the Date, Digital Invitation, Menu Card, Seating Chart, etc.), Experience Guide, and Policies — accessed via Design Studio → Guest Suite. Keep responses conversational and brief — 2-4 sentences unless they ask for detail. Never use emojis. Use "✦" sparingly for emphasis only. The user is currently on the ${currentPage} page of their Openinvite dashboard.\n\nUse the wedding context below to tailor every answer to this specific couple — their theme, faith/culture, venues, and universe should shape your suggestions, not just generic advice.`;
+      const fullPrompt = [weddingContext, systemPrompt].filter(Boolean).join('\n\n') +
+        `\n\nConversation so far:\n${newMessages.map(m => `${m.role === 'user' ? 'User' : 'Ava'}: ${m.content}`).join('\n')}\n\nRespond as Ava:`;
       const response = await base44.integrations.Core.InvokeLLM({
         model: 'claude_sonnet_4_6',
-        prompt: `You are Ava, the AI wedding specialist built into Openinvite — a premium wedding planning platform. You are warm, knowledgeable, concise, and personal. You help couples with wedding planning advice, timelines, their Openinvite dashboard, Guest Suite (website builder and invitation assets), guest management, budget, vendor management, vow writing, and RSVP management. The Guest Suite is where couples build their wedding website, invitation assets (Save the Date, Digital Invitation, Menu Card, Seating Chart, etc.), Experience Guide, and Policies — accessed via Design Studio → Guest Suite. Keep responses conversational and brief — 2-4 sentences unless they ask for detail. Never use emojis. Use "✦" sparingly for emphasis only. The user is currently on the ${currentPage} page of their Openinvite dashboard.\n\nConversation so far:\n${newMessages.map(m => `${m.role === 'user' ? 'User' : 'Ava'}: ${m.content}`).join('\n')}\n\nRespond as Ava:`,
+        prompt: fullPrompt,
       });
 
       const avaReply = typeof response === 'string' ? response : (response?.result ?? "I'm having trouble responding right now. Please try again.");
