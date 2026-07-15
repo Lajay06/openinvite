@@ -189,11 +189,11 @@ export default function TransportPage() {
         {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <DetailsSection title="Overview" icon={MapPin} defaultOpen>
-              <Field label="Note to guests">
+              <Field label="Note for your wedding party">
                 <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }}
                   value={transport.coupleNote || ''}
                   onChange={e => update({ coupleNote: e.target.value })}
-                  placeholder="We've arranged the easiest ways to get to and from our wedding…" />
+                  placeholder="e.g. Arrival time, parking instructions, who's driving who…" />
               </Field>
               <Field label="Recommended transport mode">
                 <Select value={transport.recommendedMode || ''} onValueChange={v => update({ recommendedMode: v })}>

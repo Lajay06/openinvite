@@ -24,7 +24,6 @@ const TYPE_LABELS = {
 export default function WeddingTransportPage({ weddingDetails, theme, typography, universeConfig }) {
   const places = weddingDetails.guestSuiteTransport?.places || [];
   const notes  = weddingDetails.guestSuiteTransport?.notes  || [];
-  const transport = weddingDetails.transport || {};
 
   const heading = {
     fontFamily: typography.headingFont,
@@ -65,15 +64,9 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
           </h1>
         </SectionReveal>
 
-        {transport.coupleNote ? (
-          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
-            {transport.coupleNote}
-          </SectionReveal>
-        ) : (
-          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
-            Here's everything you need to know to get to the venue.
-          </SectionReveal>
-        )}
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+          Here's everything you need to know to get to the venue.
+        </SectionReveal>
 
         {/* Transport places */}
         {places.length > 0 && (
