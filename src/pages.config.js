@@ -76,7 +76,6 @@ import GuestSuitePolls from './pages/GuestSuitePolls';
 import GuestSuiteLiveStream from './pages/GuestSuiteLiveStream';
 import GuestSuiteExperience from './pages/GuestSuiteExperience';
 import GuestSuitePolicies from './pages/GuestSuitePolicies';
-import Guestbook from './pages/Guestbook';
 import Guests from './pages/Guests';
 import Home from './pages/Home';
 import Invitations from './pages/Invitations';
@@ -137,7 +136,6 @@ export const PAGES = {
     "GuestSuiteLiveStream": GuestSuiteLiveStream,
     "GuestSuiteExperience": GuestSuiteExperience,
     "GuestSuitePolicies": GuestSuitePolicies,
-    "Guestbook": Guestbook,
     "Guests": Guests,
     "Home": Home,
     "Invitations": Invitations,

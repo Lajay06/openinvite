@@ -55,7 +55,7 @@ export default function PrivacyPolicy() {
           <div style={DIV} />
 
           <h2 style={H2}>1. Who this policy covers</h2>
-          <p style={P}>OpenInvite is used by two kinds of people: <strong>couples</strong> (account holders who plan a wedding and pay for the service) and <strong>guests</strong> (people a couple invites, who interact with the couple's published wedding website, RSVP form, guestbook, and related pages — guests do not create an OpenInvite account).</p>
+          <p style={P}>OpenInvite is used by two kinds of people: <strong>couples</strong> (account holders who plan a wedding and pay for the service) and <strong>guests</strong> (people a couple invites, who interact with the couple's published wedding website, RSVP form, and related pages — guests do not create an OpenInvite account).</p>
 
           <div style={DIV} />
           <h2 style={H2}>2. What we collect</h2>
@@ -76,7 +76,7 @@ export default function PrivacyPolicy() {
             <li>Name, email address, phone number, and postal address (if provided for invitations)</li>
             <li>RSVP responses, per-event attendance, and any plus-one details</li>
             <li>Meal preference and dietary requirements</li>
-            <li>Messages left in the guestbook, notes to the couple, and song requests</li>
+            <li>Notes to the couple and song requests</li>
             <li>Photos uploaded to a shared wedding gallery, where the couple has enabled this</li>
           </ul>
           <p style={P}>Guests do not create an OpenInvite account. Access to a guest's own RSVP page is by a private link unique to that guest.</p>
@@ -121,7 +121,7 @@ export default function PrivacyPolicy() {
           <h2 style={H2}>7. Third-party services</h2>
           <p style={P}>We use the following specialist providers to run OpenInvite. Each processes only what it needs for its specific purpose, and each has its own privacy policy governing how it handles data on our behalf.</p>
           <ProcessorTable rows={[
-            ['Base44', 'All account, wedding, guest, RSVP, guestbook, and photo data — our backend database and application platform', 'Hosts and processes all product data; also provides AI processing and file storage'],
+            ['Base44', 'All account, wedding, guest, RSVP, and photo data — our backend database and application platform', 'Hosts and processes all product data; also provides AI processing and file storage'],
             ['Vercel', 'Hosting infrastructure, request logs', 'Hosts the website and serverless functions'],
             ['Resend', 'Guest and couple email addresses, names, wedding details, RSVP links', 'Sends invitation, RSVP-link, and account emails'],
             ['Stripe', "Couple's email, payment method, plan and price details", 'Processes one-time plan payments; manages the billing portal'],
@@ -131,7 +131,7 @@ export default function PrivacyPolicy() {
             ['Cloudinary', 'No personal data — hosts static marketing images only', 'Serves images on our public marketing pages'],
             ['Google Places', 'Venue and vendor search terms a couple types', 'Powers venue/vendor location search and suggestions'],
             ['Spotify', "Couple's Spotify profile (display name, photo) and song search terms", 'Music playlist and song-request features'],
-            ['Cloudflare Turnstile', 'Client IP address, a bot-detection challenge token', 'Confirms a human is submitting public forms (RSVP-link requests, guestbook messages, sign-up)'],
+            ['Cloudflare Turnstile', 'Client IP address, a bot-detection challenge token', 'Confirms a human is submitting public forms (RSVP-link requests, sign-up)'],
           ]} />
 
           <div style={DIV} />

@@ -1,4 +1,10 @@
 {
+  // RETIRED (fix/dashboard-structure): the guestbook feature has been
+  // removed from the dashboard, builder, and published site — no code
+  // path reads or writes this entity anymore. Left in Base44 as-is
+  // (schema and any existing records) so no couple's past data is
+  // deleted; this is documentation of a dead entity, not an active
+  // data model.
   "name": "GuestbookEntry",
   "type": "object",
   "properties": {
