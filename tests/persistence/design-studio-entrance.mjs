@@ -144,9 +144,9 @@ export async function runDesignStudioEntrance() {
   results.push(/prefersReducedMotion \? 0\.08 : /.test(overlaySource)
     ? pass('Reduced motion collapses the wash duration to a near-instant value', 'found')
     : fail('Reduced motion collapses the wash duration to a near-instant value', 'found', 'not found'));
-  results.push(/\{!prefersReducedMotion && \(/.test(overlaySource)
-    ? pass('The travelling headline is skipped entirely under reduced motion, not just shortened', 'found')
-    : fail('The travelling headline is skipped entirely under reduced motion, not just shortened', 'found', 'not found'));
+  results.push(/prefersReducedMotion \? \(/.test(overlaySource) && /\/\/ Reduced motion still needs the name to appear/.test(overlaySource)
+    ? pass('The travelling headline swaps for a static, fully-visible name under reduced motion (not silently skipped)', 'found')
+    : fail('The travelling headline swaps for a static, fully-visible name under reduced motion (not silently skipped)', 'found', 'not found'));
 
   results.push(/whileHover={prefersReducedMotion \? undefined : \{ scale: 1\.045 \}}/.test(bannerSource)
     ? pass('UniverseBanner.jsx skips the hover scale entirely under reduced motion', 'found')
@@ -220,6 +220,49 @@ export async function runDesignStudioEntrance() {
   results.push(/import UniverseBanner from/.test(studioSource) && /import UniverseWorldView from/.test(studioSource)
     ? pass('UniverseStudio.jsx renders the new banner wall + world view instead', 'found')
     : fail('UniverseStudio.jsx renders the new banner wall + world view instead', 'found', 'not found'));
+
+  console.log('\n  Design Studio — every universe has a rendered motif (tulum + marrakech gaps filled):\n');
+
+  results.push(exists('src/components/guest-website/layouts/SunRayArc.jsx')
+    ? pass('SunRayArc.jsx (Tulum\'s new sun-ray motif primitive) exists', 'found')
+    : fail('SunRayArc.jsx (Tulum\'s new sun-ray motif primitive) exists', 'found', 'not found'));
+  results.push(/tulum: \(color\) => <SunRayArc/.test(bannerSource)
+    ? pass('UniverseBanner.jsx MOTIF_ACCENT now includes tulum', 'found')
+    : fail('UniverseBanner.jsx MOTIF_ACCENT now includes tulum', 'found', 'not found'));
+  results.push(/tulum: \(color\) => <SunRayArc/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx MOTIF_LARGE now includes tulum', 'found')
+    : fail('UniverseWorldView.jsx MOTIF_LARGE now includes tulum', 'found', 'not found'));
+  results.push(/marrakech: \(color\) => <ZelligeDivider/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx MOTIF_LARGE now includes marrakech (reusing ZelligeDivider)', 'found')
+    : fail('UniverseWorldView.jsx MOTIF_LARGE now includes marrakech (reusing ZelligeDivider)', 'found', 'not found'));
+  const tulumMatch = websiteThemesSource.match(/tulum: \{[\s\S]*?\n  \},/);
+  results.push(tulumMatch && /motifNote: 'Concentric sun-ray arcs/.test(tulumMatch[0])
+    ? pass('UNIVERSE_CONFIGS.tulum.motifNote describes the new sun-ray motif, not the old generic texture line', 'found')
+    : fail('UNIVERSE_CONFIGS.tulum.motifNote describes the new sun-ray motif, not the old generic texture line', 'found', 'not found'));
+
+  console.log('\n  Design Studio — entrance transition name is grid-centred on every viewport, incl. reduced motion:\n');
+
+  results.push(/display: 'grid', placeItems: 'center'/.test(overlaySource)
+    ? pass('UniverseEntranceOverlay.jsx centres via CSS grid placeItems, not margin guesses', 'found')
+    : fail('UniverseEntranceOverlay.jsx centres via CSS grid placeItems, not margin guesses', 'found', 'not found'));
+  results.push((overlaySource.match(/textAlign: 'center', maxWidth: '90vw'/g) || []).length >= 2
+    ? pass('Both the animated and reduced-motion name variants are text-centred with a maxWidth safety for long names', 'found on both')
+    : fail('Both the animated and reduced-motion name variants are text-centred with a maxWidth safety for long names', 'found on both', 'missing on at least one variant'));
+
+  console.log('\n  Design Studio — world page has a persistent, keyboard-accessible way back:\n');
+
+  results.push(/← All universes/.test(worldViewSource)
+    ? pass('World page back button reads "All universes" (was "All worlds")', 'found')
+    : fail('World page back button reads "All universes" (was "All worlds")', 'found', 'not found'));
+  results.push(/top: 96, left: 32, zIndex: 60/.test(worldViewSource)
+    ? pass('World page back button sits below the app top bar/trial banner, above default chrome z-index', 'found')
+    : fail('World page back button sits below the app top bar/trial banner, above default chrome z-index', 'found', 'not found'));
+  results.push(/background: 'rgba\(10,10,10,0\.55\)', backdropFilter: 'blur\(8px\)'/.test(worldViewSource)
+    ? pass('World page back button has a dark scrim + blur, legible over any chapter background', 'found')
+    : fail('World page back button has a dark scrim + blur, legible over any chapter background', 'found', 'not found'));
+  results.push(/if \(e\.key === 'Escape'\) onBack\(\);/.test(worldViewSource)
+    ? pass('World page listens for Escape to go back, in addition to the button', 'found')
+    : fail('World page listens for Escape to go back, in addition to the button', 'found', 'not found'));
 
   return results;
 }

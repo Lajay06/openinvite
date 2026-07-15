@@ -39,6 +39,8 @@ import VineRule from '@/components/guest-website/layouts/VineRule';
 import CubeBlock from '@/components/guest-website/layouts/CubeBlock';
 import WaveDivider from '@/components/guest-website/layouts/WaveDivider';
 import LeafCurve from '@/components/guest-website/layouts/LeafCurve';
+import SunRayArc from '@/components/guest-website/layouts/SunRayArc';
+import ZelligeDivider from '@/components/guest-website/layouts/ZelligeDivider';
 import SaveTheDatePreview from '@/components/universe-studio/assets/SaveTheDatePreview';
 import MenuCardPreview from '@/components/universe-studio/assets/MenuCardPreview';
 import SeatingChartPreview from '@/components/universe-studio/assets/SeatingChartPreview';
@@ -59,10 +61,12 @@ const MASTHEAD_BY_LAYOUT = {
 
 // The large-format motif treatment per universe for the Motifs chapter —
 // same real generated primitives the guest site itself uses, just sized
-// up for a chapter-scale moment rather than a thin rule. Tulum has no
-// dedicated layout/motif yet, so it's honestly omitted below.
+// up for a chapter-scale moment rather than a thin rule. Marrakech reuses
+// its own real editorial-masthead motif (ZelligeDivider) rather than a
+// second, redundant primitive.
 const MOTIF_LARGE = {
   aman: (color) => <HairlineRule color={color} opacity={0.6} width={220} thickness={1} />,
+  tulum: (color) => <SunRayArc color={color} opacity={0.55} width={260} height={64} />,
   kyoto: (color) => <EnsoRing color={color} opacity={0.8} size={140} />,
   capri: (color) => <CitrusScallop color={color} bumpSize={16} style={{ maxWidth: 360 }} />,
   brooklyn: (color) => <TicketStub color={color} width={260} height={28} notchSize={10} />,
@@ -80,6 +84,7 @@ const MOTIF_LARGE = {
   ),
   capetown: (color) => <VineRule color={color} opacity={0.75} height={24} style={{ width: 260 }} />,
   mykonos: (color) => <CubeBlock color={color} width={110} height={110} />,
+  marrakech: (color) => <ZelligeDivider color={color} opacity={0.6} style={{ width: 260 }} />,
 };
 
 function GenericMasthead({ coupleNames, kicker, typography, textColor }) {
@@ -229,18 +234,35 @@ export default function UniverseWorldView({
     window.scrollTo(0, 0);
   }, []);
 
+  // Escape is a second way back, alongside the fixed "All universes"
+  // button below — both call the same onBack, which restores the wall's
+  // scroll position (see UniverseStudio.jsx).
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') onBack();
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onBack]);
+
   return (
     <div>
       <button
         onClick={onBack}
         style={{
-          position: 'fixed', top: 20, left: 32, zIndex: 50,
-          display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)',
-          border: '1px solid rgba(10,10,10,0.15)', borderRadius: 999, padding: '7px 16px',
-          cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#0A0A0A',
+          // top clears the app's fixed 48px top bar (plus the 36px trial
+          // banner, when present) with room to spare — 20px collided with
+          // both. A dark scrim + blur (rather than a light pill) reads
+          // legibly over every chapter background, light or dark, without
+          // needing to know which chapter is currently in view.
+          position: 'fixed', top: 96, left: 32, zIndex: 60,
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px',
+          cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#FFFFFF',
         }}
       >
-        ← All worlds
+        ← All universes
       </button>
 
       {/* Chapter 1 — hero, full-bleed, parallax */}

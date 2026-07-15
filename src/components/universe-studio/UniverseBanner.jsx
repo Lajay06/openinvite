@@ -22,17 +22,17 @@ import EnsoRing from '@/components/guest-website/layouts/EnsoRing';
 import CitrusScallop from '@/components/guest-website/layouts/CitrusScallop';
 import TicketStub from '@/components/guest-website/layouts/TicketStub';
 import CubeBlock from '@/components/guest-website/layouts/CubeBlock';
+import SunRayArc from '@/components/guest-website/layouts/SunRayArc';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 // Each universe's real documented motif element, sized as a banner accent
 // rather than a thin rule — still the actual generated primitive, never a
 // blown-up "loud" version that would violate the design system's own
-// "woven, not printed" bar. Tulum has no dedicated layout/motif yet
-// (still the shared baseline in UNIVERSE_CONFIGS), so it's honestly
-// omitted rather than borrowing another universe's mark.
+// "woven, not printed" bar.
 const MOTIF_ACCENT = {
   aman: (color) => <HairlineRule color={color} opacity={0.5} width={120} thickness={1} />,
+  tulum: (color) => <SunRayArc color={color} opacity={0.5} width={140} height={36} />,
   kyoto: (color) => <EnsoRing color={color} opacity={0.7} size={56} />,
   capri: (color) => <CitrusScallop color={color} bumpSize={9} style={{ maxWidth: 200 }} />,
   brooklyn: (color) => <TicketStub color={color} width={120} height={16} notchSize={7} />,

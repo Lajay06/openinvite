@@ -25,15 +25,30 @@ export default function UniverseEntranceOverlay({ universe, active, muted, prefe
             position: 'fixed', inset: 0, zIndex: 2000,
             background: universe.colors.darkBg,
             filter: muted ? 'saturate(0.35) brightness(0.7)' : 'none',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'grid', placeItems: 'center',
           }}
         >
-          {!prefersReducedMotion && (
+          {prefersReducedMotion ? (
+            // Reduced motion still needs the name to appear — just with no
+            // wash, no travel, fully visible immediately — never silently
+            // skipped, which would leave a bare colour flash with no name.
+            <p
+              style={{
+                fontFamily: universe.typography.headingFont, fontSize: 'clamp(1.8rem, 4.5vw, 3.4rem)',
+                color: universe.colors.lightBg, margin: 0, textAlign: 'center', maxWidth: '90vw', padding: '0 24px',
+              }}
+            >
+              {universe.name}
+            </p>
+          ) : (
             <motion.p
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration, delay: 0.1, ease: 'easeOut' }}
-              style={{ fontFamily: universe.typography.headingFont, fontSize: 'clamp(1.8rem, 4.5vw, 3.4rem)', color: universe.colors.lightBg, margin: 0 }}
+              style={{
+                fontFamily: universe.typography.headingFont, fontSize: 'clamp(1.8rem, 4.5vw, 3.4rem)',
+                color: universe.colors.lightBg, margin: 0, textAlign: 'center', maxWidth: '90vw', padding: '0 24px',
+              }}
             >
               {universe.name}
             </motion.p>

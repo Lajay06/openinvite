@@ -557,7 +557,7 @@ export const UNIVERSE_CONFIGS = {
     tags: ['tropical', 'coastal'],
     tagline: 'Organic luxury',
     tileDescription: 'A sun-bleached journal page for a day spent barefoot and unhurried.',
-    motifNote: 'Warm canvas-weave texture across section grounds.',
+    motifNote: 'Concentric sun-ray arcs rising off a horizon line — a quiet sunrise, never a literal sun icon.',
     worldStory: "Tulum runs on sun and salt air, on mornings that start late and nights that don't rush to end. Paper feels sun-bleached, ink feels sand-warmed. This is a wedding for bare feet.",
     imageUrl: null,
   },
