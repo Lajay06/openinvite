@@ -693,9 +693,19 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
+  /* fix/modal-viewport-centering: NEVER animate `transform` here. Any
+     transform value other than the literal keyword `none` — including a
+     no-op translateY(0) left behind by `animation-fill-mode: forwards` —
+     establishes a new containing block for `position: fixed` descendants.
+     Since .page-content wraps every dashboard page, that turned every
+     hand-rolled `position:fixed` modal rendered inside it into something
+     positioned relative to .page-content's own (scrolled-with-the-page)
+     box instead of the viewport — the actual cause of modals appearing
+     centered on the page rather than the screen when scrolled. Opacity
+     alone still gives the fade-in with none of that side effect. */
   @keyframes pageFadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
   @keyframes progressShimmer {
     0%   { left: -100%; }
