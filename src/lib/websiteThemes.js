@@ -1003,6 +1003,360 @@ export const UNIVERSE_CONFIGS = {
     imageUrl: null,
     tier: 'free',
   },
+
+  // ── feat/universes-expansion-10 — 10 new Ultra-gated universes ──────────
+  // Same six levers as every universe above (layout idiom, generated
+  // motif, real type pairing, muted palette, calibrated motion, copy
+  // voice) — see UNIVERSE_DESIGN_SYSTEM.md §2. All ten declare
+  // tier: 'ultra'; universeCatalog.js's Ultra gating reads that field, not
+  // a hardcoded id list.
+
+  amalfi: {
+    // Sea/white/citrus/emerald/stone — bright and airy rather than warm
+    // and buoyant like Capri, so the two coastal-Italian worlds still
+    // read as distinct places, not palette variants of each other.
+    typography: {
+      headingFont: '"Cormorant", serif',
+      bodyFont:    '"Work Sans", sans-serif',
+      googleFonts: 'Cormorant:ital,wght@0,400;0,500;0,600;1,400&family=Work+Sans:wght@300;400;500',
+    },
+    texture: { type: 'paper', opacity: 0.018 },
+    colors: {
+      darkBg: '#1B5E6B', lightBg: '#FBFAF6', darkText: '#FBFAF6', lightText: '#1B5E6B',
+      accent: '#D9A441', accentSecondary: '#2F6E5A', navBg: '#1B5E6B',
+    },
+    motion: { sectionReveal: 'fade', duration: 0.72, yOffset: 18, ease: 'easeInOut', intensity: 'subtle' },
+    pageTransition: { type: 'dissolve', duration: 0.72 },
+    layout: 'amalfi-citrus',
+    copy: {
+      heroKicker: 'You are warmly invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: "Every guest's invitation is their own. If yours has drifted off, tell us the email it was sent to and we'll send it again.",
+      rsvpCta: 'Send it to me',
+      rsvpSent: "On its way — check your inbox, and your spam folder, just in case.",
+    },
+    tags: ['coastal', 'romantic'],
+    tagline: 'Amalfi light',
+    tileDescription: 'Cliffside citrus groves and sea light — bright, unhurried, wide open.',
+    motifNote: 'A gentle sine-curve wave with a small round citrus accent riding its peak.',
+    worldStory: 'Amalfi is light on water, groves on a cliffside, mornings that stretch long. Nothing here is heavy. This is a wedding held in open air.',
+    imageUrl: null,
+    tier: 'ultra',
+  },
+
+  sedona: {
+    // Rust/clay/taupe/sandstone/espresso — organic, unpretentious, a
+    // natural-materials palette rather than a themepark "desert" cliché.
+    typography: {
+      headingFont: '"Cinzel", serif',
+      bodyFont:    '"Sora", sans-serif',
+      googleFonts: 'Cinzel:wght@400;500;600;700&family=Sora:wght@300;400;500;600',
+    },
+    texture: { type: 'plaster', opacity: 0.025 },
+    colors: {
+      darkBg: '#3B2A1E', lightBg: '#EFDDC8', darkText: '#EFDDC8', lightText: '#3B2A1E',
+      accent: '#B5522A', accentSecondary: '#A68966', navBg: '#3B2A1E',
+    },
+    motion: { sectionReveal: 'fade', duration: 0.85, yOffset: 20, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'fade', duration: 0.78 },
+    layout: 'sedona-mesa',
+    copy: {
+      heroKicker: 'Join us',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: "Each guest has their own invitation. If yours has wandered off, just share the email it was sent to and we'll send another.",
+      rsvpCta: 'Send my invitation',
+      rsvpSent: "It's on its way — look in your inbox, and your spam folder, just in case.",
+    },
+    tags: ['desert', 'natural'],
+    tagline: 'Red rock ritual',
+    tileDescription: 'Rust and sandstone, ritual pace — a wedding grounded in real rock.',
+    motifNote: 'Nested horizon-line arcs, like mesa strata or a topographic contour line.',
+    worldStory: "Sedona is red rock and ritual pace — nothing rushed, nothing artificial. Layers of stone, layers of ceremony. This is a wedding that's been here a long time.",
+    imageUrl: null,
+    tier: 'ultra',
+  },
+
+  aspen: {
+    // Snow/pine/silver/charcoal/espresso — a premium hotel/lodge idiom,
+    // "black tie winter" rather than a rustic-cabin cliché.
+    typography: {
+      headingFont: '"Spectral", serif',
+      bodyFont:    '"Plus Jakarta Sans", sans-serif',
+      googleFonts: 'Spectral:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500',
+    },
+    texture: { type: 'grain', opacity: 0.02 },
+    colors: {
+      darkBg: '#2A2E31', lightBg: '#F7F9FA', darkText: '#F7F9FA', lightText: '#2A2E31',
+      accent: '#3D5A46', accentSecondary: '#B8C0C4', navBg: '#2A2E31',
+    },
+    motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'fade', duration: 0.65 },
+    layout: 'aspen-lodge',
+    copy: {
+      heroKicker: 'You are invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: "Every guest carries their own invitation. If yours has misplaced itself, share the email it was sent to and we'll send it again.",
+      rsvpCta: 'Have it sent to me',
+      rsvpSent: 'On its way — please check your inbox, and your spam folder, just in case.',
+    },
+    tags: ['premium', 'natural'],
+    tagline: 'Black tie winter',
+    tileDescription: 'Snow, pine and quiet luxury — a lodge dressed for black tie.',
+    motifNote: 'A single-stroke pine-branch line, minimal and geometric, never a literal illustrated tree.',
+    worldStory: 'Aspen is snow outside and warmth within — pine and silver, black tie under low light. Nothing about it is rustic. This is a wedding dressed for winter properly.',
+    imageUrl: null,
+    tier: 'ultra',
+  },
+
+  taj: {
+    // Ruby/gold/ivory/emerald/saffron — rich but restrained: hairline
+    // arch geometry standing in for mandala/paisley ornament, per the
+    // design system's "woven, not printed" bar (no filled illustration).
+    typography: {
+      headingFont: '"Prata", serif',
+      bodyFont:    '"Hind", sans-serif',
+      googleFonts: 'Prata&family=Hind:wght@300;400;500;600',
+    },
+    texture: { type: 'linen', opacity: 0.025 },
+    colors: {
+      darkBg: '#5C1626', lightBg: '#FBF6EA', darkText: '#FBF6EA', lightText: '#3A1116',
+      accent: '#C9922E', accentSecondary: '#1F5C3F', navBg: '#5C1626',
+    },
+    motion: { sectionReveal: 'fade', duration: 0.9, yOffset: 22, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'dissolve', duration: 0.85 },
+    layout: 'taj-pavilion',
+    copy: {
+      heroKicker: 'You are graciously invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'With joy, RSVP',
+      rsvpIntro: 'Each guest carries their own invitation, sent with care. If yours has wandered, simply share the email it was sent to and we will send it again with pleasure.',
+      rsvpCta: 'Reveal my invitation',
+      rsvpSent: 'Your invitation is on its way, with our gratitude — please check your inbox, and your spam folder, just in case.',
+    },
+    tags: ['ornamental', 'luxury'],
+    tagline: 'Pavilion in gold',
+    tileDescription: 'Ruby, gold and ivory framed in a single quiet arch — luxurious, never loud.',
+    motifNote: 'A thin ogee (Mughal) arch outline, used to frame the masthead rather than decorate it.',
+    worldStory: 'Taj is a pavilion at rest — ruby and gold held inside one quiet arch, ivory catching the last light. Nothing here needs to shout. This is a wedding built like a court.',
+    imageUrl: null,
+    tier: 'ultra',
+  },
+
+  havana: {
+    // Coral/teal/mustard/cream/navy — retro luxury, Art Deco geometry and
+    // film-poster energy kept to hairline weight, never a filled badge.
+    typography: {
+      headingFont: '"Abril Fatface", serif',
+      bodyFont:    '"Raleway", sans-serif',
+      googleFonts: 'Abril+Fatface&family=Raleway:wght@300;400;500;600',
+    },
+    texture: { type: 'paper', opacity: 0.03 },
+    colors: {
+      darkBg: '#16324A', lightBg: '#F3E7CF', darkText: '#F3E7CF', lightText: '#16324A',
+      accent: '#D9713C', accentSecondary: '#2C7A6B', navBg: '#16324A',
+    },
+    motion: { sectionReveal: 'fade', duration: 0.6, yOffset: 16, ease: 'circOut', intensity: 'subtle' },
+    pageTransition: { type: 'fade', duration: 0.55 },
+    layout: 'havana-deco',
+    copy: {
+      heroKicker: 'You are invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: "Every guest's own invitation is waiting. Can't find yours? Tell us the email it was sent to and we'll send it your way again.",
+      rsvpCta: 'Send my invitation',
+      rsvpSent: "It's on its way — take a look in your inbox, and your spam folder, just in case.",
+    },
+    tags: ['retro', 'romantic'],
+    tagline: 'Retro luxury',
+    tileDescription: 'Coral, teal and mustard — a film-poster glamour, warm and unhurried.',
+    motifNote: 'A thin Art Deco fan of straight rays from a single base point.',
+    worldStory: "Havana moves like an old film reel — coral light, salt air, a little static in the frame. Nothing here is polished flat. This is a wedding with real warmth in it.",
+    imageUrl: null,
+    tier: 'ultra',
+  },
+
+  edinburgh: {
+    // Forest/burgundy/stone/gold/ivory — a heritage-estate idiom, slow and
+    // cinematic rather than a tartan-shop cliché.
+    typography: {
+      headingFont: '"EB Garamond", serif',
+      bodyFont:    '"Source Sans 3", sans-serif',
+      googleFonts: 'EB+Garamond:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@300;400;500',
+    },
+    texture: { type: 'canvas', opacity: 0.025 },
+    colors: {
+      darkBg: '#2E3B2A', lightBg: '#F2ECDD', darkText: '#F2ECDD', lightText: '#2E3B2A',
+      accent: '#6B2333', accentSecondary: '#A6842E', navBg: '#2E3B2A',
+    },
+    motion: { sectionReveal: 'fade', duration: 0.95, yOffset: 24, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'dissolve', duration: 0.95 },
+    layout: 'edinburgh-estate',
+    copy: {
+      heroKicker: 'You are cordially invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: 'Each guest carries their own invitation. Should yours have gone astray, simply share the email it was sent to and we shall send it once more.',
+      rsvpCta: 'Send my invitation',
+      rsvpSent: 'Your invitation is on its way — please look in your inbox, and your spam folder, just in case.',
+    },
+    tags: ['heritage', 'classic'],
+    tagline: 'Heritage estate',
+    tileDescription: 'Forest and burgundy, a slow estate hour — considered, unhurried, real.',
+    motifNote: 'A single-line stylised thistle, quiet enough to read as a heritage-crest flourish.',
+    worldStory: 'Edinburgh keeps a slow hour — forest green, burgundy, gold catching low light. Nothing here is rushed toward. This is a wedding held like an old estate holds its grounds.',
+    imageUrl: null,
+    tier: 'ultra',
+  },
+
+  monaco: {
+    // Black/white/gold/emerald/navy — a marina fashion-plate idiom, cool
+    // and nautical rather than Paris's caption-card frame.
+    typography: {
+      headingFont: '"Antic Didone", serif',
+      bodyFont:    '"Manrope", sans-serif',
+      googleFonts: 'Antic+Didone&family=Manrope:wght@300;400;500',
+    },
+    texture: { type: 'paper', opacity: 0.022 },
+    colors: {
+      darkBg: '#0D0D10', lightBg: '#FFFFFF', darkText: '#FFFFFF', lightText: '#0D0D10',
+      accent: '#B8963E', accentSecondary: '#1F5C3F', navBg: '#14213D',
+    },
+    motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 15, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'fade', duration: 0.68 },
+    layout: 'monaco-marina',
+    copy: {
+      heroKicker: 'You are invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: "Each guest carries their own invitation. If yours has gone astray, share the email it was sent to and we'll send it again.",
+      rsvpCta: 'Send my invitation',
+      rsvpSent: 'On its way — please check your inbox, and your spam folder, just in case.',
+    },
+    tags: ['fashion', 'luxury'],
+    tagline: 'Marina fashion-plate',
+    tileDescription: 'Black, white and gold, cut like a marina evening — precise, never loud.',
+    motifNote: 'A thin triangular sail/mast outline over a single waterline rule.',
+    worldStory: 'Monaco is black and gold under evening light, a marina at rest. Every line is precise. This is a wedding with real polish, not gloss.',
+    imageUrl: null,
+    tier: 'ultra',
+  },
+
+  florence: {
+    // Olive/terracotta/cream/wine/stone — a Tuscan editorial idiom,
+    // sketch-like and unfussy rather than a vineyard-postcard cliché.
+    typography: {
+      headingFont: '"Libre Baskerville", serif',
+      bodyFont:    '"DM Sans", sans-serif',
+      googleFonts: 'Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;700',
+    },
+    texture: { type: 'canvas', opacity: 0.022 },
+    colors: {
+      darkBg: '#5C2A2E', lightBg: '#F2E9DC', darkText: '#F2E9DC', lightText: '#5C2A2E',
+      accent: '#B5643A', accentSecondary: '#5C6B3E', navBg: '#5C2A2E',
+    },
+    motion: { sectionReveal: 'fade', duration: 0.78, yOffset: 18, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'dissolve', duration: 0.82 },
+    layout: 'florence-editorial',
+    copy: {
+      heroKicker: 'You are invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: "Every guest's invitation is their own. If yours has misplaced itself, tell us the email it was sent to and we'll send it again.",
+      rsvpCta: 'Send my invitation',
+      rsvpSent: "It's on its way — check your inbox, and your spam folder, just in case.",
+    },
+    tags: ['editorial', 'romantic'],
+    tagline: 'Tuscan editorial',
+    tileDescription: 'Olive and terracotta, sketched rather than printed — a vineyard held loosely.',
+    motifNote: 'A loose, sketch-like vine curl with small leaf accents — closer to a fresco sketch than a printed border.',
+    worldStory: 'Florence reads like a sketchbook left open — olive and terracotta, ink that hasn\'t quite dried. Nothing here is over-finished. This is a wedding with real hand in it.',
+    imageUrl: null,
+    tier: 'ultra',
+  },
+
+  seoul: {
+    // Lavender/white/blush/silver/graphite — a contemporary-UI idiom, the
+    // one universe in the whole catalogue built around a sans-serif
+    // heading face and soft gradient-ring motif instead of a hairline
+    // rule or brushed mark.
+    typography: {
+      headingFont: '"Outfit", sans-serif',
+      bodyFont:    '"Noto Sans KR", sans-serif',
+      googleFonts: 'Outfit:wght@300;400;500;600&family=Noto+Sans+KR:wght@300;400;500',
+    },
+    texture: { type: 'grain', opacity: 0.015 },
+    colors: {
+      darkBg: '#2B2E33', lightBg: '#F7F3F8', darkText: '#F7F3F8', lightText: '#2B2E33',
+      accent: '#9B8AC4', accentSecondary: '#C48FA0', navBg: '#2B2E33',
+    },
+    motion: { sectionReveal: 'fade', duration: 0.5, yOffset: 12, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'fade', duration: 0.45 },
+    layout: 'seoul-glass',
+    copy: {
+      heroKicker: 'You are invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: "Every guest has their own invitation. If yours hasn't arrived, just share the email it was sent to and we'll send it again.",
+      rsvpCta: 'Send my invitation',
+      rsvpSent: "On its way — please check your inbox, and your spam folder, just in case.",
+    },
+    tags: ['contemporary', 'minimal'],
+    tagline: 'Contemporary calm',
+    tileDescription: 'Lavender and blush behind frosted glass — soft, modern, quietly precise.',
+    motifNote: 'Soft layered concentric rings — a frosted-glass orb reduced to line art.',
+    worldStory: 'Seoul feels like frosted glass — lavender and blush behind a soft blur, everything precise underneath. Nothing here is loud. This is a wedding built like modern architecture.',
+    imageUrl: null,
+    tier: 'ultra',
+  },
+
+  shanghai: {
+    // Jade/gold/black/pearl/vermilion — modern glamour built from real
+    // Chinese decorative-arts geometry (Bund Art Deco, auspicious-cloud
+    // lattice), never a dragon/lantern cliché. Vermilion lives in copy/
+    // tone rather than the two-accent palette slot, which the schema
+    // reserves for accent/accentSecondary (gold/jade here).
+    typography: {
+      headingFont: '"Playfair Display", serif',
+      bodyFont:    '"Noto Sans SC", sans-serif',
+      googleFonts: 'Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500',
+    },
+    texture: { type: 'linen', opacity: 0.018 },
+    colors: {
+      darkBg: '#0F1B14', lightBg: '#F5F0E8', darkText: '#F5F0E8', lightText: '#0F1B14',
+      accent: '#C9A227', accentSecondary: '#1F5C4A', navBg: '#0F1B14',
+    },
+    motion: { sectionReveal: 'fade', duration: 0.8, yOffset: 20, ease: 'easeOut', intensity: 'subtle' },
+    pageTransition: { type: 'dissolve', duration: 0.75 },
+    layout: 'shanghai-glamour',
+    copy: {
+      heroKicker: 'You are invited',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'With joy, RSVP',
+      rsvpIntro: 'Each guest carries their own invitation, sent with care. If yours has wandered, simply share the email it was sent to and we will send it again.',
+      rsvpCta: 'Reveal my invitation',
+      rsvpSent: 'Your invitation is on its way, with our gratitude — please check your inbox, and your spam folder, just in case.',
+    },
+    tags: ['glamour', 'luxury'],
+    tagline: 'Modern glamour',
+    tileDescription: 'Jade and gold against black lacquer — a Bund evening, cinematic and precise.',
+    motifNote: 'A stylised "auspicious cloud" (ruyi) swirl, drawn from real Chinese lattice/cornice decorative art.',
+    worldStory: 'Shanghai is jade and gold against black lacquer, a skyline caught at dusk. Every surface has real craft in it. This is a wedding with real glamour, not gloss.',
+    imageUrl: null,
+    tier: 'ultra',
+  },
 };
 
 /** Case-insensitive, whitespace-tolerant universe key lookup — 'Aman'/'aman'/' AMAN ' all resolve the same config. */

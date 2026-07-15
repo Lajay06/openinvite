@@ -82,6 +82,13 @@ export const CURATED_FONTS = {
   'outfit': { label: 'Outfit', family: '"Outfit", sans-serif', googleFonts: 'Outfit:wght@300;400;500;600', weight: 400 },
   'noto-sans-kr': { label: 'Noto Sans KR', family: '"Noto Sans KR", sans-serif', googleFonts: 'Noto+Sans+KR:wght@300;400;500;700', weight: 400 },
   'noto-sans-sc': { label: 'Noto Sans SC', family: '"Noto Sans SC", sans-serif', googleFonts: 'Noto+Sans+SC:wght@300;400;500;700', weight: 400 },
+  // Added after Aspen/Monaco's first heading-font picks (Libre Baskerville,
+  // Cormorant Garamond) turned out to collide with fonts the existing 10
+  // already use — every universe's heading AND body font must be globally
+  // distinct (tests/persistence/universe-styling.mjs), so each needed a
+  // fresh, thematically-close alternative instead.
+  'spectral': { label: 'Spectral', family: '"Spectral", serif', googleFonts: 'Spectral:wght@300;400;500;600', weight: 400 },
+  'antic-didone': { label: 'Antic Didone', family: '"Antic Didone", serif', googleFonts: 'Antic+Didone', weight: 400 },
 };
 
 /**
@@ -100,6 +107,7 @@ export const FONT_CATALOG = [
   'inter', 'montserrat-heading', 'work-sans', 'dm-sans', 'space-grotesk', 'raleway', 'nunito', 'nunito-sans',
   'poppins', 'lato', 'karla', 'jost', 'josefin-sans', 'mulish', 'ibm-plex-sans', 'zen-kaku-gothic-new',
   'prata', 'abril-fatface', 'sora', 'hind', 'source-sans-3', 'manrope', 'outfit', 'noto-sans-kr', 'noto-sans-sc',
+  'spectral', 'antic-didone',
 ].map(id => ({ id, ...CURATED_FONTS[id] }));
 
 /** Each universe's own default heading/body font, expressed as CURATED_FONTS ids. */

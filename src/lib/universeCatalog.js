@@ -36,11 +36,27 @@ const DISPLAY_NAME = {
   paris: 'Paris',
   capetown: 'Cape Town',
   mykonos: 'Mykonos',
+  amalfi: 'Amalfi',
+  sedona: 'Sedona',
+  aspen: 'Aspen',
+  taj: 'Taj',
+  havana: 'Havana',
+  edinburgh: 'Edinburgh',
+  monaco: 'Monaco',
+  florence: 'Florence',
+  seoul: 'Seoul',
+  shanghai: 'Shanghai',
 };
 
 // Fixed display order — stable across renders/filters so tiles never
-// visibly reshuffle when a filter changes which ones are shown.
-const ORDER = ['aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
+// visibly reshuffle when a filter changes which ones are shown. The
+// original 10 keep their order; the 10 new Ultra universes
+// (feat/universes-expansion-10) are appended after, not interleaved, so
+// existing weddings' sense of "where their universe sits" never shifts.
+const ORDER = [
+  'aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos',
+  'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
+];
 
 export const UNIVERSE_CATALOG = ORDER.map(id => {
   const cfg = UNIVERSE_CONFIGS[id] || {};
