@@ -126,8 +126,22 @@ export default function Onboarding() {
     const checkAuth = async () => {
       try {
         const currentUser = await base44.auth.me();
-        // If already onboarded, skip straight to dashboard
-        if (currentUser?.onboardingCompleted) {
+        // Resolved once, up front, so both guard checks below (and the
+        // resume-after-refresh rehydration further down) share one fetch.
+        const draft = await getMyWeddingDetails().catch(() => null);
+
+        // If already onboarded, skip straight to dashboard. Also guard on
+        // the account already owning a real (non-draft) wedding even when
+        // onboardingCompleted is somehow unset — this is the actual fix
+        // for the "Alex & Sam" incident: an incomplete onboarding run
+        // (often against a preview deployment, which shares the same
+        // production Base44 backend as the live site) landing back on
+        // this page for an account that already has a finished wedding
+        // used to fall through and silently create a second WeddingDetails
+        // record for the same account. Never trust onboardingCompleted
+        // alone for this — a real, non-draft record is the stronger
+        // signal a wedding already exists.
+        if (currentUser?.onboardingCompleted || (draft && !draft.onboardingDraft)) {
           navigate('/Dashboard', { replace: true });
           return;
         }
@@ -136,7 +150,6 @@ export default function Onboarding() {
         // Resume-after-refresh: if an unfinished draft exists for this user,
         // rehydrate onboardingData and jump back to where they left off
         // instead of restarting from welcome.
-        const draft = await getMyWeddingDetails().catch(() => null);
         if (draft?.onboardingDraft) {
           setDraftWeddingId(draft.id);
           setOnboardingData(prev => ({
