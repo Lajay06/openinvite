@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
-import { Search, MapPin, ChevronDown, Loader2 } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, MapPin, ChevronDown, Loader2, LocateFixed, Building2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
@@ -20,6 +21,14 @@ const PRICE_LABELS = { '$': 'Budget', '$$': 'Mid-range', '$$$': 'Premium', '$$$$
 const PRICE_MAP = { 0: '$', 1: '$', 2: '$$', 3: '$$$', 4: '$$$$' };
 const PRICE_ORDER = { '$': 1, '$$': 2, '$$$': 3, '$$$$': 4 };
 const SORT_OPTIONS = ['Relevance', 'Rating', 'Price low–high', 'Price high–low'];
+
+// Categories that can plausibly serve any location remotely — Google Places
+// has no "works online" attribute (it's an inherently location-anchored
+// directory of physical places), so "Online services" can't filter to real
+// online-only vendors. Honest v1: for these categories only, checking it
+// drops the location constraint from the search entirely instead of
+// pretending to know which specific results are remote-capable.
+const REMOTE_PLAUSIBLE_CATEGORIES = ['Celebrant', 'Styling', 'Stationery', 'Entertainment'];
 
 const CATEGORY_QUERIES = {
   'Photography':   'wedding photographer',
@@ -52,12 +61,40 @@ export default function VendorMarketplace() {
   const [priceFilter, setPriceFilter] = useState('');
   const [sortBy, setSortBy] = useState('Relevance');
   const [selectedVendor, setSelectedVendor] = useState(null);
+
+  // "Use my location" — device coordinates, passed straight through to
+  // /api/places-search's existing lat/lng branch (no reverse-geocoding: this
+  // app has no reverse-geocode endpoint, so coordinates never become a typed
+  // address; the input shows a small chip instead while active).
+  const [geoCoords, setGeoCoords] = useState(null); // { lat, lng } | null
+  const [geoStatus, setGeoStatus] = useState('');   // '' | 'locating'
+  const [geoMessage, setGeoMessage] = useState(''); // denied/unavailable, shown inline
+
+  // "Use event location" — the wedding's ceremony venue (Event details),
+  // fed through the same location string param the input already uses.
+  const [eventLocation, setEventLocation] = useState(null); // string | null
+
+  // "Online services" — see REMOTE_PLAUSIBLE_CATEGORIES above.
+  const [onlineServices, setOnlineServices] = useState(false);
+  const [resultsOnlineActive, setResultsOnlineActive] = useState(false); // reflects the last completed search, not the live checkbox
   const [profileOpen, setProfileOpen] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
   const [savedIds, setSavedIds] = useState(new Set());
   const [savingIds, setSavingIds] = useState(new Set());
   const [vendors, setVendors] = useState(null);
   const [apiStatus, setApiStatus] = useState(''); // '' | 'searching' | 'done' | 'error'
+
+  // Load the wedding's ceremony venue once, for "Use event location". Uses
+  // the MAIN ceremony specifically when both a ceremony and reception venue
+  // exist (per mainCeremony/reception on WeddingDetails, set in Event
+  // details) — address is more precise for a Places location bias than the
+  // bare venue name, falling back to the name if no address was captured.
+  useEffect(() => {
+    getMyWeddingDetails().then(wd => {
+      const mc = wd?.mainCeremony || {};
+      setEventLocation(mc.address || mc.venueName || null);
+    }).catch(() => setEventLocation(null));
+  }, []);
 
   const handleSave = async (vendor) => {
     if (savedIds.has(vendor.id)) return;
@@ -80,7 +117,11 @@ export default function VendorMarketplace() {
 
   const handleViewProfile = (vendor) => { setSelectedVendor(vendor); setProfileOpen(true); };
 
-  const handleSearch = async () => {
+  // Core search, parameterised so the two location buttons can apply their
+  // own location immediately without waiting on a state update to land
+  // (setLocationQ/setGeoCoords are async — reading the state back in the
+  // same tick would still see the old value).
+  const runSearch = async ({ coordsOverride, locationOverride } = {}) => {
     setApiStatus('searching');
 
     const rawSearch = search.trim();
@@ -89,11 +130,27 @@ export default function VendorMarketplace() {
     const categoryQuery = (!rawSearch && category !== 'All') ? (CATEGORY_QUERIES[category] || 'wedding vendor') : null;
     const q = rawSearch || categoryQuery || 'wedding vendor';
 
+    const coords = coordsOverride !== undefined ? coordsOverride : geoCoords;
+    const loc = (locationOverride !== undefined ? locationOverride : locationQ).trim();
+    const onlineActive = onlineServices && REMOTE_PLAUSIBLE_CATEGORIES.includes(category);
+
+    const body = { q };
+    if (onlineActive) {
+      // Honest widening, not a fake "online" filter: Places has no such
+      // attribute, so the only real lever is to drop the location bias
+      // entirely for categories that plausibly work remotely.
+    } else if (coords) {
+      body.lat = coords.lat;
+      body.lng = coords.lng;
+    } else if (loc) {
+      body.location = loc;
+    }
+
     try {
       const res = await fetch('/api/places-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q, location: locationQ.trim() || undefined }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         setApiStatus('error');
@@ -116,11 +173,55 @@ export default function VendorMarketplace() {
         phone: null,
       }));
       setVendors(mapped);
+      setResultsOnlineActive(onlineActive);
       setApiStatus('done');
     } catch {
       setApiStatus('error');
       setVendors(null);
     }
+  };
+
+  const handleSearch = () => runSearch();
+
+  // "Use my location" — the three real Geolocation outcomes, handled
+  // honestly: granted runs the search immediately; denied/unavailable show
+  // a small inline message and leave the location input fully usable (no
+  // toast spam).
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      setGeoMessage('Location is not available in this browser — type a location instead.');
+      return;
+    }
+    setGeoStatus('locating');
+    setGeoMessage('');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setGeoCoords(coords);
+        setGeoStatus('');
+        setGeoMessage('');
+        runSearch({ coordsOverride: coords });
+      },
+      (err) => {
+        setGeoStatus('');
+        setGeoMessage(
+          err.code === err.PERMISSION_DENIED
+            ? 'Location access was denied — type a location instead.'
+            : 'Could not get your location — type a location instead.'
+        );
+      },
+      { timeout: 8000 }
+    );
+  };
+
+  // "Use event location" — the wedding's ceremony venue, applied like any
+  // other typed location (same location string param, no coordinates).
+  const handleUseEventLocation = () => {
+    if (!eventLocation) return;
+    setGeoCoords(null);
+    setGeoMessage('');
+    setLocationQ(eventLocation);
+    runSearch({ coordsOverride: null, locationOverride: eventLocation });
   };
 
   const filtered = useMemo(() => {
@@ -169,21 +270,66 @@ export default function VendorMarketplace() {
             />
           </div>
           <div style={{ position: 'relative', width: 200 }}>
-            <MapPin size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
-            <input
-              value={locationQ} onChange={e => setLocationQ(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder="City, region or postcode"
-              style={{ ...underlineInput({ paddingLeft: 20, width: '100%' }) }}
-              onFocus={e => e.target.style.borderBottomColor = '#E03553'}
-              onBlur={e => e.target.style.borderBottomColor = 'rgba(10,10,10,0.15)'}
-            />
+            {geoCoords ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid rgba(10,10,10,0.15)', padding: '8px 0' }}>
+                <MapPin size={13} style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0 }} />
+                <span style={{ fontSize: 14, color: '#0A0A0A', fontFamily: PJS, flex: 1 }}>Current location</span>
+                <button
+                  type="button"
+                  onClick={() => setGeoCoords(null)}
+                  title="Clear current location"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 0, flexShrink: 0 }}
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            ) : (
+              <>
+                <MapPin size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                <input
+                  value={locationQ} onChange={e => setLocationQ(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                  placeholder="City, region or postcode"
+                  style={{ ...underlineInput({ paddingLeft: 20, width: '100%' }) }}
+                  onFocus={e => e.target.style.borderBottomColor = '#E03553'}
+                  onBlur={e => e.target.style.borderBottomColor = 'rgba(10,10,10,0.15)'}
+                />
+              </>
+            )}
           </div>
           <button onClick={handleSearch} disabled={apiStatus === 'searching'}
             style={{ padding: '8px 18px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: apiStatus === 'searching' ? 'not-allowed' : 'pointer', border: 'none', background: '#E03553', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, opacity: apiStatus === 'searching' ? 0.7 : 1 }}>
             {apiStatus === 'searching' ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
             Search
           </button>
+        </div>
+
+        {/* Row 1.5: location shortcuts — sit with the location input above */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={handleUseMyLocation}
+              disabled={geoStatus === 'locating'}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, fontFamily: PJS, cursor: geoStatus === 'locating' ? 'not-allowed' : 'pointer', border: '1px solid rgba(10,10,10,0.15)', background: 'none', color: '#0A0A0A', opacity: geoStatus === 'locating' ? 0.6 : 1 }}
+            >
+              {geoStatus === 'locating' ? <Loader2 size={12} className="animate-spin" /> : <LocateFixed size={12} />}
+              Use my location
+            </button>
+            <button
+              type="button"
+              onClick={handleUseEventLocation}
+              disabled={!eventLocation}
+              title={!eventLocation ? 'Add your venue in Event details to use this' : `Use ${eventLocation}`}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, fontFamily: PJS, cursor: eventLocation ? 'pointer' : 'not-allowed', border: '1px solid rgba(10,10,10,0.15)', background: 'none', color: eventLocation ? '#0A0A0A' : 'rgba(10,10,10,0.3)', opacity: eventLocation ? 1 : 0.6 }}
+            >
+              <Building2 size={12} />
+              Use event location
+            </button>
+          </div>
+          {geoMessage && (
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, margin: 0 }}>{geoMessage}</p>
+          )}
         </div>
 
         {/* Row 2: category pills */}
@@ -218,6 +364,30 @@ export default function VendorMarketplace() {
             </button>
           ))}
 
+          {/* Online services — only meaningful for categories that can plausibly
+              serve any location remotely (see REMOTE_PLAUSIBLE_CATEGORIES).
+              Disabled elsewhere rather than silently doing nothing when checked. */}
+          {(() => {
+            const onlineEnabled = REMOTE_PLAUSIBLE_CATEGORIES.includes(category);
+            return (
+              <label
+                title={!onlineEnabled ? 'Not available for this category' : undefined}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: onlineEnabled ? 'pointer' : 'not-allowed', opacity: onlineEnabled ? 1 : 0.45 }}
+              >
+                <input
+                  type="checkbox"
+                  checked={onlineServices}
+                  disabled={!onlineEnabled}
+                  onChange={e => setOnlineServices(e.target.checked)}
+                  style={{ width: 14, height: 14, accentColor: '#E03553', cursor: 'inherit' }}
+                />
+                <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: onlineEnabled ? 'rgba(10,10,10,0.55)' : 'rgba(10,10,10,0.35)' }}>
+                  Online services
+                </span>
+              </label>
+            );
+          })()}
+
           <div style={{ marginLeft: 'auto', position: 'relative' }}>
             <select value={sortBy} onChange={e => setSortBy(e.target.value)}
               style={{ appearance: 'none', border: 'none', background: 'none', fontSize: 12, fontWeight: 600, fontFamily: PJS, color: 'rgba(10,10,10,0.5)', cursor: 'pointer', paddingRight: 18, outline: 'none' }}>
@@ -238,6 +408,11 @@ export default function VendorMarketplace() {
         {apiStatus === 'done' && vendors !== null && vendors.length > 0 && (
           <div style={{ padding: '10px 14px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', marginBottom: 12, fontSize: 12, color: '#065f46', fontFamily: PJS }}>
             Live results from Google Places.
+          </div>
+        )}
+        {apiStatus === 'done' && resultsOnlineActive && (
+          <div style={{ padding: '10px 14px', background: 'rgba(10,10,10,0.03)', border: '1px solid rgba(10,10,10,0.1)', marginBottom: 12, fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+            Showing vendors regardless of location — "Online services" is checked for {category}.
           </div>
         )}
 
