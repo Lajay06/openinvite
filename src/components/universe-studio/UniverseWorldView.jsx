@@ -19,7 +19,7 @@
  * identically to an unlocked world; only the closing chapter's action
  * differs (upgrade path instead of a locked door).
  */
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Crown, ExternalLink } from 'lucide-react';
 import MinimalMasthead from '@/components/guest-website/layouts/MinimalMasthead';
@@ -108,19 +108,46 @@ function MiniLinkCard({ label, sublabel, href, colors }) {
   );
 }
 
-/** Fades/lifts its children into view once, unless reduced motion is on
- *  (then it's just... there, no animation). Every chapter body uses this. */
+/** Fades/lifts its children into view once as they cross into the
+ *  viewport, via a plain IntersectionObserver + CSS opacity/transform
+ *  transition — no scroll-linked calculation running every frame, just a
+ *  single one-shot callback per chapter. Reveals once and stays revealed
+ *  (observer disconnects itself on first intersection, so scrolling back
+ *  up never re-hides a chapter). Reduced motion skips the observer
+ *  entirely — chapters start (and stay) fully visible, no fade, no drift. */
 function Reveal({ children, prefersReducedMotion, style }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(prefersReducedMotion);
+
+  useEffect(() => {
+    if (prefersReducedMotion || visible) return;
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') { setVisible(true); return; }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [prefersReducedMotion, visible]);
+
   return (
-    <motion.div
-      initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-      style={style}
+    <div
+      ref={ref}
+      style={{
+        ...style,
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(14px)',
+        transition: prefersReducedMotion ? 'none' : 'opacity 0.6s ease-out, transform 0.6s ease-out',
+      }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -190,6 +217,17 @@ export default function UniverseWorldView({
   const showUpgrade = universe.isUltra && !canAccessUltra && !isCurrent;
   const motifLarge = MOTIF_LARGE[universe.id];
   const { colors, typography } = universe;
+
+  // The world view mounts wherever the banner wall happened to be
+  // scrolled to (entering a world is a same-page conditional swap, not a
+  // real route change — nothing else resets window.scrollY on its own).
+  // Resetting here, in useLayoutEffect, runs synchronously before the
+  // browser paints this component's first frame, so the hero is always
+  // what's actually shown first — never a visible jump from a mid-page
+  // landing back up to the top.
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div>

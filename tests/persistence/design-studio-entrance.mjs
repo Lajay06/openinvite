@@ -161,11 +161,41 @@ export async function runDesignStudioEntrance() {
   results.push(/y: prefersReducedMotion \? 0 : parallaxY/.test(worldViewSource)
     ? pass('UniverseWorldView.jsx hero parallax is disabled entirely under reduced motion (static image)', 'found')
     : fail('UniverseWorldView.jsx hero parallax is disabled entirely under reduced motion (static image)', 'found', 'not found'));
-  results.push(/initial={prefersReducedMotion \? false : \{ opacity: 0, y: 28 \}}/.test(worldViewSource)
-    ? pass('UniverseWorldView.jsx chapters skip scroll-reveal entirely under reduced motion', 'found')
-    : fail('UniverseWorldView.jsx chapters skip scroll-reveal entirely under reduced motion', 'found', 'not found'));
+  results.push(/new IntersectionObserver\(/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx chapters reveal via IntersectionObserver, not a scroll-linked calculation', 'found')
+    : fail('UniverseWorldView.jsx chapters reveal via IntersectionObserver, not a scroll-linked calculation', 'found', 'not found'));
+  results.push(/if \(prefersReducedMotion \|\| visible\) return;/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx chapters skip the observer entirely under reduced motion (immediately visible)', 'found')
+    : fail('UniverseWorldView.jsx chapters skip the observer entirely under reduced motion (immediately visible)', 'found', 'not found'));
+  results.push(/observer\.disconnect\(\);\s*\n\s*\}\s*\n\s*\},\s*\n\s*\{ threshold: 0\.15 \}/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx chapters reveal once and stop observing (never re-hide on scroll-up)', 'found')
+    : fail('UniverseWorldView.jsx chapters reveal once and stop observing (never re-hide on scroll-up)', 'found', 'not found'));
+  results.push(/transition: prefersReducedMotion \? 'none' : 'opacity 0\.6s ease-out, transform 0\.6s ease-out'/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx chapter reveal is a plain opacity/transform CSS transition', 'found')
+    : fail('UniverseWorldView.jsx chapter reveal is a plain opacity/transform CSS transition', 'found', 'not found'));
+
+  console.log('\n  Design Studio — entering/leaving a world resets/restores scroll position correctly:\n');
+
+  results.push(/useLayoutEffect\(\(\) => \{\s*\n\s*window\.scrollTo\(0, 0\);\s*\n\s*\}, \[\]\);/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx resets scroll to 0 synchronously on mount (useLayoutEffect, before paint)', 'found')
+    : fail('UniverseWorldView.jsx resets scroll to 0 synchronously on mount (useLayoutEffect, before paint)', 'found', 'not found'));
 
   const studioSource = read('src/pages/UniverseStudio.jsx');
+  results.push(/wallScrollRef\.current = window\.scrollY;/.test(studioSource)
+    ? pass('UniverseStudio.jsx saves the wall\'s scroll position before entering a world', 'found')
+    : fail('UniverseStudio.jsx saves the wall\'s scroll position before entering a world', 'found', 'not found'));
+  results.push(/window\.scrollTo\(0, wallScrollRef\.current\);/.test(studioSource)
+    ? pass('UniverseStudio.jsx restores the saved scroll position when returning to the wall', 'found')
+    : fail('UniverseStudio.jsx restores the saved scroll position when returning to the wall', 'found', 'not found'));
+
+  console.log('\n  Design Studio — banner wall is flush, no gaps between rows:\n');
+
+  results.push(/gap: 0/.test(studioSource)
+    ? pass('UniverseStudio.jsx stacks banners with zero gap between rows', 'found')
+    : fail('UniverseStudio.jsx stacks banners with zero gap between rows', 'found', 'not found — a gap may still exist'));
+  results.push(!/gap: 48/.test(studioSource)
+    ? pass('UniverseStudio.jsx no longer has the old 48px inter-banner gap', 'not found')
+    : fail('UniverseStudio.jsx no longer has the old 48px inter-banner gap', 'not found', 'still present'));
   results.push(/const prefersReducedMotion = useReducedMotion\(\)/.test(studioSource) && /prefersReducedMotion={prefersReducedMotion}/.test(studioSource)
     ? pass('UniverseStudio.jsx resolves prefersReducedMotion and passes it into the entrance overlay', 'found')
     : fail('UniverseStudio.jsx resolves prefersReducedMotion and passes it into the entrance overlay', 'found', 'not found'));

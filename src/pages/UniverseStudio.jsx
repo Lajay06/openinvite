@@ -22,7 +22,7 @@
  * with the real config (e.g. its Capri swatch was the old flagged navy/
  * lemon palette).
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReducedMotion, motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -52,6 +52,18 @@ export default function UniverseStudio() {
 
   const [phase, setPhase] = useState('browsing'); // browsing | entering | world
   const [openId, setOpenId] = useState(null);
+  // Root cause of the mid-page landing bug: entering/leaving a world is a
+  // same-page conditional re-render (no real route change — the banner
+  // wall and the world view are two branches of one component, swapped
+  // by `phase`), so the browser never touches window.scrollY on its own.
+  // Whatever the wall was scrolled to when a banner was pressed is still
+  // the scroll position once the world view's DOM mounts in its place —
+  // this ref remembers that position so it can be restored on the way
+  // back, and the world view resets scroll to 0 itself on mount (see
+  // UniverseWorldView.jsx's own useLayoutEffect) rather than this page
+  // reaching in to do it, so the fix holds regardless of how phase gets
+  // there.
+  const wallScrollRef = useRef(0);
 
   useEffect(() => {
     Promise.all([getMyWeddingDetails(), getMyRecords('Guest')])
@@ -70,6 +82,7 @@ export default function UniverseStudio() {
   const opened = openId ? getUniverse(openId) : null;
 
   const enterUniverse = (u) => {
+    wallScrollRef.current = window.scrollY;
     setOpenId(u.id);
     setPhase('entering');
     const washMs = prefersReducedMotion ? 100 : Math.round((u.motion?.duration || 0.7) * 1000) + 250;
@@ -77,6 +90,16 @@ export default function UniverseStudio() {
   };
 
   const backToBrowsing = () => { setPhase('browsing'); setOpenId(null); };
+
+  // Restores the wall's scroll position on the way back — synchronously,
+  // before the browser paints, so there's no visible jump to the top
+  // followed by a jump back down. Harmless no-op on first mount
+  // (wallScrollRef starts at 0, and the page is already at 0 then).
+  useLayoutEffect(() => {
+    if (phase === 'browsing') {
+      window.scrollTo(0, wallScrollRef.current);
+    }
+  }, [phase]);
 
   const handleSwitchUniverse = async (universeId) => {
     try {
@@ -154,11 +177,14 @@ export default function UniverseStudio() {
             })}
           </div>
 
-          {/* Banner wall — stacked full-width rows, generous vertical
-              rhythm between them (48px). layout+AnimatePresence so
-              filtered-out banners fade out and the rest reflow smoothly. */}
-          <div style={{ padding: '24px 32px 56px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
+          {/* Banner wall — flush stacked rows, no gutters between them:
+              each banner's own background is the separation, so the wall
+              reads as one continuous surface. Only the top keeps a
+              deliberate breathing gap under the filter pills; the bottom
+              has none, so the last row ends cleanly. layout+AnimatePresence
+              so filtered-out banners fade out and the rest reflow smoothly. */}
+          <div style={{ padding: '24px 32px 0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               <AnimatePresence>
                 {visibleUniverses.map(u => (
                   <motion.div
