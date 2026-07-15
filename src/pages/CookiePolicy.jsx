@@ -89,7 +89,6 @@ export default function CookiePolicy() {
             <li><strong>Google</strong> — if you choose "continue with Google" to sign in</li>
             <li><strong>Stripe</strong> — during checkout, to help prevent payment fraud</li>
             <li><strong>PostHog</strong> — analytics, only if you've consented (see above)</li>
-            <li><strong>Crisp</strong> — if you open the live chat support widget</li>
             <li><strong>Cloudflare Turnstile</strong> — on public forms (RSVP-link requests, sign-up), to confirm a human is submitting</li>
           </ul>
           <p style={P}>These are governed by each company's own privacy and cookie policies.</p>
