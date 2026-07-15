@@ -1,9 +1,11 @@
 /**
- * Design Studio (fix/design-studio-entrance) — rebuilt around the
- * "entrance" concept explored in the feat/mock/universe-studio-redesign
- * mocks (direction C). The page is now the universe experience itself: a
- * wall of large-format poster tiles, a style filter above them, and
- * pressing a tile triggers a full-screen entrance into that world.
+ * Design Studio (fix/design-studio-entrance, fix/design-studio-banners) —
+ * rebuilt around the "entrance" concept explored in the
+ * feat/mock/universe-studio-redesign mocks (direction C). The page is now
+ * the universe experience itself: a stacked wall of full-width
+ * photographic banners (microsoft.design/wallpapers reference — the
+ * image IS the design), a style filter above them, and pressing a banner
+ * triggers a full-screen entrance into that world.
  *
  * "Your design assets" has been removed from this page entirely — every
  * asset it used to show is reachable via Studio dashboard → Guest Suite
@@ -29,7 +31,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { UNIVERSE_CATALOG, STYLE_TAGS, getUniverse } from '@/lib/universeCatalog';
-import UniverseTile from '@/components/universe-studio/UniverseTile';
+import UniverseBanner from '@/components/universe-studio/UniverseBanner';
 import UniverseEntranceOverlay from '@/components/universe-studio/UniverseEntranceOverlay';
 import UniverseWorldView from '@/components/universe-studio/UniverseWorldView';
 
@@ -152,21 +154,22 @@ export default function UniverseStudio() {
             })}
           </div>
 
-          {/* Tile wall — layout+AnimatePresence so filtered-out tiles fade
-              out and the rest reflow smoothly, instead of jumping. */}
+          {/* Banner wall — stacked full-width rows, generous vertical
+              rhythm between them (48px). layout+AnimatePresence so
+              filtered-out banners fade out and the rest reflow smoothly. */}
           <div style={{ padding: '24px 32px 56px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 20 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
               <AnimatePresence>
                 {visibleUniverses.map(u => (
                   <motion.div
                     key={u.id}
                     layout
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
-                    transition={prefersReducedMotion ? { duration: 0.01 } : { duration: 0.25, ease: 'easeOut' }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={prefersReducedMotion ? { duration: 0.01 } : { duration: 0.3, ease: 'easeOut' }}
                   >
-                    <UniverseTile
+                    <UniverseBanner
                       universe={u}
                       isCurrent={activeId === u.id}
                       onClick={() => enterUniverse(u)}

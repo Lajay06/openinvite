@@ -535,6 +535,7 @@ export const UNIVERSE_CONFIGS = {
     tagline: 'Quiet luxury',
     tileDescription: "The luxury is in what's left out — quiet rooms, warm paper, nothing shouting for attention.",
     motifNote: 'Fine cross-hatch linen-weave grain, barely visible on dark sections.',
+    worldStory: 'Aman is the art of subtraction. Every surface is quiet enough to hear your own thoughts, every material honest enough to age well. This is a wedding that trusts silence.',
     imageUrl: null,
   },
   tulum: {
@@ -557,6 +558,7 @@ export const UNIVERSE_CONFIGS = {
     tagline: 'Organic luxury',
     tileDescription: 'A sun-bleached journal page for a day spent barefoot and unhurried.',
     motifNote: 'Warm canvas-weave texture across section grounds.',
+    worldStory: "Tulum runs on sun and salt air, on mornings that start late and nights that don't rush to end. Paper feels sun-bleached, ink feels sand-warmed. This is a wedding for bare feet.",
     imageUrl: null,
   },
   kyoto: {
@@ -606,6 +608,7 @@ export const UNIVERSE_CONFIGS = {
     tagline: 'Japanese minimalism',
     tileDescription: 'Vast quiet, one perfect mark — restraint as its own kind of beauty.',
     motifNote: 'Fine washi-paper grain, with a single ensō ring as the only ornament.',
+    worldStory: 'Kyoto holds space the way a garden holds silence — deliberately, with nothing wasted. One mark, drawn once, says more than a page of ornament. This is a wedding built on restraint.',
     imageUrl: null,
   },
   capri: {
@@ -653,6 +656,7 @@ export const UNIVERSE_CONFIGS = {
     tagline: 'Mediterranean summer',
     tileDescription: "Sun on warm stone, citrus at the table, joy that doesn't apologise for itself.",
     motifNote: 'A scalloped citrus-pith rule — repeating semicircle bumps — under kickers and names.',
+    worldStory: "Capri tastes like citrus and salt, sounds like laughter carrying across water. Warm stone, warm light, a joy loud enough to fill a piazza. This is a wedding that doesn't hold back.",
     imageUrl: null,
   },
   marrakech: {
@@ -711,7 +715,13 @@ export const UNIVERSE_CONFIGS = {
     tagline: 'Desert opulence',
     tileDescription: 'Woven patterns and warm plaster — an invitation carried, never just sent.',
     motifNote: 'A zellige interlocking-star weave, woven into rules and borders at low opacity.',
-    imageUrl: null,
+    worldStory: 'Marrakech is woven, not printed — plaster warmed by hand, patterns that repeat like a held breath. Every invitation feels carried, not just sent. This is a wedding wrapped in craft.',
+    // Real photography (fix/design-studio-banners). Optimised from the
+    // couple-supplied original (1.77MB → ~294KB full / ~55KB @800w via
+    // sips quality 45) — see public/universes/README or the PR
+    // description for the exact pipeline. -800.jpg is the same image at
+    // 800px wide for the responsive srcset.
+    imageUrl: '/universes/marrakech.jpg',
   },
   brooklyn: {
     // Urban industrial — asymmetric, off-grid, editorial-industrial
@@ -759,6 +769,7 @@ export const UNIVERSE_CONFIGS = {
     tagline: 'Urban industrial',
     tileDescription: 'Unfussy and direct, cut like a gig poster — this is the wedding, come as you are.',
     motifNote: 'A bold ticket-stub rule — a solid block with a perforated tear-line edge.',
+    worldStory: "Brooklyn doesn't dress up what's already good. A gig-poster rule, a name set hard right, ink that means it. This is a wedding that shows up as it is.",
     imageUrl: null,
   },
   bali: {
@@ -813,7 +824,9 @@ export const UNIVERSE_CONFIGS = {
     tagline: 'Tropical spirit',
     tileDescription: 'Open arms under a jungle canopy, every edge soft, every welcome wide.',
     motifNote: 'A generated wave-divider curve in place of every straight rule, with a small leaf-curve accent.',
-    imageUrl: null,
+    worldStory: 'Bali moves like water finds its level — soft edges, wide welcomes, a canopy overhead instead of a ceiling. This is a wedding with its arms open.',
+    // Real photography (fix/design-studio-banners) — optimised (552KB → ~226KB full / ~39KB @800w).
+    imageUrl: '/universes/bali.jpg',
   },
   paris: {
     // Fashion-plate restraint (UNIVERSE_DESIGN_SYSTEM.md §4) — chic,
@@ -863,6 +876,7 @@ export const UNIVERSE_CONFIGS = {
     tagline: 'Fashion-plate romance',
     tileDescription: 'A fashion-plate hush — fine rules, ink and rose, nothing overstated.',
     motifNote: 'A fine framed hairline rule above and below the kicker, like a fashion-plate caption card.',
+    worldStory: "Paris is a fashion plate, not a postcard — fine rules, considered proportion, nothing shouted. Ink and rose, held at arm's length. This is a wedding with real taste.",
     imageUrl: null,
   },
   capetown: {
@@ -911,7 +925,9 @@ export const UNIVERSE_CONFIGS = {
     tagline: 'Vineyard estate',
     tileDescription: 'Long tables, vineyard light, the kind of gathering that lingers past dessert.',
     motifNote: 'A vine rule — a fine estate-stationery botanical rule beneath the kicker.',
-    imageUrl: null,
+    worldStory: 'Cape Town gathers around long tables and longer evenings, vineyard light turning everything gold. Nothing is rushed here. This is a wedding built for lingering.',
+    // Real photography (fix/design-studio-banners) — optimised (1.77MB → ~294KB full / ~55KB @800w).
+    imageUrl: '/universes/cape-town.jpg',
   },
   mykonos: {
     // Architectural, heavy negative space, cube-like blocks, whitewashed
@@ -970,6 +986,7 @@ export const UNIVERSE_CONFIGS = {
     tagline: 'Aegean architecture',
     tileDescription: 'Whitewash and cobalt, cut clean against the sky — architecture as the decoration.',
     motifNote: 'A solid cube block — plain rectangular architecture, no line, no pattern.',
+    worldStory: 'Mykonos is architecture as decoration — whitewash and cobalt, cut clean against an impossibly blue sky. Nothing extra, everything considered. This is a wedding with real edges.',
     imageUrl: null,
   },
 };

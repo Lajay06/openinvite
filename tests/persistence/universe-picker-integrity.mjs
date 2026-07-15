@@ -123,8 +123,8 @@ export async function runUniversePickerIntegrity() {
       stillExists = false;
     }
     results.push(!stillExists
-      ? pass('src/components/universe-studio/UniverseSelector.jsx — deleted (retired picker, superseded by universeCatalog.js/UniverseTile.jsx)', 'deleted')
-      : fail('src/components/universe-studio/UniverseSelector.jsx — deleted (retired picker, superseded by universeCatalog.js/UniverseTile.jsx)', 'deleted', 'still exists'));
+      ? pass('src/components/universe-studio/UniverseSelector.jsx — deleted (retired picker, superseded by universeCatalog.js/UniverseBanner.jsx)', 'deleted')
+      : fail('src/components/universe-studio/UniverseSelector.jsx — deleted (retired picker, superseded by universeCatalog.js/UniverseBanner.jsx)', 'deleted', 'still exists'));
   }
 
   return results;

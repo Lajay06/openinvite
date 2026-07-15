@@ -48,6 +48,7 @@ export const UNIVERSE_CATALOG = ORDER.map(id => {
     tags: cfg.tags || [],
     tileDescription: cfg.tileDescription || '',
     motifNote: cfg.motifNote || '',
+    worldStory: cfg.worldStory || '',
     imageUrl: cfg.imageUrl || null,
   };
 });

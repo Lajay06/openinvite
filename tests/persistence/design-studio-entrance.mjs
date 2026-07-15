@@ -1,63 +1,73 @@
 /**
  * tests/persistence/design-studio-entrance.mjs
  *
- * Covers fix/design-studio-entrance: the Design Studio rebuild around
- * direction C (entrance). Structural checks against source text (same
- * convention as seating-polish.mjs/dashboard-structure.mjs — these are
- * .jsx files with real render logic, and this suite runs as a plain Node
- * script with no JSX transform) plus a couple of live/data checks.
+ * Covers fix/design-studio-entrance (the Design Studio rebuild around
+ * direction C) and fix/design-studio-banners (full-width photographic
+ * banners + the scroll-driven world view). Structural checks against
+ * source text (same convention as seating-polish.mjs/dashboard-
+ * structure.mjs — these are .jsx files with real render logic, and this
+ * suite runs as a plain Node script with no JSX transform) plus a few
+ * live/data checks and a real file-size check on the shipped images.
  *
  * What this file actually proves:
- *  1. Tiles are sourced from UNIVERSE_CONFIGS, not a second hardcoded
- *     palette (the exact bug UniverseSelector.jsx had — its Capri swatch
- *     was the old flagged navy/lemon palette, out of sync with the real
- *     config). Confirms the retired file is actually gone, the new
- *     catalog/tile files reference UNIVERSE_CONFIGS, and — a live,
- *     content-level regression guard — that Capri's accent really is the
- *     corrected value, not the old flagged one.
- *  2. The entrance overlay's reduced-motion gate exists (useReducedMotion
- *     imported and actually branched on, not just imported and ignored).
- *  3. The Ultra badge renders conditionally on isUltra in the tile
- *     component, and the Ultra id set matches the two gated universes.
- *  4. "Your design assets" is actually gone from the page (no AssetGrid/
+ *  1. Banners/tiles are sourced from UNIVERSE_CONFIGS, not a second
+ *     hardcoded palette (the exact bug UniverseSelector.jsx had — its
+ *     Capri swatch was the old flagged navy/lemon palette, out of sync
+ *     with the real config). Confirms the retired files are actually
+ *     gone, the new catalog/banner/world-view files reference
+ *     UNIVERSE_CONFIGS, and — a live, content-level regression guard —
+ *     that Capri's accent really is the corrected value, not the old
+ *     flagged one.
+ *  2. Real photography is wired for exactly the 3 universes it exists
+ *     for (marrakech/bali/capetown), the shipped files are actually
+ *     optimised (not multi-MB originals), and every universe's tile
+ *     metadata (including the new worldStory copy) is present.
+ *  3. Reduced-motion gates exist and are actually branched on (not just
+ *     imported and ignored) in the entrance overlay, the banner's hover/
+ *     scroll-reveal, and the world view's parallax hero.
+ *  4. The Ultra badge renders conditionally on isUltra, the Ultra id set
+ *     matches the two gated universes, and locked worlds get an upgrade
+ *     path rather than a locked door.
+ *  5. "Your design assets" is actually gone from the page (no AssetGrid/
  *     AssetEditorModal import left on UniverseStudio.jsx).
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pass, fail } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const read = (p) => readFileSync(resolve(__dir, '..', '..', p), 'utf8');
-const exists = (p) => { try { readFileSync(resolve(__dir, '..', '..', p)); return true; } catch { return false; } };
+const repoRoot = resolve(__dir, '..', '..');
+const read = (p) => readFileSync(resolve(repoRoot, p), 'utf8');
+const exists = (p) => { try { readFileSync(resolve(repoRoot, p)); return true; } catch { return false; } };
 
 export async function runDesignStudioEntrance() {
   const results = [];
 
-  console.log('\n  Design Studio entrance — tiles sourced from UNIVERSE_CONFIGS, no hardcoded palette (fix/design-studio-entrance):\n');
+  console.log('\n  Design Studio — banners sourced from UNIVERSE_CONFIGS, no hardcoded palette:\n');
 
   results.push(!exists('src/components/universe-studio/UniverseSelector.jsx')
     ? pass('UniverseSelector.jsx (the stale-swatch picker) is deleted', 'not found')
     : fail('UniverseSelector.jsx (the stale-swatch picker) is deleted', 'not found', 'file still present'));
+  results.push(!exists('src/components/universe-studio/UniverseTile.jsx')
+    ? pass('UniverseTile.jsx (superseded by the full-width UniverseBanner.jsx) is deleted', 'not found')
+    : fail('UniverseTile.jsx (superseded by the full-width UniverseBanner.jsx) is deleted', 'not found', 'file still present'));
 
   const catalogSource = read('src/lib/universeCatalog.js');
   results.push(/import \{ UNIVERSE_CONFIGS \} from '\.\/websiteThemes\.js'/.test(catalogSource)
     ? pass('universeCatalog.js imports UNIVERSE_CONFIGS as its source', 'found')
     : fail('universeCatalog.js imports UNIVERSE_CONFIGS as its source', 'found', 'not found'));
 
-  const tileSource = read('src/components/universe-studio/UniverseTile.jsx');
-  results.push(/colors\.darkBg/.test(tileSource) && /typography\.headingFont/.test(tileSource)
-    ? pass('UniverseTile.jsx reads colour/type from the universe prop, not a local hardcoded map', 'found')
-    : fail('UniverseTile.jsx reads colour/type from the universe prop, not a local hardcoded map', 'found', 'not found'));
+  const bannerSource = read('src/components/universe-studio/UniverseBanner.jsx');
+  results.push(/colors\.darkBg/.test(bannerSource) && /typography\.headingFont/.test(bannerSource)
+    ? pass('UniverseBanner.jsx reads colour/type from the universe prop, not a local hardcoded map', 'found')
+    : fail('UniverseBanner.jsx reads colour/type from the universe prop, not a local hardcoded map', 'found', 'not found'));
 
-  // The two old flagged hex values (Capri's pre-fix navy/lemon palette,
-  // still hardcoded in the now-deleted UniverseSelector.jsx) must not
-  // appear anywhere in the new tile/catalog/world-view files.
   const worldViewSource = read('src/components/universe-studio/UniverseWorldView.jsx');
-  const newFilesCombined = tileSource + catalogSource + worldViewSource;
+  const newFilesCombined = bannerSource + catalogSource + worldViewSource;
   results.push(!/#1A6EBD|#FFE566|#E8C547/.test(newFilesCombined)
-    ? pass('New tile/catalog/world-view files contain none of the old flagged Capri hex values', 'not found')
-    : fail('New tile/catalog/world-view files contain none of the old flagged Capri hex values', 'not found', 'stale hex value found'));
+    ? pass('New banner/catalog/world-view files contain none of the old flagged Capri hex values', 'not found')
+    : fail('New banner/catalog/world-view files contain none of the old flagged Capri hex values', 'not found', 'stale hex value found'));
 
   const websiteThemesSource = read('src/lib/websiteThemes.js');
   const capriMatch = websiteThemesSource.match(/capri: \{[\s\S]*?\n  \},/);
@@ -66,19 +76,66 @@ export async function runDesignStudioEntrance() {
     ? pass("UNIVERSE_CONFIGS.capri.accent is the corrected muted gold, not the old flagged neon lemon", '#C4A130')
     : fail("UNIVERSE_CONFIGS.capri.accent is the corrected muted gold, not the old flagged neon lemon", '#C4A130', 'not found / regressed'));
 
-  console.log('\n  Design Studio entrance — every universe has real tile metadata (tagline/tags/description/motif):\n');
+  console.log('\n  Design Studio — real photography wired for exactly 3 universes, optimised (fix/design-studio-banners):\n');
+
+  const PHOTO_UNIVERSES = { marrakech: '/universes/marrakech.jpg', bali: '/universes/bali.jpg', capetown: '/universes/cape-town.jpg' };
+  const NO_PHOTO_UNIVERSES = ['aman', 'tulum', 'kyoto', 'capri', 'brooklyn', 'paris', 'mykonos'];
+
+  for (const [id, expectedPath] of Object.entries(PHOTO_UNIVERSES)) {
+    const m = websiteThemesSource.match(new RegExp(`${id}: \\{[\\s\\S]*?\\n  \\},`));
+    const block = m ? m[0] : '';
+    const hasImage = block.includes(`imageUrl: '${expectedPath}'`);
+    results.push(hasImage
+      ? pass(`UNIVERSE_CONFIGS.${id}.imageUrl points at the real photo`, expectedPath)
+      : fail(`UNIVERSE_CONFIGS.${id}.imageUrl points at the real photo`, expectedPath, 'not found'));
+  }
+  for (const id of NO_PHOTO_UNIVERSES) {
+    const m = websiteThemesSource.match(new RegExp(`${id}: \\{[\\s\\S]*?\\n  \\},`));
+    const block = m ? m[0] : '';
+    results.push(/imageUrl: null/.test(block)
+      ? pass(`UNIVERSE_CONFIGS.${id}.imageUrl stays null — no faked image`, 'null')
+      : fail(`UNIVERSE_CONFIGS.${id}.imageUrl stays null — no faked image`, 'null', 'a value was set'));
+  }
+
+  // Real file-size guard, not just a path check — this is the actual
+  // "don't ship multi-MB originals" requirement, checked against the
+  // files that will really be served.
+  const MAX_FULL_BYTES = 700 * 1024; // 700KB — generous ceiling for a 1600px-wide hero photo at web quality
+  const MAX_SMALL_BYTES = 150 * 1024; // 150KB — the 800w responsive variant
+  for (const file of ['marrakech.jpg', 'bali.jpg', 'cape-town.jpg']) {
+    const fullPath = resolve(repoRoot, 'public/universes', file);
+    const smallPath = resolve(repoRoot, 'public/universes', file.replace(/\.jpg$/, '-800.jpg'));
+    try {
+      const fullSize = statSync(fullPath).size;
+      results.push(fullSize <= MAX_FULL_BYTES
+        ? pass(`public/universes/${file} is optimised (≤${Math.round(MAX_FULL_BYTES / 1024)}KB)`, `${Math.round(fullSize / 1024)}KB`)
+        : fail(`public/universes/${file} is optimised (≤${Math.round(MAX_FULL_BYTES / 1024)}KB)`, `≤${Math.round(MAX_FULL_BYTES / 1024)}KB`, `${Math.round(fullSize / 1024)}KB — still multi-hundred-KB or larger`));
+    } catch {
+      results.push(fail(`public/universes/${file} exists`, 'file present', 'not found'));
+    }
+    try {
+      const smallSize = statSync(smallPath).size;
+      results.push(smallSize <= MAX_SMALL_BYTES
+        ? pass(`public/universes/${file.replace(/\.jpg$/, '-800.jpg')} responsive variant is optimised (≤${Math.round(MAX_SMALL_BYTES / 1024)}KB)`, `${Math.round(smallSize / 1024)}KB`)
+        : fail(`public/universes/${file.replace(/\.jpg$/, '-800.jpg')} responsive variant is optimised (≤${Math.round(MAX_SMALL_BYTES / 1024)}KB)`, `≤${Math.round(MAX_SMALL_BYTES / 1024)}KB`, `${Math.round(smallSize / 1024)}KB`));
+    } catch {
+      results.push(fail(`public/universes/${file.replace(/\.jpg$/, '-800.jpg')} responsive variant exists`, 'file present', 'not found'));
+    }
+  }
+
+  console.log('\n  Design Studio — every universe has complete tile metadata (tagline/tags/description/motif/story):\n');
 
   const UNIVERSE_IDS = ['aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
   const missingMeta = UNIVERSE_IDS.filter(id => {
     const m = websiteThemesSource.match(new RegExp(`${id}: \\{[\\s\\S]*?\\n  \\},`));
     const block = m ? m[0] : '';
-    return !/tagline: '/.test(block) || !/tileDescription: /.test(block) || !/motifNote: /.test(block) || !/tags: \[/.test(block);
+    return !/tagline: '/.test(block) || !/tileDescription: /.test(block) || !/motifNote: /.test(block) || !/tags: \[/.test(block) || !/worldStory: /.test(block);
   });
   results.push(missingMeta.length === 0
-    ? pass('All 10 universes have tagline + tags + tileDescription + motifNote', 'found on all 10')
-    : fail('All 10 universes have tagline + tags + tileDescription + motifNote', 'found on all 10', `missing on: ${missingMeta.join(', ')}`));
+    ? pass('All 10 universes have tagline + tags + tileDescription + motifNote + worldStory', 'found on all 10')
+    : fail('All 10 universes have tagline + tags + tileDescription + motifNote + worldStory', 'found on all 10', `missing on: ${missingMeta.join(', ')}`));
 
-  console.log('\n  Design Studio entrance — reduced-motion gate on the entrance overlay:\n');
+  console.log('\n  Design Studio — reduced-motion gates (entrance overlay, banner, world view hero):\n');
 
   const overlaySource = read('src/components/universe-studio/UniverseEntranceOverlay.jsx');
   results.push(/import \{ motion, AnimatePresence \} from 'framer-motion'/.test(overlaySource)
@@ -91,16 +148,33 @@ export async function runDesignStudioEntrance() {
     ? pass('The travelling headline is skipped entirely under reduced motion, not just shortened', 'found')
     : fail('The travelling headline is skipped entirely under reduced motion, not just shortened', 'found', 'not found'));
 
+  results.push(/whileHover={prefersReducedMotion \? undefined : \{ scale: 1\.045 \}}/.test(bannerSource)
+    ? pass('UniverseBanner.jsx skips the hover scale entirely under reduced motion', 'found')
+    : fail('UniverseBanner.jsx skips the hover scale entirely under reduced motion', 'found', 'not found'));
+  results.push(/initial={prefersReducedMotion \? false : \{ opacity: 0, y: 24 \}}/.test(bannerSource)
+    ? pass('UniverseBanner.jsx skips the scroll-reveal entirely under reduced motion', 'found')
+    : fail('UniverseBanner.jsx skips the scroll-reveal entirely under reduced motion', 'found', 'not found'));
+
+  results.push(/useScroll\(\{ target: ref, offset: \['start start', 'end start'\] \}\)/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx hero uses scroll-linked parallax (useScroll/useTransform)', 'found')
+    : fail('UniverseWorldView.jsx hero uses scroll-linked parallax (useScroll/useTransform)', 'found', 'not found'));
+  results.push(/y: prefersReducedMotion \? 0 : parallaxY/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx hero parallax is disabled entirely under reduced motion (static image)', 'found')
+    : fail('UniverseWorldView.jsx hero parallax is disabled entirely under reduced motion (static image)', 'found', 'not found'));
+  results.push(/initial={prefersReducedMotion \? false : \{ opacity: 0, y: 28 \}}/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx chapters skip scroll-reveal entirely under reduced motion', 'found')
+    : fail('UniverseWorldView.jsx chapters skip scroll-reveal entirely under reduced motion', 'found', 'not found'));
+
   const studioSource = read('src/pages/UniverseStudio.jsx');
   results.push(/const prefersReducedMotion = useReducedMotion\(\)/.test(studioSource) && /prefersReducedMotion={prefersReducedMotion}/.test(studioSource)
     ? pass('UniverseStudio.jsx resolves prefersReducedMotion and passes it into the entrance overlay', 'found')
     : fail('UniverseStudio.jsx resolves prefersReducedMotion and passes it into the entrance overlay', 'found', 'not found'));
 
-  console.log('\n  Design Studio entrance — Ultra badge presence for gated universes:\n');
+  console.log('\n  Design Studio — Ultra badge presence for gated universes:\n');
 
-  results.push(/\{isUltra && \(/.test(tileSource) && /<Crown size=\{10\} \/> Ultra/.test(tileSource)
-    ? pass('UniverseTile.jsx renders the Ultra badge conditionally on isUltra', 'found')
-    : fail('UniverseTile.jsx renders the Ultra badge conditionally on isUltra', 'found', 'not found'));
+  results.push(/\{isUltra && \(/.test(bannerSource) && /<Crown size=\{10\} \/> Ultra/.test(bannerSource)
+    ? pass('UniverseBanner.jsx renders the Ultra badge conditionally on isUltra', 'found')
+    : fail('UniverseBanner.jsx renders the Ultra badge conditionally on isUltra', 'found', 'not found'));
   results.push(/ULTRA_UNIVERSE_IDS = new Set\(\['marrakech', 'paris'\]\)/.test(catalogSource)
     ? pass('universeCatalog.js gates exactly marrakech + paris behind Ultra', "['marrakech', 'paris']")
     : fail('universeCatalog.js gates exactly marrakech + paris behind Ultra', "['marrakech', 'paris']", 'not found / different set'));
@@ -108,14 +182,14 @@ export async function runDesignStudioEntrance() {
     ? pass('UniverseWorldView.jsx shows the upgrade path (not a locked-out door) for gated worlds', 'found')
     : fail('UniverseWorldView.jsx shows the upgrade path (not a locked-out door) for gated worlds', 'found', 'not found'));
 
-  console.log('\n  Design Studio entrance — "Your design assets" removed from the page:\n');
+  console.log('\n  Design Studio — "Your design assets" removed from the page:\n');
 
   results.push(!/AssetGrid|AssetEditorModal/.test(studioSource)
     ? pass('UniverseStudio.jsx no longer imports AssetGrid or AssetEditorModal', 'not found')
     : fail('UniverseStudio.jsx no longer imports AssetGrid or AssetEditorModal', 'not found', 'still referenced'));
-  results.push(/import UniverseTile from/.test(studioSource) && /import UniverseWorldView from/.test(studioSource)
-    ? pass('UniverseStudio.jsx renders the new tile wall + world view instead', 'found')
-    : fail('UniverseStudio.jsx renders the new tile wall + world view instead', 'found', 'not found'));
+  results.push(/import UniverseBanner from/.test(studioSource) && /import UniverseWorldView from/.test(studioSource)
+    ? pass('UniverseStudio.jsx renders the new banner wall + world view instead', 'found')
+    : fail('UniverseStudio.jsx renders the new banner wall + world view instead', 'found', 'not found'));
 
   return results;
 }
