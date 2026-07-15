@@ -5,14 +5,27 @@
  * 1-3): every universe id offered by every reachable picker must resolve a
  * real UNIVERSE_CONFIGS entry, so a couple's choice can never silently
  * fail (the 'cape-town' vs 'capetown' bug, and the 5-of-11 non-existent
- * StudioUniverse.jsx ids, both fixed on this branch — the latter's file
- * was deleted entirely, consolidating onto this one canonical picker).
+ * StudioUniverse.jsx ids, both fixed on that branch — the latter's file
+ * was deleted entirely, consolidating onto UniverseSelector.jsx as the
+ * one canonical picker at the time).
  *
- * Reads each picker's UNIVERSES array directly out of its source text via
- * regex rather than importing the .jsx file (these are React component
- * files with JSX syntax the plain-Node harness can't parse) — this is
- * exactly the failure mode being tested (a stale/mismatched id string),
- * so reading the literal source is the right level for this check.
+ * Updated by fix/design-studio-entrance: UniverseSelector.jsx is itself
+ * now retired (same reason StudioUniverse.jsx was — a second,
+ * independently-maintained id/palette list that had drifted out of sync
+ * with UNIVERSE_CONFIGS), superseded by src/lib/universeCatalog.js, which
+ * derives its universe list directly from Object.keys(UNIVERSE_CONFIGS)
+ * rather than a hand-maintained id array — so the exact failure mode this
+ * file exists to catch (a stale/mismatched id string) can no longer occur
+ * for the Design Studio picker specifically; the coverage/retirement
+ * checks below confirm that structurally rather than re-parsing a
+ * hardcoded list that no longer exists.
+ *
+ * Reads each remaining picker's UNIVERSES array directly out of its
+ * source text via regex rather than importing the .jsx file (these are
+ * React component files with JSX syntax the plain-Node harness can't
+ * parse) — this is exactly the failure mode being tested (a stale/
+ * mismatched id string), so reading the literal source is the right
+ * level for this check.
  */
 
 import { readFileSync } from 'node:fs';
@@ -40,7 +53,6 @@ export async function runUniversePickerIntegrity() {
 
   const pickers = [
     { name: 'OnboardingStepUniverse.jsx', path: 'src/components/onboarding/OnboardingStepUniverse.jsx' },
-    { name: 'UniverseSelector.jsx',       path: 'src/components/universe-studio/UniverseSelector.jsx' },
   ];
 
   for (const picker of pickers) {
@@ -58,14 +70,20 @@ export async function runUniversePickerIntegrity() {
   console.log('\n  Universe picker integrity — coverage of the 10 canonical universes:\n');
 
   {
-    // UniverseSelector.jsx is the one canonical, reachable picker as of
-    // this fix — it alone should offer the full set of 10.
-    const ids = extractIds('src/components/universe-studio/UniverseSelector.jsx');
+    // The Design Studio picker (src/lib/universeCatalog.js) is a plain .js
+    // module — no JSX to trip up the harness — so it's imported directly
+    // rather than regex-extracted. It derives its list from
+    // Object.keys(UNIVERSE_CONFIGS) itself, so this check is really
+    // confirming there's no separate hardcoded id list to drift out of
+    // sync in the first place, not just that today's list happens to
+    // match.
+    const { UNIVERSE_CATALOG } = await import('../../src/lib/universeCatalog.js');
+    const ids = UNIVERSE_CATALOG.map(u => u.id);
     const canonical = Object.keys(UNIVERSE_CONFIGS);
     const missing = canonical.filter(id => !ids.includes(id));
     results.push(missing.length === 0
-      ? pass('UniverseSelector.jsx — offers all 10 canonical universes', ids.join(', '))
-      : fail('UniverseSelector.jsx — offers all 10 canonical universes', canonical.join(', '), `missing: ${missing.join(', ')}`));
+      ? pass('universeCatalog.js — offers all 10 canonical universes', ids.join(', '))
+      : fail('universeCatalog.js — offers all 10 canonical universes', canonical.join(', '), `missing: ${missing.join(', ')}`));
   }
 
   {
@@ -92,6 +110,21 @@ export async function runUniversePickerIntegrity() {
     results.push(!existsAndReferenced
       ? pass('src/pages/StudioUniverse.jsx — deleted (retired picker, 5 of 11 ids had no real universe behind them)', 'deleted')
       : fail('src/pages/StudioUniverse.jsx — deleted (retired picker, 5 of 11 ids had no real universe behind them)', 'deleted', 'still exists'));
+  }
+
+  console.log('\n  UniverseSelector.jsx retirement — confirmed removed, not just unlinked (fix/design-studio-entrance):\n');
+
+  {
+    let stillExists = false;
+    try {
+      readFileSync(resolve(repoRoot, 'src/components/universe-studio/UniverseSelector.jsx'), 'utf8');
+      stillExists = true;
+    } catch {
+      stillExists = false;
+    }
+    results.push(!stillExists
+      ? pass('src/components/universe-studio/UniverseSelector.jsx — deleted (retired picker, superseded by universeCatalog.js/UniverseBanner.jsx)', 'deleted')
+      : fail('src/components/universe-studio/UniverseSelector.jsx — deleted (retired picker, superseded by universeCatalog.js/UniverseBanner.jsx)', 'deleted', 'still exists'));
   }
 
   return results;

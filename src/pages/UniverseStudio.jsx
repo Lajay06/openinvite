@@ -1,108 +1,224 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * Design Studio (fix/design-studio-entrance, fix/design-studio-banners) —
+ * rebuilt around the "entrance" concept explored in the
+ * feat/mock/universe-studio-redesign mocks (direction C). The page is now
+ * the universe experience itself: a stacked wall of full-width
+ * photographic banners (microsoft.design/wallpapers reference — the
+ * image IS the design), a style filter above them, and pressing a banner
+ * triggers a full-screen entrance into that world.
+ *
+ * "Your design assets" has been removed from this page entirely — every
+ * asset it used to show is reachable via Studio dashboard → Guest Suite
+ * → Assets (StudioAssetsTab.jsx), which is the more complete of the two
+ * (real PDF export via ASSET_EXPORT_SPECS); the live invitation website/
+ * RSVP page are reachable via Guest Suite → Website (or the Preview
+ * link). See this PR's description for the full asset-by-asset mapping
+ * verified before this section was cut.
+ *
+ * Every palette/type/motion/motif/tag/description value is sourced from
+ * UNIVERSE_CONFIGS (src/lib/websiteThemes.js) via src/lib/
+ * universeCatalog.js — never hardcoded here. This retires
+ * UniverseSelector.jsx, whose thumbnail swatches had drifted out of sync
+ * with the real config (e.g. its Capri swatch was the old flagged navy/
+ * lemon palette).
+ */
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useReducedMotion, motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
-import UniverseSelector from '@/components/universe-studio/UniverseSelector';
-import AssetGrid from '@/components/universe-studio/AssetGrid';
-import AssetEditorModal from '@/components/universe-studio/AssetEditorModal';
+import { UNIVERSE_CATALOG, STYLE_TAGS, getUniverse } from '@/lib/universeCatalog';
+import UniverseBanner from '@/components/universe-studio/UniverseBanner';
+import UniverseEntranceOverlay from '@/components/universe-studio/UniverseEntranceOverlay';
+import UniverseWorldView from '@/components/universe-studio/UniverseWorldView';
+
+const PJS = "'Plus Jakarta Sans', sans-serif";
+const WeddingDetails = base44.entities.WeddingDetails;
 
 export default function UniverseStudio() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const prefersReducedMotion = useReducedMotion();
   const canAccessUltra = (user?.plan || 'free') === 'ultra';
+
   const [weddingDetails, setWeddingDetails] = useState(null);
   const [guests, setGuests] = useState([]);
+  const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedUniverse, setSelectedUniverse] = useState('aman');
-  const [editingAsset, setEditingAsset] = useState(null);
+  const [filterTag, setFilterTag] = useState('all');
+
+  const [phase, setPhase] = useState('browsing'); // browsing | entering | world
+  const [openId, setOpenId] = useState(null);
+  // Root cause of the mid-page landing bug: entering/leaving a world is a
+  // same-page conditional re-render (no real route change — the banner
+  // wall and the world view are two branches of one component, swapped
+  // by `phase`), so the browser never touches window.scrollY on its own.
+  // Whatever the wall was scrolled to when a banner was pressed is still
+  // the scroll position once the world view's DOM mounts in its place —
+  // this ref remembers that position so it can be restored on the way
+  // back, and the world view resets scroll to 0 itself on mount (see
+  // UniverseWorldView.jsx's own useLayoutEffect) rather than this page
+  // reaching in to do it, so the fix holds regardless of how phase gets
+  // there.
+  const wallScrollRef = useRef(0);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [details, guestList] = await Promise.all([
-          getMyWeddingDetails(),
-          getMyRecords('Guest')
-        ]);
-        const d = details || {};
-        setWeddingDetails(d);
-        setSelectedUniverse(d.activeUniverse || 'aman');
-        setGuests(guestList);
-      } catch (e) {
-        console.error(e);
-      }
-      setLoading(false);
-    };
-    load();
+    Promise.all([getMyWeddingDetails(), getMyRecords('Guest')])
+      .then(([wd, g]) => {
+        const details = wd || {};
+        setWeddingDetails(details);
+        setRecordId(details.id || null);
+        setGuests(g || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleSave = async (updates) => {
-    if (!weddingDetails?.id) return;
-    const updated = { ...weddingDetails, ...updates };
-    await base44.entities.WeddingDetails.update(weddingDetails.id, updates);
-    setWeddingDetails(updated);
+  const activeId = weddingDetails?.activeUniverse || 'aman';
+  const active = getUniverse(activeId) || getUniverse('aman');
+  const opened = openId ? getUniverse(openId) : null;
+
+  const enterUniverse = (u) => {
+    wallScrollRef.current = window.scrollY;
+    setOpenId(u.id);
+    setPhase('entering');
+    const washMs = prefersReducedMotion ? 100 : Math.round((u.motion?.duration || 0.7) * 1000) + 250;
+    setTimeout(() => setPhase('world'), washMs);
   };
 
-  const handleUniverseChange = async (universeId) => {
-    setSelectedUniverse(universeId);
-    await handleSave({ activeUniverse: universeId });
+  const backToBrowsing = () => { setPhase('browsing'); setOpenId(null); };
+
+  // Restores the wall's scroll position on the way back — synchronously,
+  // before the browser paints, so there's no visible jump to the top
+  // followed by a jump back down. Harmless no-op on first mount
+  // (wallScrollRef starts at 0, and the page is already at 0 then).
+  useLayoutEffect(() => {
+    if (phase === 'browsing') {
+      window.scrollTo(0, wallScrollRef.current);
+    }
+  }, [phase]);
+
+  const handleSwitchUniverse = async (universeId) => {
+    try {
+      if (recordId) {
+        await WeddingDetails.update(recordId, { activeUniverse: universeId });
+      } else {
+        const created = await WeddingDetails.create({ activeUniverse: universeId });
+        setRecordId(created.id);
+      }
+      setWeddingDetails(prev => ({ ...(prev || {}), activeUniverse: universeId }));
+      const u = getUniverse(universeId);
+      toast.success(`You're now in ${u?.name || universeId} — your invitations, website and RSVP are restyled.`);
+    } catch {
+      toast.error('Could not switch universe — please try again.');
+    }
   };
 
-  const handleLockedUniverse = () => {
-    toast.error('Premium themes require Ultra. Upgrade at Account & billing.');
-    navigate('/account');
-  };
+  const handleUpgrade = () => navigate('/account');
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-6 h-6 border-2 border-[#E0E0DC] border-t-[#E03553] rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs text-[#888] uppercase tracking-widest">Loading Studio</p>
-        </div>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
+        <Loader2 size={22} className="animate-spin" style={{ color: '#E03553' }} />
       </div>
     );
   }
 
+  const visibleUniverses = UNIVERSE_CATALOG.filter(u =>
+    filterTag === 'all' || u.tags.includes(filterTag) || u.id === activeId
+  );
+
   return (
-    <div className="min-h-screen bg-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      {/* Page Header */}
-      <div className="px-8 pt-8 pb-6 border-b border-[#EEEEEE]">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-[#888888] mb-1">Openinvite</p>
-        <h1 className="text-3xl font-bold text-[#0A0A0A] tracking-tight">Design Studio</h1>
-        <p className="text-sm text-[#888888] mt-1">Your complete wedding design system.</p>
-      </div>
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
 
-      {/* Universe Selector */}
-      <div className="px-8 pt-6 pb-4 border-b border-[#EEEEEE]">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-[#AAAAAA] mb-4">Choose Your Universe</p>
-        <UniverseSelector
-          selectedUniverse={selectedUniverse}
-          onSelect={handleUniverseChange}
-          canAccessUltra={canAccessUltra}
-          onLockedSelect={handleLockedUniverse}
-        />
-      </div>
+      <UniverseEntranceOverlay
+        universe={opened}
+        active={phase === 'entering'}
+        muted={opened?.isUltra && !canAccessUltra}
+        prefersReducedMotion={prefersReducedMotion}
+      />
 
-      {/* Asset Grid */}
-      <div className="px-8 py-8">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-[#AAAAAA] mb-6">Your Design Assets</p>
-        <AssetGrid
-          universe={selectedUniverse}
+      {phase !== 'world' && (
+        <>
+          {/* Header — neutral chrome, current universe as a declaration */}
+          <div style={{ padding: '28px 32px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 10px' }}>
+              Design Studio
+            </p>
+            <h1 style={{ fontSize: 'clamp(1.9rem, 3.4vw, 2.8rem)', fontWeight: 800, color: '#0A0A0A', margin: 0, letterSpacing: '-0.01em' }}>
+              You're in {active.name} — {active.tagline}
+            </h1>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '10px 0 0', maxWidth: 620 }}>
+              Every universe restyles your invitations, website, RSVP and print pieces at once. Press a world below to step inside it — switching is never destructive.
+            </p>
+          </div>
+
+          {/* Style filter */}
+          <div style={{ padding: '20px 32px 0', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {['all', ...STYLE_TAGS].map(tag => {
+              const isActive = filterTag === tag;
+              return (
+                <button
+                  key={tag}
+                  onClick={() => setFilterTag(tag)}
+                  style={{
+                    padding: '6px 16px', borderRadius: 999, fontSize: 12, fontWeight: 600, fontFamily: PJS,
+                    cursor: 'pointer', border: 'none', textTransform: 'none',
+                    background: isActive ? '#0A0A0A' : 'rgba(10,10,10,0.06)',
+                    color: isActive ? '#FFFFFF' : '#444444',
+                  }}
+                >
+                  {tag === 'all' ? 'All' : tag.charAt(0).toUpperCase() + tag.slice(1)}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Banner wall — flush stacked rows, no gutters between them:
+              each banner's own background is the separation, so the wall
+              reads as one continuous surface. Only the top keeps a
+              deliberate breathing gap under the filter pills; the bottom
+              has none, so the last row ends cleanly. layout+AnimatePresence
+              so filtered-out banners fade out and the rest reflow smoothly. */}
+          <div style={{ padding: '24px 32px 0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              <AnimatePresence>
+                {visibleUniverses.map(u => (
+                  <motion.div
+                    key={u.id}
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={prefersReducedMotion ? { duration: 0.01 } : { duration: 0.3, ease: 'easeOut' }}
+                  >
+                    <UniverseBanner
+                      universe={u}
+                      isCurrent={activeId === u.id}
+                      onClick={() => enterUniverse(u)}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        </>
+      )}
+
+      {phase === 'world' && opened && (
+        <UniverseWorldView
+          universe={opened}
           weddingDetails={weddingDetails}
           guests={guests}
-          onEdit={(assetType) => setEditingAsset(assetType)}
-        />
-      </div>
-
-      {/* Asset Editor Modal */}
-      {editingAsset && (
-        <AssetEditorModal
-          assetType={editingAsset}
-          weddingDetails={weddingDetails}
-          onSave={handleSave}
-          onClose={() => setEditingAsset(null)}
+          isCurrent={activeId === opened.id}
+          canAccessUltra={canAccessUltra}
+          onBack={backToBrowsing}
+          onSwitchUniverse={handleSwitchUniverse}
+          onUpgrade={handleUpgrade}
+          motifNote={opened.motifNote}
         />
       )}
     </div>
