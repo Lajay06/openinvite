@@ -393,6 +393,7 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
   const overlineColor = isFixed ? '#E03553' : 'rgba(10,10,10,0.4)';
 
   const photoUrl  = isFixed ? (event?.photoUrl || null) : (event?.venuePhotoUrl || event?.photoUrl || null);
+  const hasImage  = !!photoUrl;
   const venueName = isFixed ? (event?.venueName || '') : (event?.venueName || event?.venue || '');
   const address   = isFixed ? (event?.address || '') : (event?.venueAddress || event?.address || '');
   const locationLine = venueName || address;
@@ -405,7 +406,7 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
   const dateTimeStr = [dateStr, timeStr].filter(Boolean).join(' · ');
 
   return (
-    <div className="ev-card">
+    <div className={`ev-card${hasImage ? '' : ' ev-card--no-image'}`}>
       {/* ── Info panel ───────────────────────────────────────────────────── */}
       <div className="ev-info">
         {/* Type overline */}
@@ -435,7 +436,7 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
         </div>
 
         {/* Edit / Delete — pushed to bottom */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 'auto', paddingTop: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 'auto', paddingTop: 24 }}>
           <button
             type="button"
             onClick={onEdit}
@@ -457,24 +458,21 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
         </div>
       </div>
 
-      {/* ── Image panel ──────────────────────────────────────────────────── */}
-      <div className="ev-photo">
-        {/* Fallback sits in background; image covers it when loaded */}
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,10,10,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <MapPin size={20} color="rgba(10,10,10,0.18)" />
-          {!photoUrl && (
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>Add a photo</span>
-          )}
-        </div>
-        {photoUrl && (
+      {/* ── Image panel — only rendered when the venue actually has a photo
+          (auto-populated from the selected venue's Google Places photo via
+          VenueSearchPanel; there's no separate manual upload). No image →
+          no panel at all, so the info panel above simply takes the full
+          card width instead of leaving reserved, empty space. */}
+      {hasImage && (
+        <div className="ev-photo">
           <img
             src={photoUrl}
             alt={venueName || title}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             onError={e => { e.target.style.display = 'none'; }}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -901,17 +899,22 @@ export default function EventDetailsPage() {
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Event card — horizontal layout with right image panel */
+        /* Event card — horizontal layout with a right image panel when the
+           venue has a photo; a clean full-width text card when it doesn't
+           (no reserved image space, no placeholder). */
         .ev-card {
           display: flex;
           max-width: 680px;
-          margin: 0 auto 12px;
+          margin: 0 auto 16px;
           border: 1px solid rgba(10,10,10,0.10);
           min-height: 180px;
         }
+        .ev-card--no-image {
+          min-height: 0;
+        }
         .ev-info {
           flex: 1;
-          padding: 28px 32px;
+          padding: 24px 32px;
           display: flex;
           flex-direction: column;
           min-width: 0;
@@ -925,9 +928,9 @@ export default function EventDetailsPage() {
 
         /* Mobile: image on top, info below */
         @media (max-width: 600px) {
-          .ev-card { flex-direction: column; margin-bottom: 12px; }
+          .ev-card { flex-direction: column; margin-bottom: 16px; }
           .ev-photo { order: -1; flex: none; width: 100%; height: 180px; }
-          .ev-info { padding: 20px 20px 24px; }
+          .ev-info { padding: 24px; }
         }
       `}</style>
     </div>
