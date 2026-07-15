@@ -391,5 +391,32 @@ export async function runDesignStudioEntrance() {
     ? pass('The couple\'s real names appear in the asset-preview chapter, not the hero', 'found')
     : fail('The couple\'s real names appear in the asset-preview chapter, not the hero', 'found', 'not found'));
 
+  console.log('\n  Design Studio — universe copy has no em dashes and no "x, not y" construction:\n');
+
+  // feat/universe-experience-fixes — a real content-quality gate, not
+  // just a one-time cleanup: checks the narrative copy fields at runtime
+  // (tagline/tileDescription/motifNote/worldStory) for every universe,
+  // so a future universe (or a future edit to an existing one) can't
+  // silently reintroduce either banned pattern.
+  {
+    const { UNIVERSE_CONFIGS } = await import('../../src/lib/websiteThemes.js');
+    const COPY_FIELDS = ['tagline', 'tileDescription', 'motifNote', 'worldStory'];
+    const emDashOffenders = [];
+    const notConstructionOffenders = [];
+    for (const [id, cfg] of Object.entries(UNIVERSE_CONFIGS)) {
+      for (const field of COPY_FIELDS) {
+        const val = cfg[field] || '';
+        if (val.includes('—')) emDashOffenders.push(`${id}.${field}`);
+        if (val.includes(', not ')) notConstructionOffenders.push(`${id}.${field}`);
+      }
+    }
+    results.push(emDashOffenders.length === 0
+      ? pass('No universe\'s tagline/tileDescription/motifNote/worldStory contains an em dash', 'none found')
+      : fail('No universe\'s tagline/tileDescription/motifNote/worldStory contains an em dash', 'none found', emDashOffenders.join(', ')));
+    results.push(notConstructionOffenders.length === 0
+      ? pass('No universe\'s tagline/tileDescription/motifNote/worldStory uses the "x, not y" construction', 'none found')
+      : fail('No universe\'s tagline/tileDescription/motifNote/worldStory uses the "x, not y" construction', 'none found', notConstructionOffenders.join(', ')));
+  }
+
   return results;
 }
