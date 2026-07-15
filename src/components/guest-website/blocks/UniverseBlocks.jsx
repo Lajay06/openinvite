@@ -49,6 +49,16 @@ import WaveDivider from '../layouts/WaveDivider';
 import CitrusScallop from '../layouts/CitrusScallop';
 import VineRule from '../layouts/VineRule';
 import CubeBlock from '../layouts/CubeBlock';
+import AmalfiWave from '../layouts/AmalfiWave';
+import SedonaContour from '../layouts/SedonaContour';
+import AspenPine from '../layouts/AspenPine';
+import TajArch from '../layouts/TajArch';
+import HavanaSunburst from '../layouts/HavanaSunburst';
+import EdinburghThistle from '../layouts/EdinburghThistle';
+import MonacoMast from '../layouts/MonacoMast';
+import FlorenceVine from '../layouts/FlorenceVine';
+import SeoulOrb from '../layouts/SeoulOrb';
+import ShanghaiCloud from '../layouts/ShanghaiCloud';
 
 import MinimalSectionMark from '../layouts/MinimalSectionMark';
 import KyotoSectionMark from '../layouts/KyotoSectionMark';
@@ -59,6 +69,16 @@ import ParisSectionMark from '../layouts/ParisSectionMark';
 import CapriSectionMark from '../layouts/CapriSectionMark';
 import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
 import MykonosSectionMark from '../layouts/MykonosSectionMark';
+import AmalfiSectionMark from '../layouts/AmalfiSectionMark';
+import SedonaSectionMark from '../layouts/SedonaSectionMark';
+import AspenSectionMark from '../layouts/AspenSectionMark';
+import TajSectionMark from '../layouts/TajSectionMark';
+import HavanaSectionMark from '../layouts/HavanaSectionMark';
+import EdinburghSectionMark from '../layouts/EdinburghSectionMark';
+import MonacoSectionMark from '../layouts/MonacoSectionMark';
+import FlorenceSectionMark from '../layouts/FlorenceSectionMark';
+import SeoulSectionMark from '../layouts/SeoulSectionMark';
+import ShanghaiSectionMark from '../layouts/ShanghaiSectionMark';
 
 // Per-universe divider accent for `spacer` (variant 'rule') — every entry
 // here is one of the already-built, reused-as-is primitives from
@@ -73,6 +93,16 @@ const DIVIDER_BY_LAYOUT = {
   'capri-citrus': CitrusScallop,
   'capetown-estate': VineRule,
   'mykonos-whitewash': CubeBlock,
+  'amalfi-citrus': AmalfiWave,
+  'sedona-mesa': SedonaContour,
+  'aspen-lodge': AspenPine,
+  'taj-pavilion': TajArch,
+  'havana-deco': HavanaSunburst,
+  'edinburgh-estate': EdinburghThistle,
+  'monaco-marina': MonacoMast,
+  'florence-editorial': FlorenceVine,
+  'seoul-glass': SeoulOrb,
+  'shanghai-glamour': ShanghaiCloud,
 };
 
 // Per-universe kicker mark for `heading`'s optional kicker label.
@@ -86,6 +116,16 @@ const KICKER_BY_LAYOUT = {
   'capri-citrus': CapriSectionMark,
   'capetown-estate': CapeTownSectionMark,
   'mykonos-whitewash': MykonosSectionMark,
+  'amalfi-citrus': AmalfiSectionMark,
+  'sedona-mesa': SedonaSectionMark,
+  'aspen-lodge': AspenSectionMark,
+  'taj-pavilion': TajSectionMark,
+  'havana-deco': HavanaSectionMark,
+  'edinburgh-estate': EdinburghSectionMark,
+  'monaco-marina': MonacoSectionMark,
+  'florence-editorial': FlorenceSectionMark,
+  'seoul-glass': SeoulSectionMark,
+  'shanghai-glamour': ShanghaiSectionMark,
 };
 
 export function UniverseDivider({ universeConfig, theme }) {
