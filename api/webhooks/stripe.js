@@ -32,6 +32,19 @@
  *   endpoint can grant paid plan tiers, so an unverified request must never
  *   be treated as real, the same fail-closed rule already applied to
  *   Turnstile verification (api/_lib/security.js).
+ *
+ * Response status contract for a paid checkout.session.completed:
+ *   200 — plan written (or already matched an existing plan — idempotent
+ *         replay is success, not failure). A 200 tells Stripe "delivered,
+ *         don't retry."
+ *   5xx — the session was paid but activation did NOT happen: BASE44_ADMIN_KEY
+ *         missing, or the Base44 write itself failed/threw. Returning 200 here
+ *         would silently strand a paying customer with no plan and no retry;
+ *         5xx makes Stripe retry over its ~3-day window instead. Search
+ *         "[stripe-webhook] ACTIVATION FAILED" in logs for either case.
+ *   The confirmation email is deliberately NOT part of this contract — a
+ *   failed/unsendable email still returns 200, since the plan itself did
+ *   activate and email is non-critical.
  */
 
 import Stripe from 'stripe';
@@ -55,6 +68,141 @@ function getRawBody(req) {
     req.on('end', () => resolve(Buffer.concat(chunks)));
     req.on('error', () => resolve(Buffer.alloc(0)));
   });
+}
+
+/**
+ * All the business logic for a checkout.session.completed event, once
+ * Stripe has already given us the verified session (network call to Stripe
+ * lives in the handler below — this function takes no live dependency on
+ * Stripe itself, only on the injectable Base44/email calls, so tests can
+ * exercise the full status-code contract without hitting either network).
+ *
+ * @returns {Promise<{status: number, body: object}>}
+ */
+export async function handleCheckoutSessionCompleted(verifiedSession, {
+  adminKey = process.env.BASE44_ADMIN_KEY,
+  fetchImpl,
+  sendEmail = (opts) => resend.emails.send(opts),
+} = {}) {
+  const email =
+    verifiedSession.customer_email ||
+    verifiedSession.customer_details?.email;
+
+  // ── Resolve plan tier ──────────────────────────────────────────────────
+  // Primary: the actual price ID Stripe recorded on the completed session's
+  // line items. Fallback: session.metadata.plan, itself set server-side at
+  // checkout-creation time from the same resolver (create-checkout-session.js)
+  // — not client-supplied, just a second, slightly less direct derivation of
+  // the same fact. If NEITHER resolves, we do not guess: log loudly and skip
+  // the write rather than silently defaulting to a tier nobody paid for.
+  const sessionPriceId = verifiedSession.line_items?.data?.[0]?.price?.id;
+  let plan = resolvePlanFromPriceId(sessionPriceId);
+  let planSource = plan ? 'price_id' : null;
+  if (!plan) {
+    const metadataPlan = verifiedSession.metadata?.plan;
+    if (metadataPlan === 'pro' || metadataPlan === 'ultra') {
+      plan = metadataPlan;
+      planSource = 'metadata_fallback';
+    }
+  }
+
+  const userId = verifiedSession.client_reference_id;
+
+  console.log('[stripe-webhook] checkout.session.completed:', {
+    sessionId: verifiedSession.id,
+    email: email || '(none)',
+    userId: userId || '(none)',
+    plan: plan || '(unresolved)',
+    planSource: planSource || '(none)',
+  });
+
+  if (!plan) {
+    console.error(
+      '[stripe-webhook] PAID SESSION — could not resolve a plan tier from price ID or metadata:',
+      { sessionId: verifiedSession.id, sessionPriceId, metadata: verifiedSession.metadata, email: email || '(unknown)' },
+      '— plan NOT written. Needs manual review.',
+    );
+    return { status: 200, body: { received: true } };
+  }
+
+  if (!userId) {
+    console.error(
+      '[stripe-webhook] PAID SESSION — client_reference_id missing, cannot identify which user to credit:',
+      { sessionId: verifiedSession.id, plan, email: email || '(unknown)' },
+      '— plan NOT written. Needs manual review.',
+    );
+    return { status: 200, body: { received: true } };
+  }
+
+  if (!adminKey) {
+    console.error(
+      '[stripe-webhook] ACTIVATION FAILED — BASE44_ADMIN_KEY not set, cannot write plan:',
+      { sessionId: verifiedSession.id, userId, plan },
+      '— set BASE44_ADMIN_KEY in Vercel environment variables.',
+    );
+    // 5xx (not 200): this is a paid session we failed to activate due to
+    // server misconfiguration. A 200 here would tell Stripe "delivered,
+    // don't retry" and the customer would silently never get their plan.
+    // A 5xx makes Stripe retry over its ~3-day window, giving time to fix
+    // the env var without losing the event.
+    return { status: 500, body: { error: 'Server misconfiguration: BASE44_ADMIN_KEY not set' } };
+  }
+
+  // ── Idempotency ──────────────────────────────────────────────────────────
+  // Stripe may deliver the same event more than once (retries, duplicate
+  // delivery). If the user's plan already matches what this event would set,
+  // treat it as already-applied: skip both the write and the confirmation
+  // email so a replay can't re-send the email or bump planActivatedAt to a
+  // later, wrong timestamp.
+  const existingUser = await getBase44User(userId, adminKey, fetchImpl);
+  if (existingUser && existingUser.plan === plan) {
+    console.log('[stripe-webhook] Plan already applied — skipping duplicate event:', { userId, plan, sessionId: verifiedSession.id });
+    return { status: 200, body: { received: true } };
+  }
+
+  const planActivatedAt = new Date().toISOString();
+  const writeResult = await writeBase44UserPlan({ userId, plan, planActivatedAt, adminKey, fetchImpl });
+
+  if (!writeResult.ok) {
+    console.error(
+      '[stripe-webhook] ACTIVATION FAILED — Base44 plan write FAILED:',
+      { userId, plan, sessionId: verifiedSession.id, status: writeResult.status, body: writeResult.body, error: writeResult.error },
+      '— needs manual review.',
+    );
+    // 5xx so Stripe retries — this is a paid session that isn't activated yet,
+    // and the failure (Base44 down, bad key, network blip) is very likely
+    // transient and self-heals on retry. Never silently 200 a customer who
+    // paid but didn't get their plan.
+    return { status: 502, body: { error: 'Failed to activate plan — will retry' } };
+  }
+
+  console.log('[stripe-webhook] Base44 plan written:', { userId, plan, planSource, sessionId: verifiedSession.id });
+
+  // ── Send confirmation email ─────────────────────────────────────────────
+  // Deliberately NOT part of the status-code contract above: the plan is
+  // already activated at this point, so a failed/unsendable email must still
+  // return 200 — email is non-critical, and turning this into a 5xx would
+  // make Stripe retry an already-successful activation (re-writing
+  // planActivatedAt, per the idempotency check above, is harmless, but
+  // there's no reason to retry for an email failure specifically).
+  const planLabel = plan === 'ultra' ? 'Ultra' : 'Pro';
+  if (email) {
+    try {
+      const result = await sendEmail({
+        from: FROM,
+        to: email,
+        subject: `You're on Openinvite ${planLabel} — payment confirmed`,
+        html: purchaseConfirmationEmail({ plan, email }),
+      });
+      console.log('[stripe-webhook] Purchase email sent to:', email, '| id:', result?.data?.id);
+    } catch (err) {
+      console.error('[stripe-webhook] Confirmation email failed (plan already activated, not retrying for this):', err.message);
+    }
+  } else {
+    console.warn('[stripe-webhook] No email address on session:', verifiedSession.id);
+  }
+
+  return { status: 200, body: { received: true } };
 }
 
 export default async function handler(req, res) {
@@ -109,107 +257,8 @@ export default async function handler(req, res) {
           expand: ['line_items'],
         });
 
-        const email =
-          verifiedSession.customer_email ||
-          verifiedSession.customer_details?.email;
-
-        // ── Resolve plan tier ──────────────────────────────────────────────
-        // Primary: the actual price ID Stripe recorded on the completed
-        // session's line items. Fallback: session.metadata.plan, which is
-        // itself set server-side at checkout-creation time from the same
-        // resolver (api/create-checkout-session.js) — not client-supplied,
-        // just a second, slightly less direct derivation of the same fact.
-        // If NEITHER resolves, we do not guess: log loudly and skip the
-        // write rather than silently defaulting to a tier nobody paid for.
-        const sessionPriceId = verifiedSession.line_items?.data?.[0]?.price?.id;
-        let plan = resolvePlanFromPriceId(sessionPriceId);
-        let planSource = plan ? 'price_id' : null;
-        if (!plan) {
-          const metadataPlan = verifiedSession.metadata?.plan;
-          if (metadataPlan === 'pro' || metadataPlan === 'ultra') {
-            plan = metadataPlan;
-            planSource = 'metadata_fallback';
-          }
-        }
-
-        const userId = verifiedSession.client_reference_id;
-
-        console.log('[stripe-webhook] checkout.session.completed:', {
-          sessionId: verifiedSession.id,
-          email: email || '(none)',
-          userId: userId || '(none)',
-          plan: plan || '(unresolved)',
-          planSource: planSource || '(none)',
-        });
-
-        if (!plan) {
-          console.error(
-            '[stripe-webhook] PAID SESSION — could not resolve a plan tier from price ID or metadata:',
-            { sessionId: verifiedSession.id, sessionPriceId, metadata: verifiedSession.metadata, email: email || '(unknown)' },
-            '— plan NOT written. Needs manual review.',
-          );
-          break;
-        }
-
-        if (!userId) {
-          console.error(
-            '[stripe-webhook] PAID SESSION — client_reference_id missing, cannot identify which user to credit:',
-            { sessionId: verifiedSession.id, plan, email: email || '(unknown)' },
-            '— plan NOT written. Needs manual review.',
-          );
-          break;
-        }
-
-        const adminKey = process.env.BASE44_ADMIN_KEY;
-        if (!adminKey) {
-          console.error(
-            '[stripe-webhook] PAID SESSION — BASE44_ADMIN_KEY not set, cannot write plan:',
-            { sessionId: verifiedSession.id, userId, plan },
-            '— set BASE44_ADMIN_KEY in Vercel environment variables.',
-          );
-          break;
-        }
-
-        // ── Idempotency ──────────────────────────────────────────────────
-        // Stripe may deliver the same event more than once (retries,
-        // duplicate delivery). If the user's plan already matches what this
-        // event would set, treat it as already-applied: skip both the write
-        // and the confirmation email so a replay can't re-send the email or
-        // bump planActivatedAt to a later, wrong timestamp.
-        const existingUser = await getBase44User(userId, adminKey);
-        if (existingUser && existingUser.plan === plan) {
-          console.log('[stripe-webhook] Plan already applied — skipping duplicate event:', { userId, plan, sessionId: verifiedSession.id });
-          break;
-        }
-
-        const planActivatedAt = new Date().toISOString();
-        const writeResult = await writeBase44UserPlan({ userId, plan, planActivatedAt, adminKey });
-
-        if (!writeResult.ok) {
-          console.error(
-            '[stripe-webhook] PAID SESSION — Base44 plan write FAILED:',
-            { userId, plan, sessionId: verifiedSession.id, status: writeResult.status, body: writeResult.body, error: writeResult.error },
-            '— needs manual review.',
-          );
-          break;
-        }
-
-        console.log('[stripe-webhook] Base44 plan written:', { userId, plan, planSource, sessionId: verifiedSession.id });
-
-        // ── Send confirmation email ───────────────────────────────────────
-        const planLabel = plan === 'ultra' ? 'Ultra' : 'Pro';
-        if (email) {
-          const result = await resend.emails.send({
-            from: FROM,
-            to: email,
-            subject: `You're on Openinvite ${planLabel} — payment confirmed`,
-            html: purchaseConfirmationEmail({ plan, email }),
-          });
-          console.log('[stripe-webhook] Purchase email sent to:', email, '| id:', result.data?.id);
-        } else {
-          console.warn('[stripe-webhook] No email address on session:', verifiedSession.id);
-        }
-        break;
+        const { status, body } = await handleCheckoutSessionCompleted(verifiedSession);
+        return res.status(status).json(body);
       }
 
       default:
