@@ -47,7 +47,7 @@ function getStoredUser() {
 }
 
 // ── Full-width top navigation bar ────────────────────────────────────────────
-function TopBar({ weddingDetails, unreadCount }) {
+function TopBar({ weddingDetails, unreadCount, onAccountSettings, onCollaborate }) {
   const navigate = useNavigate();
   const [weather, setWeather] = useState(null);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
@@ -209,10 +209,10 @@ function TopBar({ weddingDetails, unreadCount }) {
             <DropdownMenuItem onClick={() => navigate('/account')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
               Account &amp; billing
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/AccountSettings')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+            <DropdownMenuItem onClick={onAccountSettings} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
               Account settings
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/Collaborate')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+            <DropdownMenuItem onClick={onCollaborate} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
               Collaborate
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowCurrencyModal(true)} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
@@ -335,6 +335,8 @@ export default function Layout({ children, currentPageName }) {
       <TopBar
         weddingDetails={weddingDetails}
         unreadCount={unreadMessagesCount}
+        onAccountSettings={() => setShowAccountSettings(true)}
+        onCollaborate={() => setShowCollaborateModal(true)}
       />
 
       {/* ── Trial banner (desktop only, below top bar) ───────── */}

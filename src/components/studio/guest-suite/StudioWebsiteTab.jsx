@@ -3,5 +3,5 @@ import React from 'react';
 import StudioWebsite from '@/pages/StudioWebsite';
 
 export default function StudioWebsiteTab({ onBack, openAutofill }) {
-  return <StudioWebsite initialOpenAutofill={openAutofill} />;
+  return <StudioWebsite initialOpenAutofill={openAutofill} onBack={onBack} />;
 }

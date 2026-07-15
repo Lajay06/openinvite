@@ -54,7 +54,6 @@ import WeddingParty from './pages/WeddingParty';
 import WeddingFavours from './pages/WeddingFavours';
 import EventDetails from './pages/EventDetails';
 import PaymentSuccess from './pages/PaymentSuccess';
-import StudioShare from './pages/StudioShare';
 import AvaStudio from './pages/AvaStudio';
 import AvaStudioWebsite from './pages/AvaStudioWebsite';
 import AvaStudioAssets from './pages/AvaStudioAssets';
@@ -222,7 +221,6 @@ const AuthenticatedApp = () => {
         <Route path="/wedding-favours" element={<LayoutWrapper currentPageName="WeddingFavours"><WeddingFavours /></LayoutWrapper>} />
         <Route path="/event-details" element={<LayoutWrapper currentPageName="EventDetails"><EventDetails /></LayoutWrapper>} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
-        <Route path="/studio/share" element={<StudioShare />} />
         <Route path="/studio/ava" element={<AvaStudio />} />
         <Route path="/studio/ava/website" element={<AvaStudioWebsite />} />
         <Route path="/studio/ava/website/:step" element={<AvaStudioWebsite />} />
