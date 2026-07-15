@@ -5,7 +5,6 @@ import { Sentry } from '@/lib/sentry'
 import App from '@/App.jsx'
 import '@/index.css'
 import '@/lib/analytics.js' // initialises PostHog on app load
-import '@/lib/crisp.js'    // initialises Crisp support chat on app load
 
 function ErrorFallback() {
   return (

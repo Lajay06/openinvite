@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Toaster } from "@/components/ui/toaster"
 import ScrollToTop from "@/components/ScrollToTop"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -14,7 +14,6 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
-import { show as crispShow, hide as crispHide } from '@/lib/crisp';
 import DevReset from './pages/DevReset';
 import About from './pages/About';
 import Ava from './pages/Ava';
@@ -98,13 +97,6 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 
 const AuthenticatedApp = () => {
   const location = useLocation();
-
-  // Hide Crisp on public marketing pages; show inside the app
-  useEffect(() => {
-    const p = location.pathname;
-    const hide = p === '/' || p === '/Pricing' || p === '/pricing';
-    hide ? crispHide() : crispShow();
-  }, [location.pathname]);
 
   // Lowercase /dashboard → canonical /Dashboard
   if (location.pathname === '/dashboard') {

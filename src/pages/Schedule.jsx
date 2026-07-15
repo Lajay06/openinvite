@@ -241,11 +241,6 @@ export default function SchedulePage({
 
           {/* Timeline */}
           <TabsContent value="visual" className="mt-8">
-            <div style={{ padding: '10px 16px', background: 'rgba(10,10,10,0.03)', borderLeft: '2px solid #E03553', marginBottom: 24 }}>
-              <p style={{ margin: 0, fontSize: 13, color: 'rgba(10,10,10,0.55)', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.5 }}>
-                [CONFIRMED COPY HERE]
-              </p>
-            </div>
             <WeddingDayTimelineBuilder
               scheduleItems={scheduleItems}
               onEdit={handleEdit}
