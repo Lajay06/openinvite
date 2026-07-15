@@ -160,7 +160,7 @@ const DEFAULT = {
   qna: [],
 };
 
-export default function StudioWebsite() {
+export default function StudioWebsite({ onBack }) {
   const navigate = useNavigate();
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [publishModalTab, setPublishModalTab] = useState('website');
@@ -446,13 +446,13 @@ export default function StudioWebsite() {
       {/* TOP BAR */}
       <div style={{ height: 48, flexShrink: 0, background: '#1C1C1E', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', gap: 16, position: 'sticky', top: 0, zIndex: 100 }}>
         <button
-          onClick={() => navigate('/studio/guest-suite/assets')}
+          onClick={() => onBack ? onBack() : navigate('/studio/guest-suite/assets')}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: 4, transition: 'color 0.15s' }}
           onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
           onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
         >
           <ChevronLeft size={14} />
-          Guest suite
+          {onBack ? 'Design Studio' : 'Guest suite'}
         </button>
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'none' }}>
           <span style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF', letterSpacing: '0.01em' }}>Website builder</span>

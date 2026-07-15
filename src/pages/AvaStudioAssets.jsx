@@ -201,7 +201,7 @@ export default function AvaStudioAssets() {
           <h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, color: fg, margin: '0 0 16px' }}>Your assets are ready!</h2>
           <p style={{ fontSize: 16, color: sub, margin: '0 0 40px' }}>All 10 assets created for {coupleName}</p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={() => navigate('/studio/share')} style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14, fontFamily: sans }}>
+            <button onClick={() => navigate('/studio/guest-suite/share')} style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14, fontFamily: sans }}>
               Share with Guests →
             </button>
             <button onClick={() => navigate('/studio/ava')} style={{ padding: '14px 32px', border: `1px solid ${fg}`, background: 'transparent', color: fg, fontWeight: 700, cursor: 'pointer', fontSize: 14, fontFamily: sans }}>
