@@ -358,6 +358,17 @@ export async function runDesignStudioEntrance() {
   results.push(/if \(e\.key === 'Escape'\) onBack\(\);/.test(worldViewSource)
     ? pass('World page listens for Escape to go back, in addition to the button', 'found')
     : fail('World page listens for Escape to go back, in addition to the button', 'found', 'not found'));
+  // feat/universe-experience-fixes — real root cause of the button
+  // rendering invisible: it lived inside .page-content, whose forwards-
+  // filled opacity animation traps it in a stacking context that loses
+  // to the sidebar (zIndex:40, its own stacking context via `contain:
+  // layout`) — confirmed with a real browser: elementFromPoint at the
+  // button's centre returned the sidebar div, not the button, before
+  // this fix. Portalling to document.body escapes it, same as the
+  // entrance overlay fix just above.
+  results.push(/createPortal\(\s*\n\s*<button/.test(worldViewSource) && /<\/button>,\s*\n\s*document\.body\s*\n\s*\)\}/.test(worldViewSource)
+    ? pass('World page back button portals to document.body, escaping .page-content\'s stacking context (was invisible behind the sidebar)', 'found')
+    : fail('World page back button portals to document.body, escaping .page-content\'s stacking context (was invisible behind the sidebar)', 'found', 'not found'));
 
   return results;
 }

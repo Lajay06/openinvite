@@ -20,6 +20,7 @@
  * differs (upgrade path instead of a locked door).
  */
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Crown, ExternalLink } from 'lucide-react';
 import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
@@ -295,23 +296,42 @@ export default function UniverseWorldView({
 
   return (
     <div>
-      <button
-        onClick={onBack}
-        style={{
-          // top clears the app's fixed 48px top bar (plus the 36px trial
-          // banner, when present) with room to spare — 20px collided with
-          // both. A dark scrim + blur (rather than a light pill) reads
-          // legibly over every chapter background, light or dark, without
-          // needing to know which chapter is currently in view.
-          position: 'fixed', top: 96, left: 32, zIndex: 60,
-          display: 'flex', alignItems: 'center', gap: 6,
-          background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px',
-          cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#FFFFFF',
-        }}
-      >
-        ← All universes
-      </button>
+      {/* Portalled to document.body — root cause of it rendering
+          invisible/unclickable: this button lives inside .page-content,
+          which (per the same fix applied to UniverseEntranceOverlay.jsx)
+          gets its own stacking context the moment any animation with
+          animation-fill-mode:forwards is applied to it (pageFadeIn is
+          opacity-only, but that's still enough to trigger this). Trapped
+          inside that context, this button's zIndex:60 was never compared
+          directly against the sidebar (zIndex:40, a sibling outside
+          .page-content, promoted to its own stacking context by its own
+          `contain: layout` CSS) — the sidebar's outer-level effective
+          zIndex beat .page-content's (which has none set, so effectively
+          0), and its opaque white background painted straight over this
+          button, which sits at left:32 — inside the sidebar's own 0-200px
+          width. Confirmed via a real browser: before this fix,
+          elementFromPoint at the button's centre returned the sidebar div;
+          after portalling, it returns the button itself. */}
+      {createPortal(
+        <button
+          onClick={onBack}
+          style={{
+            // top clears the app's fixed 48px top bar (plus the 36px trial
+            // banner, when present) with room to spare — 20px collided with
+            // both. A dark scrim + blur (rather than a light pill) reads
+            // legibly over every chapter background, light or dark, without
+            // needing to know which chapter is currently in view.
+            position: 'fixed', top: 96, left: 32, zIndex: 60,
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px',
+            cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+          }}
+        >
+          ← All universes
+        </button>,
+        document.body
+      )}
 
       {/* Chapter 1 — hero, full-bleed, parallax */}
       <HeroChapter universe={universe} coupleNames={coupleNames} isCurrent={isCurrent} prefersReducedMotion={prefersReducedMotion} />
