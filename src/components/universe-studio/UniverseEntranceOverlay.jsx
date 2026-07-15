@@ -6,10 +6,18 @@
  * near-instant, static equivalent (no wash, no travelling text) — never a
  * diluted version of the same animation.
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 
 export default function UniverseEntranceOverlay({ universe, active, muted, prefersReducedMotion }) {
+  // The entrance is the very first paint of this universe's real display
+  // font (before the world view itself mounts) — load it the instant the
+  // overlay activates, not after the wash finishes.
+  useEffect(() => {
+    if (active && universe) loadUniverseFont(universe);
+  }, [active, universe]);
+
   if (!universe) return null;
   const duration = prefersReducedMotion ? 0.08 : (universe.motion?.duration || 0.7);
 

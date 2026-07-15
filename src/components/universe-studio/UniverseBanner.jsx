@@ -16,6 +16,7 @@
  */
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 import { Crown } from 'lucide-react';
 import HairlineRule from '@/components/guest-website/layouts/HairlineRule';
 import EnsoRing from '@/components/guest-website/layouts/EnsoRing';
@@ -130,6 +131,7 @@ export default function UniverseBanner({ universe, isCurrent, onClick }) {
       initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
+      onViewportEnter={() => loadUniverseFont(universe)}
       transition={{ duration: 0.5, ease: 'easeOut' }}
       style={{
         display: 'block', width: '100%', height: 'clamp(280px, 30vw, 460px)',

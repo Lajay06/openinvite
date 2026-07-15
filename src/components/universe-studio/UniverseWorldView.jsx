@@ -22,6 +22,7 @@
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Crown, ExternalLink } from 'lucide-react';
+import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 import MinimalMasthead from '@/components/guest-website/layouts/MinimalMasthead';
 import KyotoMasthead from '@/components/guest-website/layouts/KyotoMasthead';
 import CapriMasthead from '@/components/guest-website/layouts/CapriMasthead';
@@ -222,6 +223,13 @@ export default function UniverseWorldView({
   const showUpgrade = universe.isUltra && !canAccessUltra && !isCurrent;
   const motifLarge = MOTIF_LARGE[universe.id];
   const { colors, typography } = universe;
+
+  // Opening a world is a deliberate, immediate need for its real font (not
+  // a "might scroll into view" case like the banner wall) — load it as
+  // soon as this view mounts, deduped against whatever's already loaded.
+  useEffect(() => {
+    loadUniverseFont(universe);
+  }, [universe]);
 
   // The world view mounts wherever the banner wall happened to be
   // scrolled to (entering a world is a same-page conditional swap, not a
