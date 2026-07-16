@@ -73,14 +73,14 @@ function NotYetInvitedChip() {
 }
 
 /* ── Per-guest status chips + "Set events & send" for uninvited guests ──── */
-function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend, onEditEvents }) {
+function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend, onEditEvents, readOnly }) {
   const hasResponses = Array.isArray(guest.event_responses) && guest.event_responses.length > 0;
 
   if (!hasResponses) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
         <NotYetInvitedChip />
-        {weddingEvents.length > 0 && (
+        {!readOnly && weddingEvents.length > 0 && (
           <button
             type="button"
             onClick={() => onSetEventsAndSend(guest)}
@@ -104,6 +104,14 @@ function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend, onEditEvent
     return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>;
   }
 
+  const chips = weddingEvents.map(event => (
+    <EventChip key={event.event_id} event={event} response={getGuestEventResponse(guest, event)} />
+  ));
+
+  if (readOnly) {
+    return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxWidth: 320 }}>{chips}</div>;
+  }
+
   // The whole chip row is clickable — reopens the same event-checkbox
   // control used by "Set events & send", pre-checked with current state,
   // so invites stay editable at any time, not just before the first send.
@@ -117,9 +125,7 @@ function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend, onEditEvent
         background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', textAlign: 'left',
       }}
     >
-      {weddingEvents.map(event => (
-        <EventChip key={event.event_id} event={event} response={getGuestEventResponse(guest, event)} />
-      ))}
+      {chips}
     </button>
   );
 }
@@ -231,7 +237,7 @@ const PLUS_ONE_STATUS_STYLES = {
   pending:   { background: '#fef9c3', color: '#854d0e', label: 'Pending' },
 };
 
-function PlusOneCell({ guest, onUpdate }) {
+function PlusOneCell({ guest, onUpdate, readOnly }) {
   if (guest.plus_one_email) {
     const style = PLUS_ONE_STATUS_STYLES[guest.plus_one_rsvp_status] || PLUS_ONE_STATUS_STYLES.pending;
     return (
@@ -247,13 +253,15 @@ function PlusOneCell({ guest, onUpdate }) {
       </div>
     );
   }
+  const badge = guest.plus_one ? (
+    <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', fontFamily: PJS }}>+1 ✓</span>
+  ) : (
+    <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>—</span>
+  );
+  if (readOnly) return badge;
   return (
     <HoverDiv onClick={() => onUpdate && onUpdate(guest.id, { plus_one: !guest.plus_one })} pointer title="Click to toggle">
-      {guest.plus_one ? (
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', fontFamily: PJS }}>+1 ✓</span>
-      ) : (
-        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>—</span>
-      )}
+      {badge}
     </HoverDiv>
   );
 }
@@ -412,7 +420,7 @@ const STATUS_COLORS = { yes: '#166534', no: '#991b1b', pending: 'rgba(10,10,10,0
    had nothing here). Self-contained editing state, independent of the main
    table's shared editCell — same field (dietary_restrictions), same
    Guest.update path via onUpdate, just a different place to edit it. */
-function DietaryField({ guest, onUpdate }) {
+function DietaryField({ guest, onUpdate, readOnly }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(guest.dietary_restrictions || '');
 
@@ -431,7 +439,9 @@ function DietaryField({ guest, onUpdate }) {
       <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, display: 'block', marginBottom: 6 }}>
         Dietary requirements
       </span>
-      {editing ? (
+      {readOnly ? (
+        <DietaryCell value={guest.dietary_restrictions} />
+      ) : editing ? (
         <input
           autoFocus
           value={value}
@@ -454,13 +464,13 @@ function DietaryField({ guest, onUpdate }) {
 }
 
 /* ── Per-event RSVP detail sub-row — shows what a guest actually answered ── */
-function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate }) {
+function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly }) {
   const hasNote = !!(guest.rsvp_note || guest.song_request);
 
   return (
     <TableRow style={{ background: 'rgba(10,10,10,0.015)' }}>
       <TableCell colSpan={COLUMN_COUNT} style={{ padding: '12px 16px 16px 52px' }}>
-        <DietaryField guest={guest} onUpdate={onUpdate} />
+        <DietaryField guest={guest} onUpdate={onUpdate} readOnly={readOnly} />
 
         {weddingEvents.length === 0 ? (
           <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No events set up for this wedding yet.</span>
@@ -511,7 +521,7 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate }) {
           </div>
         )}
 
-        {weddingEvents.length > 0 && (
+        {!readOnly && weddingEvents.length > 0 && (
           <button
             type="button"
             onClick={() => onEditEvents?.(guest)}
@@ -595,6 +605,7 @@ function AddGuestRow({ onQuickAdd, columnCount }) {
 export default function GuestList({
   guests, onEdit, onDelete, onUpdate, onQuickAdd, guestRoles = {}, loading, weddingEvents = [],
   selectedIds, onToggleSelect, onToggleSelectAll, onSetEventsAndSend, onEditEvents, scrollToGuestId,
+  readOnly = false,
 }) {
   const [editCell, setEditCell] = useState(null); // { id, field }
   const [editValue, setEditValue] = useState('');
@@ -670,8 +681,11 @@ export default function GuestList({
   const isEditing = (guestId, field) =>
     editCell?.id === guestId && editCell?.field === field;
 
-  /* Text cell: renders an autoFocus input while editing, otherwise a hover div */
+  /* Text cell: renders an autoFocus input while editing, otherwise a hover div.
+     readOnly renders the plain display element with no click-to-edit affordance
+     at all — not a disabled-looking input, just the value itself. */
   const textCell = (guest, field, displayEl) => {
+    if (readOnly) return <div style={{ padding: '2px 4px', margin: '-2px -4px' }}>{displayEl}</div>;
     if (isEditing(guest.id, field)) {
       return (
         <input
@@ -696,6 +710,7 @@ export default function GuestList({
 
   /* Select cell: renders a native select while editing */
   const selectCell = (guest, field, options, displayEl) => {
+    if (readOnly) return <div style={{ padding: '2px 4px', margin: '-2px -4px' }}>{displayEl}</div>;
     if (isEditing(guest.id, field)) {
       return (
         <select
@@ -739,6 +754,7 @@ export default function GuestList({
   };
 
   const tagsCell = (guest) => {
+    if (readOnly) return <div style={{ padding: '2px 4px', margin: '-2px -4px' }}><TagsDisplay tags={guest.tags} /></div>;
     if (isEditing(guest.id, 'tags')) {
       return (
         <input
@@ -774,7 +790,7 @@ export default function GuestList({
       <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
         <Users size={28} style={{ color: '#803D81', margin: '0 auto 12px' }} />
         <p style={{ fontSize: 13, color: '#444444', fontFamily: PJS, margin: 0 }}>
-          No guests yet — add your first.
+          {readOnly ? 'No guests yet.' : 'No guests yet — add your first.'}
         </p>
       </div>
     );
@@ -789,12 +805,14 @@ export default function GuestList({
           <TableHeader>
             <TableRow style={{ background: '#FAFAFA' }}>
               <TableHead style={{ width: 36 }}>
-                <input
-                  type="checkbox"
-                  checked={allVisibleSelected}
-                  onChange={() => onToggleSelectAll && onToggleSelectAll(guests.map(g => g.id))}
-                  style={{ width: 14, height: 14, accentColor: '#E03553' }}
-                />
+                {!readOnly && (
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={() => onToggleSelectAll && onToggleSelectAll(guests.map(g => g.id))}
+                    style={{ width: 14, height: 14, accentColor: '#E03553' }}
+                  />
+                )}
               </TableHead>
               <SortableHead field="name" label="Guest" sortState={sortState} onSort={handleSort} />
               <TableHead>Contact</TableHead>
@@ -819,12 +837,14 @@ export default function GuestList({
                 >
                   {/* ── Checkbox ── */}
                   <TableCell className="align-middle">
-                    <input
-                      type="checkbox"
-                      checked={!!selectedIds?.has(guest.id)}
-                      onChange={() => onToggleSelect && onToggleSelect(guest.id)}
-                      style={{ width: 14, height: 14, accentColor: '#E03553' }}
-                    />
+                    {!readOnly && (
+                      <input
+                        type="checkbox"
+                        checked={!!selectedIds?.has(guest.id)}
+                        onChange={() => onToggleSelect && onToggleSelect(guest.id)}
+                        style={{ width: 14, height: 14, accentColor: '#E03553' }}
+                      />
+                    )}
                   </TableCell>
 
                   {/* ── Guest name (expand chevron + avatar + name) ── */}
@@ -900,7 +920,7 @@ export default function GuestList({
 
                   {/* ── Status — per-event chips (replaces RSVP + Invited to) ── */}
                   <TableCell className="align-middle">
-                    <GuestStatusCell guest={guest} weddingEvents={weddingEvents} onSetEventsAndSend={onSetEventsAndSend} onEditEvents={onEditEvents} />
+                    <GuestStatusCell guest={guest} weddingEvents={weddingEvents} onSetEventsAndSend={onSetEventsAndSend} onEditEvents={onEditEvents} readOnly={readOnly} />
                   </TableCell>
 
                   {/* ── Last sent ── */}
@@ -919,26 +939,28 @@ export default function GuestList({
 
                   {/* ── +1 — distinct RSVP status once they have their own email ── */}
                   <TableCell className="align-middle">
-                    <PlusOneCell guest={guest} onUpdate={onUpdate} />
+                    <PlusOneCell guest={guest} onUpdate={onUpdate} readOnly={readOnly} />
                   </TableCell>
 
                   {/* ── Actions ── */}
                   <TableCell className="align-middle">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal size={15} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(guest)}>
-                          <Edit2 size={13} style={{ marginRight: 8 }} />Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onDelete(guest.id)} style={{ color: '#E03553' }}>
-                          <Trash2 size={13} style={{ marginRight: 8 }} />Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {!readOnly && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal size={15} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => onEdit(guest)}>
+                            <Edit2 size={13} style={{ marginRight: 8 }} />Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onDelete(guest.id)} style={{ color: '#E03553' }}>
+                            <Trash2 size={13} style={{ marginRight: 8 }} />Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </TableCell>
                 </TableRow>
               );
@@ -964,7 +986,7 @@ export default function GuestList({
               /* ── RSVP detail sub-row (per-event answers + note/song) ── */
               if (isExpanded) {
                 rows.push(
-                  <RsvpDetailRow key={`${guest.id}-rsvp`} guest={guest} weddingEvents={weddingEvents} onEditEvents={onEditEvents} onUpdate={onUpdate} />
+                  <RsvpDetailRow key={`${guest.id}-rsvp`} guest={guest} weddingEvents={weddingEvents} onEditEvents={onEditEvents} onUpdate={onUpdate} readOnly={readOnly} />
                 );
               }
 

@@ -8,7 +8,7 @@ const labelStyle = {
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
-export default function BoardSelector({ boards, activeBoard, onBoardChange, onCreateBoard }) {
+export default function BoardSelector({ boards, activeBoard, onBoardChange, onCreateBoard, readOnly = false }) {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState('');
 
@@ -28,7 +28,7 @@ export default function BoardSelector({ boards, activeBoard, onBoardChange, onCr
           <Folder size={13} style={{ color: 'rgba(10,10,10,0.35)' }} />
           <span style={labelStyle}>Boards</span>
         </div>
-        {!showCreate && (
+        {!readOnly && !showCreate && (
           <button onClick={() => setShowCreate(true)} className="btn-editorial-secondary" style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
             <Plus size={11} />New board
           </button>

@@ -13,6 +13,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import UploadStatus from '@/components/shared/UploadStatus';
+import { useCollaboratorContext } from '@/lib/collaboratorContext';
 
 let moodboardQueueId = 0;
 
@@ -64,10 +65,29 @@ export default function MoodboardPage() {
   const uploading = uploadQueue.some(q => q.status === 'uploading');
   const fileInputRef = useRef(null);
 
-  useEffect(() => { loadItems(); }, []);
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Always read-only while collaborating — same reasoning as every other
+  // newly-wired page: the admin key 403s updating/deleting an owner-scoped
+  // MoodboardItem regardless of the 'edit' bit, so there is no working
+  // write path to gate on yet.
+  const readOnly = isCollaborating;
+
+  useEffect(() => { loadItems(); }, [isCollaborating]);
 
   const loadItems = async () => {
     try {
+      if (isCollaborating) {
+        const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Moodboard`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (res.ok) {
+          const { data } = await res.json();
+          setItems(data.MoodboardItem || []);
+        }
+        setLoading(false);
+        return;
+      }
       const data = await getMyRecords('MoodboardItem', '-created_date');
       setItems(data);
     } catch (e) {
@@ -167,7 +187,7 @@ export default function MoodboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}
       onDragOver={e => e.preventDefault()}
-      onDrop={e => { e.preventDefault(); if (!uploading && e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files); }}>
+      onDrop={e => { e.preventDefault(); if (!readOnly && !uploading && e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files); }}>
 
       <DashboardPageHeader title="Moodboard" subtitle="Collect and organise inspiration images for your wedding vision" />
 
@@ -186,32 +206,34 @@ export default function MoodboardPage() {
       {/* Ava + actions bar */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to find inspiration" onClick={() => setAvaOpen(true)} />
-        <div className="flex flex-wrap items-center gap-[10px]">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="btn-editorial-secondary"
-            style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
-            {uploading ? 'Uploading…' : 'Upload'}
-          </button>
-          <button onClick={() => setShowAddModal(true)} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Plus size={12} />Add inspiration
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            style={{ display: 'none' }}
-            onChange={e => { if (e.target.files) { handleFileUpload(e.target.files); e.target.value = ''; } }}
-          />
-        </div>
+        {!readOnly && (
+          <div className="flex flex-wrap items-center gap-[10px]">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="btn-editorial-secondary"
+              style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+              {uploading ? 'Uploading…' : 'Upload'}
+            </button>
+            <button onClick={() => setShowAddModal(true)} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Plus size={12} />Add inspiration
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              style={{ display: 'none' }}
+              onChange={e => { if (e.target.files) { handleFileUpload(e.target.files); e.target.value = ''; } }}
+            />
+          </div>
+        )}
       </div>
 
       <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Board selector */}
-        <BoardSelector boards={boards} activeBoard={activeBoard} onBoardChange={setActiveBoard} onCreateBoard={handleCreateBoard} />
+        <BoardSelector boards={boards} activeBoard={activeBoard} onBoardChange={setActiveBoard} onCreateBoard={handleCreateBoard} readOnly={readOnly} />
 
         {/* Search */}
         <div style={{ position: 'relative', maxWidth: 480 }}>
@@ -257,7 +279,7 @@ export default function MoodboardPage() {
             <span style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Loading…</span>
           </div>
         ) : (
-          <MoodboardGrid items={filteredItems} onDeleteItem={handleDeleteItem} onUpdateItem={handleUpdateItem} />
+          <MoodboardGrid items={filteredItems} onDeleteItem={readOnly ? undefined : handleDeleteItem} onUpdateItem={readOnly ? undefined : handleUpdateItem} readOnly={readOnly} />
         )}
       </div>
 

@@ -17,6 +17,7 @@ import ReceivedGifts from '../components/registry/ReceivedGifts';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+import { useCollaboratorContext } from '@/lib/collaboratorContext';
 
 const RegistryItem = base44.entities.RegistryItem;
 const CustomGift = base44.entities.CustomGift;
@@ -64,13 +65,32 @@ export default function RegistryPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [avaOpen, setAvaOpen] = useState(false);
 
-  useEffect(() => { loadData(); }, []);
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Every collaborator page is read-only regardless of the 'edit' bit —
+  // the admin key 403s updating/deleting ANY owner-scoped entity, same
+  // constraint as Guests (see api/collaborator-guests.js's header and
+  // BASE44_PLATFORM_NOTES.md). No write path exists here to gate on.
+  const readOnly = isCollaborating;
+
+  useEffect(() => { loadData(); }, [isCollaborating]);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [s, c, p] = await Promise.all([getMyRecords('RegistryItem'), getMyRecords('CustomGift'), getMyRecords('RegistryProduct')]);
-      setStoreItems(s); setCustomGifts(c); setProducts(p);
+      if (isCollaborating) {
+        const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Registry`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (!res.ok) throw new Error('Failed to load registry data');
+        const { data } = await res.json();
+        setStoreItems(data.RegistryItem || []);
+        setCustomGifts(data.CustomGift || []);
+        setProducts(data.RegistryProduct || []);
+      } else {
+        const [s, c, p] = await Promise.all([getMyRecords('RegistryItem'), getMyRecords('CustomGift'), getMyRecords('RegistryProduct')]);
+        setStoreItems(s); setCustomGifts(c); setProducts(p);
+      }
     } catch { toast.error('Failed to load registry data'); }
     setLoading(false);
   };
@@ -179,15 +199,19 @@ export default function RegistryPage() {
           <button onClick={() => setShowShareModal(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
             <Share2 size={12} />Share
           </button>
-          <button onClick={() => { setEditingStoreItem(null); setShowStoreForm(true); }} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Plus size={12} />Add platform
-          </button>
-          <button onClick={() => { setEditingProduct(null); setShowProductForm(true); }} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Plus size={12} />Add product
-          </button>
-          <button onClick={() => { setEditingCustomGift(null); setShowCustomForm(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Plus size={12} />Add cash fund
-          </button>
+          {!readOnly && (
+            <>
+              <button onClick={() => { setEditingStoreItem(null); setShowStoreForm(true); }} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Plus size={12} />Add platform
+              </button>
+              <button onClick={() => { setEditingProduct(null); setShowProductForm(true); }} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Plus size={12} />Add product
+              </button>
+              <button onClick={() => { setEditingCustomGift(null); setShowCustomForm(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Plus size={12} />Add cash fund
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -202,16 +226,16 @@ export default function RegistryPage() {
             <TabsTrigger value="received">Received gifts</TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
-            <ConsolidatedRegistryView storeItems={storeItems} products={products} customGifts={customGifts} loading={loading} onProductPurchase={handleProductPurchase} />
+            <ConsolidatedRegistryView storeItems={storeItems} products={products} customGifts={customGifts} loading={loading} onProductPurchase={readOnly ? undefined : handleProductPurchase} />
           </TabsContent>
           <TabsContent value="platforms">
-            <RegistryList items={storeItems} onEdit={handleStoreEdit} onDelete={handleStoreDelete} loading={loading} />
+            <RegistryList items={storeItems} onEdit={readOnly ? undefined : handleStoreEdit} onDelete={readOnly ? undefined : handleStoreDelete} loading={loading} readOnly={readOnly} />
           </TabsContent>
           <TabsContent value="products">
-            <RegistryProductList items={products} onEdit={handleProductEdit} onDelete={handleProductDelete} onPurchase={handleProductPurchase} loading={loading} />
+            <RegistryProductList items={products} onEdit={readOnly ? undefined : handleProductEdit} onDelete={readOnly ? undefined : handleProductDelete} onPurchase={readOnly ? undefined : handleProductPurchase} loading={loading} readOnly={readOnly} />
           </TabsContent>
           <TabsContent value="cash-funds">
-            <CustomGiftList items={customGifts} onEdit={handleCustomEdit} onDelete={handleCustomDelete} loading={loading} />
+            <CustomGiftList items={customGifts} onEdit={readOnly ? undefined : handleCustomEdit} onDelete={readOnly ? undefined : handleCustomDelete} loading={loading} readOnly={readOnly} />
           </TabsContent>
           <TabsContent value="received">
             <ReceivedGifts />

@@ -42,7 +42,7 @@ const labelStyle = {
   fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0,
 };
 
-export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAddEvent, onTimeUpdate }) {
+export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAddEvent, onTimeUpdate, readOnly = false }) {
   const printRef = useRef(null);
   const timelineRef = useRef(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -242,16 +242,16 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
                 return (
                   <div
                     key={item.id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, item)}
-                    onDragEnd={handleDragEnd}
-                    onClick={() => !isDragging && onEdit && onEdit(item)}
+                    draggable={!readOnly}
+                    onDragStart={readOnly ? undefined : (e) => handleDragStart(e, item)}
+                    onDragEnd={readOnly ? undefined : handleDragEnd}
+                    onClick={readOnly ? undefined : () => !isDragging && onEdit && onEdit(item)}
                     style={{
                       position: 'absolute', left: 6, right: 6,
                       top: top + 'px', height: Math.max(height, 32) + 'px',
                       background: cfg.bg, color: cfg.text,
                       padding: '4px 8px', overflow: 'hidden',
-                      cursor: isDragging ? 'grabbing' : 'grab',
+                      cursor: readOnly ? 'default' : (isDragging ? 'grabbing' : 'grab'),
                       opacity: isDragging ? 0.35 : 1,
                       transition: isDragging ? 'none' : 'opacity 0.15s',
                       zIndex: isDragging ? 5 : 10,
@@ -277,7 +277,7 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
                           </p>
                         )}
                       </div>
-                      <Edit2 size={10} style={{ color: cfg.text, opacity: 0.5, flexShrink: 0, marginTop: 2 }} />
+                      {!readOnly && <Edit2 size={10} style={{ color: cfg.text, opacity: 0.5, flexShrink: 0, marginTop: 2 }} />}
                     </div>
                   </div>
                 );

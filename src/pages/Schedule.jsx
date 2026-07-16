@@ -14,6 +14,7 @@ import AvaModal from "@/components/layout/AvaModal";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
+import { useCollaboratorContext } from "@/lib/collaboratorContext";
 const Schedule = base44.entities.Schedule;
 
 function CountUp({ to, duration = 1200, format }) {
@@ -78,13 +79,30 @@ export default function SchedulePage({
   // When the hub drives the view externally, use that; otherwise use internal state
   const effectiveTab = activeView ?? activeTab;
 
-  useEffect(() => { loadScheduleItems(); }, []);
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Read-only regardless of the 'edit' permission bit — Schedule's
+  // update/delete RLS is owner-scoped, same as every other entity here, so
+  // the admin key 403s on a write regardless of permission (see
+  // BASE44_PLATFORM_NOTES.md).
+  const readOnly = isCollaborating;
+
+  useEffect(() => { loadScheduleItems(); }, [isCollaborating]);
   useEffect(() => { if (refreshKey > 0) loadScheduleItems(); }, [refreshKey]);
 
   const loadScheduleItems = async () => {
     try {
-      const data = await getMyRecords('Schedule', 'start_time');
-      setScheduleItems(data);
+      if (isCollaborating) {
+        const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Schedule`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (!res.ok) throw new Error('Failed to load schedule');
+        const { data } = await res.json();
+        setScheduleItems((data.Schedule || []).slice().sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')));
+      } else {
+        const data = await getMyRecords('Schedule', 'start_time');
+        setScheduleItems(data);
+      }
     } catch {
       toast.error("Failed to load schedule");
     }
@@ -221,7 +239,7 @@ export default function SchedulePage({
             >
               Export CSV
             </button>
-            <button onClick={handleAddEvent} className="btn-primary">+ Add event</button>
+            {!readOnly && <button onClick={handleAddEvent} className="btn-primary">+ Add event</button>}
           </div>
         </div>
       )}
@@ -243,9 +261,10 @@ export default function SchedulePage({
           <TabsContent value="visual" className="mt-8">
             <WeddingDayTimelineBuilder
               scheduleItems={scheduleItems}
-              onEdit={handleEdit}
-              onAddEvent={handleAddEvent}
-              onTimeUpdate={handleTimeUpdate}
+              onEdit={readOnly ? undefined : handleEdit}
+              onAddEvent={readOnly ? undefined : handleAddEvent}
+              onTimeUpdate={readOnly ? undefined : handleTimeUpdate}
+              readOnly={readOnly}
             />
           </TabsContent>
 
@@ -273,7 +292,7 @@ export default function SchedulePage({
                   ))}
                 </div>
               </div>
-              <ScheduleTimeline items={filteredItems} onEdit={handleEdit} onDelete={handleDelete} />
+              <ScheduleTimeline items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} />
             </div>
           </TabsContent>
 
@@ -306,14 +325,14 @@ export default function SchedulePage({
                   ))}
                 </div>
               </div>
-              <ScheduleList items={filteredItems} onEdit={handleEdit} onDelete={handleDelete} />
+              <ScheduleList items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} />
             </div>
           </TabsContent>
         </Tabs>
       </div>
 
       {/* Add / Edit Event modal */}
-      {showForm && (
+      {!readOnly && showForm && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div style={{ width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF', position: 'relative' }}>
             <ScheduleForm

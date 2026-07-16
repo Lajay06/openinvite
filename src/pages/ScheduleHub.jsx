@@ -13,6 +13,7 @@ import CalendarPage from "./Calendar";
 import SchedulePage from "./Schedule";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
+import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import toast from "react-hot-toast";
 
 const Schedule = base44.entities.Schedule;
@@ -75,14 +76,31 @@ export default function ScheduleHub() {
   const isCalendar = location.pathname === "/Calendar";
   const activeTab  = isCalendar ? "calendar" : runsheetView;
 
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Read-only regardless of the 'edit' permission bit — Schedule's
+  // update/delete RLS is owner-scoped like every other entity here, so the
+  // admin key 403s on a write regardless of what was granted (same
+  // reasoning as Guests/Budget; see BASE44_PLATFORM_NOTES.md).
+  const readOnly = isCollaborating;
+
   // ── Load schedule items ───────────────────────────────────────────────────
-  useEffect(() => { loadItems(); }, []);
+  useEffect(() => { loadItems(); }, [isCollaborating]);
 
   const loadItems = async () => {
     setLoadingStats(true);
     try {
-      const data = await getMyRecords('Schedule', "start_time");
-      setScheduleItems(data);
+      if (isCollaborating) {
+        const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Schedule`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (!res.ok) throw new Error('Failed to load schedule');
+        const { data } = await res.json();
+        setScheduleItems((data.Schedule || []).slice().sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')));
+      } else {
+        const data = await getMyRecords('Schedule', "start_time");
+        setScheduleItems(data);
+      }
     } catch {
       toast.error("Failed to load schedule");
     }
@@ -206,9 +224,11 @@ export default function ScheduleHub() {
           >
             Export CSV
           </button>
-          <button onClick={handleAddEvent} className="btn-primary">
-            + Add event
-          </button>
+          {!readOnly && (
+            <button onClick={handleAddEvent} className="btn-primary">
+              + Add event
+            </button>
+          )}
         </div>
       </div>
 
@@ -243,7 +263,7 @@ export default function ScheduleHub() {
       )}
 
       {/* Add / Edit form modal */}
-      {showForm && (
+      {!readOnly && showForm && (
         <div style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div style={{ width: "100%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto", background: "#FFFFFF", position: "relative" }}>
             <ScheduleForm

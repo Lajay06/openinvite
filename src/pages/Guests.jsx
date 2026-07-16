@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
 import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
+import { useCollaboratorContext } from "@/lib/collaboratorContext";
 const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -72,6 +73,17 @@ export default function Guests() {
   const isPro = plan === 'pro';
   const upgradeTooltip = 'Upgrade to Ultra to send invitations';
 
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Always read-only while collaborating, even if 'edit' was granted:
+  // confirmed empirically that Guest's update/delete RLS is owner-scoped,
+  // so the admin key 403s on a write regardless of permission (see
+  // api/collaborator-guests.js's own header). Rendering editable UI that's
+  // guaranteed to fail on submit would be exactly the dishonest affordance
+  // this feature is supposed to avoid — so this stays true until that
+  // backend limitation is actually fixed, not just when canEdit is false.
+  const readOnly = isCollaborating;
+
   const [guests, setGuests] = useState([]);
   const [tables, setTables] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -93,27 +105,43 @@ export default function Guests() {
   const [editingEventsGuestId, setEditingEventsGuestId] = useState(null); // guestId, for the "edit events" (not auto-send) flow
   const [scrollToGuestId, setScrollToGuestId] = useState(null); // set right after a guest is added, so its row scrolls into view once it lands at the bottom
 
-  useEffect(() => { loadGuests(); }, []);
+  useEffect(() => { loadGuests(); }, [isCollaborating]);
   useEffect(() => {
+    // A collaborator has no WeddingDetails of their own to read — the
+    // events matrix isn't part of the collaborator-guests.js response
+    // (it belongs to the owner), so weddingEvents stays empty. GuestList
+    // degrades honestly for that case (shows "—" instead of event chips)
+    // rather than fabricating data we don't actually have.
+    if (isCollaborating) return;
     getMyWeddingDetails().then(details => {
       const wd = details || {};
       setWeddingParty(wd.weddingParty || {});
       setWeddingEvents(getWeddingEvents(wd));
     }).catch(() => {});
-  }, []);
+  }, [isCollaborating]);
 
   const loadGuests = async () => {
     try {
-      // Ascending — oldest first, newest last — so a newly added guest
-      // lands at the bottom of the list instead of jumping to the top.
-      // This is the *default* order; GuestList applies its own column sort
-      // on top of it whenever one is active.
-      const [guestData, tableData] = await Promise.all([
-        getMyGuestsWithRsvp('created_date'),
-        getMyRecords('Table', '-created_date'),
-      ]);
-      setGuests(guestData);
-      setTables(tableData.map(t => ({ ...t, assigned_guests: t.assigned_guests || [] })));
+      if (isCollaborating) {
+        const res = await fetch(`/api/collaborator-guests?ownerUserId=${encodeURIComponent(collab.ownerUserId)}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (!res.ok) throw new Error('Failed to load guests');
+        const data = await res.json();
+        setGuests(data.guests || []);
+        setTables([]); // table sync isn't part of the collaborator model — see handleTableAssignment's own guard
+      } else {
+        // Ascending — oldest first, newest last — so a newly added guest
+        // lands at the bottom of the list instead of jumping to the top.
+        // This is the *default* order; GuestList applies its own column sort
+        // on top of it whenever one is active.
+        const [guestData, tableData] = await Promise.all([
+          getMyGuestsWithRsvp('created_date'),
+          getMyRecords('Table', '-created_date'),
+        ]);
+        setGuests(guestData);
+        setTables(tableData.map(t => ({ ...t, assigned_guests: t.assigned_guests || [] })));
+      }
     } catch {
       toast.error("Failed to load guests");
     }
@@ -513,14 +541,17 @@ export default function Guests() {
 
       {/* Ava + toolbar row */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-        <AvaButton label="Ask Ava to help manage your guest list" onClick={() => setAvaOpen(true)} />
+        {!isCollaborating && <AvaButton label="Ask Ava to help manage your guest list" onClick={() => setAvaOpen(true)} />}
+        {isCollaborating && <div />}
         <div className="flex flex-wrap items-center gap-[10px]">
-          <button
-            onClick={() => setShowImport(true)}
-            className="btn-editorial-secondary"
-          >
-            Import CSV
-          </button>
+          {!isCollaborating && (
+            <button
+              onClick={() => setShowImport(true)}
+              className="btn-editorial-secondary"
+            >
+              Import CSV
+            </button>
+          )}
           <button
             onClick={exportGuestList}
             disabled={guests.length === 0}
@@ -529,20 +560,24 @@ export default function Guests() {
           >
             Export CSV
           </button>
-          <button onClick={() => { setEditingGuest(null); setShowForm(true); setActiveTab('guests'); }} className="btn-editorial-secondary">
-            + Add guest
-          </button>
-          <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>
-            <button
-              onClick={openSendForSelection}
-              disabled={isPro}
-              className="btn-primary"
-              style={{ display: 'flex', alignItems: 'center', gap: 6, ...(isPro ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
-            >
-              <Send size={13} />
-              Send invites
-            </button>
-          </span>
+          {!isCollaborating && (
+            <>
+              <button onClick={() => { setEditingGuest(null); setShowForm(true); setActiveTab('guests'); }} className="btn-editorial-secondary">
+                + Add guest
+              </button>
+              <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>
+                <button
+                  onClick={openSendForSelection}
+                  disabled={isPro}
+                  className="btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, ...(isPro ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
+                >
+                  <Send size={13} />
+                  Send invites
+                </button>
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -552,7 +587,7 @@ export default function Guests() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full justify-start">
             <TabsTrigger value="guests">Guests</TabsTrigger>
-            <TabsTrigger value="emails">Email templates</TabsTrigger>
+            {!isCollaborating && <TabsTrigger value="emails">Email templates</TabsTrigger>}
             <TabsTrigger value="considerations">Considerations</TabsTrigger>
           </TabsList>
 
@@ -636,25 +671,28 @@ export default function Guests() {
 
             <GuestList
               guests={filteredGuests}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onUpdate={handleInlineUpdate}
-              onQuickAdd={handleQuickAdd}
+              onEdit={readOnly ? undefined : handleEdit}
+              onDelete={readOnly ? undefined : handleDelete}
+              onUpdate={readOnly ? undefined : handleInlineUpdate}
+              onQuickAdd={readOnly ? undefined : handleQuickAdd}
               guestRoles={guestRoles}
               loading={loading}
               weddingEvents={weddingEvents}
               selectedIds={selectedIds}
-              onToggleSelect={toggleSelect}
-              onToggleSelectAll={toggleSelectAll}
-              onSetEventsAndSend={handleSetEventsAndSend}
-              onEditEvents={handleEditEvents}
+              onToggleSelect={readOnly ? undefined : toggleSelect}
+              onToggleSelectAll={readOnly ? undefined : toggleSelectAll}
+              onSetEventsAndSend={readOnly ? undefined : handleSetEventsAndSend}
+              onEditEvents={readOnly ? undefined : handleEditEvents}
               scrollToGuestId={scrollToGuestId}
+              readOnly={readOnly}
             />
           </TabsContent>
 
-          <TabsContent value="emails" className="mt-8">
-            <EmailTemplates guests={guests} onUseTemplate={(t) => setSendModalConfig({ type: t })} />
-          </TabsContent>
+          {!isCollaborating && (
+            <TabsContent value="emails" className="mt-8">
+              <EmailTemplates guests={guests} onUseTemplate={(t) => setSendModalConfig({ type: t })} />
+            </TabsContent>
+          )}
 
           <TabsContent value="considerations" className="mt-8" style={{ maxWidth: 860 }}>
             <PageConsiderations pageKey="guests" />

@@ -13,6 +13,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
+import { useCollaboratorContext } from "@/lib/collaboratorContext";
 const Vendor = base44.entities.Vendor;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -82,12 +83,29 @@ export default function VendorsPage() {
   const [managingVendor, setManagingVendor] = useState(null);
   const [activeTab, setActiveTab] = useState("vendors");
 
-  useEffect(() => { loadVendors(); }, []);
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Read-only regardless of the 'edit' permission bit — Vendor's update/
+  // delete RLS is owner-scoped, same as every other entity here, so the
+  // admin key 403s on a write no matter what was granted (see
+  // api/collaborator-guests.js's header / BASE44_PLATFORM_NOTES.md).
+  const readOnly = isCollaborating;
+
+  useEffect(() => { loadVendors(); }, [isCollaborating]);
 
   const loadVendors = async () => {
     try {
-      const data = await getMyRecords('Vendor', '-created_date');
-      setVendors(data);
+      if (isCollaborating) {
+        const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Vendors`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (!res.ok) throw new Error('Failed to load vendors');
+        const { data } = await res.json();
+        setVendors(data.Vendor || []);
+      } else {
+        const data = await getMyRecords('Vendor', '-created_date');
+        setVendors(data);
+      }
     } catch { toast.error("Failed to load vendors"); }
     setLoading(false);
   };
@@ -166,13 +184,15 @@ export default function VendorsPage() {
 
       {/* Ava + Add vendor — same row */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4">
-        <AvaButton label="Ask Ava to find the perfect vendors" onClick={() => setAvaOpen(true)} />
-        <button
-          onClick={() => { setEditingVendor(null); setShowForm(true); }}
-          className="btn-primary"
-        >
-          + Add vendor
-        </button>
+        {!isCollaborating ? <AvaButton label="Ask Ava to find the perfect vendors" onClick={() => setAvaOpen(true)} /> : <div />}
+        {!readOnly && (
+          <button
+            onClick={() => { setEditingVendor(null); setShowForm(true); }}
+            className="btn-primary"
+          >
+            + Add vendor
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -228,17 +248,21 @@ export default function VendorsPage() {
                   <Search size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
                 </div>
                 <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>No vendors added yet</p>
-                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 20px' }}>Click + Add vendor to start tracking your suppliers</p>
-                <button onClick={() => { setEditingVendor(null); setShowForm(true); }} className="btn-primary">
-                  + Add vendor
-                </button>
+                {!readOnly && (
+                  <>
+                    <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 20px' }}>Click + Add vendor to start tracking your suppliers</p>
+                    <button onClick={() => { setEditingVendor(null); setShowForm(true); }} className="btn-primary">
+                      + Add vendor
+                    </button>
+                  </>
+                )}
               </div>
             ) : (
               <VendorList
                 vendors={filteredVendors}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onManage={setManagingVendor}
+                onEdit={readOnly ? undefined : handleEdit}
+                onDelete={readOnly ? undefined : handleDelete}
+                onManage={readOnly ? undefined : setManagingVendor}
               />
             )}
           </TabsContent>

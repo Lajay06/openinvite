@@ -41,6 +41,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { getCollaborationFor, hasPagePermission } from './_lib/collaboratorAuth.js';
+import { excludeTestRecords } from './_lib/productData.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -110,12 +111,12 @@ export default async function handler(req, res) {
       const rows = unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/Guest?q=${query}`));
 
       const weddingQuery = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
-      const weddings = unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`)).filter(w => !w.is_test);
+      const weddings = excludeTestRecords(unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`)));
       const wedding = weddings.length > 0 ? weddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0] : null;
       const coupleNames = wedding?.coupleNames || [wedding?.couple1Name, wedding?.couple2Name].filter(Boolean).join(' & ') || '';
 
       return res.status(200).json({
-        guests: rows.filter(g => !g.is_test),
+        guests: excludeTestRecords(rows),
         coupleNames,
         canEdit: hasPagePermission(collaboration.permissions, PAGE, 'edit'),
       });

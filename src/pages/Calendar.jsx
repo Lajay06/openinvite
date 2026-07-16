@@ -5,6 +5,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
+import { useCollaboratorContext } from '@/lib/collaboratorContext';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -54,17 +55,36 @@ export default function CalendarPage({ embedded = false }) {
   const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', description: '', type: 'custom' });
   const [avaOpen, setAvaOpen] = useState(false);
 
-  useEffect(() => { loadAllEvents(); }, []);
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  const readOnly = isCollaborating;
+
+  useEffect(() => { loadAllEvents(); }, [isCollaborating]);
 
   const loadAllEvents = async () => {
     setLoading(true);
     try {
-      const [vendors, scheduleItems, invitation, photographers] = await Promise.all([
-        getMyRecords('Vendor').catch(() => []),
-        getMyRecords('Schedule').catch(() => []),
-        getMyInvitation().catch(() => null),
-        getMyRecords('Photographer').catch(() => [])
-      ]);
+      // Collaborating: only ever show what the 'Schedule' permission
+      // actually covers. Vendor/Photographer/Invitation aren't part of
+      // that permission's entities (Vendor has its OWN separate
+      // permission key; Photographer has none at all) — aggregating them
+      // in here regardless of what was granted would leak data across
+      // permission boundaries. See collaboratorPageMap.js.
+      const [vendors, scheduleItems, invitation, photographers] = isCollaborating
+        ? await (async () => {
+            const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Schedule`, {
+              headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+            });
+            if (!res.ok) throw new Error('Failed to load schedule');
+            const { data } = await res.json();
+            return [[], data.Schedule || [], null, []];
+          })()
+        : await Promise.all([
+            getMyRecords('Vendor').catch(() => []),
+            getMyRecords('Schedule').catch(() => []),
+            getMyInvitation().catch(() => null),
+            getMyRecords('Photographer').catch(() => [])
+          ]);
 
       const allEvents = [];
 
@@ -248,16 +268,18 @@ export default function CalendarPage({ embedded = false }) {
             style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: events.length === 0 ? 0.5 : 1 }}>
             <Download size={12} />Export
           </button>
-          <button onClick={() => setShowEventForm(true)} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Plus size={12} />Add event
-          </button>
+          {!readOnly && (
+            <button onClick={() => setShowEventForm(true)} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Plus size={12} />Add event
+            </button>
+          )}
         </div>
       </div>
 
       <div style={{ padding: '0 32px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
         {/* Add Event Form */}
-        {showEventForm && (
+        {!readOnly && showEventForm && (
           <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '20px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add new event</span>
@@ -393,7 +415,7 @@ export default function CalendarPage({ embedded = false }) {
                       {event.time && <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 2px' }}>Time: {event.time}</p>}
                       {event.description && <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{event.description}</p>}
                     </div>
-                    {event.type === 'custom' && (
+                    {!readOnly && event.type === 'custom' && (
                       <button onClick={() => handleDeleteEvent(event)}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 4 }}
                         onMouseEnter={e => e.currentTarget.style.color = '#E03553'}

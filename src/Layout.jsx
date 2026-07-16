@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { X, Bell, Search, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning } from "lucide-react";
+import { X, Bell, Search, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut } from "lucide-react";
 import { getWeddingWeather } from '@/lib/weather';
 import { track, reset as analyticsReset } from '@/lib/analytics';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -13,6 +13,7 @@ import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'react-hot-toast';
+import { useCollaboratorContext, permissionKeyForPageName, hasPagePermission } from '@/lib/collaboratorContext';
 
 const SIDEBAR_WIDTH = 200;
 const TOP_BAR_H = 48;
@@ -29,14 +30,17 @@ function getStoredUser() {
 }
 
 // ── Full-width top navigation bar ────────────────────────────────────────────
-function TopBar({ weddingDetails, unreadCount }) {
+function TopBar({ weddingDetails, unreadCount, overrideCoupleName }) {
   const navigate = useNavigate();
   const [weather, setWeather] = useState(null);
 
-  // Derive couple name from entity fields
+  // Derive couple name from entity fields — a collaborator session has no
+  // WeddingDetails record of their own to read (it belongs to the owner),
+  // so overrideCoupleName (from the collaborator-context endpoint) wins
+  // when present.
   const couple1 = weddingDetails?.couple1Name || '';
   const couple2 = weddingDetails?.couple2Name || '';
-  const coupleName = couple1 && couple2 ? `${couple1} & ${couple2}` : couple1 || couple2 || '';
+  const coupleName = overrideCoupleName || (couple1 && couple2 ? `${couple1} & ${couple2}` : couple1 || couple2 || '');
 
   // Derive date + countdown from entity
   const dateStr = weddingDetails?.weddingDate || '';
@@ -200,6 +204,49 @@ function TopBar({ weddingDetails, unreadCount }) {
   );
 }
 
+// ── Persistent collaboration context banner ──────────────────────────────────
+function CollaboratorBanner({ coupleNames, collaboratorEmail, topOffset }) {
+  return (
+    <div
+      className="hidden lg:flex"
+      style={{
+        position: 'fixed', top: topOffset, left: SIDEBAR_WIDTH, right: 0, height: 32,
+        zIndex: 45, background: 'rgba(224,53,83,0.06)', borderBottom: '1px solid rgba(224,53,83,0.15)',
+        alignItems: 'center', justifyContent: 'space-between', padding: '0 32px',
+      }}
+    >
+      <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#0A0A0A', fontFamily: PJS }}>
+        <Users size={13} style={{ color: '#E03553', flexShrink: 0 }} />
+        Collaborating on {coupleNames ? `${coupleNames}'s wedding` : 'this wedding'} as {collaboratorEmail}
+      </span>
+      <a
+        href={createPageUrl('Dashboard')}
+        style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#E03553', fontFamily: PJS, textDecoration: 'none' }}
+      >
+        <LogOut size={12} />
+        Exit collaboration
+      </a>
+    </div>
+  );
+}
+
+// ── Clean "you don't have access" state — shown instead of page content,
+// never instead of a server error; the real check already happened
+// server-side (see api/collaborator-*.js) by the time this renders. ────────
+function CollaboratorAccessDenied() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', padding: 32 }}>
+      <Users size={28} style={{ color: 'rgba(10,10,10,0.25)', marginBottom: 12 }} />
+      <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 4px' }}>
+        You don't have access to this page
+      </p>
+      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+        Ask the couple to grant you permission if you think this is a mistake.
+      </p>
+    </div>
+  );
+}
+
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -210,6 +257,8 @@ export default function Layout({ children, currentPageName }) {
   const [unreadMessagesCount, setUnreadMessagesCount] = React.useState(0);
   const [weddingName, setWeddingName] = React.useState('');
   const [weddingDetails, setWeddingDetails] = React.useState(null);
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
 
   React.useEffect(() => {
     const handler = () => setChatOpen(true);
@@ -221,6 +270,12 @@ export default function Layout({ children, currentPageName }) {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
+      // A collaborator session has no WeddingDetails/Invitation/GuestMessage
+      // of their own to read here — that data belongs to the owner, and is
+      // fetched separately via collaborator-context.js/collaborator-*.js.
+      // Reading these owner-scoped helpers under the collaborator's own
+      // token would just return their own (irrelevant, usually empty) data.
+      if (isCollaborating) return;
       try {
         const messages = await getMyRecords('GuestMessage');
         setUnreadMessagesCount(messages.filter(m => !m.read).length);
@@ -233,7 +288,7 @@ export default function Layout({ children, currentPageName }) {
         setWeddingDetails(await getMyWeddingDetails());
       } catch {}
     } catch {}
-  }, []);
+  }, [isCollaborating]);
 
   React.useEffect(() => { fetchData(); }, [fetchData, location.pathname]);
 
@@ -242,9 +297,10 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('weddingDetailsSaved', fetchData);
   }, [fetchData]);
 
-  // Trial banner: show only when user is on trial (no paid plan) and trial hasn't expired
+  // Trial banner: about the logged-in account's OWN plan — meaningless (and
+  // confusing) to show while borrowing someone else's wedding as a collaborator.
   const trialBanner = React.useMemo(() => {
-    if (!user) return null;
+    if (!user || isCollaborating) return null;
     const plan = user.plan;
     if (plan === 'pro' || plan === 'ultra') return null; // paid — no banner
 
@@ -259,6 +315,51 @@ export default function Layout({ children, currentPageName }) {
   }, [user]);
 
   if (noLayoutPages.includes(currentPageName)) return <>{children}</>;
+
+  // Resolving whether this is a real, accepted collaboration — brief, but
+  // avoids a flash of the wrong sidebar/topbar before the real permission
+  // check (server-side, collaborator-context.js) comes back.
+  if (isCollaborating && collab.loading) {
+    return <div className="min-h-screen" style={{ background: '#FFFFFF' }} />;
+  }
+
+  // Not an accepted collaborator on this owner at all — a clean dead end,
+  // not the real dashboard shell. The actual gate already happened
+  // server-side; this just presents the outcome.
+  if (isCollaborating && !collab.loading && !collab.ok) {
+    return (
+      <div className="min-h-screen" style={{ background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', padding: 32, maxWidth: 360 }}>
+          <Users size={28} style={{ color: 'rgba(10,10,10,0.25)', marginBottom: 12 }} />
+          <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>
+            You don't have access to this wedding
+          </p>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 20px' }}>
+            This collaboration link isn't valid for your account, or the invite hasn't been accepted yet.
+          </p>
+          <a
+            href={createPageUrl('Dashboard')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600,
+              color: '#fff', background: '#E03553', borderRadius: 999, padding: '8px 18px',
+              fontFamily: PJS, textDecoration: 'none',
+            }}
+          >
+            Go to your own dashboard
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  const collaboratorPermissions = collab.ok ? collab.permissions : null;
+  const bannerH = collab.ok ? 32 : 0;
+  const contentTopOffset = TOP_BAR_H + (trialBanner ? 36 : 0) + bannerH;
+  const currentPermissionKey = permissionKeyForPageName(currentPageName);
+  const canViewCurrentPage = !isCollaborating || (
+    !!currentPermissionKey &&
+    hasPagePermission(collaboratorPermissions, currentPermissionKey, 'view')
+  );
 
   return (
     <div className="min-h-screen" style={{ background: '#FFFFFF' }}>
@@ -279,7 +380,17 @@ export default function Layout({ children, currentPageName }) {
       <TopBar
         weddingDetails={weddingDetails}
         unreadCount={unreadMessagesCount}
+        overrideCoupleName={collab.ok ? collab.coupleNames : undefined}
       />
+
+      {/* ── Collaboration context banner (desktop only, below top bar) ── */}
+      {collab.ok && (
+        <CollaboratorBanner
+          coupleNames={collab.coupleNames}
+          collaboratorEmail={collab.collaboratorEmail}
+          topOffset={TOP_BAR_H}
+        />
+      )}
 
       {/* ── Trial banner (desktop only, below top bar) ───────── */}
       {trialBanner && (
@@ -328,7 +439,8 @@ export default function Layout({ children, currentPageName }) {
           weddingName={weddingName}
           onCollaborate={() => setShowCollaborateModal(true)}
           onOpenTips={() => setShowTipsModal(true)}
-          topOffset={TOP_BAR_H + (trialBanner ? 36 : 0)}
+          topOffset={contentTopOffset}
+          collaboratorPermissions={collaboratorPermissions}
         />
       </div>
 
@@ -373,6 +485,7 @@ export default function Layout({ children, currentPageName }) {
             weddingName={weddingName}
             onClose={() => setMobileMenuOpen(false)}
             onCollaborate={() => { setMobileMenuOpen(false); setShowCollaborateModal(true); }}
+            collaboratorPermissions={collaboratorPermissions}
           />
         </SheetContent>
       </Sheet>
@@ -402,12 +515,12 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* ── Main content ─────────────────────────────────── */}
-      {/* Desktop: right of sidebar, below top bar (+ trial banner if active) */}
+      {/* Desktop: right of sidebar, below top bar (+ trial/collaborator banner if active) */}
       <div
         className="hidden lg:block page-content"
-        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: TOP_BAR_H + (trialBanner ? 36 : 0) }}
+        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: contentTopOffset }}
       >
-        {children}
+        {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
       </div>
 
       {/* Mobile: full width, below mobile top bar */}
@@ -415,7 +528,7 @@ export default function Layout({ children, currentPageName }) {
         className="lg:hidden page-content"
         style={{ paddingTop: 64 }}
       >
-        {children}
+        {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
       </div>
     </div>
   );

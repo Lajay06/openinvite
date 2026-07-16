@@ -12,6 +12,7 @@ import DatePicker from "@/components/shared/DatePicker";
 import ThemeSection from "@/components/event-details/ThemeSection";
 import VenueSearchPanel from "@/components/shared/VenueSearchPanel";
 import toast from 'react-hot-toast';
+import { useCollaboratorContext } from '@/lib/collaboratorContext';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -115,14 +116,14 @@ function fmtDate(d) {
 
 // ── Details tab shared field components ──────────────────────────────────────
 
-function UInput({ label, value, onChange, placeholder = '', type = 'text' }) {
+function UInput({ label, value, onChange, placeholder = '', type = 'text', disabled = false }) {
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom: 20 }}>
       {label && <span style={sLabel}>{label}</span>}
-      <input type={type} value={value || ''} onChange={onChange} placeholder={placeholder}
+      <input type={type} value={value || ''} onChange={onChange} placeholder={placeholder} disabled={disabled}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-        style={{ width: '100%', border: 'none', borderBottom: `${focused ? 2 : 1}px solid ${focused ? '#E03553' : 'rgba(10,10,10,0.18)'}`, background: 'transparent', padding: '6px 0', fontSize: 14, fontWeight: 500, color: '#0A0A0A', outline: 'none', fontFamily: PJS, boxSizing: 'border-box', transition: 'border-color 0.2s' }}
+        style={{ width: '100%', border: 'none', borderBottom: `${focused ? 2 : 1}px solid ${focused ? '#E03553' : 'rgba(10,10,10,0.18)'}`, background: 'transparent', padding: '6px 0', fontSize: 14, fontWeight: 500, color: '#0A0A0A', outline: 'none', fontFamily: PJS, boxSizing: 'border-box', transition: 'border-color 0.2s', opacity: disabled ? 0.7 : 1 }}
       />
     </div>
   );
@@ -382,7 +383,7 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
 
 // ── Event card (horizontal card with right image panel) ──────────────────────
 
-function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, onDelete }) {
+function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, onDelete, readOnly = false }) {
   const title = fixedType === 'ceremony' ? 'Ceremony'
     : fixedType === 'reception' ? 'Reception'
     : (event?.name || event?.type || 'Untitled event');
@@ -435,27 +436,30 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
           </span>
         </div>
 
-        {/* Edit / Delete — pushed to bottom */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 'auto', paddingTop: 24 }}>
-          <button
-            type="button"
-            onClick={onEdit}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', fontFamily: PJS, fontSize: 12, fontWeight: 600, padding: 0 }}
-          >
-            <Edit2 size={12} />
-            Edit
-          </button>
-          {!isFixed && (
+        {/* Edit / Delete — pushed to bottom; absent entirely (not disabled)
+            when read-only, since there's no working write path to defer to. */}
+        {!readOnly && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 'auto', paddingTop: 24 }}>
             <button
               type="button"
-              onClick={e => { e.stopPropagation(); onDelete(); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, fontSize: 12, fontWeight: 600, padding: 0 }}
+              onClick={onEdit}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', fontFamily: PJS, fontSize: 12, fontWeight: 600, padding: 0 }}
             >
-              <Trash2 size={12} />
-              Delete
+              <Edit2 size={12} />
+              Edit
             </button>
-          )}
-        </div>
+            {!isFixed && (
+              <button
+                type="button"
+                onClick={e => { e.stopPropagation(); onDelete(); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, fontSize: 12, fontWeight: 600, padding: 0 }}
+              >
+                <Trash2 size={12} />
+                Delete
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Image panel — only rendered when the venue actually has a photo
@@ -496,7 +500,33 @@ export default function EventDetailsPage() {
   const [editingFType,  setEditingFType]    = useState(null);   // 'ceremony' | 'reception' | null
   const [editingIsPost, setEditingIsPost]   = useState(false);
 
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Always read-only while collaborating — same reasoning as every other
+  // newly-wired page (admin key 403s writing an owner-scoped WeddingDetails
+  // regardless of the 'edit' bit). Also skips every one-time migration
+  // side-effect below (dress-code promotion, event_id backfill, theme
+  // migration) — those would otherwise silently try to write via the
+  // COLLABORATOR's own token against a record they don't own, and 403.
+  const readOnly = isCollaborating;
+
   useEffect(() => {
+    if (isCollaborating) {
+      fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=${encodeURIComponent('Event Details')}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+      })
+        .then(res => res.ok ? res.json() : { data: {} })
+        .then(({ data }) => {
+          const r = data.weddingDetails || {};
+          setRecord(r);
+          setRecordId(null);
+          recordIdRef.current = null;
+          latestRef.current = r;
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+      return;
+    }
     Promise.all([
       getMyWeddingDetails(),
       getMyRecords('ThemeDetails').catch(() => []),
@@ -561,9 +591,10 @@ export default function EventDetailsPage() {
         }
       }
     }).catch(() => setLoading(false));
-  }, []);
+  }, [isCollaborating]);
 
   const update = (patch) => {
+    if (readOnly) return;
     const next = { ...(latestRef.current || {}), ...patch };
     latestRef.current = next;
     setRecord(next);
@@ -571,6 +602,7 @@ export default function EventDetailsPage() {
   };
 
   const updateNested = (key, patch) => {
+    if (readOnly) return;
     const curr = latestRef.current || {};
     const next = { ...curr, [key]: { ...(curr[key] || {}), ...patch } };
     latestRef.current = next;
@@ -579,6 +611,7 @@ export default function EventDetailsPage() {
   };
 
   const doSave = async () => {
+    if (readOnly) return;
     clearTimeout(autoSaveRef.current);
     const data = latestRef.current;
     const id   = recordIdRef.current;
@@ -642,6 +675,7 @@ export default function EventDetailsPage() {
   };
 
   const handleSaveEvent = async (saved) => {
+    if (readOnly) return;
     // Compute the full next record explicitly so we save exactly what we computed,
     // never re-reading latestRef after an async gap.
     let nextData;
@@ -701,6 +735,7 @@ export default function EventDetailsPage() {
   };
 
   const handleDeleteCustom = (evId, isPost) => {
+    if (readOnly) return;
     if (!window.confirm('Remove this event?')) return;
     const key  = isPost ? 'postWeddingEvents' : 'preWeddingEvents';
     const list = latestRef.current?.[key] || [];
@@ -762,7 +797,7 @@ export default function EventDetailsPage() {
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
         <AvaButton label="Ask Ava to help plan your event details" />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {tab === 'events' && (
+          {!readOnly && tab === 'events' && (
             <button onClick={openAddEvent} className="btn-primary">
               + Add event
             </button>
@@ -785,14 +820,14 @@ export default function EventDetailsPage() {
         <div style={{ padding: '32px 32px 80px', maxWidth: 640, margin: '0 auto' }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS, textAlign: 'center' }}>Couple</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-            <UInput label="Partner 1 name" value={r.couple1Name} onChange={e => update({ couple1Name: e.target.value })} placeholder="e.g. Sophie" />
-            <UInput label="Partner 2 name" value={r.couple2Name} onChange={e => update({ couple2Name: e.target.value })} placeholder="e.g. James" />
+            <UInput label="Partner 1 name" value={r.couple1Name} onChange={e => update({ couple1Name: e.target.value })} placeholder="e.g. Sophie" disabled={readOnly} />
+            <UInput label="Partner 2 name" value={r.couple2Name} onChange={e => update({ couple2Name: e.target.value })} placeholder="e.g. James" disabled={readOnly} />
           </div>
 
           <div style={divider} />
           <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS, textAlign: 'center' }}>The date</p>
           <span style={sLabel}>Wedding date</span>
-          <DatePicker value={r.weddingDate} onChange={v => update({ weddingDate: v })} placeholder="Select your wedding date" />
+          <DatePicker value={r.weddingDate} onChange={v => update({ weddingDate: v })} placeholder="Select your wedding date" disabled={readOnly} />
 
           <div style={divider} />
           <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS, textAlign: 'center' }}>Guest count</p>
@@ -800,8 +835,8 @@ export default function EventDetailsPage() {
             {GUEST_TYPES.map(g => {
               const sel = r.guestType === g.id;
               return (
-                <div key={g.id} onClick={() => update({ guestType: sel ? '' : g.id })}
-                  style={{ border: `2px solid ${sel ? '#E03553' : 'rgba(10,10,10,0.1)'}`, borderRadius: 0, padding: '14px 12px', cursor: 'pointer', background: sel ? 'rgba(224,53,83,0.04)' : '#FAFAFA', textAlign: 'center', transition: 'all 0.15s' }}>
+                <div key={g.id} onClick={readOnly ? undefined : () => update({ guestType: sel ? '' : g.id })}
+                  style={{ border: `2px solid ${sel ? '#E03553' : 'rgba(10,10,10,0.1)'}`, borderRadius: 0, padding: '14px 12px', cursor: readOnly ? 'default' : 'pointer', background: sel ? 'rgba(224,53,83,0.04)' : '#FAFAFA', textAlign: 'center', transition: 'all 0.15s', opacity: readOnly && !sel ? 0.6 : 1 }}>
                   <p style={{ fontSize: 13, fontWeight: 700, color: sel ? '#E03553' : '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{g.label}</p>
                   <p style={{ fontSize: 11, fontWeight: 600, color: sel ? '#E03553' : 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontFamily: PJS }}>{g.range}</p>
                   <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>{g.desc}</p>
@@ -809,7 +844,7 @@ export default function EventDetailsPage() {
               );
             })}
           </div>
-          <UInput label="Exact guest count" type="number" value={r.guestCount} onChange={e => update({ guestCount: e.target.value })} placeholder="e.g. 120" />
+          <UInput label="Exact guest count" type="number" value={r.guestCount} onChange={e => update({ guestCount: e.target.value })} placeholder="e.g. 120" disabled={readOnly} />
         </div>
       )}
 
@@ -831,6 +866,7 @@ export default function EventDetailsPage() {
               fixedType={fixedType}
               weddingDate={r.weddingDate}
               onEdit={() => openEditFixed(fixedType)}
+              readOnly={readOnly}
             />
           ))}
 
@@ -849,6 +885,7 @@ export default function EventDetailsPage() {
                   weddingDate={r.weddingDate}
                   onEdit={() => openEditCustom(ev, ev._kind === 'post')}
                   onDelete={() => handleDeleteCustom(ev.id, ev._kind === 'post')}
+                  readOnly={readOnly}
                 />
               ))}
             </>
@@ -858,11 +895,13 @@ export default function EventDetailsPage() {
           {sortedCustom.length === 0 && (
             <div style={{ padding: '32px', textAlign: 'center', border: '1px dashed rgba(10,10,10,0.12)', marginTop: 24, maxWidth: 680, marginLeft: 'auto', marginRight: 'auto' }}>
               <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.35)', margin: '0 0 12px', fontFamily: PJS }}>
-                No additional events yet — add an engagement party, rehearsal dinner, and more.
+                {readOnly ? 'No additional events yet.' : 'No additional events yet — add an engagement party, rehearsal dinner, and more.'}
               </p>
-              <button onClick={openAddEvent} className="btn-primary" style={{ fontSize: 12 }}>
-                + Add event
-              </button>
+              {!readOnly && (
+                <button onClick={openAddEvent} className="btn-primary" style={{ fontSize: 12 }}>
+                  + Add event
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -874,11 +913,13 @@ export default function EventDetailsPage() {
           <ThemeSection
             theme={theme}
             onSave={(nextTheme) => {
+              if (readOnly) return;
               const next = { ...(latestRef.current || {}), theme: nextTheme };
               latestRef.current = next;
               setRecord(next);
               triggerAutoSave();
             }}
+            readOnly={readOnly}
           />
         </div>
       )}

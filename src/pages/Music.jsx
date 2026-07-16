@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+import { useCollaboratorContext } from '@/lib/collaboratorContext';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -88,27 +89,62 @@ export default function MusicPage() {
   const [editingVendor, setEditingVendor] = useState(null);
   const spotifyPillRef = useRef(null);
 
-  const { data: details, isSuccess: detailsLoaded } = useQuery({
-    queryKey: ['musicDetails'],
-    queryFn: async () => await getMyWeddingDetails(),
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Always read-only while collaborating — same reasoning as every other
+  // newly-wired page (admin key 403s writes to any owner-scoped entity
+  // regardless of the 'edit' bit). The Vendor tab is hidden entirely for
+  // collaborators rather than shown empty: music vendors are the Vendor
+  // entity filtered to category==='music', which isn't one of Music's own
+  // mapped entities (collaboratorPageMap.js) — a collaborator only sees
+  // that data if they were separately granted the "Vendors" permission,
+  // via the real Vendors page, not smuggled in through Music.
+  const readOnly = isCollaborating;
+
+  // A single collaborator-data.js fetch replaces all four queries below
+  // when collaborating — same cache-key shape so the rest of the page
+  // (which reads `details`/`songRequests`/`tracksData`) needs no changes.
+  const collabDataQuery = useQuery({
+    queryKey: ['collabMusicData', collab.ownerUserId],
+    enabled: isCollaborating,
+    queryFn: async () => {
+      const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Music`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+      });
+      if (!res.ok) return { weddingDetails: {}, SongRequest: [], Music: [] };
+      const { data } = await res.json();
+      return data;
+    },
   });
 
-  const { data: songRequests } = useQuery({
+  const { data: ownDetails, isSuccess: ownDetailsLoaded } = useQuery({
+    queryKey: ['musicDetails'],
+    enabled: !isCollaborating,
+    queryFn: async () => await getMyWeddingDetails(),
+  });
+  const details = isCollaborating ? collabDataQuery.data?.weddingDetails : ownDetails;
+  const detailsLoaded = isCollaborating ? collabDataQuery.isSuccess : ownDetailsLoaded;
+
+  const { data: ownSongRequests } = useQuery({
     queryKey: ['songRequests'],
+    enabled: !isCollaborating,
     queryFn: async () => { try { return await getMyRecords('SongRequest'); } catch { return []; } },
   });
+  const songRequests = isCollaborating ? collabDataQuery.data?.SongRequest : ownSongRequests;
 
   // Every track — search-added or link-pasted — is a real Music entity
   // record (created_by_id-scoped, per CLAUDE.md's base44.entities.* rule),
   // grouped into playlists via its `category` field.
-  const { data: tracksData } = useQuery({
+  const { data: ownTracksData } = useQuery({
     queryKey: ['musicTracks'],
+    enabled: !isCollaborating,
     queryFn: async () => { try { return await getMyRecords('Music'); } catch { return []; } },
   });
-  const playlistTracks = tracksData || [];
+  const playlistTracks = (isCollaborating ? collabDataQuery.data?.Music : ownTracksData) || [];
 
   const { data: vendorsData } = useQuery({
     queryKey: ['musicVendors'],
+    enabled: !isCollaborating,
     queryFn: async () => { try { return await getMyRecords('Vendor'); } catch { return []; } },
   });
   const musicVendors = (vendorsData || []).filter(v => v.category === 'music');
@@ -365,15 +401,20 @@ export default function MusicPage() {
           <button onClick={() => setShowShare(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
             <Share2 size={12} />Share playlist
           </button>
-          <button onClick={() => setShowSettings(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Settings size={12} />Settings
-          </button>
+          {/* Settings hidden while collaborating — every control inside it
+              (guest-request toggles, message copy, disconnect Spotify) is
+              a WeddingDetails.music write. */}
+          {!readOnly && (
+            <button onClick={() => setShowSettings(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Settings size={12} />Settings
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Tab bar */}
+      {/* Tab bar — Vendor hidden while collaborating, see readOnly's own comment above */}
       <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
-        {TABS.map(tab => (
+        {TABS.filter(tab => !isCollaborating || tab.key !== 'vendor').map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             style={{
               padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700,
@@ -419,29 +460,31 @@ export default function MusicPage() {
               ))}
             </div>
             {/* Add playlist */}
-            <div style={{ borderTop: '1px solid rgba(10,10,10,0.06)', padding: '10px 16px', flexShrink: 0 }}>
-              {addingPlaylist ? (
-                <div>
-                  <input
-                    autoFocus
-                    value={newPlaylistName}
-                    onChange={e => setNewPlaylistName(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleAddPlaylist(); if (e.key === 'Escape') { setAddingPlaylist(false); setNewPlaylistName(''); } }}
-                    placeholder="Playlist name…"
-                    style={{ width: '100%', border: 'none', borderBottom: '1px solid #E03553', background: 'none', fontSize: 13, fontFamily: PJS, padding: '4px 0', outline: 'none', color: '#0A0A0A', boxSizing: 'border-box' }}
-                  />
-                  <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                    <button onClick={handleAddPlaylist} className="btn-primary" style={{ fontSize: 11, flex: 1 }}>Add</button>
-                    <button onClick={() => { setAddingPlaylist(false); setNewPlaylistName(''); }} className="btn-editorial-secondary" style={{ fontSize: 11, flex: 1 }}>Cancel</button>
+            {!readOnly && (
+              <div style={{ borderTop: '1px solid rgba(10,10,10,0.06)', padding: '10px 16px', flexShrink: 0 }}>
+                {addingPlaylist ? (
+                  <div>
+                    <input
+                      autoFocus
+                      value={newPlaylistName}
+                      onChange={e => setNewPlaylistName(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleAddPlaylist(); if (e.key === 'Escape') { setAddingPlaylist(false); setNewPlaylistName(''); } }}
+                      placeholder="Playlist name…"
+                      style={{ width: '100%', border: 'none', borderBottom: '1px solid #E03553', background: 'none', fontSize: 13, fontFamily: PJS, padding: '4px 0', outline: 'none', color: '#0A0A0A', boxSizing: 'border-box' }}
+                    />
+                    <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                      <button onClick={handleAddPlaylist} className="btn-primary" style={{ fontSize: 11, flex: 1 }}>Add</button>
+                      <button onClick={() => { setAddingPlaylist(false); setNewPlaylistName(''); }} className="btn-editorial-secondary" style={{ fontSize: 11, flex: 1 }}>Cancel</button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <button onClick={() => setAddingPlaylist(true)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: '2px 0', width: '100%' }}>
-                  <Plus size={11} />Add playlist
-                </button>
-              )}
-            </div>
+                ) : (
+                  <button onClick={() => setAddingPlaylist(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: '2px 0', width: '100%' }}>
+                    <Plus size={11} />Add playlist
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Center: Search + Tracks */}
@@ -454,63 +497,65 @@ export default function MusicPage() {
                   {playlistTracks.filter(t => t.category === activePlaylist?.id).length} songs
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <button onClick={() => { setShowSearch(v => !v); setShowAddForm(false); setShowAddLink(false); setEditingTrack(null); }}
-                  className={showSearch ? 'btn-primary' : 'btn-editorial-secondary'}
-                  style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <Plus size={12} />Search Spotify
-                </button>
-                {isSpotifyConnected ? (
-                  <div style={{ position: 'relative' }} ref={spotifyPillRef}>
-                    <button
-                      onClick={() => setSpotifyDropdownOpen(v => !v)}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(29,185,84,0.08)', border: '1px solid rgba(29,185,84,0.25)', borderRadius: 999, padding: '5px 11px', cursor: 'pointer', fontSize: 12, fontFamily: PJS, fontWeight: 600, color: '#1DB954' }}
-                    >
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#1DB954', flexShrink: 0 }} />
-                      Connected · {spotifyConnection.displayName}
-                    </button>
-                    {spotifyDropdownOpen && (
-                      <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)', zIndex: 200, minWidth: 160 }}>
-                        <button
-                          onClick={() => setShowSpotifyModal(true)}
-                          style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', cursor: 'pointer' }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(10,10,10,0.04)'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                        >
-                          Search Spotify
-                        </button>
-                        <button
-                          onClick={() => { setSpotifyDropdownOpen(false); handleDisconnectSpotify(); }}
-                          style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#E03553', cursor: 'pointer' }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(224,53,83,0.04)'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                        >
-                          Disconnect Spotify
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleConnectSpotify}
-                    className="btn-editorial-secondary"
-                    style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}
-                  >
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.412.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.33.366.225.48.706.257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.837.327 1.282-.264.444-.838.59-1.284.327z"/></svg>
-                    Connect Spotify
+              {!readOnly && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button onClick={() => { setShowSearch(v => !v); setShowAddForm(false); setShowAddLink(false); setEditingTrack(null); }}
+                    className={showSearch ? 'btn-primary' : 'btn-editorial-secondary'}
+                    style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <Plus size={12} />Search Spotify
                   </button>
-                )}
-                <button onClick={() => { setShowAddLink(v => !v); setShowSearch(false); setShowAddForm(false); setEditingTrack(null); }}
-                  className={showAddLink ? 'btn-primary' : 'btn-editorial-secondary'}
-                  style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <Link2 size={12} />Add from a link
-                </button>
-                <button onClick={() => { setShowAddForm(v => !v); setShowSearch(false); setShowAddLink(false); setEditingTrack(null); }}
-                  className="btn-editorial-secondary"
-                  style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <Plus size={12} />Add manually
-                </button>
-              </div>
+                  {isSpotifyConnected ? (
+                    <div style={{ position: 'relative' }} ref={spotifyPillRef}>
+                      <button
+                        onClick={() => setSpotifyDropdownOpen(v => !v)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(29,185,84,0.08)', border: '1px solid rgba(29,185,84,0.25)', borderRadius: 999, padding: '5px 11px', cursor: 'pointer', fontSize: 12, fontFamily: PJS, fontWeight: 600, color: '#1DB954' }}
+                      >
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#1DB954', flexShrink: 0 }} />
+                        Connected · {spotifyConnection.displayName}
+                      </button>
+                      {spotifyDropdownOpen && (
+                        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)', zIndex: 200, minWidth: 160 }}>
+                          <button
+                            onClick={() => setShowSpotifyModal(true)}
+                            style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', cursor: 'pointer' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(10,10,10,0.04)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                          >
+                            Search Spotify
+                          </button>
+                          <button
+                            onClick={() => { setSpotifyDropdownOpen(false); handleDisconnectSpotify(); }}
+                            style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#E03553', cursor: 'pointer' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(224,53,83,0.04)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                          >
+                            Disconnect Spotify
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleConnectSpotify}
+                      className="btn-editorial-secondary"
+                      style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.412.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.33.366.225.48.706.257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.837.327 1.282-.264.444-.838.59-1.284.327z"/></svg>
+                      Connect Spotify
+                    </button>
+                  )}
+                  <button onClick={() => { setShowAddLink(v => !v); setShowSearch(false); setShowAddForm(false); setEditingTrack(null); }}
+                    className={showAddLink ? 'btn-primary' : 'btn-editorial-secondary'}
+                    style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <Link2 size={12} />Add from a link
+                  </button>
+                  <button onClick={() => { setShowAddForm(v => !v); setShowSearch(false); setShowAddLink(false); setEditingTrack(null); }}
+                    className="btn-editorial-secondary"
+                    style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <Plus size={12} />Add manually
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* SpotifySearch */}
@@ -549,9 +594,10 @@ export default function MusicPage() {
               <MusicList
                 items={playlistTracks.filter(t => !activePlaylist || t.category === activePlaylist.id)}
                 groupByCategory={!activePlaylist}
-                onEdit={handleEditTrack}
-                onDelete={handleDeleteTrack}
-                onToggleApproval={handleToggleApproval}
+                onEdit={readOnly ? undefined : handleEditTrack}
+                onDelete={readOnly ? undefined : handleDeleteTrack}
+                onToggleApproval={readOnly ? undefined : handleToggleApproval}
+                readOnly={readOnly}
               />
             </div>
           </div>
@@ -599,7 +645,7 @@ export default function MusicPage() {
       )}
 
       {/* ── VENDOR ─────────────────────────────────────────────────────────── */}
-      {activeTab === 'vendor' && (
+      {!isCollaborating && activeTab === 'vendor' && (
         <div style={{ padding: '32px 32px 48px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -629,6 +675,7 @@ export default function MusicPage() {
               onChange={e => updateMusic('notes', e.target.value)}
               placeholder="Anything else about your music plans — must-plays, timing notes, vendor coordination…"
               style={{ minHeight: 200 }}
+              disabled={readOnly}
             />
           </div>
         </div>

@@ -31,7 +31,7 @@ const fmtDate = (d) => {
   try { return format(new Date(d + 'T00:00:00'), 'MMMM d, yyyy'); } catch { return d; }
 };
 
-export default function ScheduleTimeline({ items, onEdit, onDelete }) {
+export default function ScheduleTimeline({ items, onEdit, onDelete, readOnly = false }) {
   if (items.length === 0) {
     return (
       <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
@@ -137,19 +137,21 @@ export default function ScheduleTimeline({ items, onEdit, onDelete }) {
                       <span style={{ ...pillBase, background: cfg.bg, color: cfg.text }}>
                         {cfg.label}
                       </span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon"><MoreHorizontal size={15} /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => onEdit(item)}>
-                            <Edit2 size={13} style={{ marginRight: 8 }} />Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onDelete(item.id)} style={{ color: '#E03553' }}>
-                            <Trash2 size={13} style={{ marginRight: 8 }} />Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {!readOnly && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreHorizontal size={15} /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onEdit(item)}>
+                              <Edit2 size={13} style={{ marginRight: 8 }} />Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onDelete(item.id)} style={{ color: '#E03553' }}>
+                              <Trash2 size={13} style={{ marginRight: 8 }} />Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </div>
                 </div>

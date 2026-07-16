@@ -149,28 +149,34 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage }) {
             )}
           </div>
 
-          {/* Actions */}
+          {/* Actions — hidden entirely (not disabled-looking) when nothing is passed, e.g. a read-only collaborator */}
           <div style={{ flex: '0 0 auto' }}>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" style={{ width: 28, height: 28 }}>
-                  <MoreHorizontal size={14} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {onManage && (
-                  <DropdownMenuItem onClick={() => onManage(vendor)}>
-                    <FolderOpen size={13} style={{ marginRight: 8 }} />Manage
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem onClick={() => onEdit(vendor)}>
-                  <Edit2 size={13} style={{ marginRight: 8 }} />Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete(vendor.id)} style={{ color: '#E03553' }}>
-                  <Trash2 size={13} style={{ marginRight: 8 }} />Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {(onManage || onEdit || onDelete) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" style={{ width: 28, height: 28 }}>
+                    <MoreHorizontal size={14} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {onManage && (
+                    <DropdownMenuItem onClick={() => onManage(vendor)}>
+                      <FolderOpen size={13} style={{ marginRight: 8 }} />Manage
+                    </DropdownMenuItem>
+                  )}
+                  {onEdit && (
+                    <DropdownMenuItem onClick={() => onEdit(vendor)}>
+                      <Edit2 size={13} style={{ marginRight: 8 }} />Edit
+                    </DropdownMenuItem>
+                  )}
+                  {onDelete && (
+                    <DropdownMenuItem onClick={() => onDelete(vendor.id)} style={{ color: '#E03553' }}>
+                      <Trash2 size={13} style={{ marginRight: 8 }} />Delete
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       ))}

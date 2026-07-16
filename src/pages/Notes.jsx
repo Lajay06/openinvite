@@ -8,6 +8,7 @@ import SuggestionsModal from "../components/notes/SuggestionsModal";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
+import { useCollaboratorContext } from "@/lib/collaboratorContext";
 const Task = base44.entities.Task;
 
 const labelStyle = {
@@ -83,12 +84,29 @@ export default function ToDoListPage() {
     priority: "medium", due_date: "", wedding_timeline: ""
   });
 
-  useEffect(() => { loadTasks(); }, []);
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Always read-only while collaborating — confirmed empirically that
+  // Base44's admin key 403s updating/deleting ANY owner-scoped entity
+  // (documented in api/collaborator-guests.js and BASE44_PLATFORM_NOTES.md),
+  // so there is no working write path here regardless of 'edit' permission.
+  const readOnly = isCollaborating;
+
+  useEffect(() => { loadTasks(); }, [isCollaborating]);
 
   const loadTasks = async () => {
     try {
-      const data = await getMyRecords('Task', '-created_date');
-      setTasks(data);
+      if (isCollaborating) {
+        const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Notes`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (!res.ok) throw new Error('Failed to load tasks');
+        const { data } = await res.json();
+        setTasks(data?.Task || []);
+      } else {
+        const data = await getMyRecords('Task', '-created_date');
+        setTasks(data);
+      }
     } catch (error) {
       console.error("Error loading tasks:", error);
       toast.error("Failed to load tasks");
@@ -204,18 +222,20 @@ export default function ToDoListPage() {
       </div>
 
       {/* Toolbar */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button onClick={() => setShowSuggestionsModal(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#0A1930', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
-          <Lightbulb size={12} style={{ color: '#DDF762' }} />AI suggestions
-        </button>
-        <div style={{ flex: 1 }} />
-        <button
-          onClick={() => { setEditingTask(null); setTaskFormData({ title: "", description: "", category: "general", priority: "medium", due_date: "", wedding_timeline: "" }); setShowTaskForm(true); }}
-          className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Plus size={12} />Add task
-        </button>
-      </div>
+      {!readOnly && (
+        <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={() => setShowSuggestionsModal(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#0A1930', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
+            <Lightbulb size={12} style={{ color: '#DDF762' }} />AI suggestions
+          </button>
+          <div style={{ flex: 1 }} />
+          <button
+            onClick={() => { setEditingTask(null); setTaskFormData({ title: "", description: "", category: "general", priority: "medium", due_date: "", wedding_timeline: "" }); setShowTaskForm(true); }}
+            className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={12} />Add task
+          </button>
+        </div>
+      )}
 
       {/* Content */}
       <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -333,13 +353,22 @@ export default function ToDoListPage() {
           {filteredTasks.map(task => (
             <div key={task.id}
               style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 8px', borderBottom: '1px solid rgba(10,10,10,0.06)', opacity: task.completed ? 0.6 : 1 }}>
-              <button onClick={() => toggleCompleted(task)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2, flexShrink: 0 }}>
-                {task.completed
-                  ? <CheckCircle2 size={16} style={{ color: '#E03553' }} />
-                  : <Circle size={16} style={{ color: 'rgba(10,10,10,0.2)' }} />
-                }
-              </button>
+              {readOnly ? (
+                <span style={{ padding: 0, marginTop: 2, flexShrink: 0, display: 'flex' }}>
+                  {task.completed
+                    ? <CheckCircle2 size={16} style={{ color: '#E03553' }} />
+                    : <Circle size={16} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                  }
+                </span>
+              ) : (
+                <button onClick={() => toggleCompleted(task)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2, flexShrink: 0 }}>
+                  {task.completed
+                    ? <CheckCircle2 size={16} style={{ color: '#E03553' }} />
+                    : <Circle size={16} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                  }
+                </button>
+              )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 2 }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: task.completed ? 'line-through' : 'none' }}>
@@ -347,18 +376,22 @@ export default function ToDoListPage() {
                   </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
                     {task.is_suggested && <span style={{ ...labelStyle, marginRight: 6 }}>AI</span>}
-                    <button onClick={() => handleEditTask(task)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 4 }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
-                      <Edit3 size={13} />
-                    </button>
-                    <button onClick={() => handleDelete(task.id)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 4 }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
-                      <Trash2 size={13} />
-                    </button>
+                    {!readOnly && (
+                      <>
+                        <button onClick={() => handleEditTask(task)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 4 }}
+                          onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
+                          onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
+                          <Edit3 size={13} />
+                        </button>
+                        <button onClick={() => handleDelete(task.id)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 4 }}
+                          onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
+                          onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
+                          <Trash2 size={13} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
                 {task.description && (

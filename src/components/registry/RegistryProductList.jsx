@@ -16,7 +16,7 @@ const PRIORITY_STYLES = {
   low:    { color: 'rgba(10,10,10,0.5)', bg: 'rgba(10,10,10,0.06)', label: 'Low' },
 };
 
-export default function RegistryProductList({ items, onEdit, onDelete, onPurchase, loading }) {
+export default function RegistryProductList({ items, onEdit, onDelete, onPurchase, loading, readOnly = false }) {
   const [purchaseProduct, setPurchaseProduct] = useState(null);
   const [purchaseData, setPurchaseData] = useState({ guest_name: '', guest_email: '', quantity: 1, message: '' });
 
@@ -91,7 +91,7 @@ export default function RegistryProductList({ items, onEdit, onDelete, onPurchas
                   </div>
                 </div>
                 <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {!fullyPurchased && (
+                  {!readOnly && !fullyPurchased && (
                     <button onClick={() => openPurchase(item)} className="btn-primary" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12 }}>
                       <ShoppingCart size={12} />Mark as purchased
                     </button>
@@ -102,8 +102,12 @@ export default function RegistryProductList({ items, onEdit, onDelete, onPurchas
                         <ExternalLink size={11} />View
                       </a>
                     )}
-                    <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: 6, display: 'flex' }}><Edit size={14} /></button>
-                    <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 6, display: 'flex' }}><Trash2 size={14} /></button>
+                    {!readOnly && (
+                      <>
+                        <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: 6, display: 'flex' }}><Edit size={14} /></button>
+                        <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 6, display: 'flex' }}><Trash2 size={14} /></button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

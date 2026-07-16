@@ -14,6 +14,7 @@ import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import TipsModal from "../components/dashboard/TipsModal";
 import { getMyRecords, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
+import { useCollaboratorContext, hasPagePermission } from "@/lib/collaboratorContext";
 
 const QUICK_LINKS = [
   { label: "Guest list", url: "Guests" },
@@ -47,11 +48,11 @@ function CountUp({ to, duration = 1200, suffix = '' }) {
   return <>{value}{suffix}</>;
 }
 
-function QuickLink({ label, url, isLast }) {
+function QuickLink({ label, url, isLast, collabSuffix }) {
   const [hovered, setHovered] = useState(false);
   return (
     <Link
-      to={createPageUrl(url)}
+      to={createPageUrl(url) + collabSuffix}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -107,7 +108,14 @@ export default function Dashboard() {
   const [showTipsModal, setShowTipsModal] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
 
-  useEffect(() => { init(); }, []);
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Links to append ?collabOwner=... so navigating from here never drops
+  // the collaboration context (a bare createPageUrl() link would silently
+  // land the collaborator back on their OWN, unrelated dashboard page).
+  const collabSuffix = isCollaborating ? `?collabOwner=${encodeURIComponent(collab.ownerUserId)}` : '';
+
+  useEffect(() => { init(); }, [isCollaborating]);
 
   // Track purchase_completed when Stripe redirects back with ?checkout=success
   useEffect(() => {
@@ -124,6 +132,21 @@ export default function Dashboard() {
 
   const init = async () => {
     try {
+      if (isCollaborating) {
+        // No welcome banner/onboarding-tips prompt — those are owner-onboarding
+        // concepts, meaningless while borrowing someone else's wedding.
+        const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Dashboard`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (res.ok) {
+          const { data } = await res.json();
+          setGuests(data.Guest || []);
+          setBudget(data.Budget || []);
+          setSchedule(data.Schedule || []);
+        }
+        setLoading(false);
+        return;
+      }
       const currentUser = await base44.auth.me();
       if (currentUser?.id) identify(currentUser.id, { email: currentUser.email, name: currentUser.full_name });
       if (currentUser && !currentUser.onboardingCompleted) setShowWelcomeBanner(true);
@@ -155,6 +178,13 @@ export default function Dashboard() {
     { label: 'Events planned', value: schedule.length, suffix: '', url: 'Schedule' },
   ];
 
+  // A collaborator only ever gets a working link to a page they were also
+  // granted separately — Dashboard permission shows the summary numbers,
+  // it doesn't imply access to the underlying pages themselves.
+  const visibleQuickLinks = isCollaborating
+    ? QUICK_LINKS.filter(l => hasPagePermission(collab.permissions, l.url, 'view'))
+    : QUICK_LINKS;
+
   const dismissWelcome = async () => {
     setShowWelcomeBanner(false);
     try { await base44.auth.updateMe({ onboardingCompleted: true }); } catch {}
@@ -174,6 +204,7 @@ export default function Dashboard() {
             value={s.value}
             suffix={s.suffix}
             url={s.url}
+            collabSuffix={collabSuffix}
             isLast={i === STAT_CARDS.length - 1}
             loading={loading}
           />
@@ -193,8 +224,8 @@ export default function Dashboard() {
           border: '1px solid rgba(10,10,10,0.08)',
           marginBottom: 24,
         }}>
-          {QUICK_LINKS.map((l, i) => (
-            <QuickLink key={l.label} label={l.label} url={l.url} isLast={i === QUICK_LINKS.length - 1} />
+          {visibleQuickLinks.map((l, i) => (
+            <QuickLink key={l.label} label={l.label} url={l.url} collabSuffix={collabSuffix} isLast={i === visibleQuickLinks.length - 1} />
           ))}
         </div>
         <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', marginBottom: 0 }} />
@@ -236,11 +267,11 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ label, value, suffix, url, isLast, loading }) {
+function StatCard({ label, value, suffix, url, collabSuffix = '', isLast, loading }) {
   const [hovered, setHovered] = useState(false);
   return (
     <Link
-      to={createPageUrl(url)}
+      to={createPageUrl(url) + collabSuffix}
       className="grow shrink basis-1/2 min-w-0 lg:flex-1 block"
       style={{
         padding: '24px 32px',

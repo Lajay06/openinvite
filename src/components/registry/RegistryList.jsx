@@ -7,7 +7,7 @@ const labelStyle = {
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
-export default function RegistryList({ items, onEdit, onDelete, loading }) {
+export default function RegistryList({ items, onEdit, onDelete, loading, readOnly = false }) {
   if (loading) return <div style={{ padding: 40, textAlign: 'center', color: '#444444', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Loading…</div>;
 
   if (items.length === 0) {
@@ -46,12 +46,16 @@ export default function RegistryList({ items, onEdit, onDelete, loading }) {
               style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", border: '1px solid rgba(10,10,10,0.15)', borderRadius: 999, padding: '5px 12px', textDecoration: 'none' }}>
               Visit <ArrowRight size={11} />
             </a>
-            <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: 6, display: 'flex' }}>
-              <Edit size={14} />
-            </button>
-            <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 6, display: 'flex' }}>
-              <Trash2 size={14} />
-            </button>
+            {!readOnly && (
+              <>
+                <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: 6, display: 'flex' }}>
+                  <Edit size={14} />
+                </button>
+                <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 6, display: 'flex' }}>
+                  <Trash2 size={14} />
+                </button>
+              </>
+            )}
           </div>
         </div>
       ))}

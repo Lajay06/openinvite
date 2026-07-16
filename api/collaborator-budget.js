@@ -19,6 +19,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { getCollaborationFor, hasPagePermission } from './_lib/collaboratorAuth.js';
+import { excludeTestRecords } from './_lib/productData.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -84,7 +85,7 @@ export default async function handler(req, res) {
     const query = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
     const rows = unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/Budget?q=${query}`));
 
-    return res.status(200).json({ budget: rows.filter(b => !b.is_test) });
+    return res.status(200).json({ budget: excludeTestRecords(rows) });
   } catch (err) {
     console.error('[collaborator-budget] Error:', err.message);
     return res.status(500).json({ error: 'Something went wrong — please try again.' });

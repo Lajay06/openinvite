@@ -26,7 +26,7 @@ const CATEGORY_COLORS = {
   other:        { color: '#FFFFFF', bg: 'rgba(10,10,10,0.4)' },
 };
 
-function MoodboardCard({ item, size, onDelete, onUpdate }) {
+function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
   const [hovered, setHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showFull, setShowFull] = useState(false);
@@ -56,14 +56,16 @@ function MoodboardCard({ item, size, onDelete, onUpdate }) {
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {item.category}
             </span>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <button onClick={() => setIsEditing(true)} style={{ width: 28, height: 28, background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Edit3 size={12} />
-              </button>
-              <button onClick={() => onDelete(item.id)} style={{ width: 28, height: 28, background: 'rgba(224,53,83,0.3)', border: 'none', cursor: 'pointer', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Trash2 size={12} />
-              </button>
-            </div>
+            {!readOnly && (
+              <div style={{ display: 'flex', gap: 4 }}>
+                <button onClick={() => setIsEditing(true)} style={{ width: 28, height: 28, background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Edit3 size={12} />
+                </button>
+                <button onClick={() => onDelete(item.id)} style={{ width: 28, height: 28, background: 'rgba(224,53,83,0.3)', border: 'none', cursor: 'pointer', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            )}
           </div>
           <div>
             <p style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.title}</p>
@@ -155,7 +157,7 @@ function MoodboardCard({ item, size, onDelete, onUpdate }) {
   );
 }
 
-export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem }) {
+export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem, readOnly = false }) {
   if (items.length === 0) {
     return (
       <div style={{ padding: '80px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.08)' }}>
@@ -174,7 +176,7 @@ export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gridAutoRows: 200, gap: 4 }}>
       {itemsWithSizes.map(item => (
-        <MoodboardCard key={item.id} item={item} size={item.size} onDelete={onDeleteItem} onUpdate={onUpdateItem} />
+        <MoodboardCard key={item.id} item={item} size={item.size} onDelete={onDeleteItem} onUpdate={onUpdateItem} readOnly={readOnly} />
       ))}
     </div>
   );

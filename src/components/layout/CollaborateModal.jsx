@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
+import { COLLABORATOR_PERMISSION_KEYS } from '@/lib/collaboratorPageMap';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -29,11 +30,10 @@ async function sendInvite({ collaboratorId, name, email, permissions }) {
   return data.collaborator;
 }
 
-const pages = [
-  "Dashboard", "Guests", "Budget", "Schedule", "Music", 
-  "Invitations", "Seating", "Registry", "Vendors", 
-  "Moodboard", "Event Details", "Notes"
-];
+// Driven from collaboratorPageMap.js — the same list AnimatedSidebar.jsx
+// builds the collaborator's nav from, so a permission offered here can
+// never silently have no corresponding sidebar entry (or vice versa).
+const pages = COLLABORATOR_PERMISSION_KEYS;
 
 const initialPermissions = pages.reduce((acc, page) => {
   acc[page] = { view: false, edit: false };
