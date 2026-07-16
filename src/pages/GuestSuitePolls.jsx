@@ -181,13 +181,13 @@ export default function GuestSuitePolls() {
               No polls created yet
             </p>
             <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: '0 0 24px', lineHeight: 1.6 }}>
-              Create polls in Guests → Guest polls to involve your guests in the planning. Results will appear here live.
+              Create polls in Guests → Polls & games to involve your guests in the planning. Results will appear here live.
             </p>
             <button
               onClick={() => navigate(createPageUrl('Polls'))}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: '#E03553', background: 'none', border: '1px solid rgba(224,53,83,0.3)', borderRadius: 999, padding: '8px 18px', cursor: 'pointer', fontFamily: PJS }}
             >
-              Create polls in Guest polls <ArrowRight size={12} />
+              Create polls in Polls & games <ArrowRight size={12} />
             </button>
           </div>
         ) : (

@@ -1,0 +1,78 @@
+{
+  "name": "Questionnaire",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Questionnaire title, e.g. 'How well do you know the couple?'"
+    },
+    "intro": {
+      "type": "string",
+      "description": "Intro line shown to the guest before they start answering"
+    },
+    "questions": {
+      "type": "array",
+      "description": "Ordered list of questions. Each has a stable id (referenced by QuestionnaireResponse.answers[].question_id).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "text": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["short_text", "multiple_choice"],
+            "default": "short_text"
+          },
+          "options": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Choices for a multiple_choice question — unused for short_text"
+          }
+        }
+      }
+    },
+    "recipient_mode": {
+      "type": "string",
+      "enum": ["all", "tag", "individual"],
+      "default": "all",
+      "description": "Who this questionnaire is sent to — every guest, guests matching one of recipient_tags, or the explicit recipient_guest_ids list"
+    },
+    "recipient_tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Guest.tags values that qualify a guest as a recipient — only used when recipient_mode is 'tag'"
+    },
+    "recipient_guest_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Explicit Guest.id list — only used when recipient_mode is 'individual'"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Inactive questionnaires are no longer answerable by guests (their game link shows a closed message) but stay visible to the couple with existing responses"
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
