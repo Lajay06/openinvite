@@ -47,6 +47,7 @@ import { runSeatingPolish } from '../tests/persistence/seating-polish.mjs';
 import { runDashboardStructure } from '../tests/persistence/dashboard-structure.mjs';
 import { runGuestbookRemoval } from '../tests/persistence/guestbook-removal.mjs';
 import { runDesignStudioEntrance } from '../tests/persistence/design-studio-entrance.mjs';
+import { runConsolidateOverview } from '../tests/persistence/consolidate-overview.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -123,6 +124,7 @@ async function run() {
     await runModule('runDashboardStructure', () => runDashboardStructure());
     await runModule('runGuestbookRemoval', () => runGuestbookRemoval());
     await runModule('runDesignStudioEntrance', () => runDesignStudioEntrance());
+    await runModule('runConsolidateOverview', () => runConsolidateOverview());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
     // itself, or a bug in runModule) — this is the actual safety net the

@@ -26,7 +26,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReducedMotion, motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Calendar, MapPin, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
@@ -34,6 +34,20 @@ import { UNIVERSE_CATALOG, STYLE_TAGS, getUniverse } from '@/lib/universeCatalog
 import UniverseBanner from '@/components/universe-studio/UniverseBanner';
 import UniverseEntranceOverlay from '@/components/universe-studio/UniverseEntranceOverlay';
 import UniverseWorldView from '@/components/universe-studio/UniverseWorldView';
+import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
+
+// chore/consolidate-overview — the couple name + days-to-go countdown are
+// already global (Layout.jsx's top bar shows them on every page, per
+// DESIGN_SPEC.md), so only venue + formatted date + venue photo — the
+// pieces that had no other home in the app — are rehomed here from the
+// retired GuestSuite.jsx "Overview" page.
+function fmtWeddingDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+}
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const WeddingDetails = base44.entities.WeddingDetails;
@@ -52,6 +66,7 @@ export default function UniverseStudio() {
 
   const [phase, setPhase] = useState('browsing'); // browsing | entering | world
   const [openId, setOpenId] = useState(null);
+  const [avaOpen, setAvaOpen] = useState(false);
   // Root cause of the mid-page landing bug: entering/leaving a world is a
   // same-page conditional re-render (no real route change — the banner
   // wall and the world view are two branches of one component, swapped
@@ -80,6 +95,13 @@ export default function UniverseStudio() {
   const activeId = weddingDetails?.activeUniverse || 'aman';
   const active = getUniverse(activeId) || getUniverse('aman');
   const opened = openId ? getUniverse(openId) : null;
+
+  // Rehomed from GuestSuite.jsx's "Overview" page (now retired) — the one
+  // piece of couple-facing wedding info with no other home in the app.
+  const venueName = weddingDetails?.mainCeremony?.venueName || '';
+  const venuePhotoUrl = weddingDetails?.mainCeremony?.photoUrl || null;
+  const weddingDateStr = fmtWeddingDate(weddingDetails?.weddingDate);
+  const hasEventDetails = !!(weddingDetails?.couple1Name || weddingDetails?.weddingDate || venueName);
 
   const enterUniverse = (u) => {
     wallScrollRef.current = window.scrollY;
@@ -154,6 +176,54 @@ export default function UniverseStudio() {
             <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '10px 0 0', maxWidth: 620 }}>
               Every universe restyles your invitations, website, RSVP and print pieces at once. Press a world below to step inside it — switching is never destructive.
             </p>
+
+            {/* Rehomed from GuestSuite.jsx's "Overview" page (retired,
+                chore/consolidate-overview) — venue/date/photo had no other
+                home in the app; couple name + countdown stay out since
+                Layout.jsx's top bar already shows those on every page. */}
+            <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+              {hasEventDetails ? (
+                (weddingDateStr || venueName) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    {venuePhotoUrl && (
+                      <div style={{ width: 48, height: 48, flexShrink: 0, overflow: 'hidden', background: '#ECE7E1' }}>
+                        <img
+                          src={venuePhotoUrl}
+                          alt={venueName || 'Venue'}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          onError={e => { e.target.style.display = 'none'; }}
+                        />
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {weddingDateStr && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>
+                          <Calendar size={13} style={{ color: 'rgba(10,10,10,0.4)' }} /> {weddingDateStr}
+                        </span>
+                      )}
+                      {venueName && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>
+                          <MapPin size={13} style={{ color: 'rgba(10,10,10,0.4)' }} /> {venueName}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              ) : (
+                <button
+                  onClick={() => navigate('/event-details')}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0,
+                    fontSize: 13, fontWeight: 700, color: '#E03553', fontFamily: PJS,
+                    background: 'none', border: '1px solid rgba(224,53,83,0.3)', borderRadius: 999,
+                    padding: '8px 16px', cursor: 'pointer',
+                  }}
+                >
+                  Complete event details <ArrowRight size={13} />
+                </button>
+              )}
+              <AvaButton label="Ask Ava about your design & guest experience" onClick={() => setAvaOpen(true)} />
+            </div>
           </div>
 
           {/* Style filter */}
@@ -226,6 +296,14 @@ export default function UniverseStudio() {
           motifNote={opened.motifNote}
         />
       )}
+
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Design & guest experience advisor"
+        systemPrompt="You are Ava, helping a couple with both their wedding's visual design (universe/theme choice, website, invitations, print pieces) and their overall guest experience (RSVP flow, guest communication, making guests feel welcome)."
+        quickActions={["Which universe suits our wedding style?", "What should go on my wedding website?", "How do I write a great RSVP message?", "Tips for making guests feel welcome"]}
+      />
     </div>
   );
 }

@@ -86,7 +86,7 @@ const ARTICLES = {
         <li style={S.li}><strong>Vendors:</strong> My vendors, Marketplace</li>
         <li style={S.li}><strong>On the day:</strong> Ceremony details, Transport, Accommodation, Emergency contact</li>
         <li style={S.li}><strong>Finances:</strong> Budget, Registry</li>
-        <li style={S.li}><strong>Guest Suite:</strong> Overview, Schedule, Q&A, Registry, Accommodation, Transport, Live stream, Experience guide, Policies, Guest polls</li>
+        <li style={S.li}><strong>Guest Suite:</strong> Schedule, Q&A, Registry, Accommodation, Transport, Live stream, Experience guide, Policies, Guest polls</li>
         <li style={S.li}><strong>Extras:</strong> Honeymoon, Considerations</li>
       </ul>
       <p style={S.p}>At the bottom of the sidebar: Account settings, Collaborate, Quick tips, Help centre, Leave dashboard.</p>
