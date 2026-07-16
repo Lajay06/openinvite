@@ -7,9 +7,27 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge"; // Added this import
-import { X, Users, Send, Edit, Trash2, Eye, PenSquare } from 'lucide-react';
+import { X, Users, Send, Edit, Trash2, Eye, PenSquare, RotateCw } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Collaborator = base44.entities.Collaborator;
+
+/** Real invite send/resend — creates or updates the Collaborator record AND
+ *  sends the on-brand email with a fresh accept token, via
+ *  /api/send-collaborator-invite (Resend, server-side). */
+async function sendInvite({ collaboratorId, name, email, permissions }) {
+  const res = await fetch('/api/send-collaborator-invite', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+    },
+    body: JSON.stringify({ collaboratorId, name, email, permissions, origin: window.location.origin }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to send invite');
+  return data.collaborator;
+}
 
 const pages = [
   "Dashboard", "Guests", "Budget", "Schedule", "Music", 
@@ -68,6 +86,8 @@ export default function CollaborateModal({ onClose }) {
     setEditingCollaborator(null);
   };
 
+  const [sending, setSending] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email) {
@@ -75,20 +95,39 @@ export default function CollaborateModal({ onClose }) {
       return;
     }
 
-    const collaboratorData = { name, email, permissions };
-
+    setSending(true);
     try {
       if (editingCollaborator) {
-        await Collaborator.update(editingCollaborator.id, collaboratorData);
+        // Editing an already-invited collaborator's permissions doesn't need
+        // a new email/token — only Resend (below) does that. A plain
+        // permissions update goes through the couple's own token directly,
+        // same RLS-safe path this always used.
+        await Collaborator.update(editingCollaborator.id, { name, email, permissions });
+        toast.success('Collaborator updated');
       } else {
-        await Collaborator.create(collaboratorData);
-        // Here you would typically also trigger an invitation email
+        await sendInvite({ name, email, permissions });
+        toast.success(`Invite sent to ${email}`);
       }
       resetForm();
       fetchCollaborators();
     } catch (error) {
       console.error("Failed to save collaborator:", error);
-      alert("Error saving collaborator.");
+      toast.error(error.message || 'Error saving collaborator');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleResend = async (collab) => {
+    setSending(true);
+    try {
+      await sendInvite({ collaboratorId: collab.id, name: collab.name, email: collab.email, permissions: collab.permissions });
+      toast.success(`Invite resent to ${collab.email}`);
+      fetchCollaborators();
+    } catch (error) {
+      toast.error(error.message || 'Failed to resend invite');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -178,9 +217,9 @@ export default function CollaborateModal({ onClose }) {
               </div>
               
               <div className="flex gap-2 pt-4">
-                <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700">
+                <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700" disabled={sending}>
                   <Send className="w-4 h-4 mr-2" />
-                  {editingCollaborator ? 'Update Collaborator' : 'Send Invite'}
+                  {sending ? 'Sending…' : editingCollaborator ? 'Update Collaborator' : 'Send Invite'}
                 </Button>
                 {editingCollaborator && (
                   <Button type="button" variant="outline" onClick={resetForm}>Cancel Edit</Button>
@@ -200,12 +239,24 @@ export default function CollaborateModal({ onClose }) {
                   <div key={collab.id} className="p-3 border rounded-lg bg-white">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-semibold">{collab.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold">{collab.name}</p>
+                          {collab.status === 'accepted' ? (
+                            <Badge variant="secondary" className="bg-green-100 text-green-700 font-normal">Accepted</Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 font-normal">Pending</Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-500">{collab.email}</p>
                       </div>
                       <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" onClick={() => handleEdit(collab)}><Edit className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleDelete(collab.id)} className="text-red-500 hover:text-red-600"><Trash2 className="w-4 h-4" /></Button>
+                        {collab.status !== 'accepted' && (
+                          <Button size="icon" variant="ghost" onClick={() => handleResend(collab)} disabled={sending} title="Resend invite">
+                            <RotateCw className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <Button size="icon" variant="ghost" onClick={() => handleEdit(collab)} title="Edit permissions"><Edit className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleDelete(collab.id)} className="text-red-500 hover:text-red-600" title="Revoke access"><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     </div>
                     <div className="mt-2 pt-2 border-t text-xs text-gray-600 space-y-1">

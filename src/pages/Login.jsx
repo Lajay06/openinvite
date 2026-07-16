@@ -17,13 +17,18 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Supports a ?next= redirect target (e.g. back to a collaborator accept
+  // page after signing in) — falls back to the normal /Dashboard landing
+  // when absent, so every existing login link behaves exactly as before.
+  const next = new URLSearchParams(window.location.search).get('next');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/Dashboard";
+      window.location.href = next || "/Dashboard";
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -32,7 +37,7 @@ export default function Login() {
   };
 
   const handleProvider = (provider) => {
-    base44.auth.loginWithProvider(provider, "/Dashboard");
+    base44.auth.loginWithProvider(provider, next || "/Dashboard");
   };
 
   return (

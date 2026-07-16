@@ -33,6 +33,8 @@ import Register from './pages/Register';
 import MultiPageWeddingWebsite from './components/guest-website/MultiPageWeddingWebsite';
 import RSVPPage from './components/rsvp/RSVPPage';
 import GamesPage from './components/games/GamesPage';
+import CollaboratorAccept from './pages/CollaboratorAccept';
+import CollaboratorGuests from './pages/CollaboratorGuests';
 // Dev-only shared vendor-template mocks — not linked from any nav, not
 // reachable without the URL. Does NOT touch Beauty.jsx/FoodBeverage.jsx or
 // any real page; own new files only (src/components/mocks/VendorTemplateMock.jsx,
@@ -98,7 +100,7 @@ const PUBLIC_PATH_SET = new Set([
   '/GuestRSVP',
 ]);
 const isPublicPath = (pathname) =>
-  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/games/');
+  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/games/') || pathname.startsWith('/collaborate/accept/');
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -145,6 +147,7 @@ const AuthenticatedApp = () => {
         <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
         <Route path="/rsvp/:token" element={<RSVPPage />} />
         <Route path="/games/:token/:questionnaireId" element={<GamesPage />} />
+        <Route path="/collaborate/accept/:token" element={<CollaboratorAccept />} />
         <Route path="/GuestRSVP" element={<GuestRSVPRetired />} />
       </Routes>
     );
@@ -179,6 +182,7 @@ const AuthenticatedApp = () => {
         ))}
         <Route path="/About" element={<About />} />
         <Route path="/ava" element={<Ava />} />
+        <Route path="/collaborate/guests" element={<CollaboratorGuests />} />
         <Route path="/Pricing" element={<Pricing />} />
         <Route path="/Contact" element={<Contact />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
