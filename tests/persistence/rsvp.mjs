@@ -9,7 +9,7 @@
  * invited guest's events later (SetEventsModal.handleSave).
  */
 
-import { APP_ID, api, pass, fail, deepEqual } from './_shared.mjs';
+import { APP_ID, api, pass, fail, deepEqual, cleanupEntity } from './_shared.mjs';
 import { getGuestEventResponse, toggleEventInvite } from '../../src/lib/weddingEvents.js';
 
 export async function runRsvp(token, weddingDetailsRecordId) {
@@ -41,7 +41,7 @@ export async function runRsvp(token, weddingDetailsRecordId) {
     ];
 
     const geCreated = await api('POST', `/apps/${APP_ID}/entities/Guest`,
-      { name: '__PERSISTENCE_TEST_EVENT_RESPONSES__' }, token);
+      { name: '__PERSISTENCE_TEST_EVENT_RESPONSES__', is_test: true }, token);
     guestEventRespId = geCreated.id;
     if (!guestEventRespId) throw new Error('No id on created Guest');
 
@@ -132,8 +132,7 @@ export async function runRsvp(token, weddingDetailsRecordId) {
     results.push(false); results.push(false);
   } finally {
     if (guestEventRespId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestEventRespId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', guestEventRespId);
     }
   }
 
@@ -155,6 +154,7 @@ export async function runRsvp(token, weddingDetailsRecordId) {
       rsvp_link_id: 'test-per-event-rsvp-token',
       plus_one: true,
       event_responses: seededResponses,
+      is_test: true,
     }, token);
     guestEventRsvpId = created.id;
     if (!guestEventRsvpId) throw new Error('No id on created Guest');
@@ -257,8 +257,7 @@ export async function runRsvp(token, weddingDetailsRecordId) {
     for (let i = 0; i < 14; i++) results.push(false);
   } finally {
     if (guestEventRsvpId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestEventRsvpId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', guestEventRsvpId);
     }
   }
 
@@ -282,6 +281,7 @@ export async function runRsvp(token, weddingDetailsRecordId) {
       name: '__PERSISTENCE_TEST_EVENT_RSVP_DECLINED__',
       event_responses: declinedResponses,
       rsvp_status: derived2,
+      is_test: true,
     }, token);
     guestAllDeclinedId = created2.id;
     if (!guestAllDeclinedId) throw new Error('No id on created Guest');
@@ -295,8 +295,7 @@ export async function runRsvp(token, weddingDetailsRecordId) {
     results.push(false);
   } finally {
     if (guestAllDeclinedId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestAllDeclinedId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', guestAllDeclinedId);
     }
   }
 
@@ -331,6 +330,7 @@ export async function runRsvp(token, weddingDetailsRecordId) {
     const created = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
       name: '__PERSISTENCE_TEST_EDIT_INVITES__',
       event_responses: seededResponses,
+      is_test: true,
     }, token);
     editInvitesGuestId = created.id;
     if (!editInvitesGuestId) throw new Error('No id on created Guest');
@@ -379,8 +379,7 @@ export async function runRsvp(token, weddingDetailsRecordId) {
     results.push(false, false, false, false);
   } finally {
     if (editInvitesGuestId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${editInvitesGuestId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', editInvitesGuestId);
     }
   }
 

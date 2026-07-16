@@ -101,6 +101,25 @@ export function writtenSubsetMatches(written, readBack) {
   return true;
 }
 
+/**
+ * Deletes one sentinel record. Unlike the old ad hoc silently-swallowing
+ * try/catch duplicated across every domain file, always reports a failed
+ * delete loudly (record id + error) instead of hiding it. A leaked,
+ * unmarked test record is exactly how the production seating-page leak
+ * happened — a failed cleanup with no is_test stamp and no visible failure.
+ * Every domain file should call this (or cleanupWeddingDetails for the
+ * shared WeddingDetails sentinel) rather than writing its own try/catch
+ * around a DELETE.
+ */
+export async function cleanupEntity(token, entityType, id) {
+  if (!id) return;
+  try {
+    await api('DELETE', `/apps/${APP_ID}/entities/${entityType}/${id}`, undefined, token);
+  } catch (err) {
+    console.error(`  ⚠️  CLEANUP FAILED — ${entityType} record ${id} may still exist. Delete it manually in the Base44 dashboard. Error: ${err.message}`);
+  }
+}
+
 export async function cleanupWeddingDetails(token, id) {
   if (!id) return;
   process.stdout.write('  Deleting sentinel record… ');

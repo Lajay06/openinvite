@@ -9,9 +9,31 @@
  *
  * Imports _shared.mjs first so its .env.local side-effect (populating
  * process.env) runs before any api/*.js module-level env reads.
+ *
+ * KNOWN, STRUCTURAL CLEANUP GAP — not fixable from this file:
+ * every PollVote/PollComment/RsvpResponse/SongRequest created below goes
+ * through the real anonymous handler (wedding-poll-vote.js etc.), so it's
+ * written with created_by_id: 'anonymous', matching real guest traffic.
+ * Each entity's own delete RLS is `{ created_by_id: '{{user.id}}' }`
+ * (base44/entities/PollVote.jsonc etc.) — no logged-in user, and not even
+ * the BASE44_ADMIN_KEY-authenticated REST path (verified directly), can
+ * ever satisfy created_by_id === 'anonymous', so cleanupEntity's DELETE
+ * always 404s for these four types. This is why their schema already
+ * carries an is_test field with the comment "must exclude is_test records
+ * ... even if harness cleanup fails" — but that field can't be set here
+ * either, since the anonymous handlers have no way to distinguish this
+ * harness's calls from real guest activity (and accepting a client-supplied
+ * is_test flag on a public endpoint would let any real visitor hide their
+ * own row from the couple's dashboard). Practically low-risk: these rows'
+ * wedding_id/guest_id point at sentinel records that DO get deleted
+ * (below), so no live wedding can ever join against them. Left as loud,
+ * visible 404s (via cleanupEntity) rather than silently swallowed, so this
+ * is documented rather than invisible. A real fix would mean changing
+ * these entities' delete RLS or adding a service-credential deletion path
+ * — a schema/security decision, not a test-harness bug.
  */
 
-import { APP_ID, api, pass, fail, login } from './_shared.mjs';
+import { APP_ID, api, pass, fail, login, cleanupEntity } from './_shared.mjs';
 import { pickGuestSafeFields, NEVER_RETURN_FIELDS } from '../../api/_lib/guestSafeWedding.js';
 import weddingBySlugHandler from '../../api/wedding-by-slug.js';
 import rsvpLookupHandler from '../../api/rsvp-lookup.js';
@@ -123,8 +145,7 @@ export async function runAnonymousEndpoints() {
     results.push(false, false);
   } finally {
     if (slugWeddingId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${slugWeddingId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'WeddingDetails', slugWeddingId);
     }
   }
 
@@ -139,12 +160,14 @@ export async function runAnonymousEndpoints() {
     const guestA = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
       name: '__PERSISTENCE_TEST_LOOKUP_A__', rsvp_link_id: tokenA,
       song_request: 'Guest A song — must not leak to guest B lookup',
+      is_test: true,
     }, token);
     lookupGuestAId = guestA.id;
 
     const guestB = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
       name: '__PERSISTENCE_TEST_LOOKUP_B__', rsvp_link_id: tokenB,
       song_request: 'Guest B song — must not appear when looking up token A',
+      is_test: true,
     }, token);
     lookupGuestBId = guestB.id;
 
@@ -170,8 +193,7 @@ export async function runAnonymousEndpoints() {
   } finally {
     for (const id of [lookupGuestAId, lookupGuestBId]) {
       if (!id) continue;
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${id}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', id);
     }
   }
 
@@ -222,12 +244,10 @@ export async function runAnonymousEndpoints() {
     results.push(false, false, false);
   } finally {
     if (createdSongRequestId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/SongRequest/${createdSongRequestId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'SongRequest', createdSongRequestId);
     }
     if (songWeddingId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${songWeddingId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'WeddingDetails', songWeddingId);
     }
   }
 
@@ -268,12 +288,10 @@ export async function runAnonymousEndpoints() {
     results.push(false, false);
   } finally {
     for (const id of pollVoteIdsToClean) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/PollVote/${id}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'PollVote', id);
     }
     if (pollWeddingId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${pollWeddingId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'WeddingDetails', pollWeddingId);
     }
   }
 
@@ -311,12 +329,10 @@ export async function runAnonymousEndpoints() {
     results.push(false, false);
   } finally {
     if (pollCommentIdToClean) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/PollComment/${pollCommentIdToClean}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'PollComment', pollCommentIdToClean);
     }
     if (commentWeddingId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${commentWeddingId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'WeddingDetails', commentWeddingId);
     }
   }
 
@@ -334,7 +350,7 @@ export async function runAnonymousEndpoints() {
 
     const rsvpToken = `test-rsvp-poll-token-${Date.now()}`;
     const guest = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
-      name: '__PERSISTENCE_TEST_RSVP_POLL_GUEST__', rsvp_link_id: rsvpToken,
+      name: '__PERSISTENCE_TEST_RSVP_POLL_GUEST__', rsvp_link_id: rsvpToken, is_test: true,
     }, token);
     rsvpPollGuestId = guest.id;
 
@@ -368,16 +384,13 @@ export async function runAnonymousEndpoints() {
     results.push(false, false, false);
   } finally {
     for (const id of rsvpPollVoteIdsToClean) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/PollVote/${id}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'PollVote', id);
     }
     if (rsvpPollGuestId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${rsvpPollGuestId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', rsvpPollGuestId);
     }
     if (rsvpPollWeddingId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${rsvpPollWeddingId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'WeddingDetails', rsvpPollWeddingId);
     }
   }
 
@@ -441,12 +454,10 @@ export async function runAnonymousEndpoints() {
     results.push(false, false, false);
   } finally {
     for (const id of aggVoteIdsToClean) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/PollVote/${id}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'PollVote', id);
     }
     if (aggWeddingId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${aggWeddingId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'WeddingDetails', aggWeddingId);
     }
   }
 
@@ -468,7 +479,7 @@ export async function runAnonymousEndpoints() {
 
     const rsvpToken = `test-rsvp-submit-token-${Date.now()}`;
     const guest = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
-      name: '__PERSISTENCE_TEST_RSVP_SUBMIT_GUEST__', rsvp_link_id: rsvpToken,
+      name: '__PERSISTENCE_TEST_RSVP_SUBMIT_GUEST__', rsvp_link_id: rsvpToken, is_test: true,
     }, token);
     rsvpGuestId = guest.id;
 
@@ -543,16 +554,13 @@ export async function runAnonymousEndpoints() {
     results.push(false, false, false, false, false, false);
   } finally {
     for (const id of rsvpResponseIdsToClean) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/RsvpResponse/${id}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'RsvpResponse', id);
     }
     if (rsvpGuestId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${rsvpGuestId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', rsvpGuestId);
     }
     if (rsvpWeddingId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${rsvpWeddingId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'WeddingDetails', rsvpWeddingId);
     }
   }
 
@@ -570,8 +578,8 @@ export async function runAnonymousEndpoints() {
 
     const tokenA = `test-rsvp-tally-a-${Date.now()}`;
     const tokenB = `test-rsvp-tally-b-${Date.now()}`;
-    const guestA = await api('POST', `/apps/${APP_ID}/entities/Guest`, { name: '__PERSISTENCE_TEST_TALLY_GUEST_A__', rsvp_link_id: tokenA }, token);
-    const guestB = await api('POST', `/apps/${APP_ID}/entities/Guest`, { name: '__PERSISTENCE_TEST_TALLY_GUEST_B__', rsvp_link_id: tokenB }, token);
+    const guestA = await api('POST', `/apps/${APP_ID}/entities/Guest`, { name: '__PERSISTENCE_TEST_TALLY_GUEST_A__', rsvp_link_id: tokenA, is_test: true }, token);
+    const guestB = await api('POST', `/apps/${APP_ID}/entities/Guest`, { name: '__PERSISTENCE_TEST_TALLY_GUEST_B__', rsvp_link_id: tokenB, is_test: true }, token);
     tallyGuestAId = guestA.id;
     tallyGuestBId = guestB.id;
 
@@ -594,17 +602,14 @@ export async function runAnonymousEndpoints() {
     results.push(false);
   } finally {
     for (const id of tallyRowIdsToClean) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/RsvpResponse/${id}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'RsvpResponse', id);
     }
     for (const id of [tallyGuestAId, tallyGuestBId]) {
       if (!id) continue;
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${id}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', id);
     }
     if (tallyWeddingId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${tallyWeddingId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'WeddingDetails', tallyWeddingId);
     }
   }
 

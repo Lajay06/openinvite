@@ -73,38 +73,62 @@ async function run() {
     process.exit(1);
   }
 
-  // wedding-details.mjs creates the shared sentinel WeddingDetails record
-  // that rsvp.mjs (events-array reorder) and ownership.mjs (WeddingDetails
-  // ownership isolation) also exercise, so it must run first and its
-  // recordId must survive until every domain that needs it has run.
-  const wd = await runWeddingDetails(token);
-  recordId = wd.recordId;
-  results.push(...wd.results);
+  // Runs one domain module, catching any exception that escapes its own
+  // internal try/catch. Previously NOTHING wrapped these ~24 calls — a
+  // single uncaught throw anywhere aborted the whole script immediately,
+  // skipping every module still to come AND the final cleanupWeddingDetails()
+  // call below, permanently leaking whatever cleanup hadn't run yet. This is
+  // the root cause behind the persistence suite's production data leak: a
+  // crash mid-run left later domain files' own finally blocks (and the
+  // shared sentinel delete) never executed.
+  async function runModule(name, fn) {
+    try {
+      results.push(...await fn());
+    } catch (err) {
+      console.error(`\n  ⚠️  UNCAUGHT ERROR in ${name} — its own cleanup may not have completed: ${err.message}\n`);
+      results.push(false);
+    }
+  }
 
-  results.push(...await runGuest(token));
-  results.push(...await runRsvp(token, recordId));
-  results.push(...await runOwnership(token, recordId));
-  results.push(...await runEmails());
-  results.push(...await runOnboarding(token));
-  results.push(...await runEndpointAuth());
-  results.push(...await runSpotifyOAuth());
-  results.push(...await runAnonymousEndpoints());
-  results.push(...await runUniverseStyling());
-  results.push(...await runRateLimiting());
-  results.push(...await runHeroVideo());
-  results.push(...await runUniversePickerIntegrity());
-  results.push(...await runAssetSystem());
-  results.push(...await runStripeWebhook());
-  results.push(...await runComponentLibrary());
-  results.push(...await runCuratedFonts());
-  results.push(...await runBlockStylingUniverse());
-  results.push(...await runEntranceMoment());
-  results.push(...await runGuestlistEditable(token));
-  results.push(...await runModalViewportCentering());
-  results.push(...await runSeatingPolish(token));
-  results.push(...await runDashboardStructure());
-  results.push(...await runGuestbookRemoval());
-  results.push(...await runDesignStudioEntrance());
+  try {
+    // wedding-details.mjs creates the shared sentinel WeddingDetails record
+    // that rsvp.mjs (events-array reorder) and ownership.mjs (WeddingDetails
+    // ownership isolation) also exercise, so it must run first and its
+    // recordId must survive until every domain that needs it has run.
+    const wd = await runWeddingDetails(token);
+    recordId = wd.recordId;
+    results.push(...wd.results);
+
+    await runModule('runGuest', () => runGuest(token));
+    await runModule('runRsvp', () => runRsvp(token, recordId));
+    await runModule('runOwnership', () => runOwnership(token, recordId));
+    await runModule('runEmails', () => runEmails());
+    await runModule('runOnboarding', () => runOnboarding(token));
+    await runModule('runEndpointAuth', () => runEndpointAuth());
+    await runModule('runSpotifyOAuth', () => runSpotifyOAuth());
+    await runModule('runAnonymousEndpoints', () => runAnonymousEndpoints());
+    await runModule('runUniverseStyling', () => runUniverseStyling());
+    await runModule('runRateLimiting', () => runRateLimiting());
+    await runModule('runHeroVideo', () => runHeroVideo());
+    await runModule('runUniversePickerIntegrity', () => runUniversePickerIntegrity());
+    await runModule('runAssetSystem', () => runAssetSystem());
+    await runModule('runStripeWebhook', () => runStripeWebhook());
+    await runModule('runComponentLibrary', () => runComponentLibrary());
+    await runModule('runCuratedFonts', () => runCuratedFonts());
+    await runModule('runBlockStylingUniverse', () => runBlockStylingUniverse());
+    await runModule('runEntranceMoment', () => runEntranceMoment());
+    await runModule('runGuestlistEditable', () => runGuestlistEditable(token));
+    await runModule('runModalViewportCentering', () => runModalViewportCentering());
+    await runModule('runSeatingPolish', () => runSeatingPolish(token));
+    await runModule('runDashboardStructure', () => runDashboardStructure());
+    await runModule('runGuestbookRemoval', () => runGuestbookRemoval());
+    await runModule('runDesignStudioEntrance', () => runDesignStudioEntrance());
+  } finally {
+    // Always runs, even if something above threw uncaught (runWeddingDetails
+    // itself, or a bug in runModule) — this is the actual safety net the
+    // old version was missing entirely.
+    await cleanupWeddingDetails(token, recordId);
+  }
 
   // ── Summary ───────────────────────────────────────────────────────────────
   const passed = results.filter(Boolean).length;
@@ -118,9 +142,6 @@ async function run() {
     console.log('  the WeddingDetails / Guest entity schemas on Base44.');
   }
   console.log(`${'─'.repeat(55)}\n`);
-
-  // ── Cleanup ──────────────────────────────────────────────────────────────
-  await cleanupWeddingDetails(token, recordId);
 
   process.exit(allOk ? 0 : 1);
 }

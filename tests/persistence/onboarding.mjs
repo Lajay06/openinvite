@@ -10,7 +10,7 @@
  * wedding-details.mjs.
  */
 
-import { APP_ID, api, pass, fail } from './_shared.mjs';
+import { APP_ID, api, pass, fail, cleanupEntity } from './_shared.mjs';
 import { buildWeddingDetailsPayload, verifyOnboardingSave } from '../../src/lib/onboardingSave.js';
 
 export async function runOnboarding(token) {
@@ -75,13 +75,23 @@ export async function runOnboarding(token) {
   let onboardingDraftId = null;
   try {
     const partialOnboardingData = {
-      couple1Name: 'Alex', couple2Name: 'Sam',
+      // NOT '__PERSISTENCE_TEST__'-prefixed couple names with is_test — this
+      // record deliberately simulates a genuine in-progress draft, so its
+      // own name-prefix is the only marker available (see comment below).
+      couple1Name: '__PERSISTENCE_TEST_ONBOARDING_DRAFT__', couple2Name: 'DO_NOT_USE',
       weddingDate: '2027-03-14', venue: 'Test Garden Venue', location: 'Test City',
       guestCount: 120, guestType: 'celebration',
       activeUniverse: 'tulum', websiteMode: 'light',
     };
     const stepIndexAtRefresh = 5; // 'weddingType' step, per Onboarding.jsx's STEPS array
 
+    // Deliberately NOT stamped is_test:true — this test proves that
+    // getMyWeddingDetails()'s own `!w.is_test` filter resolves a genuine,
+    // in-progress draft; marking it is_test would make it invisible to that
+    // exact filter and falsify the very thing being tested. The
+    // __PERSISTENCE_TEST_ONBOARDING_DRAFT__ name prefix (above) is this
+    // record's only marker, and the ownership scoping already proven in
+    // ownership.mjs confines any leak to this harness's own test account.
     const payload = {
       ...buildWeddingDetailsPayload(partialOnboardingData),
       onboardingDraft: true,
@@ -112,9 +122,9 @@ export async function runOnboarding(token) {
     results.push(resumed?.onboardingStepIndex === stepIndexAtRefresh
       ? pass('Simulated reload — onboardingStepIndex survives (resume point)', String(resumed?.onboardingStepIndex))
       : fail('Simulated reload — onboardingStepIndex survives (resume point)', stepIndexAtRefresh, resumed?.onboardingStepIndex));
-    results.push(resumed?.couple1Name === 'Alex' && resumed?.couple2Name === 'Sam'
+    results.push(resumed?.couple1Name === '__PERSISTENCE_TEST_ONBOARDING_DRAFT__' && resumed?.couple2Name === 'DO_NOT_USE'
       ? pass('Simulated reload — couple names survive for rehydration', `${resumed?.couple1Name} & ${resumed?.couple2Name}`)
-      : fail('Simulated reload — couple names survive for rehydration', 'Alex / Sam', `${resumed?.couple1Name} / ${resumed?.couple2Name}`));
+      : fail('Simulated reload — couple names survive for rehydration', '__PERSISTENCE_TEST_ONBOARDING_DRAFT__ / DO_NOT_USE', `${resumed?.couple1Name} / ${resumed?.couple2Name}`));
     results.push(resumed?.mainCeremony?.venueName === 'Test Garden Venue'
       ? pass('Simulated reload — venue survives for rehydration', resumed?.mainCeremony?.venueName)
       : fail('Simulated reload — venue survives for rehydration', 'Test Garden Venue', resumed?.mainCeremony?.venueName));
@@ -126,8 +136,7 @@ export async function runOnboarding(token) {
     results.push(false, false, false, false, false, false);
   } finally {
     if (onboardingDraftId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${onboardingDraftId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'WeddingDetails', onboardingDraftId);
     }
   }
 
@@ -146,7 +155,7 @@ export async function runOnboarding(token) {
     const baseSlug = `test-slug-collision-${Date.now()}`;
 
     const first = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
-      couple1Name: 'Alex', couple2Name: 'Sam', slug: baseSlug,
+      couple1Name: '__PERSISTENCE_TEST_SLUG_COLLISION__', couple2Name: 'DO_NOT_USE', slug: baseSlug, is_test: true,
     }, token);
     slugFirstId = first.id;
     if (!slugFirstId) throw new Error('No id on first sentinel WeddingDetails');
@@ -175,7 +184,7 @@ export async function runOnboarding(token) {
       : fail('resolveUniqueSlug — second couple with the same base slug gets a disambiguated one', `${baseSlug}-2`, resolvedForSecondCouple));
 
     const second = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
-      couple1Name: 'Alex', couple2Name: 'Sam', slug: resolvedForSecondCouple,
+      couple1Name: '__PERSISTENCE_TEST_SLUG_COLLISION__', couple2Name: 'DO_NOT_USE', slug: resolvedForSecondCouple, is_test: true,
     }, token);
     slugSecondId = second.id;
 
@@ -198,8 +207,7 @@ export async function runOnboarding(token) {
   } finally {
     for (const id of [slugFirstId, slugSecondId]) {
       if (!id) continue;
-      try { await api('DELETE', `/apps/${APP_ID}/entities/WeddingDetails/${id}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'WeddingDetails', id);
     }
   }
 
