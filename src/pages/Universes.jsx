@@ -211,7 +211,7 @@ const Universes = () => {
             lineHeight: 1.6,
             fontFamily: 'Plus Jakarta Sans',
           }}>
-            Every invitation, menu, seating chart and digital asset — designed around a single aesthetic vision. Choose your universe and everything follows.
+            Every invitation, menu, seating chart and digital asset, designed around a single aesthetic vision. Choose your universe and everything follows.
           </p>
         </div>
         <ScrollCue />
@@ -252,7 +252,7 @@ const Universes = () => {
               lineHeight: 1.7,
               marginBottom: 20,
             }}>
-              A Universe is a complete visual system for your wedding. The moment you choose one, it defines the typography, colour palette, layout logic and mood across all 10 pieces in your Guest Suite — from your Save the Date to your Thank You Notes.
+              A universe is a complete visual system for your wedding. The moment you choose one, it defines the typography, colour palette, layout logic and mood across all 10 pieces in your Guest Suite, from your Save the Date to your Thank You Notes.
             </p>
             <p style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",

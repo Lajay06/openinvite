@@ -21,7 +21,7 @@ const STEPS = [
 {
   num: "03",
   title: "Plan everything, together",
-  body: "Collaborate with your partner, planner, or anyone else — in real time, beautifully."
+  body: "Collaborate with your partner, planner, or anyone else, in real time, beautifully."
 }];
 
 

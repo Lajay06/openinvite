@@ -89,7 +89,7 @@ export default function AvaSpotlightSection() {
           lineHeight: 1.8,
           fontFamily: PJS,
         }}>
-          Ava learns your style, your budget, and your vision — then helps you make smarter decisions at every step. From vendor suggestions to seating optimisation, she's always one step ahead.
+          Ava learns your style, your budget, and your vision, then helps you make smarter decisions at every step. From vendor suggestions to seating optimisation, she's always one step ahead.
         </p>
         {ROWS.map((row, i) => (
           <AnimatedRow key={i} row={row} delay={i * 100} />

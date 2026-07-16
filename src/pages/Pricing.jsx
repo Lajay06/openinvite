@@ -11,7 +11,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const PRO_FEATURES = [
   "Unlimited guests & full RSVP management",
   "Complete budget suite",
-  "Ava AI — unlimited & context-aware",
+  "Ava AI: unlimited & context-aware",
   "Full vendor management & marketplace",
   "Seating planner",
   "Schedule & day-of timeline",
@@ -24,10 +24,10 @@ const PRO_FEATURES = [
 
 const ULTRA_EXTRAS = [
   "Wedding website builder",
-  "Premium themes (11 universe styles)",
+  "Premium themes (12 universe styles)",
   "Digital invitations via email & WhatsApp",
   "Online RSVP pages for guests",
-  "Guest suite — accommodation, transport & experience guide",
+  "Guest suite: accommodation, transport & experience guide",
   "Save the dates & thank you cards",
 ];
 
@@ -46,7 +46,7 @@ const FAQS = [
   },
   {
     q: "Can I upgrade from Pro to Ultra later?",
-    a: "Yes — you can upgrade at any time and pay only the difference ($70).",
+    a: "Yes, you can upgrade at any time and pay only the difference ($70).",
   },
   {
     q: "What if I want a refund?",
@@ -58,7 +58,7 @@ const FAQS = [
   },
   {
     q: "What happens to my data after 24 months?",
-    a: "Your wedding is done — congratulations. After 24 months, your account moves to archive mode. Add an archive plan for $49 to keep permanent access to your wedding story.",
+    a: "Your wedding is done, congratulations. After 24 months, your account moves to archive mode. Add an archive plan for $49 to keep permanent access to your wedding story.",
   },
 ];
 
@@ -129,7 +129,7 @@ async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
       });
     } catch (networkErr) {
       console.error('[Checkout] Network error — is the API reachable?', networkErr);
-      setCheckoutError('Network error — could not reach the checkout server. Please try again.');
+      setCheckoutError('Network error: could not reach the checkout server. Please try again.');
       return;
     }
 
@@ -145,7 +145,7 @@ async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
       console.error('[Checkout] Non-JSON response received:', text.slice(0, 300));
       setCheckoutError(
         res.status === 404
-          ? 'Checkout API not found. This works on Vercel — run `vercel dev` to test locally.'
+          ? 'Checkout API not found. This works on Vercel: run `vercel dev` to test locally.'
           : `Server error ${res.status}. Please try again.`
       );
       return;
@@ -226,7 +226,7 @@ export default function Pricing() {
             onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
             onMouseLeave={e => e.currentTarget.style.opacity = "1"}
           >
-            Start free — no card needed
+            Start free, no card needed
           </button>
         </div>
 
@@ -277,7 +277,7 @@ export default function Pricing() {
               onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.88"; }}
               onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
             >
-              {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $79"}
+              {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro: $79"}
             </button>
           </div>
 
@@ -301,7 +301,7 @@ export default function Pricing() {
               24-month access · one-time payment
             </p>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 20, fontFamily: PJS }}>
-              Everything in Pro, plus the full digital wedding suite — website, invitations, and RSVP.
+              Everything in Pro, plus the full digital wedding suite: website, invitations, and RSVP.
             </p>
             <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 14 }} />
             <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(10,10,10,0.4)", marginBottom: 12, letterSpacing: "0.04em", fontFamily: PJS }}>
@@ -328,7 +328,7 @@ export default function Pricing() {
               onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "0.88"; }}
               onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "1"; }}
             >
-              {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra — $149"}
+              {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra: $149"}
             </button>
           </div>
 
@@ -374,7 +374,7 @@ export default function Pricing() {
             What happens after 24 months?
           </p>
           <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(10,10,10,0.6)", marginBottom: 10, fontFamily: PJS }}>
-            Your wedding is done — congratulations. After 24 months, your account moves to archive mode.
+            Your wedding is done, congratulations. After 24 months, your account moves to archive mode.
             Your data, photos, and memories stay safe. To keep full access to your wedding story,
             add an archive plan for a single $49 payment. No recurring fees, ever.
           </p>
@@ -485,7 +485,7 @@ export default function Pricing() {
             onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.85"; }}
             onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
           >
-            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $79"}
+            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro: $79"}
           </button>
           <button
             onClick={goUltra}
@@ -500,7 +500,7 @@ export default function Pricing() {
             onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "0.85"; }}
             onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "1"; }}
           >
-            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra — $149"}
+            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra: $149"}
           </button>
         </div>
       </section>
