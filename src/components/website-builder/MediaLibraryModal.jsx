@@ -3,6 +3,9 @@ import { Upload } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
 import { validateUploadFile } from '@/lib/uploadValidation';
+import UploadStatus from '@/components/shared/UploadStatus';
+
+let queueItemId = 0;
 
 const STOCK_GRADIENTS = [
   'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
@@ -23,12 +26,26 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('uploaded');
-  const [uploading, setUploading] = useState(false);
+  const [queue, setQueue] = useState([]); // [{ id, file, status: 'uploading'|'error', error }]
   const [dragOver, setDragOver] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
   const fileInputRef = useRef(null);
 
-  const uploadFiles = useCallback(async (files) => {
+  const uploading = queue.some(q => q.status === 'uploading');
+
+  const uploadOne = useCallback(async (item) => {
+    setQueue(q => q.map(i => i.id === item.id ? { ...i, status: 'uploading', error: null } : i));
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: item.file });
+      const fileType = item.file.type.startsWith('video/') ? 'video' : 'photo';
+      onUploaded({ url: file_url, name: item.file.name, type: fileType });
+      setQueue(q => q.filter(i => i.id !== item.id));
+    } catch {
+      setQueue(q => q.map(i => i.id === item.id ? { ...i, status: 'error', error: `Failed to upload ${item.file.name}.` } : i));
+    }
+  }, [onUploaded]);
+
+  const uploadFiles = useCallback((files) => {
     const fileArray = Array.from(files);
 
     // Validate every file before uploading any
@@ -37,18 +54,18 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
       if (err) { toast.error(`${file.name}: ${err}`); return; }
     }
 
-    setUploading(true);
-    for (const file of fileArray) {
-      try {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        const fileType = file.type.startsWith('video/') ? 'video' : 'photo';
-        onUploaded({ url: file_url, name: file.name, type: fileType });
-      } catch {
-        toast.error(`Failed to upload ${file.name}`);
-      }
-    }
-    setUploading(false);
-  }, [onUploaded]);
+    const items = fileArray.map(file => ({ id: ++queueItemId, file, status: 'uploading', error: null }));
+    setQueue(q => [...q, ...items]);
+    items.forEach(uploadOne);
+  }, [uploadOne]);
+
+  const retryItem = useCallback((id) => {
+    setQueue(q => {
+      const item = q.find(i => i.id === id);
+      if (item) uploadOne(item);
+      return q;
+    });
+  }, [uploadOne]);
 
   const handleDrop = useCallback((e) => {
     e.preventDefault();
@@ -98,8 +115,7 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
           <h3 style={{ flex: 1, margin: 0, fontSize: 15, fontWeight: 600, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Media library</h3>
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            style={{ padding: '6px 14px', background: '#E03553', color: '#FFFFFF', border: 'none', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1, fontFamily: 'inherit' }}
+            style={{ padding: '6px 14px', background: '#E03553', color: '#FFFFFF', border: 'none', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
           >
             {uploading ? 'Uploading…' : '+ Upload'}
           </button>
@@ -190,7 +206,24 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
                 </p>
               </div>
 
-              {filteredUploaded.length === 0 ? (
+              {queue.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8, marginBottom: filteredUploaded.length ? 8 : 0 }}>
+                  {queue.map(item => (
+                    <div key={item.id} style={{ aspectRatio: '1' }}>
+                      <UploadStatus
+                        status={item.status}
+                        error={item.error}
+                        onRetry={() => retryItem(item.id)}
+                        dark
+                        height="100%"
+                        style={{ height: '100%', minHeight: 0 }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {filteredUploaded.length === 0 && queue.length === 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 200, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
                   <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, color: 'rgba(255,255,255,0.5)' }}>No uploads yet</p>
                   <p style={{ fontSize: 13, margin: 0 }}>Upload photos or videos to use them in your website</p>

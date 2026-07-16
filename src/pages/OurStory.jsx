@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Trash2, Image as ImageIcon, Sparkles, Loader2, GripVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { validateUploadFile } from '@/lib/uploadValidation';
 import AIWeddingAssistant from '../components/shared/AIWeddingAssistant';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { useFileUpload } from '@/hooks/useFileUpload';
+import UploadStatus from '@/components/shared/UploadStatus';
 
 export default function OurStoryPage() {
   const [milestones, setMilestones] = useState([]);
@@ -23,7 +24,7 @@ export default function OurStoryPage() {
     image_url: '',
     order: 0
   });
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageUpload = useFileUpload('image');
   const [generatingStory, setGeneratingStory] = useState(false);
 
   useEffect(() => {
@@ -121,27 +122,10 @@ export default function OurStoryPage() {
 
   const handleUploadImage = async (e) => {
     const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file after a retry
     if (!file) return;
-
-    // Validate type and size before uploading
-    const validationError = validateUploadFile(file, 'image');
-    if (validationError) {
-      toast.error(validationError);
-      e.target.value = '';
-      return;
-    }
-
-    setUploadingImage(true);
-    const toastId = toast.loading('Uploading image...');
-    try {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      setFormData(prev => ({ ...prev, image_url: result.file_url }));
-      toast.success('Image uploaded!', { id: toastId });
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Failed to upload image', { id: toastId });
-    }
-    setUploadingImage(false);
+    const result = await imageUpload.upload(file);
+    if (result) setFormData(prev => ({ ...prev, image_url: result.file_url }));
   };
 
   const onDragEnd = async (result) => {
@@ -261,7 +245,10 @@ export default function OurStoryPage() {
               <div>
                 <Label>Photo</Label>
                 <div className="mt-1 space-y-3">
-                  {formData.image_url ? (
+                  {(imageUpload.status === 'uploading' || imageUpload.status === 'error') && (
+                    <UploadStatus status={imageUpload.status} error={imageUpload.error} onRetry={imageUpload.retry} height={128} />
+                  )}
+                  {formData.image_url && imageUpload.status !== 'uploading' ? (
                     <div className="relative">
                       <img
                         src={formData.image_url}
@@ -272,26 +259,23 @@ export default function OurStoryPage() {
                         type="button"
                         variant="destructive"
                         size="sm"
-                        onClick={() => setFormData({ ...formData, image_url: '' })}
+                        onClick={() => { setFormData({ ...formData, image_url: '' }); imageUpload.reset(); }}
                         className="absolute top-2 right-2"
                       >
                         Remove
                       </Button>
                     </div>
-                  ) : (
-                    <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg ${uploadingImage ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-gray-50'}`}>
+                  ) : imageUpload.status === 'uploading' || imageUpload.status === 'error' ? null : (
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        {uploadingImage
-                          ? <Loader2 className="w-8 h-8 mb-2 text-gray-400 animate-spin" />
-                          : <ImageIcon className="w-8 h-8 mb-2 text-gray-400" />}
-                        <p className="text-sm text-gray-500">{uploadingImage ? 'Uploading…' : 'Click to upload photo'}</p>
+                        <ImageIcon className="w-8 h-8 mb-2 text-gray-400" />
+                        <p className="text-sm text-gray-500">Click to upload photo</p>
                       </div>
                       <input
                         type="file"
                         className="hidden"
                         accept="image/jpeg,image/png,image/webp,image/gif"
                         onChange={handleUploadImage}
-                        disabled={uploadingImage}
                       />
                     </label>
                   )}

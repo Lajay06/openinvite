@@ -19,13 +19,14 @@ import {
   Camera
 } from "lucide-react";
 import toast from 'react-hot-toast';
-import { validateUploadFile } from '@/lib/uploadValidation';
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
+import { useFileUpload } from '@/hooks/useFileUpload';
+import UploadStatus from '@/components/shared/UploadStatus';
 
 export default function PhotoGalleryPage() {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  const photoUpload = useFileUpload('image');
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [editingPhoto, setEditingPhoto] = useState(null);
@@ -68,28 +69,10 @@ export default function PhotoGalleryPage() {
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
+    e.target.value = ''; // allow re-selecting the same file after a retry
     if (!file) return;
-
-    // Validate type and size before uploading
-    const validationError = validateUploadFile(file, 'image');
-    if (validationError) {
-      toast.error(validationError);
-      e.target.value = '';
-      return;
-    }
-
-    setUploading(true);
-    const toastId = toast.loading('Uploading photo...');
-
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setFormData({ ...formData, image_url: file_url });
-      toast.success('Photo uploaded!', { id: toastId });
-    } catch (error) {
-      console.error("Error uploading photo:", error);
-      toast.error('Failed to upload photo', { id: toastId });
-    }
-    setUploading(false);
+    const result = await photoUpload.upload(file);
+    if (result) setFormData(prev => ({ ...prev, image_url: result.file_url }));
   };
 
   const handleSubmit = async (e) => {
@@ -256,15 +239,19 @@ export default function PhotoGalleryPage() {
                       type="file"
                       accept="image/*"
                       onChange={handleFileUpload}
-                      disabled={uploading}
+                      disabled={photoUpload.status === 'uploading'}
                       className="flex-1"
                     />
-                    {uploading && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
                   </div>
-                  {formData.image_url && (
-                    <img 
-                      src={formData.image_url} 
-                      alt="Preview" 
+                  {(photoUpload.status === 'uploading' || photoUpload.status === 'error') && (
+                    <div className="mt-2 w-32">
+                      <UploadStatus status={photoUpload.status} error={photoUpload.error} onRetry={photoUpload.retry} height={128} />
+                    </div>
+                  )}
+                  {formData.image_url && photoUpload.status !== 'uploading' && (
+                    <img
+                      src={formData.image_url}
+                      alt="Preview"
                       className="mt-2 w-32 h-32 object-cover rounded-lg"
                     />
                   )}

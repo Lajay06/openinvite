@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { base44 } from '@/api/base44Client';
 import { validateUploadFile } from '@/lib/uploadValidation';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import UploadStatus from '@/components/shared/UploadStatus';
 
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -78,8 +79,9 @@ function Field({ lbl, children }) {
 }
 
 // ── Single outfit card ────────────────────────────────────────────────────────
-function OutfitCard({ outfit, onUpdate, onRemove, uploadingFor, onPhotoUpload, fileRefs }) {
-  const uploading = uploadingFor === outfit.id;
+function OutfitCard({ outfit, onUpdate, onRemove, uploadState, onPhotoUpload, onPhotoRetry, fileRefs }) {
+  const status = uploadState?.status || 'idle';
+  const uploading = status === 'uploading';
 
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 16 }}>
@@ -201,7 +203,7 @@ function OutfitCard({ outfit, onUpdate, onRemove, uploadingFor, onPhotoUpload, f
 
       {/* Row 5: photo upload */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {outfit.photoUrl ? (
+        {outfit.photoUrl && !uploading ? (
           <>
             <img
               src={outfit.photoUrl}
@@ -210,8 +212,7 @@ function OutfitCard({ outfit, onUpdate, onRemove, uploadingFor, onPhotoUpload, f
             />
             <button
               onClick={() => fileRefs.current[outfit.id]?.click()}
-              disabled={uploading}
-              style={{ fontSize: 12, fontWeight: 600, color: '#E03553', background: 'transparent', border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', padding: 0, fontFamily: PJS }}
+              style={{ fontSize: 12, fontWeight: 600, color: '#E03553', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontFamily: PJS }}
             >
               Change photo
             </button>
@@ -222,14 +223,21 @@ function OutfitCard({ outfit, onUpdate, onRemove, uploadingFor, onPhotoUpload, f
               Remove
             </button>
           </>
+        ) : status === 'uploading' || status === 'error' ? (
+          <UploadStatus
+            status={status}
+            error={uploadState?.error}
+            onRetry={() => onPhotoRetry(outfit.id)}
+            height={64}
+            style={{ flex: 1 }}
+          />
         ) : (
           <button
             onClick={() => fileRefs.current[outfit.id]?.click()}
-            disabled={uploading}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: uploading ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 600, fontFamily: PJS, color: '#0A0A0A' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: PJS, color: '#0A0A0A' }}
           >
-            {uploading ? <Loader2 size={12} className="animate-spin" /> : <Image size={12} />}
-            {uploading ? 'Uploading...' : 'Upload photo'}
+            <Image size={12} />
+            Upload photo
           </button>
         )}
 
@@ -240,8 +248,8 @@ function OutfitCard({ outfit, onUpdate, onRemove, uploadingFor, onPhotoUpload, f
           ref={el => { fileRefs.current[outfit.id] = el; }}
           onChange={e => {
             const file = e.target.files?.[0];
-            if (file) onPhotoUpload(outfit.id, file);
             e.target.value = '';
+            if (file) onPhotoUpload(outfit.id, file);
           }}
         />
       </div>
@@ -256,12 +264,13 @@ export default function AttirePanel() {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [savedOk, setSavedOk] = useState(false);
-  const [uploadingFor, setUploadingFor] = useState(null);
+  const [uploadStates, setUploadStates] = useState({}); // { [outfitId]: { status, error } }
 
   const latestAttireRef = useRef({});
   const detailsIdRef = useRef(null);
   const savedOkTimer = useRef(null);
   const fileRefs = useRef({});
+  const lastFileByOutfitRef = useRef({});
 
   useEffect(() => { load(); }, []);
 
@@ -361,16 +370,27 @@ export default function AttirePanel() {
 
   // ── Photo upload ──────────────────────────────────────────────────────────────
   async function handlePhotoUpload(outfitId, file) {
+    lastFileByOutfitRef.current[outfitId] = file;
+
     const err = validateUploadFile(file, 'image');
-    if (err) { toast.error(err); return; }
-    setUploadingFor(outfitId);
+    if (err) {
+      setUploadStates(s => ({ ...s, [outfitId]: { status: 'error', error: err } }));
+      return;
+    }
+
+    setUploadStates(s => ({ ...s, [outfitId]: { status: 'uploading', error: null } }));
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
       updateOutfit(outfitId, 'photoUrl', result.file_url);
+      setUploadStates(s => ({ ...s, [outfitId]: { status: 'success', error: null } }));
     } catch {
-      toast.error('Photo upload failed');
+      setUploadStates(s => ({ ...s, [outfitId]: { status: 'error', error: 'Upload failed. Please try again.' } }));
     }
-    setUploadingFor(null);
+  }
+
+  function retryPhotoUpload(outfitId) {
+    const file = lastFileByOutfitRef.current[outfitId];
+    if (file) handlePhotoUpload(outfitId, file);
   }
 
   // ── Save ──────────────────────────────────────────────────────────────────────
@@ -429,8 +449,9 @@ export default function AttirePanel() {
               outfit={outfit}
               onUpdate={updateOutfit}
               onRemove={removeOutfit}
-              uploadingFor={uploadingFor}
+              uploadState={uploadStates[outfit.id]}
               onPhotoUpload={handlePhotoUpload}
+              onPhotoRetry={retryPhotoUpload}
               fileRefs={fileRefs}
             />
           ))}

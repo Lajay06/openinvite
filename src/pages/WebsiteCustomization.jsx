@@ -9,15 +9,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Palette, Upload, Loader2, Eye, Plus, Trash2, X } from "lucide-react";
 import toast from 'react-hot-toast';
-import { validateUploadFile } from '@/lib/uploadValidation';
 import { Textarea } from "@/components/ui/textarea";
+import { useFileUpload } from '@/hooks/useFileUpload';
+import UploadStatus from '@/components/shared/UploadStatus';
 
 export default function WebsiteCustomizationPage() {
   const [theme, setTheme] = useState(null);
   const [customPages, setCustomPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const heroUpload = useFileUpload('image');
   const [showPageForm, setShowPageForm] = useState(false);
   const [editingPage, setEditingPage] = useState(null);
 
@@ -87,28 +88,11 @@ export default function WebsiteCustomizationPage() {
   };
 
   const handleHeroUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file after a retry
     if (!file) return;
-
-    // Validate type and size before uploading
-    const validationError = validateUploadFile(file, 'image');
-    if (validationError) {
-      toast.error(validationError);
-      e.target.value = '';
-      return;
-    }
-
-    setUploading(true);
-    const toastId = toast.loading('Uploading image...');
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setThemeData({ ...themeData, hero_image_url: file_url });
-      toast.success('Image uploaded!', { id: toastId });
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error('Failed to upload image', { id: toastId });
-    }
-    setUploading(false);
+    const result = await heroUpload.upload(file);
+    if (result) setThemeData(prev => ({ ...prev, hero_image_url: result.file_url }));
   };
 
   const handleSavePage = async (e) => {
@@ -280,9 +264,12 @@ export default function WebsiteCustomizationPage() {
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/gif"
                     onChange={handleHeroUpload}
-                    disabled={uploading}
+                    disabled={heroUpload.status === 'uploading'}
                   />
-                  {themeData.hero_image_url && (
+                  {(heroUpload.status === 'uploading' || heroUpload.status === 'error') && (
+                    <UploadStatus status={heroUpload.status} error={heroUpload.error} onRetry={heroUpload.retry} height={192} style={{ marginTop: 16 }} />
+                  )}
+                  {themeData.hero_image_url && heroUpload.status !== 'uploading' && (
                     <img src={themeData.hero_image_url} alt="Hero" className="mt-4 w-full h-48 object-cover rounded-lg" />
                   )}
                 </div>
