@@ -45,7 +45,7 @@ function AssetButton({ label, Icon, onClick }) {
   );
 }
 
-export default function VenueAssetLibrary({ onAddTable, onAddAsset, onImportLayout, uploadingImage }) {
+export default function VenueAssetLibrary({ onAddTable, onAddAsset, onImportLayout, uploadingImage, readOnly = false }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
 
@@ -57,32 +57,40 @@ export default function VenueAssetLibrary({ onAddTable, onAddAsset, onImportLayo
         </span>
       </div>
 
-      {/* Add Table */}
-      <div style={{ padding: '12px 16px 4px', flexShrink: 0 }}>
-        <button
-          onClick={onAddTable}
-          className="btn-primary"
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12 }}
-        >
-          <Plus size={12} />Add table
-        </button>
-      </div>
+      {readOnly ? (
+        <p style={{ padding: '16px', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          View only — the couple can add or rearrange tables and venue items.
+        </p>
+      ) : (
+        <>
+          {/* Add Table */}
+          <div style={{ padding: '12px 16px 4px', flexShrink: 0 }}>
+            <button
+              onClick={onAddTable}
+              className="btn-primary"
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12 }}
+            >
+              <Plus size={12} />Add table
+            </button>
+          </div>
 
-      {/* Venue assets */}
-      <div style={{ flexShrink: 0 }}>
-        <span style={sectionLabel}>Venue assets</span>
-        {VENUE_ASSETS.map(a => (
-          <AssetButton key={a.type} label={a.name} Icon={a.Icon} onClick={() => onAddAsset(a)} />
-        ))}
-      </div>
+          {/* Venue assets */}
+          <div style={{ flexShrink: 0 }}>
+            <span style={sectionLabel}>Venue assets</span>
+            {VENUE_ASSETS.map(a => (
+              <AssetButton key={a.type} label={a.name} Icon={a.Icon} onClick={() => onAddAsset(a)} />
+            ))}
+          </div>
 
-      {/* Basic shapes */}
-      <div style={{ borderTop: '1px solid rgba(10,10,10,0.06)', flexShrink: 0 }}>
-        <span style={sectionLabel}>Basic shapes</span>
-        {SHAPES.map(s => (
-          <AssetButton key={s.type} label={s.name} Icon={s.Icon} onClick={() => onAddAsset(s)} />
-        ))}
-      </div>
+          {/* Basic shapes */}
+          <div style={{ borderTop: '1px solid rgba(10,10,10,0.06)', flexShrink: 0 }}>
+            <span style={sectionLabel}>Basic shapes</span>
+            {SHAPES.map(s => (
+              <AssetButton key={s.type} label={s.name} Icon={s.Icon} onClick={() => onAddAsset(s)} />
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Import layout: intentionally hidden pre-launch
           (fix/seating-select-import-cleanup) — future feature, not launch

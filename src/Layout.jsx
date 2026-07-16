@@ -13,7 +13,7 @@ import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'react-hot-toast';
-import { useCollaboratorContext, COLLABORATOR_SUPPORTED_PAGES, hasPagePermission } from '@/lib/collaboratorContext';
+import { useCollaboratorContext, permissionKeyForPageName, hasPagePermission } from '@/lib/collaboratorContext';
 
 const SIDEBAR_WIDTH = 200;
 const TOP_BAR_H = 48;
@@ -355,9 +355,10 @@ export default function Layout({ children, currentPageName }) {
   const collaboratorPermissions = collab.ok ? collab.permissions : null;
   const bannerH = collab.ok ? 32 : 0;
   const contentTopOffset = TOP_BAR_H + (trialBanner ? 36 : 0) + bannerH;
+  const currentPermissionKey = permissionKeyForPageName(currentPageName);
   const canViewCurrentPage = !isCollaborating || (
-    COLLABORATOR_SUPPORTED_PAGES.includes(currentPageName) &&
-    hasPagePermission(collaboratorPermissions, currentPageName, 'view')
+    !!currentPermissionKey &&
+    hasPagePermission(collaboratorPermissions, currentPermissionKey, 'view')
   );
 
   return (

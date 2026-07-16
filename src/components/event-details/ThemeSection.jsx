@@ -16,11 +16,11 @@ const SETTING_OPTIONS    = ['Indoor', 'Outdoor', 'Mix of both'];
 const headingStyle = { fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 14px' };
 const subLabelStyle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 10px', display: 'block' };
 
-function Pill({ label, selected, onClick, small }) {
+function Pill({ label, selected, onClick, small, disabled }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
       style={{
         padding: small ? '5px 12px' : '6px 16px',
         borderRadius: 999,
@@ -30,16 +30,17 @@ function Pill({ label, selected, onClick, small }) {
         fontSize: small ? 11 : 12,
         fontWeight: 600,
         fontFamily: PJS,
-        cursor: 'pointer',
+        cursor: disabled ? 'default' : 'pointer',
         transition: 'all 0.15s',
         whiteSpace: 'nowrap',
+        opacity: disabled && !selected ? 0.6 : 1,
       }}>
       {label}
     </button>
   );
 }
 
-export default function ThemeSection({ theme, onSave }) {
+export default function ThemeSection({ theme, onSave, readOnly = false }) {
   const [local, setLocal] = useState({
     aesthetic: [],
     faith: '',
@@ -112,7 +113,8 @@ export default function ThemeSection({ theme, onSave }) {
           {AESTHETIC_OPTIONS.map(opt => (
             <Pill key={opt} label={opt}
               selected={(local.aesthetic || []).includes(opt)}
-              onClick={() => toggleMulti('aesthetic', opt)} />
+              onClick={() => toggleMulti('aesthetic', opt)}
+              disabled={readOnly} />
           ))}
         </div>
       </div>
@@ -124,7 +126,8 @@ export default function ThemeSection({ theme, onSave }) {
           {FAITH_OPTIONS.map(opt => (
             <Pill key={opt} label={opt}
               selected={local.faith === opt}
-              onClick={() => setFaith(opt)} />
+              onClick={() => setFaith(opt)}
+              disabled={readOnly} />
           ))}
         </div>
 
@@ -137,7 +140,8 @@ export default function ThemeSection({ theme, onSave }) {
               {FAITH_FOR_INTERFAITH.map(opt => (
                 <Pill key={opt} label={opt} small
                   selected={interfaithPicks.includes(opt)}
-                  onClick={() => toggleInterfaithPick(opt)} />
+                  onClick={() => toggleInterfaithPick(opt)}
+                  disabled={readOnly} />
               ))}
             </div>
             {interfaithPicks.length === 2 && (
@@ -159,11 +163,16 @@ export default function ThemeSection({ theme, onSave }) {
           {CULTURE_OPTIONS.map(opt => (
             <Pill key={opt} label={opt}
               selected={(local.culture || []).includes(opt)}
-              onClick={() => toggleMulti('culture', opt)} />
+              onClick={() => toggleMulti('culture', opt)}
+              disabled={readOnly} />
           ))}
         </div>
 
-        {!showCultureInput && !local.cultureOther ? (
+        {readOnly ? (
+          local.cultureOther && (
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>{local.cultureOther}</p>
+          )
+        ) : !showCultureInput && !local.cultureOther ? (
           <button type="button" onClick={() => setShowCultureInput(true)}
             style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, fontWeight: 600, padding: 0 }}>
             <Plus size={13} /> Add your own
@@ -191,7 +200,8 @@ export default function ThemeSection({ theme, onSave }) {
           {ATMOSPHERE_OPTIONS.map(opt => (
             <Pill key={opt} label={opt}
               selected={(local.atmosphere || []).includes(opt)}
-              onClick={() => toggleMulti('atmosphere', opt)} />
+              onClick={() => toggleMulti('atmosphere', opt)}
+              disabled={readOnly} />
           ))}
         </div>
       </div>
@@ -203,7 +213,8 @@ export default function ThemeSection({ theme, onSave }) {
           {SEASON_OPTIONS.map(opt => (
             <Pill key={opt} label={opt}
               selected={local.season === opt}
-              onClick={() => setSingle('season', opt)} />
+              onClick={() => setSingle('season', opt)}
+              disabled={readOnly} />
           ))}
         </div>
       </div>
@@ -215,17 +226,21 @@ export default function ThemeSection({ theme, onSave }) {
           {SETTING_OPTIONS.map(opt => (
             <Pill key={opt} label={opt}
               selected={local.setting === opt}
-              onClick={() => setSingle('setting', opt)} />
+              onClick={() => setSingle('setting', opt)}
+              disabled={readOnly} />
           ))}
         </div>
       </div>
 
-      {/* Save */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
-        <button type="button" onClick={handleSave} className="btn-primary" style={{ fontSize: 13, padding: '9px 24px' }}>
-          Save theme
-        </button>
-      </div>
+      {/* Save — hidden entirely while read-only, not just disabled, since
+          there is nothing for it to do (onSave's writes 403/no-op upstream). */}
+      {!readOnly && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+          <button type="button" onClick={handleSave} className="btn-primary" style={{ fontSize: 13, padding: '9px 24px' }}>
+            Save theme
+          </button>
+        </div>
+      )}
 
     </div>
   );

@@ -51,6 +51,7 @@ import { runConsolidateOverview } from '../tests/persistence/consolidate-overvie
 import { runTableGuestSync } from '../tests/persistence/table-guest-sync.mjs';
 import { runPlusOneIdentity } from '../tests/persistence/plus-one-identity.mjs';
 import { runCollaboratorInvite } from '../tests/persistence/collaborator-invite.mjs';
+import { runCollaboratorPageMap } from '../tests/persistence/collaborator-page-map.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -131,6 +132,7 @@ async function run() {
     await runModule('runTableGuestSync', () => runTableGuestSync(token));
     await runModule('runPlusOneIdentity', () => runPlusOneIdentity(token));
     await runModule('runCollaboratorInvite', () => runCollaboratorInvite(token));
+    await runModule('runCollaboratorPageMap', () => runCollaboratorPageMap());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
     // itself, or a bug in runModule) — this is the actual safety net the

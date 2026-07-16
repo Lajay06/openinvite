@@ -9,7 +9,7 @@ export function formatDateDisplay(dateStr) {
   return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-export default function DatePicker({ value, onChange, label, placeholder = 'Select date', dark = false }) {
+export default function DatePicker({ value, onChange, label, placeholder = 'Select date', dark = false, disabled = false }) {
   const [open, setOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState(() => value ? new Date(value + 'T00:00:00') : new Date());
   const ref = useRef(null);
@@ -52,10 +52,11 @@ export default function DatePicker({ value, onChange, label, placeholder = 'Sele
       {label && <p style={labelStyle}>{label}</p>}
 
       {/* Trigger */}
-      <div onClick={() => setOpen(o => !o)} style={{
+      <div onClick={() => { if (!disabled) setOpen(o => !o); }} style={{
         display: 'flex', alignItems: 'center', gap: 8,
         borderBottom: `1px solid ${open ? '#E03553' : dark ? '#333' : '#DDDDDD'}`,
-        padding: '8px 0', cursor: 'pointer', transition: 'border-color 0.2s',
+        padding: '8px 0', cursor: disabled ? 'default' : 'pointer', transition: 'border-color 0.2s',
+        opacity: disabled ? 0.7 : 1,
       }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={open ? '#E03553' : '#AAAAAA'} strokeWidth="1.8">
           <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>
@@ -64,13 +65,13 @@ export default function DatePicker({ value, onChange, label, placeholder = 'Sele
         <span style={{ flex: 1, fontSize: 14, color: value ? (dark ? '#fff' : '#0A0A0A') : '#AAAAAA', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
           {value ? formatDateDisplay(value) : placeholder}
         </span>
-        {value && (
+        {value && !disabled && (
           <button onClick={e => { e.stopPropagation(); onChange(''); }} style={{ background: 'none', border: 'none', color: '#AAAAAA', cursor: 'pointer', fontSize: 18, padding: 0, lineHeight: 1 }}>×</button>
         )}
       </div>
 
       {/* Calendar */}
-      {open && (
+      {open && !disabled && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, zIndex: 9999,
           background: '#FFFFFF', border: '1px solid #EEEEEE',

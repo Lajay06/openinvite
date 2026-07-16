@@ -36,7 +36,7 @@ const fmtTime = (t) => {
   try { return format(new Date(`2024-01-01T${t}`), 'h:mm a'); } catch { return t; }
 };
 
-export default function ScheduleList({ items, onEdit, onDelete }) {
+export default function ScheduleList({ items, onEdit, onDelete, readOnly = false }) {
   if (items.length === 0) {
     return (
       <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
@@ -110,19 +110,21 @@ export default function ScheduleList({ items, onEdit, onDelete }) {
                   )}
                 </TableCell>
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon"><MoreHorizontal size={15} /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(item)}>
-                        <Edit2 size={13} style={{ marginRight: 8 }} />Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onDelete(item.id)} style={{ color: '#E03553' }}>
-                        <Trash2 size={13} style={{ marginRight: 8 }} />Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {!readOnly && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon"><MoreHorizontal size={15} /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onEdit(item)}>
+                          <Edit2 size={13} style={{ marginRight: 8 }} />Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDelete(item.id)} style={{ color: '#E03553' }}>
+                          <Trash2 size={13} style={{ marginRight: 8 }} />Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

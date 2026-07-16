@@ -13,17 +13,26 @@
  * — a page hidden here because permissions say "no" is still checked again,
  * for real, the moment any data actually gets fetched.
  *
- * COLLABORATOR_SUPPORTED_PAGES is deliberately small and must only ever
- * list pages that have a real, working api/collaborator-*.js endpoint
- * behind them. Listing a page here without one would let a collaborator
- * see it in the sidebar / land on it directly with nothing enforcing
- * access at all — worse than not building the feature.
+ * The set of pages a collaborator can ever see is COLLABORATOR_PAGE_MAP
+ * (collaboratorPageMap.js) — every permission key CollaborateModal.jsx
+ * offers, so nothing here can drift out of sync with what the invite form
+ * promises.
  */
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS } from './collaboratorPageMap';
 
-export const COLLABORATOR_SUPPORTED_PAGES = ['Guests', 'Budget'];
+export { COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS };
+
+/** React Router currentPageName -> the permission key that gates it (they differ for "Event Details" / "EventDetails"). */
+const PAGE_NAME_TO_PERMISSION_KEY = Object.fromEntries(
+  COLLABORATOR_PERMISSION_KEYS.map(key => [COLLABORATOR_PAGE_MAP[key].pageName, key])
+);
+
+export function permissionKeyForPageName(pageName) {
+  return PAGE_NAME_TO_PERMISSION_KEY[pageName] || null;
+}
 
 export function hasPagePermission(permissions, page, level) {
   const p = permissions?.[page];

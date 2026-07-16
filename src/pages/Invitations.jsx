@@ -6,22 +6,50 @@ import InvitationStudio from "../components/invitations/InvitationStudio";
 import InvitationBuilder from "../components/invitations/InvitationBuilder";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
+import { useCollaboratorContext } from '@/lib/collaboratorContext';
 const Invitation = base44.entities.Invitation;
 
 export default function InvitationsPage() {
   const [invitation, setInvitation] = useState(null);
   const [weddingDetails, setWeddingDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('loading'); // loading, builder, studio
+  const [view, setView] = useState('loading'); // loading, builder, studio, empty
+
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // Read-only regardless of 'edit' — Invitation's update RLS is owner-scoped
+  // like every other entity here (see BASE44_PLATFORM_NOTES.md).
+  const readOnly = isCollaborating;
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [isCollaborating]);
 
   const loadData = async () => {
     setLoading(true);
     setView('loading');
     try {
+      if (isCollaborating) {
+        const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Invitations`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (!res.ok) throw new Error('Failed to load invitation');
+        const { data } = await res.json();
+        const invites = (data.Invitation || []).slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+        if (invites.length > 0) {
+          setInvitation(invites[0]);
+          setView('studio');
+        } else {
+          // A collaborator is never shown the "create the first invitation"
+          // builder — that's the owner's own starting flow, not something
+          // a collaborator can do on their behalf (Invitation.create's admin-
+          // key write would 403 the same as every other entity here anyway).
+          setView('empty');
+        }
+        setLoading(false);
+        return;
+      }
+
       const [myInvitation, myDetails] = await Promise.all([
         getMyInvitation(),
         getMyWeddingDetails()
@@ -67,9 +95,19 @@ export default function InvitationsPage() {
     );
   }
 
+  if (view === 'empty') {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: 'rgba(10,10,10,0.4)', fontSize: 14 }}>
+          No invitation has been created yet.
+        </p>
+      </div>
+    );
+  }
+
   if (view === 'builder') {
     return (
-      <InvitationBuilder 
+      <InvitationBuilder
         onInvitationSaved={handleInvitationCreated}
         // No back button needed as this is the starting point
       />
@@ -80,10 +118,11 @@ export default function InvitationsPage() {
     return (
       <>
 
-        <InvitationStudio 
+        <InvitationStudio
           invitation={invitation}
           weddingDetails={weddingDetails}
           onSave={handleSave}
+          readOnly={readOnly}
           // No back button needed as this is the main view
         />
       </>

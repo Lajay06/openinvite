@@ -18,7 +18,7 @@ const SOURCE_BADGE_STYLES = {
   youtube: { color: '#E03553', background: 'rgba(224,53,83,0.1)' },
 };
 
-export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleApproval }) {
+export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleApproval, readOnly = false }) {
   const [playing, setPlaying] = useState(false);
   const [embedExpanded, setEmbedExpanded] = useState(false);
   const [embedLoaded, setEmbedLoaded] = useState(false);
@@ -119,19 +119,23 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
             {embedExpanded ? <Pause size={13} /> : <Play size={13} />}
           </button>
         )}
-        <button onClick={() => onToggleApproval(item)}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: item.approved ? '#6b7700' : 'rgba(10,10,10,0.3)' }}
-          title={item.approved ? 'Approved' : 'Mark as approved'}>
-          {item.approved ? <Check size={13} /> : <Clock size={13} />}
-        </button>
-        <button onClick={() => onEdit(item)}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)' }}>
-          <Edit2 size={12} />
-        </button>
-        <button onClick={() => onDelete(item.id)}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)' }}>
-          <Trash2 size={12} />
-        </button>
+        {!readOnly && (
+          <>
+            <button onClick={() => onToggleApproval(item)}
+              style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: item.approved ? '#6b7700' : 'rgba(10,10,10,0.3)' }}
+              title={item.approved ? 'Approved' : 'Mark as approved'}>
+              {item.approved ? <Check size={13} /> : <Clock size={13} />}
+            </button>
+            <button onClick={() => onEdit(item)}
+              style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)' }}>
+              <Edit2 size={12} />
+            </button>
+            <button onClick={() => onDelete(item.id)}
+              style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)' }}>
+              <Trash2 size={12} />
+            </button>
+          </>
+        )}
       </div>
     </div>
 

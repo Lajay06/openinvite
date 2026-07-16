@@ -28,7 +28,7 @@ const CATEGORY_LABELS = {
   general: 'General',
 };
 
-export default function MusicList({ items, groupByCategory, onEdit, onDelete, onToggleApproval }) {
+export default function MusicList({ items, groupByCategory, onEdit, onDelete, onToggleApproval, readOnly = false }) {
   if (items.length === 0) {
     return (
       <div style={{ background: '#F5F4F0', padding: '64px 24px', textAlign: 'center' }}>
@@ -51,7 +51,7 @@ export default function MusicList({ items, groupByCategory, onEdit, onDelete, on
           <span style={{ width: 120, flexShrink: 0 }} />
         </div>
         {items.map((item, i) => (
-          <MusicTrackRow key={item.id} item={item} index={i} onEdit={onEdit} onDelete={onDelete} onToggleApproval={onToggleApproval} />
+          <MusicTrackRow key={item.id} item={item} index={i} onEdit={onEdit} onDelete={onDelete} onToggleApproval={onToggleApproval} readOnly={readOnly} />
         ))}
       </div>
     );
@@ -75,7 +75,7 @@ export default function MusicList({ items, groupByCategory, onEdit, onDelete, on
             <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{catItems.length} song{catItems.length !== 1 ? 's' : ''}</span>
           </div>
           {catItems.map((item, i) => (
-            <MusicTrackRow key={item.id} item={item} index={i} onEdit={onEdit} onDelete={onDelete} onToggleApproval={onToggleApproval} />
+            <MusicTrackRow key={item.id} item={item} index={i} onEdit={onEdit} onDelete={onDelete} onToggleApproval={onToggleApproval} readOnly={readOnly} />
           ))}
         </div>
       ))}
