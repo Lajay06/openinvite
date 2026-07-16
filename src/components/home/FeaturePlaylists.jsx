@@ -9,7 +9,7 @@ const prefersReduced = () =>
 typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const BULLETS = [
-"Spotify integration — seamless",
+"Spotify integration: seamless",
 "Let guests submit their favourite tracks",
 "Organise songs by vibe or moment",
 "Share playlists in a click",
@@ -90,7 +90,7 @@ export default function FeaturePlaylists() {
           lineHeight: 1.7,
           textAlign: "center"
         }}>
-          Curate the ultimate wedding soundtrack — and let your guests be part of the vibe.
+          Curate the ultimate wedding soundtrack, and let your guests be part of the vibe.
         </p>
 
         {/* Expand button */}

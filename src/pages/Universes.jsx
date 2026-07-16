@@ -3,61 +3,107 @@ import { useNavigate } from 'react-router-dom';
 import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
 import ScrollCue from '@/components/motion/ScrollCue';
+import { UNIVERSE_CATALOG } from '@/lib/universeCatalog';
 
-const UNIVERSE_DATA = [
-  {
-    id: 'aman',
-    name: 'AMAN',
-    tagline: 'Quiet Luxury',
-    description: 'Inspired by the world\'s most considered resort collection. Every element stripped back to what matters. The AMAN universe speaks quietly — and says more for it.',
-    palette: [{ color: '#0A0A0A', label: 'Obsidian' }, { color: '#F8F7F5', label: 'Linen' }, { color: '#C4956A', label: 'Sand' }, { color: '#FFFFFF', label: 'Pure' }],
-    image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246464/manuel-moreno-DGa0LQ0yDPc-unsplash_nbgivs.jpg',
-    available: true,
-  },
-  {
-    id: 'tulum',
-    name: 'TULUM',
-    tagline: 'Desert Bloom',
-    description: 'Sun-bleached romance. Warm earth tones and organic texture that feel alive under open sky.',
-    palette: [{ color: '#C4956A', label: 'Terracotta' }, { color: '#F5ECD7', label: 'Sand' }, { color: '#7B6B52', label: 'Earth' }, { color: '#FFFFFF', label: 'Pure' }],
-    image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246462/alex-bertha-Jyg7xHRmXiU-unsplash_ypu0wy.jpg',
-    available: true,
-  },
-  {
-    id: 'kyoto',
-    name: 'KYOTO',
-    tagline: 'Zen and Ceremony',
-    description: 'Ancient ritual meets modern refinement. Stillness as a design principle.',
-    palette: [{ color: '#2C2C2C', label: 'Charcoal' }, { color: '#F0EBE3', label: 'Paper' }, { color: '#8B7355', label: 'Bamboo' }, { color: '#E8D5C4', label: 'Blush' }],
-    image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246462/anne-laure-p-PbemriYGLoQ-unsplash_rgyetw.jpg',
-    available: true,
-  },
-  {
-    id: 'capri',
-    name: 'CAPRI',
-    tagline: 'Italian Coast',
-    description: 'La dolce vita. Deep blues, warm stone and effortless elegance.',
-    palette: [{ color: '#1B3A6B', label: 'Cobalt' }, { color: '#F4E4C1', label: 'Stone' }, { color: '#7BA7C2', label: 'Sea' }, { color: '#FFFFFF', label: 'Pure' }],
-    image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246455/nicolo-salinetti-FiGEvsSG4vU-unsplash_ai9pim.jpg',
-    available: true,
-  },
-  {
-    id: 'paris',
-    name: 'PARIS',
-    tagline: 'Haussmann Romance',
-    description: 'Grand and timeless. The language of French elegance.',
-    palette: [{ color: '#1A1A2E', label: 'Midnight' }, { color: '#F5F0E8', label: 'Cream' }, { color: '#C9A96E', label: 'Gold' }, { color: '#8B4B6B', label: 'Rose' }],
-    image: 'https://res.cloudinary.com/dsr84xknv/image/upload/v1779246459/alex-boyd-HhFi1gKYosc-unsplash_prtm0n.jpg',
-    available: true,
-  },
-];
+// Aman is the one universe with no dedicated /universes/*.jpg photography
+// yet (UNIVERSE_CONFIGS' aman.imageUrl is null — quiet-luxury identity, no
+// real photography shot for it as of this overhaul). Falls back to a
+// Cloudinary photo whose own mood ("Quiet Glamour") matches the universe's
+// actual tone, rather than leaving a tile with no image at all.
+const FALLBACK_IMAGE = {
+  aman: 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355_zhr0xb.jpg',
+};
+
+const PJS = 'Plus Jakarta Sans, sans-serif';
+
+function UniverseTile({ universe, index, onExplore }) {
+  const [hovered, setHovered] = useState(false);
+  const image = universe.imageUrl || FALLBACK_IMAGE[universe.id];
+  const swatches = [
+    { color: universe.colors.darkBg, label: 'Ground' },
+    { color: universe.colors.lightBg, label: 'Paper' },
+    { color: universe.colors.accent, label: 'Accent' },
+    { color: universe.colors.accentSecondary, label: 'Secondary' },
+  ].filter(s => !!s.color);
+
+  return (
+    <article
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'relative', aspectRatio: '3 / 4', overflow: 'hidden', cursor: 'pointer',
+      }}
+    >
+      <img
+        src={image}
+        alt={`The ${universe.name} universe: ${universe.tagline || 'a full wedding aesthetic'}`}
+        loading={index < 4 ? 'eager' : 'lazy'}
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+          transform: hovered ? 'scale(1.04)' : 'scale(1)', transition: 'transform 0.6s cubic-bezier(0.16,1,0.3,1)',
+        }}
+      />
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: hovered
+          ? 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.15) 100%)'
+          : 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0) 100%)',
+        transition: 'background 0.4s ease',
+      }} />
+
+      {universe.isUltra && (
+        <span style={{
+          position: 'absolute', top: 20, right: 20, zIndex: 2,
+          fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: '#0A0A0A',
+          background: '#DDF762', borderRadius: 999, padding: '4px 10px', fontFamily: PJS,
+        }}>
+          Ultra
+        </span>
+      )}
+
+      <div style={{ position: 'absolute', inset: 0, zIndex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 24 }}>
+        <p style={{ fontSize: 11, fontStyle: 'italic', color: 'rgba(255,255,255,0.6)', margin: '0 0 6px', fontFamily: PJS }}>
+          {universe.tagline}
+        </p>
+        <h3 style={{ fontSize: 'clamp(24px, 2.4vw, 32px)', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.01em', margin: '0 0 10px', lineHeight: 1.05 }}>
+          {universe.name}
+        </h3>
+
+        <p style={{
+          fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.55, margin: '0 0 16px', maxWidth: 320,
+          maxHeight: hovered ? 120 : 0, opacity: hovered ? 1 : 0, overflow: 'hidden',
+          transition: 'max-height 0.35s ease, opacity 0.3s ease',
+        }}>
+          {universe.worldStory}
+        </p>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {swatches.map((s, i) => (
+              <span key={i} title={s.label} style={{ width: 16, height: 16, background: s.color, border: s.color === '#FFFFFF' ? '1px solid rgba(255,255,255,0.3)' : 'none', flexShrink: 0 }} />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={onExplore}
+            style={{
+              background: 'none', border: 'none', padding: 0, color: '#FFFFFF', fontSize: 12, fontWeight: 600,
+              cursor: 'pointer', fontFamily: PJS, letterSpacing: '0.02em',
+              opacity: hovered ? 1 : 0.7, transition: 'opacity 0.2s ease',
+            }}
+          >
+            Explore &rarr;
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 const Universes = () => {
   const navigate = useNavigate();
   const [scrollAnimations, setScrollAnimations] = useState({});
   const observerRef = useRef(null);
-  const universeContainerRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver((entries) => {
@@ -77,39 +123,27 @@ const Universes = () => {
     return () => observerRef.current?.disconnect();
   }, []);
 
-  const scrollToAssets = () => {
-    document.getElementById('assets-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+  // SEO — this SPA has no per-route meta tags beyond the static index.html,
+  // so this is the same lightweight document.title pattern already used on
+  // ScrollMorph.jsx, extended to the description meta tag too. Restores the
+  // sitewide defaults on unmount so navigating away doesn't leave this
+  // page's tags behind.
   useEffect(() => {
-    let rafId = null;
-    const handleScroll = () => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        const el = universeContainerRef.current;
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        const scrollRange = el.offsetHeight - window.innerHeight;
-        const scrolled = -rect.top;
-        const progress = Math.max(0, Math.min(1, scrolled / scrollRange));
-        setActiveIndex(Math.min(Math.floor(progress * 5), 4));
-      });
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
+    const prevTitle = document.title;
+    document.title = 'Universes: 20 aesthetic worlds for your wedding | Openinvite';
+    const meta = document.querySelector('meta[name="description"]');
+    const prevDescription = meta?.getAttribute('content') ?? null;
+    if (meta) {
+      meta.setAttribute('content', 'Explore all 20 Openinvite universes, a complete visual system for your wedding, from Aman to Shanghai. Every invitation, website and printed piece follows one aesthetic vision.');
+    }
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (rafId) cancelAnimationFrame(rafId);
+      document.title = prevTitle;
+      if (meta && prevDescription !== null) meta.setAttribute('content', prevDescription);
     };
   }, []);
 
-  const scrollToUniverse = (index) => {
-    const el = universeContainerRef.current;
-    if (!el) return;
-    const sectionTop = el.getBoundingClientRect().top + window.scrollY;
-    const scrollRange = el.offsetHeight - window.innerHeight;
-    window.scrollTo({ top: sectionTop + (index / 5) * scrollRange, behavior: 'smooth' });
+  const scrollToAssets = () => {
+    document.getElementById('assets-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const assets = [
@@ -166,7 +200,7 @@ const Universes = () => {
             lineHeight: 1.05,
             margin: '0 0 24px',
           }}>
-            Your Universe
+            Your universe
           </h1>
           <p style={{
             fontSize: 'clamp(16px,2vw,22px)',
@@ -177,7 +211,7 @@ const Universes = () => {
             lineHeight: 1.6,
             fontFamily: 'Plus Jakarta Sans',
           }}>
-            Every invitation, menu, seating chart and digital asset — designed around a single aesthetic vision. Choose your universe and everything follows.
+            Every invitation, menu, seating chart and digital asset, designed around a single aesthetic vision. Choose your universe and everything follows.
           </p>
         </div>
         <ScrollCue />
@@ -218,7 +252,7 @@ const Universes = () => {
               lineHeight: 1.7,
               marginBottom: 20,
             }}>
-              A Universe is a complete visual system for your wedding. The moment you choose one, it defines the typography, colour palette, layout logic and mood across all 10 pieces in your Guest Suite — from your Save the Date to your Thank You Notes.
+              A universe is a complete visual system for your wedding. The moment you choose one, it defines the typography, colour palette, layout logic and mood across all 10 pieces in your Guest Suite, from your Save the Date to your Thank You Notes.
             </p>
             <p style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -247,7 +281,7 @@ const Universes = () => {
           marginBottom: 16,
           fontFamily: 'Plus Jakarta Sans',
         }}>
-          YOUR GUEST SUITE
+          Your guest suite
         </p>
         <h2 style={{
           fontFamily: 'Plus Jakarta Sans, sans-serif',
@@ -324,114 +358,30 @@ const Universes = () => {
         </div>
       </section>
 
-      {/* SECTION 4: UNIVERSE SHOWCASE */}
-      <div ref={universeContainerRef} style={{ position: 'relative', height: '600vh' }}>
-        <style>{`@keyframes universeFadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
-        <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', background: '#0A0A0A' }}>
-          {/* Crossfading background images */}
-          {UNIVERSE_DATA.map((u, i) => (
-            <img
-              key={u.id}
-              src={u.image}
-              alt=""
-              style={{
-                position: 'absolute', inset: 0, width: '100%', height: '100%',
-                objectFit: 'cover', objectPosition: 'center', zIndex: 1,
-                opacity: i === activeIndex ? 1 : 0,
-                transition: 'opacity 0.8s ease',
-              }}
-            />
-          ))}
-          {/* Dark overlay */}
-          <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.75))' }} />
-          {/* Content grid */}
-          <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', height: '100%' }}>
-            {/* Left column: universe name list */}
-            <div style={{ padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {UNIVERSE_DATA.map((u, i) => (
-                  <button
-                    key={u.id}
-                    type="button"
-                    onClick={() => scrollToUniverse(i)}
-                    style={{
-                      background: 'none', border: 'none', padding: 0, textAlign: 'left',
-                      cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif',
-                      fontSize: i === activeIndex ? 'clamp(32px, 4vw, 52px)' : 'clamp(20px, 2.5vw, 32px)',
-                      fontWeight: i === activeIndex ? 700 : 400,
-                      color: i === activeIndex ? '#FFFFFF' : 'rgba(255,255,255,0.2)',
-                      letterSpacing: '0.05em',
-                      transition: 'all 0.4s ease',
-                      lineHeight: 1.1,
-                    }}
-                  >
-                    {u.name}
-                  </button>
-                ))}
-              </div>
-              <p style={{
-                fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em',
-                margin: '40px 0 0', fontFamily: 'Plus Jakarta Sans, sans-serif',
-              }}>
-                {String(activeIndex + 1).padStart(2, '0')} / 05
-              </p>
-            </div>
-            {/* Right column: universe detail */}
-            <div style={{ padding: 80, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative' }}>
-              {/* Large ghost name */}
-              <div style={{
-                position: 'absolute', top: 40, right: 80,
-                fontSize: 'clamp(64px, 10vw, 140px)', fontWeight: 700, letterSpacing: '0.08em',
-                color: 'rgba(255,255,255,0.06)', lineHeight: 1,
-                pointerEvents: 'none', userSelect: 'none',
-                fontFamily: 'Plus Jakarta Sans, sans-serif',
-              }}>
-                {UNIVERSE_DATA[activeIndex].name}
-              </div>
-              {/* Fading content */}
-              <div key={activeIndex} style={{ display: 'flex', flexDirection: 'column', animation: 'universeFadeIn 0.4s ease' }}>
-                <p style={{ fontStyle: 'italic', fontSize: 18, color: 'rgba(255,255,255,0.5)', margin: '0 0 16px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-                  {UNIVERSE_DATA[activeIndex].tagline}
-                </p>
-                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, maxWidth: 440, margin: '0 0 32px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-                  {UNIVERSE_DATA[activeIndex].description}
-                </p>
-                <div style={{ display: 'flex', gap: 16 }}>
-                  {UNIVERSE_DATA[activeIndex].palette.map((swatch, i) => (
-                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <div style={{ width: 48, height: 48, background: swatch.color, border: swatch.color === '#FFFFFF' ? '1px solid #444' : 'none' }} />
-                      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Plus Jakarta Sans, sans-serif', textAlign: 'center', margin: '6px 0 0' }}>
-                        {swatch.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <div style={{
-                  border: '1px solid rgba(255,255,255,0.2)', padding: '4px 14px',
-                  fontSize: 10, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.2em',
-                  display: 'inline-block', marginTop: 24, fontFamily: 'Plus Jakarta Sans, sans-serif',
-                  alignSelf: 'flex-start',
-                }}>
-                  Available now
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigate('/studio/universe')}
-                  style={{
-                    marginTop: 16, padding: '14px 40px', background: 'transparent',
-                    color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)',
-                    fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                    fontFamily: 'Plus Jakarta Sans, sans-serif', letterSpacing: '0.02em',
-                    alignSelf: 'flex-start',
-                  }}
-                >
-                  Explore {UNIVERSE_DATA[activeIndex].name} →
-                </button>
-              </div>
-            </div>
+      {/* SECTION 4: UNIVERSE SHOWCASE — all 20 worlds, one editorial grid.
+          Previously a sticky-pinned crossfade built for 5 hardcoded
+          universes (scaling it to 20 would mean ~2400vh of scroll just to
+          reach the last one). A grid scales to any count — a 21st universe
+          added to UNIVERSE_CONFIGS just adds one more tile — and every
+          tile's full text renders unconditionally, so it's crawlable
+          without needing JS scroll state to reveal it (the old version
+          only ever put the ACTIVE universe's description in the DOM). */}
+      <section style={{ background: '#0A0A0A', padding: '100px clamp(24px, 6vw, 80px) 120px' }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', marginBottom: 16, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+            {UNIVERSE_CATALOG.length} worlds
+          </p>
+          <h2 style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 700, fontSize: 'clamp(36px, 6vw, 64px)', color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.05, margin: '0 0 60px', maxWidth: 800 }}>
+            Every one of them, real.
+          </h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
+            {UNIVERSE_CATALOG.map((u, i) => (
+              <UniverseTile key={u.id} universe={u} index={i} onExplore={() => navigate('/studio/universe')} />
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* SECTION 6: EDITOR EXPERIENCE */}
       <section data-animate style={{
@@ -446,7 +396,7 @@ const Universes = () => {
           marginBottom: 16,
           fontFamily: 'Plus Jakarta Sans',
         }}>
-          THE EDITOR
+          The editor
         </p>
         <h2 style={{
           fontFamily: 'Plus Jakarta Sans, sans-serif',
@@ -521,7 +471,7 @@ const Universes = () => {
             marginBottom: 20,
             fontFamily: 'Plus Jakarta Sans',
           }}>
-            AVA'S STUDIO
+            Ava's studio
           </p>
           <h2 style={{
             fontFamily: 'Plus Jakarta Sans, sans-serif',

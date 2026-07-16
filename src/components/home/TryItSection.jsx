@@ -74,7 +74,7 @@ export default function TryItSection({ onCTA }) {
           Try it. Love it.
         </h2>
         <p style={{ color: "#7a9ab5" }} className="text-lg max-w-lg mb-10 leading-relaxed">
-          Take Openinvite for a spin — no commitments, no pressure. Your dream wedding workspace starts here.
+          Take Openinvite for a spin, no commitments, no pressure. Your dream wedding workspace starts here.
         </p>
         <button onClick={onCTA} className="btn-primary" style={{ padding: '14px 40px', fontSize: 12 }}>Start for free</button>
       </div>

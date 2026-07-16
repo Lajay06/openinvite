@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from "react";
-import { createPageUrl } from "@/utils";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -8,11 +7,10 @@ import HeroCollage from "@/components/home/HeroCollage";
 import ValuePropSection from "@/components/home/ValuePropSection";
 import FeatureInvitations from "@/components/home/FeatureInvitations";
 import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
-import ScrollMorphSection from "@/components/home/ScrollMorphSection";
+import PriceHonestySection from "@/components/home/PriceHonestySection";
 
 import LightSectionReveal from "@/components/home/LightSectionReveal";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
-import TestimonialsSection from "@/components/home/TestimonialsSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
 
@@ -20,13 +18,6 @@ export default function Home() {
   const handleCTA = () => {
     window.location.href = '/signup';
   };
-
-  const SECTION_LABELS = [
-  { id: "section-hero", label: "OVERVIEW" },
-  { id: "section-features", label: "FEATURES" },
-  { id: "section-invitations", label: "INVITATIONS" },
-  { id: "section-pricing", label: "PRICING" }];
-
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] font-sans" style={{ scrollBehavior: "smooth" }}>
@@ -41,29 +32,30 @@ export default function Home() {
       {/* 2. RED SILHOUETTE — full-width natural-height image */}
       <ValuePropSection />
 
-      {/* 3. SCROLL MORPH — "So, why us?" */}
-      <ScrollMorphSection />
+      {/* 3. "So, why us?" — the honest price comparison */}
+      <PriceHonestySection />
 
       {/* 4. HORIZONTAL SCROLL */}
       <div id="section-features" style={{ background: "#0A0A0A" }}>
         <HorizontalScrollSection />
       </div>
 
-      {/* 5. LIGHT SECTION CURTAIN REVEAL — transitions to white */}
-      <LightSectionReveal />
-
-      {/* 5. FEATURE BLOCKS — all on white */}
-      <div style={{ background: "#FFFFFF" }}>
-        <div id="section-invitations"><FeatureInvitations onCTA={handleCTA} /></div>
-      </div>
+      {/* 5. LIGHT SECTION CURTAIN REVEAL — wipes from black to white, then
+          reveals the feature blocks. Previously rendered with no children
+          (a separate plain white div held FeatureInvitations right after it),
+          so the curtain wipe had nothing to reveal and collapsed to a bare
+          sliver between the black scroll section and the white blocks below
+          — the "dead gap". Fixed by making it the actual wrapper. */}
+      <LightSectionReveal>
+        <div style={{ background: "#FFFFFF" }}>
+          <div id="section-invitations"><FeatureInvitations onCTA={handleCTA} /></div>
+        </div>
+      </LightSectionReveal>
 
       {/* 6. HOW IT WORKS */}
       <HowItWorksSection />
 
-      {/* 7. TESTIMONIALS */}
-      <TestimonialsSection />
-
-      {/* 8. AVA GRADIENT BANNER + SPOTLIGHT */}
+      {/* 7. AVA GRADIENT BANNER + SPOTLIGHT */}
       <div className="min-h-[140px] md:min-h-[180px]" style={{
         background: "linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)",
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -75,7 +67,7 @@ export default function Home() {
       </div>
       <AvaSpotlightSection />
 
-      {/* 10. PRICING */}
+      {/* 8. PRICING */}
       <div id="section-pricing">
         <PricingSection onCTA={handleCTA} />
       </div>
@@ -83,7 +75,7 @@ export default function Home() {
       {/* 9. FULL BLEED PHOTO CTA */}
       <FullBleedPhotoCTA onCTA={handleCTA} />
 
-      {/* 12. FOOTER */}
+      {/* 10. FOOTER */}
       <PublicFooter />
     </div>);
 
@@ -145,7 +137,7 @@ function PricingSection({ onCTA }) {
     <section ref={ref} style={{ background: "#0A0A0A", padding: "clamp(80px, 10vw, 160px)" }}>
       <div style={{ opacity: visible ? 1 : 0, transition: reduced ? "none" : `opacity 0.6s ${EASE}`, display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "0 12px" }}>
         <span style={{ fontSize: "clamp(40px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05, color: "#FFFFFF", whiteSpace: "nowrap" }}>
-          Go All In –{" "}
+          Go all in:{" "}
         </span>
         <span style={{
           fontSize: "clamp(40px, 5vw, 64px)",

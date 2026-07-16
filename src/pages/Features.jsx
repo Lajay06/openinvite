@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { PHOTOS } from "@/lib/photos";
 import { createPageUrl } from "@/utils";
@@ -7,8 +8,6 @@ import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import AnimDivider from "@/components/motion/AnimDivider";
-import { ArrowUpRight } from "lucide-react";
-import HorizontalCardShelf from "@/components/shared/HorizontalCardShelf";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 import FeatureTimeline from "@/components/home/FeatureTimeline";
 import FeaturePlaylists from "@/components/home/FeaturePlaylists";
@@ -43,23 +42,23 @@ function useScrollReveal(threshold = 0.2) {
 }
 
 const ESSENTIALS = [
-{ title: "Smart Budget Tracker", accent: "#E03553", label: "BUDGET", desc: "Track everything in one place — from flowers to favours — with real-time visuals and AI tips.", bg: PHOTOS.photoP },
-{ title: "Registry Tool", accent: "#803D81", label: "REGISTRY", desc: "Connect your dream registry or build your own — stylish, mobile, and guest-friendly.", bg: PHOTOS.photoQ },
-{ title: "Ultimate Planner", accent: "#6B2CAE", label: "PLANNING", desc: "The all-in-one planning workspace. Every detail, every vendor, every task.", bg: PHOTOS.photoR },
-{ title: "AI Integration", accent: "#DDF762", label: "AI", desc: "Smart suggestions, personalised insights, and Ava always one step ahead.", bg: PHOTOS.photoFeatAI },
-{ title: "Guest Suite", accent: "#C2E5F3", label: "GUESTS", desc: "From RSVP to seating — manage every guest with zero stress and total control.", bg: PHOTOS.photoFeatGuests },
-{ title: "Collaborative Playlists", accent: "#E03553", label: "MUSIC", desc: "Curate the ultimate soundtrack. Spotify-connected, guest-friendly, effortlessly organised.", bg: PHOTOS.photoFeatMusic }];
+{ title: "Smart budget tracker", accent: "#E03553", label: "Budget", desc: "Track everything in one place, from flowers to favours, with real-time visuals and Ava's tips." },
+{ title: "Registry tool", accent: "#803D81", label: "Registry", desc: "Connect your dream registry or build your own: stylish, mobile, guest-friendly." },
+{ title: "Ultimate planner", accent: "#6B2CAE", label: "Planning", desc: "The all-in-one planning workspace. Every detail, every vendor, every task." },
+{ title: "AI integration", accent: "#DDF762", label: "Ava", desc: "Smart suggestions, personalised insights, and Ava always one step ahead." },
+{ title: "Guest suite", accent: "#C2E5F3", label: "Guests", desc: "From RSVP to seating, manage every guest with zero stress and total control." },
+{ title: "Collaborative playlists", accent: "#E03553", label: "Music", desc: "Curate the ultimate soundtrack: Spotify-connected, guest-friendly, effortlessly organised." }];
 
 
 const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3", "#0A1930", "#E03553"];
 const ALL_FEATURES = [
-{ title: "Advanced Guest Management", bullets: ["Unlimited guest lists", "Real-time RSVP tracking", "Dietary preference tracking", "Smart table assignments", "Guest tagging & categories", "Centralised contact management"] },
-{ title: "Smart Budget Tracking", bullets: ["Budget vs. actual spend tracking", "Vendor payment scheduling", "Category-based budgeting", "Visual expense analytics", "Friendly payment reminders", "Subtle cost-saving suggestions"] },
-{ title: "Timeline & Schedule Planning", bullets: ["Visual timeline builder", "Vendor coordination made easy", "Assign tasks to your crew", "Track deadlines without drama", "Share the schedule with key players", "Create your seamless day-of rundown"] },
-{ title: "Collaborative Playlists", bullets: ["Spotify integration", "Let guests submit their favourite tracks", "Organise songs by vibe or moment", "Share playlists in a click", "DJ collaboration made effortless", "Create a music timeline"] },
-{ title: "Photo & Memory Management", bullets: ["Collect photos from all stages", "Guests can share their moments too", "Visual memory timeline", "Create albums", "Easy downloads", "Slideshow generator"] },
-{ title: "Registry Integration", bullets: ["One-click registry linking", "Sync with major platforms", "Share seamlessly with guests"] },
-{ title: "Venue Management", bullets: ["Track multiple venues", "Upload contracts & notes", "Capture must-know logistics"] }];
+{ title: "Advanced guest management", bullets: ["Unlimited guest lists", "Real-time RSVP tracking", "Dietary preference tracking", "Smart table assignments", "Guest tagging & categories", "Centralised contact management"] },
+{ title: "Smart budget tracking", bullets: ["Budget vs. actual spend tracking", "Vendor payment scheduling", "Category-based budgeting", "Visual expense analytics", "Friendly payment reminders", "Subtle cost-saving suggestions"] },
+{ title: "Timeline & schedule planning", bullets: ["Visual timeline builder", "Vendor coordination made easy", "Assign tasks to your crew", "Track deadlines without drama", "Share the schedule with key players", "Create your seamless day-of rundown"] },
+{ title: "Collaborative playlists", bullets: ["Spotify integration", "Let guests submit their favourite tracks", "Organise songs by vibe or moment", "Share playlists in a click", "DJ collaboration made effortless", "Create a music timeline"] },
+{ title: "Photo & memory management", bullets: ["Collect photos from all stages", "Guests can share their moments too", "Visual memory timeline", "Create albums", "Easy downloads", "Slideshow generator"] },
+{ title: "Registry integration", bullets: ["One-click registry linking", "Sync with major platforms", "Share seamlessly with guests"] },
+{ title: "Venue management", bullets: ["Track multiple venues", "Upload contracts & notes", "Capture must-know logistics"] }];
 
 
 const DOTS = ["#E03553", "#803D81", "#DDF762", "#6B2CAE", "#C2E5F3", "#0A1930"];
@@ -185,11 +184,11 @@ function ZoomParallax({ images }) {
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', textAlign: 'center', pointerEvents: 'none', zIndex: 10 }}>
           <motion.p style={{
             color: '#DDF762', fontSize: '11px', fontWeight: 500,
-            letterSpacing: '0.25em', textTransform: 'uppercase',
+            letterSpacing: '0.25em',
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             marginBottom: '12px', opacity: textOpacity
           }}>
-            SCROLL TO EXPLORE
+            Scroll to explore
           </motion.p>
           <motion.h2 style={{
             color: '#FFFFFF', fontSize: 'clamp(24px, 3vw, 42px)',
@@ -217,9 +216,9 @@ function QuickStartSection() {
       <div className="w-full lg:w-1/2 order-2 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: `opacity 0.9s ${EASE} 0.2s, transform 0.9s ${EASE} 0.2s` }}>
         <div style={{ maxWidth: 480 }}>
           <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#E03553,#803D81)", marginBottom: 24 }} />
-          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#C2E5F3", marginBottom: 16 }}>Getting Started</p>
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Quick Start Wizard</h2>
-          <p style={{ color: "#AAAAAA", lineHeight: 1.7, fontSize: 16 }}>Get set up in seconds — enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#C2E5F3", marginBottom: 16 }}>Getting started</p>
+          <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Quick start wizard</h2>
+          <p style={{ color: "#AAAAAA", lineHeight: 1.7, fontSize: 16 }}>Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
         </div>
       </div>
     </section>);
@@ -249,7 +248,7 @@ function DashboardSection() {
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 480 }}>
           <div style={{ width: 40, height: 2, background: "#803D81", marginBottom: 24 }} />
-          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#803D81", marginBottom: 16 }}>Collaboration</p>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#803D81", marginBottom: 16 }}>Collaboration</p>
           <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#0A0A0A", marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Customisable Dashboard</h2>
           <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16, marginBottom: 32 }}>Invite your partner, planner, or mum. Set who sees what, and assign tasks like a pro.</p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
@@ -283,31 +282,84 @@ function AvaSection({ essentials }) {
       <div style={{ position: "absolute", inset: 0, background: "#0A0A0A", zIndex: 10, transform: curtainUp ? "translateY(-100%)" : "translateY(0)", transition: `transform 0.9s ${EASE}`, pointerEvents: "none" }} />
       <div style={{ position: "relative", zIndex: 3 }}>
         <div style={{ textAlign: "center", marginBottom: 48, padding: "0 clamp(24px, 4vw, 64px)", opacity: curtainUp ? 1 : 0, transition: `opacity 0.8s ${EASE} 0.15s` }}>
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginBottom: 12, overflow: "visible", hyphens: "none" }}>The Essentials</h2>
+          <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginBottom: 12, overflow: "visible", hyphens: "none" }}>The essentials</h2>
         </div>
-        <HorizontalCardShelf cards={essentials} />
+        <EssentialsManifesto items={essentials} visible={curtainUp} />
       </div>
     </section>);
 
 }
 
+// A stated thesis, not a slideshow to scroll past — replaces the old
+// horizontal-shelf-of-photo-cards (which read as a generic "feature
+// carousel," the exact templated SaaS pattern the rest of this overhaul is
+// moving away from). No per-item photo competes with the section's own
+// full-bleed background; each essential is just an accent-coloured numeral,
+// a confident sentence-case headline, and one clean line of copy.
+function EssentialsManifesto({ items, visible }) {
+  return (
+    <div style={{
+      maxWidth: 1100, margin: "0 auto", padding: "0 clamp(24px, 4vw, 64px)",
+      display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1px",
+      background: "rgba(255,255,255,0.08)",
+    }}>
+      {items.map((item, i) => (
+        <div key={item.title} style={{
+          background: "#0A0A0A", padding: "32px 28px", borderLeft: `3px solid ${item.accent}`,
+          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
+          transition: `opacity 0.6s ${EASE} ${0.1 + i * 0.06}s, transform 0.6s ${EASE} ${0.1 + i * 0.06}s`,
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: item.accent, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: "0 0 12px" }}>
+            {item.label}
+          </p>
+          <h3 style={{ color: "#FFF", fontWeight: 700, fontSize: "clamp(20px, 2vw, 26px)", letterSpacing: "-0.01em", lineHeight: 1.15, margin: "0 0 10px" }}>
+            {item.title}
+          </h3>
+          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>
+            {item.desc}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 
 
 function InvitationsSection() {
+  const navigate = useNavigate();
   const [ref, visible] = useScrollReveal(0.2);
-  return null;
-
-
-
-
-
-
-
-
-
-
-
+  return (
+    <section ref={ref} style={{ background: "#0A0A0A", display: "flex", flexWrap: "wrap" }}>
+      <div style={{
+        flex: "1 1 480px", padding: "100px clamp(32px, 6vw, 80px)",
+        display: "flex", flexDirection: "column", justifyContent: "center",
+        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
+        transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
+      }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#DDF762", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          Invitations & guest suite
+        </p>
+        <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 24, maxWidth: 480 }}>
+          One invitation. A whole guest experience.
+        </h2>
+        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", lineHeight: 1.7, marginBottom: 32, maxWidth: 460 }}>
+          Send a digital invitation that opens into a full guest suite: accommodation, transport, a live stream for anyone who can't make it, and a Q&A your guests will actually read. Every piece follows the aesthetic universe you choose, automatically.
+        </p>
+        <ApplePillButton onClick={() => navigate('/universes')} light={false}>Explore universes</ApplePillButton>
+      </div>
+      <div style={{ flex: "1 1 480px", minHeight: 420, position: "relative", overflow: "hidden" }}>
+        <img
+          src="/universes/marrakech.jpg"
+          alt="The Marrakech universe applied to a digital invitation"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </div>
+    </section>
+  );
 }
+
+
 
 function AccordionSection({ features, borders, dots, openFeature, setOpenFeature }) {
   const [ref, visible] = useScrollReveal(0.1);
@@ -315,7 +367,7 @@ function AccordionSection({ features, borders, dots, openFeature, setOpenFeature
     <section ref={ref} style={{ background: "#F5F5F3", padding: "120px 0" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(32px, 6vw, 80px)" }}>
         <AnimDivider />
-        <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(10,10,10,0.4)", margin: "24px 0 48px" }}>All Features</p>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(10,10,10,0.4)", margin: "24px 0 48px" }}>All features</p>
         <div>
           {features.map((f, i) =>
           <div

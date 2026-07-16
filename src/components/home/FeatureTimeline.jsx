@@ -150,7 +150,7 @@ export default function FeatureTimeline() {
             className="feature-body-text"
             style={{ color: "#444444", lineHeight: 1.7, marginBottom: 32, fontSize: 16, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif" }}
           >
-            Run the day like a director — with an intuitive, drag-and-drop builder that keeps every moment smooth, stylish, and on time.
+            Run the day like a director, with an intuitive, drag-and-drop builder that keeps every moment smooth, stylish, and on time.
           </p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {BULLETS.map((b, i) => (

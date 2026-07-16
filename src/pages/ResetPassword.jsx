@@ -106,7 +106,7 @@ export default function ResetPassword() {
       await base44.auth.resetPassword({ resetToken: token, newPassword: password });
       setDone(true);
     } catch (err) {
-      setError(err?.message || "Could not reset password. Your link may have expired — please request a new one.");
+      setError(err?.message || "Could not reset password. Your link may have expired, please request a new one.");
     }
     setLoading(false);
   };
