@@ -31,6 +31,13 @@
  * getMyGuestsWithRsvp overlay prefers the real Guest.email whenever it's
  * set), not here — Guest.email itself is never touched by this endpoint,
  * so there is nothing here that could overwrite it even by mistake.
+ *
+ * feat/plus-one-identity: resolveGuestByToken's `role` says whether this
+ * submission is the primary guest's own or their plus-one's (same
+ * underlying guest_id either way — there's no separate Guest record for a
+ * plus-one). Rows are stamped is_plus_one accordingly, which is what keeps
+ * the two sets of answers from colliding under latest-wins aggregation
+ * (src/lib/rsvpAggregation.js).
  * Response: 200 { ok: true }
  *        or 404 { error: 'This link has expired or is invalid.' }
  *
@@ -119,7 +126,8 @@ export default async function handler(req, res) {
     if (!resolved || !resolved.wedding) {
       return res.status(404).json({ error: 'This link has expired or is invalid.' });
     }
-    const { guest, wedding } = resolved;
+    const { guest, wedding, role } = resolved;
+    const isPlusOne = role === 'plus_one';
 
     // One row per submitted event (append-only — an event this submission
     // didn't touch simply gets no new row, and its previous latest row still
@@ -131,6 +139,7 @@ export default async function handler(req, res) {
       ...eventResponses.map(r => createRsvpResponse({
         wedding_id: wedding.id,
         guest_id: guest.id,
+        is_plus_one: isPlusOne,
         event_id: r.event_id,
         status: r.status,
         meal_choice: r.meal_choice,
@@ -140,6 +149,7 @@ export default async function handler(req, res) {
       createRsvpResponse({
         wedding_id: wedding.id,
         guest_id: guest.id,
+        is_plus_one: isPlusOne,
         event_id: null,
         song_request: songRequest,
         note: rsvpNote,

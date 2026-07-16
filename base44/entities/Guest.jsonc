@@ -89,6 +89,10 @@
       "format": "email",
       "description": "Plus one's email address"
     },
+    "plus_one_rsvp_link_id": {
+      "type": "string",
+      "description": "Unique RSVP token for the plus-one's own invite link, set only when plus_one_email is present. Resolves via the same /rsvp/:token route as rsvp_link_id, but as the plus-one's own identity (see api/_lib/rsvpAuth.js)."
+    },
     "plus_one_rsvp": {
       "type": "string",
       "enum": [

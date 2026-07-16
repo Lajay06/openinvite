@@ -305,16 +305,25 @@ export default function SendInvitesModal({
     bannerImageUrl,
   }).html;
 
-  // Ensure tokens and return guest list with tokens
+  // Ensure tokens and return guest list with tokens — also ensures a
+  // separate plus_one_rsvp_link_id whenever plus_one_email is set, so the
+  // plus-one gets their own invite/RSVP link distinct from the primary
+  // guest's (feat/plus-one-identity).
   const ensureTokens = async (list) => {
     const updates = [];
     const result = list.map(g => {
-      if (!g.rsvp_link_id) {
+      let next = g;
+      if (!next.rsvp_link_id) {
         const token = crypto.randomUUID();
         updates.push(base44.entities.Guest.update(g.id, { rsvp_link_id: token }));
-        return { ...g, rsvp_link_id: token };
+        next = { ...next, rsvp_link_id: token };
       }
-      return g;
+      if (next.plus_one_email && !next.plus_one_rsvp_link_id) {
+        const poToken = crypto.randomUUID();
+        updates.push(base44.entities.Guest.update(g.id, { plus_one_rsvp_link_id: poToken }));
+        next = { ...next, plus_one_rsvp_link_id: poToken };
+      }
+      return next;
     });
     if (updates.length > 0) await Promise.all(updates);
     return result;
@@ -331,15 +340,28 @@ export default function SendInvitesModal({
 
       if (sendEmail) {
         const emailList = withTokens.filter(g => g.email);
-        if (emailList.length > 0) {
+        // A plus-one with their own email gets their own invite too — same
+        // events as the primary guest (they're invited to whatever the
+        // primary is), their own rsvp_link (plus_one_rsvp_link_id, ensured
+        // above), independent of whether the primary guest has an email at
+        // all (feat/plus-one-identity).
+        const plusOneEmailList = withTokens.filter(g => g.plus_one_email && g.plus_one_rsvp_link_id);
+        const recipients = [
+          ...emailList.map(g => ({
+            email: g.email, name: g.name, rsvpUrl: buildRsvpUrl(g.rsvp_link_id),
+            events: buildGuestEvents(g),
+          })),
+          ...plusOneEmailList.map(g => ({
+            email: g.plus_one_email, name: g.plus_one_name || 'Guest', rsvpUrl: buildRsvpUrl(g.plus_one_rsvp_link_id),
+            events: buildGuestEvents(g),
+          })),
+        ];
+        if (recipients.length > 0) {
           const payload = {
             type,
             universeId,
             bannerChoice,
-            guests: emailList.map(g => ({
-              email: g.email, name: g.name, rsvpUrl: buildRsvpUrl(g.rsvp_link_id),
-              events: buildGuestEvents(g),
-            })),
+            guests: recipients,
             wedding: { coupleName, weddingDate, venue, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
             customSubject: subject,
             customBody: messageBody,
