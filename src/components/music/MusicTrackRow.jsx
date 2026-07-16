@@ -12,9 +12,22 @@ const CATEGORY_LABELS = {
   general: 'General',
 };
 
+const SOURCE_LABELS = { apple: 'Apple Music', youtube: 'YouTube' };
+const SOURCE_BADGE_STYLES = {
+  apple:   { color: '#803D81', background: 'rgba(128,61,129,0.1)' },
+  youtube: { color: '#E03553', background: 'rgba(224,53,83,0.1)' },
+};
+
 export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleApproval }) {
   const [playing, setPlaying] = useState(false);
+  const [embedExpanded, setEmbedExpanded] = useState(false);
+  const [embedLoaded, setEmbedLoaded] = useState(false);
   const audioRef = useRef(null);
+
+  // Only apple/youtube link-pasted tracks carry an embed_url — Spotify
+  // tracks (search or paste) keep using preview_url audio, per the existing
+  // convention this reuses rather than replaces.
+  const hasEmbed = (item.source === 'apple' || item.source === 'youtube') && !!item.embed_url;
 
   const handlePlay = () => {
     if (!item.preview_url) return;
@@ -29,9 +42,19 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
     }
   };
 
+  // Iframe only ever mounts once the row is expanded — with a full
+  // playlist of link-pasted tracks, mounting 50 embeds up front would be
+  // slow and wasteful; this way each one loads only on demand, and stays
+  // mounted (not unmounted on collapse) so re-expanding doesn't reload it.
+  const handleToggleEmbed = () => {
+    setEmbedExpanded(v => !v);
+    if (!embedLoaded) setEmbedLoaded(true);
+  };
+
   return (
+    <div style={{ borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
     <div
-      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(10,10,10,0.06)', background: 'transparent', transition: 'background 0.1s', cursor: 'default' }}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: 'transparent', transition: 'background 0.1s', cursor: 'default' }}
       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.02)'; }}
       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
     >
@@ -57,6 +80,11 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.song_title}</span>
+          {SOURCE_LABELS[item.source] && (
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, fontFamily: PJS, flexShrink: 0, ...SOURCE_BADGE_STYLES[item.source] }}>
+              {SOURCE_LABELS[item.source]}
+            </span>
+          )}
           {item.guest_suggestion && (
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(128,61,129,0.1)', color: '#803D81', fontFamily: PJS, flexShrink: 0 }}>
               Guest request
@@ -84,6 +112,13 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
             {playing ? <Pause size={13} /> : <Play size={13} />}
           </button>
         )}
+        {hasEmbed && (
+          <button onClick={handleToggleEmbed}
+            title={embedExpanded ? 'Hide player' : 'Show player'}
+            style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: embedExpanded ? '#E03553' : 'rgba(10,10,10,0.35)' }}>
+            {embedExpanded ? <Pause size={13} /> : <Play size={13} />}
+          </button>
+        )}
         <button onClick={() => onToggleApproval(item)}
           style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: item.approved ? '#6b7700' : 'rgba(10,10,10,0.3)' }}
           title={item.approved ? 'Approved' : 'Mark as approved'}>
@@ -98,6 +133,19 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
           <Trash2 size={12} />
         </button>
       </div>
+    </div>
+
+    {hasEmbed && embedExpanded && embedLoaded && (
+      <div style={{ padding: '0 16px 14px 80px' }}>
+        <iframe
+          src={item.embed_url}
+          title={`${item.song_title} — ${SOURCE_LABELS[item.source]} player`}
+          style={{ width: '100%', maxWidth: 480, height: item.source === 'apple' ? 152 : 200, border: 'none', display: 'block' }}
+          allow="autoplay; encrypted-media; fullscreen; clipboard-write"
+          loading="lazy"
+        />
+      </div>
+    )}
     </div>
   );
 }

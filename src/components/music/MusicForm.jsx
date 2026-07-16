@@ -35,6 +35,7 @@ export default function MusicForm({ item, onSubmit, onCancel }) {
     song_title: '', artist: '', album: '', duration: '',
     category: 'general', guest_suggestion: false, approved: true,
     notes: '', spotify_track_id: '', preview_url: '', image_url: '',
+    source: 'spotify',
   });
   const [isSearching, setIsSearching] = useState(false);
 

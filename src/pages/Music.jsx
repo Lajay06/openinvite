@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Music2, Plus, Sparkles, Share2, Settings, X, Check, Clock } from 'lucide-react';
+import { Music2, Plus, Share2, Settings, X, Link2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SpotifySearch from '../components/music/SpotifySearch';
 import SpotifyModal from '../components/music/SpotifyModal';
@@ -10,6 +10,10 @@ import MusicSuggestionsModal from '../components/music/MusicSuggestionsModal';
 import SharePlaylist from '../components/music/SharePlaylist';
 import MusicList from '../components/music/MusicList';
 import MusicForm from '../components/music/MusicForm';
+import AddFromLink from '../components/music/AddFromLink';
+import VendorForm from '../components/vendors/VendorForm';
+import VendorList from '../components/vendors/VendorList';
+import PageConsiderations from '../components/shared/PageConsiderations';
 import { Textarea } from '@/components/ui/textarea';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
@@ -24,6 +28,12 @@ const labelStyle = {
   margin: 0, marginBottom: 10,
 };
 
+const TABS = [
+  { key: 'playlist',       label: 'Playlist' },
+  { key: 'vendor',         label: 'Vendor' },
+  { key: 'notes',          label: 'Notes' },
+  { key: 'considerations', label: 'Considerations' },
+];
 
 function CountUp({ to, duration = 1200, suffix = '' }) {
   const [value, setValue] = useState(0);
@@ -58,11 +68,12 @@ function ToggleRow({ label, value, onChange }) {
 
 export default function MusicPage() {
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState('playlist');
   const [activePlaylist, setActivePlaylist] = useState(null);
-  const [playlistTracks, setPlaylistTracks] = useState([]);
   const [requestFilter, setRequestFilter] = useState('pending');
   const [showSearch, setShowSearch] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddLink, setShowAddLink] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -73,6 +84,8 @@ export default function MusicPage() {
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [pendingSpotifyData, setPendingSpotifyData] = useState(null);
   const [spotifyDropdownOpen, setSpotifyDropdownOpen] = useState(false);
+  const [showVendorForm, setShowVendorForm] = useState(false);
+  const [editingVendor, setEditingVendor] = useState(null);
   const spotifyPillRef = useRef(null);
 
   const { data: details, isSuccess: detailsLoaded } = useQuery({
@@ -85,6 +98,21 @@ export default function MusicPage() {
     queryFn: async () => { try { return await getMyRecords('SongRequest'); } catch { return []; } },
   });
 
+  // Every track — search-added or link-pasted — is a real Music entity
+  // record (created_by_id-scoped, per CLAUDE.md's base44.entities.* rule),
+  // grouped into playlists via its `category` field.
+  const { data: tracksData } = useQuery({
+    queryKey: ['musicTracks'],
+    queryFn: async () => { try { return await getMyRecords('Music'); } catch { return []; } },
+  });
+  const playlistTracks = tracksData || [];
+
+  const { data: vendorsData } = useQuery({
+    queryKey: ['musicVendors'],
+    queryFn: async () => { try { return await getMyRecords('Vendor'); } catch { return []; } },
+  });
+  const musicVendors = (vendorsData || []).filter(v => v.category === 'music');
+
   const updateMutation = useMutation({
     mutationFn: async (updates) => {
       const current = details || {};
@@ -92,6 +120,19 @@ export default function MusicPage() {
       else await base44.entities.WeddingDetails.create({ ...updates, slug: 'temp' });
     },
     onSuccess: () => queryClient.invalidateQueries(['musicDetails']),
+  });
+
+  const addTrackMutation = useMutation({
+    mutationFn: async (track) => base44.entities.Music.create({ source: 'spotify', approved: true, guest_suggestion: false, ...track }),
+    onSuccess: () => queryClient.invalidateQueries(['musicTracks']),
+  });
+  const updateTrackMutation = useMutation({
+    mutationFn: async ({ id, updates }) => base44.entities.Music.update(id, updates),
+    onSuccess: () => queryClient.invalidateQueries(['musicTracks']),
+  });
+  const deleteTrackMutation = useMutation({
+    mutationFn: async (id) => base44.entities.Music.delete(id),
+    onSuccess: () => queryClient.invalidateQueries(['musicTracks']),
   });
 
   useEffect(() => {
@@ -208,26 +249,42 @@ export default function MusicPage() {
   const approvedCount = playlistTracks.filter(t => t.approved).length;
   const guestCount = playlistTracks.filter(t => t.guest_suggestion).length;
 
-  const handleAddTrack = (track) => {
-    const newTrack = { ...track, id: `${Date.now()}-${Math.random()}` };
-    setPlaylistTracks(prev => [...prev, newTrack]);
-    setShowSearch(false);
-    setShowAddForm(false);
-    toast.success('Track added');
+  const closeAddPanels = () => { setShowSearch(false); setShowAddForm(false); setShowAddLink(false); setEditingTrack(null); };
+
+  const handleAddTrack = async (track) => {
+    try {
+      await addTrackMutation.mutateAsync(track);
+      closeAddPanels();
+      toast.success('Track added');
+    } catch {
+      toast.error('Failed to add track');
+    }
   };
 
-  const handleEditTrack = (track) => { setEditingTrack(track); setShowAddForm(true); setShowSearch(false); };
-  const handleUpdateTrack = (updated) => {
-    setPlaylistTracks(prev => prev.map(t => t.id === editingTrack.id ? { ...t, ...updated } : t));
-    setEditingTrack(null); setShowAddForm(false);
-    toast.success('Track updated');
+  const handleEditTrack = (track) => { setEditingTrack(track); setShowAddForm(true); setShowSearch(false); setShowAddLink(false); };
+  const handleUpdateTrack = async (updated) => {
+    try {
+      await updateTrackMutation.mutateAsync({ id: editingTrack.id, updates: updated });
+      setEditingTrack(null); setShowAddForm(false);
+      toast.success('Track updated');
+    } catch {
+      toast.error('Failed to update track');
+    }
   };
-  const handleDeleteTrack = (id) => {
+  const handleDeleteTrack = async (id) => {
     if (!window.confirm('Remove this track?')) return;
-    setPlaylistTracks(prev => prev.filter(t => t.id !== id));
+    try {
+      await deleteTrackMutation.mutateAsync(id);
+    } catch {
+      toast.error('Failed to remove track');
+    }
   };
-  const handleToggleApproval = (track) => {
-    setPlaylistTracks(prev => prev.map(t => t.id === track.id ? { ...t, approved: !t.approved } : t));
+  const handleToggleApproval = async (track) => {
+    try {
+      await updateTrackMutation.mutateAsync({ id: track.id, updates: { approved: !track.approved } });
+    } catch {
+      toast.error('Failed to update track');
+    }
   };
 
   const handleAddPlaylist = () => {
@@ -239,6 +296,37 @@ export default function MusicPage() {
     setNewPlaylistName('');
     setAddingPlaylist(false);
     setActivePlaylist(newPl);
+  };
+
+  // ── Vendor tab — same mechanic as Beauty's "Beauty team" tab: a plain
+  // Vendor entity list filtered by category, add/edit via the shared
+  // VendorForm/VendorList components. ─────────────────────────────────────
+  const handleVendorSubmit = async (vendorData) => {
+    const tid = toast.loading(editingVendor ? 'Updating…' : 'Adding vendor…');
+    try {
+      if (editingVendor) {
+        await base44.entities.Vendor.update(editingVendor.id, vendorData);
+        toast.success('Vendor updated', { id: tid });
+      } else {
+        await base44.entities.Vendor.create({ ...vendorData, category: 'music' });
+        toast.success('Vendor added', { id: tid });
+      }
+      setShowVendorForm(false);
+      setEditingVendor(null);
+      queryClient.invalidateQueries(['musicVendors']);
+    } catch { toast.error('Failed to save vendor', { id: tid }); }
+  };
+
+  const handleVendorEdit = (vendor) => { setEditingVendor(vendor); setShowVendorForm(true); };
+
+  const handleVendorDelete = async (id) => {
+    if (!window.confirm('Delete this vendor?')) return;
+    const tid = toast.loading('Deleting…');
+    try {
+      await base44.entities.Vendor.delete(id);
+      toast.success('Vendor deleted', { id: tid });
+      queryClient.invalidateQueries(['musicVendors']);
+    } catch { toast.error('Failed to delete', { id: tid }); }
   };
 
   const filteredRequests = (songRequests || []).filter(r => r.status === requestFilter);
@@ -283,200 +371,277 @@ export default function MusicPage() {
         </div>
       </div>
 
-      {/* Three-panel layout — horizontally scrollable on mobile */}
-      <div className="overflow-x-auto" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-      <div style={{ display: 'flex', height: 680, minWidth: 700 }}>
-        {/* Left: Playlists */}
-        <div style={{ width: 220, borderRight: '1px solid rgba(10,10,10,0.08)', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '14px 16px 8px', borderBottom: '1px solid rgba(10,10,10,0.06)', flexShrink: 0 }}>
-            <span style={labelStyle}>Your playlists</span>
-          </div>
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            {playlists.length === 0 && (
-              <div style={{ padding: '24px 16px', textAlign: 'center' }}>
-                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
-                  No playlists yet. Create your first one below.
-                </p>
-              </div>
-            )}
-            {playlists.map(pl => (
-              <div key={pl.id} onClick={() => setActivePlaylist(pl)}
-                style={{ padding: '11px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, borderLeft: `3px solid ${activePlaylist?.id === pl.id ? '#E03553' : 'transparent'}`, background: activePlaylist?.id === pl.id ? 'rgba(224,53,83,0.05)' : 'transparent' }}>
-                <div style={{ width: 32, height: 32, background: '#F5F4F0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Music2 size={14} style={{ color: '#0A0A0A' }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pl.name}</p>
-                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
-                    {playlistTracks.filter(t => t.category === pl.id).length} songs
+      {/* Tab bar */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+        {TABS.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+            style={{
+              padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700,
+              fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer',
+              color: activeTab === tab.key ? '#E03553' : 'rgba(10,10,10,0.45)',
+              borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── PLAYLIST ───────────────────────────────────────────────────────── */}
+      {activeTab === 'playlist' && (
+        <div className="overflow-x-auto" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', height: 680, minWidth: 700 }}>
+          {/* Left: Playlists */}
+          <div style={{ width: 220, borderRight: '1px solid rgba(10,10,10,0.08)', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '14px 16px 8px', borderBottom: '1px solid rgba(10,10,10,0.06)', flexShrink: 0 }}>
+              <span style={labelStyle}>Your playlists</span>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {playlists.length === 0 && (
+                <div style={{ padding: '24px 16px', textAlign: 'center' }}>
+                  <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+                    No playlists yet. Create your first one below.
                   </p>
                 </div>
-              </div>
-            ))}
-          </div>
-          {/* Add playlist */}
-          <div style={{ borderTop: '1px solid rgba(10,10,10,0.06)', padding: '10px 16px', flexShrink: 0 }}>
-            {addingPlaylist ? (
-              <div>
-                <input
-                  autoFocus
-                  value={newPlaylistName}
-                  onChange={e => setNewPlaylistName(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') handleAddPlaylist(); if (e.key === 'Escape') { setAddingPlaylist(false); setNewPlaylistName(''); } }}
-                  placeholder="Playlist name…"
-                  style={{ width: '100%', border: 'none', borderBottom: '1px solid #E03553', background: 'none', fontSize: 13, fontFamily: PJS, padding: '4px 0', outline: 'none', color: '#0A0A0A', boxSizing: 'border-box' }}
-                />
-                <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                  <button onClick={handleAddPlaylist} className="btn-primary" style={{ fontSize: 11, flex: 1 }}>Add</button>
-                  <button onClick={() => { setAddingPlaylist(false); setNewPlaylistName(''); }} className="btn-editorial-secondary" style={{ fontSize: 11, flex: 1 }}>Cancel</button>
+              )}
+              {playlists.map(pl => (
+                <div key={pl.id} onClick={() => setActivePlaylist(pl)}
+                  style={{ padding: '11px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, borderLeft: `3px solid ${activePlaylist?.id === pl.id ? '#E03553' : 'transparent'}`, background: activePlaylist?.id === pl.id ? 'rgba(224,53,83,0.05)' : 'transparent' }}>
+                  <div style={{ width: 32, height: 32, background: '#F5F4F0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Music2 size={14} style={{ color: '#0A0A0A' }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pl.name}</p>
+                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+                      {playlistTracks.filter(t => t.category === pl.id).length} songs
+                    </p>
+                  </div>
                 </div>
+              ))}
+            </div>
+            {/* Add playlist */}
+            <div style={{ borderTop: '1px solid rgba(10,10,10,0.06)', padding: '10px 16px', flexShrink: 0 }}>
+              {addingPlaylist ? (
+                <div>
+                  <input
+                    autoFocus
+                    value={newPlaylistName}
+                    onChange={e => setNewPlaylistName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleAddPlaylist(); if (e.key === 'Escape') { setAddingPlaylist(false); setNewPlaylistName(''); } }}
+                    placeholder="Playlist name…"
+                    style={{ width: '100%', border: 'none', borderBottom: '1px solid #E03553', background: 'none', fontSize: 13, fontFamily: PJS, padding: '4px 0', outline: 'none', color: '#0A0A0A', boxSizing: 'border-box' }}
+                  />
+                  <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                    <button onClick={handleAddPlaylist} className="btn-primary" style={{ fontSize: 11, flex: 1 }}>Add</button>
+                    <button onClick={() => { setAddingPlaylist(false); setNewPlaylistName(''); }} className="btn-editorial-secondary" style={{ fontSize: 11, flex: 1 }}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setAddingPlaylist(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: '2px 0', width: '100%' }}>
+                  <Plus size={11} />Add playlist
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Center: Search + Tracks */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
+            {/* Center header */}
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, flexWrap: 'wrap', gap: 8 }}>
+              <div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{activePlaylist?.name || 'Select a playlist'}</p>
+                <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
+                  {playlistTracks.filter(t => t.category === activePlaylist?.id).length} songs
+                </p>
               </div>
-            ) : (
-              <button onClick={() => setAddingPlaylist(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: '2px 0', width: '100%' }}>
-                <Plus size={11} />Add playlist
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button onClick={() => { setShowSearch(v => !v); setShowAddForm(false); setShowAddLink(false); setEditingTrack(null); }}
+                  className={showSearch ? 'btn-primary' : 'btn-editorial-secondary'}
+                  style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Plus size={12} />Search Spotify
+                </button>
+                {isSpotifyConnected ? (
+                  <div style={{ position: 'relative' }} ref={spotifyPillRef}>
+                    <button
+                      onClick={() => setSpotifyDropdownOpen(v => !v)}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(29,185,84,0.08)', border: '1px solid rgba(29,185,84,0.25)', borderRadius: 999, padding: '5px 11px', cursor: 'pointer', fontSize: 12, fontFamily: PJS, fontWeight: 600, color: '#1DB954' }}
+                    >
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#1DB954', flexShrink: 0 }} />
+                      Connected · {spotifyConnection.displayName}
+                    </button>
+                    {spotifyDropdownOpen && (
+                      <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)', zIndex: 200, minWidth: 160 }}>
+                        <button
+                          onClick={() => setShowSpotifyModal(true)}
+                          style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', cursor: 'pointer' }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(10,10,10,0.04)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                        >
+                          Search Spotify
+                        </button>
+                        <button
+                          onClick={() => { setSpotifyDropdownOpen(false); handleDisconnectSpotify(); }}
+                          style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#E03553', cursor: 'pointer' }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(224,53,83,0.04)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                        >
+                          Disconnect Spotify
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleConnectSpotify}
+                    className="btn-editorial-secondary"
+                    style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.412.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.33.366.225.48.706.257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.837.327 1.282-.264.444-.838.59-1.284.327z"/></svg>
+                    Connect Spotify
+                  </button>
+                )}
+                <button onClick={() => { setShowAddLink(v => !v); setShowSearch(false); setShowAddForm(false); setEditingTrack(null); }}
+                  className={showAddLink ? 'btn-primary' : 'btn-editorial-secondary'}
+                  style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Link2 size={12} />Add from a link
+                </button>
+                <button onClick={() => { setShowAddForm(v => !v); setShowSearch(false); setShowAddLink(false); setEditingTrack(null); }}
+                  className="btn-editorial-secondary"
+                  style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Plus size={12} />Add manually
+                </button>
+              </div>
+            </div>
+
+            {/* SpotifySearch */}
+            {showSearch && (
+              <div style={{ flexShrink: 0, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                <SpotifySearch
+                  onAdd={(track) => handleAddTrack({ ...track, category: activePlaylist?.id || 'general' })}
+                  onClose={() => setShowSearch(false)}
+                />
+              </div>
+            )}
+
+            {/* AddFromLink — Apple Music / YouTube (or a raw Spotify link) */}
+            {showAddLink && (
+              <div style={{ flexShrink: 0, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                <AddFromLink
+                  onAdd={(track) => handleAddTrack({ ...track, category: activePlaylist?.id || 'general' })}
+                  onClose={() => setShowAddLink(false)}
+                />
+              </div>
+            )}
+
+            {/* MusicForm */}
+            {showAddForm && (
+              <div style={{ flexShrink: 0, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                <MusicForm
+                  item={editingTrack ? { ...editingTrack, category: editingTrack.category || activePlaylist?.id } : { category: activePlaylist?.id || 'general' }}
+                  onSubmit={editingTrack ? handleUpdateTrack : (d) => handleAddTrack({ ...d, category: d.category || activePlaylist?.id || 'general' })}
+                  onCancel={() => { setShowAddForm(false); setEditingTrack(null); }}
+                />
+              </div>
+            )}
+
+            {/* Track list */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <MusicList
+                items={playlistTracks.filter(t => !activePlaylist || t.category === activePlaylist.id)}
+                groupByCategory={!activePlaylist}
+                onEdit={handleEditTrack}
+                onDelete={handleDeleteTrack}
+                onToggleApproval={handleToggleApproval}
+              />
+            </div>
+          </div>
+
+          {/* Right: Song Requests */}
+          <div style={{ width: 300, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 10px' }}>Song requests</p>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {['pending', 'approved', 'declined'].map(status => (
+                  <button key={status} onClick={() => setRequestFilter(status)}
+                    style={{ padding: '3px 10px', border: 'none', background: requestFilter === status ? '#E03553' : 'rgba(10,10,10,0.06)', color: requestFilter === status ? '#FFFFFF' : 'rgba(10,10,10,0.6)', fontSize: 12, fontWeight: 600, cursor: 'pointer', borderRadius: 999, fontFamily: PJS, whiteSpace: 'nowrap', transition: 'background 0.12s, color 0.12s' }}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}{status === 'pending' && pendingCount > 0 ? ` (${pendingCount})` : ''}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {filteredRequests.length === 0 ? (
+                <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '32px 0' }}>No {requestFilter} requests</p>
+              ) : (
+                filteredRequests.map(req => (
+                  <div key={req.id} style={{ border: '1px solid rgba(10,10,10,0.08)' }}>
+                    <div style={{ display: 'flex', gap: 10, padding: 12 }}>
+                      {req.albumArt && <img src={req.albumArt} style={{ width: 44, height: 44, objectFit: 'cover', flexShrink: 0 }} alt="" />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.title}</p>
+                        <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0' }}>{req.artist}</p>
+                        <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>by {req.submittedBy}</p>
+                      </div>
+                    </div>
+                    {req.guestNote && (
+                      <div style={{ padding: '6px 12px', background: '#FAFAFA', borderTop: '1px solid rgba(10,10,10,0.05)' }}>
+                        <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", fontStyle: 'italic', margin: 0 }}>"{req.guestNote}"</p>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+        </div>
+      )}
+
+      {/* ── VENDOR ─────────────────────────────────────────────────────────── */}
+      {activeTab === 'vendor' && (
+        <div style={{ padding: '32px 32px 48px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} className="btn-primary"
+                style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Plus size={13} />Add music vendor
               </button>
+            </div>
+            {musicVendors.length === 0 ? (
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textAlign: 'center', padding: '40px 0' }}>
+                No music vendors added yet. Click "Add music vendor" to get started.
+              </p>
+            ) : (
+              <VendorList vendors={musicVendors} onEdit={handleVendorEdit} onDelete={handleVendorDelete} />
             )}
           </div>
         </div>
+      )}
 
-        {/* Center: Search + Tracks */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
-          {/* Center header */}
-          <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-            <div>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{activePlaylist?.name || 'Select a playlist'}</p>
-              <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
-                {playlistTracks.filter(t => t.category === activePlaylist?.id).length} songs
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => { setShowSearch(v => !v); setShowAddForm(false); setEditingTrack(null); }}
-                className={showSearch ? 'btn-primary' : 'btn-editorial-secondary'}
-                style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Plus size={12} />Search & add
-              </button>
-              {isSpotifyConnected ? (
-                <div style={{ position: 'relative' }} ref={spotifyPillRef}>
-                  <button
-                    onClick={() => setSpotifyDropdownOpen(v => !v)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(29,185,84,0.08)', border: '1px solid rgba(29,185,84,0.25)', borderRadius: 999, padding: '5px 11px', cursor: 'pointer', fontSize: 12, fontFamily: PJS, fontWeight: 600, color: '#1DB954' }}
-                  >
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#1DB954', flexShrink: 0 }} />
-                    Connected · {spotifyConnection.displayName}
-                  </button>
-                  {spotifyDropdownOpen && (
-                    <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)', zIndex: 200, minWidth: 160 }}>
-                      <button
-                        onClick={() => setShowSpotifyModal(true)}
-                        style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', cursor: 'pointer' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(10,10,10,0.04)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                      >
-                        Search Spotify
-                      </button>
-                      <button
-                        onClick={() => { setSpotifyDropdownOpen(false); handleDisconnectSpotify(); }}
-                        style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#E03553', cursor: 'pointer' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(224,53,83,0.04)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                      >
-                        Disconnect Spotify
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={handleConnectSpotify}
-                  className="btn-editorial-secondary"
-                  style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.412.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.33.366.225.48.706.257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.837.327 1.282-.264.444-.838.59-1.284.327z"/></svg>
-                  Connect Spotify
-                </button>
-              )}
-              <button onClick={() => { setShowAddForm(v => !v); setShowSearch(false); setEditingTrack(null); }}
-                className="btn-editorial-secondary"
-                style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Plus size={12} />Add manually
-              </button>
-            </div>
-          </div>
-
-          {/* SpotifySearch */}
-          {showSearch && (
-            <div style={{ flexShrink: 0, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-              <SpotifySearch
-                onAdd={(track) => handleAddTrack({ ...track, category: activePlaylist?.id || 'general' })}
-                onClose={() => setShowSearch(false)}
-              />
-            </div>
-          )}
-
-          {/* MusicForm */}
-          {showAddForm && (
-            <div style={{ flexShrink: 0, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-              <MusicForm
-                item={editingTrack ? { ...editingTrack, category: editingTrack.category || activePlaylist?.id } : { category: activePlaylist?.id || 'general' }}
-                onSubmit={editingTrack ? handleUpdateTrack : (d) => handleAddTrack({ ...d, category: d.category || activePlaylist?.id || 'general' })}
-                onCancel={() => { setShowAddForm(false); setEditingTrack(null); }}
-              />
-            </div>
-          )}
-
-          {/* Track list */}
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            <MusicList
-              items={playlistTracks.filter(t => !activePlaylist || t.category === activePlaylist.id)}
-              groupByCategory={!activePlaylist}
-              onEdit={handleEditTrack}
-              onDelete={handleDeleteTrack}
-              onToggleApproval={handleToggleApproval}
+      {/* ── NOTES ──────────────────────────────────────────────────────────── */}
+      {activeTab === 'notes' && (
+        <div style={{ padding: '32px 32px 48px' }}>
+          <div style={{ maxWidth: 760 }}>
+            <label style={labelStyle}>Notes</label>
+            <Textarea
+              value={details?.music?.notes || ''}
+              onChange={e => updateMusic('notes', e.target.value)}
+              placeholder="Anything else about your music plans — must-plays, timing notes, vendor coordination…"
+              style={{ minHeight: 200 }}
             />
           </div>
         </div>
+      )}
 
-        {/* Right: Song Requests */}
-        <div style={{ width: 300, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 10px' }}>Song requests</p>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {['pending', 'approved', 'declined'].map(status => (
-                <button key={status} onClick={() => setRequestFilter(status)}
-                  style={{ padding: '3px 10px', border: 'none', background: requestFilter === status ? '#E03553' : 'rgba(10,10,10,0.06)', color: requestFilter === status ? '#FFFFFF' : 'rgba(10,10,10,0.6)', fontSize: 12, fontWeight: 600, cursor: 'pointer', borderRadius: 999, fontFamily: PJS, whiteSpace: 'nowrap', transition: 'background 0.12s, color 0.12s' }}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}{status === 'pending' && pendingCount > 0 ? ` (${pendingCount})` : ''}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {filteredRequests.length === 0 ? (
-              <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '32px 0' }}>No {requestFilter} requests</p>
-            ) : (
-              filteredRequests.map(req => (
-                <div key={req.id} style={{ border: '1px solid rgba(10,10,10,0.08)' }}>
-                  <div style={{ display: 'flex', gap: 10, padding: 12 }}>
-                    {req.albumArt && <img src={req.albumArt} style={{ width: 44, height: 44, objectFit: 'cover', flexShrink: 0 }} alt="" />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.title}</p>
-                      <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0' }}>{req.artist}</p>
-                      <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>by {req.submittedBy}</p>
-                    </div>
-                  </div>
-                  {req.guestNote && (
-                    <div style={{ padding: '6px 12px', background: '#FAFAFA', borderTop: '1px solid rgba(10,10,10,0.05)' }}>
-                      <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", fontStyle: 'italic', margin: 0 }}>"{req.guestNote}"</p>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
+      {/* ── CONSIDERATIONS ─────────────────────────────────────────────────── */}
+      {activeTab === 'considerations' && (
+        <div style={{ padding: '32px 32px 48px' }}>
+          <div style={{ maxWidth: 860 }}>
+            <PageConsiderations pageKey="music" />
           </div>
         </div>
-      </div>
-      </div>{/* end overflow-x-auto wrapper */}
+      )}
 
       {/* Modals */}
       {showSuggestions && (
@@ -491,6 +656,22 @@ export default function MusicPage() {
           onAdd={(track) => handleAddTrack({ ...track, category: activePlaylist?.id || 'general' })}
           onClose={() => setShowSpotifyModal(false)}
         />
+      )}
+
+      {/* Vendor form modal */}
+      {showVendorForm && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          onClick={() => { setShowVendorForm(false); setEditingVendor(null); }}>
+          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
+            onClick={e => e.stopPropagation()}>
+            <VendorForm
+              vendor={editingVendor}
+              defaultCategory="music"
+              onSubmit={handleVendorSubmit}
+              onCancel={() => { setShowVendorForm(false); setEditingVendor(null); }}
+            />
+          </div>
+        </div>
       )}
 
       {/* Settings modal */}
