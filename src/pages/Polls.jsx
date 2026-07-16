@@ -5,6 +5,7 @@ import { aggregateVotes } from "@/lib/pollAggregation";
 import { Loader2, Trash2, Share2, Plus, X, ChevronLeft } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
+import GamesManager from "@/components/games/GamesManager";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -247,7 +248,13 @@ function PollEditor({ initial, onSave, onCancel, saving }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+const SECTIONS = [
+  { key: 'polls', label: 'Polls' },
+  { key: 'games', label: 'Games' },
+];
+
 export default function Polls() {
+  const [section, setSection] = useState('polls');
   const [tab, setTab] = useState('active');
   const [createView, setCreateView] = useState('templates'); // 'templates' | 'edit' | 'custom'
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -416,8 +423,33 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
-      <DashboardPageHeader title="Guest polls" subtitle="Involve your guests in the planning" />
+      <DashboardPageHeader title="Polls & games" subtitle="Involve your guests in the planning, and run private games only you can see the answers to" />
 
+      {/* Section tabs: Polls | Games */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ padding: '0 32px', display: 'flex' }}>
+          {SECTIONS.map(s => (
+            <button key={s.key} onClick={() => setSection(s.key)} style={{
+              padding: '14px 0', marginRight: 32, border: 'none', background: 'none', cursor: 'pointer',
+              fontSize: 13, fontWeight: 700, fontFamily: PJS,
+              color: section === s.key ? '#E03553' : 'rgba(10,10,10,0.45)',
+              borderBottom: section === s.key ? '2px solid #E03553' : '2px solid transparent',
+              transition: 'color 0.15s',
+            }}>
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {section === 'games' && (
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 32px 80px' }}>
+          <GamesManager />
+        </div>
+      )}
+
+      {section === 'polls' && (
+        <>
       {/* Guest Suite visibility banner */}
       <div style={{ padding: '8px 32px', background: 'rgba(10,10,10,0.02)', borderBottom: '1px solid rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS }}>
@@ -540,6 +572,8 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }

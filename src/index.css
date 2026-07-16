@@ -1156,3 +1156,17 @@ body {
   border-color: rgba(10,10,10,0.3);
   color: #0A0A0A;
 }
+
+/* ── Games print/export view (Polls & games) ──────────────────
+   The print overlay portals straight to document.body (a sibling of the
+   dashboard shell, not nested inside .page-content), so this single rule
+   hides the entire rest of the app — sidebar, top bar, everything — and
+   leaves only the overlay's own printable content on the page. */
+@media print {
+  body > *:not(.games-print-overlay) {
+    display: none !important;
+  }
+  .games-print-overlay .no-print {
+    display: none !important;
+  }
+}

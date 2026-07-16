@@ -1,0 +1,56 @@
+{
+  "name": "QuestionnaireResponse",
+  "type": "object",
+  "properties": {
+    "questionnaire_id": {
+      "type": "string",
+      "description": "The Questionnaire this response answers"
+    },
+    "guest_id": {
+      "type": "string",
+      "description": "The Guest.id who submitted this response — resolved server-side from their rsvp_link_id token, never client-suppliable"
+    },
+    "guest_name": {
+      "type": "string",
+      "description": "Denormalized guest name at time of submission, so the couple's per-question game view doesn't need a second Guest lookup"
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question_id": { "type": "string" },
+          "answer_text": { "type": "string", "description": "Free-text answer for a short_text question" },
+          "selected_option": { "type": "string", "description": "Chosen option for a multiple_choice question" }
+        }
+      }
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
+    }
+  },
+  "required": [
+    "questionnaire_id",
+    "guest_id"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
