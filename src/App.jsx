@@ -206,6 +206,11 @@ const AuthenticatedApp = () => {
             <UniverseStudio />
           </LayoutWrapper>
         } />
+        {/* chore/consolidate-overview — GuestSuite.jsx ("Overview") is
+            retired; Design Studio is the single design home now. Explicit
+            redirect since removing "GuestSuite" from pages.config.js's
+            Pages map also removes its auto-generated route. */}
+        <Route path="/GuestSuite" element={<Navigate to="/studio/universe" replace />} />
         <Route path="/food-beverage" element={<LayoutWrapper currentPageName="FoodBeverage"><FoodBeverage /></LayoutWrapper>} />
         {/* Dev-only vendor-template mocks (Beauty/Music/Food & beverage/Photography
             unification) — see import comment above. */}
