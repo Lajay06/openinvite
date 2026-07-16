@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
+import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
+import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
 const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -72,6 +73,7 @@ export default function Guests() {
   const upgradeTooltip = 'Upgrade to Ultra to send invitations';
 
   const [guests, setGuests] = useState([]);
+  const [tables, setTables] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingGuest, setEditingGuest] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -104,34 +106,87 @@ export default function Guests() {
     try {
       // Ascending — oldest first, newest last — so a newly added guest
       // lands at the bottom of the list instead of jumping to the top.
-      // There's no explicit sort control on this page today; if one is
-      // added later, this default should only apply while it's unset.
-      const data = await getMyGuestsWithRsvp('created_date');
-      setGuests(data);
+      // This is the *default* order; GuestList applies its own column sort
+      // on top of it whenever one is active.
+      const [guestData, tableData] = await Promise.all([
+        getMyGuestsWithRsvp('created_date'),
+        getMyRecords('Table', '-created_date'),
+      ]);
+      setGuests(guestData);
+      setTables(tableData.map(t => ({ ...t, assigned_guests: t.assigned_guests || [] })));
     } catch {
       toast.error("Failed to load guests");
     }
     setLoading(false);
   };
 
+  /* ── Table assignment — routes through the shared Table.assigned_guests
+     write path (src/lib/tableAssignment.js) instead of writing
+     Guest.table_assignment directly, so the seating visualiser and the
+     guest list's Table column can never drift apart. Empty value clears
+     the guest's seat everywhere; a non-empty value resolves (or
+     auto-creates, or grows) the named table. */
+  const handleTableAssignment = async (guestId, rawValue) => {
+    const value = (rawValue || '').trim();
+    const prevName = guests.find(g => g.id === guestId)?.table_assignment || '';
+    if (value === prevName) return;
+
+    // Optimistic UI update
+    setGuests(prev => prev.map(g => g.id === guestId ? { ...g, table_assignment: value } : g));
+
+    try {
+      if (!value) {
+        await unassignGuestFromTables({ guestId, tables });
+      } else {
+        const { tableName, created, grewCapacityTo } = await assignGuestToTableByName({ guestId, tableName: value, tables });
+        if (created) {
+          toast.success(`Created table "${tableName}" (capacity ${DEFAULT_TABLE_CAPACITY}) and seated the guest`);
+        } else if (grewCapacityTo) {
+          toast(`${tableName} grew to ${grewCapacityTo} seats to fit everyone assigned`, { icon: '⚠️' });
+        }
+      }
+      loadGuests();
+    } catch (e) {
+      toast.error(e?.message || 'Failed to update table assignment');
+      loadGuests(); // rollback
+    }
+  };
+
   const handleSubmit = async (guestData) => {
     setSaving(true);
     const tid = toast.loading(editingGuest ? 'Updating guest…' : 'Adding guest…');
+    // table_assignment goes through the shared write path below, once the
+    // guest id is known — never as a plain field on the Guest record itself.
+    const { table_assignment: tableAssignmentInput, ...restGuestData } = guestData;
     try {
+      let guestId;
       if (editingGuest) {
-        await Guest.update(editingGuest.id, guestData);
+        await Guest.update(editingGuest.id, restGuestData);
+        guestId = editingGuest.id;
         toast.success('Guest updated', { id: tid });
       } else {
         // New guests default to invited for main events (ceremony + reception) —
         // per SMART_RSVP_MODEL.md, custom events are opt-in via the couple's
         // per-guest event checkboxes.
-        const payload = guestData.event_responses
-          ? guestData
-          : { ...guestData, event_responses: defaultEventResponses(weddingEvents) };
+        const payload = restGuestData.event_responses
+          ? restGuestData
+          : { ...restGuestData, event_responses: defaultEventResponses(weddingEvents) };
         const created = await Guest.create(payload);
+        guestId = created.id;
         toast.success('Guest added', { id: tid });
         setScrollToGuestId(created.id);
       }
+
+      const prevTableAssignment = editingGuest?.table_assignment || '';
+      const nextTableAssignment = (tableAssignmentInput || '').trim();
+      if (nextTableAssignment !== prevTableAssignment) {
+        if (nextTableAssignment) {
+          await assignGuestToTableByName({ guestId, tableName: nextTableAssignment, tables });
+        } else {
+          await unassignGuestFromTables({ guestId, tables });
+        }
+      }
+
       setShowForm(false);
       setEditingGuest(null);
       loadGuests();
@@ -158,6 +213,13 @@ export default function Guests() {
   };
 
   const handleInlineUpdate = async (guestId, updates) => {
+    // table_assignment has its own write path (Table.assigned_guests is the
+    // source of truth) — never write it as a plain field, or the guest list
+    // and the seating visualiser drift apart again.
+    if ('table_assignment' in updates) {
+      await handleTableAssignment(guestId, updates.table_assignment);
+      return;
+    }
     // Optimistic update so the UI feels instant
     setGuests(prev => prev.map(g => g.id === guestId ? { ...g, ...updates } : g));
     try {
