@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, Search, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
 import { validateUploadFile } from '@/lib/uploadValidation';
@@ -7,20 +7,10 @@ import UploadStatus from '@/components/shared/UploadStatus';
 
 let queueItemId = 0;
 
-const STOCK_GRADIENTS = [
-  'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-  'linear-gradient(135deg, #0f3460 0%, #533483 100%)',
-  'linear-gradient(135deg, #2d1b69 0%, #11998e 100%)',
-  'linear-gradient(135deg, #c94b4b 0%, #4b134f 100%)',
-  'linear-gradient(135deg, #373b44 0%, #4286f4 100%)',
-  'linear-gradient(135deg, #1d4350 0%, #a43931 100%)',
-  'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
-  'linear-gradient(135deg, #4a00e0 0%, #8e2de2 100%)',
-  'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
-  'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)',
-  'linear-gradient(135deg, #cc2b5e 0%, #753a88 100%)',
-  'linear-gradient(135deg, #005c97 0%, #363795 100%)',
-];
+// Wedding-appropriate starting points shown before the couple types their
+// own search — not an exhaustive taxonomy, just enough to make the empty
+// state feel populated rather than a bare input box.
+const STOCK_SUGGESTIONS = ['Florals', 'Wedding venue', 'Greenery', 'Table setting', 'Wedding rings', 'Neutral texture'];
 
 export default function MediaLibraryModal({ library, onClose, onSelect, onUploaded }) {
   const [selected, setSelected] = useState(null);
@@ -29,7 +19,15 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
   const [queue, setQueue] = useState([]); // [{ id, file, status: 'uploading'|'error', error }]
   const [dragOver, setDragOver] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
+  const [stockQuery, setStockQuery] = useState('');
+  const [stockResults, setStockResults] = useState([]);
+  const [stockLoading, setStockLoading] = useState(false);
+  const [stockError, setStockError] = useState('');
+  const [stockPage, setStockPage] = useState(1);
+  const [stockHasMore, setStockHasMore] = useState(false);
+  const [stockImportingId, setStockImportingId] = useState(null);
   const fileInputRef = useRef(null);
+  const stockDebounceRef = useRef(null);
 
   const uploading = queue.some(q => q.status === 'uploading');
 
@@ -66,6 +64,66 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
       return q;
     });
   }, [uploadOne]);
+
+  // ── Stock photos (Pexels, via api/stock-search.js — the key never ships
+  // client-side) ────────────────────────────────────────────────────────
+  const searchStock = useCallback(async (q, page = 1) => {
+    const query = q.trim();
+    if (!query) { setStockResults([]); setStockError(''); setStockHasMore(false); return; }
+    setStockLoading(true);
+    setStockError('');
+    try {
+      const res = await fetch(`/api/stock-search?q=${encodeURIComponent(query)}&page=${page}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Search failed');
+      setStockResults(prev => (page === 1 ? data.photos : [...prev, ...data.photos]));
+      setStockHasMore(!!data.hasMore);
+      setStockPage(page);
+    } catch (e) {
+      setStockError(e.message || 'Search failed. Please try again.');
+    }
+    setStockLoading(false);
+  }, []);
+
+  const handleStockQueryChange = (e) => {
+    const val = e.target.value;
+    setStockQuery(val);
+    clearTimeout(stockDebounceRef.current);
+    if (val.trim().length >= 2) {
+      stockDebounceRef.current = setTimeout(() => searchStock(val, 1), 400);
+    } else {
+      setStockResults([]);
+      setStockError('');
+      setStockHasMore(false);
+    }
+  };
+
+  const handleStockSuggestion = (label) => {
+    setStockQuery(label);
+    clearTimeout(stockDebounceRef.current);
+    searchStock(label, 1);
+  };
+
+  // Downloads the chosen size from Pexels' own CDN (permits direct
+  // hotlinking — that's their embed model) and re-uploads it through the
+  // existing base44 path, so the wedding site ends up with its own hosted
+  // copy rather than a long-term hot-link to a third party.
+  const handleSelectStockPhoto = async (photo) => {
+    setStockImportingId(photo.id);
+    try {
+      const imgRes = await fetch(photo.full);
+      if (!imgRes.ok) throw new Error('Download failed');
+      const blob = await imgRes.blob();
+      const file = new File([blob], `pexels-${photo.id}.jpg`, { type: blob.type || 'image/jpeg' });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      onUploaded({ url: file_url, name: photo.alt || `Stock photo by ${photo.photographer}`, type: 'photo' });
+      toast.success('Photo added');
+    } catch (e) {
+      console.error('[MediaLibraryModal] stock photo import failed:', e);
+      toast.error('Failed to add photo — please try again.');
+    }
+    setStockImportingId(null);
+  };
 
   const handleDrop = useCallback((e) => {
     e.preventDefault();
@@ -276,17 +334,112 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
 
           {/* ── STOCK TAB ── */}
           {tab === 'stock' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
-              {STOCK_GRADIENTS.map((grad, i) => (
-                <div
-                  key={i}
-                  style={{ aspectRatio: '1', background: grad, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}
-                >
-                  <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.7)', textAlign: 'center', padding: '0 8px', fontFamily: 'inherit', fontWeight: 500 }}>
-                    Stock library<br />coming soon
-                  </p>
+            <div>
+              {/* Search bar */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  {stockLoading
+                    ? <Loader2 size={13} className="animate-spin" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
+                    : <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
+                  }
+                  <input
+                    value={stockQuery}
+                    onChange={handleStockQueryChange}
+                    onKeyDown={e => e.key === 'Enter' && searchStock(stockQuery, 1)}
+                    placeholder="Search stock photos — florals, venues, textures…"
+                    style={{
+                      width: '100%', boxSizing: 'border-box', border: '1px solid rgba(255,255,255,0.1)',
+                      background: 'rgba(255,255,255,0.06)', padding: '8px 10px 8px 32px', fontSize: 13,
+                      outline: 'none', color: '#FFFFFF', fontFamily: 'inherit',
+                    }}
+                  />
                 </div>
-              ))}
+              </div>
+
+              {stockError && (
+                <p style={{ fontSize: 12, color: '#E03553', fontFamily: 'inherit', margin: '0 0 16px' }}>{stockError}</p>
+              )}
+
+              {/* Suggestions — shown before a search has been made */}
+              {!stockQuery && stockResults.length === 0 && !stockError && (
+                <div>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: 'inherit', margin: '0 0 10px' }}>
+                    Try a wedding-ready search:
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {STOCK_SUGGESTIONS.map(label => (
+                      <button
+                        key={label}
+                        onClick={() => handleStockSuggestion(label)}
+                        style={{
+                          padding: '6px 14px', borderRadius: 999, background: 'transparent',
+                          border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)',
+                          fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Results */}
+              {stockResults.length > 0 && (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
+                    {stockResults.map(photo => {
+                      const importing = stockImportingId === photo.id;
+                      return (
+                        <div
+                          key={photo.id}
+                          onClick={() => !importing && handleSelectStockPhoto(photo)}
+                          style={{
+                            aspectRatio: '1', position: 'relative', overflow: 'hidden', cursor: importing ? 'default' : 'pointer',
+                            background: 'rgba(255,255,255,0.06)',
+                          }}
+                        >
+                          <img
+                            src={photo.thumbnail}
+                            alt={photo.alt}
+                            loading="lazy"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          />
+                          {photo.photographer && (
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(0,0,0,0.75))', padding: '16px 8px 6px', pointerEvents: 'none' }}>
+                              <p style={{ margin: 0, fontSize: 10, color: 'rgba(255,255,255,0.8)', fontFamily: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {photo.photographer}
+                              </p>
+                            </div>
+                          )}
+                          {importing && (
+                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Loader2 size={18} className="animate-spin" style={{ color: '#FFFFFF' }} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {stockHasMore && (
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+                      <button
+                        onClick={() => searchStock(stockQuery, stockPage + 1)}
+                        disabled={stockLoading}
+                        style={{ padding: '7px 18px', borderRadius: 999, background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, cursor: stockLoading ? 'default' : 'pointer', fontFamily: 'inherit' }}
+                      >
+                        {stockLoading ? 'Loading…' : 'Load more'}
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {!stockLoading && stockQuery && stockResults.length === 0 && !stockError && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 160, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
+                  <p style={{ fontSize: 13, margin: 0 }}>No stock photos found for "{stockQuery}". Try a different search.</p>
+                </div>
+              )}
             </div>
           )}
         </div>
