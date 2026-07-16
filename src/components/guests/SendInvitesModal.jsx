@@ -8,6 +8,7 @@ import {
 } from '@/lib/emailTemplate';
 import { X, Mail, MessageCircle, Check, Loader2, Search, ArrowLeft, ArrowRight, Send, AlertCircle, FlaskConical } from 'lucide-react';
 import toast from 'react-hot-toast';
+import GuestAvatar from '@/components/shared/GuestAvatar';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
@@ -27,14 +28,6 @@ function buildWhatsAppUrl(guest, coupleName, weddingDate, token) {
   return phone
     ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
     : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-}
-
-function getInitials(name) {
-  if (!name) return '?';
-  const parts = name.trim().split(/\s+/);
-  return parts.length >= 2
-    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-    : parts[0][0].toUpperCase();
 }
 
 function replaceMergeTags(str, guestName, coupleName, dateStr) {
@@ -112,23 +105,6 @@ function StepIndicator({ current }) {
           </React.Fragment>
         );
       })}
-    </div>
-  );
-}
-
-// ── Guest avatar ─────────────────────────────────────────────────────────────
-const AVATAR_COLORS = ['#FDE8EC', '#E8F4FD', '#E8FDE8', '#FDF4E8', '#F4E8FD'];
-function Avatar({ name, size = 36 }) {
-  const initials = getInitials(name);
-  const colorIdx = name ? name.charCodeAt(0) % AVATAR_COLORS.length : 0;
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', background: AVATAR_COLORS[colorIdx],
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.36, fontWeight: 700, color: '#0A0A0A', flexShrink: 0,
-      ...F,
-    }}>
-      {initials}
     </div>
   );
 }
@@ -650,7 +626,7 @@ export default function SendInvitesModal({
                         onClick={e => e.stopPropagation()}
                         style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#E03553', flexShrink: 0 }}
                       />
-                      <Avatar name={g.name} size={36} />
+                      <GuestAvatar name={g.name} email={g.email} profilePictureUrl={g.profile_picture_url} size={36} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name}</p>
                         <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -862,7 +838,7 @@ export default function SendInvitesModal({
                     <div style={{ maxHeight: 220, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {selectedGuests.map(g => (
                         <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <Avatar name={g.name} size={28} />
+                          <GuestAvatar name={g.name} email={g.email} profilePictureUrl={g.profile_picture_url} size={28} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, ...F }}>{g.name}</p>
                             <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, ...F }}>{g.email || 'No email'}</p>

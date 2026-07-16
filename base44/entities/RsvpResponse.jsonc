@@ -12,6 +12,7 @@
     "note": { "type": "string", "description": "Free-text note the guest left with this submission — whole-submission, not per-event. Only ever set on the guest-level row (event_id null)." },
     "song_request": { "type": "string", "description": "Guest's requested song for the reception — whole-submission, not per-event. Only ever set on the guest-level row (event_id null)." },
     "dietary_restrictions": { "type": "string", "description": "Guest's dietary requirements — whole-submission, not per-event. Only ever set on the guest-level row (event_id null)." },
+    "email": { "type": "string", "format": "email", "description": "Optional email the guest gave with their RSVP so the couple can reach them — whole-submission, not per-event. Only ever set on the guest-level row (event_id null). Only used to fill in Guest.email when it's empty; an existing Guest.email is never overwritten by this." },
     "is_test": { "type": "boolean", "default": false, "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails." }
   },
   "required": [],

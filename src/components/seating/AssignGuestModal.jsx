@@ -1,15 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Search, Users, UserCheck, UserX, Clock } from 'lucide-react';
-
-const getInitials = (name) => {
-    if (!name) return '';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-};
+import GuestAvatar from '@/components/shared/GuestAvatar';
 
 export default function AssignGuestModal({ guests, assignedGuestIds, onAssign, onClose }) {
     const [searchTerm, setSearchTerm] = useState('');
@@ -124,12 +119,7 @@ export default function AssignGuestModal({ guests, assignedGuestIds, onAssign, o
                                         : 'cursor-pointer'
                                 }`}
                             >
-                                <Avatar className="w-10 h-10">
-                                    <AvatarImage src={guest.profile_picture_url} alt={guest.name} />
-                                    <AvatarFallback className="text-xs bg-pink-100 text-pink-700">
-                                        {getInitials(guest.name)}
-                                    </AvatarFallback>
-                                </Avatar>
+                                <GuestAvatar name={guest.name} email={guest.email} profilePictureUrl={guest.profile_picture_url} size={40} />
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">
                                         <span className="font-medium">{guest.name}</span>

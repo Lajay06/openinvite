@@ -21,15 +21,23 @@
  * Body: {
  *   token: string,
  *   event_responses: Array<{ event_id, status, meal_choice?, plus_ones?, plus_one_names?, responded_at? }>,
- *   song_request?: string, rsvp_note?: string, dietary_restrictions?: string,
+ *   song_request?: string, rsvp_note?: string, dietary_restrictions?: string, email?: string,
  * }
+ *
+ * email is optional and never blocks submission — an invalid or missing
+ * value is just dropped from the guest-level row, same tolerant handling
+ * as the other free-text fields. "Don't overwrite an existing Guest.email"
+ * is enforced at READ time (src/lib/resolveMyWedding.js's
+ * getMyGuestsWithRsvp overlay prefers the real Guest.email whenever it's
+ * set), not here — Guest.email itself is never touched by this endpoint,
+ * so there is nothing here that could overwrite it even by mistake.
  * Response: 200 { ok: true }
  *        or 404 { error: 'This link has expired or is invalid.' }
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
 
-import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
+import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail } from './_lib/security.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 
 const BASE44_API = 'https://base44.app/api';
@@ -103,6 +111,8 @@ export default async function handler(req, res) {
   const songRequest = sanitizeString(req.body?.song_request || '').slice(0, MAX_TEXT_LENGTH);
   const rsvpNote = sanitizeString(req.body?.rsvp_note || '').slice(0, MAX_TEXT_LENGTH);
   const dietaryRestrictions = sanitizeString(req.body?.dietary_restrictions || '').slice(0, MAX_TEXT_LENGTH);
+  const submittedEmail = sanitizeString(req.body?.email || '').trim();
+  const email = submittedEmail && isValidEmail(submittedEmail) ? submittedEmail : '';
 
   try {
     const resolved = await resolveGuestByToken(token);
@@ -134,6 +144,7 @@ export default async function handler(req, res) {
         song_request: songRequest,
         note: rsvpNote,
         dietary_restrictions: dietaryRestrictions,
+        email,
       }),
     ]);
 

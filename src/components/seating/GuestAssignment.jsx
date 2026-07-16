@@ -1,12 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, UserCheck, Clock } from 'lucide-react';
-
-const getInitials = (name) => {
-    if (!name) return '';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-};
+import GuestAvatar from '@/components/shared/GuestAvatar';
 
 const GuestCard = ({ guest }) => {
     const isAssigned = !!guest.table_assignment;
@@ -14,12 +9,7 @@ const GuestCard = ({ guest }) => {
         <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
             isAssigned ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200 hover:bg-gray-50'
         }`}>
-            <Avatar className="w-10 h-10">
-                <AvatarImage src={guest.profile_picture_url} alt={guest.name} />
-                <AvatarFallback className="text-xs bg-pink-100 text-pink-700">
-                    {getInitials(guest.name)}
-                </AvatarFallback>
-            </Avatar>
+            <GuestAvatar name={guest.name} email={guest.email} profilePictureUrl={guest.profile_picture_url} size={40} />
             <div className="flex-1">
                 <p className="font-medium text-gray-900">{guest.name}</p>
                 {guest.email && (

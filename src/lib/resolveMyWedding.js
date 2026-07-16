@@ -101,6 +101,15 @@ export async function getMyRecords(entityName, sort, limit) {
  * instead). A guest who has never submitted an RSVP has no RsvpResponse
  * rows yet, so their Guest record's own (still-accurate, pre-migration
  * default) fields pass through unchanged.
+ *
+ * email is overlaid with the OPPOSITE precedence from the other fields
+ * above: the real Guest.email wins whenever it's set, and an RSVP-
+ * submitted email only fills the gap when Guest.email is empty ("if the
+ * guest record has no email, save it; if it has one, don't overwrite").
+ * Since Guest.email itself is never actually written by this flow (same
+ * update-RLS constraint as the rest of this comment), this precedence is
+ * enforced entirely here, at read time, and stays correct even if the
+ * couple later types a real email directly onto the Guest record.
  */
 export async function getMyGuestsWithRsvp(sort, limit) {
   const guests = await getMyRecords('Guest', sort, limit);
@@ -133,6 +142,7 @@ export async function getMyGuestsWithRsvp(sort, limit) {
       song_request: guestLevel?.song_request ?? g.song_request,
       rsvp_note: guestLevel?.note ?? g.rsvp_note,
       dietary_restrictions: guestLevel?.dietary_restrictions ?? g.dietary_restrictions,
+      email: g.email || guestLevel?.email || null,
     };
   });
 }

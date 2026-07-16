@@ -1,9 +1,5 @@
 import React from 'react';
-
-const getInitials = (name) => {
-  if (!name) return '';
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-};
+import GuestAvatar from '@/components/shared/GuestAvatar';
 
 const SEAT = 20;
 
@@ -143,12 +139,7 @@ export default function VisualTable({ table, guests, onSeatClick, selected, sele
             }}
           >
             {guest && (
-              <span style={{
-                fontSize: 6, fontWeight: 700, color: '#FFFFFF',
-                fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1,
-              }}>
-                {getInitials(guest.name)}
-              </span>
+              <GuestAvatar name={guest.name} email={guest.email} profilePictureUrl={guest.profile_picture_url} size={SEAT - 4} />
             )}
           </div>
         );
