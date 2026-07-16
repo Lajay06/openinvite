@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus, Pencil } from "lucide-react";
 import { getGuestEventResponse } from "@/lib/weddingEvents";
+import GuestAvatar from "@/components/shared/GuestAvatar";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -219,39 +220,6 @@ function TagsDisplay({ tags }) {
       {first2.map(t => <span key={t} style={tagPillStyle}>{t}</span>)}
       {rest > 0 && <span style={{ ...tagPillStyle, background: 'rgba(10,10,10,0.06)', color: '#444444', border: 'none' }}>+{rest}</span>}
     </span>
-  );
-}
-
-const AVATAR_COLOURS = [
-  '#E8B4B8', '#B4C8E8', '#B4E8C8', '#D4B4E8',
-  '#E8D4B4', '#B4E8E8', '#E8C8B4', '#C8E8B4',
-];
-
-function nameColour(name) {
-  const str = name || '';
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-  return AVATAR_COLOURS[h % AVATAR_COLOURS.length];
-}
-
-function getInitials(name) {
-  if (!name) return '?';
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
-}
-
-function GuestAvatar({ name }) {
-  return (
-    <div style={{
-      width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-      background: nameColour(name),
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <span style={{ fontSize: 11, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS, lineHeight: 1 }}>
-        {getInitials(name)}
-      </span>
-    </div>
   );
 }
 
@@ -761,7 +729,7 @@ export default function GuestList({
                       >
                         {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                       </button>
-                      <GuestAvatar name={guest.name} />
+                      <GuestAvatar name={guest.name} email={guest.email} profilePictureUrl={guest.profile_picture_url} size={32} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         {textCell(guest, 'name',
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>

@@ -212,6 +212,7 @@ export default function RSVPPage() {
   const [songRequest, setSongRequest] = useState('');
   const [rsvpNote, setRsvpNote] = useState('');
   const [dietaryRestrictions, setDietaryRestrictions] = useState('');
+  const [email, setEmail] = useState('');
 
   // Per-event form state: { [event_id]: { status, meal_choice, plus_one_attending, plus_one_name } }
   const [eventForm, setEventForm] = useState({});
@@ -282,6 +283,7 @@ export default function RSVPPage() {
         setSongRequest(g.song_request || '');
         setRsvpNote(g.rsvp_note || '');
         setDietaryRestrictions(g.dietary_restrictions || '');
+        setEmail(g.email || '');
 
         // Seed per-event form state from existing event_responses (or sane defaults)
         const events = wd ? getWeddingEvents(wd) : [];
@@ -361,6 +363,7 @@ export default function RSVPPage() {
           song_request: songRequest,
           rsvp_note: rsvpNote,
           dietary_restrictions: dietaryRestrictions,
+          email,
         }),
       });
       if (!res.ok) throw new Error('RSVP submit failed');
@@ -375,6 +378,7 @@ export default function RSVPPage() {
         song_request: songRequest,
         rsvp_note: rsvpNote,
         dietary_restrictions: dietaryRestrictions,
+        email,
       }));
       // Advance to polls if any active, otherwise straight to done
       setStep(activePolls.length > 0 ? 'polls' : 'done');
@@ -635,7 +639,7 @@ export default function RSVPPage() {
             />
           </div>
 
-          <div style={{ marginBottom: 32 }}>
+          <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: theme.lightText, marginBottom: 8 }}>
               Message for the couple
               <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
@@ -646,6 +650,21 @@ export default function RSVPPage() {
               placeholder="We're so excited to celebrate with you!"
               rows={3}
               style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 }}
+            />
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: theme.lightText, marginBottom: 8 }}>
+              Your email
+              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional — so the couple can reach you</span>
+            </label>
+            <input
+              type="text"
+              inputMode="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
 

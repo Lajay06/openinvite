@@ -59,6 +59,11 @@ function pickGuestSafeGuestFields(guest, rsvpRows) {
     song_request: guestLevel?.song_request ?? (guest.song_request || ''),
     rsvp_note: guestLevel?.note ?? (guest.rsvp_note || ''),
     dietary_restrictions: guestLevel?.dietary_restrictions ?? (guest.dietary_restrictions || ''),
+    // Opposite precedence from the fields above: a real Guest.email always
+    // wins over a previously RSVP-submitted one, matching the same "don't
+    // overwrite an existing email" rule getMyGuestsWithRsvp() enforces on
+    // the couple's own dashboard read.
+    email: guest.email || guestLevel?.email || '',
     event_responses: eventRows.length > 0 ? toEventResponsesShape(eventRows) : (guest.event_responses || []),
   };
 }
