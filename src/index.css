@@ -727,6 +727,25 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   @keyframes scrollCue { 0%{transform:translateY(-100%)} 100%{transform:translateY(220%)} }
   @keyframes marqueeLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @keyframes marqueeRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+  /* Shared upload-feedback indeterminate bar (UploadStatus.jsx) — no real
+     byte-progress is available from the upload path, see useFileUpload.js.
+     Gated here too (belt-and-braces alongside the JS prefersReducedMotion
+     check already in UploadStatus.jsx) matching this file's own established
+     convention for every other looping animation. */
+  @keyframes uploadIndeterminate {
+    0%   { left: -40%; }
+    100% { left: 100%; }
+  }
+  /* Guest-site loading skeleton (MultiPageWeddingWebsite.jsx) — subtle,
+     warm-neutral shimmer so the placeholder reads as "loading" rather than
+     a blank flash, regardless of which universe eventually renders (the
+     active universe isn't known until the wedding fetch resolves). Gated
+     here (belt-and-braces alongside the JS prefersReduced check in
+     MultiPageWeddingWebsite.jsx) matching this file's convention. */
+  @keyframes guestSkeletonShimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
 }
 
 /* ── Aurora layer ──────────────────────────────────────────── */
@@ -808,6 +827,19 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
 }
 @media (prefers-reduced-motion: no-preference) {
   .skeleton { animation: skeletonShimmer 1.5s ease-in-out infinite; }
+}
+
+/* ── Guest-site loading skeleton ──────────────────────────────
+   Warm-neutral tones (not grey-on-white, not black) so the placeholder
+   sits closer to the light end of most universe palettes and doesn't
+   flash jarringly once the real page paints in. */
+.guest-skeleton-block {
+  background: linear-gradient(90deg, #EDE9E3 25%, #F5F2ED 50%, #EDE9E3 75%);
+  background-size: 200% 100%;
+  border-radius: 2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .guest-skeleton-block { animation: guestSkeletonShimmer 1.6s ease-in-out infinite; }
 }
 
 /* ── Seating: selected-table pulse ────────────────────────────

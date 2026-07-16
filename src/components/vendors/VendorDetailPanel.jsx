@@ -6,7 +6,8 @@ import {
   CheckCircle2, Circle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { validateUploadFile } from '@/lib/uploadValidation';
+import { useFileUpload } from '@/hooks/useFileUpload';
+import UploadStatus from '@/components/shared/UploadStatus';
 
 const VendorLog = base44.entities.VendorLog;
 const VendorTask = base44.entities.VendorTask;
@@ -33,7 +34,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
 
   const [showLogForm, setShowLogForm] = useState(false);
   const [logForm, setLogForm] = useState({ type: 'note', subject: '', body: '', document_type: 'contract', document_url: '', document_name: '' });
-  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const docUpload = useFileUpload('document');
 
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [taskForm, setTaskForm] = useState({ title: '', due_date: '', priority: 'medium', notes: '' });
@@ -56,27 +57,13 @@ export default function VendorDetailPanel({ vendor, onClose }) {
 
   const handleUploadDoc = async (e) => {
     const file = e.target.files[0];
+    e.target.value = ''; // allow re-selecting the same file after a retry
     if (!file) return;
-
-    // Validate type and size before uploading
-    const validationError = validateUploadFile(file, 'document');
-    if (validationError) {
-      toast.error(validationError);
-      e.target.value = '';
-      return;
-    }
-
-    setUploadingDoc(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setLogForm(f => ({ ...f, document_url: file_url, document_name: file.name, type: 'document' }));
+    const result = await docUpload.upload(file);
+    if (result) {
+      setLogForm(f => ({ ...f, document_url: result.file_url, document_name: file.name, type: 'document' }));
       setShowLogForm(true);
-      toast.success('File uploaded');
-    } catch (err) {
-      console.error('Error uploading document:', err);
-      toast.error('Failed to upload file');
     }
-    setUploadingDoc(false);
   };
 
   const submitLog = async () => {
@@ -262,17 +249,20 @@ export default function VendorDetailPanel({ vendor, onClose }) {
           {/* ── Documents ── */}
           {tab === 'docs' && (
             <>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginBottom: 12 }}>
                 <label style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '7px 16px', borderRadius: 999,
                   background: 'rgba(10,10,10,0.08)', color: '#0A0A0A', cursor: 'pointer',
-                  opacity: uploadingDoc ? 0.5 : 1, pointerEvents: uploadingDoc ? 'none' : 'auto',
+                  opacity: docUpload.status === 'uploading' ? 0.5 : 1, pointerEvents: docUpload.status === 'uploading' ? 'none' : 'auto',
                 }}>
                   <Upload size={12} />
-                  {uploadingDoc ? 'Uploading…' : 'Upload document'}
-                  <input type="file" style={{ display: 'none' }} onChange={handleUploadDoc} disabled={uploadingDoc} accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png" />
+                  {docUpload.status === 'uploading' ? 'Uploading…' : 'Upload document'}
+                  <input type="file" style={{ display: 'none' }} onChange={handleUploadDoc} disabled={docUpload.status === 'uploading'} accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png" />
                 </label>
+                {docUpload.status === 'error' && (
+                  <UploadStatus status={docUpload.status} error={docUpload.error} onRetry={docUpload.retry} height={64} style={{ width: '100%' }} />
+                )}
               </div>
 
               {showLogForm && logForm.document_url && (

@@ -1,39 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { validateUploadFile } from '@/lib/uploadValidation';
+import UploadStatus from '@/components/shared/UploadStatus';
+
+let inspirationQueueId = 0;
 
 export default function OnboardingPathAInspiration({ onNext, data }) {
   const [images, setImages] = useState([]);
-  const [uploading, setUploading] = useState(false);
+  const [queue, setQueue] = useState([]); // [{ id, file, status: 'uploading'|'error', error }]
+  const [formError, setFormError] = useState(null);
+  const uploading = queue.some(q => q.status === 'uploading');
 
-  const handleImageUpload = async (e) => {
+  const uploadOne = useCallback(async (item) => {
+    setQueue(q => q.map(i => i.id === item.id ? { ...i, status: 'uploading', error: null } : i));
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file: item.file });
+      setImages(prev => [...prev, result.file_url]);
+      setQueue(q => q.filter(i => i.id !== item.id));
+    } catch (err) {
+      console.error('Upload error:', err);
+      setQueue(q => q.map(i => i.id === item.id ? { ...i, status: 'error', error: 'Upload failed. Please try again.' } : i));
+    }
+  }, []);
+
+  const handleImageUpload = (e) => {
     const files = Array.from(e.target.files || []);
-    if (images.length + files.length > 6) {
-      alert('Maximum 6 images');
+    e.target.value = '';
+    setFormError(null);
+
+    if (images.length + queue.length + files.length > 6) {
+      setFormError('Maximum 6 images');
       return;
     }
 
     // Validate every file before uploading any
     for (const file of files) {
       const err = validateUploadFile(file, 'image');
-      if (err) { alert(err); e.target.value = ''; return; }
+      if (err) { setFormError(err); return; }
     }
 
-    setUploading(true);
-    try {
-      for (const file of files) {
-        const result = await base44.integrations.Core.UploadFile({ file });
-        setImages(prev => [...prev, result.file_url]);
-      }
-    } catch (err) {
-      console.error('Upload error:', err);
-      alert('Upload failed — please try again.');
-    }
-    setUploading(false);
-    e.target.value = '';
+    const items = files.map(file => ({ id: ++inspirationQueueId, file, status: 'uploading', error: null }));
+    setQueue(q => [...q, ...items]);
+    items.forEach(uploadOne);
   };
+
+  const retryUpload = useCallback((id) => {
+    setQueue(q => {
+      const item = q.find(i => i.id === id);
+      if (item) uploadOne(item);
+      return q;
+    });
+  }, [uploadOne]);
 
   const removeImage = (url) => {
     setImages(prev => prev.filter(img => img !== url));
@@ -69,13 +88,13 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
         transition={{ delay: 0.2 }}
         className="mb-12"
       >
-        {images.length < 6 && (
+        {images.length + queue.length < 6 && (
           <label className="block mb-6">
             <div className="border-2 border-dashed border-[#333] rounded-2xl p-12 cursor-pointer hover:border-[#E03553] transition-colors">
               <Upload className="w-8 h-8 text-[#888888] mx-auto mb-3" />
               <p className="text-white font-medium">Upload images</p>
               <p className="text-[#666666] text-sm mt-1">
-                {images.length}/6 images
+                {images.length + queue.length}/6 images
               </p>
             </div>
             <input
@@ -83,17 +102,21 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
               multiple
               accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={handleImageUpload}
-              disabled={uploading || images.length >= 6}
+              disabled={images.length + queue.length >= 6}
               className="hidden"
             />
           </label>
         )}
 
-        {images.length > 0 && (
+        {formError && (
+          <p className="text-[#E03553] text-sm mb-6">{formError}</p>
+        )}
+
+        {(images.length > 0 || queue.length > 0) && (
           <div className="grid grid-cols-3 gap-4">
             {images.map((url, i) => (
               <motion.div
-                key={i}
+                key={url + i}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative aspect-square rounded-lg overflow-hidden group"
@@ -112,6 +135,18 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
                   <X className="w-6 h-6 text-white" />
                 </motion.button>
               </motion.div>
+            ))}
+            {queue.map(item => (
+              <div key={item.id} className="relative aspect-square rounded-lg overflow-hidden">
+                <UploadStatus
+                  status={item.status}
+                  error={item.error}
+                  onRetry={() => retryUpload(item.id)}
+                  dark
+                  height="100%"
+                  style={{ height: '100%', minHeight: 0, borderRadius: 8 }}
+                />
+              </div>
             ))}
           </div>
         )}

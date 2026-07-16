@@ -5,6 +5,7 @@ import { resolveUniverseConfig } from '@/lib/websiteThemes';
 import { resolveTypography, resolveColors, googleFontsHref } from '@/lib/universeStyling';
 import TextureOverlay from './TextureOverlay';
 import EntranceMoment from './EntranceMoment';
+import GuestSiteSkeleton from './GuestSiteSkeleton';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 
 function PasswordGateSimple({ slug, onUnlock }) {
@@ -143,7 +144,7 @@ export default function MultiPageWeddingWebsite() {
     loadWeddingDetails();
   }, [weddingSlug, navigate, isPreview]);
 
-  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="text-white">Loading...</div></div>;
+  if (loading) return <GuestSiteSkeleton prefersReduced={prefersReduced} />;
 
   if (!weddingDetails) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="text-white">Wedding not found</div></div>;
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import { UploadFile } from '@/integrations/Core';
@@ -12,6 +12,9 @@ import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+import UploadStatus from '@/components/shared/UploadStatus';
+
+let moodboardQueueId = 0;
 
 const MoodboardItem = base44.entities.MoodboardItem;
 
@@ -56,8 +59,9 @@ export default function MoodboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  const [uploadQueue, setUploadQueue] = useState([]); // [{ id, file, status: 'uploading'|'error', error }]
   const [avaOpen, setAvaOpen] = useState(false);
+  const uploading = uploadQueue.some(q => q.status === 'uploading');
   const fileInputRef = useRef(null);
 
   useEffect(() => { loadItems(); }, []);
@@ -83,7 +87,22 @@ export default function MoodboardPage() {
     }
   };
 
-  const handleFileUpload = async (files) => {
+  const uploadOne = useCallback(async (item) => {
+    setUploadQueue(q => q.map(i => i.id === item.id ? { ...i, status: 'uploading', error: null } : i));
+    try {
+      const { file_url } = await UploadFile({ file: item.file });
+      await MoodboardItem.create({
+        title: item.file.name.split('.')[0], image_url: file_url,
+        category: 'other', board_name: activeBoard, tags: [],
+      });
+      setUploadQueue(q => q.filter(i => i.id !== item.id));
+      loadItems();
+    } catch (e) {
+      setUploadQueue(q => q.map(i => i.id === item.id ? { ...i, status: 'error', error: `Failed to upload ${item.file.name}.` } : i));
+    }
+  }, [activeBoard]);
+
+  const handleFileUpload = (files) => {
     const fileArray = Array.from(files);
 
     // Validate every file before uploading any
@@ -92,21 +111,18 @@ export default function MoodboardPage() {
       if (err) { toast.error(`${file.name}: ${err}`); return; }
     }
 
-    setUploading(true);
-    const toastId = toast.loading(`Uploading ${fileArray.length} file${fileArray.length > 1 ? 's' : ''}…`);
-    try {
-      const uploads = await Promise.all(fileArray.map(async (file) => {
-        const { file_url } = await UploadFile({ file });
-        return { title: file.name.split('.')[0], image_url: file_url, category: 'other', board_name: activeBoard, tags: [] };
-      }));
-      await Promise.all(uploads.map(item => MoodboardItem.create(item)));
-      toast.success(`${fileArray.length} image${fileArray.length > 1 ? 's' : ''} added`, { id: toastId });
-      loadItems();
-    } catch (e) {
-      toast.error('Upload failed', { id: toastId });
-    }
-    setUploading(false);
+    const items = fileArray.map(file => ({ id: ++moodboardQueueId, file, status: 'uploading', error: null }));
+    setUploadQueue(q => [...q, ...items]);
+    items.forEach(uploadOne);
   };
+
+  const retryUpload = useCallback((id) => {
+    setUploadQueue(q => {
+      const item = q.find(i => i.id === id);
+      if (item) uploadOne(item);
+      return q;
+    });
+  }, [uploadOne]);
 
   const handleDeleteItem = async (itemId) => {
     try {
@@ -172,10 +188,9 @@ export default function MoodboardPage() {
         <AvaButton label="Ask Ava to find inspiration" onClick={() => setAvaOpen(true)} />
         <div className="flex flex-wrap items-center gap-[10px]">
           <button
-            onClick={() => !uploading && fileInputRef.current?.click()}
+            onClick={() => fileInputRef.current?.click()}
             className="btn-editorial-secondary"
-            disabled={uploading}
-            style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: uploading ? 0.6 : 1, cursor: uploading ? 'default' : 'pointer' }}
+            style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
           >
             {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
             {uploading ? 'Uploading…' : 'Upload'}
@@ -218,6 +233,22 @@ export default function MoodboardPage() {
             </button>
           ))}
         </div>
+
+        {/* In-flight uploads */}
+        {uploadQueue.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+            {uploadQueue.map(item => (
+              <div key={item.id} style={{ width: 160 }}>
+                <UploadStatus
+                  status={item.status}
+                  error={item.error}
+                  onRetry={() => retryUpload(item.id)}
+                  height={160}
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Grid */}
         {loading ? (
