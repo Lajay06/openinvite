@@ -76,3 +76,22 @@ Universes.jsx's grid (all 20 worlds) otherwise uses the pre-existing local
 per-universe images, used in the real Design Studio picker) — not Cloudinary,
 and not part of this no-repeat audit since each is already dedicated to
 exactly one universe.
+
+| `DTS_SILVER_HOUR_Franco_Dupuy_Photos_ID14690_mjiupn` | Couple | About.jsx — "every kind of love" full-bleed |
+| `DTS_LEAP_Shauna_Summers_Photos_ID7601_k27hx3` | Party | About.jsx — photo pair, left |
+| `DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa` | Couple | About.jsx — photo pair, right |
+| `DTS_la_calma_Parole_Dure_Photos_ID5853_haflhv` | Relax | About.jsx — full-bleed before stats |
+
+**Finding, not a straight "move":** About.jsx's original 4 photos (`photoU`,
+`photoAbout1/2/3` in `photos.js`, all `static.wixstatic.com`) turned out to
+be generic off-brand lifestyle/fashion stock on inspection (a cocktail
+glass, a nightclub tinsel portrait, street fashion, a hotel-bathroom scene)
+— none depicted a couple or a wedding. Promoting them to Home/Features as
+instructed would have hurt cohesion rather than helped it, so instead:
+About's 4 slots got fresh, on-theme Cloudinary photography (the older
+couple walking arm in arm is a genuinely strong match for the page's own
+"every kind of couple" copy), and the 4 wixstatic images were retired
+outright rather than moved — they were never "good imagery," just unused
+now. `photos.js`'s `photoU`/`photoAbout1`/`photoAbout2`/`photoAbout3` keys
+are now dead (left in place; not otherwise referenced) — candidate for the
+cohesion-sweep cleanup pass.

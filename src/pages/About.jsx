@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
-import { PHOTOS } from "@/lib/photos";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -175,19 +174,19 @@ export default function About() {
 
       {/* ── S3: FULL BLEED PHOTO ─────────────────────────── */}
       <section id="story" style={{ width: "100vw", height: "85vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
-        <img src={PHOTOS.photoU} alt="Wedding photo" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
+        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100477/DTS_SILVER_HOUR_Franco_Dupuy_Photos_ID14690_mjiupn.jpg" alt="An older couple walking arm in arm outside a cafe" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
         <p style={{ position: "absolute", bottom: 40, left: "50%", transform: "translateX(-50%)", fontSize: 12, color: "#888888", fontStyle: "italic", textAlign: "center", maxWidth: 400 }}>
           Built for every kind of love, every kind of celebration.
         </p>
       </section>
 
       {/* ── S4: OUR STORY ──────────────────────────────── */}
-      <TwoColumnSection id="story" number="01" title="Our Story" headline="Built for the way people actually plan." body={["Openinvite was born from a real problem. Couples were drowning in spreadsheets, group chats, and tools that were either too complex or too basic. We saw an opportunity to build something that was genuinely beautiful and genuinely powerful — a platform that respected your time and matched the energy of the occasion.", "From day one, we made a commitment: no feature would ship unless it was designed as carefully as it was engineered. Every screen, every interaction, every detail had to earn its place. The result is a platform that feels as considered as the weddings it helps plan."]} />
+      <TwoColumnSection id="story" number="01" title="Our Story" headline="Built for the way people actually plan." body={["Openinvite was born from a real problem. Couples were drowning in spreadsheets, group chats, and tools that were either too complex or too basic. We saw an opportunity to build something that was genuinely beautiful and genuinely powerful: a platform that respected your time and matched the energy of the occasion.", "From day one, we made a commitment: no feature would ship unless it was designed as carefully as it was engineered. Every screen, every interaction, every detail had to earn its place. The result is a platform that feels as considered as the weddings it helps plan."]} />
 
       {/* ── S5: PHOTO PAIR ────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
-        <img src={PHOTOS.photoAbout1} alt="Wedding photo 1" style={{ width: "100%", height: "70vh", objectFit: "cover" }} />
-        <img src={PHOTOS.photoAbout2} alt="Wedding photo 2" style={{ width: "100%", height: "70vh", objectFit: "cover" }} />
+        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100478/DTS_LEAP_Shauna_Summers_Photos_ID7601_k27hx3.jpg" alt="A woman leaping joyfully against a blue backdrop" style={{ width: "100%", height: "70vh", objectFit: "cover" }} />
+        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa.jpg" alt="A man carrying his partner outdoors, both laughing" style={{ width: "100%", height: "70vh", objectFit: "cover" }} />
       </div>
 
       {/* ── S6: WHAT WE BELIEVE ─────────────────────────── */}
@@ -195,7 +194,7 @@ export default function About() {
 
       {/* ── S7: FULL BLEED PHOTO ─────────────────────────── */}
       <section style={{ width: "100vw", height: "90vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
-        <img src={PHOTOS.photoAbout3} alt="Wedding photo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100482/DTS_la_calma_Parole_Dure_Photos_ID5853_haflhv.jpg" alt="An aerial view of a turquoise cove" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </section>
 
       {/* ── S8: THE NUMBERS ──────────────────────────────── */}
@@ -219,7 +218,7 @@ function EditorialIntro() {
           Wedding planning, reimagined for the way modern couples actually live.
         </h2>
         <p style={{ fontSize: 17, color: "#555555", lineHeight: 1.7, marginBottom: 32 }}>
-          Openinvite was built out of a simple frustration — wedding planning tools were outdated, overwhelming, and frankly ugly. We believed that one of the most exciting moments of your life deserved a platform that matched that energy. So we built one.
+          Openinvite was built out of a simple frustration: wedding planning tools were outdated, overwhelming, and frankly ugly. We believed that one of the most exciting moments of your life deserved a platform that matched that energy. So we built one.
         </p>
 
         <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 24 }}>Deliverables</p>
@@ -279,7 +278,7 @@ function StatsSection() {
   const [ref, visible] = useScrollReveal(0.2);
   const stats = [
     { display: "10,000+", label: "Couples planning", num: 10000 },
-    { display: "37", label: "Planning tools", num: 37 },
+    { display: "40", label: "Planning tools", num: 40 },
     { display: "$79", label: "One-time forever", num: 79 },
     { display: "∞", label: "Memories made", num: null },
   ];
