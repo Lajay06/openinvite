@@ -49,13 +49,17 @@ export default function Home() {
         <HorizontalScrollSection />
       </div>
 
-      {/* 5. LIGHT SECTION CURTAIN REVEAL — transitions to white */}
-      <LightSectionReveal />
-
-      {/* 5. FEATURE BLOCKS — all on white */}
-      <div style={{ background: "#FFFFFF" }}>
-        <div id="section-invitations"><FeatureInvitations onCTA={handleCTA} /></div>
-      </div>
+      {/* 5. LIGHT SECTION CURTAIN REVEAL — wipes from black to white, then
+          reveals the feature blocks. Previously rendered with no children
+          (a separate plain white div held FeatureInvitations right after it),
+          so the curtain wipe had nothing to reveal and collapsed to a bare
+          sliver between the black scroll section and the white blocks below
+          — the "dead gap". Fixed by making it the actual wrapper. */}
+      <LightSectionReveal>
+        <div style={{ background: "#FFFFFF" }}>
+          <div id="section-invitations"><FeatureInvitations onCTA={handleCTA} /></div>
+        </div>
+      </LightSectionReveal>
 
       {/* 6. HOW IT WORKS */}
       <HowItWorksSection />
