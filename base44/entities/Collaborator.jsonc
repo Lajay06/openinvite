@@ -27,6 +27,25 @@
           }
         }
       }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "accepted"],
+      "default": "pending",
+      "description": "pending until the invitee completes the accept flow (signs in/up and confirms), accepted afterward."
+    },
+    "invite_token": {
+      "type": "string",
+      "description": "Unique token for this invite's accept link (/collaborate/accept/:token). Regenerated on resend so an old copy of the email can't be reused indefinitely."
+    },
+    "accepted_user_id": {
+      "type": "string",
+      "description": "The Base44 User.id of the account that accepted this invite — set once, at accept time, via the admin key (the collaborator's own bearer token cannot write this record, per this entity's own update RLS). This is the id every collaborator-proxy endpoint (api/_lib/collaboratorAuth.js) checks incoming requests against."
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the invite was accepted."
     }
   },
   "required": [

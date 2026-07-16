@@ -40,6 +40,10 @@ export default function Register() {
     }
   };
 
+  // Supports a ?next= redirect target (e.g. back to a collaborator accept
+  // page after creating an account) — falls back to /Dashboard when absent.
+  const next = new URLSearchParams(window.location.search).get('next');
+
   const handleVerify = async () => {
     setError("");
     setLoading(true);
@@ -48,7 +52,7 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
-      window.location.href = "/Dashboard";
+      window.location.href = next || "/Dashboard";
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -70,7 +74,7 @@ export default function Register() {
   };
 
   const handleProvider = (provider) => {
-    base44.auth.loginWithProvider(provider, "/");
+    base44.auth.loginWithProvider(provider, next || "/");
   };
 
   if (showOtp) {
