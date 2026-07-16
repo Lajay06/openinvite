@@ -182,10 +182,15 @@ export default function UniverseStudio() {
               reads as one continuous surface. Only the top keeps a
               deliberate breathing gap under the filter pills; the bottom
               has none, so the last row ends cleanly. layout+AnimatePresence
-              so filtered-out banners fade out and the rest reflow smoothly. */}
+              so filtered-out banners fade out and the rest reflow smoothly.
+              AnimatePresence's own initial={false} (fix/design-studio-back-
+              fade-fix) skips the enter animation for whichever banners are
+              already present on first mount — they're simply opaque
+              immediately, no white flash — while still animating banners
+              added/removed by a filter-pill change afterward. */}
           <div style={{ padding: '24px 32px 0' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {visibleUniverses.map(u => (
                   <motion.div
                     key={u.id}
