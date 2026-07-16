@@ -6,7 +6,7 @@
  * timestamps. Each block creates and cleans up its own sentinel Guest.
  */
 
-import { APP_ID, api, pass, fail } from './_shared.mjs';
+import { APP_ID, api, pass, fail, cleanupEntity } from './_shared.mjs';
 
 export async function runGuest(token) {
   const results = [];
@@ -47,8 +47,7 @@ export async function runGuest(token) {
     results.push(false); results.push(false); results.push(false);
   } finally {
     if (guestSentinelId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestSentinelId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', guestSentinelId);
     }
   }
 
@@ -88,8 +87,7 @@ export async function runGuest(token) {
     results.push(false); results.push(false); results.push(false);
   } finally {
     if (guestInviteId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestInviteId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', guestInviteId);
     }
   }
 

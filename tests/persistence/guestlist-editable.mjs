@@ -20,7 +20,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { APP_ID, api, pass, fail } from './_shared.mjs';
+import { APP_ID, api, pass, fail, cleanupEntity } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const read = (p) => readFileSync(resolve(__dir, '..', '..', p), 'utf8');
@@ -44,7 +44,7 @@ export async function runGuestlistEditable(token) {
     results.push(false);
   } finally {
     if (blankCategoryId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${blankCategoryId}`, undefined, token); } catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', blankCategoryId);
     }
   }
 
@@ -81,7 +81,7 @@ export async function runGuestlistEditable(token) {
     results.push(false); results.push(false); results.push(false);
   } finally {
     if (tagsGuestId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${tagsGuestId}`, undefined, token); } catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', tagsGuestId);
     }
   }
 
@@ -235,8 +235,8 @@ export async function runGuestlistEditable(token) {
     console.log(`  ❌ FAIL  guest list ordering — error: ${err.message}`);
     results.push(false);
   } finally {
-    if (orderAId) { try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${orderAId}`, undefined, token); } catch { /* non-fatal */ } }
-    if (orderBId) { try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${orderBId}`, undefined, token); } catch { /* non-fatal */ } }
+    if (orderAId) { await cleanupEntity(token, 'Guest', orderAId); }
+    if (orderBId) { await cleanupEntity(token, 'Guest', orderBId); }
   }
 
   return results;

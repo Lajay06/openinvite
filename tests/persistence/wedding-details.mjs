@@ -317,6 +317,12 @@ export async function runWeddingDetails(token) {
   }
 
   // ── Assert each field ─────────────────────────────────────────────────────
+  // Wrapped in its own try/catch (previously unguarded, unlike the phase
+  // above) so an exception anywhere in this large assertion section — a bad
+  // await api() call, an unexpected shape — still deletes the sentinel
+  // record before exiting, instead of throwing uncaught and leaking
+  // recordId out of this module with no cleanup attempt at all.
+  try {
   console.log('  Field assertions:\n');
 
   // is_test — harness-hygiene tag; must persist so product queries can
@@ -685,6 +691,11 @@ export async function runWeddingDetails(token) {
   } catch (err) {
     console.log(`  ❌ FAIL  sequential append — error: ${err.message}`);
     results.push(false);
+  }
+  } catch (err) {
+    console.error(`\n  ✗ Uncaught error during field assertions: ${err.message}`);
+    await cleanupWeddingDetails(token, recordId);
+    process.exit(1);
   }
 
   return { results, recordId };

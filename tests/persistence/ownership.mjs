@@ -7,7 +7,7 @@
  * runner) and LiveStream (self-contained sentinel).
  */
 
-import { APP_ID, api, pass, fail } from './_shared.mjs';
+import { APP_ID, api, pass, fail, cleanupEntity } from './_shared.mjs';
 
 export async function runOwnership(token, weddingDetailsRecordId) {
   const results = [];
@@ -111,8 +111,7 @@ export async function runOwnership(token, weddingDetailsRecordId) {
     results.push(false, false, false);
   } finally {
     if (liveStreamId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/LiveStream/${liveStreamId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'LiveStream', liveStreamId);
     }
   }
 
@@ -168,8 +167,7 @@ export async function runOwnership(token, weddingDetailsRecordId) {
     results.push(false, false);
   } finally {
     if (guestId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${guestId}`, undefined, token); }
-      catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Guest', guestId);
     }
   }
 

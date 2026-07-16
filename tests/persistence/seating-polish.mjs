@@ -15,7 +15,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { APP_ID, api, pass, fail } from './_shared.mjs';
+import { APP_ID, api, pass, fail, cleanupEntity } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const read = (p) => readFileSync(resolve(__dir, '..', '..', p), 'utf8');
@@ -123,7 +123,7 @@ export async function runSeatingPolish(token) {
     results.push(false);
   } finally {
     if (tableId) {
-      try { await api('DELETE', `/apps/${APP_ID}/entities/Table/${tableId}`, undefined, token); } catch { /* non-fatal */ }
+      await cleanupEntity(token, 'Table', tableId);
     }
   }
 
