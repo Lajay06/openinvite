@@ -308,10 +308,21 @@ export default function Guests() {
   const stats = React.useMemo(() => {
     const total = guests.length;
     const invited = guests.filter(g => g.invite_sent_at).length;
-    const attending = guests.filter(g => g.rsvp_status === 'attending').length;
-    const declined = guests.filter(g => g.rsvp_status === 'declined').length;
-    const awaiting = guests.filter(g => g.invite_sent_at && (!g.rsvp_status || g.rsvp_status === 'pending')).length;
     const plusOnes = guests.filter(g => g.plus_one).length;
+
+    // A plus-one with their own identity (plus_one_email) has their own
+    // rsvp_status, distinct from the primary guest's — counted in addition
+    // to the primary guest below. A plus-one with no email has no separate
+    // status to count (current behaviour: the primary answers for both),
+    // so they're intentionally left out of these counts, same as before
+    // this feature.
+    const plusOneAttending = guests.filter(g => g.plus_one_email && g.plus_one_rsvp_status === 'attending').length;
+    const plusOneDeclined = guests.filter(g => g.plus_one_email && g.plus_one_rsvp_status === 'declined').length;
+    const plusOneAwaiting = guests.filter(g => g.plus_one_email && g.invite_sent_at && (!g.plus_one_rsvp_status || g.plus_one_rsvp_status === 'pending')).length;
+
+    const attending = guests.filter(g => g.rsvp_status === 'attending').length + plusOneAttending;
+    const declined = guests.filter(g => g.rsvp_status === 'declined').length + plusOneDeclined;
+    const awaiting = guests.filter(g => g.invite_sent_at && (!g.rsvp_status || g.rsvp_status === 'pending')).length + plusOneAwaiting;
     return { total, invited, attending, declined, awaiting, plusOnes };
   }, [guests]);
 

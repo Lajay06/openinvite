@@ -49,6 +49,11 @@ function unwrapList(payload) {
  * that a batch-send request only targets guests belonging to the caller's
  * own wedding, never an arbitrary email address.
  *
+ * Includes each owned guest's plus_one_email too (feat/plus-one-identity)
+ * — a plus-one with their own identity is still part of a guest the caller
+ * owns, so their invite must pass this same ownership check rather than
+ * being silently dropped by filterGuestsByOwnership.
+ *
  * @param {string} userId
  * @param {string} adminKey — BASE44_ADMIN_KEY, needed because listing
  *   another entity's records by created_by_id requires the admin token;
@@ -62,9 +67,9 @@ export async function fetchOwnedGuestEmails(userId, adminKey) {
   });
   if (!res.ok) return new Set();
   const guests = unwrapList(await res.json());
-  return new Set(
-    guests.map(g => g.email?.trim().toLowerCase()).filter(Boolean)
-  );
+  const emails = guests.map(g => g.email?.trim().toLowerCase()).filter(Boolean);
+  const plusOneEmails = guests.map(g => g.plus_one_email?.trim().toLowerCase()).filter(Boolean);
+  return new Set([...emails, ...plusOneEmails]);
 }
 
 /**

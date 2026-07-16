@@ -88,6 +88,8 @@ const SCHEMAS = {
     song_request:1, rsvp_note:1, poll_votes:1,
     // Registered 2026-06-03 (previously silently dropped — invite-tracking fields)
     invite_sent_at:1, invite_channel:1, reminder_sent_at:1,
+    // Registered via feat/plus-one-identity (mcp update_entity_schema)
+    plus_one_rsvp_link_id:1,
     _nested: {},
   },
 

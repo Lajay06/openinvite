@@ -223,6 +223,41 @@ function TagsDisplay({ tags }) {
   );
 }
 
+/* ── Plus-one cell — distinct RSVP status once they have their own identity
+   (plus_one_email set), otherwise the original toggle (unchanged). ────── */
+const PLUS_ONE_STATUS_STYLES = {
+  attending: { background: '#dcfce7', color: '#166534', label: 'Attending' },
+  declined:  { background: '#fee2e2', color: '#991b1b', label: 'Declined' },
+  pending:   { background: '#fef9c3', color: '#854d0e', label: 'Pending' },
+};
+
+function PlusOneCell({ guest, onUpdate }) {
+  if (guest.plus_one_email) {
+    const style = PLUS_ONE_STATUS_STYLES[guest.plus_one_rsvp_status] || PLUS_ONE_STATUS_STYLES.pending;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }} title={`${guest.plus_one_name || 'Plus one'} — ${style.label}`}>
+        {guest.plus_one_name && (
+          <span style={{ fontSize: 11, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 100 }}>
+            {guest.plus_one_name}
+          </span>
+        )}
+        <span style={{ ...dietaryPillStyle, background: style.background, color: style.color, alignSelf: 'flex-start' }}>
+          {style.label}
+        </span>
+      </div>
+    );
+  }
+  return (
+    <HoverDiv onClick={() => onUpdate && onUpdate(guest.id, { plus_one: !guest.plus_one })} pointer title="Click to toggle">
+      {guest.plus_one ? (
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', fontFamily: PJS }}>+1 ✓</span>
+      ) : (
+        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>—</span>
+      )}
+    </HoverDiv>
+  );
+}
+
 const hoverCell = {
   cursor: 'text',
   borderRadius: 3,
@@ -882,19 +917,9 @@ export default function GuestList({
                     )}
                   </TableCell>
 
-                  {/* ── +1 toggle ── */}
+                  {/* ── +1 — distinct RSVP status once they have their own email ── */}
                   <TableCell className="align-middle">
-                    <HoverDiv
-                      onClick={() => onUpdate && onUpdate(guest.id, { plus_one: !guest.plus_one })}
-                      pointer
-                      title="Click to toggle"
-                    >
-                      {guest.plus_one ? (
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', fontFamily: PJS }}>+1 ✓</span>
-                      ) : (
-                        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>—</span>
-                      )}
-                    </HoverDiv>
+                    <PlusOneCell guest={guest} onUpdate={onUpdate} />
                   </TableCell>
 
                   {/* ── Actions ── */}

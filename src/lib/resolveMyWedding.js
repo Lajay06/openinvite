@@ -21,7 +21,7 @@
  */
 
 import { base44 } from '@/api/base44Client';
-import { latestEventResponses, latestGuestLevel, deriveRsvpStatus, toEventResponsesShape } from '@/lib/rsvpAggregation';
+import { latestEventResponses, latestGuestLevel, deriveRsvpStatus, toEventResponsesShape, mergePlusOneEventResponses } from '@/lib/rsvpAggregation';
 
 function mostRecent(records) {
   const real = (records || []).filter(r => !r.is_test);
@@ -110,6 +110,12 @@ export async function getMyRecords(entityName, sort, limit) {
  * update-RLS constraint as the rest of this comment), this precedence is
  * enforced entirely here, at read time, and stays correct even if the
  * couple later types a real email directly onto the Guest record.
+ *
+ * feat/plus-one-identity: when a guest has plus_one_email set, also
+ * overlays plus_one_rsvp_status — derived from the plus-one's OWN
+ * is_plus_one:true RsvpResponse rows (mergePlusOneEventResponses), never
+ * the primary guest's. Computed independently of whether the primary has
+ * answered yet, since the plus-one may respond first via their own link.
  */
 export async function getMyGuestsWithRsvp(sort, limit) {
   const guests = await getMyRecords('Guest', sort, limit);
@@ -129,12 +135,27 @@ export async function getMyGuestsWithRsvp(sort, limit) {
   }
   const guestLevelByGuest = new Map(latestGuestLevel(rows).map(r => [r.guest_id, r]));
 
+  // Every row (both is_plus_one values) for a guest_id, grouped once —
+  // mergePlusOneEventResponses does its own is_plus_one filtering internally.
+  const rowsByGuestId = new Map();
+  for (const r of rows) {
+    if (!rowsByGuestId.has(r.guest_id)) rowsByGuestId.set(r.guest_id, []);
+    rowsByGuestId.get(r.guest_id).push(r);
+  }
+
   return guests.map(g => {
     const eventRows = eventsByGuest.get(g.id);
     const guestLevel = guestLevelByGuest.get(g.id);
-    if (!eventRows && !guestLevel) return g;
-
     const eventResponses = eventRows ? toEventResponsesShape(eventRows) : (g.event_responses || []);
+
+    let plusOneRsvpStatus = null;
+    if (g.plus_one_email) {
+      const plusOneEventResponses = mergePlusOneEventResponses(eventResponses, rowsByGuestId.get(g.id) || []);
+      plusOneRsvpStatus = deriveRsvpStatus(plusOneEventResponses);
+    }
+
+    if (!eventRows && !guestLevel && plusOneRsvpStatus === null) return g;
+
     return {
       ...g,
       event_responses: eventResponses,
@@ -143,6 +164,7 @@ export async function getMyGuestsWithRsvp(sort, limit) {
       rsvp_note: guestLevel?.note ?? g.rsvp_note,
       dietary_restrictions: guestLevel?.dietary_restrictions ?? g.dietary_restrictions,
       email: g.email || guestLevel?.email || null,
+      plus_one_rsvp_status: plusOneRsvpStatus,
     };
   });
 }

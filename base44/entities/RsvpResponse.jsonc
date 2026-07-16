@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "wedding_id": { "type": "string", "description": "WeddingDetails id this response belongs to" },
-    "guest_id": { "type": "string", "description": "Guest.id (Base44 record id — never the raw rsvp_link_id token) this response is for" },
+    "guest_id": { "type": "string", "description": "Guest.id (Base44 record id — never the raw rsvp_link_id token) this response is for. The primary guest and their plus-one share the same guest_id (there is no separate Guest record for a plus-one) — is_plus_one is what distinguishes their rows, never guest_id." },
     "event_id": { "type": "string", "description": "Stable event id from WeddingDetails' preWeddingEvents[]/postWeddingEvents[]/mainCeremony/reception this response is for. NULL marks this row as the whole-submission guest-level row (song_request/dietary_restrictions/note) — a row is either a per-event row (event_id set, status/meal_choice/plus_ones/plus_one_names populated) or a guest-level row (event_id null, song_request/dietary_restrictions/note populated); never both on the same row." },
     "status": { "type": "string", "enum": ["pending", "yes", "no"], "default": "pending", "description": "Attendance response for this event. Only ever set on a per-event row (event_id non-null)." },
     "meal_choice": { "type": "string", "description": "Menu option id/label for this event, null if not yet chosen. Only ever set on a per-event row." },
@@ -13,7 +13,8 @@
     "song_request": { "type": "string", "description": "Guest's requested song for the reception — whole-submission, not per-event. Only ever set on the guest-level row (event_id null)." },
     "dietary_restrictions": { "type": "string", "description": "Guest's dietary requirements — whole-submission, not per-event. Only ever set on the guest-level row (event_id null)." },
     "email": { "type": "string", "format": "email", "description": "Optional email the guest gave with their RSVP so the couple can reach them — whole-submission, not per-event. Only ever set on the guest-level row (event_id null). Only used to fill in Guest.email when it's empty; an existing Guest.email is never overwritten by this." },
-    "is_test": { "type": "boolean", "default": false, "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails." }
+    "is_test": { "type": "boolean", "default": false, "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails." },
+    "is_plus_one": { "type": "boolean", "default": false, "description": "True when this row is the plus-one's own submission (via their own plus_one_rsvp_link_id token), false/unset for the primary guest's own row. Combined with guest_id + event_id as the dedup key (src/lib/rsvpAggregation.js) so a plus-one's answers can never overwrite or be overwritten by the primary guest's — existing rows all default to false, so old data's dedup behaviour is unchanged." }
   },
   "required": [],
   "rls": { "create": null, "read": null, "update": { "created_by_id": "{{user.id}}" }, "delete": { "created_by_id": "{{user.id}}" } }

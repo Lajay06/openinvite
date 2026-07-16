@@ -14,6 +14,13 @@
  * RsvpResponse rows now, not Guest.update()), so reading them straight off
  * Guest here would show a returning guest a stale/blank form.
  *
+ * feat/plus-one-identity: resolveGuestByToken's `role` tells us whose
+ * perspective to render — a plus-one's own token resolves to the SAME
+ * underlying Guest record (there's no separate Guest row for them), so
+ * pickGuestSafeGuestFields branches on role to substitute their own
+ * name/email/dietary and overlay their own is_plus_one:true RsvpResponse
+ * rows instead of the primary guest's.
+ *
  * Replaces RSVPPage.jsx's direct client-side
  * base44.entities.Guest.filter({rsvp_link_id}) and
  * base44.entities.WeddingDetails.filter({created_by_id}) calls, which
@@ -29,7 +36,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { pickGuestSafeFields } from './_lib/guestSafeWedding.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
-import { latestEventResponses, latestGuestLevel, toEventResponsesShape } from '../src/lib/rsvpAggregation.js';
+import { latestEventResponses, latestGuestLevel, toEventResponsesShape, mergePlusOneEventResponses } from '../src/lib/rsvpAggregation.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -47,11 +54,33 @@ function unwrapList(payload) {
  * `created_by_id`, `rsvp_link_id`, and every other guest's data. All future
  * writes are re-resolved server-side from the token, never a client-
  * supplied guest id, so the client never needs the raw id at all.
+ *
+ * When role === 'plus_one', every field below is the PLUS-ONE's own —
+ * their name, their email, their dietary needs, their own event answers —
+ * never the primary guest's. They're invited to whatever events the
+ * primary is invited to (inherited, not answered separately for them) via
+ * mergePlusOneEventResponses, but their attendance/meal/etc. per event is
+ * entirely their own, recorded under is_plus_one:true rows.
  */
-function pickGuestSafeGuestFields(guest, rsvpRows) {
-  const eventRows = latestEventResponses(rsvpRows);
-  const guestLevelRows = latestGuestLevel(rsvpRows);
+function pickGuestSafeGuestFields(guest, rsvpRows, role) {
+  const isPlusOne = role === 'plus_one';
+  const guestLevelRows = latestGuestLevel(rsvpRows, { plusOne: isPlusOne });
   const guestLevel = guestLevelRows[0] || null;
+
+  if (isPlusOne) {
+    return {
+      name: guest.plus_one_name || 'Guest',
+      plus_one: false, // a plus-one doesn't get their own plus-one
+      poll_votes: {},
+      song_request: guestLevel?.song_request ?? '',
+      rsvp_note: guestLevel?.note ?? '',
+      dietary_restrictions: guestLevel?.dietary_restrictions ?? (guest.plus_one_dietary_restrictions || ''),
+      email: guest.plus_one_email || guestLevel?.email || '',
+      event_responses: mergePlusOneEventResponses(guest.event_responses || [], rsvpRows),
+    };
+  }
+
+  const eventRows = latestEventResponses(rsvpRows);
   return {
     name: guest.name,
     plus_one: !!guest.plus_one,
@@ -98,7 +127,7 @@ export default async function handler(req, res) {
     if (!resolved) {
       return res.status(404).json({ error: 'This link has expired or is invalid.' });
     }
-    const { guest, wedding } = resolved;
+    const { guest, wedding, role } = resolved;
 
     let rsvpRows = [];
     if (wedding?.id) {
@@ -112,7 +141,7 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({
-      guest: pickGuestSafeGuestFields(guest, rsvpRows),
+      guest: pickGuestSafeGuestFields(guest, rsvpRows, role),
       wedding: wedding ? pickGuestSafeFields(wedding) : null,
     });
   } catch (err) {

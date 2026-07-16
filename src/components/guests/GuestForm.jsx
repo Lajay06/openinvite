@@ -54,7 +54,8 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
   const [formData, setFormData] = useState(guest || {
     name: '', email: '', phone: '', category: 'family',
     tags: [], table_assignment: '', dietary_restrictions: '',
-    rsvp_status: 'pending', plus_one: false, plus_one_name: '', plus_one_dietary: '', notes: '',
+    rsvp_status: 'pending', plus_one: false, plus_one_name: '', plus_one_email: '',
+    plus_one_dietary_restrictions: '', notes: '',
   });
   const [tagInput, setTagInput] = useState('');
 
@@ -63,8 +64,11 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
   const [dietarySelected, setDietarySelected] = useState(init.selected);
   const [dietaryOther, setDietaryOther] = useState(init.other);
 
-  // Plus-one dietary pill state
-  const initPo = parseDietary((guest || {}).plus_one_dietary || '');
+  // Plus-one dietary pill state — was reading/writing "plus_one_dietary",
+  // a field the Guest schema doesn't define (the real field is
+  // plus_one_dietary_restrictions); every previous save of this control
+  // silently dropped, and edit always started blank. Fixed here.
+  const initPo = parseDietary((guest || {}).plus_one_dietary_restrictions || '');
   const [poDietarySelected, setPoDietarySelected] = useState(initPo.selected);
   const [poDietaryOther, setPoDietaryOther] = useState(initPo.other);
 
@@ -113,12 +117,12 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
         : [...poDietarySelected, option];
     }
     setPoDietarySelected(next);
-    set('plus_one_dietary', dietaryToString(next, poDietaryOther));
+    set('plus_one_dietary_restrictions', dietaryToString(next, poDietaryOther));
   };
 
   const handlePoOtherText = (text) => {
     setPoDietaryOther(text);
-    set('plus_one_dietary', dietaryToString(poDietarySelected, text));
+    set('plus_one_dietary_restrictions', dietaryToString(poDietarySelected, text));
   };
 
   const noneActive = dietarySelected.length === 0;
@@ -310,9 +314,20 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
 
           {formData.plus_one && (
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Label htmlFor="plus_one_name">Plus one name</Label>
-                <Input id="plus_one_name" value={formData.plus_one_name} onChange={e => set('plus_one_name', e.target.value)} placeholder="Plus one's name" />
+              <div style={{ display: 'flex', gap: 16 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Label htmlFor="plus_one_name">Plus one name</Label>
+                  <Input id="plus_one_name" value={formData.plus_one_name} onChange={e => set('plus_one_name', e.target.value)} placeholder="Plus one's name" />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Label htmlFor="plus_one_email">
+                    Plus one email{' '}
+                    <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: 11, color: 'rgba(10,10,10,0.4)' }}>
+                      (optional — gives them their own invite &amp; RSVP)
+                    </span>
+                  </Label>
+                  <Input id="plus_one_email" type="email" value={formData.plus_one_email} onChange={e => set('plus_one_email', e.target.value)} placeholder="plusone@example.com" />
+                </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <Label>Plus one dietary restrictions</Label>
