@@ -14,6 +14,7 @@ import FeaturePlaylists from "@/components/home/FeaturePlaylists";
 import FeatureGuests from "@/components/home/FeatureGuests";
 import FeatureBudget from "@/components/home/FeatureBudget";
 import ScrollCue from "@/components/motion/ScrollCue";
+import ProductVideo from "@/components/shared/ProductVideo";
 
 const FEATURE_ZOOM_IMAGES = [
 { src: "https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg", alt: "Wedding planning" },
@@ -106,6 +107,9 @@ export default function Features() {
 
       {/* ── S5: INVITATIONS x GUEST SUITE ────────────────── */}
       <InvitationsSection />
+
+      {/* ── S5b: SEATING, REAL PRODUCT VIDEO ─────────────── */}
+      <SeatingSection />
 
       {/* ── S6: ACCORDION ────────────────────────────────── */}
       <AccordionSection features={ALL_FEATURES} borders={ACCORDION_BORDERS} dots={DOTS} openFeature={openFeature} setOpenFeature={setOpenFeature} />
@@ -326,6 +330,10 @@ function EssentialsManifesto({ items, visible }) {
 
 
 
+// Real product screens — this section used to render nothing at all
+// (`return null;`) despite being labelled "Invitations x Guest Suite" in
+// the surrounding comment. Every image/video here is a real capture from
+// the real app (scripts/capture/), not stock photography.
 function InvitationsSection() {
   const navigate = useNavigate();
   const [ref, visible] = useScrollReveal(0.2);
@@ -348,17 +356,65 @@ function InvitationsSection() {
         </p>
         <ApplePillButton onClick={() => navigate('/universes')} light={false}>Explore universes</ApplePillButton>
       </div>
-      <div style={{ flex: "1 1 480px", minHeight: 420, position: "relative", overflow: "hidden" }}>
-        <img
-          src="/universes/marrakech.jpg"
-          alt="The Marrakech universe applied to a digital invitation"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-        />
+      {/* Real captures (scripts/capture/) — an actual guest-site entrance
+          moment and a real personalised RSVP page — not the placeholder
+          /universes/marrakech.jpg this section used before the capture
+          pipeline existed. */}
+      <div style={{ flex: "1 1 480px", minHeight: 420, position: "relative", overflow: "hidden", display: "flex", gap: 2 }}>
+        <div style={{ flex: "1 1 60%", position: "relative", overflow: "hidden" }}>
+          <img
+            src="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/02-entrance-moment-landing.png"
+            alt="A real Openinvite guest website entrance moment"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+          />
+        </div>
+        <div style={{ flex: "1 1 40%", position: "relative", overflow: "hidden" }}>
+          <img
+            src="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/07-rsvp-mobile.png"
+            alt="A real personalised RSVP page on mobile"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+          />
+        </div>
       </div>
     </section>
   );
 }
 
+function SeatingSection() {
+  const [ref, visible] = useScrollReveal(0.2);
+  return (
+    <section ref={ref} style={{ background: "#F5F5F3", padding: "120px clamp(32px, 6vw, 80px)" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 48, alignItems: "center" }}>
+        <div style={{
+          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
+          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#803D81", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Seating
+          </p>
+          <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 24 }}>
+            A real canvas for a real guest list.
+          </h2>
+          <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16 }}>
+            Drag tables into place, assign guests one at a time or let Ava suggest a starting layout. This is an actual recording of the seating tool, not a mockup.
+          </p>
+        </div>
+        <div style={{
+          aspectRatio: "16/10", overflow: "hidden", border: "1px solid rgba(10,10,10,0.08)",
+          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
+          transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
+        }}>
+          <ProductVideo
+            mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-02-seating-exploration.mp4"
+            webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-02-seating-exploration.webm"
+            poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-02-seating-exploration-poster.jpg"
+            alt="Screen recording of the Openinvite seating canvas"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
 
 
 function AccordionSection({ features, borders, dots, openFeature, setOpenFeature }) {

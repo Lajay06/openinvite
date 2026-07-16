@@ -12,7 +12,12 @@
     "preview": "vite preview",
     "test:persistence": "node scripts/test-persistence.mjs",
     "reset:test": "node scripts/reset-test-account.mjs",
-    "audit:schema": "node scripts/audit-schema.mjs"
+    "audit:schema": "node scripts/audit-schema.mjs",
+    "capture": "node scripts/capture/run-all.mjs",
+    "capture:preflight": "node scripts/capture/preflight.mjs",
+    "capture:stills": "node scripts/capture/stills.mjs",
+    "capture:videos": "node scripts/capture/videos.mjs",
+    "capture:upload": "node scripts/capture/upload.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.39",
@@ -103,7 +108,9 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.18",
     "eslint-plugin-unused-imports": "^4.3.0",
+    "ffmpeg-static": "^5.3.0",
     "globals": "^15.14.0",
+    "playwright": "^1.61.1",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.2",

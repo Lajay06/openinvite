@@ -13,6 +13,7 @@ import LightSectionReveal from "@/components/home/LightSectionReveal";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
+import ProductVideo from "@/components/shared/ProductVideo";
 
 export default function Home() {
   const handleCTA = () => {
@@ -28,6 +29,24 @@ export default function Home() {
       <div id="section-hero">
         <HeroCollage onCTA={handleCTA} />
       </div>
+
+      {/* 1b. HERO-ADJACENT PRODUCT MOMENT — a real screen recording, not a
+          mockup: choosing an aesthetic universe in the Design Studio. */}
+      <section style={{ background: "#0A0A0A", padding: "0 clamp(24px, 6vw, 80px) 100px" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#DDF762", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
+            The real product
+          </p>
+          <div style={{ aspectRatio: "16/9", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+            <ProductVideo
+              mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.mp4"
+              webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.webm"
+              poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-01-choosing-a-universe-poster.jpg"
+              alt="Screen recording of choosing an aesthetic universe in the Openinvite Design Studio"
+            />
+          </div>
+        </div>
+      </section>
 
       {/* 2. RED SILHOUETTE — full-width natural-height image */}
       <ValuePropSection />
