@@ -307,10 +307,10 @@ export default function UniverseWorldView({
 
   return (
     <div>
-      {/* Portalled to document.body — root cause of it rendering
-          invisible/unclickable: this button lives inside .page-content,
-          which (per the same fix applied to UniverseEntranceOverlay.jsx)
-          gets its own stacking context the moment any animation with
+      {/* Portalled to document.body — root cause of an earlier invisible/
+          unclickable bug: this button lives inside .page-content, which
+          (per the same fix applied to UniverseEntranceOverlay.jsx) gets
+          its own stacking context the moment any animation with
           animation-fill-mode:forwards is applied to it (pageFadeIn is
           opacity-only, but that's still enough to trigger this). Trapped
           inside that context, this button's zIndex:60 was never compared
@@ -319,10 +319,16 @@ export default function UniverseWorldView({
           `contain: layout` CSS) — the sidebar's outer-level effective
           zIndex beat .page-content's (which has none set, so effectively
           0), and its opaque white background painted straight over this
-          button, which sits at left:32 — inside the sidebar's own 0-200px
-          width. Confirmed via a real browser: before this fix,
+          button. Confirmed via a real browser: before this fix,
           elementFromPoint at the button's centre returned the sidebar div;
-          after portalling, it returns the button itself. */}
+          after portalling, it returns the button itself.
+
+          left is offset from the CONTENT area, not the viewport — the
+          sidebar is a constant, non-responsive, non-collapsible 200px
+          (AnimatedSidebar.jsx; no breakpoint/collapsed state exists), so
+          200 (sidebar width) + 32 (8px-grid offset) = 232 always lands
+          just inside the content edge, never over the sidebar, at every
+          viewport width. */}
       {createPortal(
         <button
           onClick={onBack}
@@ -332,7 +338,7 @@ export default function UniverseWorldView({
             // both. A dark scrim + blur (rather than a light pill) reads
             // legibly over every chapter background, light or dark, without
             // needing to know which chapter is currently in view.
-            position: 'fixed', top: 96, left: 32, zIndex: 60,
+            position: 'fixed', top: 96, left: 232, zIndex: 60,
             display: 'flex', alignItems: 'center', gap: 6,
             background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(8px)',
             border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px',

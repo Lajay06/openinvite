@@ -232,9 +232,16 @@ export async function runDesignStudioEntrance() {
   results.push(/whileHover={prefersReducedMotion \? undefined : \{ scale: 1\.045 \}}/.test(bannerSource)
     ? pass('UniverseBanner.jsx skips the hover scale entirely under reduced motion', 'found')
     : fail('UniverseBanner.jsx skips the hover scale entirely under reduced motion', 'found', 'not found'));
-  results.push(/initial={prefersReducedMotion \? false : \{ opacity: 0, y: 24 \}}/.test(bannerSource)
-    ? pass('UniverseBanner.jsx skips the scroll-reveal entirely under reduced motion', 'found')
-    : fail('UniverseBanner.jsx skips the scroll-reveal entirely under reduced motion', 'found', 'not found'));
+  // fix/design-studio-back-fade-fix — the scroll-triggered reveal
+  // (fade in from white as a banner entered the viewport) is removed
+  // entirely, not just gated behind reduced motion — banners are simply
+  // present, fully opaque, immediately, for everyone.
+  results.push(!/initial={prefersReducedMotion \? false : \{ opacity: 0, y: 24 \}}/.test(bannerSource) && !/whileInView={{ opacity: 1, y: 0 }}/.test(bannerSource)
+    ? pass('UniverseBanner.jsx has no scroll-triggered fade/reveal at all', 'not found')
+    : fail('UniverseBanner.jsx has no scroll-triggered fade/reveal at all', 'not found', 'still present'));
+  results.push(/onViewportEnter={\(\) => loadUniverseFont\(universe\)}/.test(bannerSource)
+    ? pass('UniverseBanner.jsx still lazy-loads the universe font on viewport entry (unrelated perf optimisation, kept)', 'found')
+    : fail('UniverseBanner.jsx still lazy-loads the universe font on viewport entry', 'found', 'not found'));
 
   results.push(/useScroll\(\{ target: ref, offset: \['start start', 'end start'\] \}\)/.test(worldViewSource)
     ? pass('UniverseWorldView.jsx hero uses scroll-linked parallax (useScroll/useTransform)', 'found')
@@ -268,6 +275,17 @@ export async function runDesignStudioEntrance() {
   results.push(/window\.scrollTo\(0, wallScrollRef\.current\);/.test(studioSource)
     ? pass('UniverseStudio.jsx restores the saved scroll position when returning to the wall', 'found')
     : fail('UniverseStudio.jsx restores the saved scroll position when returning to the wall', 'found', 'not found'));
+
+  console.log('\n  Design Studio — no fade-in on initial paint (only on filter-pill changes):\n');
+
+  // fix/design-studio-back-fade-fix — AnimatePresence's own initial={false}
+  // skips the enter animation for whichever banners are already present on
+  // first mount (immediately opaque, no white flash), while still
+  // animating banners added/removed by a filter-pill change afterward —
+  // the one case this reveal is actually for.
+  results.push(/<AnimatePresence initial={false}>/.test(studioSource)
+    ? pass('UniverseStudio.jsx\'s banner wall skips the enter animation on initial mount', 'found')
+    : fail('UniverseStudio.jsx\'s banner wall skips the enter animation on initial mount', 'found', 'not found'));
 
   console.log('\n  Design Studio — banner wall is flush, no gaps between rows:\n');
 
@@ -349,9 +367,16 @@ export async function runDesignStudioEntrance() {
   results.push(/← All universes/.test(worldViewSource)
     ? pass('World page back button reads "All universes" (was "All worlds")', 'found')
     : fail('World page back button reads "All universes" (was "All worlds")', 'found', 'not found'));
-  results.push(/top: 96, left: 32, zIndex: 60/.test(worldViewSource)
+  results.push(/top: 96, left: 232, zIndex: 60/.test(worldViewSource)
     ? pass('World page back button sits below the app top bar/trial banner, above default chrome z-index', 'found')
     : fail('World page back button sits below the app top bar/trial banner, above default chrome z-index', 'found', 'not found'));
+  // fix/design-studio-back-fade-fix — left:232 = 200 (sidebar width,
+  // constant/non-collapsible) + 32 (8px-grid offset), so the button lands
+  // inside the content area, never over the sidebar. left:32 alone (the
+  // old value) sits inside the sidebar's own 0-200px span.
+  results.push(!/left: 32, zIndex: 60/.test(worldViewSource)
+    ? pass('World page back button no longer positions inside the sidebar\'s own 0-200px span', 'left:32 not found')
+    : fail('World page back button no longer positions inside the sidebar\'s own span', 'left:32 not found', 'still present'));
   results.push(/background: 'rgba\(10,10,10,0\.55\)', backdropFilter: 'blur\(8px\)'/.test(worldViewSource)
     ? pass('World page back button has a dark scrim + blur, legible over any chapter background', 'found')
     : fail('World page back button has a dark scrim + blur, legible over any chapter background', 'found', 'not found'));

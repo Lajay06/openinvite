@@ -149,11 +149,14 @@ export default function UniverseBanner({ universe, isCurrent, onClick }) {
   return (
     <motion.button
       onClick={onClick}
-      initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      // fix/design-studio-back-fade-fix — banners used to fade in from
+      // white (opacity:0→1, y:24→0) as each scrolled into view. Removed
+      // entirely: banners are simply present, fully opaque, immediately.
+      // viewport + onViewportEnter stay — that's lazy font-loading as a
+      // banner nears the viewport, a separate performance concern, not a
+      // visual reveal.
       viewport={{ once: true, amount: 0.25 }}
       onViewportEnter={() => loadUniverseFont(universe)}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
       style={{
         display: 'block', width: '100%', height: 'clamp(280px, 30vw, 460px)',
         border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left',
