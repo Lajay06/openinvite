@@ -53,4 +53,18 @@ Hero images (per standing instruction, kept as-is, not reassigned):
 
 ## Newly assigned in this overhaul
 
-*(filled in as each section ships — see per-section commits)*
+| public_id | Folder | Used on |
+|---|---|---|
+| `DTS_Natural_Beauty_Rob_Christain_Crosby_Photos_ID2677_e2cw9w` | Party | Home — features scroll, card 1 (Guest management) |
+| `DTS_Ceramic_Daniel_Farò_Photos_ID3766_gipmok` | Planning | Home — features scroll, card 2 (Budget & registry) |
+| `DTS_Weekend_Brainstorm_Kristine_Isabedra_Photos_ID2889_etg9ko` | Planning | Home — features scroll, card 3 (Planning & schedule) |
+| `DTS_Fine_Dining_Patrick_Chin_Photos_ID955_uoaegj` | Food | Home — features scroll, card 4 (Vendors) |
+| `DTS_Tradition_Chris_Abatzis_Photos_ID9180_eg2nbh` | Couple | Home — features scroll, card 5 (Style & experience) |
+| `tim-oun-n4Qtylea9-M-unsplash_elfx1q` | Universe | Home — features scroll, card 6 (Universes) |
+| `DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3565_ys7asa` | Relax | Home — features scroll, card 7 (Guest suite) |
+
+Note: the old `HorizontalScrollSection.jsx` cards used 5 `static.wixstatic.com`
+URLs (not this manifest's concern — being retired, not reused) plus a hacky
+render-time override that relabelled the "Digital Invitations" card as
+"Universes". Replaced with 7 honest cards, real Cloudinary photos, no
+runtime title swap.
