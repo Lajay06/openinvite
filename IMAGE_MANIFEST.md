@@ -82,6 +82,13 @@ exactly one universe.
 | `DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa` | Couple | About.jsx — photo pair, right |
 | `DTS_la_calma_Parole_Dure_Photos_ID5853_haflhv` | Relax | About.jsx — full-bleed before stats |
 
+**Cohesion sweep (task 9):** Features.jsx's dead "Invitations x Guest Suite"
+section (`InvitationsSection` — was `return null;`, rendering nothing) was
+revived with real copy and the local `/universes/marrakech.jpg` (same
+canonical per-universe asset used on the Universes grid — not a Cloudinary
+pick, not part of the no-repeat pool, appropriate to reference again as "here's
+what a universe looks like").
+
 **Finding, not a straight "move":** About.jsx's original 4 photos (`photoU`,
 `photoAbout1/2/3` in `photos.js`, all `static.wixstatic.com`) turned out to
 be generic off-brand lifestyle/fashion stock on inspection (a cocktail

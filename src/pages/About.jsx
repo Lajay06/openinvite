@@ -12,18 +12,18 @@ const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const DELIVERABLES = [
-  "Guest Management Suite",
-  "Smart Budget Tracker",
-  "Digital Invitations",
-  "Seating Planner",
-  "Collaborative Playlists",
-  "Registry Integration",
-  "AI Assistant (Ava)",
-  "Photo & Memory Management",
-  "Vendor Management",
-  "Timeline & Schedule Builder",
-  "RSVP Tracking",
-  "Collaboration Access",
+  "Guest management suite",
+  "Smart budget tracker",
+  "Digital invitations",
+  "Seating planner",
+  "Collaborative playlists",
+  "Registry integration",
+  "AI assistant (Ava)",
+  "Photo & memory management",
+  "Vendor management",
+  "Timeline & schedule builder",
+  "RSVP tracking",
+  "Collaboration access",
 ];
 
 const BELIEFS = [
@@ -129,13 +129,12 @@ export default function About() {
         fontSize: 11,
         fontWeight: 500,
         letterSpacing: "0.25em",
-        textTransform: "uppercase",
         color: "#E03553",
         margin: 0,
         lineHeight: 1.4
       }}
     >
-      Our Story
+      Our story
     </p>
 
     <h1
@@ -181,7 +180,7 @@ export default function About() {
       </section>
 
       {/* ── S4: OUR STORY ──────────────────────────────── */}
-      <TwoColumnSection id="story" number="01" title="Our Story" headline="Built for the way people actually plan." body={["Openinvite was born from a real problem. Couples were drowning in spreadsheets, group chats, and tools that were either too complex or too basic. We saw an opportunity to build something that was genuinely beautiful and genuinely powerful: a platform that respected your time and matched the energy of the occasion.", "From day one, we made a commitment: no feature would ship unless it was designed as carefully as it was engineered. Every screen, every interaction, every detail had to earn its place. The result is a platform that feels as considered as the weddings it helps plan."]} />
+      <TwoColumnSection id="story" number="01" title="Our story" headline="Built for the way people actually plan." body={["Openinvite was born from a real problem. Couples were drowning in spreadsheets, group chats, and tools that were either too complex or too basic. We saw an opportunity to build something that was genuinely beautiful and genuinely powerful: a platform that respected your time and matched the energy of the occasion.", "From day one, we made a commitment: no feature would ship unless it was designed as carefully as it was engineered. Every screen, every interaction, every detail had to earn its place. The result is a platform that feels as considered as the weddings it helps plan."]} />
 
       {/* ── S5: PHOTO PAIR ────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
@@ -190,7 +189,7 @@ export default function About() {
       </div>
 
       {/* ── S6: WHAT WE BELIEVE ─────────────────────────── */}
-      <TwoColumnSection id="beliefs" number="02" title="What We Believe" headline="Simple beliefs. Big impact." background="#F5F5F3" beliefs={BELIEFS} />
+      <TwoColumnSection id="beliefs" number="02" title="What we believe" headline="Simple beliefs. Big impact." background="#F5F5F3" beliefs={BELIEFS} />
 
       {/* ── S7: FULL BLEED PHOTO ─────────────────────────── */}
       <section style={{ width: "100vw", height: "90vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
@@ -221,7 +220,7 @@ function EditorialIntro() {
           Openinvite was built out of a simple frustration: wedding planning tools were outdated, overwhelming, and frankly ugly. We believed that one of the most exciting moments of your life deserved a platform that matched that energy. So we built one.
         </p>
 
-        <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 24 }}>Deliverables</p>
+        <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em", marginBottom: 24 }}>Deliverables</p>
         <div>
           {DELIVERABLES.map((item, i) => (
             <div key={i} style={{ padding: "10px 0", borderBottom: "1px solid #E8E8E8", fontSize: 14, color: "#0A0A0A", opacity: visible ? 1 : 0, animation: visible ? `fadeIn 0.6s ease ${i * 0.05}s forwards` : "none" }}>
@@ -243,7 +242,7 @@ function TwoColumnSection({ id, number, title, headline, body, background, belie
     <section ref={ref} id={id} style={{ background: background || "#FFFFFF", padding: "120px 80px", maxWidth: 1100, margin: "0 auto", borderBottom: "1px solid #E0E0DC" }}>
       {/* Content */}
       <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: "opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s" }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 16 }}>{title}</p>
+        <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em", marginBottom: 16 }}>{title}</p>
         <h2 style={{ fontSize: "clamp(28px, 3vw, 42px)", fontWeight: 700, color: "#0A0A0A", marginBottom: 32, hyphens: "none" }}>
           {headline}
         </h2>
@@ -291,7 +290,7 @@ function StatsSection() {
             <div style={{ fontSize: 72, fontWeight: 700, lineHeight: 1, marginBottom: 12, letterSpacing: "-0.02em" }}>
               <CountUp target={stat.num} display={stat.display} />
             </div>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", textTransform: "uppercase", letterSpacing: "0.15em" }}>{stat.label}</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em" }}>{stat.label}</p>
           </div>
         ))}
       </div>

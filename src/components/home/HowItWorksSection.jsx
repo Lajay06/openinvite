@@ -58,11 +58,30 @@ export default function HowItWorksSection() {
     return () => obs.disconnect();
   }, []);
 
-  return null;
-
-
-
-
+  return (
+    <section ref={sectionRef} style={{ background: "#FFFFFF", padding: "120px clamp(32px, 6vw, 80px)" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#E03553", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          How it works
+        </p>
+        <h2 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 64, maxWidth: 600 }}>
+          Three steps. That's the whole learning curve.
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 48 }}>
+          {STEPS.map((step, i) => (
+            <div key={step.num} style={{
+              opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)",
+              transition: `opacity 0.6s ${EASE} ${i * 0.1}s, transform 0.6s ${EASE} ${i * 0.1}s`,
+            }}>
+              <GradNum>{step.num}</GradNum>
+              <h3 style={{ fontSize: 20, fontWeight: 700, color: "#0A0A0A", marginBottom: 10 }}>{step.title}</h3>
+              <p style={{ fontSize: 15, color: "rgba(10,10,10,0.6)", lineHeight: 1.6 }}>{step.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 
 
 

@@ -20,7 +20,7 @@ export default function PublicFooter() {
 
           {/* Links */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Links</p>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Links</p>
             <ul className="space-y-3">
               <li><Link to="/" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Home</Link></li>
               <li><Link to="/About" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">About</Link></li>
@@ -30,7 +30,7 @@ export default function PublicFooter() {
 
           {/* Legal */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Legal</p>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Legal</p>
             <ul className="space-y-3">
               <li><Link to="/privacy-policy" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Privacy policy</Link></li>
               <li><Link to="/terms-of-service" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Terms of service</Link></li>
@@ -43,7 +43,7 @@ export default function PublicFooter() {
 
           {/* Contact */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Contact</p>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Contact</p>
             <Link to="/Contact" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors block mb-2">
               Get in touch
             </Link>
