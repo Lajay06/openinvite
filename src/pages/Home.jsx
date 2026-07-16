@@ -8,7 +8,7 @@ import HeroCollage from "@/components/home/HeroCollage";
 import ValuePropSection from "@/components/home/ValuePropSection";
 import FeatureInvitations from "@/components/home/FeatureInvitations";
 import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
-import ScrollMorphSection from "@/components/home/ScrollMorphSection";
+import PriceHonestySection from "@/components/home/PriceHonestySection";
 
 import LightSectionReveal from "@/components/home/LightSectionReveal";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
@@ -41,8 +41,8 @@ export default function Home() {
       {/* 2. RED SILHOUETTE — full-width natural-height image */}
       <ValuePropSection />
 
-      {/* 3. SCROLL MORPH — "So, why us?" */}
-      <ScrollMorphSection />
+      {/* 3. "So, why us?" — the honest price comparison */}
+      <PriceHonestySection />
 
       {/* 4. HORIZONTAL SCROLL */}
       <div id="section-features" style={{ background: "#0A0A0A" }}>
