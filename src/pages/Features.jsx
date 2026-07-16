@@ -8,7 +8,6 @@ import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import AnimDivider from "@/components/motion/AnimDivider";
 import { ArrowUpRight } from "lucide-react";
-import HorizontalCardShelf from "@/components/shared/HorizontalCardShelf";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 import FeatureTimeline from "@/components/home/FeatureTimeline";
 import FeaturePlaylists from "@/components/home/FeaturePlaylists";
@@ -43,12 +42,12 @@ function useScrollReveal(threshold = 0.2) {
 }
 
 const ESSENTIALS = [
-{ title: "Smart Budget Tracker", accent: "#E03553", label: "BUDGET", desc: "Track everything in one place — from flowers to favours — with real-time visuals and AI tips.", bg: PHOTOS.photoP },
-{ title: "Registry Tool", accent: "#803D81", label: "REGISTRY", desc: "Connect your dream registry or build your own — stylish, mobile, and guest-friendly.", bg: PHOTOS.photoQ },
-{ title: "Ultimate Planner", accent: "#6B2CAE", label: "PLANNING", desc: "The all-in-one planning workspace. Every detail, every vendor, every task.", bg: PHOTOS.photoR },
-{ title: "AI Integration", accent: "#DDF762", label: "AI", desc: "Smart suggestions, personalised insights, and Ava always one step ahead.", bg: PHOTOS.photoFeatAI },
-{ title: "Guest Suite", accent: "#C2E5F3", label: "GUESTS", desc: "From RSVP to seating — manage every guest with zero stress and total control.", bg: PHOTOS.photoFeatGuests },
-{ title: "Collaborative Playlists", accent: "#E03553", label: "MUSIC", desc: "Curate the ultimate soundtrack. Spotify-connected, guest-friendly, effortlessly organised.", bg: PHOTOS.photoFeatMusic }];
+{ title: "Smart budget tracker", accent: "#E03553", label: "Budget", desc: "Track everything in one place, from flowers to favours, with real-time visuals and Ava's tips." },
+{ title: "Registry tool", accent: "#803D81", label: "Registry", desc: "Connect your dream registry or build your own: stylish, mobile, guest-friendly." },
+{ title: "Ultimate planner", accent: "#6B2CAE", label: "Planning", desc: "The all-in-one planning workspace. Every detail, every vendor, every task." },
+{ title: "AI integration", accent: "#DDF762", label: "Ava", desc: "Smart suggestions, personalised insights, and Ava always one step ahead." },
+{ title: "Guest suite", accent: "#C2E5F3", label: "Guests", desc: "From RSVP to seating, manage every guest with zero stress and total control." },
+{ title: "Collaborative playlists", accent: "#E03553", label: "Music", desc: "Curate the ultimate soundtrack: Spotify-connected, guest-friendly, effortlessly organised." }];
 
 
 const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3", "#0A1930", "#E03553"];
@@ -283,12 +282,46 @@ function AvaSection({ essentials }) {
       <div style={{ position: "absolute", inset: 0, background: "#0A0A0A", zIndex: 10, transform: curtainUp ? "translateY(-100%)" : "translateY(0)", transition: `transform 0.9s ${EASE}`, pointerEvents: "none" }} />
       <div style={{ position: "relative", zIndex: 3 }}>
         <div style={{ textAlign: "center", marginBottom: 48, padding: "0 clamp(24px, 4vw, 64px)", opacity: curtainUp ? 1 : 0, transition: `opacity 0.8s ${EASE} 0.15s` }}>
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginBottom: 12, overflow: "visible", hyphens: "none" }}>The Essentials</h2>
+          <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginBottom: 12, overflow: "visible", hyphens: "none" }}>The essentials</h2>
         </div>
-        <HorizontalCardShelf cards={essentials} />
+        <EssentialsManifesto items={essentials} visible={curtainUp} />
       </div>
     </section>);
 
+}
+
+// A stated thesis, not a slideshow to scroll past — replaces the old
+// horizontal-shelf-of-photo-cards (which read as a generic "feature
+// carousel," the exact templated SaaS pattern the rest of this overhaul is
+// moving away from). No per-item photo competes with the section's own
+// full-bleed background; each essential is just an accent-coloured numeral,
+// a confident sentence-case headline, and one clean line of copy.
+function EssentialsManifesto({ items, visible }) {
+  return (
+    <div style={{
+      maxWidth: 1100, margin: "0 auto", padding: "0 clamp(24px, 4vw, 64px)",
+      display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1px",
+      background: "rgba(255,255,255,0.08)",
+    }}>
+      {items.map((item, i) => (
+        <div key={item.title} style={{
+          background: "#0A0A0A", padding: "32px 28px", borderLeft: `3px solid ${item.accent}`,
+          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
+          transition: `opacity 0.6s ${EASE} ${0.1 + i * 0.06}s, transform 0.6s ${EASE} ${0.1 + i * 0.06}s`,
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: item.accent, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: "0 0 12px" }}>
+            {item.label}
+          </p>
+          <h3 style={{ color: "#FFF", fontWeight: 700, fontSize: "clamp(20px, 2vw, 26px)", letterSpacing: "-0.01em", lineHeight: 1.15, margin: "0 0 10px" }}>
+            {item.title}
+          </h3>
+          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>
+            {item.desc}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 
