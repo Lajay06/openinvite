@@ -69,6 +69,12 @@ import Admin from './pages/Admin';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import StudioGuestSuite from './pages/StudioGuestSuite';
+// Dev-only Design Studio redesign mocks — not linked from any nav, not
+// used by the real DesignStudio (UniverseStudio.jsx) route. See each
+// file's header comment.
+import MockUniverseA from './pages/MockUniverseA';
+import MockUniverseB from './pages/MockUniverseB';
+import MockUniverseC from './pages/MockUniverseC';
 import Features from './pages/Features';
 import Home from './pages/Home';
 
@@ -211,6 +217,12 @@ const AuthenticatedApp = () => {
             redirect since removing "GuestSuite" from pages.config.js's
             Pages map also removes its auto-generated route. */}
         <Route path="/GuestSuite" element={<Navigate to="/studio/universe" replace />} />
+        {/* Dev-only Design Studio redesign mocks — unreachable without the
+            URL (no nav entry anywhere); do not modify or replace
+            /studio/universe above. */}
+        <Route path="/mocks/universe/a" element={<LayoutWrapper currentPageName="MockUniverseA"><MockUniverseA /></LayoutWrapper>} />
+        <Route path="/mocks/universe/b" element={<LayoutWrapper currentPageName="MockUniverseB"><MockUniverseB /></LayoutWrapper>} />
+        <Route path="/mocks/universe/c" element={<LayoutWrapper currentPageName="MockUniverseC"><MockUniverseC /></LayoutWrapper>} />
         <Route path="/food-beverage" element={<LayoutWrapper currentPageName="FoodBeverage"><FoodBeverage /></LayoutWrapper>} />
         {/* Dev-only vendor-template mocks (Beauty/Music/Food & beverage/Photography
             unification) — see import comment above. */}
