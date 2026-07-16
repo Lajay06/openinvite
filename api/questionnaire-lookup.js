@@ -10,6 +10,19 @@
  * (isEligibleRecipient — the same recipient rule the couple's dashboard
  * tracker uses) before returning anything.
  *
+ * fix/questionnaire-response-rls: this endpoint was silently 404ing for
+ * EVERY real guest before this fix — Questionnaire.read was owner-scoped
+ * ({{user.id}}), which the admin key can never satisfy (it has no session
+ * identity), so the adminFetch below always returned an empty list.
+ * Questionnaire.read is now null (same class of change as Guest.read,
+ * already null for the identical reason — content here is non-sensitive
+ * game copy, not guest PII, so no encryption needed for this entity).
+ * QuestionnaireResponse is now looked up by questionnaire_id_hash +
+ * guest_id_hash (HMAC, api/_lib/questionnaireCrypto.js) instead of the
+ * plaintext ids it used to store, and decrypted server-side — see that
+ * file's header comment for why (read:null + real confidentiality promise
+ * means the row itself must not carry anything plaintext-readable).
+ *
  * A non-recipient's token gets the same 404 as a bad token or a
  * non-existent questionnaire id — never a distinguishing 403 — so this
  * endpoint can't be used to probe which questionnaires exist for guests
@@ -17,8 +30,8 @@
  *
  * Never returns another guest's answers: the only response fields tied to
  * "who answered what" are this SAME guest's own prior submission (so they
- * can see/edit what they already sent), resolved by (questionnaire_id,
- * this guest's own guest_id) — there is no code path here that reads or
+ * can see/edit what they already sent), resolved by (questionnaire_id_hash,
+ * this guest's own guest_id_hash) — there is no code path here that reads or
  * returns any other guest's QuestionnaireResponse row.
  *
  * Body: { token: string, questionnaireId: string }
@@ -35,6 +48,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 import { isEligibleRecipient } from '../src/lib/questionnaireRecipients.js';
+import { hashId, decryptPayload } from './_lib/questionnaireCrypto.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -53,6 +67,14 @@ async function adminFetch(path) {
   });
   if (!res.ok) throw new Error(`Base44 GET ${path} failed (${res.status})`);
   return res.json();
+}
+
+/** Latest row wins for a given (questionnaire, guest) pair — append-only, mirrors rsvpAggregation.js. */
+function latestResponse(rows) {
+  return rows.reduce((latest, row) => {
+    if (!latest) return row;
+    return new Date(row.created_date) > new Date(latest.created_date) ? row : latest;
+  }, null);
 }
 
 export default async function handler(req, res) {
@@ -97,10 +119,13 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'This game could not be found.' });
     }
 
-    const existingResponses = unwrapList(
-      await adminFetch(`/apps/${BASE44_APP_ID}/entities/QuestionnaireResponse?q=${encodeURIComponent(JSON.stringify({ questionnaire_id: questionnaireId, guest_id: guest.id }))}`)
+    const qHash = hashId(questionnaireId);
+    const gHash = hashId(guest.id);
+    const existingRows = unwrapList(
+      await adminFetch(`/apps/${BASE44_APP_ID}/entities/QuestionnaireResponse?q=${encodeURIComponent(JSON.stringify({ questionnaire_id_hash: qHash, guest_id_hash: gHash }))}`)
     );
-    const mine = existingResponses.find(r => r.guest_id === guest.id && r.questionnaire_id === questionnaireId);
+    const mine = latestResponse(existingRows.filter(r => r.questionnaire_id_hash === qHash && r.guest_id_hash === gHash));
+    const decrypted = mine ? decryptPayload(mine.encrypted_answers) : null;
 
     return res.status(200).json({
       title: questionnaire.title,
@@ -109,8 +134,8 @@ export default async function handler(req, res) {
       questions: (questionnaire.questions || []).map(q => ({
         id: q.id, text: q.text, type: q.type || 'short_text', options: q.options || [],
       })),
-      alreadyAnswered: !!mine,
-      previousAnswers: mine ? (mine.answers || []) : null,
+      alreadyAnswered: !!decrypted,
+      previousAnswers: decrypted ? decrypted.answers : null,
     });
   } catch (err) {
     console.error('[questionnaire-lookup] Error:', err.message);

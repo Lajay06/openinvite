@@ -2,24 +2,42 @@
  * POST /api/questionnaire-answer-submit
  *
  * Public, unauthenticated endpoint backing GamesPage.jsx. Writes one
- * QuestionnaireResponse row per guest, keyed by (questionnaire_id,
- * guest_id) — resubmitting just updates the existing row (mirrors
- * rsvp-submit.js's "always allow updating your own response" behaviour).
+ * QuestionnaireResponse row per submission — append-only (mirrors
+ * rsvp-submit.js/PollVote's "resubmitting writes a NEW row, latest wins at
+ * read time" pattern), rather than updating an existing row, because
+ * QuestionnaireResponse's update RLS is owner-scoped and the admin key can
+ * never satisfy it (no session identity) — same reason RsvpResponse/PollVote
+ * never update in place either.
+ *
+ * fix/questionnaire-response-rls: this endpoint 500'd for EVERY real guest
+ * before this fix. QuestionnaireResponse's create RLS used to be
+ * {created_by_id: {{user.id}}} — the admin key has no session identity, so
+ * every create() call got a flat 403 (confirmed empirically against the
+ * live entity, not assumed). create is now null, matching the
+ * RsvpResponse/PollVote/SongRequest precedent already proven to work in
+ * this codebase.
+ *
+ * Privacy is stronger here than polls: game answers must be visible ONLY to
+ * the couple, never derivable from an unscoped list. Base44 RLS can't scope
+ * per-token (no per-record secret comparison, only flat {{user.id}}
+ * equality), so read:null is unavoidable once the admin key needs to find
+ * these rows again — confidentiality instead comes from AES-256-GCM
+ * encrypting the answer payload (api/_lib/questionnaireCrypto.js), keyed
+ * from BASE44_ADMIN_KEY. questionnaire_id and guest_id are stored as HMAC
+ * digests, never plaintext, for the same reason pollAuth.js hashes guest
+ * identifiers on PollVote/PollComment.
  *
  * Privacy enforcement (server-side, not just UI):
  *   1. guest_id always comes from resolveGuestByToken(token) — there is no
  *      client-suppliable guest id anywhere in this file, so a caller can
  *      never write (or overwrite) another guest's response no matter what
  *      the request body claims.
- *   2. created_by_id is stamped to wedding.created_by_id (the COUPLE's own
- *      user id, resolved server-side from the guest's wedding) via the
- *      admin key, which is what makes QuestionnaireResponse's owner-scoped
- *      read RLS (`created_by_id: {{user.id}}`) resolve to the couple later
- *      — a guest has no base44 session at all, so no token, however
- *      crafted, can ever satisfy that rule and read anything back.
- *   3. Eligibility (isEligibleRecipient) is re-checked here independently
+ *   2. Eligibility (isEligibleRecipient) is re-checked here independently
  *      of questionnaire-lookup.js — a guest can't answer a questionnaire
  *      they were never sent, even if they somehow had its id.
+ *   3. The stored row carries only hashed ids + ciphertext — a direct,
+ *      unscoped `.list()` against this entity (anyone, any API token)
+ *      yields nothing readable.
  *
  * Body: { token: string, questionnaireId: string, answers: [{ question_id, answer_text?, selected_option? }] }
  * Response: 200 { ok: true }
@@ -31,6 +49,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 import { isEligibleRecipient } from '../src/lib/questionnaireRecipients.js';
+import { hashId, encryptPayload } from './_lib/questionnaireCrypto.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -110,24 +129,15 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'This game is no longer accepting answers.' });
     }
 
-    const existing = unwrapList(
-      await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/QuestionnaireResponse?q=${encodeURIComponent(JSON.stringify({ questionnaire_id: questionnaireId, guest_id: guest.id }))}`)
-    ).find(r => r.guest_id === guest.id && r.questionnaire_id === questionnaireId);
+    const submitted_at = new Date().toISOString();
+    const encrypted_answers = encryptPayload({ guest_name: guest.name || '', answers, submitted_at });
 
-    const payload = {
-      questionnaire_id: questionnaireId,
-      guest_id: guest.id,
-      guest_name: guest.name || '',
-      answers,
-      submitted_at: new Date().toISOString(),
-      created_by_id: wedding.created_by_id,
-    };
-
-    if (existing) {
-      await adminFetch('PUT', `/apps/${BASE44_APP_ID}/entities/QuestionnaireResponse/${existing.id}`, payload);
-    } else {
-      await adminFetch('POST', `/apps/${BASE44_APP_ID}/entities/QuestionnaireResponse`, payload);
-    }
+    await adminFetch('POST', `/apps/${BASE44_APP_ID}/entities/QuestionnaireResponse`, {
+      questionnaire_id_hash: hashId(questionnaireId),
+      guest_id_hash: hashId(guest.id),
+      encrypted_answers,
+      submitted_at,
+    });
 
     return res.status(200).json({ ok: true });
   } catch (err) {

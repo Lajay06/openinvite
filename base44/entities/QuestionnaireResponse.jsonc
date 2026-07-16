@@ -2,32 +2,22 @@
   "name": "QuestionnaireResponse",
   "type": "object",
   "properties": {
-    "questionnaire_id": {
+    "questionnaire_id_hash": {
       "type": "string",
-      "description": "The Questionnaire this response answers"
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, questionnaire_id) — read:null means this entity is listable unscoped by anyone with any API token, so the plaintext Questionnaire.id never lives here. Server endpoints compute the same deterministic hash to filter (api/_lib/questionnaireCrypto.js hashId)."
     },
-    "guest_id": {
+    "guest_id_hash": {
       "type": "string",
-      "description": "The Guest.id who submitted this response — resolved server-side from their rsvp_link_id token, never client-suppliable"
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, guest.id) — same reasoning as questionnaire_id_hash. Never the raw Guest.id."
     },
-    "guest_name": {
+    "encrypted_answers": {
       "type": "string",
-      "description": "Denormalized guest name at time of submission, so the couple's per-question game view doesn't need a second Guest lookup"
-    },
-    "answers": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "question_id": { "type": "string" },
-          "answer_text": { "type": "string", "description": "Free-text answer for a short_text question" },
-          "selected_option": { "type": "string", "description": "Chosen option for a multiple_choice question" }
-        }
-      }
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of {guest_name, answers, submitted_at} — key derived from BASE44_ADMIN_KEY. Decryptable only server-side; an unscoped list of this entity yields opaque blobs, never plaintext answers."
     },
     "submitted_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "Plaintext timestamp — not sensitive on its own, kept outside the ciphertext so latest-wins dedup (append-only, mirrors rsvpAggregation.js) doesn't require decrypting every row just to sort them."
     },
     "is_test": {
       "type": "boolean",
@@ -36,16 +26,13 @@
     }
   },
   "required": [
-    "questionnaire_id",
-    "guest_id"
+    "questionnaire_id_hash",
+    "guest_id_hash",
+    "encrypted_answers"
   ],
   "rls": {
-    "create": {
-      "created_by_id": "{{user.id}}"
-    },
-    "read": {
-      "created_by_id": "{{user.id}}"
-    },
+    "create": null,
+    "read": null,
     "update": {
       "created_by_id": "{{user.id}}"
     },
