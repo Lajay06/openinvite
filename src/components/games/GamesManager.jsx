@@ -359,13 +359,31 @@ export default function GamesManager() {
       const [qs, gs, rs] = await Promise.all([
         getMyRecords('Questionnaire', '-created_date'),
         getMyRecords('Guest'),
-        getMyRecords('QuestionnaireResponse'),
+        fetchResponses(),
       ]);
       setQuestionnaires(qs);
       setGuests(gs);
       setResponses(rs);
     } catch (e) { console.error(e); toast.error('Failed to load games'); }
     setLoading(false);
+  };
+
+  // QuestionnaireResponse rows now hold hashed ids + an encrypted payload
+  // (fix/questionnaire-response-rls — the entity is read:null so nothing
+  // plaintext can live on the row), so a direct getMyRecords() call can no
+  // longer read anything meaningful. This endpoint verifies the caller owns
+  // the questionnaires being asked about, then decrypts server-side.
+  const fetchResponses = async () => {
+    const res = await fetch('/api/questionnaire-responses-for-owner', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+      },
+    });
+    if (!res.ok) throw new Error(`questionnaire-responses-for-owner failed (${res.status})`);
+    const data = await res.json();
+    return data.responses || [];
   };
 
   const createQuestionnaire = async (data) => {
