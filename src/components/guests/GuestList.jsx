@@ -260,6 +260,67 @@ const selectStyle = {
 
 const COLUMN_COUNT = 10;
 
+/* ── Sortable columns ──────────────────────────────────────────────────────
+   Name/Table use a natural (numeric-aware) string compare so "Table 2"
+   sorts before "Table 10". Status sorts by the guest's overall derived
+   state, not the raw per-event chip row. Blank values always sort to the
+   end, in both directions — the default (unsorted) order is untouched
+   until a column header is clicked. */
+function naturalCompare(a, b) {
+  return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
+}
+
+const STATUS_SORT_RANK = { attending: 0, pending: 1, declined: 2 };
+
+function guestStatusSortKey(guest) {
+  const hasResponses = Array.isArray(guest.event_responses) && guest.event_responses.length > 0;
+  if (!hasResponses) return 3; // "Not yet invited"
+  return STATUS_SORT_RANK[guest.rsvp_status] ?? 1; // default to "pending" bucket
+}
+
+const SORTABLE_COLUMNS = {
+  name:     { getValue: g => g.name || '', compare: naturalCompare },
+  category: { getValue: g => g.category || '', compare: naturalCompare },
+  status:   { getValue: g => guestStatusSortKey(g), compare: (a, b) => a - b },
+  table:    { getValue: g => g.table_assignment || '', compare: naturalCompare },
+};
+
+function sortGuests(guests, sortState) {
+  if (!sortState?.field) return guests;
+  const { getValue, compare } = SORTABLE_COLUMNS[sortState.field];
+  const dir = sortState.direction === 'desc' ? -1 : 1;
+  return [...guests].sort((a, b) => {
+    const va = getValue(a);
+    const vb = getValue(b);
+    const aBlank = va === '' || va == null;
+    const bBlank = vb === '' || vb == null;
+    if (aBlank && bBlank) return 0;
+    if (aBlank) return 1;  // blanks always last, regardless of direction
+    if (bBlank) return -1;
+    return compare(va, vb) * dir;
+  });
+}
+
+/** Clickable column header — cycles asc → desc → unsorted (back to default order). */
+function SortableHead({ field, label, sortState, onSort }) {
+  const active = sortState?.field === field;
+  const direction = active ? sortState.direction : null;
+  return (
+    <TableHead
+      onClick={() => onSort(field)}
+      style={{ cursor: 'pointer', userSelect: 'none' }}
+      title={`Sort by ${label.toLowerCase()}`}
+    >
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        {label}
+        <span style={{ fontSize: 10, color: active ? '#E03553' : 'rgba(10,10,10,0.25)', lineHeight: 1 }}>
+          {active ? (direction === 'desc' ? '▼' : '▲') : '⇅'}
+        </span>
+      </span>
+    </TableHead>
+  );
+}
+
 const SkeletonRows = () => (
   <>
     {Array.from({ length: 6 }).map((_, i) => (
@@ -503,8 +564,21 @@ export default function GuestList({
   const [editCell, setEditCell] = useState(null); // { id, field }
   const [editValue, setEditValue] = useState('');
   const [expandedGuestIds, setExpandedGuestIds] = useState(() => new Set());
+  const [sortState, setSortState] = useState({ field: null, direction: 'asc' }); // null field = default order (oldest first, per loadGuests)
   const rowRefs = useRef(new Map());
   const scrolledForId = useRef(null);
+
+  // Cycles a column through asc → desc → unsorted (back to the default,
+  // caller-provided order) — clicking a different column always starts at asc.
+  const handleSort = (field) => {
+    setSortState(prev => {
+      if (prev.field !== field) return { field, direction: 'asc' };
+      if (prev.direction === 'asc') return { field, direction: 'desc' };
+      return { field: null, direction: 'asc' };
+    });
+  };
+
+  const sortedGuests = sortGuests(guests, sortState);
 
   const toggleExpanded = (guestId) => {
     setExpandedGuestIds(prev => {
@@ -687,19 +761,19 @@ export default function GuestList({
                   style={{ width: 14, height: 14, accentColor: '#E03553' }}
                 />
               </TableHead>
-              <TableHead>Guest</TableHead>
+              <SortableHead field="name" label="Guest" sortState={sortState} onSort={handleSort} />
               <TableHead>Contact</TableHead>
-              <TableHead>Category</TableHead>
+              <SortableHead field="category" label="Category" sortState={sortState} onSort={handleSort} />
               <TableHead>Tags</TableHead>
-              <TableHead>Status</TableHead>
+              <SortableHead field="status" label="Status" sortState={sortState} onSort={handleSort} />
               <TableHead>Last sent</TableHead>
-              <TableHead>Table</TableHead>
+              <SortableHead field="table" label="Table" sortState={sortState} onSort={handleSort} />
               <TableHead>+1</TableHead>
               <TableHead style={{ width: 48 }} />
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading ? <SkeletonRows /> : guests.flatMap((guest) => {
+            {loading ? <SkeletonRows /> : sortedGuests.flatMap((guest) => {
               const rows = [];
               const isExpanded = expandedGuestIds.has(guest.id);
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
+import { getGuestTableName, propagateTableRename } from '@/lib/tableAssignment';
 const Guest = base44.entities.Guest;
 const Table = base44.entities.Table;
 const VenueAsset = base44.entities.VenueAsset;
@@ -203,6 +204,10 @@ export default function SeatingPage() {
     setTables(prev => prev.map(t => t.id === tableId ? { ...t, name: trimmed } : t));
     try {
       await Table.update(tableId, { name: trimmed });
+      // Keep every seated guest's cached table_assignment (what the guest
+      // list's Table column reads) in step with the rename — otherwise it
+      // shows the old name until each guest happens to be reassigned.
+      await propagateTableRename({ tableId, newName: trimmed, tables });
     } catch {
       toast.error('Failed to rename table');
       setTables(prev => prev.map(t => t.id === tableId ? { ...t, name: prevName } : t)); // rollback
@@ -373,13 +378,6 @@ export default function SeatingPage() {
   const guestsAtSelectedTable = selectedTable
     ? new Set((selectedTable.assigned_guests || []).map(a => a.guest_id))
     : new Set();
-
-  const getGuestTableName = (guestId) => {
-    for (const t of tables) {
-      if ((t.assigned_guests || []).some(a => a.guest_id === guestId)) return t.name;
-    }
-    return null;
-  };
 
   const STAT_CARDS = [
     { label: 'Tables',     value: stats.tables },
@@ -764,7 +762,7 @@ export default function SeatingPage() {
                     const showAssigned = guestFilter !== 'unassigned';
 
                     const GuestRow = ({ guest, isAssigned: isAsgn }) => {
-                      const tableName = isAsgn ? getGuestTableName(guest.id) : null;
+                      const tableName = isAsgn ? getGuestTableName(guest.id, tables) : null;
                       return (
                         <div
                           key={guest.id}
