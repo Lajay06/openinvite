@@ -96,6 +96,64 @@ const CONSIDERATIONS = {
     },
   ],
 
+  music: [
+    {
+      id: 'm1',
+      title: 'Booking your DJ or band',
+      tag: 'Book early',
+      body: [
+        'Popular DJs and bands book out 9–12 months ahead for peak wedding season, and a band even earlier since group availability is harder to line up. Ask what happens if a band member is sick — is there a substitute, or does the lineup change on the day? Get every inclusion in writing: hours of coverage, MC duties, lighting, and overtime rates.',
+        'Watch them perform live if you can, not just a demo reel — a demo shows their best moment, not how they read and adapt to an actual room.',
+      ],
+      tips: [
+        'Ask for a full "do not play" list option, not just requests',
+        'Confirm who acts as MC for announcements — DJ, band, or a nominated friend',
+        'Check their setup and pack-down time against your venue\'s access window',
+      ],
+      why: 'Music sets the emotional pace of the whole day — a mismatch between what you booked and what shows up is hard to recover from in the moment.',
+    },
+    {
+      id: 'm2',
+      title: 'Building playlists by moment',
+      tag: 'Plan ahead',
+      body: [
+        'Different parts of the day call for different music, and it helps your DJ or band to have them separated rather than one long list: ceremony (processional, signing, recessional), cocktail hour (background, conversational), dinner (low-key, not competing with speeches), and dancing (the songs that actually fill the floor).',
+        'A handful of "must-play" and "must-not-play" songs, plus your first dance and any parent dances, matters far more to your vendor than a 200-song wishlist — give them the moments that need a specific song, and trust them with the rest.',
+      ],
+      tips: [
+        'Pick your first dance, parent dances, and processional song early — everything else can wait',
+        'Keep the "do not play" list short and specific, not a whole genre ban',
+      ],
+      why: 'A DJ reading the room with a short, clear brief will fill a dance floor better than one working through an unstructured 200-song list.',
+    },
+    {
+      id: 'm3',
+      title: 'Guest song requests',
+      tag: 'Guest experience',
+      body: [
+        'Letting guests suggest songs is a nice touch, but decide upfront whether every request gets played automatically or needs approval first — a request queue with no filter can pull the night in a direction you didn\'t plan for. If you enable requests, tell guests when they can expect them to be played (the DJ still runs the room, not a jukebox).',
+      ],
+      tips: [
+        'Turn on approval if you want final say over what actually gets played',
+        'Let guests know requests are welcomed but not guaranteed',
+      ],
+      why: 'An open request queue can crowd out the songs that actually matter to you if there\'s no approval step.',
+    },
+    {
+      id: 'm4',
+      title: 'Ceremony sound and timing',
+      tag: 'Day of',
+      body: [
+        'Outdoor ceremonies especially need a real sound check — wind and open air swallow acoustic music fast. Confirm who is providing the sound system: your band/DJ, the venue, or a separate ceremony musician, and make sure they know your exact processional cues (when to start, how long the walk takes, when to swell for the entrance).',
+      ],
+      tips: [
+        'Do a walk-through with whoever is playing the processional, timed to the actual aisle length',
+        'For outdoor ceremonies, ask specifically about wind and how audio will carry',
+      ],
+      why: 'The processional only happens once — a music cue that starts too early or too late is one of the most noticeable things a guest will remember.',
+    },
+  ],
+
   photography: [
     {
       id: 'ph1',
