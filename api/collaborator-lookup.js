@@ -1,28 +1,28 @@
 /**
- * GET /api/collaborator-lookup?token=<invite_token>
- *
- * NOT YET FUNCTIONAL — verified empirically that Base44's admin key is
- * bound by Collaborator's owner-scoped read RLS ({created_by_id: user.id})
- * the same as any other caller, so it cannot read a Collaborator record by
- * invite_token at all (this always 404s right now). Fixing this needs a
- * deliberate RLS tradeoff (see the PR description) that requires explicit
- * sign-off before shipping — this file is otherwise complete and will work
- * once that's resolved.
+ * GET /api/collaborator-lookup?token=<signed invite>
  *
  * Public, unauthenticated — backs the accept page (src/pages/CollaboratorAccept.jsx)
- * before the invitee has signed in. Resolves the Collaborator by their
- * invite_token via the admin key (their own token doesn't exist yet), and
- * returns only what the accept page needs to render: the collaborator's own
- * name, the couple's name, the granted page permissions, and status. Never
- * the owner's user id or any other identifying data.
+ * before the invitee has signed in. Unlike the original design, this never
+ * reads Collaborator at all (confirmed empirically that the admin key can't
+ * — see api/_lib/collaboratorAuth.js's header). The invite link itself
+ * carries a signed, tamper-evident payload (api/_lib/collaboratorInviteToken.js)
+ * minted by send-collaborator-invite.js using the OWNER's own request, so
+ * there is nothing to look up here beyond verifying the signature and
+ * reading the couple's display name (WeddingDetails.read is null, so the
+ * admin key can fetch that safely).
  *
- * Response: 200 { collaboratorName, coupleNames, permissions, status }
+ * A malformed or tampered token gets the same 404 as an expired one — never
+ * a distinguishing error — so this endpoint can't be used to probe whether
+ * a signature is "close" to valid.
+ *
+ * Response: 200 { collaboratorName, coupleNames, permissions, email }
  *        or 404 { error: 'This invite has expired or is invalid.' }
  *
  * Required env var: BASE44_ADMIN_KEY.
  */
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
+import { verifyInvite } from './_lib/collaboratorInviteToken.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -58,18 +58,13 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server not configured' });
   }
 
-  try {
-    const query = encodeURIComponent(JSON.stringify({ invite_token: token }));
-    const collabRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/Collaborator?q=${query}`, {
-      headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
-    });
-    const collaborators = collabRes.ok ? unwrapList(await collabRes.json()) : [];
-    if (collaborators.length === 0) {
-      return res.status(404).json({ error: 'This invite has expired or is invalid.' });
-    }
-    const collaborator = collaborators[0];
+  const payload = verifyInvite(token);
+  if (!payload || !payload.ownerUserId || !payload.email) {
+    return res.status(404).json({ error: 'This invite has expired or is invalid.' });
+  }
 
-    const weddingQuery = encodeURIComponent(JSON.stringify({ created_by_id: collaborator.created_by_id }));
+  try {
+    const weddingQuery = encodeURIComponent(JSON.stringify({ created_by_id: payload.ownerUserId }));
     const weddingRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`, {
       headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
     });
@@ -80,10 +75,10 @@ export default async function handler(req, res) {
     const coupleNames = wedding?.coupleNames || [wedding?.couple1Name, wedding?.couple2Name].filter(Boolean).join(' & ') || '';
 
     return res.status(200).json({
-      collaboratorName: collaborator.name,
+      collaboratorName: payload.name || '',
       coupleNames,
-      permissions: collaborator.permissions || {},
-      status: collaborator.status || 'pending',
+      permissions: payload.permissions || {},
+      email: payload.email,
     });
   } catch (err) {
     console.error('[collaborator-lookup] Error:', err.message);

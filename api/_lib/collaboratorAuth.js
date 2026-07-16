@@ -2,26 +2,36 @@
  * api/_lib/collaboratorAuth.js
  *
  * Shared server-side resolver for "what is this authenticated user allowed
- * to do, on whose wedding, as a collaborator." Collaborator's own RLS scopes
- * read/update to created_by_id === the OWNER (the couple who sent the
- * invite) — a collaborator's own bearer token can never read or write a
- * Collaborator record at all, by design (same reasoning as every other
- * admin-key-mediated entity in this app: PollVote, RsvpResponse, etc.). So
- * every collaborator-facing endpoint must:
- *   1. verify the caller's own bearer token (verifyBase44User),
- *   2. resolve their accepted Collaborator record(s) via the admin key,
- *   3. check the specific page+level permission being requested,
- *   4. only then perform the actual owner-scoped read/write, ALSO via the
- *      admin key, scoped to the owner's created_by_id — never trusting the
- *      collaborator's own session to reach the owner's data directly.
+ * to do, on whose wedding, as a collaborator." Originally tried to resolve
+ * this straight off the Collaborator record via the admin key — confirmed
+ * empirically that's impossible (a scoped read returns 200/[], a scoped
+ * update returns a flat 403; the admin key has no session identity to
+ * satisfy Collaborator's owner-scoped {{user.id}} RLS). Collaborator's own
+ * RLS is untouched (approved design) — this resolver goes through
+ * CollaboratorGrant instead, a small, purpose-built, append-only entity
+ * (create:null/read:null, same shape as RsvpResponse/PollVote) written by
+ * the collaborator's own bearer token at accept time (api/collaborator-accept.js),
+ * never by the admin key. Ids are stored as HMAC digests (hashId) — an
+ * unscoped list of this entity (anyone, any API token, since read:null)
+ * yields opaque hash pairs, never a real user id, and forging a row that
+ * targets a real owner/collaborator pair requires knowing BASE44_ADMIN_KEY.
  *
  * This is real, server-enforced permission checking — not menu-hiding. A
  * request that skips the UI entirely and hits a collaborator-proxy endpoint
  * straight is checked exactly the same way.
  */
 
+import crypto from 'crypto';
+
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
+const HASH_KEY = process.env.BASE44_ADMIN_KEY || '';
+
+/** One-way HMAC-SHA256 digest, keyed with BASE44_ADMIN_KEY — never reversible without that secret. */
+export function hashId(rawValue) {
+  if (!rawValue) return null;
+  return crypto.createHmac('sha256', HASH_KEY).update(String(rawValue)).digest('hex');
+}
 
 function unwrapList(payload) {
   if (Array.isArray(payload)) return payload;
@@ -45,24 +55,26 @@ async function adminFetch(method, path, adminKey, body) {
 }
 
 /**
- * Every accepted Collaborator record for a given user, across every couple
- * who has invited them — a person can collaborate on more than one wedding.
+ * This user's current access to ONE specific owner's wedding — the latest
+ * CollaboratorGrant event for (ownerUserId, userId), or null if there is
+ * none, or the most recent event was a revoke.
  *
- * @returns {Promise<Array<{ collaboratorId: string, ownerUserId: string, permissions: object }>>}
- */
-export async function getAcceptedCollaborations(userId, adminKey) {
-  const query = encodeURIComponent(JSON.stringify({ accepted_user_id: userId, status: 'accepted' }));
-  const rows = unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/Collaborator?q=${query}`, adminKey));
-  return rows.map(r => ({ collaboratorId: r.id, ownerUserId: r.created_by_id, permissions: r.permissions || {} }));
-}
-
-/**
- * This user's accepted access to ONE specific owner's wedding, or null if
- * they aren't an accepted collaborator for that owner at all.
+ * @returns {Promise<{permissions: object}|null>}
  */
 export async function getCollaborationFor(userId, ownerUserId, adminKey) {
-  const collaborations = await getAcceptedCollaborations(userId, adminKey);
-  return collaborations.find(c => c.ownerUserId === ownerUserId) || null;
+  const ownerHash = hashId(ownerUserId);
+  const collabHash = hashId(userId);
+  const query = encodeURIComponent(JSON.stringify({ owner_user_id_hash: ownerHash, collaborator_user_id_hash: collabHash }));
+  const rows = unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/CollaboratorGrant?q=${query}`, adminKey));
+  // Defense in depth: re-check both hashes match exactly, don't just trust the query filter.
+  const relevant = rows.filter(r => r.owner_user_id_hash === ownerHash && r.collaborator_user_id_hash === collabHash);
+
+  const latest = relevant.reduce((best, r) => (
+    !best || new Date(r.created_date) > new Date(best.created_date) ? r : best
+  ), null);
+
+  if (!latest || latest.event_type !== 'grant') return null;
+  return { permissions: latest.permissions || {} };
 }
 
 /** True if `permissions` grants at least `level` ('view' or 'edit') on `page`. */

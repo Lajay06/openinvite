@@ -1,33 +1,38 @@
 /**
  * /api/collaborator-guests — GET / PUT / DELETE
  *
- * NOT YET FUNCTIONAL — depends on collaborator-accept.js actually being
- * able to record an acceptance, which is currently blocked (see that
- * file's own header). This endpoint's own logic (permission check, then
- * scoped admin-key read/write) is complete and will work once the
- * accept-side RLS decision is made — nothing here needs to change.
- *
  * Real, server-enforced Guest access for an accepted collaborator — not
  * menu-hiding. Every request is checked here regardless of what the client
  * UI would have allowed: verify the caller's own bearer token, resolve
- * their accepted Collaborator record for the given ownerUserId (never
- * trusting a client-claimed permission), then check the specific
- * view/edit permission for the 'Guests' page before touching any data.
+ * their current grant for the given ownerUserId via CollaboratorGrant
+ * (never trusting a client-claimed permission — see
+ * api/_lib/collaboratorAuth.js), then check the specific view/edit
+ * permission for the 'Guests' page before touching any data.
  *
- * KNOWN LIMITATION — no create here: writes go through the admin key
- * (Collaborator's own bearer token can't reach another user's Guest
- * records at all, same as every other owner-scoped entity). Verified
- * empirically that the admin key always stamps a freshly-created record's
- * created_by_id as 'anonymous', never a chosen value — so a collaborator-
- * created Guest would be invisible on the owner's own dashboard (which
- * filters strictly by created_by_id === owner's own id) and permanently
- * undeletable by any credential (Guest's delete RLS requires
- * created_by_id === {{user.id}}, which 'anonymous' can never satisfy).
- * UPDATING an existing record is safe — created_by_id is stamped once at
- * creation and untouched by later admin-key updates — so collaborators can
- * fully view, edit, and remove existing guests; only adding a brand-new
- * guest is left to the account owner until Base44 offers a way to create a
- * record under a specific user's identity.
+ * VIEW works fully: Guest's read RLS is null, so the admin key can list
+ * an owner's guests once permission is confirmed.
+ *
+ * KNOWN LIMITATION — edit/delete do NOT actually work, even when a
+ * collaborator has been granted 'edit': confirmed empirically that the
+ * admin key gets a flat 403 attempting to UPDATE or DELETE an existing
+ * Guest record (Guest's update/delete RLS is owner-scoped
+ * {created_by_id: {{user.id}}}, same as every other owner-scoped entity —
+ * the admin key has no session identity to satisfy it). This is a
+ * DIFFERENT, deeper limitation than the create-side one below; the
+ * permission check below is correctly enforced, but even a collaborator
+ * who legitimately holds 'edit' would still get a 403 from Base44 itself
+ * on the PUT/DELETE call. Left in place (not stripped) so the shape is
+ * ready if Base44 ever exposes a real admin-bypass write path, but this is
+ * NOT currently a working feature — flagged explicitly rather than implied
+ * to work.
+ *
+ * KNOWN LIMITATION — no create here either, same root cause: Guest.create
+ * is unrestricted (null), but the admin key always stamps a freshly-
+ * created record's created_by_id as 'anonymous', never a chosen value — a
+ * collaborator-created Guest would be invisible on the owner's own
+ * dashboard (which filters strictly by created_by_id === owner's own id)
+ * and permanently undeletable (nothing can ever satisfy 'anonymous' ===
+ * {{user.id}}).
  *
  * Query/body always include ownerUserId — the wedding owner's Base44
  * User.id — since a collaborator may work with more than one couple.

@@ -24,6 +24,7 @@ import { Resend } from 'resend';
 import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { renderCollaboratorInviteEmail } from '../src/lib/collaboratorEmailTemplate.js';
+import { signInvite } from './_lib/collaboratorInviteToken.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = 'Openinvite <hello@openinvite.com.au>';
@@ -81,6 +82,9 @@ export default async function handler(req, res) {
       : null;
     const coupleNames = wedding?.coupleNames || [wedding?.couple1Name, wedding?.couple2Name].filter(Boolean).join(' & ') || '';
 
+    // Stored on the Collaborator record for display/dedup purposes only — the
+    // actual accept link below never looks this up in Base44 (the admin key
+    // can't read Collaborator at all; see collaboratorAuth.js's header).
     const inviteToken = crypto.randomUUID();
     const payload = { name: cleanName, email: cleanEmail, permissions: permissions || {}, status: 'pending', invite_token: inviteToken };
 
@@ -103,7 +107,13 @@ export default async function handler(req, res) {
       collaborator = await createRes.json();
     }
 
-    const acceptUrl = `${origin}/collaborate/accept/${inviteToken}`;
+    // The accept link carries a signed payload, not a lookup key — the
+    // accept page (and collaborator-accept.js) verify it and read the
+    // owner id/permissions straight out of it, with zero Collaborator reads.
+    const signedInvite = signInvite({
+      ownerUserId: caller.id, email: cleanEmail, name: cleanName, permissions: permissions || {}, iat: Date.now(),
+    });
+    const acceptUrl = `${origin}/collaborate/accept/${signedInvite}`;
     const { subject, html } = renderCollaboratorInviteEmail({
       collaboratorName: cleanName, coupleNames, acceptUrl, permissions: permissions || {},
     });
@@ -115,7 +125,7 @@ export default async function handler(req, res) {
       console.warn('[send-collaborator-invite] RESEND_API_KEY not set — invite record saved, email not sent');
     }
 
-    return res.status(200).json({ collaborator });
+    return res.status(200).json({ collaborator, acceptUrl });
   } catch (err) {
     console.error('[send-collaborator-invite] Error:', err.message);
     return res.status(500).json({ error: 'Something went wrong — please try again.' });

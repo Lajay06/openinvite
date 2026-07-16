@@ -1,0 +1,51 @@
+{
+  "name": "CollaboratorGrant",
+  "type": "object",
+  "properties": {
+    "owner_user_id_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, owner's real Base44 User.id). Collaborator's own RLS stays owner-scoped and untouched — the admin key can never read/write it, so enforcement can't go through that record at all. This entity exists purely so admin-key-backed endpoints can resolve 'does X have permission on Y's wedding' without ever touching Collaborator. Hashed (not the raw id) because read:null makes this entity listable by anyone with any API token — an attacker would need BASE44_ADMIN_KEY itself to compute a matching hash for a chosen id, which they don't have, so a forged row can never target a real owner/collaborator pair."
+    },
+    "collaborator_user_id_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, collaborator's real Base44 User.id) — same reasoning as owner_user_id_hash."
+    },
+    "collaborator_email_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, invited email, lowercased) — lets the owner's own dashboard (using its own bearer token, which CAN read/write its own Collaborator rows) reconcile a pending invite's email against an accepted grant without needing the collaborator's user id in advance."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": ["grant", "revoke"],
+      "description": "Append-only event log, same pattern as RsvpResponse/PollVote — latest event per (owner_user_id_hash, collaborator_user_id_hash) wins at read time. 'grant' establishes/updates permissions (re-accepting or the owner changing permissions writes a new grant row); 'revoke' ends access. Never mutate an existing row — Collaborator's own update RLS problem is exactly why this entity is create:null/read:null instead."
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Page-level view/edit rights, copied from the signed invite payload at accept time. Only meaningful when event_type is 'grant'.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": { "view": { "type": "boolean", "default": false }, "edit": { "type": "boolean", "default": false } }
+      }
+    },
+    "granted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
+    }
+  },
+  "required": ["owner_user_id_hash", "collaborator_user_id_hash", "event_type"],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
