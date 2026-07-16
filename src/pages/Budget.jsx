@@ -15,6 +15,7 @@ import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { getMyRecords } from "@/lib/resolveMyWedding";
+import { useCollaboratorContext } from "@/lib/collaboratorContext";
 const Budget = base44.entities.Budget;
 
 function CountUp({ to, duration = 1200, format }) {
@@ -177,12 +178,29 @@ export default function BudgetPage() {
   const [loading, setLoading] = useState(true);
   const [avaOpen, setAvaOpen] = useState(false);
 
-  useEffect(() => { loadBudgetItems(); }, []);
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // collaborator-budget.js is read-only by design — there is no write path
+  // for a collaborator's Budget access at all yet, regardless of what
+  // permission was granted, so this is unconditional (not gated on
+  // hasPagePermission(..., 'edit')), unlike Guests' readOnly flag.
+  const readOnly = isCollaborating;
+
+  useEffect(() => { loadBudgetItems(); }, [isCollaborating]);
 
   const loadBudgetItems = async () => {
     try {
-      const data = await getMyRecords('Budget', '-created_date');
-      setBudgetItems(data);
+      if (isCollaborating) {
+        const res = await fetch(`/api/collaborator-budget?ownerUserId=${encodeURIComponent(collab.ownerUserId)}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (!res.ok) throw new Error('Failed to load budget');
+        const data = await res.json();
+        setBudgetItems(data.budget || []);
+      } else {
+        const data = await getMyRecords('Budget', '-created_date');
+        setBudgetItems(data);
+      }
     } catch {
       toast.error("Failed to load budget");
     }
@@ -292,12 +310,14 @@ export default function BudgetPage() {
           >
             Export CSV
           </button>
-          <button
-            onClick={() => { setEditingItem(null); setShowForm(true); }}
-            className="btn-primary"
-          >
-            + Add expense
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => { setEditingItem(null); setShowForm(true); }}
+              className="btn-primary"
+            >
+              + Add expense
+            </button>
+          )}
         </div>
       </div>
 
@@ -349,7 +369,7 @@ export default function BudgetPage() {
               </div>
             </div>
 
-            <BudgetList items={filteredItems} onEdit={handleEdit} onDelete={handleDelete} />
+            <BudgetList items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} />
           </TabsContent>
         </Tabs>
       </div>

@@ -23,6 +23,7 @@
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { hashId, decryptPayload } from './_lib/questionnaireCrypto.js';
+import { excludeTestRecords } from './_lib/productData.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -72,9 +73,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const myQuestionnaires = unwrapList(
+    const myQuestionnaires = excludeTestRecords(unwrapList(
       await fetchJson(`/apps/${BASE44_APP_ID}/entities/Questionnaire?q=${encodeURIComponent(JSON.stringify({ created_by_id: caller.id }))}`, callerToken)
-    );
+    ));
     if (myQuestionnaires.length === 0) return res.status(200).json({ responses: [] });
 
     const hashToId = new Map(myQuestionnaires.map(q => [hashId(q.id), q.id]));

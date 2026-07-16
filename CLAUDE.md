@@ -4,6 +4,12 @@
 Before making ANY change, read DESIGN_SPEC.md in the 
 project root. All changes must comply with it.
 
+Before touching RLS, the admin key, or any admin-key-backed api/*.js
+endpoint, read BASE44_PLATFORM_NOTES.md — empirically established Base44
+platform behavior (what the admin key can/can't do, the create:null +
+hashed-identifier pattern, the User-entity auth quirk, schema drift, env
+var sourcing). Update it when you learn something new the same way.
+
 ## Rules
 - Sentence case everywhere — no ALL CAPS, no Uppercase Every Word
 - No text-transform: uppercase anywhere in CSS or JSX

@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useAuth } from "@/lib/AuthContext";
+import { COLLABORATOR_SUPPORTED_PAGES, hasPagePermission } from "@/lib/collaboratorContext";
 import {
   LayoutDashboard, Calendar, ListTodo,
   Users, UserCheck, LayoutGrid, MessageCircle,
@@ -189,13 +190,32 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disable
 
 // ── Desktop sidebar ───────────────────────────────────────────────────────────
 
-export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOffset = 48 }) {
+export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOffset = 48, collaboratorPermissions = null }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const _plan = user?.plan || 'free';
   const canAccessUltra = _plan === 'ultra' || _plan === 'free';
   const isProPlan = _plan === 'pro';
+
+  // Collaborator sessions see only the pages they were granted AND that have
+  // a real, working server-side collaborator endpoint behind them (see
+  // collaboratorContext.js's own header for why that second condition
+  // matters) — everything else in NAV_SECTIONS is simply absent, not
+  // shown-and-disabled.
+  const isCollaborator = !!collaboratorPermissions;
+  const allowedUrls = isCollaborator
+    ? new Set(
+        COLLABORATOR_SUPPORTED_PAGES
+          .filter(page => hasPagePermission(collaboratorPermissions, page, 'view'))
+          .map(page => createPageUrl(page))
+      )
+    : null;
+  const visibleSections = isCollaborator
+    ? NAV_SECTIONS
+        .map(section => ({ ...section, items: section.items.filter(item => allowedUrls.has(item.url.split('?')[0])) }))
+        .filter(section => section.items.length > 0)
+    : NAV_SECTIONS;
 
   const isActive = (url) => {
     const path = url.split("?")[0];
@@ -221,23 +241,27 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
       {/* Scrollable nav */}
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingBottom: 8 }}>
 
-        <NavItem
-          icon={Sparkles}
-          label="Design studio"
-          url="/studio"
-          isActive={isActive("/studio")}
-          onClick={() => navigate("/studio")}
-        />
-        <NavItem
-          icon={FileText}
-          label="Event details"
-          url="/event-details"
-          isActive={isActive("/event-details")}
-          onClick={() => navigate("/event-details")}
-        />
+        {!isCollaborator && (
+          <>
+            <NavItem
+              icon={Sparkles}
+              label="Design studio"
+              url="/studio"
+              isActive={isActive("/studio")}
+              onClick={() => navigate("/studio")}
+            />
+            <NavItem
+              icon={FileText}
+              label="Event details"
+              url="/event-details"
+              isActive={isActive("/event-details")}
+              onClick={() => navigate("/event-details")}
+            />
+          </>
+        )}
 
         {/* Nav sections */}
-        {NAV_SECTIONS.map((section, si) => {
+        {visibleSections.map((section, si) => {
           const guestSuiteDisabled = section.guestSuite && isProPlan;
           return (
             <div key={si}>
@@ -264,7 +288,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
       <div style={{ borderTop: "1px solid rgba(10,10,10,0.08)", paddingTop: 4, paddingBottom: 4, flexShrink: 0 }}>
 
         {/* Quick tips */}
-        {onOpenTips && (
+        {!isCollaborator && onOpenTips && (
           <div
             onClick={onOpenTips}
             style={{
@@ -301,8 +325,9 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
           </span>
         </div>
 
-        {/* Collaborate */}
-        {onCollaborate && (
+        {/* Collaborate — not shown in a collaborator's own borrowed session;
+            it's for the couple to invite others onto THEIR wedding. */}
+        {!isCollaborator && onCollaborate && (
           <div
             onClick={onCollaborate}
             style={{
@@ -320,9 +345,9 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
           </div>
         )}
 
-        {/* Leave Dashboard */}
+        {/* Leave Dashboard / Exit collaboration */}
         <div
-          onClick={() => { window.location.href = createPageUrl("Home"); }}
+          onClick={() => { window.location.href = isCollaborator ? createPageUrl("Dashboard") : createPageUrl("Home"); }}
           style={{
             display: "flex", alignItems: "center", gap: 8,
             padding: "7px 12px", cursor: "pointer",
@@ -333,7 +358,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
         >
           <LogOut size={14} strokeWidth={1.8} style={{ color: "#E03553", flexShrink: 0 }} />
           <span style={{ fontSize: 12, fontWeight: 600, color: "#E03553", fontFamily: PJS }}>
-            Leave dashboard
+            {isCollaborator ? "Exit collaboration" : "Leave dashboard"}
           </span>
         </div>
       </div>
@@ -343,13 +368,27 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
 
 // ── Mobile sidebar content (used inside Sheet) ────────────────────────────────
 
-export function MobileSidebarContent({ weddingName, onClose, onCollaborate }) {
+export function MobileSidebarContent({ weddingName, onClose, onCollaborate, collaboratorPermissions = null }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const _planM = user?.plan || 'free';
   const canAccessUltraMobile = _planM === 'ultra' || _planM === 'free';
   const isProPlanMobile = _planM === 'pro';
+
+  const isCollaboratorMobile = !!collaboratorPermissions;
+  const allowedUrlsMobile = isCollaboratorMobile
+    ? new Set(
+        COLLABORATOR_SUPPORTED_PAGES
+          .filter(page => hasPagePermission(collaboratorPermissions, page, 'view'))
+          .map(page => createPageUrl(page))
+      )
+    : null;
+  const visibleSectionsMobile = isCollaboratorMobile
+    ? NAV_SECTIONS
+        .map(section => ({ ...section, items: section.items.filter(item => allowedUrlsMobile.has(item.url.split('?')[0])) }))
+        .filter(section => section.items.length > 0)
+    : NAV_SECTIONS;
 
   const storedUser = (() => { try { return JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch { return {}; } })();
   const initials = (storedUser.full_name || storedUser.email || 'U')
@@ -386,7 +425,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate }) {
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 8 }}>
 
         {/* Design studio link */}
-        {(() => {
+        {!isCollaboratorMobile && (() => {
           const active = isActive("/studio");
           return (
             <div
@@ -408,7 +447,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate }) {
         })()}
 
         {/* Event details link */}
-        {(() => {
+        {!isCollaboratorMobile && (() => {
           const active = isActive("/event-details");
           return (
             <div
@@ -429,7 +468,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate }) {
           );
         })()}
 
-        {NAV_SECTIONS.map((section, si) => {
+        {visibleSectionsMobile.map((section, si) => {
           const guestSuiteDisabled = section.guestSuite && isProPlanMobile;
           return (
             <div key={si}>
@@ -520,7 +559,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate }) {
         {/* Account + Collaborate */}
         {[
           { icon: CreditCard, label: "Account",      action: () => { onClose?.(); navigate("/account"); } },
-          { icon: UserPlus,   label: "Collaborate",   action: () => { onClose?.(); onCollaborate?.(); } },
+          ...(isCollaboratorMobile ? [] : [{ icon: UserPlus, label: "Collaborate", action: () => { onClose?.(); onCollaborate?.(); } }]),
         ].map((item, i) => (
           <div
             key={i}

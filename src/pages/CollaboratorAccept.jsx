@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { Users, Loader2, Eye, PenSquare } from 'lucide-react';
+import { COLLABORATOR_SUPPORTED_PAGES, hasPagePermission } from '@/lib/collaboratorContext';
+import { createPageUrl } from '@/utils';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -45,7 +47,10 @@ export default function CollaboratorAccept() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to accept invite');
-      window.location.href = `/collaborate/guests?owner=${encodeURIComponent(data.ownerUserId)}`;
+      // Land on the first page this collaborator can actually see, in the
+      // real dashboard shell — never the old bespoke page.
+      const landingPage = COLLABORATOR_SUPPORTED_PAGES.find(page => hasPagePermission(invite?.permissions, page, 'view')) || COLLABORATOR_SUPPORTED_PAGES[0];
+      window.location.href = `${createPageUrl(landingPage)}?collabOwner=${encodeURIComponent(data.ownerUserId)}`;
     } catch (err) {
       setAcceptError(err.message || 'Failed to accept invite');
       setAccepting(false);
