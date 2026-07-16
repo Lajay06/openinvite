@@ -68,3 +68,11 @@ URLs (not this manifest's concern — being retired, not reused) plus a hacky
 render-time override that relabelled the "Digital Invitations" card as
 "Universes". Replaced with 7 honest cards, real Cloudinary photos, no
 runtime title swap.
+
+| `DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355_zhr0xb` | Food | Universes.jsx grid — Aman fallback (only universe with no dedicated `/universes/*.jpg`) |
+
+Universes.jsx's grid (all 20 worlds) otherwise uses the pre-existing local
+`public/universes/{id}.jpg` photography (already the app's own canonical
+per-universe images, used in the real Design Studio picker) — not Cloudinary,
+and not part of this no-repeat audit since each is already dedicated to
+exactly one universe.

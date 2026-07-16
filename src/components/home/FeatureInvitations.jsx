@@ -143,7 +143,7 @@ export default function FeatureInvitations({ onCTA }) {
               margin: '0 auto',
               lineHeight: 1.6,
             }}>
-              Choose your aesthetic universe. Every invitation, asset and piece of design follows a single visual vision — from your Save the Date to your Thank You Notes. 9 universes, 10 pieces each.
+              Choose your aesthetic universe. Every invitation, asset and piece of design follows a single visual vision, from your Save the Date to your Thank You Notes. 20 universes, 10 pieces each.
             </p>
           </div>
 

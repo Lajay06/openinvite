@@ -48,15 +48,14 @@ const DISPLAY_NAME = {
   shanghai: 'Shanghai',
 };
 
-// Fixed display order — stable across renders/filters so tiles never
-// visibly reshuffle when a filter changes which ones are shown. The
-// original 10 keep their order; the 10 new Ultra universes
-// (feat/universes-expansion-10) are appended after, not interleaved, so
-// existing weddings' sense of "where their universe sits" never shifts.
-const ORDER = [
-  'aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos',
-  'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
-];
+// Display order — derived from UNIVERSE_CONFIGS' own key order (which is
+// its declaration order in websiteThemes.js: the original 10, then the 10
+// new Ultra universes from feat/universes-expansion-10, appended not
+// interleaved) rather than a second hand-maintained list. A universe added
+// to UNIVERSE_CONFIGS with no other changes here now appears automatically,
+// in whatever position it was declared — no drift possible between "what
+// universes exist" and "what the picker/marketing page shows".
+const ORDER = Object.keys(UNIVERSE_CONFIGS);
 
 export const UNIVERSE_CATALOG = ORDER.map(id => {
   const cfg = UNIVERSE_CONFIGS[id] || {};
