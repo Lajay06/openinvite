@@ -33,6 +33,12 @@ import Register from './pages/Register';
 import MultiPageWeddingWebsite from './components/guest-website/MultiPageWeddingWebsite';
 import RSVPPage from './components/rsvp/RSVPPage';
 import GamesPage from './components/games/GamesPage';
+// Dev-only shared vendor-template mocks — not linked from any nav, not
+// reachable without the URL. Does NOT touch Beauty.jsx/FoodBeverage.jsx or
+// any real page; own new files only (src/components/mocks/VendorTemplateMock.jsx,
+// src/pages/MockVendorTemplateBeauty.jsx, src/pages/MockVendorTemplateFoodBeverage.jsx).
+import MockVendorTemplateBeauty from './pages/MockVendorTemplateBeauty';
+import MockVendorTemplateFoodBeverage from './pages/MockVendorTemplateFoodBeverage';
 import GuestRSVPRetired from './pages/GuestRSVPRetired';
 import UniverseStudio from './pages/UniverseStudio';
 import StudioHub from './pages/StudioHub';
@@ -201,6 +207,10 @@ const AuthenticatedApp = () => {
           </LayoutWrapper>
         } />
         <Route path="/food-beverage" element={<LayoutWrapper currentPageName="FoodBeverage"><FoodBeverage /></LayoutWrapper>} />
+        {/* Dev-only vendor-template mocks (Beauty/Music/Food & beverage/Photography
+            unification) — see import comment above. */}
+        <Route path="/mocks/vendor-template/beauty" element={<LayoutWrapper currentPageName="MockVendorTemplateBeauty"><MockVendorTemplateBeauty /></LayoutWrapper>} />
+        <Route path="/mocks/vendor-template/food" element={<LayoutWrapper currentPageName="MockVendorTemplateFoodBeverage"><MockVendorTemplateFoodBeverage /></LayoutWrapper>} />
         <Route path="/photography-details" element={<LayoutWrapper currentPageName="PhotographyDetails"><PhotographyDetails /></LayoutWrapper>} />
         <Route path="/florals" element={<LayoutWrapper currentPageName="Florals"><Florals /></LayoutWrapper>} />
         <Route path="/entertainment-details" element={<LayoutWrapper currentPageName="EntertainmentDetails"><EntertainmentDetails /></LayoutWrapper>} />
