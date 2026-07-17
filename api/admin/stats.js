@@ -11,6 +11,7 @@
  */
 
 import Stripe from 'stripe';
+import { checkRateLimit, getClientIp } from '../_lib/security.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -37,6 +38,18 @@ async function verifyAdmin(req) {
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // ── Rate limiting: 20 requests/min per IP ──────────────────────────────
+  // Defense-in-depth: admin-gated, but each call still does up to 200
+  // Stripe API reads plus a Base44 token check.
+  const ip = getClientIp(req);
+  const { limited, remaining } = checkRateLimit(ip, 'admin-stats', 20);
+  res.setHeader('X-RateLimit-Limit', '20');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    console.warn('[admin/stats] Rate limited:', ip);
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
   }
 
   const isAdmin = await verifyAdmin(req);

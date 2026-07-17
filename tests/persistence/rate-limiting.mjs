@@ -37,18 +37,42 @@ import placesPhotoHandler from '../../api/places-photo.js';
 import spotifySearchHandler from '../../api/spotify-search.js';
 import spotifyRefreshHandler from '../../api/spotify-refresh.js';
 import { isKnownSpotifyRefreshToken } from '../../api/_lib/spotifyAuth.js';
+import spotifyCallbackHandler from '../../api/spotify-callback.js';
+import spotifySessionFetchHandler from '../../api/spotify-session-fetch.js';
+
+// on-signup.js / admin/stats.js / create-portal-session.js construct
+// Resend/Stripe clients at module scope, which throw synchronously if
+// RESEND_API_KEY / STRIPE_SECRET_KEY are unset — guard with placeholders
+// and dynamic-import, same pattern as tests/persistence/stripe-webhook.mjs.
+const priorResendKey = process.env.RESEND_API_KEY;
+if (!process.env.RESEND_API_KEY) process.env.RESEND_API_KEY = 're_persistence_suite_placeholder';
+const { default: onSignupHandler } = await import('../../api/on-signup.js');
+process.env.RESEND_API_KEY = priorResendKey;
+
+const priorStripeKey = process.env.STRIPE_SECRET_KEY;
+if (!process.env.STRIPE_SECRET_KEY) process.env.STRIPE_SECRET_KEY = 'sk_test_persistence_suite_placeholder';
+const { default: adminStatsHandler } = await import('../../api/admin/stats.js');
+const { default: portalSessionHandler } = await import('../../api/create-portal-session.js');
+process.env.STRIPE_SECRET_KEY = priorStripeKey;
 
 /** Minimal Vercel-shaped req/res mock — handlers only touch this surface. */
-function mockReqRes({ method = 'GET', ip, query = {}, body = {} } = {}) {
-  const req = { method, headers: { 'x-forwarded-for': ip }, query, body };
+function mockReqRes({ method = 'GET', ip, query = {}, body = {}, headers = {} } = {}) {
+  const req = { method, headers: { 'x-forwarded-for': ip, ...headers }, query, body };
   const res = {
     _status: 200,
     _json: null,
     _headers: {},
+    _redirectUrl: null,
     setHeader(k, v) { this._headers[k] = v; return this; },
     status(code) { this._status = code; return this; },
     json(obj) { this._json = obj; return this; },
     send(obj) { this._json = obj; return this; },
+    redirect(urlOrStatus, maybeUrl) {
+      // handlers in this repo call res.redirect(url) (2-arg Vercel form not used)
+      this._redirectUrl = typeof urlOrStatus === 'string' ? urlOrStatus : maybeUrl;
+      this._status = typeof urlOrStatus === 'number' ? urlOrStatus : 302;
+      return this;
+    },
     end() { return this; },
   };
   return { req, res };
@@ -197,6 +221,87 @@ export async function runRateLimiting() {
     results.push(!res._json?.newToken
       ? pass('spotify-search.js — unknown refresh token is never silently exchanged', `${res._status}, no newToken in response`)
       : fail('spotify-search.js — unknown refresh token is never silently exchanged', 'no newToken', JSON.stringify(res._json)));
+  }
+
+  console.log('\n  Rate limiting — security-batch follow-up, 5 more previously-unprotected functions:\n');
+
+  {
+    // Missing `email` short-circuits at on-signup.js's own 400 validation,
+    // *after* the rate-limit check — never reaches Base44 or Resend.
+    const status = await assertRateLimited(onSignupHandler, {
+      limit: 5, ip: '203.0.113.20', reqShape: { method: 'POST', body: {} },
+    });
+    results.push(status === 429
+      ? pass('on-signup.js — 6th request in a minute is rate limited', '429')
+      : fail('on-signup.js — 6th request in a minute is rate limited', 429, status));
+  }
+
+  {
+    // No Authorization header — verifyAdmin() returns false without any
+    // network call, short-circuiting at 403 after the rate-limit check.
+    const status = await assertRateLimited(adminStatsHandler, {
+      limit: 20, ip: '203.0.113.21', reqShape: { method: 'GET', query: {} },
+    });
+    results.push(status === 429
+      ? pass('admin/stats.js — 21st request in a minute is rate limited', '429')
+      : fail('admin/stats.js — 21st request in a minute is rate limited', 429, status));
+  }
+
+  {
+    // No Authorization header — verifyBase44User() returns null without any
+    // network call, short-circuiting at 401 after the rate-limit check.
+    const status = await assertRateLimited(portalSessionHandler, {
+      limit: 10, ip: '203.0.113.22', reqShape: { method: 'POST', body: {} },
+    });
+    results.push(status === 429
+      ? pass('create-portal-session.js — 11th request in a minute is rate limited', '429')
+      : fail('create-portal-session.js — 11th request in a minute is rate limited', 429, status));
+  }
+
+  {
+    // Rate-limit check is the very first thing spotify-callback.js does —
+    // never reaches Spotify regardless of query params.
+    const status = await assertRateLimited(spotifyCallbackHandler, {
+      limit: 10, ip: '203.0.113.23', reqShape: { method: 'GET', query: {} },
+    });
+    results.push(status === 302
+      ? pass('spotify-callback.js — 11th request in a minute is redirected (rate limited)', '302 redirect')
+      : fail('spotify-callback.js — 11th request in a minute is redirected (rate limited)', 302, status));
+  }
+
+  {
+    const { req, res } = mockReqRes({ method: 'GET', ip: '203.0.113.23', query: {} });
+    await spotifyCallbackHandler(req, res);
+    results.push(res._redirectUrl?.includes('spotify_error=rate_limited')
+      ? pass('spotify-callback.js — rate-limited redirect carries spotify_error=rate_limited', res._redirectUrl)
+      : fail('spotify-callback.js — rate-limited redirect carries spotify_error=rate_limited', 'spotify_error=rate_limited', res._redirectUrl));
+  }
+
+  {
+    const status = await assertRateLimited(spotifySessionFetchHandler, {
+      limit: 30, ip: '203.0.113.24', reqShape: { method: 'GET', query: {} },
+    });
+    results.push(status === 429
+      ? pass('spotify-session-fetch.js — 31st request in a minute is rate limited', '429')
+      : fail('spotify-session-fetch.js — 31st request in a minute is rate limited', 429, status));
+  }
+
+  // ── Confirm normal traffic is unaffected: a single request from a fresh
+  //    IP on each new endpoint never gets a 429. ──
+  {
+    const { req, res } = mockReqRes({ method: 'POST', ip: '203.0.113.40', body: {} });
+    await onSignupHandler(req, res);
+    results.push(res._status !== 429
+      ? pass('on-signup.js — a single normal request is never rate limited', res._status)
+      : fail('on-signup.js — a single normal request is never rate limited', '!== 429', res._status));
+  }
+
+  {
+    const { req, res } = mockReqRes({ method: 'GET', ip: '203.0.113.41', query: {} });
+    await adminStatsHandler(req, res);
+    results.push(res._status !== 429
+      ? pass('admin/stats.js — a single normal request is never rate limited', res._status)
+      : fail('admin/stats.js — a single normal request is never rate limited', '!== 429', res._status));
   }
 
   return results;
