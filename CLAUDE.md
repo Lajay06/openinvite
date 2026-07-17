@@ -26,6 +26,12 @@ var sourcing). Update it when you learn something new the same way.
 
 ## After every change
 - Run npm run build and confirm exit 0
+- If the change touches any marketing/public page (Home, Features, Ava,
+  Universes, Pricing, About, Contact, legal/auth pages, or a shared
+  component they import), also run npm run test:marketing-routes — see
+  WORKFLOW.md. A component referenced in JSX but never imported does NOT
+  fail the build; it ships a blank error-boundary page to production
+  (this happened once already). This test is what catches that before merge.
 - Work on a feature/fix branch — NEVER commit or push directly to main
 - Open a PR with ./scripts/ship.sh and let the Vercel preview deploy before merging
 - If a new pattern was introduced, update DESIGN_SPEC.md
