@@ -60,9 +60,9 @@ const CARDS = [
 },
 {
   num: "06",
-  title: "Digital invitations",
-  desc: "Send a real invitation, not a PDF attachment: a full digital experience that opens into your whole guest suite.",
-  bullets: ["Send by email, text or link", "Opens into your full guest suite", "Follows your chosen universe automatically"],
+  title: "Plus 1",
+  desc: "Bring someone into the planning. Invite your partner, a parent or a friend, with their own login and their own access.",
+  bullets: ["Invite a partner, parent or friend", "Their own login and their own access", "Everyone stays in sync automatically"],
   photo: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779218329/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID3470_knfncz.jpg"
 },
 {

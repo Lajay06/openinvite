@@ -174,7 +174,7 @@ function PricingSection({ onCTA }) {
         transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.15s, transform 0.7s ${EASE} 0.15s`,
       }}>
         <TierChip name="Pro" price="$79" blurb="Planning, guests, budget, Ava" accent="#E03553" />
-        <TierChip name="Ultra" price="$149" blurb="Everything, plus universes & website" accent="#DDF762" />
+        <TierChip name="Ultra" price="$149" blurb="Everything, plus universes & digital invitations" accent="#DDF762" />
       </div>
       <div style={{
         display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", justifyContent: "center",
