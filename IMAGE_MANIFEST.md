@@ -102,3 +102,19 @@ outright rather than moved — they were never "good imagery," just unused
 now. `photos.js`'s `photoU`/`photoAbout1`/`photoAbout2`/`photoAbout3` keys
 are now dead (left in place; not otherwise referenced) — candidate for the
 cohesion-sweep cleanup pass.
+
+## Round 2 (marketing feedback pass)
+
+| public_id | Folder | Used on |
+|---|---|---|
+| `/universes/kyoto.jpg` (local, not Cloudinary) | — | Home — ScrollExpandMedia background behind the universe-choosing video moment |
+
+Not part of the no-repeat pool — same canonical per-universe local asset
+already used on the Universes.jsx grid, reused deliberately here (same
+precedent as Features.jsx's `marrakech.jpg` reuse above: "here's a real
+universe" is the point, not a violation).
+
+`scripts/audit-image-repeats.mjs` (`npm run audit:images`) now checks this
+automatically instead of relying solely on this hand-maintained log —
+see that file's header comment for what it catches and why the manifest
+alone missed the FeatureGuests.jsx repeated-photo bug.
