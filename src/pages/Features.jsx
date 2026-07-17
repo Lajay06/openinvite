@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { PHOTOS } from "@/lib/photos";
 import { createPageUrl } from "@/utils";
@@ -103,9 +102,6 @@ export default function Features() {
 
       {/* ── S4: AVA / ESSENTIALS ─────────────────────────── */}
       <AvaSection essentials={ESSENTIALS} />
-
-      {/* ── S5: INVITATIONS x GUEST SUITE ────────────────── */}
-      <InvitationsSection />
 
       {/* ── S5b: SEATING, REAL PRODUCT VIDEO ─────────────── */}
       <SeatingSection />
@@ -328,56 +324,6 @@ function EssentialsGrid({ items, visible }) {
 }
 
 
-
-// Real product screens — this section used to render nothing at all
-// (`return null;`) despite being labelled "Invitations x Guest Suite" in
-// the surrounding comment. Every image/video here is a real capture from
-// the real app (scripts/capture/), not stock photography.
-function InvitationsSection() {
-  const navigate = useNavigate();
-  const [ref, visible] = useScrollReveal(0.2);
-  return (
-    <section ref={ref} style={{ background: "#0A0A0A", display: "flex", flexWrap: "wrap" }}>
-      <div style={{
-        flex: "1 1 480px", padding: "100px clamp(32px, 6vw, 80px)",
-        display: "flex", flexDirection: "column", justifyContent: "center",
-        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-        transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
-      }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#DDF762", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Invitations & guest suite
-        </p>
-        <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 24, maxWidth: 480 }}>
-          One invitation. A whole guest experience.
-        </h2>
-        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", lineHeight: 1.7, marginBottom: 32, maxWidth: 460 }}>
-          Send a digital invitation that opens into a full guest suite: accommodation, transport, a live stream for anyone who can't make it, and a Q&A your guests will actually read. Every piece follows the aesthetic universe you choose, automatically.
-        </p>
-        <ApplePillButton onClick={() => navigate('/universes')} light={false}>Explore universes</ApplePillButton>
-      </div>
-      {/* Real captures (scripts/capture/) — an actual guest-site entrance
-          moment and a real personalised RSVP page — not the placeholder
-          /universes/marrakech.jpg this section used before the capture
-          pipeline existed. */}
-      <div style={{ flex: "1 1 480px", minHeight: 420, display: "flex", gap: 12, padding: "24px" }}>
-        <ProductMediaFrame aspectRatio="4/5" maxWidth="none" style={{ flex: "1 1 60%" }}>
-          <img
-            src="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/02-entrance-moment-landing.png"
-            alt="A real Openinvite guest website entrance moment"
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-          />
-        </ProductMediaFrame>
-        <ProductMediaFrame aspectRatio="9/16" maxWidth="none" style={{ flex: "1 1 40%" }}>
-          <img
-            src="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/07-rsvp-mobile.png"
-            alt="A real personalised RSVP page on mobile"
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-          />
-        </ProductMediaFrame>
-      </div>
-    </section>
-  );
-}
 
 function SeatingSection() {
   const [ref, visible] = useScrollReveal(0.2);
