@@ -62,7 +62,6 @@ export default function PublicNav() {
             border: "1px solid rgba(255,255,255,0.1)",
             borderRadius: 999,
             padding: "10px 24px",
-            display: "flex",
             alignItems: "center",
             gap: 28,
             height: 48,
