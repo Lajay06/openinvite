@@ -153,6 +153,47 @@ instead of looking like it saved but disappearing on reload.
 
 ---
 
+## Marketing-routes smoke test
+
+Before merging **any** change that touches a marketing/public page (`src/pages/Home.jsx`,
+`Features.jsx`, `Ava.jsx`, `Universes.jsx`, `Pricing.jsx`, `About.jsx`, `Contact.jsx`, the
+legal pages, auth pages, or any shared component they import), run:
+
+```bash
+npm run test:marketing-routes
+```
+
+**What it checks:** Loads every public marketing/auth route in a real browser (Playwright)
+and fails if the page renders the root Sentry error boundary ("Something went wrong.") or
+throws an uncaught exception during render. Prints `✓`/`✗` per route. Exits 0 if all pass,
+1 if any fail (CI-ready).
+
+**Requires:** nothing by default — points at production (`https://openinvite.com.au`) same
+as the capture pipeline. To test a branch before it's live, point it at a local dev server
+or the PR's own Vercel preview instead, via the same env var the capture pipeline uses:
+
+```bash
+CAPTURE_BASE_URL=http://localhost:5173 npm run test:marketing-routes
+CAPTURE_BASE_URL=https://openinvite-git-my-branch-lajay06.vercel.app npm run test:marketing-routes
+```
+
+**Run it when you:**
+- Change anything on a marketing/public page or a component it imports
+- Add a new section/component to the marketing site
+- Are about to merge a marketing-site PR at all — this is now a required pre-merge step,
+  same standing as the persistence test above
+
+**The bug it catches:** A component referenced in JSX but never imported (or any other
+render-time `ReferenceError`/`TypeError`) does not fail `npm run build` — Vite only
+resolves `import` statements at build time, not whether every JSX tag name is actually in
+scope. This exact bug shipped to production once already (`Ava.jsx` used
+`ProductMediaFrame`/`ProductVideo` without importing them; the build stayed green, and the
+live page showed nothing but the generic error boundary until someone opened it manually).
+This test opens every route the same way a visitor would and catches that class of crash
+before merge, not after.
+
+---
+
 ## What Claude Code sessions should do
 
 Claude always works on a feature branch, never on `main`.  
