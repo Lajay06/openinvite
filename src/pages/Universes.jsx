@@ -625,13 +625,14 @@ const Universes = () => {
             background: 'linear-gradient(135deg, #E03553, #803D81)',
             color: '#FFFFFF',
             border: 'none',
+            borderRadius: 999,
             fontSize: 13,
             fontWeight: 600,
             cursor: 'pointer',
             fontFamily: 'Plus Jakarta Sans',
             letterSpacing: '0.02em',
           }}>
-            Try Ava's Studio →
+            Try Ava's studio →
           </button>
         </div>
 
@@ -755,6 +756,7 @@ const Universes = () => {
               fontWeight: 600,
               letterSpacing: '0.02em',
               border: 'none',
+              borderRadius: 999,
               cursor: 'pointer',
               fontFamily: 'Plus Jakarta Sans',
             }}>
@@ -763,6 +765,7 @@ const Universes = () => {
             <button onClick={() => navigate('/Features')} style={{
               padding: '16px 40px',
               border: '1px solid rgba(255,255,255,0.25)',
+              borderRadius: 999,
               background: 'transparent',
               color: 'rgba(255,255,255,0.7)',
               textDecoration: 'none',
