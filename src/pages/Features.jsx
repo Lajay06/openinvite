@@ -47,9 +47,7 @@ const ESSENTIALS = [
 { title: "Smart budget tracker", accent: "#E03553", label: "Budget", desc: "Track everything in one place, from flowers to favours, with real-time visuals and Ava's tips." },
 { title: "Registry tool", accent: "#803D81", label: "Registry", desc: "Connect your dream registry or build your own: stylish, mobile, guest-friendly." },
 { title: "Ultimate planner", accent: "#6B2CAE", label: "Planning", desc: "The all-in-one planning workspace. Every detail, every vendor, every task." },
-{ title: "AI integration", accent: "#DDF762", label: "Ava", desc: "Smart suggestions, personalised insights, and Ava always one step ahead." },
-{ title: "Guest suite", accent: "#C2E5F3", label: "Guests", desc: "From RSVP to seating, manage every guest with zero stress and total control." },
-{ title: "Collaborative playlists", accent: "#E03553", label: "Music", desc: "Curate the ultimate soundtrack: Spotify-connected, guest-friendly, effortlessly organised." }];
+{ title: "AI integration", accent: "#DDF762", label: "Ava", desc: "Smart suggestions, personalised insights, and Ava always one step ahead." }];
 
 
 const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3", "#0A1930", "#E03553"];
@@ -279,70 +277,52 @@ function DashboardSection() {
 function AvaSection({ essentials }) {
   const [ref, curtainUp] = useScrollReveal(0);
   return (
-    <section ref={ref} style={{
-      position: "relative", padding: "0 0 80px",
-      overflow: "hidden",
-      backgroundImage: `url(${PHOTOS.photoO})`,
-      backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "scroll"
-    }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(10,10,10,0.88)", zIndex: 1 }} />
-      {/* Curtain reveal */}
-      <div style={{ position: "absolute", inset: 0, background: "#0A0A0A", zIndex: 10, transform: curtainUp ? "translateY(-100%)" : "translateY(0)", transition: `transform 0.9s ${EASE}`, pointerEvents: "none" }} />
-      <div style={{ position: "relative", zIndex: 3 }}>
-        <div style={{ textAlign: "center", marginBottom: 48, padding: "0 clamp(24px, 4vw, 64px)", opacity: curtainUp ? 1 : 0, transition: `opacity 0.8s ${EASE} 0.15s` }}>
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginBottom: 12, overflow: "visible", hyphens: "none" }}>The essentials</h2>
+    <section ref={ref} style={{ position: "relative", padding: "140px clamp(24px, 6vw, 80px)", background: "#0A0A0A" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 64, opacity: curtainUp ? 1 : 0, transition: `opacity 0.8s ${EASE} 0.15s` }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", color: "#DDF762", fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 16 }}>
+            What's included
+          </p>
+          <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", margin: 0, overflow: "visible", hyphens: "none" }}>The essentials</h2>
         </div>
-        <EssentialsManifesto items={essentials} visible={curtainUp} />
+        <EssentialsGrid items={essentials} visible={curtainUp} />
       </div>
     </section>);
 
 }
 
-// A confident stacked list, not a grid of six bordered cells — no card
-// borders, no even columns. Each essential is one full-width row: a big,
-// oversized sentence-case headline that dominates, a small accent label,
-// and one line of copy. A soft colour wash sweeps in on hover/focus (the
-// row's own accent, at low opacity) instead of a permanent border, so nothing
-// reads as "boxed" the way the old bordered grid did. Description stays
-// visible at rest (not hover-only) so touch devices don't lose it.
-function EssentialsManifesto({ items, visible }) {
-  const [activeIdx, setActiveIdx] = useState(null);
+// A clean, considered grid on a solid background — no photo behind it, no
+// per-row left/right text split (the round-2 layout put the title on the
+// left and the description on the right of the same row, which broke
+// awkwardly at in-between widths). Each cell is one consistent vertical
+// stack: label, title, description, all left-aligned, same hierarchy in
+// every cell.
+function EssentialsGrid({ items, visible }) {
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 clamp(24px, 4vw, 64px)" }}>
-      {items.map((item, i) => {
-        const active = activeIdx === i;
-        return (
-          <div
-            key={item.title}
-            onMouseEnter={() => setActiveIdx(i)}
-            onMouseLeave={() => setActiveIdx(null)}
-            style={{
-              display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap",
-              gap: "8px 32px", padding: "28px 24px",
-              borderTop: i === 0 ? "1px solid rgba(255,255,255,0.1)" : "none",
-              borderBottom: "1px solid rgba(255,255,255,0.1)",
-              background: active ? `${item.accent}1a` : "transparent",
-              transition: `background 0.3s ease, opacity 0.6s ${EASE} ${0.1 + i * 0.06}s, transform 0.6s ${EASE} ${0.1 + i * 0.06}s`,
-              opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "baseline", gap: 24, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: item.accent, fontFamily: "'Plus Jakarta Sans', sans-serif", minWidth: 76 }}>
-                {item.label}
-              </span>
-              <h3 style={{
-                color: "#FFF", fontWeight: 700, fontSize: "clamp(26px, 3.6vw, 46px)", letterSpacing: "-0.02em",
-                lineHeight: 1.1, margin: 0, transition: "color 0.3s ease",
-              }}>
-                {item.title}
-              </h3>
-            </div>
-            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 320, textAlign: "right" }}>
-              {item.desc}
-            </p>
-          </div>
-        );
-      })}
+    <div style={{
+      display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1px",
+      background: "rgba(255,255,255,0.08)",
+    }}>
+      {items.map((item, i) => (
+        <div
+          key={item.title}
+          style={{
+            background: "#0A0A0A", padding: "48px 40px",
+            opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
+            transition: `opacity 0.6s ${EASE} ${0.1 + i * 0.08}s, transform 0.6s ${EASE} ${0.1 + i * 0.08}s`,
+          }}
+        >
+          <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: item.accent, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 20 }}>
+            {item.label}
+          </span>
+          <h3 style={{ color: "#FFF", fontWeight: 700, fontSize: "clamp(24px, 2.2vw, 32px)", letterSpacing: "-0.02em", lineHeight: 1.15, margin: "0 0 14px" }}>
+            {item.title}
+          </h3>
+          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 280 }}>
+            {item.desc}
+          </p>
+        </div>
+      ))}
     </div>
   );
 }
