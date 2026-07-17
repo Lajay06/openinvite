@@ -211,7 +211,7 @@ function QuickStartSection() {
   return (
     <section ref={ref} style={{ background: "#0A0A0A", minHeight: "100vh", display: "flex", flexDirection: "row", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-1" style={{ position: "relative", minHeight: 320, overflow: "hidden", flexShrink: 0 }}>
-        <img src={PHOTOS.photoM} alt="Wedding photo" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-100px)", transition: `opacity 0.9s ${EASE}, transform 1s ${EASE}` }} />
+        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779246464/manuel-moreno-DGa0LQ0yDPc-unsplash_nbgivs.jpg" alt="A quiet resort terrace at sunset" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-100px)", transition: `opacity 0.9s ${EASE}, transform 1s ${EASE}` }} />
         <div style={{ position: "absolute", inset: 0, background: "rgba(194,229,243,0.12)", mixBlendMode: "multiply", pointerEvents: "none" }} />
         <div className="lg:hidden" style={{ paddingBottom: "66.66%", position: "relative" }} />
       </div>
