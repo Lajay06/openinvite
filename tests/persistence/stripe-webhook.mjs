@@ -1,9 +1,12 @@
 /**
  * tests/persistence/stripe-webhook.mjs
  *
- * Covers feat/payment-complete: price→tier mapping, Stripe signature
- * verification, and the Base44 admin write path the checkout.session.completed
- * handler (api/webhooks/stripe.js) uses to write User.plan.
+ * Covers feat/payment-complete and the multi-currency-pricing follow-up:
+ * price→tier and price→currency mapping across all four (AUD+USD) known
+ * prices, the AUD/USD-conditional payment_method_types Afterpay/Clearpay
+ * fix, Stripe signature verification, and the Base44 admin write path the
+ * checkout.session.completed handler (api/webhooks/stripe.js) uses to
+ * write User.plan.
  *
  * Pure-function + mocked-network tests — no live Base44 or Stripe API calls,
  * no auth needed. Signature verification is tested against the real `stripe`
@@ -12,27 +15,33 @@
  */
 
 import Stripe from 'stripe';
-import { resolvePlanFromPriceId } from '../../api/_lib/planPricing.js';
+import { resolvePlanFromPriceId, resolveCurrencyFromPriceId } from '../../api/_lib/planPricing.js';
 import { getBase44User, writeBase44UserPlan } from '../../api/_lib/base44Admin.js';
 import { pass, fail } from './_shared.mjs';
 
 const PRO_PRICE_ID = 'price_TEST_PRO_1234567890';
 const ULTRA_PRICE_ID = 'price_TEST_ULTRA_1234567890';
+const PRO_PRICE_ID_USD = 'price_TEST_PRO_USD_1234567890';
+const ULTRA_PRICE_ID_USD = 'price_TEST_ULTRA_USD_1234567890';
 
 export async function runStripeWebhook() {
   const results = [];
   const restore = {
     pro: process.env.VITE_STRIPE_PRO_PRICE_ID,
     ultra: process.env.VITE_STRIPE_ULTRA_PRICE_ID,
+    proUsd: process.env.VITE_STRIPE_PRO_PRICE_ID_USD,
+    ultraUsd: process.env.VITE_STRIPE_ULTRA_PRICE_ID_USD,
   };
   process.env.VITE_STRIPE_PRO_PRICE_ID = PRO_PRICE_ID;
   process.env.VITE_STRIPE_ULTRA_PRICE_ID = ULTRA_PRICE_ID;
+  process.env.VITE_STRIPE_PRO_PRICE_ID_USD = PRO_PRICE_ID_USD;
+  process.env.VITE_STRIPE_ULTRA_PRICE_ID_USD = ULTRA_PRICE_ID_USD;
 
-  console.log('\n  Stripe webhook — price ID → plan tier mapping:\n');
+  console.log('\n  Stripe webhook — price ID → plan tier mapping (AUD + USD, four known prices):\n');
 
   results.push(resolvePlanFromPriceId(PRO_PRICE_ID) === 'pro'
-    ? pass('resolvePlanFromPriceId — Pro price ID resolves to \'pro\'', 'pro')
-    : fail('resolvePlanFromPriceId — Pro price ID resolves to \'pro\'', 'pro', resolvePlanFromPriceId(PRO_PRICE_ID)));
+    ? pass('resolvePlanFromPriceId — AUD Pro price ID resolves to \'pro\'', 'pro')
+    : fail('resolvePlanFromPriceId — AUD Pro price ID resolves to \'pro\'', 'pro', resolvePlanFromPriceId(PRO_PRICE_ID)));
 
   // The literal string every gating check in the app compares against
   // (AuthContext.jsx → StudioGuestSuite.jsx:87-88, Account.jsx:65,
@@ -41,8 +50,17 @@ export async function runStripeWebhook() {
   // checks test for, not just "truthy" or a differently-cased/spelled tier.
   const ultraResolved = resolvePlanFromPriceId(ULTRA_PRICE_ID);
   results.push(ultraResolved === 'ultra'
-    ? pass('resolvePlanFromPriceId — Ultra price ID resolves to the exact gating literal \'ultra\'', ultraResolved)
-    : fail('resolvePlanFromPriceId — Ultra price ID resolves to the exact gating literal \'ultra\'', 'ultra', ultraResolved));
+    ? pass('resolvePlanFromPriceId — AUD Ultra price ID resolves to the exact gating literal \'ultra\'', ultraResolved)
+    : fail('resolvePlanFromPriceId — AUD Ultra price ID resolves to the exact gating literal \'ultra\'', 'ultra', ultraResolved));
+
+  results.push(resolvePlanFromPriceId(PRO_PRICE_ID_USD) === 'pro'
+    ? pass('resolvePlanFromPriceId — USD Pro price ID resolves to \'pro\'', 'pro')
+    : fail('resolvePlanFromPriceId — USD Pro price ID resolves to \'pro\'', 'pro', resolvePlanFromPriceId(PRO_PRICE_ID_USD)));
+
+  const ultraUsdResolved = resolvePlanFromPriceId(ULTRA_PRICE_ID_USD);
+  results.push(ultraUsdResolved === 'ultra'
+    ? pass('resolvePlanFromPriceId — USD Ultra price ID resolves to the exact gating literal \'ultra\'', ultraUsdResolved)
+    : fail('resolvePlanFromPriceId — USD Ultra price ID resolves to the exact gating literal \'ultra\'', 'ultra', ultraUsdResolved));
 
   results.push(resolvePlanFromPriceId('price_unknown_never_configured') === null
     ? pass('resolvePlanFromPriceId — unrecognised price ID resolves to null, never a guessed tier', 'null')
@@ -52,8 +70,95 @@ export async function runStripeWebhook() {
     ? pass('resolvePlanFromPriceId — null/undefined priceId resolves to null, not a throw', 'null')
     : fail('resolvePlanFromPriceId — null/undefined priceId resolves to null, not a throw', 'null', 'threw or returned non-null'));
 
+  console.log('\n  Stripe webhook — price ID → currency mapping:\n');
+
+  results.push(resolveCurrencyFromPriceId(PRO_PRICE_ID) === 'aud' && resolveCurrencyFromPriceId(ULTRA_PRICE_ID) === 'aud'
+    ? pass('resolveCurrencyFromPriceId — AUD Pro/Ultra price IDs resolve to \'aud\'', 'aud')
+    : fail('resolveCurrencyFromPriceId — AUD Pro/Ultra price IDs resolve to \'aud\'', 'aud', `${resolveCurrencyFromPriceId(PRO_PRICE_ID)}, ${resolveCurrencyFromPriceId(ULTRA_PRICE_ID)}`));
+
+  results.push(resolveCurrencyFromPriceId(PRO_PRICE_ID_USD) === 'usd' && resolveCurrencyFromPriceId(ULTRA_PRICE_ID_USD) === 'usd'
+    ? pass('resolveCurrencyFromPriceId — USD Pro/Ultra price IDs resolve to \'usd\'', 'usd')
+    : fail('resolveCurrencyFromPriceId — USD Pro/Ultra price IDs resolve to \'usd\'', 'usd', `${resolveCurrencyFromPriceId(PRO_PRICE_ID_USD)}, ${resolveCurrencyFromPriceId(ULTRA_PRICE_ID_USD)}`));
+
+  results.push(resolveCurrencyFromPriceId('price_unknown_never_configured') === null && resolveCurrencyFromPriceId(null) === null
+    ? pass('resolveCurrencyFromPriceId — unrecognised/null priceId resolves to null, not a guess', 'null')
+    : fail('resolveCurrencyFromPriceId — unrecognised/null priceId resolves to null, not a guess', 'null', 'non-null'));
+
+  console.log('\n  Stripe checkout — payment_method_types is currency-conditional (the Afterpay/Clearpay fix):\n');
+
+  // api/create-checkout-session.js constructs `new Stripe(...)` at module
+  // scope (same reason api/webhooks/stripe.js is dynamically imported
+  // below) — it throws synchronously on an empty key, so a placeholder is
+  // needed before the first import, same pattern as the Stripe/Resend keys
+  // further down this file. Only imported once; reused for the rejection-
+  // path test later in this function too (ES modules cache on re-import).
+  const priorStripeKeyForCheckout = process.env.STRIPE_SECRET_KEY;
+  if (!process.env.STRIPE_SECRET_KEY) process.env.STRIPE_SECRET_KEY = 'sk_test_persistence_suite_placeholder';
+  const { default: createCheckoutSessionHandler, getPaymentMethodTypes } = await import('../../api/create-checkout-session.js');
+  process.env.STRIPE_SECRET_KEY = priorStripeKeyForCheckout;
+
+  // The actual bug this suite guards against: this account's Afterpay/
+  // Clearpay only supports AUD. Before this fix, payment_method_types was a
+  // hardcoded ['card','afterpay_clearpay','klarna'] regardless of session
+  // currency — a USD session requesting afterpay_clearpay could fail
+  // outright. Now: AUD keeps all three, USD gets card only.
+  const audMethods = getPaymentMethodTypes('aud');
+  results.push(audMethods.includes('card') && audMethods.includes('afterpay_clearpay')
+    ? pass('getPaymentMethodTypes(\'aud\') — includes afterpay_clearpay', JSON.stringify(audMethods))
+    : fail('getPaymentMethodTypes(\'aud\') — includes afterpay_clearpay', 'includes afterpay_clearpay', JSON.stringify(audMethods)));
+
+  const usdMethods = getPaymentMethodTypes('usd');
+  results.push(usdMethods.includes('card') && !usdMethods.includes('afterpay_clearpay') && !usdMethods.includes('klarna')
+    ? pass('getPaymentMethodTypes(\'usd\') — card only, no afterpay_clearpay/klarna', JSON.stringify(usdMethods))
+    : fail('getPaymentMethodTypes(\'usd\') — card only, no afterpay_clearpay/klarna', '["card"]', JSON.stringify(usdMethods)));
+
+  // Unknown/unset currency must fail closed toward the more restrictive
+  // list (no Afterpay), not fail open — same posture as every other
+  // "don't guess, don't assume the permissive case" rule in this codebase.
+  results.push(!getPaymentMethodTypes(null).includes('afterpay_clearpay') && !getPaymentMethodTypes(undefined).includes('afterpay_clearpay')
+    ? pass('getPaymentMethodTypes — unknown currency fails closed (no afterpay_clearpay), not open', 'card only')
+    : fail('getPaymentMethodTypes — unknown currency fails closed (no afterpay_clearpay), not open', 'card only', JSON.stringify([getPaymentMethodTypes(null), getPaymentMethodTypes(undefined)])));
+
+  console.log('\n  create-checkout-session — still rejects any price ID outside the known set of four:\n');
+
+  {
+    const mockReqRes = (body) => {
+      const req = { method: 'POST', headers: {}, body };
+      const res = {
+        _status: 200, _json: null,
+        setHeader() { return this; },
+        status(code) { this._status = code; return this; },
+        json(obj) { this._json = obj; return this; },
+      };
+      return { req, res };
+    };
+
+    // A well-formed but unrecognised price ID (right shape — isValidPriceId
+    // is /^price_[A-Za-z0-9]+$/, no underscores allowed — so this exercises
+    // rejection by resolvePlanFromPriceId returning null, not a rejection at
+    // the format-validation step, which would be a different, weaker claim
+    // than "not one of the four configured prices"). Confirms the new
+    // currency-resolution step added ahead of the Stripe call didn't
+    // accidentally bypass this existing rejection.
+    const { req, res } = mockReqRes({ priceId: 'price_AttackerSupplied1234567890xyz', userId: 'user_test' });
+    await createCheckoutSessionHandler(req, res);
+    results.push(res._status === 400
+      ? pass('create-checkout-session — unrecognised (but well-formed) priceId is rejected with 400', '400')
+      : fail('create-checkout-session — unrecognised (but well-formed) priceId is rejected with 400', 400, res._status));
+  }
+
+  // Deliberately not testing "a known USD price passes validation" the same
+  // way — past the 400 check, the real handler goes on to call the live
+  // Stripe API (stripe.checkout.sessions.create), which would create a real
+  // (if harmless, test-mode) Stripe session as a side effect of running this
+  // suite. The getPaymentMethodTypes assertions above already cover the
+  // currency-conditional logic without touching the network; this section
+  // only needs the rejection path, which never reaches Stripe.
+
   process.env.VITE_STRIPE_PRO_PRICE_ID = restore.pro;
   process.env.VITE_STRIPE_ULTRA_PRICE_ID = restore.ultra;
+  process.env.VITE_STRIPE_PRO_PRICE_ID_USD = restore.proUsd;
+  process.env.VITE_STRIPE_ULTRA_PRICE_ID_USD = restore.ultraUsd;
 
   console.log('\n  Stripe webhook — signature verification (real `stripe` package, no mocking):\n');
 

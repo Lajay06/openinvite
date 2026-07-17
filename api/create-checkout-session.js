@@ -5,9 +5,20 @@ import {
   getClientIp,
   isValidPriceId,
 } from './_lib/security.js';
-import { resolvePlanFromPriceId } from './_lib/planPricing.js';
+import { resolvePlanFromPriceId, resolveCurrencyFromPriceId } from './_lib/planPricing.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Afterpay/Clearpay on this (Australian) Stripe account only supports AUD —
+// requesting it on a USD session can fail the session outright. Klarna is
+// AU-available in AUD; left off the USD list rather than assumed safe,
+// since it hasn't been verified against this account's USD Klarna
+// availability. card is the only method guaranteed to work in both.
+// Exported for direct unit testing — this must never regress to a
+// currency-blind array again without a test catching it.
+export function getPaymentMethodTypes(currency) {
+  return currency === 'aud' ? ['card', 'afterpay_clearpay', 'klarna'] : ['card'];
+}
 
 export default async function handler(req, res) {
   // ── CORS ────────────────────────────────────────────────────────────────────
@@ -61,16 +72,27 @@ export default async function handler(req, res) {
     }
     console.log('[checkout] resolved plan:', plan, '| priceId:', priceId);
 
+    // Currency comes from the Price object itself, never a client-supplied
+    // field — same tamper-proof property as plan resolution above. Falls
+    // back to 'aud' only in the defensive/unreachable case where plan
+    // resolved but currency somehow didn't (both derive from the same four
+    // configured price IDs, so in practice this never disagrees) — 'aud'
+    // matches this account's pre-multi-currency default, not a guess.
+    const currency = resolveCurrencyFromPriceId(priceId) || 'aud';
+    console.log('[checkout] resolved currency:', currency, '| priceId:', priceId);
+
     const appUrl = process.env.VITE_APP_URL || 'https://openinvite.com.au';
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      currency: 'aud',
-      payment_method_types: [
-        'card',
-        'afterpay_clearpay',
-        'klarna',
-      ],
+      // No top-level `currency` — Stripe infers it from the referenced
+      // Price object itself, and errors if a top-level currency were passed
+      // that didn't match ("The price specified only supports `usd`. This
+      // doesn't match the expected currency: `aud`.", confirmed empirically
+      // via the Stripe CLI while adding USD prices). priceId can now resolve
+      // to either an AUD or a USD price, so hardcoding one here would break
+      // checkout for whichever currency wasn't hardcoded.
+      payment_method_types: getPaymentMethodTypes(currency),
       line_items: [{ price: priceId, quantity: 1 }],
       metadata: { plan },
       // client_reference_id is how the webhook knows WHOSE User record to
