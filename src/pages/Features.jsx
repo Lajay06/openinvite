@@ -15,6 +15,7 @@ import FeatureGuests from "@/components/home/FeatureGuests";
 import FeatureBudget from "@/components/home/FeatureBudget";
 import ScrollCue from "@/components/motion/ScrollCue";
 import ProductVideo from "@/components/shared/ProductVideo";
+import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
 
 const FEATURE_ZOOM_IMAGES = [
 { src: "https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg", alt: "Wedding planning" },
@@ -110,6 +111,9 @@ export default function Features() {
 
       {/* ── S5b: SEATING, REAL PRODUCT VIDEO ─────────────── */}
       <SeatingSection />
+
+      {/* ── S5c: BUDGET, REAL PRODUCT VIDEO ──────────────── */}
+      <BudgetSection />
 
       {/* ── S6: ACCORDION ────────────────────────────────── */}
       <AccordionSection features={ALL_FEATURES} borders={ACCORDION_BORDERS} dots={DOTS} openFeature={openFeature} setOpenFeature={setOpenFeature} />
@@ -360,21 +364,21 @@ function InvitationsSection() {
           moment and a real personalised RSVP page — not the placeholder
           /universes/marrakech.jpg this section used before the capture
           pipeline existed. */}
-      <div style={{ flex: "1 1 480px", minHeight: 420, position: "relative", overflow: "hidden", display: "flex", gap: 2 }}>
-        <div style={{ flex: "1 1 60%", position: "relative", overflow: "hidden" }}>
+      <div style={{ flex: "1 1 480px", minHeight: 420, display: "flex", gap: 12, padding: "24px" }}>
+        <ProductMediaFrame aspectRatio="4/5" maxWidth="none" style={{ flex: "1 1 60%" }}>
           <img
             src="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/02-entrance-moment-landing.png"
             alt="A real Openinvite guest website entrance moment"
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
           />
-        </div>
-        <div style={{ flex: "1 1 40%", position: "relative", overflow: "hidden" }}>
+        </ProductMediaFrame>
+        <ProductMediaFrame aspectRatio="9/16" maxWidth="none" style={{ flex: "1 1 40%" }}>
           <img
             src="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/07-rsvp-mobile.png"
             alt="A real personalised RSVP page on mobile"
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
           />
-        </div>
+        </ProductMediaFrame>
       </div>
     </section>
   );
@@ -400,16 +404,56 @@ function SeatingSection() {
           </p>
         </div>
         <div style={{
-          aspectRatio: "16/10", overflow: "hidden", border: "1px solid rgba(10,10,10,0.08)",
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
           transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
         }}>
-          <ProductVideo
-            mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-02-seating-exploration.mp4"
-            webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-02-seating-exploration.webm"
-            poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-02-seating-exploration-poster.jpg"
-            alt="Screen recording of the Openinvite seating canvas"
-          />
+          <ProductMediaFrame aspectRatio="16/10" maxWidth="none" dark={false}>
+            <ProductVideo
+              mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-02-seating-exploration.mp4"
+              webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-02-seating-exploration.webm"
+              poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-02-seating-exploration-poster.jpg"
+              alt="Screen recording of the Openinvite seating canvas"
+            />
+          </ProductMediaFrame>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BudgetSection() {
+  const [ref, visible] = useScrollReveal(0.2);
+  return (
+    <section ref={ref} style={{ background: "#FFFFFF", padding: "120px clamp(32px, 6vw, 80px)" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 48, alignItems: "center" }}>
+        <div style={{
+          order: 2,
+          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
+          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
+        }}>
+          <ProductMediaFrame aspectRatio="16/10" maxWidth="none" dark={false}>
+            <ProductVideo
+              mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-04-budget-tracker.mp4"
+              webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-04-budget-tracker.webm"
+              poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-04-budget-tracker-poster.jpg"
+              alt="Screen recording of the real Openinvite budget tracker"
+            />
+          </ProductMediaFrame>
+        </div>
+        <div style={{
+          order: 1,
+          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
+          transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#E03553", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Budget
+          </p>
+          <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 24 }}>
+            Every dollar, in real time.
+          </h2>
+          <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16 }}>
+            Budget versus actual spend, category by category. This is the real tracker with a real 201-guest wedding's numbers in it.
+          </p>
         </div>
       </div>
     </section>

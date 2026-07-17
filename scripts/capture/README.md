@@ -102,11 +102,19 @@ to both `.webm` (vp9, primary) and `.mp4` (h264, Safari/fallback), plus a
 flow spends its first couple of seconds on page-load settle, so an early
 frame posters a loading skeleton instead of real content):
 
-| # | Flow | What it shows |
-|---|---|---|
-| 1 | Choosing a universe | Scrolling the universe wall, opening one universe's preview (client-side only — the actual "switch universe" write is a separate button this flow never reaches) |
-| 2 | Seating exploration | Panning the canvas, selecting a table to view its assignment panel (no drag) |
-| 3 | Guest RSVP view | Scrolling a real personalized RSVP page, toggling "Attending" (a selection, not a submission) — stops before the actual Submit |
+| # | Flow | Route | What it shows |
+|---|---|---|---|
+| 1 | Choosing a universe | `/studio/universe` | Scrolling the universe wall, opening one universe's preview (client-side only — the actual "switch universe" write is a separate button this flow never reaches) |
+| 2 | Seating exploration | `/Seating` | Panning the canvas, selecting a table to view its assignment panel (no drag) |
+| 3 | Guest RSVP view | `/rsvp/<token>` | Scrolling a real personalized RSVP page, toggling "Attending" (a selection, not a submission) — stops before the actual Submit |
+| 4 | Budget tracker in motion | `/Budget` | Scrolling the real budget breakdown, hovering line items |
+| 5 | Moodboard browsing | `/Moodboard` | Scrolling through the real moodboard grid |
+| 6 | Ava — wedding date | `/Dashboard` | Opening Ava via the same `openAva` window event `Layout.jsx` listens for, typing "What's my wedding date?", letting the streamed answer render — a read-only question, never a write |
+| 7 | Ava — guest count | `/Dashboard` | Same Ava panel, typing "How many guests have RSVP'd so far?" — again read-only ("how many", not "add"/"change"/"send") |
+
+Flows 6 and 7 are deliberately informational questions only — asking "what"
+or "how many" rather than "add"/"change"/"send" — so there's no ambiguity
+about Ava taking a write action on camera.
 
 ### Two shots don't point where the brief originally said, and here's why
 

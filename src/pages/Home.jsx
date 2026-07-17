@@ -14,6 +14,7 @@ import HowItWorksSection from "@/components/home/HowItWorksSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
 import ProductVideo from "@/components/shared/ProductVideo";
+import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
 
 export default function Home() {
   const handleCTA = () => {
@@ -30,20 +31,32 @@ export default function Home() {
         <HeroCollage onCTA={handleCTA} />
       </div>
 
-      {/* 1b. HERO-ADJACENT PRODUCT MOMENT — a real screen recording, not a
-          mockup: choosing an aesthetic universe in the Design Studio. */}
+      {/* 1b. HERO-ADJACENT PRODUCT MOMENT — two real screen recordings,
+          anchored to the hero's own composition rather than dropped in as
+          an isolated block: choosing a universe, then a glimpse of the
+          moodboard that feeds it. */}
       <section style={{ background: "#0A0A0A", padding: "0 clamp(24px, 6vw, 80px) 100px" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#DDF762", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#DDF762", marginBottom: 24, fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
             The real product
           </p>
-          <div style={{ aspectRatio: "16/9", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
-            <ProductVideo
-              mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.mp4"
-              webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.webm"
-              poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-01-choosing-a-universe-poster.jpg"
-              alt="Screen recording of choosing an aesthetic universe in the Openinvite Design Studio"
-            />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 24 }}>
+            <ProductMediaFrame aspectRatio="16/9" maxWidth="none">
+              <ProductVideo
+                mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.mp4"
+                webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.webm"
+                poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-01-choosing-a-universe-poster.jpg"
+                alt="Screen recording of choosing an aesthetic universe in the Openinvite Design Studio"
+              />
+            </ProductMediaFrame>
+            <ProductMediaFrame aspectRatio="16/9" maxWidth="none">
+              <ProductVideo
+                mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-05-moodboard-browsing.mp4"
+                webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-05-moodboard-browsing.webm"
+                poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-05-moodboard-browsing-poster.jpg"
+                alt="Screen recording of browsing a real moodboard in Openinvite"
+              />
+            </ProductMediaFrame>
           </div>
         </div>
       </section>

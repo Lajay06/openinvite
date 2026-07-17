@@ -32,6 +32,11 @@
 - Exception — onboarding/tips carousel cards (e.g. TipsModal): 16px. A
   deliberate, narrow exception for soft, welcoming first-run UI; does not
   apply to dashboard cards, which stay 0px.
+- Exception — real product stills/video on the marketing site
+  (ProductMediaFrame, src/components/shared/): 14px. A screen sitting in
+  the page reads correctly with a slight radius; a flat 0px edge reads like
+  a printed card, not a device. Scoped to real captured product media only
+  (scripts/capture/) — never stock photography, never dashboard UI.
 
 ## Layout
 - Top bar: fixed, full width, 48px height, background #0A0A0A, z-index 50

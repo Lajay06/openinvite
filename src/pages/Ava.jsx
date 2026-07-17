@@ -357,6 +357,35 @@ export default function AvaPage() {
         </div>
       </section>
 
+      {/* ── AVA, ACTUALLY ANSWERING ──────────────────────── */}
+      <section style={{ background: "#0A0A0A", padding: "120px clamp(32px, 6vw, 80px)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#DDF762", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
+            Real conversations
+          </p>
+          <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", lineHeight: 1.1, textAlign: "center", margin: "0 auto 48px", maxWidth: 640 }}>
+            Ask Ava anything. Watch her actually answer.
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: 24 }}>
+            <ProductMediaFrame aspectRatio="16/10" maxWidth="none">
+              <ProductVideo
+                mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-06-ava-wedding-date.mp4"
+                webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-06-ava-wedding-date.webm"
+                poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-06-ava-wedding-date-poster.jpg"
+                alt="Screen recording of asking Ava a question and watching her real, streamed answer"
+              />
+            </ProductMediaFrame>
+            <ProductMediaFrame aspectRatio="16/10" maxWidth="none">
+              <ProductVideo
+                mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-07-ava-guest-count.mp4"
+                webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-07-ava-guest-count.webm"
+                poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-07-ava-guest-count-poster.jpg"
+                alt="Screen recording of asking Ava a second question and watching her real, streamed answer"
+              />
+            </ProductMediaFrame>
+          </div>
+        </div>
+      </section>
 
       <PublicFooter />
     </div>);

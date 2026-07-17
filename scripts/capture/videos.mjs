@@ -122,6 +122,60 @@ results.push(await record('flow-02-seating-exploration', `${BASE_URL}/Seating`, 
   await page.waitForTimeout(2000);
 }));
 
+// ── Flow 4: Budget tracker in motion ────────────────────────────────────
+results.push(await record('flow-04-budget-tracker', `${BASE_URL}/Budget`, true, async (page) => {
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1200);
+  await page.mouse.wheel(0, 400);
+  await page.waitForTimeout(1500);
+  await page.mouse.wheel(0, 500);
+  await page.waitForTimeout(1500);
+  await page.mouse.move(900, 500, { steps: 15 });
+  await page.waitForTimeout(2000);
+}));
+
+// ── Flow 5: Moodboard browsing ───────────────────────────────────────────
+results.push(await record('flow-05-moodboard-browsing', `${BASE_URL}/Moodboard`, true, async (page) => {
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1200);
+  await page.mouse.wheel(0, 400);
+  await page.waitForTimeout(1500);
+  await page.mouse.wheel(0, 500);
+  await page.waitForTimeout(2000);
+  await page.mouse.wheel(0, 400);
+  await page.waitForTimeout(1500);
+}));
+
+// ── Flows 6 & 7: Ava actually interacting ────────────────────────────────
+// Two informational, clearly read-only questions — asking "what" and "how
+// many", never "add"/"change"/"send" — so there's no ambiguity about Ava
+// taking a write action in response. Opened via the same `openAva` custom
+// window event Layout.jsx itself listens for (DESIGN_SPEC.md), rather than
+// hunting for the floating button's exact position on every page.
+async function recordAvaFlow(name, question) {
+  return record(name, `${BASE_URL}/Dashboard`, true, async (page) => {
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+    // Dismiss the first-run "Here's how to get started" tips modal if it's
+    // showing — shot hygiene, not a data write (a purely local dismissal).
+    const skipAll = page.getByText('Skip all', { exact: true });
+    if (await skipAll.count() > 0) {
+      await skipAll.click().catch(() => {});
+      await page.waitForTimeout(500);
+    }
+    await page.evaluate(() => window.dispatchEvent(new Event('openAva')));
+    await page.waitForTimeout(1200);
+    const textarea = page.getByPlaceholder('Ask Ava anything...');
+    await textarea.click();
+    await textarea.type(question, { delay: 45 }); // real per-character typing, not a paste
+    await page.waitForTimeout(500);
+    await page.keyboard.press('Enter').catch(() => {});
+    await page.waitForTimeout(6000); // let the streamed response render
+  });
+}
+results.push(await recordAvaFlow('flow-06-ava-wedding-date', "What's my wedding date?"));
+results.push(await recordAvaFlow('flow-07-ava-guest-count', "How many guests have RSVP'd so far?"));
+
 // ── Flow 3: Guest RSVP experience ───────────────────────────────────────
 if (RSVP_TOKEN) {
   results.push(await record('flow-03-guest-rsvp', `${BASE_URL}/rsvp/${RSVP_TOKEN}`, false, async (page) => {
