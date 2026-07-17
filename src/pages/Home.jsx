@@ -7,6 +7,7 @@ import HeroCollage from "@/components/home/HeroCollage";
 import ValuePropSection from "@/components/home/ValuePropSection";
 import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
 import WhyUsSection from "@/components/home/WhyUsSection";
+import UniverseTeaserSection from "@/components/home/UniverseTeaserSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
 import ScrollExpandMedia from "@/components/shared/ScrollExpandMedia";
@@ -50,6 +51,14 @@ export default function Home() {
       <div id="section-features" style={{ background: "#0A0A0A" }}>
         <HorizontalScrollSection />
       </div>
+
+      {/* 4b. UNIVERSES TEASER — universes had no presence on the homepage
+          at all after the carousel's Universes card and the old
+          Invitations/guest-suite section were both removed. High level
+          only (4 real photos, not the full 20-universe grid — that's the
+          Universes page's job), dark and minimal to match the rest of the
+          homepage, with a clear CTA through to /universes. */}
+      <UniverseTeaserSection />
 
       {/* 5. AVA GRADIENT BANNER + SPOTLIGHT — the black carousel now runs
           straight into the gradient banner. The "Invitations & guest suite"
@@ -174,7 +183,7 @@ function PricingSection({ onCTA }) {
         transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.15s, transform 0.7s ${EASE} 0.15s`,
       }}>
         <TierChip name="Pro" price="$79" blurb="Planning, guests, budget, Ava" accent="#E03553" />
-        <TierChip name="Ultra" price="$149" blurb="Everything, plus universes & website" accent="#DDF762" />
+        <TierChip name="Ultra" price="$149" blurb="Everything, plus universes & digital invitations" accent="#DDF762" />
       </div>
       <div style={{
         display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", justifyContent: "center",

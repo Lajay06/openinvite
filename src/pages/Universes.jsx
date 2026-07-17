@@ -16,9 +16,8 @@ const FALLBACK_IMAGE = {
 
 const PJS = 'Plus Jakarta Sans, sans-serif';
 
-const FULL_BLEED_COUNT = 8;
-const FULL_BLEED_UNIVERSES = UNIVERSE_CATALOG.slice(0, FULL_BLEED_COUNT);
-const GRID_UNIVERSES = UNIVERSE_CATALOG.slice(FULL_BLEED_COUNT);
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function UniverseTile({ universe, index, onExplore }) {
   const [hovered, setHovered] = useState(false);
@@ -104,79 +103,123 @@ function UniverseTile({ universe, index, onExplore }) {
   );
 }
 
-// Full-bleed scrolling panel — the in-app banner-wall energy the owner
-// asked to restore: one universe, one huge full-bleed photo, physically
-// stacked and scrolled past (not sticky-pinned/crossfaded). Capped at the
-// first 8 universes rather than all 20 — a 20-panel version of this was
-// the exact thing removed earlier for being too heavy to scroll through
-// (the old sticky-crossfade needed ~2400vh for 20 stops); 8 keeps the
-// full-bleed drama without making the page endless, and the remaining 12
-// still get their moment in the grid immediately below.
-function UniverseFullBleedPanel({ universe, index, onExplore }) {
-  const image = universe.imageUrl || FALLBACK_IMAGE[universe.id];
+// Pinned crossfade showcase — restores the pre-round-2 behaviour: the
+// component pins on screen showing one universe full bleed, and scrolling
+// crossfades to the next while the screen stays still, rather than
+// physically scrolling past a stack of panels. The original version of
+// this was built for 5 hardcoded universes and dropped when the catalog
+// grew to 20 (a naive port would need ~2400vh of scroll to reach the
+// last one) — ported here for the full, real 20-universe catalog anyway,
+// per instruction, but simplified from the original's two-column
+// (clickable name list + detail panel) layout to a single bottom-anchored
+// detail block with an index counter, since a permanently-visible list of
+// 20 names doesn't fit the way a list of 5 did.
+function UniverseCrossfadeShowcase({ universes, onExplore }) {
+  const containerRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const reduced = prefersReducedMotion();
+
+  useEffect(() => {
+    if (reduced) return;
+    let rafId = null;
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const el = containerRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const scrollRange = el.offsetHeight - window.innerHeight;
+        const scrolled = -rect.top;
+        const progress = scrollRange > 0 ? Math.max(0, Math.min(1, scrolled / scrollRange)) : 0;
+        setActiveIndex(Math.min(universes.length - 1, Math.floor(progress * universes.length)));
+      });
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [reduced, universes.length]);
+
+  if (reduced) {
+    // No pin/crossfade for motion-sensitive users — the plain grid
+    // immediately below already covers every universe statically.
+    return null;
+  }
+
+  const active = universes[activeIndex];
   const swatches = [
-    { color: universe.colors.darkBg, label: 'Ground' },
-    { color: universe.colors.lightBg, label: 'Paper' },
-    { color: universe.colors.accent, label: 'Accent' },
-    { color: universe.colors.accentSecondary, label: 'Secondary' },
+    { color: active.colors.darkBg, label: 'Ground' },
+    { color: active.colors.lightBg, label: 'Paper' },
+    { color: active.colors.accent, label: 'Accent' },
+    { color: active.colors.accentSecondary, label: 'Secondary' },
   ].filter(s => !!s.color);
 
   return (
-    <div style={{ position: 'relative', minHeight: '90vh', overflow: 'hidden', display: 'flex', background: '#0A0A0A' }}>
-      <img
-        src={image}
-        alt=""
-        loading={index < 2 ? 'eager' : 'lazy'}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', zIndex: 1 }}
-      />
-      <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.8) 100%)' }} />
-      <div style={{ position: 'relative', zIndex: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', minHeight: '90vh' }}>
-        <div style={{ padding: 'clamp(40px, 6vw, 80px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          {universe.isUltra && (
-            <span style={{
-              alignSelf: 'flex-start', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: '#0A0A0A',
-              background: '#DDF762', borderRadius: 999, padding: '4px 10px', fontFamily: PJS, marginBottom: 20,
+    <div ref={containerRef} style={{ position: 'relative', height: `${universes.length * 100}vh` }}>
+      <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', background: '#0A0A0A' }}>
+        {universes.map((u, i) => {
+          const img = u.imageUrl || FALLBACK_IMAGE[u.id];
+          return (
+            <img
+              key={u.id}
+              src={img}
+              alt=""
+              loading={i === 0 ? 'eager' : 'lazy'}
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center',
+                zIndex: 1, opacity: i === activeIndex ? 1 : 0, transition: 'opacity 0.8s ease',
+              }}
+            />
+          );
+        })}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8))' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 'clamp(40px, 6vw, 80px)' }}>
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+            {String(activeIndex + 1).padStart(2, '0')} / {universes.length}
+          </p>
+          <div key={activeIndex} style={{ animation: 'universeCrossfadeIn 0.5s ease' }}>
+            {active.isUltra && (
+              <span style={{
+                display: 'inline-block', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: '#0A0A0A',
+                background: '#DDF762', borderRadius: 999, padding: '4px 10px', fontFamily: PJS, marginBottom: 16,
+              }}>
+                Ultra
+              </span>
+            )}
+            <h2 style={{
+              fontFamily: PJS, fontWeight: 700, fontSize: 'clamp(48px, 8vw, 120px)', color: '#FFFFFF',
+              letterSpacing: '-0.02em', lineHeight: 1, margin: '0 0 16px',
             }}>
-              Ultra
-            </span>
-          )}
-          <h2 style={{
-            fontFamily: PJS, fontWeight: 700, fontSize: 'clamp(40px, 7vw, 88px)', color: '#FFFFFF',
-            letterSpacing: '-0.02em', lineHeight: 1.02, margin: 0,
-          }}>
-            {universe.name}
-          </h2>
-        </div>
-        <div style={{ padding: 'clamp(40px, 6vw, 80px)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-          <p style={{ fontStyle: 'italic', fontSize: 18, color: 'rgba(255,255,255,0.5)', margin: '0 0 16px', fontFamily: PJS }}>
-            {universe.tagline}
-          </p>
-          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, maxWidth: 440, margin: '0 0 32px', fontFamily: PJS }}>
-            {universe.worldStory}
-          </p>
-          <div style={{ display: 'flex', gap: 16, marginBottom: 32 }}>
-            {swatches.map((s, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ width: 40, height: 40, background: s.color, border: s.color === '#FFFFFF' ? '1px solid #444' : 'none' }} />
-                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: PJS, textAlign: 'center', margin: '6px 0 0' }}>
-                  {s.label}
-                </p>
+              {active.name}
+            </h2>
+            <p style={{ fontStyle: 'italic', fontSize: 18, color: 'rgba(255,255,255,0.5)', margin: '0 0 16px', fontFamily: PJS }}>
+              {active.tagline}
+            </p>
+            <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, maxWidth: 480, margin: '0 0 28px', fontFamily: PJS }}>
+              {active.worldStory}
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 16 }}>
+                {swatches.map((s, i) => (
+                  <div key={i} style={{ width: 32, height: 32, background: s.color, border: s.color === '#FFFFFF' ? '1px solid #444' : 'none' }} title={s.label} />
+                ))}
               </div>
-            ))}
+              <button
+                type="button"
+                onClick={onExplore}
+                style={{
+                  padding: '14px 40px', background: 'transparent', color: '#FFFFFF',
+                  border: '1px solid rgba(255,255,255,0.3)', borderRadius: 999,
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: PJS, letterSpacing: '0.02em',
+                }}
+              >
+                Explore {active.name} &rarr;
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={onExplore}
-            style={{
-              alignSelf: 'flex-start', padding: '14px 40px', background: 'transparent',
-              color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 999,
-              fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: PJS, letterSpacing: '0.02em',
-            }}
-          >
-            Explore {universe.name} &rarr;
-          </button>
         </div>
       </div>
+      <style>{`@keyframes universeCrossfadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
     </div>
   );
 }
@@ -211,7 +254,7 @@ const Universes = () => {
   // page's tags behind.
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = 'Universes: 20 aesthetic worlds for your wedding | Openinvite';
+    document.title = 'Openinvite';
     const meta = document.querySelector('meta[name="description"]');
     const prevDescription = meta?.getAttribute('content') ?? null;
     if (meta) {
@@ -443,35 +486,23 @@ const Universes = () => {
         </div>
       </section>
 
-      {/* SECTION 4: UNIVERSE SHOWCASE — full-bleed first, grid second.
-          The first 8 universes get the full-bleed scrolling-panel treatment
-          (the in-app banner-wall energy) — physically stacked, huge photos,
-          no JS scroll-hijacking. The remaining 12 follow in the compact
-          editorial grid below: a grid scales to any count (a 21st universe
-          just adds one more tile) and every tile's full text renders
-          unconditionally, so it stays crawlable. */}
-      <section style={{ background: '#0A0A0A', padding: '100px clamp(24px, 6vw, 80px) 0' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', marginBottom: 16, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-            {UNIVERSE_CATALOG.length} worlds
-          </p>
-          <h2 style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 700, fontSize: 'clamp(36px, 6vw, 64px)', color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.05, margin: '0 0 60px', maxWidth: 800 }}>
-            Every one of them, real.
-          </h2>
-        </div>
-      </section>
-
-      {FULL_BLEED_UNIVERSES.map((u, i) => (
-        <UniverseFullBleedPanel key={u.id} universe={u} index={i} onExplore={() => navigate('/studio/universe')} />
-      ))}
+      {/* SECTION 4: UNIVERSE SHOWCASE — the "Every one of them, real."
+          heading/kicker piece had a visual glitch and is removed entirely,
+          not just fixed. The full-bleed-panels-then-grid layout that
+          replaced the original pinned crossfade is gone too — restored
+          the crossfade: pins on screen, scrolling fades between universes
+          while the screen stays still, for all 20. The plain grid below it
+          stays as-is (it's also the reduced-motion fallback surface, and
+          keeps every universe crawlable/linkable without scroll state). */}
+      <UniverseCrossfadeShowcase universes={UNIVERSE_CATALOG} onExplore={() => navigate('/studio/universe')} />
 
       <section style={{ background: '#0A0A0A', padding: '120px clamp(24px, 6vw, 80px) 120px' }}>
         <div style={{ maxWidth: 1400, margin: '0 auto' }}>
           <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', marginBottom: 60, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-            And {GRID_UNIVERSES.length} more
+            All {UNIVERSE_CATALOG.length} worlds
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
-            {GRID_UNIVERSES.map((u, i) => (
+            {UNIVERSE_CATALOG.map((u, i) => (
               <UniverseTile key={u.id} universe={u} index={i} onExplore={() => navigate('/studio/universe')} />
             ))}
           </div>
@@ -545,167 +576,6 @@ const Universes = () => {
               </p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* SECTION 7: AVA IN THE STUDIO */}
-      <section data-animate style={{
-        background: '#F5F5F3',
-        padding: '100px 80px',
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 60,
-        alignItems: 'center',
-      }}>
-        <div>
-          <p style={{
-            fontSize: 10,
-            fontWeight: 600,
-            color: '#555555',
-            letterSpacing: '0.2em',
-            marginBottom: 20,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Ava's studio
-          </p>
-          <h2 style={{
-            fontFamily: 'Plus Jakarta Sans, sans-serif',
-            fontWeight: 700,
-            fontSize: 'clamp(32px, 5vw, 56px)',
-            color: '#0A0A0A',
-            letterSpacing: '-0.01em',
-            marginBottom: 32,
-          }}>
-            Let Ava build it for you.
-          </h2>
-          <p style={{
-            fontSize: 14,
-            fontWeight: 400,
-            color: '#444444',
-            lineHeight: 1.7,
-            marginBottom: 32,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Ava's Studio guides you through every asset, one at a time. Add a photo, confirm your details, and Ava fills in the rest. Each piece is ready to download in minutes.
-          </p>
-
-          <div>
-            {[
-              'One question at a time. No overwhelm.',
-              'Ava writes descriptions and fills in your details.',
-              'Live preview updates as you go.',
-            ].map((item, i) => (
-              <div key={i} style={{
-                padding: '14px 0',
-                borderBottom: '1px solid #E8E8E5',
-                fontSize: 14,
-                color: '#444444',
-                fontFamily: 'Plus Jakarta Sans',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-              }}>
-                <span style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: '#E03553',
-                  letterSpacing: '0.1em',
-                  fontFamily: 'Plus Jakarta Sans',
-                }}>
-                  0{i + 1}
-                </span>
-                {item}
-              </div>
-            ))}
-          </div>
-
-          <button onClick={() => navigate('/ava')} style={{
-            marginTop: 32,
-            padding: '14px 40px',
-            background: 'linear-gradient(135deg, #E03553, #803D81)',
-            color: '#FFFFFF',
-            border: 'none',
-            borderRadius: 999,
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontFamily: 'Plus Jakarta Sans',
-            letterSpacing: '0.02em',
-          }}>
-            Try Ava's studio →
-          </button>
-        </div>
-
-        <div style={{
-          background: '#0A0A0A',
-          padding: 40,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-        }}>
-          <div style={{
-            width: 48,
-            height: 48,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #E03553, #803D81)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#FFFFFF',
-            fontSize: 20,
-            marginBottom: 16,
-          }}>
-            ✦
-          </div>
-          <p style={{
-            fontSize: 14,
-            fontWeight: 600,
-            color: '#FFFFFF',
-            margin: '0 0 4px',
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Ava
-          </p>
-          <p style={{
-            fontSize: 12,
-            color: 'rgba(255,255,255,0.5)',
-            margin: '0 0 20px',
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Your personal wedding specialist
-          </p>
-          <div style={{
-            background: 'rgba(255,255,255,0.07)',
-            padding: 12,
-            borderRadius: '12px 12px 12px 4px',
-            marginBottom: 12,
-          }}>
-            <p style={{
-              fontSize: 13,
-              color: 'rgba(255,255,255,0.7)',
-              fontStyle: 'italic',
-              margin: 0,
-              fontFamily: 'Plus Jakarta Sans',
-            }}>
-              Which universe have you chosen?
-            </p>
-          </div>
-          <div style={{
-            background: 'linear-gradient(135deg, #E03553, #803D81)',
-            padding: 12,
-            borderRadius: '12px 12px 4px 12px',
-            alignSelf: 'flex-end',
-            maxWidth: '80%',
-          }}>
-            <p style={{
-              fontSize: 13,
-              color: '#FFFFFF',
-              margin: 0,
-              fontFamily: 'Plus Jakarta Sans',
-            }}>
-              Let's start with your Save the Date. Add a photo of you both.
-            </p>
-          </div>
         </div>
       </section>
 

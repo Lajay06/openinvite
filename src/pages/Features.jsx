@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { PHOTOS } from "@/lib/photos";
 import { createPageUrl } from "@/utils";
@@ -47,9 +46,7 @@ const ESSENTIALS = [
 { title: "Smart budget tracker", accent: "#E03553", label: "Budget", desc: "Track everything in one place, from flowers to favours, with real-time visuals and Ava's tips." },
 { title: "Registry tool", accent: "#803D81", label: "Registry", desc: "Connect your dream registry or build your own: stylish, mobile, guest-friendly." },
 { title: "Ultimate planner", accent: "#6B2CAE", label: "Planning", desc: "The all-in-one planning workspace. Every detail, every vendor, every task." },
-{ title: "AI integration", accent: "#DDF762", label: "Ava", desc: "Smart suggestions, personalised insights, and Ava always one step ahead." },
-{ title: "Guest suite", accent: "#C2E5F3", label: "Guests", desc: "From RSVP to seating, manage every guest with zero stress and total control." },
-{ title: "Collaborative playlists", accent: "#E03553", label: "Music", desc: "Curate the ultimate soundtrack: Spotify-connected, guest-friendly, effortlessly organised." }];
+{ title: "AI integration", accent: "#DDF762", label: "Ava", desc: "Smart suggestions, personalised insights, and Ava always one step ahead." }];
 
 
 const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3", "#0A1930", "#E03553"];
@@ -105,9 +102,6 @@ export default function Features() {
 
       {/* ── S4: AVA / ESSENTIALS ─────────────────────────── */}
       <AvaSection essentials={ESSENTIALS} />
-
-      {/* ── S5: INVITATIONS x GUEST SUITE ────────────────── */}
-      <InvitationsSection />
 
       {/* ── S5b: SEATING, REAL PRODUCT VIDEO ─────────────── */}
       <SeatingSection />
@@ -217,7 +211,7 @@ function QuickStartSection() {
   return (
     <section ref={ref} style={{ background: "#0A0A0A", minHeight: "100vh", display: "flex", flexDirection: "row", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-1" style={{ position: "relative", minHeight: 320, overflow: "hidden", flexShrink: 0 }}>
-        <img src={PHOTOS.photoM} alt="Wedding photo" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-100px)", transition: `opacity 0.9s ${EASE}, transform 1s ${EASE}` }} />
+        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779246464/manuel-moreno-DGa0LQ0yDPc-unsplash_nbgivs.jpg" alt="A quiet resort terrace at sunset" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-100px)", transition: `opacity 0.9s ${EASE}, transform 1s ${EASE}` }} />
         <div style={{ position: "absolute", inset: 0, background: "rgba(194,229,243,0.12)", mixBlendMode: "multiply", pointerEvents: "none" }} />
         <div className="lg:hidden" style={{ paddingBottom: "66.66%", position: "relative" }} />
       </div>
@@ -279,145 +273,78 @@ function DashboardSection() {
 function AvaSection({ essentials }) {
   const [ref, curtainUp] = useScrollReveal(0);
   return (
-    <section ref={ref} style={{
-      position: "relative", padding: "0 0 80px",
-      overflow: "hidden",
-      backgroundImage: `url(${PHOTOS.photoO})`,
-      backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "scroll"
-    }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(10,10,10,0.88)", zIndex: 1 }} />
-      {/* Curtain reveal */}
-      <div style={{ position: "absolute", inset: 0, background: "#0A0A0A", zIndex: 10, transform: curtainUp ? "translateY(-100%)" : "translateY(0)", transition: `transform 0.9s ${EASE}`, pointerEvents: "none" }} />
-      <div style={{ position: "relative", zIndex: 3 }}>
-        <div style={{ textAlign: "center", marginBottom: 48, padding: "0 clamp(24px, 4vw, 64px)", opacity: curtainUp ? 1 : 0, transition: `opacity 0.8s ${EASE} 0.15s` }}>
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginBottom: 12, overflow: "visible", hyphens: "none" }}>The essentials</h2>
+    <section ref={ref} style={{ position: "relative", padding: "140px clamp(24px, 6vw, 80px)", background: "#0A0A0A" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 64, opacity: curtainUp ? 1 : 0, transition: `opacity 0.8s ${EASE} 0.15s` }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", color: "#DDF762", fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 16 }}>
+            What's included
+          </p>
+          <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", margin: 0, overflow: "visible", hyphens: "none" }}>The essentials</h2>
         </div>
-        <EssentialsManifesto items={essentials} visible={curtainUp} />
+        <EssentialsGrid items={essentials} visible={curtainUp} />
       </div>
     </section>);
 
 }
 
-// A confident stacked list, not a grid of six bordered cells — no card
-// borders, no even columns. Each essential is one full-width row: a big,
-// oversized sentence-case headline that dominates, a small accent label,
-// and one line of copy. A soft colour wash sweeps in on hover/focus (the
-// row's own accent, at low opacity) instead of a permanent border, so nothing
-// reads as "boxed" the way the old bordered grid did. Description stays
-// visible at rest (not hover-only) so touch devices don't lose it.
-function EssentialsManifesto({ items, visible }) {
-  const [activeIdx, setActiveIdx] = useState(null);
+// A clean, considered grid on a solid background — no photo behind it, no
+// per-row left/right text split (the round-2 layout put the title on the
+// left and the description on the right of the same row, which broke
+// awkwardly at in-between widths). Each cell is one consistent vertical
+// stack: label, title, description, all left-aligned, same hierarchy in
+// every cell.
+function EssentialsGrid({ items, visible }) {
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 clamp(24px, 4vw, 64px)" }}>
-      {items.map((item, i) => {
-        const active = activeIdx === i;
-        return (
-          <div
-            key={item.title}
-            onMouseEnter={() => setActiveIdx(i)}
-            onMouseLeave={() => setActiveIdx(null)}
-            style={{
-              display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap",
-              gap: "8px 32px", padding: "28px 24px",
-              borderTop: i === 0 ? "1px solid rgba(255,255,255,0.1)" : "none",
-              borderBottom: "1px solid rgba(255,255,255,0.1)",
-              background: active ? `${item.accent}1a` : "transparent",
-              transition: `background 0.3s ease, opacity 0.6s ${EASE} ${0.1 + i * 0.06}s, transform 0.6s ${EASE} ${0.1 + i * 0.06}s`,
-              opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "baseline", gap: 24, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: item.accent, fontFamily: "'Plus Jakarta Sans', sans-serif", minWidth: 76 }}>
-                {item.label}
-              </span>
-              <h3 style={{
-                color: "#FFF", fontWeight: 700, fontSize: "clamp(26px, 3.6vw, 46px)", letterSpacing: "-0.02em",
-                lineHeight: 1.1, margin: 0, transition: "color 0.3s ease",
-              }}>
-                {item.title}
-              </h3>
-            </div>
-            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 320, textAlign: "right" }}>
-              {item.desc}
-            </p>
-          </div>
-        );
-      })}
+    <div style={{
+      display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1px",
+      background: "rgba(255,255,255,0.08)",
+    }}>
+      {items.map((item, i) => (
+        <div
+          key={item.title}
+          style={{
+            background: "#0A0A0A", padding: "48px 40px",
+            opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
+            transition: `opacity 0.6s ${EASE} ${0.1 + i * 0.08}s, transform 0.6s ${EASE} ${0.1 + i * 0.08}s`,
+          }}
+        >
+          <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: item.accent, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 20 }}>
+            {item.label}
+          </span>
+          <h3 style={{ color: "#FFF", fontWeight: 700, fontSize: "clamp(24px, 2.2vw, 32px)", letterSpacing: "-0.02em", lineHeight: 1.15, margin: "0 0 14px" }}>
+            {item.title}
+          </h3>
+          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 280 }}>
+            {item.desc}
+          </p>
+        </div>
+      ))}
     </div>
   );
 }
 
 
 
-// Real product screens — this section used to render nothing at all
-// (`return null;`) despite being labelled "Invitations x Guest Suite" in
-// the surrounding comment. Every image/video here is a real capture from
-// the real app (scripts/capture/), not stock photography.
-function InvitationsSection() {
-  const navigate = useNavigate();
-  const [ref, visible] = useScrollReveal(0.2);
+// Shared grid for the seating/budget video showcases — the video column
+// gets more room than the text (1.15fr vs 1fr) so the media reads as the
+// main event, not an equal-weight afterthought. Single column on mobile.
+function FeatureVideoGridStyle() {
   return (
-    <section ref={ref} style={{ background: "#0A0A0A", display: "flex", flexWrap: "wrap" }}>
-      <div style={{
-        flex: "1 1 480px", padding: "100px clamp(32px, 6vw, 80px)",
-        display: "flex", flexDirection: "column", justifyContent: "center",
-        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-        transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
-      }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#DDF762", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Invitations & guest suite
-        </p>
-        <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 24, maxWidth: 480 }}>
-          One invitation. A whole guest experience.
-        </h2>
-        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", lineHeight: 1.7, marginBottom: 32, maxWidth: 460 }}>
-          Send a digital invitation that opens into a full guest suite: accommodation, transport, a live stream for anyone who can't make it, and a Q&A your guests will actually read. Every piece follows the aesthetic universe you choose, automatically.
-        </p>
-        <ApplePillButton onClick={() => navigate('/universes')} light={false}>Explore universes</ApplePillButton>
-      </div>
-      {/* Real captures (scripts/capture/) — an actual guest-site entrance
-          moment and a real personalised RSVP page — not the placeholder
-          /universes/marrakech.jpg this section used before the capture
-          pipeline existed. */}
-      <div style={{ flex: "1 1 480px", minHeight: 420, display: "flex", gap: 12, padding: "24px" }}>
-        <ProductMediaFrame aspectRatio="4/5" maxWidth="none" style={{ flex: "1 1 60%" }}>
-          <img
-            src="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/02-entrance-moment-landing.png"
-            alt="A real Openinvite guest website entrance moment"
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-          />
-        </ProductMediaFrame>
-        <ProductMediaFrame aspectRatio="9/16" maxWidth="none" style={{ flex: "1 1 40%" }}>
-          <img
-            src="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/07-rsvp-mobile.png"
-            alt="A real personalised RSVP page on mobile"
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-          />
-        </ProductMediaFrame>
-      </div>
-    </section>
+    <style>{`
+      .feature-video-grid { display: grid; grid-template-columns: 1fr; gap: 56px; align-items: center; }
+      @media (min-width: 900px) {
+        .feature-video-grid { grid-template-columns: 1.15fr 1fr; gap: 72px; }
+      }
+    `}</style>
   );
 }
 
 function SeatingSection() {
   const [ref, visible] = useScrollReveal(0.2);
   return (
-    <section ref={ref} style={{ background: "#F5F5F3", padding: "120px clamp(32px, 6vw, 80px)" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 48, alignItems: "center" }}>
-        <div style={{
-          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
-        }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#803D81", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Seating
-          </p>
-          <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 24 }}>
-            A real canvas for a real guest list.
-          </h2>
-          <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16 }}>
-            Drag tables into place, assign guests one at a time or let Ava suggest a starting layout. This is an actual recording of the seating tool, not a mockup.
-          </p>
-        </div>
+    <section ref={ref} style={{ background: "#F5F5F3", padding: "160px clamp(32px, 6vw, 80px)" }}>
+      <FeatureVideoGridStyle />
+      <div className="feature-video-grid" style={{ maxWidth: 1320, margin: "0 auto" }}>
         <div style={{
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
           transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
@@ -431,6 +358,20 @@ function SeatingSection() {
             />
           </ProductMediaFrame>
         </div>
+        <div style={{
+          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
+          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
+        }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", color: "#803D81", marginBottom: 20, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Seating
+          </p>
+          <h2 style={{ fontSize: "clamp(32px, 4.2vw, 56px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.08, marginBottom: 28 }}>
+            A real canvas for a real guest list.
+          </h2>
+          <p style={{ color: "#444444", lineHeight: 1.75, fontSize: 18, maxWidth: 420 }}>
+            Drag tables into place, assign guests one at a time or let Ava suggest a starting layout. This is an actual recording of the seating tool, not a mockup.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -439,12 +380,12 @@ function SeatingSection() {
 function BudgetSection() {
   const [ref, visible] = useScrollReveal(0.2);
   return (
-    <section ref={ref} style={{ background: "#FFFFFF", padding: "120px clamp(32px, 6vw, 80px)" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 48, alignItems: "center" }}>
+    <section ref={ref} style={{ background: "#FFFFFF", padding: "160px clamp(32px, 6vw, 80px)" }}>
+      <FeatureVideoGridStyle />
+      <div className="feature-video-grid" style={{ maxWidth: 1320, margin: "0 auto" }}>
         <div style={{
-          order: 2,
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
+          transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
         }}>
           <ProductMediaFrame aspectRatio="16/10" maxWidth="none" dark={false}>
             <ProductVideo
@@ -456,14 +397,13 @@ function BudgetSection() {
           </ProductMediaFrame>
         </div>
         <div style={{
-          order: 1,
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-          transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
+          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#E03553", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", color: "#E03553", marginBottom: 20, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Budget
           </p>
-          <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 24 }}>
+          <h2 style={{ fontSize: "clamp(32px, 4.2vw, 56px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.08, marginBottom: 28 }}>
             Every dollar, in real time.
           </h2>
           <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16 }}>

@@ -119,3 +119,29 @@ universe" is the point, not a violation).
 automatically instead of relying solely on this hand-maintained log —
 see that file's header comment for what it catches and why the manifest
 alone missed the FeatureGuests.jsx repeated-photo bug.
+
+## Round 3 (owner feedback pass)
+
+| public_id | Folder | Used on |
+|---|---|---|
+| `manuel-moreno-DGa0LQ0yDPc-unsplash_nbgivs` | Universe | Features.jsx — Quick Start section (replaces the cocktail-glass photo, which was also FeatureBudget.jsx's photo — a real duplicate reached through `PHOTOS.photoM` that the URL-literal-only audit had missed) |
+
+Freed up rather than picked fresh: previously the Aman universe's stock
+photo on Universes.jsx, orphaned once that page switched to local
+`/universes/*.jpg` canonical photography. Confirmed unused anywhere else
+in `src/` before reassigning. `photoM` and `photoO` removed from
+`src/lib/photos.js` (both dead); `TryItSection.jsx` deleted (dead code —
+not imported anywhere — rather than left as an unrendered duplicate of
+FeatureGuests.jsx's photo). `scripts/audit-image-repeats.mjs` updated to
+resolve `PHOTOS.key` references against `photos.js`, so a dictionary-
+reached duplicate like this one won't need a human to catch it next time.
+
+Home's new UniverseTeaserSection reuses 4 universes' own canonical
+`imageUrl` (Tulum, Kyoto, Capri, Paris — same UNIVERSE_CATALOG entries
+Universes.jsx renders) as a small preview row. Same precedent as the
+Kyoto/Marrakech reuse above: the app's own per-universe photography,
+deliberately shown again as "here's a taste of the range," not a
+no-repeat violation. Not caught by `audit-image-repeats.mjs` (the URLs
+are resolved at runtime from `UNIVERSE_CATALOG`, not literal strings in
+source) — a known limitation, acceptable here since the reuse is
+intentional and documented.

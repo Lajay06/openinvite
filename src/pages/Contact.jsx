@@ -51,12 +51,22 @@ export default function Contact() {
     <div className="min-h-screen bg-white font-sans">
       <PublicNav />
 
-      {/* BANNER */}
-      <section style={{ position: "relative", overflow: "hidden", padding: "80px clamp(32px, 6vw, 80px)", textAlign: "center", borderBottom: "1px solid #E0E0DC" }}>
-        <img src="https://static.wixstatic.com/media/d2df22_5f864fb8dc374942930cb254fc220681~mv2.jpg" alt="Contact banner" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
-        <div style={{ position: "absolute", inset: 0, background: "rgba(245,245,243,0.88)" }} />
-        <p style={{ fontSize: 11, fontWeight: 600, color: "#E03553", letterSpacing: "0.15em", marginBottom: 16, position: "relative", zIndex: 2 }}>Get in touch</p>
-        <h1 style={{ fontSize: 48, fontWeight: 700, color: "#0A0A0A", lineHeight: 1.1, hyphens: "none", maxWidth: 600, margin: "0 auto", position: "relative", zIndex: 2 }}>
+      {/* BANNER — full-width image, no text overlaid on it. The heading
+          used to sit on top of the image behind a near-opaque white wash
+          (rgba(245,245,243,0.88)), which mostly hid the photo anyway. Now
+          the banner is just the photo, and the heading is normal page
+          content underneath it. */}
+      <section style={{ width: "100%", height: "clamp(280px, 40vh, 480px)", overflow: "hidden" }}>
+        <img
+          src="https://static.wixstatic.com/media/d2df22_5f864fb8dc374942930cb254fc220681~mv2.jpg"
+          alt="Openinvite"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
+        />
+      </section>
+
+      <section style={{ padding: "64px clamp(32px, 6vw, 80px) 0", textAlign: "center", borderBottom: "1px solid #E0E0DC", paddingBottom: 64 }}>
+        <p style={{ fontSize: 11, fontWeight: 600, color: "#E03553", letterSpacing: "0.15em", marginBottom: 16 }}>Get in touch</p>
+        <h1 style={{ fontSize: 48, fontWeight: 700, color: "#0A0A0A", lineHeight: 1.1, hyphens: "none", maxWidth: 600, margin: "0 auto" }}>
           Let's plan something beautiful.
         </h1>
       </section>
@@ -217,6 +227,8 @@ export default function Contact() {
           <div style={{ position: "absolute", bottom: 40, right: 40, fontSize: 200, color: "#EEEEEE", lineHeight: 1, zIndex: 0 }}>✦</div>
         </div>
       </div>
+
+      <PublicFooter />
     </div>
   );
 }

@@ -27,6 +27,13 @@
  *    iteration paints the same fixed image regardless of what's being
  *    mapped over.
  *
+ * Check 1 also resolves `PHOTOS.key` references against src/lib/photos.js
+ * — round 3 found a real duplicate (Features.jsx's Quick Start photo and
+ * FeatureBudget.jsx's cocktail-glass photo were the exact same image) that
+ * this script missed on its first version, because it only matched literal
+ * URL strings and `PHOTOS.photoM` isn't one. Without this resolution step,
+ * any duplicate reached through the photo dictionary is invisible again.
+ *
  * Usage: npm run audit:images
  * Exits non-zero if either check finds something, so it can gate CI later.
  */
@@ -117,6 +124,16 @@ function walk(relPath, out) {
 const files = [];
 for (const t of TARGET_FILES) walk(t, files);
 
+// Resolve src/lib/photos.js's PHOTOS dictionary so `PHOTOS.photoX` references
+// count as their actual URL for duplicate-checking — see header comment.
+const PHOTOS_MAP = new Map();
+try {
+  const photosSrc = readFileSync(join(ROOT, 'src/lib/photos.js'), 'utf8');
+  const keyRe = /(\w+):\s*["'`](https?:\/\/[^"'`]+)["'`]/g;
+  let km;
+  while ((km = keyRe.exec(photosSrc))) PHOTOS_MAP.set(km[1], km[2]);
+} catch { /* photos.js missing or moved — resolution just skipped */ }
+
 const urlLocations = new Map(); // url -> [{file, line}]
 const mapWarnings = [];
 
@@ -131,6 +148,15 @@ for (const relFile of files) {
     const re = new RegExp(IMAGE_URL_RE);
     while ((m = re.exec(line))) {
       const url = m[0];
+      if (!urlLocations.has(url)) urlLocations.set(url, []);
+      urlLocations.get(url).push({ file: relFile, line: i + 1 });
+    }
+    // PHOTOS.key references — resolve to the actual URL, same tracking.
+    const photosRe = /PHOTOS\.(\w+)/g;
+    let pm;
+    while ((pm = photosRe.exec(line))) {
+      const url = PHOTOS_MAP.get(pm[1]);
+      if (!url) continue;
       if (!urlLocations.has(url)) urlLocations.set(url, []);
       urlLocations.get(url).push({ file: relFile, line: i + 1 });
     }

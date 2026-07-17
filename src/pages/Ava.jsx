@@ -42,11 +42,11 @@ function useCountUp(target, inView, duration = 1400) {
 
 // ── Ava features ──────────────────────────────────────────────
 const avaFeatures = [
-{ value: "autofill", label: "Auto-Fill Website", description: "Ava reads your planning details and builds your entire wedding website in seconds: venue, story, FAQ, travel, all populated beautifully.", detail: "Just answer a few questions during setup and Ava writes your welcome message, love story, event details and FAQ automatically. One click, fully personalised.", icon: "✦", color: "#E03553", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779218328/DTS_PLAYER_TWO_JELLY_LUISE_Photos_ID13458_a53qq3.jpg", bgPosition: "center center" },
-{ value: "budget", label: "Smart Budget Tips", description: "Ava monitors your spending patterns and proactively suggests where you can save, without compromising what matters most.", detail: "When your florals go over budget, Ava suggests reallocation options. When a vendor quote comes in high, Ava benchmarks it against typical costs for your area.", icon: "◈", color: "#803D81", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185602/DTS_Remote_Studio_Tino_Renato_Photos_ID3726_vgcgmv.jpg", bgPosition: "center center" },
-{ value: "checklist", label: "Personalised Checklist", description: "Ava generates a custom wedding checklist based on your date, venue, style and priorities, not a generic template.", detail: "A beach elopement 3 months away needs different tasks than a 200-person ballroom wedding 12 months out. Ava knows the difference and plans accordingly.", icon: "⬡", color: "#6B2CAE", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779240971/kiet-trinh-L5gTFp1iGHE-unsplash_lpjp5z.jpg", bgPosition: "center center" },
-{ value: "guests", label: "Guest Intelligence", description: "Ava analyses your guest list to surface insights (dietary clusters, seating conflicts, RSVP patterns) and makes smart suggestions.", detail: "Ava spots that 40% of your guests are vegetarian before you finalise the menu, or flags that two guests who should not be seated near each other are assigned to adjacent tables.", icon: "◇", color: "#DDF762", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779240973/DTS_Remote_Studio_Tino_Renato_Photos_ID3722_copy_qbcgts.jpg", bgPosition: "center center" },
-{ value: "vows", label: "Vow Writing Assistant", description: "Stuck on your vows? Ava helps you find the right words: prompting, suggesting, and refining until they feel completely yours.", detail: "Tell Ava your story, your partner's qualities, and the tone you want (funny, heartfelt, poetic). Ava drafts something real: not a template, a starting point that sounds like you.", icon: "✧", color: "#C2E5F3", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185622/alok-verma-ARLh7m5S4VA-unsplash_eslg13.jpg", bgPosition: "center center" }];
+{ value: "briefing", label: "Daily update briefings", description: "Ava sends a short briefing each day: what's coming up, a few smart suggestions, and the little details worth remembering.", detail: "Your countdown, this week's priorities, and quick notes on budget and vendors, all written just for you, every morning.", color: "#E03553", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779218328/DTS_PLAYER_TWO_JELLY_LUISE_Photos_ID13458_a53qq3.jpg", bgPosition: "center center" },
+{ value: "budget", label: "Smart Budget Tips", description: "Ava monitors your spending patterns and proactively suggests where you can save, without compromising what matters most.", detail: "When your florals go over budget, Ava suggests reallocation options. When a vendor quote comes in high, Ava benchmarks it against typical costs for your area.", color: "#803D81", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185602/DTS_Remote_Studio_Tino_Renato_Photos_ID3726_vgcgmv.jpg", bgPosition: "center center" },
+{ value: "checklist", label: "Personalised Checklist", description: "Ava generates a custom wedding checklist based on your date, venue, style and priorities, not a generic template.", detail: "A beach elopement 3 months away needs different tasks than a 200-person ballroom wedding 12 months out. Ava knows the difference and plans accordingly.", color: "#6B2CAE", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779240971/kiet-trinh-L5gTFp1iGHE-unsplash_lpjp5z.jpg", bgPosition: "center center" },
+{ value: "guests", label: "Guest Intelligence", description: "Ava analyses your guest list to surface insights (dietary clusters, seating conflicts, RSVP patterns) and makes smart suggestions.", detail: "Ava spots that 40% of your guests are vegetarian before you finalise the menu, or flags that two guests who should not be seated near each other are assigned to adjacent tables.", color: "#DDF762", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779240973/DTS_Remote_Studio_Tino_Renato_Photos_ID3722_copy_qbcgts.jpg", bgPosition: "center center" },
+{ value: "vows", label: "Vow Writing Assistant", description: "Stuck on your vows? Ava helps you find the right words: prompting, suggesting, and refining until they feel completely yours.", detail: "Tell Ava your story, your partner's qualities, and the tone you want (funny, heartfelt, poetic). Ava drafts something real: not a template, a starting point that sounds like you.", color: "#C2E5F3", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185622/alok-verma-ARLh7m5S4VA-unsplash_eslg13.jpg", bgPosition: "center center" }];
 
 
 const SLIDE_DURATION = 6000;
@@ -113,7 +113,6 @@ function AvaCarousel({ inView }) {
         
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)" }} />
         <div style={{ position: "absolute", bottom: 40, left: 48, maxWidth: 600 }}>
-          <div style={{ fontSize: 32, color: feature.color, marginBottom: 8 }}>{feature.icon}</div>
           <h3 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 700, color: "#fff", margin: "0 0 12px", letterSpacing: "-0.02em", animation: "fadeIn 0.5s ease forwards" }}>{feature.label}</h3>
           <p style={{ fontSize: 16, color: "#FFFFFF", lineHeight: 1.6, maxWidth: 500, margin: 0, animation: "fadeIn 0.5s 0.1s ease both" }}>{feature.detail}</p>
         </div>
@@ -360,32 +359,19 @@ export default function AvaPage() {
       </section>
 
       {/* ── AVA, ACTUALLY ANSWERING ──────────────────────── */}
-      <section style={{ background: "#0A0A0A", padding: "120px clamp(32px, 6vw, 80px)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#DDF762", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
-            Real conversations
-          </p>
-          <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", lineHeight: 1.1, textAlign: "center", margin: "0 auto 48px", maxWidth: 640 }}>
+      <section style={{ background: "#0A0A0A", padding: "140px clamp(32px, 6vw, 80px)" }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+          <h2 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", lineHeight: 1.1, textAlign: "center", margin: "0 auto 56px", maxWidth: 700 }}>
             Ask Ava anything. Watch her actually answer.
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: 24 }}>
-            <ProductMediaFrame aspectRatio="16/10" maxWidth="none">
-              <ProductVideo
-                mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-06-ava-wedding-date.mp4"
-                webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-06-ava-wedding-date.webm"
-                poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-06-ava-wedding-date-poster.jpg"
-                alt="Screen recording of asking Ava a question and watching her real, streamed answer"
-              />
-            </ProductMediaFrame>
-            <ProductMediaFrame aspectRatio="16/10" maxWidth="none">
-              <ProductVideo
-                mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-07-ava-guest-count.mp4"
-                webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-07-ava-guest-count.webm"
-                poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-07-ava-guest-count-poster.jpg"
-                alt="Screen recording of asking Ava a second question and watching her real, streamed answer"
-              />
-            </ProductMediaFrame>
-          </div>
+          <ProductMediaFrame aspectRatio="16/10" maxWidth="none">
+            <ProductVideo
+              mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-06-ava-wedding-date.mp4"
+              webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-06-ava-wedding-date.webm"
+              poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-06-ava-wedding-date-poster.jpg"
+              alt="Screen recording of asking Ava a question and watching her real, streamed answer"
+            />
+          </ProductMediaFrame>
         </div>
       </section>
 
