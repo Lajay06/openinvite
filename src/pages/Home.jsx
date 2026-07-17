@@ -5,12 +5,8 @@ import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import HeroCollage from "@/components/home/HeroCollage";
 import ValuePropSection from "@/components/home/ValuePropSection";
-import FeatureInvitations from "@/components/home/FeatureInvitations";
 import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
 import PriceHonestySection from "@/components/home/PriceHonestySection";
-
-import LightSectionReveal from "@/components/home/LightSectionReveal";
-import HowItWorksSection from "@/components/home/HowItWorksSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
 import ScrollExpandMedia from "@/components/shared/ScrollExpandMedia";
@@ -55,22 +51,19 @@ export default function Home() {
         <HorizontalScrollSection />
       </div>
 
-      {/* 5. LIGHT SECTION CURTAIN REVEAL — wipes from black to white, then
-          reveals the feature blocks. Previously rendered with no children
-          (a separate plain white div held FeatureInvitations right after it),
-          so the curtain wipe had nothing to reveal and collapsed to a bare
-          sliver between the black scroll section and the white blocks below
-          — the "dead gap". Fixed by making it the actual wrapper. */}
-      <LightSectionReveal>
-        <div style={{ background: "#FFFFFF" }}>
-          <div id="section-invitations"><FeatureInvitations onCTA={handleCTA} /></div>
-        </div>
-      </LightSectionReveal>
-
-      {/* 6. HOW IT WORKS */}
-      <HowItWorksSection />
-
-      {/* 7. AVA GRADIENT BANNER + SPOTLIGHT */}
+      {/* 5. AVA GRADIENT BANNER + SPOTLIGHT — the black carousel now runs
+          straight into the gradient banner. The "Invitations & guest suite"
+          moment and the "Three steps" how-it-works block that used to sit
+          here are both gone: invitations/guest-suite now lives exclusively
+          on the Universes page (which gets the full treatment), and
+          "Three steps" was generic filler with nothing distinctive to say.
+          Removing them also killed the actual root cause of the "random
+          black dead space" complaint — this page was stacking five
+          consecutive scroll-jacked/sticky sections back to back (this
+          video moment, the price-honesty reveal, the carousel, then two
+          more inside the now-deleted Invitations section), and each one's
+          release/re-engage handoff briefly showed a static, empty black
+          frame. Fewer sticky sections, no dead handoffs. */}
       <div className="min-h-[140px] md:min-h-[180px]" style={{
         background: "linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)",
         display: "flex", alignItems: "center", justifyContent: "center",
