@@ -195,10 +195,16 @@ export default function Contact() {
             <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" alt="openinvite" style={{ height: 32, marginBottom: 24 }} />
             <div style={{ borderBottom: "1px solid #E0E0DC", marginBottom: 32 }} />
 
-            <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em", marginBottom: 6 }}>Email</p>
-              <p style={{ fontSize: 16, color: "#0A0A0A", fontWeight: 500 }}>hello@openinvite.com.au</p>
-            </div>
+            {[
+              { label: "Email", value: "hello@openinvite.com.au" },
+              { label: "Support", value: "customercare@openinvite.com.au" },
+              { label: "Response time", value: "Within 24 hours" },
+            ].map((item, i) => (
+              <div key={i} style={{ marginBottom: 24 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em", marginBottom: 6 }}>{item.label}</p>
+                <p style={{ fontSize: 16, color: "#0A0A0A", fontWeight: 500 }}>{item.value}</p>
+              </div>
+            ))}
 
             <div style={{ borderBottom: "1px solid #E0E0DC", marginBottom: 32 }} />
 
