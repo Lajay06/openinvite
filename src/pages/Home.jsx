@@ -6,7 +6,7 @@ import ScrollProgress from "@/components/motion/ScrollProgress";
 import HeroCollage from "@/components/home/HeroCollage";
 import ValuePropSection from "@/components/home/ValuePropSection";
 import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
-import PriceHonestySection from "@/components/home/PriceHonestySection";
+import WhyUsSection from "@/components/home/WhyUsSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
 import ScrollExpandMedia from "@/components/shared/ScrollExpandMedia";
@@ -43,8 +43,8 @@ export default function Home() {
         scrollToExpand="Scroll to explore"
       />
 
-      {/* 3. "So, why us?" — the honest price comparison */}
-      <PriceHonestySection />
+      {/* 3. "So, why us?" — three emotional moments, not a feature list */}
+      <WhyUsSection />
 
       {/* 4. HORIZONTAL SCROLL */}
       <div id="section-features" style={{ background: "#0A0A0A" }}>
