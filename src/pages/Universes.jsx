@@ -304,9 +304,13 @@ const Universes = () => {
           Every universe includes all 10 pieces, personalised with your names, date and venue. Edit each one in the asset editor or let Ava fill them for you.
         </p>
 
-        <div style={{
+        <style>{`
+          .assets-grid { grid-template-columns: repeat(2, 1fr); }
+          @media (min-width: 640px) { .assets-grid { grid-template-columns: repeat(3, 1fr); } }
+          @media (min-width: 900px) { .assets-grid { grid-template-columns: repeat(5, 1fr); } }
+        `}</style>
+        <div className="assets-grid" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '1px',
           background: 'rgba(255,255,255,0.06)',
           padding: '1px',
