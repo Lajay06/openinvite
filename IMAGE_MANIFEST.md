@@ -108,6 +108,7 @@ cohesion-sweep cleanup pass.
 | public_id | Folder | Used on |
 |---|---|---|
 | `/universes/kyoto.jpg` (local, not Cloudinary) | — | Home — ScrollExpandMedia background behind the universe-choosing video moment |
+| `DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID3470_knfncz` | Texture | Home — features carousel, card 6 (Digital invitations, backfilled after removing the Universes card — see below) |
 
 Not part of the no-repeat pool — same canonical per-universe local asset
 already used on the Universes.jsx grid, reused deliberately here (same

@@ -60,10 +60,10 @@ const CARDS = [
 },
 {
   num: "06",
-  title: "Universes",
-  desc: "Choose your aesthetic universe, and every asset (invitation, website, thank you note) follows it automatically.",
-  bullets: ["20 aesthetic universes", "Every asset restyled instantly", "12 exclusive to Ultra"],
-  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779246457/tim-oun-n4Qtylea9-M-unsplash_elfx1q.jpg"
+  title: "Digital invitations",
+  desc: "Send a real invitation, not a PDF attachment: a full digital experience that opens into your whole guest suite.",
+  bullets: ["Send by email, text or link", "Opens into your full guest suite", "Follows your chosen universe automatically"],
+  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779218329/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID3470_knfncz.jpg"
 },
 {
   num: "07",
