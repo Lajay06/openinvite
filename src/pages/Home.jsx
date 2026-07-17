@@ -89,46 +89,53 @@ export default function Home() {
 
 }
 
-// ── See Pricing ghost button ─────────────────────────────────────
-function SeePricingButton() {
-  const [hovered, setHovered] = React.useState(false);
-  return (
-    <button
-      type="button"
-      onClick={() => { window.location.href = '/Pricing'; }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "inline-flex", alignItems: "center", justifyContent: "center",
-        padding: "12px 24px", borderRadius: 999,
-        border: "1px solid #FFFFFF",
-        background: hovered ? "#FFFFFF" : "transparent",
-        color: hovered ? "#0A0A0A" : "#FFFFFF",
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
-        fontSize: "clamp(13px, 1.2vw, 15px)", fontWeight: 600,
-        cursor: "pointer",
-        transition: "background 0.2s ease, color 0.2s ease",
-      }}
-    >
-      See pricing
-    </button>
-  );
-}
-
 // ── Pricing ───────────────────────────────────────────────────────
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// A tier chip, not a full pricing table — full comparison lives on /Pricing.
+// Honest about there being two tiers instead of implying $79 unlocks
+// everything (Ultra's website builder, invitations and guest suite are
+// $149, per Pricing.jsx's own PRO_FEATURES/ULTRA_EXTRAS split).
+function TierChip({ name, price, blurb, accent }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <a
+      href="/Pricing"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
+        gap: 4, padding: "24px 40px", borderRadius: 999,
+        border: `1px solid ${hovered ? accent : "rgba(255,255,255,0.15)"}`,
+        textDecoration: "none",
+        transition: "border-color 0.2s ease, transform 0.2s ease",
+        transform: hovered ? "translateY(-2px)" : "none",
+        minWidth: 200,
+      }}
+    >
+      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: accent, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        {name}
+      </span>
+      <span style={{ fontSize: "clamp(28px, 3vw, 36px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        {price}
+      </span>
+      <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        {blurb}
+      </span>
+    </a>
+  );
+}
+
 function PricingSection({ onCTA }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
-  const [spring, setSpring] = useState(false);
   const reduced = prefersReduced();
 
   useEffect(() => {
-    if (reduced) { setVisible(true); setSpring(true); return; }
+    if (reduced) { setVisible(true); return; }
     const obs = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
       { threshold: 0.2 }
@@ -137,45 +144,44 @@ function PricingSection({ onCTA }) {
     return () => obs.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (visible && !spring) setTimeout(() => setSpring(true), 80);
-  }, [visible]);
-
   return (
-    <section ref={ref} style={{ background: "#0A0A0A", padding: "clamp(80px, 10vw, 160px)" }}>
-      <div style={{ opacity: visible ? 1 : 0, transition: reduced ? "none" : `opacity 0.6s ${EASE}`, display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "0 12px" }}>
-        <span style={{ fontSize: "clamp(40px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05, color: "#FFFFFF", whiteSpace: "nowrap" }}>
-          Go all in:{" "}
-        </span>
-        <span style={{
-          fontSize: "clamp(40px, 5vw, 64px)",
-          fontWeight: 700,
-          letterSpacing: "-0.03em",
-          lineHeight: 1.05,
-          color: "#DDF762",
-          display: "inline-block",
-          transform: reduced ? "scale(1)" : spring ? "scale(1)" : visible ? "scale(1.2)" : "scale(0)",
-          transition: reduced ? "none" : spring ? `transform 0.5s ${EASE}` : `transform 0.4s ease`,
-        }}>
-          $79
-        </span>
-      </div>
+    <section ref={ref} style={{ background: "#0A0A0A", padding: "clamp(100px, 12vw, 180px) clamp(24px, 6vw, 80px)", textAlign: "center" }}>
       <p style={{
-        maxWidth: 480,
-        marginTop: "1.5rem",
-        marginBottom: "2.5rem",
-        color: "#FFFFFF",
-        fontSize: 18,
-        lineHeight: 1.6,
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(20px)",
+        fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", color: "#DDF762",
+        fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 24,
+        opacity: visible ? 1 : 0, transition: reduced ? "none" : `opacity 0.6s ${EASE}`,
+      }}>
+        One-time. Lifetime access.
+      </p>
+      <h2 style={{
+        fontSize: "clamp(40px, 6vw, 76px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05,
+        color: "#FFFFFF", margin: "0 0 20px", fontFamily: "'Plus Jakarta Sans', sans-serif",
+        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)",
+        transition: reduced ? "none" : `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
+      }}>
+        From <span style={{ color: "#DDF762" }}>$79</span>.
+      </h2>
+      <p style={{
+        maxWidth: 480, margin: "0 auto 48px", color: "rgba(255,255,255,0.6)", fontSize: 18, lineHeight: 1.6,
+        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
         transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
       }}>
-        Unlock the full experience. One-time payment, lifetime access. Everything you need. Nothing you don't.
+        Two plans, no subscriptions, ever. Pick the one that fits.
       </p>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)", transition: reduced ? "none" : `opacity 0.6s ${EASE} 0.1s, transform 0.6s ${EASE} 0.1s` }}>
+      <div style={{
+        display: "flex", gap: 20, flexWrap: "wrap", justifyContent: "center", marginBottom: 48,
+        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
+        transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.15s, transform 0.7s ${EASE} 0.15s`,
+      }}>
+        <TierChip name="Pro" price="$79" blurb="Planning, guests, budget, Ava" accent="#E03553" />
+        <TierChip name="Ultra" price="$149" blurb="Everything, plus universes & website" accent="#DDF762" />
+      </div>
+      <div style={{
+        display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", justifyContent: "center",
+        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
+        transition: reduced ? "none" : `opacity 0.6s ${EASE} 0.2s, transform 0.6s ${EASE} 0.2s`,
+      }}>
         <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
-        <SeePricingButton />
       </div>
     </section>
   );
