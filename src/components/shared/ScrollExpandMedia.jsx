@@ -1,42 +1,35 @@
 /**
  * src/components/shared/ScrollExpandMedia.jsx
  *
- * Ported from the owner's Next.js/TypeScript reference component (a small
- * video that expands to full-bleed as the page scrolls). Two adaptations
- * from the original, both deliberate:
+ * Pinned scroll-scrub: the video's own playback position is driven
+ * directly by scroll progress (video.currentTime = progress * duration),
+ * not an independent autoplaying clock. Round 2's version expanded the
+ * media box from small to full-bleed as you scrolled, but let the video
+ * play on its own timeline — scroll fast and you'd miss half of it, scroll
+ * slow and it'd finish early and just loop. Now scroll IS the timeline:
+ * scrub down to play forward, scrub up to play backward, stop scrolling
+ * and the video stops exactly where you left it. The box still expands
+ * small-to-full-bleed on the same progress value, so "the window-
+ * expansion component" identity stays intact — expansion and playback
+ * are now the same scroll-driven number instead of two independent ones.
  *
- * 1. Platform: no next/image, no 'use client', plain JSX (this app is
- *    Vite + React Router, not Next.js).
+ * Sticky + tall-wrapper (unchanged from round 2, still deliberate): a
+ * tall wrapper with a `position: sticky` inner panel. The section pins
+ * centred in the viewport for the wrapper's full scrollable range, and
+ * only releases — continuing to the next section — once that range (and
+ * so the scrub) is exhausted. No JS scroll-hijacking/preventDefault, so
+ * it stays smooth in both directions and works with trackpad momentum,
+ * keyboard, and screen readers.
  *
- * 2. Pinning mechanism: the reference implementation attaches window-level
- *    wheel/touch listeners on mount and force-scrolls to (0,0) the whole
- *    time the media isn't fully expanded — that only behaves correctly
- *    when the component IS the very first thing on the page (it hijacks
- *    ALL scrolling from load, regardless of where in the DOM it sits).
- *    This instance sits after the red hero section, not at the top, so
- *    that approach would fight the sections above it — the page would be
- *    unscrollable from the moment it loads while a component below the
- *    fold silently ate every scroll event. Replaced with the standard
- *    sticky-scroll-progress pin instead: a tall wrapper + a `position:
- *    sticky` inner panel, with expansion progress derived from the
- *    wrapper's own scroll position. Same expand-as-you-scroll outcome,
- *    scoped to wherever this component actually sits, and it never calls
- *    preventDefault on real scroll input — works with trackpad momentum,
- *    keyboard, and screen readers, which the wheel/touch-hijack approach
- *    doesn't.
- *
- * The reference component's youtube-iframe media branch was dropped —
- * this app has no youtube sources. The video path renders through
- * ProductMediaFrame/ProductVideo (this site's shared real-media
- * treatment) instead of a raw <video>, so it gets the same 14px frame
- * and Safari autoplay fix as every other product recording on the site.
+ * Ported from the owner's Next.js/TypeScript reference component; see
+ * git history on this file for the fuller platform-port rationale
+ * (no next/image, no 'use client', plain JSX).
  */
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
-import ProductVideo from "@/components/shared/ProductVideo";
 
-const WRAPPER_HEIGHT_VH = 250; // scroll distance the expansion is spread across
+const WRAPPER_HEIGHT_VH = 250; // scroll distance the expansion+scrub is spread across
 const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -56,6 +49,8 @@ export default function ScrollExpandMedia({
   const [showContent, setShowContent] = useState(reduced);
   const [isMobileState, setIsMobileState] = useState(false);
   const wrapperRef = useRef(null);
+  const videoRef = useRef(null);
+  const progressRef = useRef(reduced ? 1 : 0); // scrub needs the latest value without waiting on React state
 
   useEffect(() => {
     const checkIfMobile = () => setIsMobileState(window.innerWidth < 768);
@@ -64,8 +59,17 @@ export default function ScrollExpandMedia({
     return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
 
+  // Scrub the video to match: only ever seeks, never plays on its own —
+  // scroll is the only thing that advances the timeline.
+  const scrubToProgress = (progress) => {
+    const v = videoRef.current;
+    if (!v || !v.duration || Number.isNaN(v.duration)) return;
+    const target = progress * v.duration;
+    if (Math.abs(v.currentTime - target) > 0.01) v.currentTime = target;
+  };
+
   useEffect(() => {
-    if (reduced) return; // skip the scroll-linked pin entirely for motion-sensitive users
+    if (reduced) return; // skip the scroll-linked pin/scrub entirely for motion-sensitive users
     const handleScroll = () => {
       const el = wrapperRef.current;
       if (!el) return;
@@ -73,13 +77,19 @@ export default function ScrollExpandMedia({
       const total = rect.height - window.innerHeight;
       const scrolled = -rect.top;
       const progress = total > 0 ? Math.min(Math.max(scrolled / total, 0), 1) : 0;
+      progressRef.current = progress;
       setScrollProgress(progress);
       setShowContent(progress > 0.85);
+      scrubToProgress(progress);
     };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [reduced]);
+
+  // Video loads metadata asynchronously — as soon as duration is known,
+  // scrub to wherever scroll currently is instead of showing frame 0.
+  const handleLoadedMetadata = () => scrubToProgress(progressRef.current);
 
   const mediaWidth = 300 + scrollProgress * (isMobileState ? 650 : 1250);
   const mediaHeight = 400 + scrollProgress * (isMobileState ? 200 : 400);
@@ -104,7 +114,21 @@ export default function ScrollExpandMedia({
         style={{ width: "100%", height: "100%", maxWidth: "none", margin: 0, aspectRatio: "auto" }}
       >
         {mediaType === "video" ? (
-          <ProductVideo mp4={mediaSrc} webm={webmSrc} poster={posterSrc} alt={title || "Product video"} />
+          <video
+            ref={videoRef}
+            muted
+            playsInline
+            preload="auto"
+            poster={posterSrc}
+            aria-label={title || "Product video"}
+            onLoadedMetadata={handleLoadedMetadata}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          >
+            {/* mp4 first deliberately — Safari picks the first source it can
+                decode; see ProductVideo.jsx for the fuller rationale. */}
+            <source src={mediaSrc} type="video/mp4" />
+            {webmSrc && <source src={webmSrc} type="video/webm" />}
+          </video>
         ) : (
           <img src={mediaSrc} alt={title || "Media"} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         )}

@@ -211,7 +211,7 @@ const Universes = () => {
   // page's tags behind.
   useEffect(() => {
     const prevTitle = document.title;
-    document.title = 'Universes: 20 aesthetic worlds for your wedding | Openinvite';
+    document.title = 'Openinvite';
     const meta = document.querySelector('meta[name="description"]');
     const prevDescription = meta?.getAttribute('content') ?? null;
     if (meta) {
