@@ -135,3 +135,13 @@ not imported anywhere — rather than left as an unrendered duplicate of
 FeatureGuests.jsx's photo). `scripts/audit-image-repeats.mjs` updated to
 resolve `PHOTOS.key` references against `photos.js`, so a dictionary-
 reached duplicate like this one won't need a human to catch it next time.
+
+Home's new UniverseTeaserSection reuses 4 universes' own canonical
+`imageUrl` (Tulum, Kyoto, Capri, Paris — same UNIVERSE_CATALOG entries
+Universes.jsx renders) as a small preview row. Same precedent as the
+Kyoto/Marrakech reuse above: the app's own per-universe photography,
+deliberately shown again as "here's a taste of the range," not a
+no-repeat violation. Not caught by `audit-image-repeats.mjs` (the URLs
+are resolved at runtime from `UNIVERSE_CATALOG`, not literal strings in
+source) — a known limitation, acceptable here since the reuse is
+intentional and documented.
