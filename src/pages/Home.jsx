@@ -13,8 +13,7 @@ import LightSectionReveal from "@/components/home/LightSectionReveal";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
-import ProductVideo from "@/components/shared/ProductVideo";
-import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
+import ScrollExpandMedia from "@/components/shared/ScrollExpandMedia";
 
 export default function Home() {
   const handleCTA = () => {
@@ -31,38 +30,22 @@ export default function Home() {
         <HeroCollage onCTA={handleCTA} />
       </div>
 
-      {/* 1b. HERO-ADJACENT PRODUCT MOMENT — two real screen recordings,
-          anchored to the hero's own composition rather than dropped in as
-          an isolated block: choosing a universe, then a glimpse of the
-          moodboard that feeds it. */}
-      <section style={{ background: "#0A0A0A", padding: "0 clamp(24px, 6vw, 80px) 100px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#DDF762", marginBottom: 24, fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
-            The real product
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 24 }}>
-            <ProductMediaFrame aspectRatio="16/9" maxWidth="none">
-              <ProductVideo
-                mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.mp4"
-                webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.webm"
-                poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-01-choosing-a-universe-poster.jpg"
-                alt="Screen recording of choosing an aesthetic universe in the Openinvite Design Studio"
-              />
-            </ProductMediaFrame>
-            <ProductMediaFrame aspectRatio="16/9" maxWidth="none">
-              <ProductVideo
-                mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-05-moodboard-browsing.mp4"
-                webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-05-moodboard-browsing.webm"
-                poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-05-moodboard-browsing-poster.jpg"
-                alt="Screen recording of browsing a real moodboard in Openinvite"
-              />
-            </ProductMediaFrame>
-          </div>
-        </div>
-      </section>
-
       {/* 2. RED SILHOUETTE — full-width natural-height image */}
       <ValuePropSection />
+
+      {/* 2b. SCROLL-EXPAND PRODUCT MOMENT — the one real screen recording
+          that earns the scroll-expansion treatment: choosing a universe,
+          expanding from a small floating frame to full-bleed as the page
+          scrolls. Placed after the red hero, not competing with it. */}
+      <ScrollExpandMedia
+        mediaType="video"
+        mediaSrc="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.mp4"
+        webmSrc="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.webm"
+        posterSrc="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-01-choosing-a-universe-poster.jpg"
+        bgImageSrc="/universes/kyoto.jpg"
+        title="Choose your universe"
+        scrollToExpand="Scroll to explore"
+      />
 
       {/* 3. "So, why us?" — the honest price comparison */}
       <PriceHonestySection />
