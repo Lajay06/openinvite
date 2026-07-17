@@ -1,6 +1,6 @@
 /**
  * Feature 3 — Advanced Guest Management
- * LIGHT section: #FFFFFF background, #0A0A0A text, photo grid right
+ * LIGHT section: #FFFFFF background, #0A0A0A text, one strong photo right
  */
 import React, { useRef, useEffect, useState } from "react";
 import { useAppleReveal } from "@/hooks/useAppleReveal";
@@ -28,7 +28,7 @@ export default function FeatureGuests({ children }) {
   const sectionRef = useRef(null);
   const h2Ref = useRef(null);
   const bodyRef = useRef(null);
-  const [tilesIn, setTilesIn] = useState([false, false, false, false]);
+  const [photoIn, setPhotoIn] = useState(prefersReduced());
   const [contentIn, setContentIn] = useState(prefersReduced());
   useAppleReveal(h2Ref);
 
@@ -48,7 +48,7 @@ export default function FeatureGuests({ children }) {
 
   useEffect(() => {
     if (prefersReduced()) {
-      setTilesIn([true, true, true, true]);
+      setPhotoIn(true);
       setContentIn(true);
       return;
     }
@@ -56,12 +56,10 @@ export default function FeatureGuests({ children }) {
       ([e]) => {
         if (e.isIntersecting) {
           setContentIn(true);
-          [0, 1, 2, 3].forEach((i) => {
-            setTimeout(() => setTilesIn((prev) => { const n = [...prev]; n[i] = true; return n; }), i * 150);
-          });
+          setPhotoIn(true);
         } else {
           setContentIn(false);
-          setTilesIn([false, false, false, false]);
+          setPhotoIn(false);
         }
       },
       { threshold: 0.2 }
@@ -132,47 +130,34 @@ export default function FeatureGuests({ children }) {
         </div>
       </div>
 
-      {/* Right side — 2x2 photo grid */}
-       <div
+      {/* Right side — one strong photo, not four copies of the same one.
+          The old 2x2 grid mapped over 4 distinct URLs but the <img> inside
+          ignored the loop variable and hardcoded a 5th, unrelated URL —
+          the same photo rendered four times. See npm run audit:images. */}
+      <div
         className="w-full lg:w-1/2 order-1 lg:order-2"
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 0,
-          minHeight: "100%"
+          position: "relative",
+          overflow: "hidden",
+          minHeight: 480,
+          opacity: photoIn ? 1 : 0,
+          transform: photoIn ? "scale(1)" : "scale(1.04)",
+          transition: prefersReduced() ? "none" : `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`,
         }}>
-        
-         {[
-        "https://static.wixstatic.com/media/d2df22_b014095a4e4f42a9a415f314cad6b260~mv2.jpg",
-        "https://static.wixstatic.com/media/d2df22_370cde85ab644a8fad626149c63f7f0c~mv2.jpg",
-        "https://static.wixstatic.com/media/d2df22_d44e25f4998148b5a36522f648fbc794~mv2.jpg",
-        "https://static.wixstatic.com/media/d2df22_f912572c44a94a71a99d2672ac25e364~mv2.jpg"].
-        map((src, i) =>
-        <div
-          key={i}
-          style={{
-            position: "relative",
-            overflow: "hidden",
-            opacity: tilesIn[i] ? 1 : 0,
-            transform: tilesIn[i] ? "rotateY(0deg)" : "rotateY(90deg)",
-            transition: prefersReduced() ? "none" : `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
-            transformOrigin: "center"
-          }}>
-          
-             <img src="https://media.base44.com/images/public/68731d183f075e406eda2236/e633e01bc_DTS_Remote_Studio_Tino_Renato_Photos_ID3732.jpg"
-
-          alt={`Guest management feature ${i + 1}`}
+        <img
+          src="https://static.wixstatic.com/media/d2df22_b014095a4e4f42a9a415f314cad6b260~mv2.jpg"
+          alt="A couple reviewing their guest list together"
           style={{
             width: "100%",
             height: "100%",
             objectFit: "cover",
             objectPosition: "center",
-            display: "block"
-          }} />
-          
-           </div>
-        )}
-       </div>
+            display: "block",
+            position: "absolute",
+            inset: 0,
+          }}
+        />
+      </div>
     </section>);
 
 }
