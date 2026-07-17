@@ -325,25 +325,26 @@ function EssentialsGrid({ items, visible }) {
 
 
 
+// Shared grid for the seating/budget video showcases — the video column
+// gets more room than the text (1.15fr vs 1fr) so the media reads as the
+// main event, not an equal-weight afterthought. Single column on mobile.
+function FeatureVideoGridStyle() {
+  return (
+    <style>{`
+      .feature-video-grid { display: grid; grid-template-columns: 1fr; gap: 56px; align-items: center; }
+      @media (min-width: 900px) {
+        .feature-video-grid { grid-template-columns: 1.15fr 1fr; gap: 72px; }
+      }
+    `}</style>
+  );
+}
+
 function SeatingSection() {
   const [ref, visible] = useScrollReveal(0.2);
   return (
-    <section ref={ref} style={{ background: "#F5F5F3", padding: "120px clamp(32px, 6vw, 80px)" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 48, alignItems: "center" }}>
-        <div style={{
-          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
-        }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#803D81", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Seating
-          </p>
-          <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 24 }}>
-            A real canvas for a real guest list.
-          </h2>
-          <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16 }}>
-            Drag tables into place, assign guests one at a time or let Ava suggest a starting layout. This is an actual recording of the seating tool, not a mockup.
-          </p>
-        </div>
+    <section ref={ref} style={{ background: "#F5F5F3", padding: "160px clamp(32px, 6vw, 80px)" }}>
+      <FeatureVideoGridStyle />
+      <div className="feature-video-grid" style={{ maxWidth: 1320, margin: "0 auto" }}>
         <div style={{
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
           transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
@@ -357,6 +358,20 @@ function SeatingSection() {
             />
           </ProductMediaFrame>
         </div>
+        <div style={{
+          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
+          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
+        }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", color: "#803D81", marginBottom: 20, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Seating
+          </p>
+          <h2 style={{ fontSize: "clamp(32px, 4.2vw, 56px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.08, marginBottom: 28 }}>
+            A real canvas for a real guest list.
+          </h2>
+          <p style={{ color: "#444444", lineHeight: 1.75, fontSize: 18, maxWidth: 420 }}>
+            Drag tables into place, assign guests one at a time or let Ava suggest a starting layout. This is an actual recording of the seating tool, not a mockup.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -365,12 +380,12 @@ function SeatingSection() {
 function BudgetSection() {
   const [ref, visible] = useScrollReveal(0.2);
   return (
-    <section ref={ref} style={{ background: "#FFFFFF", padding: "120px clamp(32px, 6vw, 80px)" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 48, alignItems: "center" }}>
+    <section ref={ref} style={{ background: "#FFFFFF", padding: "160px clamp(32px, 6vw, 80px)" }}>
+      <FeatureVideoGridStyle />
+      <div className="feature-video-grid" style={{ maxWidth: 1320, margin: "0 auto" }}>
         <div style={{
-          order: 2,
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
+          transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
         }}>
           <ProductMediaFrame aspectRatio="16/10" maxWidth="none" dark={false}>
             <ProductVideo
@@ -382,14 +397,13 @@ function BudgetSection() {
           </ProductMediaFrame>
         </div>
         <div style={{
-          order: 1,
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-          transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
+          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: "#E03553", marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", color: "#E03553", marginBottom: 20, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Budget
           </p>
-          <h2 style={{ fontSize: "clamp(28px, 3.5vw, 44px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 24 }}>
+          <h2 style={{ fontSize: "clamp(32px, 4.2vw, 56px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.08, marginBottom: 28 }}>
             Every dollar, in real time.
           </h2>
           <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16 }}>
