@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
+import ProductVideo from "@/components/shared/ProductVideo";
+import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
 
 // ── Scroll animation hook ─────────────────────────────────────
 function useInView(threshold = 0.15, once = true) {
