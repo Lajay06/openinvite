@@ -55,6 +55,7 @@ import { runCollaboratorPageMap } from '../tests/persistence/collaborator-page-m
 import { runCheckoutErrorHandling } from '../tests/persistence/checkout-error-handling.mjs';
 import { runGuestRsvpTally } from '../tests/persistence/guest-rsvp-tally.mjs';
 import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
+import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -138,6 +139,7 @@ async function run() {
     await runModule('runCollaboratorPageMap', () => runCollaboratorPageMap());
     await runModule('runCheckoutErrorHandling', () => runCheckoutErrorHandling());
     await runModule('runGuestRsvpTally', () => runGuestRsvpTally());
+    await runModule('runTodoListSchema', () => runTodoListSchema(token));
     await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
