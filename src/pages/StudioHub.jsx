@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Globe, Sparkles, Eye, ChevronRight, Camera, Map } from 'lucide-react';
 import { getMyWeddingDetails, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 export default function StudioHub() {
   const navigate = useNavigate();
@@ -84,15 +85,8 @@ export default function StudioHub() {
 
       {/* Scrollable content */}
       <div style={{ paddingTop: 56 }}>
+        <DashboardPageHeader title="Design studio" subtitle="Everything to design, build and share your wedding" />
         <div style={{ maxWidth: 800, margin: '0 auto', padding: '48px 24px' }}>
-
-          {/* Welcome */}
-          <h1 style={{ fontSize: 28, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
-            Your Design Studio
-          </h1>
-          <p style={{ fontSize: 14, color: '#888888', margin: '0 0 48px' }}>
-            Everything to design, build and share your wedding.
-          </p>
 
           {/* Nav cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 48 }}>

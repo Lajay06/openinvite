@@ -36,6 +36,7 @@ import UniverseEntranceOverlay from '@/components/universe-studio/UniverseEntran
 import UniverseWorldView from '@/components/universe-studio/UniverseWorldView';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 // chore/consolidate-overview — the couple name + days-to-go countdown are
 // already global (Layout.jsx's top bar shows them on every page, per
@@ -165,6 +166,8 @@ export default function UniverseStudio() {
 
       {phase !== 'world' && (
         <>
+          <DashboardPageHeader title="Design studio" subtitle="Choose the aesthetic for your entire wedding suite" />
+
           {/* Header — neutral chrome, current universe as a declaration */}
           <div style={{ padding: '28px 32px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 10px' }}>

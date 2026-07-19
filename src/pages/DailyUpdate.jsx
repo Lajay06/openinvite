@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { tallyGuestRsvp, isAttending } from '@/lib/guestRsvpTally';
 import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -244,6 +245,8 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', color: '#0A0A0A' }}>
+
+      <DashboardPageHeader title="Daily update" subtitle="Your wedding planning briefing" />
 
       {/* ── SECTION 1: Masthead ── */}
       <div style={{

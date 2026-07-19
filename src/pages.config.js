@@ -70,7 +70,6 @@ const ScheduleHub = lazy(() => import('./pages/ScheduleHub'));
 const Catering = lazy(() => import('./pages/Catering'));
 const TasksHub = lazy(() => import('./pages/TasksHub'));
 const Considerations = lazy(() => import('./pages/Considerations'));
-const CouplesStudio = lazy(() => import('./pages/CouplesStudio'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const EventDetails = lazy(() => import('./pages/EventDetails'));
 const Features = lazy(() => import('./pages/Features'));
@@ -104,7 +103,6 @@ const Seating = lazy(() => import('./pages/Seating'));
 const Styling = lazy(() => import('./pages/Styling'));
 const Vendors = lazy(() => import('./pages/Vendors'));
 const VowsSpeeches = lazy(() => import('./pages/VowsSpeeches'));
-const WebsiteCustomization = lazy(() => import('./pages/WebsiteCustomization'));
 const WeddingWebsite = lazy(() => import('./pages/WeddingWebsite'));
 const VendorMarketplace = lazy(() => import('./pages/VendorMarketplace'));
 const QandA = lazy(() => import('./pages/QandA'));
@@ -127,7 +125,6 @@ export const PAGES = {
     "Catering": Catering,
     "Checklist": TasksHub,
     "Considerations": Considerations,
-    "CouplesStudio": CouplesStudio,
     "Dashboard": Dashboard,
     "EventDetails": EventDetails,
     "Features": Features,
@@ -163,7 +160,6 @@ export const PAGES = {
     "TodoList": TasksHub,
     "Vendors": Vendors,
     "VowsSpeeches": VowsSpeeches,
-    "WebsiteCustomization": WebsiteCustomization,
     "WeddingWebsite": WeddingWebsite,
     "VendorMarketplace": VendorMarketplace,
     "QandA": QandA,
