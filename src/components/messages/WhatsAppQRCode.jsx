@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Download, X } from "lucide-react";
+import { interactiveDivProps } from '@/lib/a11y';
 
 const WHATSAPP_GREEN = "#25D366";
 
@@ -29,12 +30,14 @@ export default function WhatsAppQRCode({ phoneNumber }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000, padding: 24 }}
-      onClick={() => setShowModal(false)}>
+      onClick={() => setShowModal(false)}
+      {...interactiveDivProps(() => setShowModal(false), { label: 'Close WhatsApp QR code modal' })}>
       <div onClick={e => e.stopPropagation()}
         style={{ background: '#FFFFFF', padding: 32, maxWidth: 400, width: '100%', textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>WhatsApp QR code</span>
           <button onClick={() => setShowModal(false)}
+            aria-label="Close WhatsApp QR code modal"
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
         </div>
 

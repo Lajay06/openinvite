@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Save, Camera } from "lucide-react";
+import { interactiveDivProps } from '@/lib/a11y';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -77,7 +78,8 @@ export default function PhotographerForm({ photographer, onSubmit, onCancel }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 9000, overflowY: 'auto', padding: '40px 24px' }}
-      onClick={onCancel}>
+      onClick={onCancel}
+      {...interactiveDivProps(onCancel, { label: 'Close photographer form' })}>
       <div onClick={e => e.stopPropagation()}
         style={{ background: '#FFFFFF', width: '100%', maxWidth: 680, marginBottom: 40 }}>
 
@@ -89,7 +91,7 @@ export default function PhotographerForm({ photographer, onSubmit, onCancel }) {
               {photographer ? 'Edit professional' : 'Add photographer / videographer'}
             </span>
           </div>
-          <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 4 }}>
+          <button onClick={onCancel} aria-label="Close photographer form" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 4 }}>
             <X size={16} />
           </button>
         </div>

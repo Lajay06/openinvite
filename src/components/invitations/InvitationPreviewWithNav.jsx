@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X, MapPin, Clock, ExternalLink, Star, Hotel } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { interactiveDivProps } from '@/lib/a11y';
 
 export default function InvitationPreviewWithNav({ invitation, weddingDetails, onElementSelect, currentPage, onPageChange }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -44,9 +45,10 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
     };
 
     return (
-      <div 
+      <div
         className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md hover:border-gray-300 transition-all duration-300 cursor-pointer group"
         onClick={handleHotelClick}
+        {...interactiveDivProps(handleHotelClick)}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1 space-y-3">
@@ -151,10 +153,11 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
     switch (component.type) {
       case 'text':
         return (
-          <div 
+          <div
             style={baseStyles}
             className="transition-all duration-200"
             onClick={() => onElementSelect?.(component.id)}
+            {...interactiveDivProps(() => onElementSelect?.(component.id))}
           >
             {component.content.text}
           </div>
@@ -178,10 +181,11 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
 
       default:
         return (
-          <div 
+          <div
             style={baseStyles}
             className="border border-dashed border-gray-300 p-4 rounded-lg text-center text-gray-500"
             onClick={() => onElementSelect?.(component.id)}
+            {...interactiveDivProps(() => onElementSelect?.(component.id))}
           >
             {component.type} component
           </div>
@@ -267,6 +271,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
                 variant="ghost"
                 size="sm"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                 className="p-2"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { X, CalendarCheck } from 'lucide-react';
 import { getGuestEventResponse, toggleEventInvite } from '@/lib/weddingEvents';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 
@@ -91,7 +92,7 @@ export default function SetEventsModal({ guests, weddingEvents, onUpdate, onClos
 
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(10,10,10,0.55)' }} />
+      <div onClick={onClose} {...interactiveDivProps(onClose, { label: 'Close set events modal' })} style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(10,10,10,0.55)' }} />
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
         zIndex: 1000, width: 'min(90vw, 420px)', background: '#FFFFFF',
@@ -106,7 +107,7 @@ export default function SetEventsModal({ guests, weddingEvents, onUpdate, onClos
               {guests.length === 1 ? guestNames[0] : `${guests.length} guests selected`}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4 }}>
+          <button onClick={onClose} aria-label="Close set events modal" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4 }}>
             <X size={16} />
           </button>
         </div>

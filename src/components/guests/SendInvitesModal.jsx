@@ -10,6 +10,7 @@ import { X, Mail, MessageCircle, Check, Loader2, Search, ArrowLeft, ArrowRight, 
 import toast from 'react-hot-toast';
 import GuestAvatar from '@/components/shared/GuestAvatar';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
@@ -506,6 +507,7 @@ export default function SendInvitesModal({
       {/* Overlay */}
       <div
         onClick={handleClose}
+        {...interactiveDivProps(handleClose, { label: 'Close send invites modal' })}
         style={{
           position: 'fixed', inset: 0, zIndex: 999,
           background: 'rgba(10,10,10,0.55)',
@@ -540,7 +542,7 @@ export default function SendInvitesModal({
               Step {step} of {STEP_LABELS.length} — {STEP_LABELS[step - 1]}
             </p>
           </div>
-          <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4, marginTop: -4 }}>
+          <button onClick={handleClose} aria-label="Close send invites modal" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4, marginTop: -4 }}>
             <X size={20} />
           </button>
         </div>
@@ -638,6 +640,7 @@ export default function SendInvitesModal({
                     <div
                       key={g.id}
                       onClick={() => toggleOne(g.id)}
+                      {...interactiveDivProps(() => toggleOne(g.id))}
                       style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 8px', borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer', borderRadius: 6, transition: 'background 0.1s' }}
                       onMouseEnter={e => e.currentTarget.style.background = '#FAFAFA'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -785,6 +788,7 @@ export default function SendInvitesModal({
                       <div
                         key={opt.val}
                         onClick={() => setChannel(opt.val)}
+                        {...interactiveDivProps(() => setChannel(opt.val))}
                         style={{
                           padding: '16px 20px', border: `2px solid ${active ? '#E03553' : 'rgba(10,10,10,0.1)'}`,
                           background: active ? '#FFF8F9' : '#FFFFFF',

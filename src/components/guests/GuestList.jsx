@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus, Pencil } from "lucide-react";
 import { getGuestEventResponse } from "@/lib/weddingEvents";
 import GuestAvatar from "@/components/shared/GuestAvatar";
+import { interactiveDivProps } from '@/lib/a11y';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -395,6 +396,7 @@ function HoverDiv({ onClick, pointer, children, title }) {
     <div
       onClick={onClick}
       title={title}
+      {...interactiveDivProps(onClick)}
       style={{
         ...(pointer ? hoverCellPointer : hoverCell),
         background: hovered ? 'rgba(10,10,10,0.04)' : 'transparent',
@@ -854,6 +856,7 @@ export default function GuestList({
                         type="button"
                         onClick={() => toggleExpanded(guest.id)}
                         title={isExpanded ? 'Hide RSVP details' : 'Show RSVP details'}
+                        aria-label={isExpanded ? 'Hide RSVP details' : 'Show RSVP details'}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center', color: 'rgba(10,10,10,0.6)', flexShrink: 0 }}
                       >
                         {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
@@ -947,7 +950,7 @@ export default function GuestList({
                     {!readOnly && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" aria-label="Guest actions">
                             <MoreHorizontal size={15} />
                           </Button>
                         </DropdownMenuTrigger>
