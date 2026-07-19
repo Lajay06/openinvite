@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from "react-router-dom";
 import { X, Bell, Search, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut } from "lucide-react";
 import { getWeddingWeather } from '@/lib/weather';
 import { track, reset as analyticsReset } from '@/lib/analytics';
@@ -17,6 +18,14 @@ import { useCollaboratorContext, permissionKeyForPageName, hasPagePermission } f
 
 const SIDEBAR_WIDTH = 200;
 const TOP_BAR_H = 48;
+
+// AUDIT_2026-07.md S3/S4: exported so any component that mutates data the
+// layout shell displays (unread message count, wedding name/countdown)
+// can invalidate this exact query after its own mutation — e.g.
+// Messages.jsx after marking a message read. A prefix match
+// (queryClient.invalidateQueries({ queryKey: [LAYOUT_QUERY_KEY] }))
+// invalidates every variant regardless of the isCollaborating suffix.
+export const LAYOUT_QUERY_KEY = 'layoutData';
 
 const noLayoutPages = [
   "Home", "Features", "Pricing", "CouplesStudio", "PlanSelection",
@@ -249,17 +258,13 @@ function CollaboratorAccessDenied() {
 }
 
 export default function Layout({ children, currentPageName }) {
-  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [showCollaborateModal, setShowCollaborateModal] = React.useState(false);
   const [showTipsModal, setShowTipsModal] = React.useState(false);
   const [chatOpen, setChatOpen] = React.useState(false);
-  const [user, setUser] = React.useState(null);
-  const [unreadMessagesCount, setUnreadMessagesCount] = React.useState(0);
-  const [weddingName, setWeddingName] = React.useState('');
-  const [weddingDetails, setWeddingDetails] = React.useState(null);
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
+  const queryClient = useQueryClient();
 
   React.useEffect(() => {
     const handler = () => setChatOpen(true);
@@ -267,36 +272,58 @@ export default function Layout({ children, currentPageName }) {
     return () => window.removeEventListener('openAva', handler);
   }, []);
 
-  const fetchData = React.useCallback(async () => {
-    try {
+  // AUDIT_2026-07.md S3/S4: this used to refetch on every navigation
+  // (location.pathname in the effect deps) — up to 7 requests per nav for
+  // data that changes rarely within a session. React Query now caches it
+  // across navigations and only refetches when genuinely stale or when
+  // something explicitly invalidates LAYOUT_QUERY_KEY (the existing
+  // weddingDetailsSaved event below, plus Messages.jsx after marking a
+  // message read/replied).
+  const { data: layoutData } = useQuery({
+    queryKey: [LAYOUT_QUERY_KEY, isCollaborating],
+    queryFn: async () => {
       const currentUser = await base44.auth.me();
-      setUser(currentUser);
       // A collaborator session has no WeddingDetails/Invitation/GuestMessage
       // of their own to read here — that data belongs to the owner, and is
       // fetched separately via collaborator-context.js/collaborator-*.js.
       // Reading these owner-scoped helpers under the collaborator's own
       // token would just return their own (irrelevant, usually empty) data.
-      if (isCollaborating) return;
-      try {
-        const messages = await getMyRecords('GuestMessage');
-        setUnreadMessagesCount(messages.filter(m => !m.read).length);
-      } catch {}
-      try {
-        const invitation = await getMyInvitation();
-        if (invitation) setWeddingName(invitation.couple_names);
-      } catch {}
-      try {
-        setWeddingDetails(await getMyWeddingDetails());
-      } catch {}
-    } catch {}
-  }, [isCollaborating]);
+      if (isCollaborating) {
+        return { user: currentUser, unreadMessagesCount: 0, weddingName: '', weddingDetails: null };
+      }
+      const [messagesResult, invitationResult, weddingDetailsResult] = await Promise.allSettled([
+        getMyRecords('GuestMessage'),
+        getMyInvitation(),
+        getMyWeddingDetails(),
+      ]);
+      const messages = messagesResult.status === 'fulfilled' ? messagesResult.value : [];
+      const invitation = invitationResult.status === 'fulfilled' ? invitationResult.value : null;
+      const weddingDetails = weddingDetailsResult.status === 'fulfilled' ? weddingDetailsResult.value : null;
+      return {
+        user: currentUser,
+        unreadMessagesCount: messages.filter(m => !m.read).length,
+        weddingName: invitation?.couple_names || '',
+        weddingDetails,
+      };
+    },
+    // This data (user plan, wedding name/date, unread count) rarely changes
+    // within a session — real changes go through explicit invalidation
+    // (weddingDetailsSaved event, Messages.jsx's mutations) rather than a
+    // time-based refetch, so a generous staleTime just avoids the
+    // per-navigation refetch without risking staleness after a real edit.
+    staleTime: 5 * 60 * 1000,
+  });
 
-  React.useEffect(() => { fetchData(); }, [fetchData, location.pathname]);
+  const user = layoutData?.user ?? null;
+  const unreadMessagesCount = layoutData?.unreadMessagesCount ?? 0;
+  const weddingName = layoutData?.weddingName ?? '';
+  const weddingDetails = layoutData?.weddingDetails ?? null;
 
   React.useEffect(() => {
-    window.addEventListener('weddingDetailsSaved', fetchData);
-    return () => window.removeEventListener('weddingDetailsSaved', fetchData);
-  }, [fetchData]);
+    const invalidate = () => queryClient.invalidateQueries({ queryKey: [LAYOUT_QUERY_KEY] });
+    window.addEventListener('weddingDetailsSaved', invalidate);
+    return () => window.removeEventListener('weddingDetailsSaved', invalidate);
+  }, [queryClient]);
 
   // Trial banner: about the logged-in account's OWN plan — meaningless (and
   // confusing) to show while borrowing someone else's wedding as a collaborator.

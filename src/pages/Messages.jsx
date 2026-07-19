@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
+import { LAYOUT_QUERY_KEY } from '@/Layout';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, Reply, Search, CheckCheck, Send, Heart, Mail, User, EyeOff, Eye, MessageSquare, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -48,6 +50,7 @@ const FILTERS = [
 ];
 
 export default function MessagesPage() {
+  const queryClient = useQueryClient();
   const [messages, setMessages] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -72,6 +75,13 @@ export default function MessagesPage() {
       for (const msg of unread) {
         await GuestMessage.update(msg.id, { ...msg, read: true });
       }
+      // AUDIT_2026-07.md S3/S4: the top bar's bell badge (Layout.jsx) reads
+      // GuestMessage.read status through a cached React Query result —
+      // invalidate it here since this function is the one place every
+      // read-status change (visiting this page, replying, toggling read)
+      // funnels through, so the badge updates without waiting for its
+      // 5-minute staleTime or a navigation.
+      queryClient.invalidateQueries({ queryKey: [LAYOUT_QUERY_KEY] });
     } catch (error) {
       console.error('Error loading messages:', error);
     }
