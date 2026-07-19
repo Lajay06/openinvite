@@ -6,6 +6,18 @@
  * is testable without a key (mock:true flag in response).
  *
  * Required env var: GOOGLE_PLACES_API_KEY
+ *
+ * AUDIT_2026-07.md S6: this endpoint always returns 200 with MOCK_PLACES
+ * on any failure (no key configured, a Google API error, or a network/
+ * exception) instead of a 4xx/5xx like its sibling proxies (places-search.js
+ * etc.) do for the equivalent failure. This is CONFIRMED INTENTIONAL —
+ * do not change the status code or response shape. Every fallback path
+ * logs a distinctly grep-able "[places] MOCK FALLBACK" line with its
+ * reason, so a real upstream failure rate (Google API errors / network
+ * exceptions) can be tracked in Vercel logs separately from the expected,
+ * config-driven no-key case (which fires 100% of the time in any
+ * environment — dev, preview — that hasn't set the key, and isn't itself
+ * a failure worth alerting on).
  */
 
 import { checkRateLimit, getClientIp } from './_lib/security.js';
@@ -54,6 +66,10 @@ export default async function handler(req, res) {
 
   const key = process.env.GOOGLE_PLACES_API_KEY;
   if (!key) {
+    // Config-driven, not a failure — expected in any environment without
+    // the key set. Logged distinctly (reason: 'no-key') so it's easy to
+    // exclude when measuring real upstream failure rate below.
+    console.log('[places] MOCK FALLBACK — reason: no-key');
     return res.status(200).json({ places: MOCK_PLACES, mock: true });
   }
 
@@ -74,6 +90,7 @@ export default async function handler(req, res) {
 
     if (data.error) {
       console.error('[places] API error:', data.error.status, data.error.message);
+      console.log('[places] MOCK FALLBACK — reason: google-api-error —', data.error.status);
       return res.status(200).json({ places: MOCK_PLACES, mock: true, apiError: data.error.status });
     }
 
@@ -92,6 +109,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ places, mock: false });
   } catch (err) {
     console.error('[places] Error:', err.message);
+    console.log('[places] MOCK FALLBACK — reason: network-exception —', err.message);
     return res.status(200).json({ places: MOCK_PLACES, mock: true });
   }
 }
