@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const PAGE_TEMPLATES = [
   { id: 'blank', name: 'Blank Page', description: 'Start from scratch' },
@@ -36,13 +36,15 @@ export default function NewPageModal({ onClose, onCreate, weddingSlug }) {
     onClose();
   };
 
+  const dialogRef = useModalFocusTrap(onClose);
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
       background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }} onClick={e => e.target === e.currentTarget && onClose()} {...interactiveDivProps(onClose, { label: 'Close' })}>
-      <div style={{
+      <div ref={dialogRef} tabIndex={-1} style={{
         width: 420, background: '#fff', borderRadius: 12,
         boxShadow: '0 24px 80px rgba(0,0,0,0.25)',
         overflow: 'hidden',

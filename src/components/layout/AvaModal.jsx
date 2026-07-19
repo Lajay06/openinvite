@@ -5,7 +5,7 @@ import { InvokeLLM } from '@/integrations/Core';
 import { base44 } from '@/api/base44Client';
 import { buildWeddingContext } from '@/lib/avaContext';
 import toast from 'react-hot-toast';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -103,22 +103,27 @@ function ActionCard({ action, onConfirm, onCancel }) {
 }
 
 export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions = [], pageTitle = 'Ava' }) {
+  if (!isOpen) return null;
+  return <AvaModalDialog onClose={onClose} systemPrompt={systemPrompt} quickActions={quickActions} pageTitle={pageTitle} />;
+}
+
+function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [weddingContext, setWeddingContext] = useState('');
   const bottomRef = useRef(null);
+  const dialogRef = useModalFocusTrap(onClose);
 
   useEffect(() => {
-    if (!isOpen) return;
     setMessages([]);
     setInput('');
     setWeddingContext('');
     buildWeddingContext()
       .then(ctx => setWeddingContext(ctx))
       .catch(() => {});
-  }, [isOpen]);
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -185,8 +190,6 @@ export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions =
     setLoading(false);
   };
 
-  if (!isOpen) return null;
-
   return (
     <div
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
@@ -194,6 +197,8 @@ export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions =
       {...interactiveDivProps(onClose, { label: 'Close Ava modal' })}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         onClick={e => e.stopPropagation()}
         style={{ background: '#FFFFFF', width: '100%', maxWidth: 560, maxHeight: '80vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
       >

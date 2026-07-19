@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 function ToggleSwitch({ value, onChange, label }) {
   return (
@@ -78,13 +78,15 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     { id: 'qr', label: '⬛ QR Code' },
   ];
 
+  const dialogRef = useModalFocusTrap(onClose);
+
   return (
     <div
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={e => e.target === e.currentTarget && onClose()}
       {...interactiveDivProps(onClose, { label: 'Close' })}
     >
-      <div style={{ background: '#FFFFFF', width: 620, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div ref={dialogRef} tabIndex={-1} style={{ background: '#FFFFFF', width: 620, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #EEE', display: 'flex', alignItems: 'center' }}>

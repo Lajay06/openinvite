@@ -7,7 +7,7 @@ import CurrencyModal from '@/components/layout/CurrencyModal';
 import { useAuth } from '@/lib/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { base44 } from '@/api/base44Client';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 import { Switch } from '@/components/ui/switch';
 import { getNotificationPrefs } from '@/lib/notificationPrefs';
 import toast from 'react-hot-toast';
@@ -620,55 +620,72 @@ function SecurityTab({ user }) {
       )}
 
       {deleteOpen && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-6"
-          onClick={() => setDeleteOpen(false)}
-          {...interactiveDivProps(() => setDeleteOpen(false), { label: 'Close account deletion modal' })}
-        >
-          <div
-            style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', width: '100%', maxWidth: 440 }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ padding: '28px 28px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <AlertTriangle size={18} style={{ color: '#E03553' }} />
-                <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>Request account deletion</h2>
-              </div>
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, lineHeight: 1.7, margin: '0 0 20px' }}>
-                This submits a deletion request for <strong>{user?.email}</strong> — your wedding details, guest list, budget, vendors, and website will be permanently removed once we verify it's you. This can't be undone after processing.
-              </p>
-              <label style={labelStyle}>Type DELETE to confirm</label>
-              <input
-                className="input-editorial"
-                value={deleteConfirmText}
-                onChange={e => setDeleteConfirmText(e.target.value)}
-                placeholder="DELETE"
-                style={{ marginBottom: 20 }}
-              />
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button
-                  onClick={() => setDeleteOpen(false)}
-                  style={{ flex: 1, padding: '10px 0', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: '1.5px solid rgba(10,10,10,0.15)', background: 'none', color: '#0A0A0A' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteRequest}
-                  disabled={deleteConfirmText !== 'DELETE' || deleting}
-                  style={{
-                    flex: 1, padding: '10px 0', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS,
-                    cursor: deleteConfirmText !== 'DELETE' || deleting ? 'not-allowed' : 'pointer',
-                    border: 'none', background: '#E03553', color: '#FFFFFF',
-                    opacity: deleteConfirmText !== 'DELETE' || deleting ? 0.4 : 1,
-                  }}
-                >
-                  {deleting ? 'Sending…' : 'Submit request'}
-                </button>
-              </div>
-            </div>
+        <DeleteAccountModal
+          user={user}
+          deleteConfirmText={deleteConfirmText}
+          setDeleteConfirmText={setDeleteConfirmText}
+          deleting={deleting}
+          onClose={() => setDeleteOpen(false)}
+          onSubmit={handleDeleteRequest}
+        />
+      )}
+    </div>
+  );
+}
+
+function DeleteAccountModal({ user, deleteConfirmText, setDeleteConfirmText, deleting, onClose, onSubmit }) {
+  const dialogRef = useModalFocusTrap(onClose);
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-6"
+      onClick={onClose}
+      {...interactiveDivProps(onClose, { label: 'Close account deletion modal' })}
+    >
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', width: '100%', maxWidth: 440 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ padding: '28px 28px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+            <AlertTriangle size={18} style={{ color: '#E03553' }} />
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>Request account deletion</h2>
+          </div>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, lineHeight: 1.7, margin: '0 0 20px' }}>
+            This submits a deletion request for <strong>{user?.email}</strong> — your wedding details, guest list, budget, vendors, and website will be permanently removed once we verify it's you. This can't be undone after processing.
+          </p>
+          <label style={labelStyle}>Type DELETE to confirm</label>
+          <input
+            className="input-editorial"
+            value={deleteConfirmText}
+            onChange={e => setDeleteConfirmText(e.target.value)}
+            placeholder="DELETE"
+            style={{ marginBottom: 20 }}
+          />
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              onClick={onClose}
+              style={{ flex: 1, padding: '10px 0', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: '1.5px solid rgba(10,10,10,0.15)', background: 'none', color: '#0A0A0A' }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onSubmit}
+              disabled={deleteConfirmText !== 'DELETE' || deleting}
+              style={{
+                flex: 1, padding: '10px 0', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS,
+                cursor: deleteConfirmText !== 'DELETE' || deleting ? 'not-allowed' : 'pointer',
+                border: 'none', background: '#E03553', color: '#FFFFFF',
+                opacity: deleteConfirmText !== 'DELETE' || deleting ? 0.4 : 1,
+              }}
+            >
+              {deleting ? 'Sending…' : 'Submit request'}
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

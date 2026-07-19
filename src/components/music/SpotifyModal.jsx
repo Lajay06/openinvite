@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { X, Search, Loader2, Plus, Music2 } from 'lucide-react';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -98,6 +98,8 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
     setAddedIds(prev => new Set([...prev, track.id]));
   };
 
+  const dialogRef = useModalFocusTrap(onClose);
+
   return (
     <div
       className="fixed inset-0 flex items-center justify-center z-[9999]"
@@ -106,6 +108,8 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
       {...interactiveDivProps(onClose, { label: 'Close Spotify search modal' })}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         onClick={e => e.stopPropagation()}
         style={{ background: '#FFFFFF', border: '1px solid #E5E5E5', width: '100%', maxWidth: 560, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
       >
@@ -134,7 +138,6 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
                 : <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
               }
               <input
-                autoFocus
                 placeholder="Search by song title or artist…"
                 value={query}
                 onChange={handleQueryChange}

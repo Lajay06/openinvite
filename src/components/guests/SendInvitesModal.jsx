@@ -10,7 +10,7 @@ import { X, Mail, MessageCircle, Check, Loader2, Search, ArrowLeft, ArrowRight, 
 import toast from 'react-hot-toast';
 import GuestAvatar from '@/components/shared/GuestAvatar';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
@@ -284,6 +284,8 @@ export default function SendInvitesModal({
     setTimeout(onClose, 280);
   };
 
+  const dialogRef = useModalFocusTrap(handleClose);
+
   // Live preview — subject/body with merge tags resolved for the first
   // selected guest (or a placeholder if none selected yet).
   const previewSubject = replaceMergeTags(subject, selectedGuests[0]?.name, coupleName, dateStr);
@@ -517,7 +519,10 @@ export default function SendInvitesModal({
       />
 
       {/* Drawer — split pane: step content (left) + permanent preview (right) */}
-      <div style={{
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        style={{
         position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 1000,
         width: 'min(94vw, 1240px)',
         background: '#FFFFFF',

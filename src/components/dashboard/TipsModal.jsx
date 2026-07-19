@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const tips = [
   {
@@ -49,6 +49,8 @@ export default function TipsModal({ onClose }) {
     setKey(k => k + 1);
   };
 
+  const dialogRef = useModalFocusTrap(handleClose);
+
   return (
     <>
       <style>{`
@@ -71,6 +73,8 @@ export default function TipsModal({ onClose }) {
       >
         {/* Panel */}
         <div
+          ref={dialogRef}
+          tabIndex={-1}
           style={{
             width: 560, maxWidth: '100%', background: '#FFFFFF', borderRadius: 16,
             maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',

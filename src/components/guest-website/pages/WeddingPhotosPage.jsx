@@ -2,7 +2,67 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+
+function PhotoLightbox({ photo, theme, onClose }) {
+  const dialogRef = useModalFocusTrap(onClose);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      {...interactiveDivProps(onClose, { label: 'Close photo viewer' })}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: `${theme.darkBg}EE`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 50,
+        backdropFilter: 'blur(8px)'
+      }}
+    >
+      <motion.div
+        ref={dialogRef}
+        tabIndex={-1}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          position: 'relative',
+          maxWidth: '90vw',
+          maxHeight: '90vh'
+        }}
+      >
+        <img
+          src={photo.url}
+          alt=""
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            borderRadius: '4px'
+          }}
+        />
+        {photo.caption && (
+          <div
+            style={{
+              color: theme.darkText,
+              padding: '16px',
+              textAlign: 'center',
+              fontSize: '0.875rem'
+            }}
+          >
+            {photo.caption}
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
 
 export default function WeddingPhotosPage({ weddingDetails, theme, typography, universeConfig }) {
   const content = weddingDetails.photosContent || {};
@@ -96,57 +156,11 @@ export default function WeddingPhotosPage({ weddingDetails, theme, typography, u
 
         {/* Lightbox */}
         {selectedIndex !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedIndex(null)}
-            {...interactiveDivProps(() => setSelectedIndex(null), { label: 'Close photo viewer' })}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundColor: `${theme.darkBg}EE`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 50,
-              backdropFilter: 'blur(8px)'
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                position: 'relative',
-                maxWidth: '90vw',
-                maxHeight: '90vh'
-              }}
-            >
-              <img
-                src={gallery[selectedIndex].url}
-                alt=""
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  borderRadius: '4px'
-                }}
-              />
-              {gallery[selectedIndex].caption && (
-                <div
-                  style={{
-                    color: theme.darkText,
-                    padding: '16px',
-                    textAlign: 'center',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  {gallery[selectedIndex].caption}
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
+          <PhotoLightbox
+            photo={gallery[selectedIndex]}
+            theme={theme}
+            onClose={() => setSelectedIndex(null)}
+          />
         )}
       </div>
     </div>

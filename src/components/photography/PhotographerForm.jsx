@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Save, Camera } from "lucide-react";
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -76,11 +76,13 @@ export default function PhotographerForm({ photographer, onSubmit, onCancel }) {
     });
   };
 
+  const dialogRef = useModalFocusTrap(onCancel);
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 9000, overflowY: 'auto', padding: '40px 24px' }}
       onClick={onCancel}
       {...interactiveDivProps(onCancel, { label: 'Close photographer form' })}>
-      <div onClick={e => e.stopPropagation()}
+      <div ref={dialogRef} tabIndex={-1} onClick={e => e.stopPropagation()}
         style={{ background: '#FFFFFF', width: '100%', maxWidth: 680, marginBottom: 40 }}>
 
         {/* Header */}
