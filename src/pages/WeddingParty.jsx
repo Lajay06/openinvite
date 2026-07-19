@@ -14,7 +14,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: PJS,
 };
 
@@ -148,7 +148,7 @@ function GuestSearch({ value, guests, onSelect, onClear, placeholder = 'Type a n
           boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
         }}>
           {filtered.length === 0 && !showCustom && (
-            <div style={{ padding: '10px 14px', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+            <div style={{ padding: '10px 14px', fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
               {searchTerm ? 'No matching guests' : 'Start typing a name…'}
             </div>
           )}
@@ -457,7 +457,7 @@ export default function WeddingPartyPage() {
           <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
             Wedding party members
           </span>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '4px 0 0' }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '4px 0 0' }}>
             Bridesmaids, groomsmen, and everyone else standing with you on the day.
           </p>
         </div>

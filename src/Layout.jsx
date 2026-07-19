@@ -185,7 +185,7 @@ function TopBar({ weddingDetails, unreadCount, overrideCoupleName }) {
                 {storedUser.full_name || coupleName || 'Your account'}
               </p>
               {storedUser.email && (
-                <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '2px 0 0', fontWeight: 400 }}>
+                <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0', fontWeight: 400 }}>
                   {storedUser.email}
                 </p>
               )}
@@ -241,7 +241,7 @@ function CollaboratorAccessDenied() {
       <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 4px' }}>
         You don't have access to this page
       </p>
-      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
         Ask the couple to grant you permission if you think this is a mistake.
       </p>
     </div>
@@ -335,7 +335,7 @@ export default function Layout({ children, currentPageName }) {
           <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>
             You don't have access to this wedding
           </p>
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 20px' }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 20px' }}>
             This collaboration link isn't valid for your account, or the invite hasn't been accepted yet.
           </p>
           <a

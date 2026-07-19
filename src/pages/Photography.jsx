@@ -18,7 +18,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -237,7 +237,7 @@ export default function PhotographyPage() {
             </div>
             <PhotographerList photographers={photographersList} onEdit={handleEdit} onDelete={handleDelete} />
             {photographersList.length === 0 && (
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '40px 0' }}>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '40px 0' }}>
                 No photographers added yet. Click "Add photographer" to get started.
               </p>
             )}
@@ -255,7 +255,7 @@ export default function PhotographyPage() {
             </div>
             <PhotographerList photographers={videographersList} onEdit={handleEdit} onDelete={handleDelete} />
             {videographersList.length === 0 && (
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '40px 0' }}>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '40px 0' }}>
                 No videographers added yet. Click "Add videographer" to get started.
               </p>
             )}

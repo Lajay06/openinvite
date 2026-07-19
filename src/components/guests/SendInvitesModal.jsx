@@ -115,7 +115,7 @@ function WhatsAppPreview({ guest, coupleName, weddingDate, rsvpUrl }) {
   const message = buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl);
   return (
     <div style={{ padding: 20 }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.4)', letterSpacing: '0.08em', margin: '0 0 10px', ...F }}>
+      <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 10px', ...F }}>
         WHATSAPP MESSAGE {guest?.phone ? `— TO ${guest.phone}` : '(NO PHONE ON FILE)'}
       </p>
       <div style={{
@@ -540,7 +540,7 @@ export default function SendInvitesModal({
               Step {step} of {STEP_LABELS.length} — {STEP_LABELS[step - 1]}
             </p>
           </div>
-          <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', padding: 4, marginTop: -4 }}>
+          <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4, marginTop: -4 }}>
             <X size={20} />
           </button>
         </div>
@@ -631,7 +631,7 @@ export default function SendInvitesModal({
                 {/* Guest list */}
                 {filteredGuests.length === 0 ? (
                   <div style={{ padding: '32px 0', textAlign: 'center' }}>
-                    <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)' }}>No guests match this filter.</p>
+                    <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)' }}>No guests match this filter.</p>
                   </div>
                 ) : (
                   filteredGuests.map(g => (
@@ -652,7 +652,7 @@ export default function SendInvitesModal({
                       <GuestAvatar name={g.name} email={g.email} profilePictureUrl={g.profile_picture_url} size={36} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name}</p>
-                        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {g.email || <span style={{ color: '#E03553' }}>No email</span>}
                           {g.phone && <span style={{ marginLeft: 8 }}>· {g.phone}</span>}
                         </p>
@@ -683,7 +683,7 @@ export default function SendInvitesModal({
 
                 {/* Merge tag hints */}
                 <div style={{ background: '#F7F7F7', borderRadius: 8, padding: '10px 14px', marginBottom: 20, display: 'flex', flexWrap: 'wrap', gap: '6px 12px' }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', marginRight: 4 }}>Merge tags:</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', marginRight: 4 }}>Merge tags:</span>
                   {['[Guest name]', '[Wedding date]', '[Couple names]', '[RSVP link]'].map(tag => (
                     <span key={tag} style={{ fontSize: 11, fontWeight: 700, color: '#E03553', background: '#FFF0F3', padding: '2px 7px', borderRadius: 999 }}>{tag}</span>
                   ))}
@@ -807,7 +807,7 @@ export default function SendInvitesModal({
                             )}
                           </div>
                           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', margin: '0 0 4px', ...F }}>{opt.desc}</p>
-                          <p style={{ fontSize: 12, fontWeight: 600, color: active ? '#E03553' : 'rgba(10,10,10,0.4)', margin: 0, ...F }}>{opt.countLabel}</p>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: active ? '#E03553' : 'rgba(10,10,10,0.6)', margin: 0, ...F }}>{opt.countLabel}</p>
                         </div>
                         {opt.skip && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
@@ -850,21 +850,21 @@ export default function SendInvitesModal({
                     ].map(s => (
                       <div key={s.label} style={{ textAlign: 'center' }}>
                         <p style={{ fontSize: 18, fontWeight: 800, color: '#0A0A0A', margin: '0 0 2px', letterSpacing: '-0.02em', ...F }}>{s.value}</p>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', margin: 0, letterSpacing: '0.06em', ...F }}>{s.label.toUpperCase()}</p>
+                        <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', margin: 0, letterSpacing: '0.06em', ...F }}>{s.label.toUpperCase()}</p>
                       </div>
                     ))}
                   </div>
 
                   {/* Guest list */}
                   <div style={{ padding: '12px 20px 16px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.4)', letterSpacing: '0.08em', margin: '0 0 8px', ...F }}>SENDING TO</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 8px', ...F }}>SENDING TO</p>
                     <div style={{ maxHeight: 220, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {selectedGuests.map(g => (
                         <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <GuestAvatar name={g.name} email={g.email} profilePictureUrl={g.profile_picture_url} size={28} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, ...F }}>{g.name}</p>
-                            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, ...F }}>{g.email || 'No email'}</p>
+                            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>{g.email || 'No email'}</p>
                           </div>
                         </div>
                       ))}

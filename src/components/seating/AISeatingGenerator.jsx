@@ -4,7 +4,7 @@ import { InvokeLLM } from '@/integrations/Core';
 import toast from 'react-hot-toast';
 
 const labelStyle = {
-  color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif",
+  color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
 function Spinner() {

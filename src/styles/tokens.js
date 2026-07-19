@@ -24,10 +24,10 @@ export const color = {
   // Text
   textPrimary:     '#0A0A0A',
   textSecondary:   '#444444',
-  textMuted:       'rgba(10,10,10,0.4)',
+  textMuted:       'rgba(10,10,10,0.6)',
   textOnDark:      '#FFFFFF',
   textOnDarkMuted: 'rgba(255,255,255,0.4)',
-  textPlaceholder: 'rgba(10,10,10,0.4)',
+  textPlaceholder: 'rgba(10,10,10,0.6)',
 
   // Borders
   border:       'rgba(10,10,10,0.08)',

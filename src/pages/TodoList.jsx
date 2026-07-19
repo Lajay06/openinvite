@@ -11,7 +11,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS,
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 
 const PRIORITY = {
@@ -137,7 +137,7 @@ export default function TodoList({ embedded = false }) {
               </button>
             ))}
           </div>
-          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             {done}/{total} complete
           </span>
         </div>
@@ -318,7 +318,7 @@ export default function TodoList({ embedded = false }) {
                         border: '1px dashed rgba(10,10,10,0.18)',
                         cursor: 'pointer', borderRadius: 0,
                         fontSize: 12, fontWeight: 600,
-                        color: 'rgba(10,10,10,0.4)', fontFamily: PJS,
+                        color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
                       }}
                     >
                       <Plus size={12} /> Add card

@@ -5,7 +5,7 @@ import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -59,7 +59,7 @@ function SuggestionItem({ suggestion, onAdd, added }) {
         </div>
         <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 4px' }}>{suggestion.description}</p>
         {suggestion.wedding_timeline && (
-          <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 4 }}>
             <Clock size={11} />{TIMELINE_LABELS[suggestion.wedding_timeline] || suggestion.wedding_timeline}
           </span>
         )}

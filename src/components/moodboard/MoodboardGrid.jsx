@@ -6,7 +6,7 @@ import { Edit3, Trash2, Heart, ExternalLink, Eye, X, Save, Image as ImageIcon } 
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -23,7 +23,7 @@ const CATEGORY_COLORS = {
   makeup:       { color: '#FFFFFF', bg: '#803D81' },
   centerpieces: { color: '#FFFFFF', bg: '#6b7700' },
   lighting:     { color: '#FFFFFF', bg: '#8a9a00' },
-  other:        { color: '#FFFFFF', bg: 'rgba(10,10,10,0.4)' },
+  other:        { color: '#FFFFFF', bg: 'rgba(10,10,10,0.6)' },
 };
 
 function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
@@ -92,7 +92,7 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
           <div style={{ width: '100%', maxWidth: 440, background: '#FFFFFF' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Edit item</span>
-              <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}><X size={14} /></button>
+              <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={14} /></button>
             </div>
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -128,7 +128,7 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
             <div style={{ width: 320, padding: 24, display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", flex: 1, margin: 0 }}>{item.title}</p>
-                <button onClick={() => setShowFull(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4, flexShrink: 0 }}><X size={16} /></button>
+                <button onClick={() => setShowFull(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, flexShrink: 0 }}><X size={16} /></button>
               </div>
               <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 {item.category}

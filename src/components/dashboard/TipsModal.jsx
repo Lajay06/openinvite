@@ -97,7 +97,7 @@ export default function TipsModal({ onClose }) {
           {/* Content */}
           <div style={{ flex: 1, padding: 32, minHeight: 280, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'auto' }}>
             <div key={key} style={{ animation: 'tipSlideIn 0.3s ease' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: 'Plus Jakarta Sans', margin: '0 0 12px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: 'Plus Jakarta Sans', margin: '0 0 12px' }}>
                 Tip {currentTip + 1} of {tips.length}
               </p>
               <h3 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', lineHeight: 1.3, marginBottom: 16, marginTop: 0, fontFamily: 'Plus Jakarta Sans' }}>
@@ -113,7 +113,7 @@ export default function TipsModal({ onClose }) {
           <div style={{ padding: '24px 32px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #EEEEEE', marginTop: 'auto' }}>
             <button
               onClick={handleClose}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: 'Plus Jakarta Sans' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: 'Plus Jakarta Sans' }}
             >
               Skip all
             </button>

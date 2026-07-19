@@ -79,7 +79,7 @@ function WorldPage({ universe, isCurrent, weddingDetails, guests, onBack, naviga
             <strong style={{ color: '#0A0A0A' }}>Signature motif — </strong>{MOTIF_NOTES[universe.id]}
           </p>
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 12px' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 12px' }}>
               How your assets look in this world
             </p>
             <UniverseAssetQuintet universeId={universe.id} weddingDetails={weddingDetails} guests={guests} colors={universe.colors} />
@@ -91,7 +91,7 @@ function WorldPage({ universe, isCurrent, weddingDetails, guests, onBack, naviga
             >
               Make this my universe
             </button>
-            <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '8px 0 0' }}>
+            <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '8px 0 0' }}>
               Restyles your existing invitations, website and RSVP — switching is never destructive.
             </p>
           </div>
@@ -140,7 +140,7 @@ export default function MockUniverseB() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
       {/* ── Header: neutral chrome, bold statement ── */}
       <div style={{ padding: '28px 32px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 6px' }}>
           Design Studio — mock B · Tile + world page
         </p>
         <h1 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: 800, color: '#0A0A0A', margin: 0, letterSpacing: '-0.01em' }}>

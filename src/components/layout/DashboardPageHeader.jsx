@@ -18,7 +18,7 @@ export default function DashboardPageHeader({ title, subtitle, actions }) {
           {title}
         </h1>
         {subtitle && (
-          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, flexShrink: 0 }}>
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, flexShrink: 0 }}>
             {subtitle}
           </span>
         )}

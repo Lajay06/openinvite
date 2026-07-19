@@ -58,13 +58,13 @@ export default function ScheduleTimeline({ items, onEdit, onDelete, readOnly = f
           {/* Date header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
             <span style={{
-              color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: 'nowrap',
+              color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: 'nowrap',
             }}>
               {date === '__nodate__' ? 'No date set' : fmtDate(date)}
             </span>
             <div style={{ flex: 1, height: 1, background: 'rgba(10,10,10,0.08)' }} />
             <span style={{
-              color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif",
+              color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}>
               {dateItems.length} {dateItems.length === 1 ? 'event' : 'events'}
             </span>
@@ -88,7 +88,7 @@ export default function ScheduleTimeline({ items, onEdit, onDelete, readOnly = f
                       {fmtTime(item.start_time)}
                     </span>
                     {item.end_time && (
-                      <span style={{ fontSize: 10, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'block' }}>
+                      <span style={{ fontSize: 10, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'block' }}>
                         {fmtTime(item.end_time)}
                       </span>
                     )}
@@ -117,12 +117,12 @@ export default function ScheduleTimeline({ items, onEdit, onDelete, readOnly = f
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', marginTop: 6 }}>
                         {item.location && (
                           <span style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 3 }}>
-                            <MapPin size={10} style={{ color: 'rgba(10,10,10,0.4)' }} />{item.location}
+                            <MapPin size={10} style={{ color: 'rgba(10,10,10,0.6)' }} />{item.location}
                           </span>
                         )}
                         {item.responsible_person && (
                           <span style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 3 }}>
-                            <User size={10} style={{ color: 'rgba(10,10,10,0.4)' }} />{item.responsible_person}
+                            <User size={10} style={{ color: 'rgba(10,10,10,0.6)' }} />{item.responsible_person}
                           </span>
                         )}
                       </div>

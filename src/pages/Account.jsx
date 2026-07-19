@@ -73,7 +73,7 @@ const TABS = [
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, display: 'block', marginBottom: 6,
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'block', marginBottom: 6,
 };
 
 const sectionTitleStyle = {
@@ -166,12 +166,12 @@ function SettingsTab({ user, refreshUser }) {
           <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>
             {user?.full_name || 'Your account'}
           </p>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>
             {user?.email || ''}
           </p>
         </div>
         {saveStatus === 'saving' && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginLeft: 'auto' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginLeft: 'auto' }}>
             <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Saving…
           </span>
         )}
@@ -221,7 +221,7 @@ function SettingsTab({ user, refreshUser }) {
           className="input-editorial"
           style={{ color: 'rgba(10,10,10,0.35)', cursor: 'not-allowed' }}
         />
-        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '6px 0 0', fontFamily: PJS }}>
+        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '6px 0 0', fontFamily: PJS }}>
           Contact support to change your email address.
         </p>
       </div>
@@ -234,7 +234,7 @@ function SettingsTab({ user, refreshUser }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>Currency</p>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>Used across your budget and pricing</p>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>Used across your budget and pricing</p>
         </div>
         <button
           onClick={() => setCurrencyModalOpen(true)}
@@ -247,7 +247,7 @@ function SettingsTab({ user, refreshUser }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>Temperature unit</p>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>Used for your wedding-day weather</p>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>Used for your wedding-day weather</p>
         </div>
         <TempUnitToggle value={tempUnit} onChange={handleTempUnitChange} saving={savingUnit} />
       </div>
@@ -318,7 +318,7 @@ function BillingTab({ user }) {
           {planLabel}
         </span>
         {planActivatedAt && (
-          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Active since {planActivatedAt}</span>
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Active since {planActivatedAt}</span>
         )}
       </div>
 
@@ -333,7 +333,7 @@ function BillingTab({ user }) {
                 </div>
                 <p style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
                   {formatCurrency(PLAN_PRICES_USD[pk])}
-                  <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.4)' }}> one-time (USD {PLAN_PRICES_USD[pk]} charged)</span>
+                  <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}> one-time (USD {PLAN_PRICES_USD[pk]} charged)</span>
                 </p>
                 <button
                   onClick={() => handleCheckout(pk)}
@@ -368,7 +368,7 @@ function BillingTab({ user }) {
               Add the digital suite: wedding website, invitations, online RSVP, and premium themes.
             </p>
             <p style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
-              {formatCurrency(PLAN_PRICES_USD.ultra)} <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.4)' }}>one-time (USD {PLAN_PRICES_USD.ultra} charged)</span>
+              {formatCurrency(PLAN_PRICES_USD.ultra)} <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}>one-time (USD {PLAN_PRICES_USD.ultra} charged)</span>
             </p>
             <button
               onClick={() => handleCheckout('ultra')}
@@ -423,7 +423,7 @@ function BillingTab({ user }) {
       )}
 
       <div>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', margin: '0 0 12px', fontFamily: PJS }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: PJS }}>
           {plan === 'free' ? "What's included in your free trial" : `What's included in ${planLabel}`}
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

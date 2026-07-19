@@ -92,7 +92,7 @@ function ActionCard({ action, onConfirm, onCancel }) {
       )}
 
       {action.status !== 'pending' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: action.status === 'done' ? '#10B981' : action.status === 'error' ? '#E03553' : 'rgba(10,10,10,0.4)', fontWeight: 600 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: action.status === 'done' ? '#10B981' : action.status === 'error' ? '#E03553' : 'rgba(10,10,10,0.6)', fontWeight: 600 }}>
           {STATUS_ICON[action.status]}
           {STATUS_TEXT[action.status]}
         </div>
@@ -212,7 +212,7 @@ export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions =
         {/* Quick actions */}
         {quickActions.length > 0 && messages.length === 0 && (
           <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8 }}>Quick actions</div>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8 }}>Quick actions</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {quickActions.map(action => (
                 <button key={action} onClick={() => sendMessage(action)} disabled={loading}

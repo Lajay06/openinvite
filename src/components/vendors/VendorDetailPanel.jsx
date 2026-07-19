@@ -13,7 +13,7 @@ const VendorLog = base44.entities.VendorLog;
 const VendorTask = base44.entities.VendorTask;
 
 const labelStyle = {
-  color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif",
+  color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif",
   display: 'block', marginBottom: 6,
 };
 
@@ -129,17 +129,17 @@ export default function VendorDetailPanel({ vendor, onClose }) {
               )}
               {vendor.phone && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  <Phone size={10} style={{ color: 'rgba(10,10,10,0.4)' }} />{vendor.phone}
+                  <Phone size={10} style={{ color: 'rgba(10,10,10,0.6)' }} />{vendor.phone}
                 </span>
               )}
               {vendor.email && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  <Mail size={10} style={{ color: 'rgba(10,10,10,0.4)' }} />{vendor.email}
+                  <Mail size={10} style={{ color: 'rgba(10,10,10,0.6)' }} />{vendor.email}
                 </span>
               )}
               {vendor.address && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  <MapPin size={10} style={{ color: 'rgba(10,10,10,0.4)' }} />{vendor.address}
+                  <MapPin size={10} style={{ color: 'rgba(10,10,10,0.6)' }} />{vendor.address}
                 </span>
               )}
               {vendor.website && (
@@ -150,7 +150,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
               )}
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', padding: 4, marginLeft: 8, display: 'flex' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4, marginLeft: 8, display: 'flex' }}>
             <X size={16} />
           </button>
         </div>
@@ -228,7 +228,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                               <p style={{ fontSize: 12, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{log.subject}</p>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                                <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                   {new Date(log.logged_at || log.created_date).toLocaleDateString()}
                                 </span>
                                 <button onClick={() => deleteLog(log.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', display: 'flex', padding: 2 }}>
@@ -311,7 +311,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                                   border: '1px solid rgba(10,10,10,0.15)', color: '#444444',
                                 }}>{log.document_type}</span>
                               )}
-                              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                 {new Date(log.created_date).toLocaleDateString()}
                               </span>
                             </div>
@@ -405,7 +405,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                                 </span>
                               )}
                               {task.due_date && (
-                                <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                   Due {new Date(task.due_date).toLocaleDateString()}
                                 </span>
                               )}

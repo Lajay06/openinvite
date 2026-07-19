@@ -113,12 +113,12 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
             <SpotifyIcon />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>Search Spotify</span>
             {spotifyConnection?.displayName && (
-              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                 · {spotifyConnection.displayName}
               </span>
             )}
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', padding: 4 }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4 }}>
             <X size={16} />
           </button>
         </div>
@@ -156,10 +156,10 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
             </div>
           )}
           {!loading && results.length === 0 && query && !error && (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textAlign: 'center', padding: '40px 24px' }}>No results found. Try a different search.</p>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textAlign: 'center', padding: '40px 24px' }}>No results found. Try a different search.</p>
           )}
           {!loading && !query && (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textAlign: 'center', padding: '40px 24px' }}>Search for a song or artist to get started.</p>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textAlign: 'center', padding: '40px 24px' }}>Search for a song or artist to get started.</p>
           )}
           {results.map(track => {
             const added = addedIds.has(track.id);

@@ -14,7 +14,7 @@ const ReceivedGift = base44.entities.ReceivedGift;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -195,7 +195,7 @@ export default function ReceivedGifts() {
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {editingGift ? 'Edit gift' : 'Add received gift'}
             </span>
-            <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}><X size={16} /></button>
+            <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -211,7 +211,7 @@ export default function ReceivedGifts() {
                 <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.1)', zIndex: 20, maxHeight: 160, overflowY: 'auto' }}>
                   {filteredGuests.map(g => (
                     <button key={g.id} onClick={() => selectGuest(g)} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: 13, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
-                      {g.name}{g.email ? <span style={{ color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>· {g.email}</span> : ''}
+                      {g.name}{g.email ? <span style={{ color: 'rgba(10,10,10,0.6)', marginLeft: 6 }}>· {g.email}</span> : ''}
                     </button>
                   ))}
                 </div>

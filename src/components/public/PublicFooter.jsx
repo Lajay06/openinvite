@@ -13,7 +13,7 @@ export default function PublicFooter() {
             <Link to="/">
               <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" alt="openinvite" style={{ height: "48px", width: "auto", display: "block", filter: "brightness(0)" }} />
             </Link>
-            <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: 15, fontWeight: 600, lineHeight: 1.7 }}>
+            <p style={{ color: 'rgba(10,10,10,0.6)', fontSize: 15, fontWeight: 600, lineHeight: 1.7 }}>
               You should enjoy yourself.
             </p>
           </div>
@@ -72,7 +72,7 @@ export default function PublicFooter() {
         </div>
 
         <div className="border-t border-[#E0E0DC] pt-8">
-          <p style={{ color: 'rgba(10,10,10,0.4)', fontSize: 12 }}>© 2026 OpenInvite. All rights reserved.</p>
+          <p style={{ color: 'rgba(10,10,10,0.6)', fontSize: 12 }}>© 2026 OpenInvite. All rights reserved.</p>
         </div>
       </div>
     </footer>

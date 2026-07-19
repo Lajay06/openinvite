@@ -14,7 +14,7 @@ const SEASON_OPTIONS     = ['Spring', 'Summer', 'Autumn', 'Winter'];
 const SETTING_OPTIONS    = ['Indoor', 'Outdoor', 'Mix of both'];
 
 const headingStyle = { fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 14px' };
-const subLabelStyle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 10px', display: 'block' };
+const subLabelStyle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px', display: 'block' };
 
 function Pill({ label, selected, onClick, small, disabled }) {
   return (

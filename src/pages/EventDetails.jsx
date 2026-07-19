@@ -98,7 +98,7 @@ function migrateThemeFields(wd, tdEntity) {
 const PRE_WEDDING_TYPES  = ['Engagement Party', 'Bridal Shower', 'Bachelor Party', 'Bachelorette Party', 'Rehearsal Dinner', 'Welcome Cocktails', 'Other'];
 const POST_WEDDING_TYPES = ['After Party', 'Next-Day Brunch', 'Farewell Brunch', 'Thank You Reception', 'Other'];
 
-const sLabel = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8, display: 'block' };
+const sLabel = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block' };
 const divider = { height: 1, background: 'rgba(10,10,10,0.08)', margin: '28px 0' };
 
 function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
@@ -173,7 +173,7 @@ function TimeSelect({ id, value, onChange }) {
           padding: '6px 20px 6px 0',
           fontSize: 14,
           fontWeight: 500,
-          color: value ? '#0A0A0A' : 'rgba(10,10,10,0.4)',
+          color: value ? '#0A0A0A' : 'rgba(10,10,10,0.6)',
           outline: 'none',
           fontFamily: PJS,
           cursor: 'pointer',
@@ -188,7 +188,7 @@ function TimeSelect({ id, value, onChange }) {
         ))}
       </select>
       <svg style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
-        <path d="M1.5 3.5l4 4 4-4" stroke="rgba(10,10,10,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M1.5 3.5l4 4 4-4" stroke="rgba(10,10,10,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     </div>
   );
@@ -277,7 +277,7 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
             {modalTitle}
           </span>
-          <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4, borderRadius: 999 }}>
+          <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, borderRadius: 999 }}>
             <X size={16} />
           </button>
         </div>
@@ -391,7 +391,7 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
   const overline = isFixed
     ? 'Main event'
     : (event?.type || (isPost ? 'Post-wedding' : 'Pre-wedding'));
-  const overlineColor = isFixed ? '#E03553' : 'rgba(10,10,10,0.4)';
+  const overlineColor = isFixed ? '#E03553' : 'rgba(10,10,10,0.6)';
 
   const photoUrl  = isFixed ? (event?.photoUrl || null) : (event?.venuePhotoUrl || event?.photoUrl || null);
   const hasImage  = !!photoUrl;
@@ -422,7 +422,7 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
 
         {/* Date · time */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 8 }}>
-          <Calendar size={13} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0, marginTop: 1 }} />
+          <Calendar size={13} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0, marginTop: 1 }} />
           <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, lineHeight: 1.3 }}>
             {dateTimeStr || 'Date to be confirmed'}
           </span>
@@ -430,7 +430,7 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
 
         {/* Location */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7 }}>
-          <MapPin size={13} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0, marginTop: 1 }} />
+          <MapPin size={13} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0, marginTop: 1 }} />
           <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, lineHeight: 1.3 }}>
             {locationLine || 'Location to be confirmed'}
           </span>
@@ -452,7 +452,7 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
               <button
                 type="button"
                 onClick={e => { e.stopPropagation(); onDelete(); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, fontSize: 12, fontWeight: 600, padding: 0 }}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, fontSize: 12, fontWeight: 600, padding: 0 }}
               >
                 <Trash2 size={12} />
                 Delete
@@ -744,7 +744,7 @@ export default function EventDetailsPage() {
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite', color: 'rgba(10,10,10,0.4)' }} />
+      <Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite', color: 'rgba(10,10,10,0.6)' }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -809,7 +809,7 @@ export default function EventDetailsPage() {
       <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px', overflowX: 'auto' }}>
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            style={{ padding: '12px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: tab === t.key ? '#0A0A0A' : 'rgba(10,10,10,0.4)', borderBottom: tab === t.key ? '2px solid #0A0A0A' : '2px solid transparent', fontFamily: PJS, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
+            style={{ padding: '12px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: tab === t.key ? '#0A0A0A' : 'rgba(10,10,10,0.6)', borderBottom: tab === t.key ? '2px solid #0A0A0A' : '2px solid transparent', fontFamily: PJS, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>
             {t.label}
           </button>
         ))}
@@ -838,8 +838,8 @@ export default function EventDetailsPage() {
                 <div key={g.id} onClick={readOnly ? undefined : () => update({ guestType: sel ? '' : g.id })}
                   style={{ border: `2px solid ${sel ? '#E03553' : 'rgba(10,10,10,0.1)'}`, borderRadius: 0, padding: '14px 12px', cursor: readOnly ? 'default' : 'pointer', background: sel ? 'rgba(224,53,83,0.04)' : '#FAFAFA', textAlign: 'center', transition: 'all 0.15s', opacity: readOnly && !sel ? 0.6 : 1 }}>
                   <p style={{ fontSize: 13, fontWeight: 700, color: sel ? '#E03553' : '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{g.label}</p>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: sel ? '#E03553' : 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontFamily: PJS }}>{g.range}</p>
-                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>{g.desc}</p>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: sel ? '#E03553' : 'rgba(10,10,10,0.6)', margin: '0 0 4px', fontFamily: PJS }}>{g.range}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>{g.desc}</p>
                 </div>
               );
             })}
@@ -853,7 +853,7 @@ export default function EventDetailsPage() {
         <div style={{ padding: '32px 32px 80px' }}>
 
           {/* Fixed events header */}
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 auto 12px', maxWidth: 680 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 auto 12px', maxWidth: 680 }}>
             Main events
           </p>
 
@@ -873,7 +873,7 @@ export default function EventDetailsPage() {
           {/* Custom events — sorted chronologically */}
           {sortedCustom.length > 0 && (
             <>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '28px auto 12px', maxWidth: 680 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '28px auto 12px', maxWidth: 680 }}>
                 Additional events
               </p>
               {sortedCustom.map(ev => (

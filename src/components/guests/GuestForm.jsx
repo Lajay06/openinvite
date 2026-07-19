@@ -136,7 +136,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
         <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
           {guest ? 'Edit guest' : 'Add new guest'}
         </span>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4, borderRadius: 999 }}>
+        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, borderRadius: 999 }}>
           <X size={16} />
         </button>
       </div>
@@ -197,7 +197,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
           <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <Label htmlFor="tags">
               Tags{' '}
-              <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: 11, color: 'rgba(10,10,10,0.4)' }}>
+              <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>
                 (for smart seating)
               </span>
             </Label>
@@ -217,7 +217,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
 
             {/* Quick-add */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Quick add:</span>
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Quick add:</span>
               {COMMON_TAGS.map(tag => (
                 <button
                   key={tag}
@@ -322,7 +322,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <Label htmlFor="plus_one_email">
                     Plus one email{' '}
-                    <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: 11, color: 'rgba(10,10,10,0.4)' }}>
+                    <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>
                       (optional — gives them their own invite &amp; RSVP)
                     </span>
                   </Label>

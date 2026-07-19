@@ -63,7 +63,7 @@ function FilterPill({ label, active, onClick }) {
 }
 
 const labelStyle = {
-  color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0,
+  color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0,
 };
 
 const CATEGORIES = [
@@ -327,7 +327,7 @@ export default function VendorSearch({ onAddVendor }) {
           {/* Compare prompt */}
           {compareList.length < 2 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Scale size={13} style={{ color: 'rgba(10,10,10,0.4)' }} />
+              <Scale size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
               <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 Select up to 3 vendors to compare side by side.
               </span>
@@ -353,7 +353,7 @@ export default function VendorSearch({ onAddVendor }) {
           {searchResults.some(r => !r.recommended) && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Search size={13} style={{ color: 'rgba(10,10,10,0.4)' }} />
+                <Search size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
                 <p style={labelStyle}>More options</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -421,7 +421,7 @@ function VendorResultCard({ result, onAdd, onToggleCompare, inCompare, canCompar
         </div>
         {result.address && (
           <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-            <MapPin size={11} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0, marginTop: 1 }} />{result.address}
+            <MapPin size={11} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0, marginTop: 1 }} />{result.address}
           </p>
         )}
       </div>

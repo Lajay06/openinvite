@@ -82,7 +82,7 @@ function PollCard({ poll, onEnd, onDelete, onShare, onInsightGenerated }) {
                 <span style={{ fontFamily: PJS, fontSize: 13, fontWeight: isLeading && totalVotes > 0 ? 700 : 400, color: '#0A0A0A' }}>
                   {opt.emoji && `${opt.emoji} `}{opt.label}
                 </span>
-                <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', marginLeft: 8, flexShrink: 0 }}>
+                <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', marginLeft: 8, flexShrink: 0 }}>
                   {pct}%
                 </span>
               </div>
@@ -107,7 +107,7 @@ function PollCard({ poll, onEnd, onDelete, onShare, onInsightGenerated }) {
       {/* Recent comments */}
       {poll.allowComments && poll.comments?.length > 0 && (
         <div style={{ margin: '0 20px 14px' }}>
-          <button onClick={() => setExpanded(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.4)', padding: 0, fontWeight: 600 }}>
+          <button onClick={() => setExpanded(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', padding: 0, fontWeight: 600 }}>
             {expanded ? 'Hide comments' : `${poll.comments.length} comment${poll.comments.length > 1 ? 's' : ''}`}
           </button>
           {expanded && (
@@ -156,7 +156,7 @@ function TemplateCard({ tpl, onClick }) {
     >
       <div style={{ fontSize: 22, marginBottom: 8 }}>{tpl.emoji}</div>
       <p style={{ fontFamily: PJS, fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px' }}>{tpl.category}</p>
-      <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, lineHeight: 1.4 }}>{tpl.title}</p>
+      <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, lineHeight: 1.4 }}>{tpl.title}</p>
     </div>
   );
 }
@@ -184,7 +184,7 @@ function PollEditor({ initial, onSave, onCancel, saving }) {
   return (
     <div>
       {onCancel && (
-        <button onClick={onCancel} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.4)', padding: '0 0 20px', fontWeight: 600 }}>
+        <button onClick={onCancel} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', padding: '0 0 20px', fontWeight: 600 }}>
           <ChevronLeft size={13} /> Back to templates
         </button>
       )}
@@ -219,7 +219,7 @@ function PollEditor({ initial, onSave, onCancel, saving }) {
           </div>
         ))}
         {options.length < 8 && (
-          <button onClick={addOption} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.4)', padding: '6px 0', fontWeight: 600 }}>
+          <button onClick={addOption} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', padding: '6px 0', fontWeight: 600 }}>
             <Plus size={11} /> Add option
           </button>
         )}
@@ -468,7 +468,7 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
             <button key={t.key} onClick={() => setTab(t.key)} style={{
               padding: '12px 14px', border: 'none', background: 'none', cursor: 'pointer',
               fontSize: 13, fontWeight: 600, fontFamily: PJS,
-              color: tab === t.key ? '#0A0A0A' : 'rgba(10,10,10,0.4)',
+              color: tab === t.key ? '#0A0A0A' : 'rgba(10,10,10,0.6)',
               borderBottom: tab === t.key ? '2px solid #0A0A0A' : '2px solid transparent',
               transition: 'color 0.15s',
             }}>
@@ -491,7 +491,7 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
             <div style={{ textAlign: 'center', padding: '60px 0' }}>
               <p style={{ fontSize: 32, margin: '0 0 12px' }}>🗳️</p>
               <p style={{ fontFamily: PJS, fontSize: 15, fontWeight: 600, color: '#0A0A0A', margin: '0 0 6px' }}>No polls yet</p>
-              <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.4)', margin: '0 0 24px' }}>Create your first poll and involve your guests in the planning.</p>
+              <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>Create your first poll and involve your guests in the planning.</p>
               <button onClick={() => setTab('create')} style={{ padding: '9px 20px', borderRadius: 999, background: '#E03553', color: '#FFFFFF', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 700 }}>
                 Create your first poll
               </button>
@@ -533,7 +533,7 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
                 <p style={{ fontFamily: PJS, fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px' }}>
                   Start from a template
                 </p>
-                <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.4)', margin: '0 0 24px' }}>
+                <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
                   Pick a category to pre-fill your poll, then customise before publishing.
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 32 }}>

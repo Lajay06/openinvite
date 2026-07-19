@@ -44,7 +44,7 @@ export default function CookiePolicy() {
       <main style={{ paddingTop: 120, paddingBottom: 120 }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
 
-          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 10 }}>Last updated: 9 July 2026</div>
+          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 10 }}>Last updated: 9 July 2026</div>
           <h1 style={H1}>Cookie policy</h1>
           <p style={{ ...P, fontSize: 16, color: 'rgba(10,10,10,0.6)', marginBottom: 48 }}>We keep cookies and similar browser-storage technologies to a minimum. Here is exactly what we use and why.</p>
 

@@ -10,7 +10,7 @@ const PAGE_SIZE = 20;
 
 const statLabelStyle = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0, marginBottom: 10,
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, marginBottom: 10,
 };
 const statValueStyle = {
   fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A',
@@ -36,7 +36,7 @@ function TableCell({ children, muted }) {
   return (
     <td style={{
       padding: '12px 16px', fontSize: 13, fontFamily: PJS,
-      color: muted ? 'rgba(10,10,10,0.4)' : '#0A0A0A',
+      color: muted ? 'rgba(10,10,10,0.6)' : '#0A0A0A',
       borderBottom: '1px solid rgba(10,10,10,0.06)',
       whiteSpace: 'nowrap',
     }}>
@@ -159,7 +159,7 @@ export default function Admin() {
       >
         {/* Search */}
         <div style={{ position: 'relative', maxWidth: 280, width: '100%' }}>
-          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.4)', pointerEvents: 'none' }} />
+          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.6)', pointerEvents: 'none' }} />
           <input
             type="text"
             placeholder="Search by email…"
@@ -206,7 +206,7 @@ export default function Admin() {
             Paid users{filteredUsers.length !== users.length ? ` (${filteredUsers.length} of ${users.length})` : ` (${users.length})`}
           </p>
           {totalPages > 1 && (
-            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
               Page {page} of {totalPages}
             </span>
           )}
@@ -220,7 +220,7 @@ export default function Admin() {
                   <th key={h} style={{
                     padding: '10px 16px', textAlign: 'left',
                     fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-                    color: 'rgba(10,10,10,0.4)', fontFamily: PJS,
+                    color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
                     borderBottom: '1px solid rgba(10,10,10,0.08)',
                     whiteSpace: 'nowrap',
                   }}>
@@ -276,7 +276,7 @@ export default function Admin() {
             >
               <ChevronLeft size={13} /> Previous
             </button>
-            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
               {page} / {totalPages}
             </span>
             <button
@@ -309,7 +309,7 @@ export default function Admin() {
                   <th key={h} style={{
                     padding: '10px 16px', textAlign: 'left',
                     fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-                    color: 'rgba(10,10,10,0.4)', fontFamily: PJS,
+                    color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
                     borderBottom: '1px solid rgba(10,10,10,0.08)',
                     whiteSpace: 'nowrap',
                   }}>

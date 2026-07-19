@@ -59,7 +59,7 @@ export default function MockUniverseA() {
 
       {/* ── Neutral chrome kicker — the app frame stays quiet ── */}
       <div style={{ padding: '20px 32px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: 0 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: 0 }}>
           Design Studio — mock A · Gallery
         </p>
         <MockDataNotice loading={loading} weddingDetails={weddingDetails} />
@@ -92,7 +92,7 @@ export default function MockUniverseA() {
 
       {/* ── Gallery wall ── */}
       <div id="gallery-wall" style={{ padding: '40px 32px 8px' }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 16px' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 16px' }}>
           All 10 worlds
         </p>
         <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 12, scrollSnapType: 'x proximity' }}>

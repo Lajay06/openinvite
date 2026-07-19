@@ -58,7 +58,7 @@ export default function VenueAssetLibrary({ onAddTable, onAddAsset, onImportLayo
       </div>
 
       {readOnly ? (
-        <p style={{ padding: '16px', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <p style={{ padding: '16px', fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           View only — the couple can add or rearrange tables and venue items.
         </p>
       ) : (

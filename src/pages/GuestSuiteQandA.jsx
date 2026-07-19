@@ -109,7 +109,7 @@ export default function GuestSuiteQandA() {
           </div>
         ) : (
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 4px' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 4px' }}>
               {qna.length} {qna.length === 1 ? 'question' : 'questions'}
             </p>
             {qna.map((item, i) => (

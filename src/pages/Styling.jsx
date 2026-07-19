@@ -216,7 +216,7 @@ const [activeTab, setActiveTab] = useState("attire");
                     </div>
                   )}
                   {floristVendors.length === 0 && (
-                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No florist vendors added yet. Click + to add one.</p>
+                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No florist vendors added yet. Click + to add one.</p>
                   )}
                 </div>
               </DetailsSection>
@@ -326,7 +326,7 @@ const [activeTab, setActiveTab] = useState("attire");
                     </div>
                   )}
                   {decorationVendors.length === 0 && (
-                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No decoration vendors added yet. Click + to add one.</p>
+                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No decoration vendors added yet. Click + to add one.</p>
                   )}
                 </div>
               </DetailsSection>

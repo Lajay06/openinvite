@@ -20,7 +20,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const labelStyle = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6, display: 'block',
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 6, display: 'block',
 };
 
 const TABS = [
@@ -188,7 +188,7 @@ export default function CateringPage() {
         ].map((s, i, arr) => (
           <div key={s.label} style={{ flex: 1, padding: '20px 32px', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : undefined }}>
             <div style={{ fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.02em' }}>{s.value}</div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, letterSpacing: '0.06em', marginTop: 2 }}>{s.label}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, letterSpacing: '0.06em', marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -255,7 +255,7 @@ export default function CateringPage() {
                   </div>
                 )}
                 {caterers.length === 0 && (
-                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginTop: 6 }}>No catering vendors added yet. Click + to add one.</p>
+                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginTop: 6 }}>No catering vendors added yet. Click + to add one.</p>
                 )}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>

@@ -45,7 +45,7 @@ export function onboardingDay1Email({ name, email }) {
           <!-- 3 things to do first -->
           <tr>
             <td style="padding:0 40px 32px;">
-              <p style="margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:0.06em;color:rgba(10,10,10,0.4);">
+              <p style="margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:0.06em;color:rgba(10,10,10,0.6);">
                 3 things to do first
               </p>
 

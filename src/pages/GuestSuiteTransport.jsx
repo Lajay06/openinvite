@@ -20,7 +20,7 @@ const TRANSPORT_TYPES = [
 
 const sectionLabel = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8, display: 'block',
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block',
 };
 
 function photoProxy(ref, w = 600) {
@@ -63,7 +63,7 @@ function TransportPlaceCard({ place, onRemove }) {
       </div>
       <div style={{ padding: '12px 14px' }}>
         <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: PJS }}>{place.name}</p>
-        {place.address && <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', fontFamily: PJS }}>{place.address}</p>}
+        {place.address && <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: PJS }}>{place.address}</p>}
         {place.note && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 6px', fontFamily: PJS, fontStyle: 'italic' }}>"{place.note}"</p>}
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           {place.maps_url && (
@@ -112,7 +112,7 @@ function NoteCard({ note, onRemove, onEdit }) {
       </div>
       {!editing && (
         <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-          <button onClick={() => setEditing(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: 0 }}>Edit</button>
+          <button onClick={() => setEditing(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: 0 }}>Edit</button>
           <button onClick={onRemove} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 0 }}><X size={13} /></button>
         </div>
       )}
@@ -357,7 +357,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
       <DashboardPageHeader
         title="Transport"
         subtitle="Getting to and around the venue"
-        actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Saving…</span> : null}
+        actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Saving…</span> : null}
       />
 
       <div style={{ padding: '32px 32px 80px' }}>
@@ -381,7 +381,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
             {/* Ava suggestions */}
             {avaSuggestions.length > 0 && (
               <div style={{ marginBottom: 36 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                   Ava's suggestions — add what's relevant
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -421,16 +421,16 @@ isPlace: true only for actual places (airports, stations) that can be found on G
               {/* Search */}
               <div style={{ position: 'relative' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Search Google Places</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Search Google Places</span>
                   {/* Geolocation control */}
                   {geoState === 'idle' && (
                     <button type="button" onClick={handleUseLocation}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: 0 }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: 0 }}>
                       <Navigation size={11} /> Use my location
                     </button>
                   )}
                   {geoState === 'loading' && (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                       <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> Getting location…
                     </span>
                   )}
@@ -444,14 +444,14 @@ isPlace: true only for actual places (airports, stations) that can be found on G
                     </span>
                   )}
                   {geoState === 'error' && (
-                    <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                    <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                       Couldn't get location —{' '}
                       <button type="button" onClick={handleUseLocation}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
                     </span>
                   )}
                   {geoState === 'unavailable' && (
-                    <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Location not available</span>
+                    <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Location not available</span>
                   )}
                 </div>
 
@@ -485,7 +485,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
                         )}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{place.name}</p>
-                          <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
+                          <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
                         </div>
                       </button>
                     ))}
@@ -506,7 +506,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
               {/* Manual entry form */}
               {!selectedPlace && showManual && (
                 <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '16px 16px 18px' }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
                     <div>
                       <label style={sectionLabel}>Name</label>
@@ -586,7 +586,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
             {/* Saved places */}
             {places.length > 0 && (
               <div style={{ marginBottom: 36 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                   Getting here — {places.length} location{places.length !== 1 ? 's' : ''}
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
@@ -597,7 +597,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
 
             {/* Transport notes */}
             <div style={{ marginBottom: 36 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                 Transport tips & notes
               </p>
 

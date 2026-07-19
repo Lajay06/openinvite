@@ -91,7 +91,7 @@ export default function VisualTable({ table, guests, onSeatClick, selected, sele
           {table.name}
         </span>
         <span style={{
-          fontSize: 9, color: isFull ? '#6b7700' : 'rgba(10,10,10,0.4)',
+          fontSize: 9, color: isFull ? '#6b7700' : 'rgba(10,10,10,0.6)',
           fontFamily: "'Plus Jakarta Sans', sans-serif", marginTop: 2, fontWeight: 600,
         }}>
           {assignedCount}/{table.capacity}

@@ -83,7 +83,7 @@ export default function ScheduleList({ items, onEdit, onDelete, readOnly = false
                 <TableCell><CategoryPill category={item.category} /></TableCell>
                 <TableCell>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <Clock size={11} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} />
+                    <Clock size={11} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
                     <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {fmtTime(item.start_time)}{item.end_time ? ` – ${fmtTime(item.end_time)}` : ''}
                     </span>
@@ -92,7 +92,7 @@ export default function ScheduleList({ items, onEdit, onDelete, readOnly = false
                 <TableCell>
                   {item.location ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <MapPin size={11} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} />
+                      <MapPin size={11} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
                       <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{item.location}</span>
                     </div>
                   ) : (
@@ -102,7 +102,7 @@ export default function ScheduleList({ items, onEdit, onDelete, readOnly = false
                 <TableCell>
                   {item.responsible_person ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <User size={11} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} />
+                      <User size={11} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
                       <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{item.responsible_person}</span>
                     </div>
                   ) : (

@@ -32,7 +32,7 @@ export default function RefundPolicy() {
       <main style={{ paddingTop: 120, paddingBottom: 120 }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
 
-          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 10 }}>Last updated: 9 July 2026</div>
+          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 10 }}>Last updated: 9 July 2026</div>
           <h1 style={H1}>Refund policy</h1>
           <p style={{ fontSize: 15, lineHeight: 1.75, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 48 }}>
             Pro and Ultra are one-time purchases, not subscriptions — so our refund policy is a single, simple guarantee.

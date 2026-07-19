@@ -42,7 +42,7 @@ export default function RegistryProductForm({ item, onSubmit, onClose }) {
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {item ? 'Edit product' : 'Add product'}
           </span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}><X size={16} /></button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
         </div>
         <form onSubmit={handleSubmit}>
           <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>

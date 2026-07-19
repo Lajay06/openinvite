@@ -142,7 +142,7 @@ export default function GamesPage() {
     return (
       <Centered>
         <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', margin: '0 0 6px' }}>{error}</p>
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)' }}>Check the link and try again, or reach out to the couple.</p>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>Check the link and try again, or reach out to the couple.</p>
       </Centered>
     );
   }
@@ -152,7 +152,7 @@ export default function GamesPage() {
       <Centered>
         <p style={{ fontSize: 32, margin: '0 0 12px' }}>🔒</p>
         <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', margin: '0 0 6px' }}>This game has closed</p>
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)' }}>It's no longer accepting answers.</p>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>It's no longer accepting answers.</p>
       </Centered>
     );
   }

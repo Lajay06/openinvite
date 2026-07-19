@@ -26,13 +26,13 @@ function AboutTab({ vendor, details }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {vendor.location && (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-          <MapPin size={14} style={{ color: 'rgba(10,10,10,0.4)', marginTop: 2, flexShrink: 0 }} />
+          <MapPin size={14} style={{ color: 'rgba(10,10,10,0.6)', marginTop: 2, flexShrink: 0 }} />
           <span style={{ fontSize: 14, color: 'rgba(10,10,10,0.7)', fontFamily: PJS, lineHeight: 1.6 }}>{vendor.location}</span>
         </div>
       )}
       {details?.types?.length > 0 && (
         <div>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8 }}>Listed as</div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8 }}>Listed as</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {details.types.filter(t => !['point_of_interest', 'establishment'].includes(t)).slice(0, 6).map(t => (
               <span key={t} style={{ fontSize: 12, color: '#0A0A0A', background: 'rgba(10,10,10,0.06)', padding: '4px 10px', borderRadius: 999, fontFamily: PJS }}>{t.replace(/_/g, ' ')}</span>
@@ -57,12 +57,12 @@ function ReviewsTab({ vendor, details }) {
         </div>
         <div>
           {vendor.rating != null && <StarRow rating={vendor.rating} size={15} />}
-          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginTop: 4 }}>{vendor.reviewCount || 0} Google reviews</div>
+          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginTop: 4 }}>{vendor.reviewCount || 0} Google reviews</div>
         </div>
       </div>
 
       {reviews.length === 0 ? (
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No review snippets available from Google for this listing.</p>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No review snippets available from Google for this listing.</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {reviews.map((r, i) => (
@@ -70,7 +70,7 @@ function ReviewsTab({ vendor, details }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{r.author_name}</div>
-                  <div style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{r.relative_time_description}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{r.relative_time_description}</div>
                 </div>
                 {r.rating != null && <StarRow rating={r.rating} size={11} />}
               </div>
@@ -96,7 +96,7 @@ function ContactTab({ vendor, details, onSave, isSaved }) {
             style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}
             onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
             onMouseLeave={e => e.currentTarget.style.color = '#0A0A0A'}>
-            <Globe size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />
+            <Globe size={14} style={{ color: 'rgba(10,10,10,0.6)' }} />
             {website}
             <ExternalLink size={11} style={{ color: 'rgba(10,10,10,0.3)' }} />
           </a>
@@ -105,7 +105,7 @@ function ContactTab({ vendor, details, onSave, isSaved }) {
           <a href={`tel:${phone}`} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}
             onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
             onMouseLeave={e => e.currentTarget.style.color = '#0A0A0A'}>
-            <Phone size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />
+            <Phone size={14} style={{ color: 'rgba(10,10,10,0.6)' }} />
             {phone}
           </a>
         )}
@@ -114,13 +114,13 @@ function ContactTab({ vendor, details, onSave, isSaved }) {
             style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, textDecoration: 'none' }}
             onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
             onMouseLeave={e => e.currentTarget.style.color = '#0A0A0A'}>
-            <MapIcon size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />
+            <MapIcon size={14} style={{ color: 'rgba(10,10,10,0.6)' }} />
             View on Google Maps
             <ExternalLink size={11} style={{ color: 'rgba(10,10,10,0.3)' }} />
           </a>
         )}
         {!website && !phone && !mapsUrl && (
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No contact details available from Google for this listing.</p>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No contact details available from Google for this listing.</p>
         )}
       </div>
 
@@ -203,7 +203,7 @@ export default function VendorProfileModal({ vendor, onClose, onSave, isSaved })
                   <>
                     <StarRow rating={vendor.rating} size={13} />
                     <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A' }}>{vendor.rating}</span>
-                    <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)' }}>({vendor.reviewCount} reviews)</span>
+                    <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>({vendor.reviewCount} reviews)</span>
                   </>
                 )}
                 {vendor.priceRange && <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', marginLeft: 4 }}>{vendor.priceRange}</span>}

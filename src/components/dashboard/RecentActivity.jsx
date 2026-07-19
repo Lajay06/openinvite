@@ -4,7 +4,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: PJS,
 };
 
@@ -57,7 +57,7 @@ export default function RecentActivity({ guests, budget }) {
                 }}>
                   {pill.label}
                 </span>
-                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
                   {timeAgo(a.date)}
                 </span>
               </div>
@@ -65,7 +65,7 @@ export default function RecentActivity({ guests, budget }) {
           );
         }) : (
           <div style={{ padding: '32px 0', textAlign: 'center' }}>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No activity yet.</p>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No activity yet.</p>
           </div>
         )}
       </div>

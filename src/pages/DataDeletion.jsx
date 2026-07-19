@@ -13,7 +13,7 @@ export default function DataDeletion() {
       <main style={{ paddingTop: 120, paddingBottom: 120 }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
 
-          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 10 }}>Last updated: 9 July 2026</div>
+          <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 10 }}>Last updated: 9 July 2026</div>
           <h1 style={{ fontSize: 40, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.02em', lineHeight: 1.15, marginBottom: 16 }}>Delete your account and data</h1>
           <p style={{ fontSize: 15, lineHeight: 1.75, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 48 }}>
             We're sorry to see you go. Your data belongs to you — here's exactly how to remove it.

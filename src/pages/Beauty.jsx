@@ -18,7 +18,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS,
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 const inputStyle = {
   width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)',
@@ -394,7 +394,7 @@ export default function BeautyPage() {
                 </div>
 
                 {gettingReadyPeople.length === 0 ? (
-                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No one added yet. Click "Add person" to start building your getting ready list.</p>
+                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No one added yet. Click "Add person" to start building your getting ready list.</p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {/* Header row */}
@@ -453,7 +453,7 @@ export default function BeautyPage() {
                         <span>Total getting ready time</span>
                         <span>{Math.floor(totalMins / 60)}h {totalMins % 60 > 0 ? `${totalMins % 60}m` : ''}</span>
                       </div>
-                      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '4px 0 0' }}>
+                      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '4px 0 0' }}>
                         Recommended start time: at least {Math.ceil(totalMins / 60) + 1}h before ceremony
                       </p>
                     </div>
@@ -476,7 +476,7 @@ export default function BeautyPage() {
             {skincareTimeline.length === 0 && (
               <div style={{ padding: '48px 0', textAlign: 'center' }}>
                 <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>No milestones yet</p>
-                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add your first milestone above to start planning your skincare countdown.</p>
+                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add your first milestone above to start planning your skincare countdown.</p>
               </div>
             )}
 
@@ -536,7 +536,7 @@ export default function BeautyPage() {
               </button>
             </div>
             {beautyVendors.length === 0 ? (
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textAlign: 'center', padding: '40px 0' }}>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textAlign: 'center', padding: '40px 0' }}>
                 No beauty vendors added yet. Click "Add beauty vendor" to get started.
               </p>
             ) : (
@@ -558,7 +558,7 @@ export default function BeautyPage() {
             {showTrialForm && <TrialForm onSubmit={addTrial} onCancel={() => setShowTrialForm(false)} />}
 
             {trials.length === 0 && !showTrialForm ? (
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textAlign: 'center', padding: '32px 0' }}>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textAlign: 'center', padding: '32px 0' }}>
                 No trials scheduled yet. Click "Schedule trial" to add one.
               </p>
             ) : (
@@ -568,7 +568,7 @@ export default function BeautyPage() {
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{t.artist || 'Trial'}</span>
-                        {t.date && <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{t.date}</span>}
+                        {t.date && <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{t.date}</span>}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         {t.rating > 0 && <StarRating value={t.rating} onChange={() => {}} />}
@@ -582,7 +582,7 @@ export default function BeautyPage() {
                       <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>{t.lookDescription}</p>
                     )}
                     {t.notes && (
-                      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0, fontStyle: 'italic' }}>{t.notes}</p>
+                      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, fontStyle: 'italic' }}>{t.notes}</p>
                     )}
                   </div>
                 ))}
@@ -649,32 +649,32 @@ function TrialForm({ onSubmit, onCancel }) {
     <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 24, marginBottom: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>Schedule a trial</span>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}><X size={15} /></button>
+        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={15} /></button>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Date</label>
+            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Date</label>
             <input type="date" value={data.date} onChange={e => set('date', e.target.value)}
               style={{ border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '6px 0' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Artist name</label>
+            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Artist name</label>
             <input value={data.artist} onChange={e => set('artist', e.target.value)} placeholder="Artist"
               style={{ border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '6px 0', width: '100%' }} />
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Look description</label>
+          <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Look description</label>
           <textarea value={data.lookDescription} onChange={e => set('lookDescription', e.target.value)} placeholder="Describe the look discussed…"
             style={{ border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '6px 0', resize: 'vertical', minHeight: 60, width: '100%' }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Rating</label>
+          <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Rating</label>
           <StarRating value={data.rating} onChange={v => set('rating', v)} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Notes</label>
+          <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Notes</label>
           <textarea value={data.notes} onChange={e => set('notes', e.target.value)} placeholder="Products used, feedback, things to change…"
             style={{ border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '6px 0', resize: 'vertical', minHeight: 60, width: '100%' }} />
         </div>

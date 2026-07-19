@@ -2,7 +2,7 @@ import React from 'react';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -48,7 +48,7 @@ export default function BudgetSummary({ budget, stats }) {
           <div key={cat}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <p style={labelStyle}>{cat}</p>
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>${spent.toLocaleString()} / ${budgeted.toLocaleString()}</p>
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>${spent.toLocaleString()} / ${budgeted.toLocaleString()}</p>
             </div>
             <div style={{ height: 3, background: 'rgba(10,10,10,0.06)', width: '100%' }}>
               <div style={{ height: '100%', width: `${Math.min(pct, 100)}%`, background: pct > 100 ? '#E03553' : 'linear-gradient(90deg,#E03553,#803D81)', transition: 'width 0.6s ease' }} />
@@ -56,7 +56,7 @@ export default function BudgetSummary({ budget, stats }) {
           </div>
         ))}
         {categoryTotals.length === 0 && (
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '16px 0' }}>No budget items yet.</p>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", padding: '16px 0' }}>No budget items yet.</p>
         )}
       </div>
     </div>

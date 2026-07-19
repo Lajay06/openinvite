@@ -36,7 +36,7 @@ const HOUR_HEIGHT = 80;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0,
 };
 
@@ -312,7 +312,7 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
               >
                 <div style={{ width: 3, height: 28, background: cfg.bg, flexShrink: 0 }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", width: 64, flexShrink: 0 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", width: 64, flexShrink: 0 }}>
                   {fmt12(item.start_time)}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>

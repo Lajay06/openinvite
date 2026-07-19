@@ -49,7 +49,7 @@ export function onboardingDay3Email({ name, email }) {
           <!-- What Ava can do -->
           <tr>
             <td style="padding:0 40px 32px;">
-              <p style="margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:0.06em;color:rgba(10,10,10,0.4);">
+              <p style="margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:0.06em;color:rgba(10,10,10,0.6);">
                 What you can ask Ava
               </p>
 

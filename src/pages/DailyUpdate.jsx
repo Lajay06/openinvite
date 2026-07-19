@@ -290,7 +290,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
         {phase === 'loading' ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 100 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#E03553', animation: 'pulse 1.4s infinite' }} />
-            <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.4)' }}>
+            <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>
               Ava is preparing your briefing...
             </span>
           </div>

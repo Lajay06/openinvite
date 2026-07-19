@@ -48,7 +48,7 @@ export function onboardingDay7Email({ name, email }) {
           <!-- Plan comparison -->
           <tr>
             <td style="padding:0 40px 32px;">
-              <p style="margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:0.06em;color:rgba(10,10,10,0.4);">
+              <p style="margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:0.06em;color:rgba(10,10,10,0.6);">
                 Choose the plan that fits you
               </p>
 
@@ -60,7 +60,7 @@ export function onboardingDay7Email({ name, email }) {
                       <tr>
                         <td>
                           <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:#0A0A0A;">Pro</p>
-                          <p style="margin:0;font-size:22px;font-weight:700;color:#0A0A0A;">$79 <span style="font-size:13px;font-weight:400;color:rgba(10,10,10,0.4);">AUD one-time</span></p>
+                          <p style="margin:0;font-size:22px;font-weight:700;color:#0A0A0A;">$79 <span style="font-size:13px;font-weight:400;color:rgba(10,10,10,0.6);">AUD one-time</span></p>
                         </td>
                       </tr>
                       <tr>
@@ -90,7 +90,7 @@ export function onboardingDay7Email({ name, email }) {
                       <tr>
                         <td>
                           <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:#0A0A0A;">Ultra</p>
-                          <p style="margin:0;font-size:22px;font-weight:700;color:#0A0A0A;">$149 <span style="font-size:13px;font-weight:400;color:rgba(10,10,10,0.4);">AUD one-time</span></p>
+                          <p style="margin:0;font-size:22px;font-weight:700;color:#0A0A0A;">$149 <span style="font-size:13px;font-weight:400;color:rgba(10,10,10,0.6);">AUD one-time</span></p>
                         </td>
                       </tr>
                       <tr>

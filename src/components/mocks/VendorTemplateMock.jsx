@@ -10,7 +10,7 @@ export const PJS = "'Plus Jakarta Sans', sans-serif";
 
 export const labelStyle = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS,
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 
 export const inputStyle = {
@@ -70,11 +70,11 @@ export function AccordionSection({ title, summary, children }) {
         <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, flexShrink: 0 }}>{title}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           {!open && (
-            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {summary}
             </span>
           )}
-          {open ? <ChevronUp size={14} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} /> : <ChevronDown size={14} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} />}
+          {open ? <ChevronUp size={14} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} /> : <ChevronDown size={14} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />}
         </div>
       </button>
       {open && <div style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>{children}</div>}
@@ -115,12 +115,12 @@ export function VendorTabMock({ category, vendor, setVendor, myVendors }) {
                 )}
                 {vendor.phone && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#444444', fontFamily: PJS }}>
-                    <Phone size={11} style={{ color: 'rgba(10,10,10,0.4)' }} />{vendor.phone}
+                    <Phone size={11} style={{ color: 'rgba(10,10,10,0.6)' }} />{vendor.phone}
                   </span>
                 )}
                 {vendor.email && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#444444', fontFamily: PJS }}>
-                    <Mail size={11} style={{ color: 'rgba(10,10,10,0.4)' }} />{vendor.email}
+                    <Mail size={11} style={{ color: 'rgba(10,10,10,0.6)' }} />{vendor.email}
                   </span>
                 )}
               </div>
@@ -162,7 +162,7 @@ export function VendorTabMock({ category, vendor, setVendor, myVendors }) {
     <div style={{ maxWidth: 560 }}>
       {mode === null && (
         <div style={{ border: '1px dashed rgba(10,10,10,0.18)', padding: '40px 24px', textAlign: 'center' }}>
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
             No vendor added yet.
           </p>
           <button onClick={() => setMode('choose')} className="btn-primary" style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -197,7 +197,7 @@ function VendorChoiceMock({ categoryVendors, pickedId, setPickedId, onPickExisti
         <div>
           <p style={{ fontSize: 12, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 8px' }}>From my vendors</p>
           {categoryVendors.length === 0 ? (
-            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>No matching vendors in My vendors yet.</p>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>No matching vendors in My vendors yet.</p>
           ) : (
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ flex: 1 }}>
@@ -224,7 +224,7 @@ function VendorChoiceMock({ categoryVendors, pickedId, setPickedId, onPickExisti
         </button>
       </div>
       <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(10,10,10,0.06)' }}>
-        <button onClick={onCancel} style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontWeight: 600 }}>
+        <button onClick={onCancel} style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontWeight: 600 }}>
           Cancel
         </button>
       </div>

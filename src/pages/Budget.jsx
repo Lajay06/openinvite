@@ -50,7 +50,7 @@ function FilterPill({ label, active, onClick }) {
 }
 
 const statLabelStyle = {
-  color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, marginBottom: 10,
+  color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, marginBottom: 10,
 };
 const statValueStyle = {
   fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A',
@@ -118,7 +118,7 @@ function BudgetPlanner({ symbol = '$' }) {
 
       {/* Total budget input */}
       <div style={{ marginBottom: 24, maxWidth: 320 }}>
-        <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Total wedding budget ({symbol})
         </label>
         <input
@@ -136,7 +136,7 @@ function BudgetPlanner({ symbol = '$' }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px 32px' }}>
         {BUDGET_CATEGORIES.map(cat => (
           <div key={cat.key}>
-            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {cat.label}
             </label>
             <input

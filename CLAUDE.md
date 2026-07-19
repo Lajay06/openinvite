@@ -19,7 +19,9 @@ var sourcing). Update it when you learn something new the same way.
 - All data via base44.entities.* authenticated client only
 - No imports from @/entities/* — use base44.entities.* instead
 - Font: Plus Jakarta Sans, always
-- Muted text: rgba(10,10,10,0.4) — never #888 or gray-400/500
+- Muted text: rgba(10,10,10,0.6) — never #888 or gray-400/500 (WCAG AA 4.5:1
+  against white; the previous rgba(10,10,10,0.4) only reached ~2.7:1 —
+  AUDIT_2026-07.md S13)
 - All accordions: defaultValue={[]} (collapsed by default)
 - Primary colour: #E03553
 - Black: #0A0A0A

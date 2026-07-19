@@ -167,7 +167,7 @@ export default function UniverseStudio() {
         <>
           {/* Header — neutral chrome, current universe as a declaration */}
           <div style={{ padding: '28px 32px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 10px' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 10px' }}>
               Design Studio
             </p>
             <h1 style={{ fontSize: 'clamp(1.9rem, 3.4vw, 2.8rem)', fontWeight: 800, color: '#0A0A0A', margin: 0, letterSpacing: '-0.01em' }}>
@@ -198,12 +198,12 @@ export default function UniverseStudio() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                       {weddingDateStr && (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>
-                          <Calendar size={13} style={{ color: 'rgba(10,10,10,0.4)' }} /> {weddingDateStr}
+                          <Calendar size={13} style={{ color: 'rgba(10,10,10,0.6)' }} /> {weddingDateStr}
                         </span>
                       )}
                       {venueName && (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>
-                          <MapPin size={13} style={{ color: 'rgba(10,10,10,0.4)' }} /> {venueName}
+                          <MapPin size={13} style={{ color: 'rgba(10,10,10,0.6)' }} /> {venueName}
                         </span>
                       )}
                     </div>

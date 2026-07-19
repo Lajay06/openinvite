@@ -489,7 +489,7 @@ export default function RSVPPage() {
             )}
             <button
               onClick={() => setStep('rsvp')}
-              style={{ marginTop: 24, background: 'none', border: 'none', fontSize: 13, color: 'rgba(10,10,10,0.4)', cursor: 'pointer', ...F, textDecoration: 'underline' }}
+              style={{ marginTop: 24, background: 'none', border: 'none', fontSize: 13, color: 'rgba(10,10,10,0.6)', cursor: 'pointer', ...F, textDecoration: 'underline' }}
             >
               Change my response
             </button>
@@ -548,7 +548,7 @@ export default function RSVPPage() {
           <button
             onClick={() => setStep('done')}
             disabled={pollSubmitting}
-            style={{ background: 'none', border: 'none', fontSize: 13, color: 'rgba(10,10,10,0.4)', cursor: 'pointer', ...F, textAlign: 'center', padding: '4px 0' }}
+            style={{ background: 'none', border: 'none', fontSize: 13, color: 'rgba(10,10,10,0.6)', cursor: 'pointer', ...F, textAlign: 'center', padding: '4px 0' }}
           >
             Skip
           </button>
@@ -614,7 +614,7 @@ export default function RSVPPage() {
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: theme.lightText, marginBottom: 8 }}>
               Dietary restrictions
-              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
+              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.6)', marginLeft: 6 }}>optional</span>
             </label>
             <input
               type="text"
@@ -628,7 +628,7 @@ export default function RSVPPage() {
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: theme.lightText, marginBottom: 8 }}>
               Song request
-              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
+              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.6)', marginLeft: 6 }}>optional</span>
             </label>
             <input
               type="text"
@@ -642,7 +642,7 @@ export default function RSVPPage() {
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: theme.lightText, marginBottom: 8 }}>
               Message for the couple
-              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional</span>
+              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.6)', marginLeft: 6 }}>optional</span>
             </label>
             <textarea
               value={rsvpNote}
@@ -656,7 +656,7 @@ export default function RSVPPage() {
           <div style={{ marginBottom: 32 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: theme.lightText, marginBottom: 8 }}>
               Your email
-              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.4)', marginLeft: 6 }}>optional — so the couple can reach you</span>
+              <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.6)', marginLeft: 6 }}>optional — so the couple can reach you</span>
             </label>
             <input
               type="text"

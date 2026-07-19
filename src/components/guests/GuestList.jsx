@@ -66,7 +66,7 @@ function EventChip({ event, response }) {
 
 function NotYetInvitedChip() {
   return (
-    <span style={{ ...CHIP_BASE, background: 'transparent', border: '1px dashed rgba(10,10,10,0.25)', color: 'rgba(10,10,10,0.4)' }}>
+    <span style={{ ...CHIP_BASE, background: 'transparent', border: '1px dashed rgba(10,10,10,0.25)', color: 'rgba(10,10,10,0.6)' }}>
       Not yet invited
     </span>
   );
@@ -145,7 +145,7 @@ function LastSentCell({ guest }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>{fmtDate(guest.invite_sent_at)}</span>
-      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
         {CHANNEL_LABELS[guest.invite_channel] || 'Sent'}
       </span>
     </div>
@@ -413,7 +413,7 @@ function fmtRespondedAt(iso) {
 }
 
 const STATUS_LABELS = { yes: 'Attending', no: 'Declined', pending: 'Pending' };
-const STATUS_COLORS = { yes: '#166534', no: '#991b1b', pending: 'rgba(10,10,10,0.4)' };
+const STATUS_COLORS = { yes: '#166534', no: '#991b1b', pending: 'rgba(10,10,10,0.6)' };
 
 /* ── Dietary requirements — lives in the expanded detail row now, not its own
    table column (moved out to give the remaining columns more room; most rows
@@ -436,7 +436,7 @@ function DietaryField({ guest, onUpdate, readOnly }) {
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, display: 'block', marginBottom: 6 }}>
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'block', marginBottom: 6 }}>
         Dietary requirements
       </span>
       {readOnly ? (
@@ -473,7 +473,7 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly 
         <DietaryField guest={guest} onUpdate={onUpdate} readOnly={readOnly} />
 
         {weddingEvents.length === 0 ? (
-          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No events set up for this wedding yet.</span>
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No events set up for this wedding yet.</span>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid rgba(10,10,10,0.08)', maxWidth: 720 }}>
             <div style={{
@@ -482,7 +482,7 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly 
               borderBottom: '1px solid rgba(10,10,10,0.08)', alignItems: 'center',
             }}>
               {['Event', 'Invited', 'Status', 'Meal', 'Plus-one', 'Responded'].map(h => (
-                <span key={h} style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{h}</span>
+                <span key={h} style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{h}</span>
               ))}
             </div>
             {weddingEvents.map((event, i) => {
@@ -512,7 +512,7 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly 
                   <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
                     {r.invited ? plusOneText : '—'}
                   </span>
-                  <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                  <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                     {r.invited ? fmtRespondedAt(r.responded_at) : '—'}
                   </span>
                 </div>
@@ -541,13 +541,13 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 12, maxWidth: 720 }}>
             {guest.song_request && (
               <p style={{ fontSize: 12, color: '#444444', fontFamily: PJS, margin: 0 }}>
-                <span style={{ color: 'rgba(10,10,10,0.4)', fontWeight: 700 }}>Song request: </span>
+                <span style={{ color: 'rgba(10,10,10,0.6)', fontWeight: 700 }}>Song request: </span>
                 {guest.song_request}
               </p>
             )}
             {guest.rsvp_note && (
               <p style={{ fontSize: 12, color: '#444444', fontFamily: PJS, margin: 0 }}>
-                <span style={{ color: 'rgba(10,10,10,0.4)', fontWeight: 700 }}>Note: </span>
+                <span style={{ color: 'rgba(10,10,10,0.6)', fontWeight: 700 }}>Note: </span>
                 {guest.rsvp_note}
               </p>
             )}
@@ -854,7 +854,7 @@ export default function GuestList({
                         type="button"
                         onClick={() => toggleExpanded(guest.id)}
                         title={isExpanded ? 'Hide RSVP details' : 'Show RSVP details'}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center', color: 'rgba(10,10,10,0.4)', flexShrink: 0 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center', color: 'rgba(10,10,10,0.6)', flexShrink: 0 }}
                       >
                         {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                       </button>

@@ -120,13 +120,13 @@ export default function MockVendorTemplateBeauty() {
 
             <AccordionSection title="Wedding party" summary={partySummary}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Who's getting hair and/or makeup done</span>
+                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Who's getting hair and/or makeup done</span>
                 <button className="btn-primary" style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 5 }}>
                   <Plus size={11} />Add person
                 </button>
               </div>
               {data.gettingReadyPeople.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No one added yet. Click "Add person" to start building your getting ready list.</p>
+                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No one added yet. Click "Add person" to start building your getting ready list.</p>
               ) : (
                 <div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 90px 24px', gap: 10, padding: '0 0 8px', borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 8 }}>
@@ -156,7 +156,7 @@ export default function MockVendorTemplateBeauty() {
                 </button>
               </div>
               {data.skincareTimeline.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No milestones yet.</p>
+                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No milestones yet.</p>
               ) : (
                 <div>
                   <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 50px', gap: 14, padding: '0 0 8px', borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 8 }}>
@@ -166,7 +166,7 @@ export default function MockVendorTemplateBeauty() {
                     <div key={m.id} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 50px', gap: 14, alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(10,10,10,0.05)' }}>
                       <span style={{ fontSize: 13, fontFamily: PJS, color: '#0A0A0A' }}>{m.timeframe}</span>
                       <span style={{ fontSize: 13, fontFamily: PJS, color: '#444444' }}>{m.treatment}</span>
-                      <span style={{ fontSize: 12, fontFamily: PJS, color: 'rgba(10,10,10,0.4)' }}>{m.notes || '—'}</span>
+                      <span style={{ fontSize: 12, fontFamily: PJS, color: 'rgba(10,10,10,0.6)' }}>{m.notes || '—'}</span>
                       <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${m.done ? '#E03553' : 'rgba(10,10,10,0.25)'}`, background: m.done ? '#E03553' : 'transparent' }} />
                     </div>
                   ))}
@@ -181,14 +181,14 @@ export default function MockVendorTemplateBeauty() {
                 </button>
               </div>
               {data.trials.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No trials scheduled yet.</p>
+                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No trials scheduled yet.</p>
               ) : (
                 data.trials.map(t => (
                   <div key={t.id} style={{ padding: '14px 0', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
                       <div>
                         <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>{t.artist}</p>
-                        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '2px 0 0' }}>{t.date}</p>
+                        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '2px 0 0' }}>{t.date}</p>
                       </div>
                       <StarRow value={t.rating} />
                     </div>

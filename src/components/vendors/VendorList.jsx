@@ -60,7 +60,7 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage }) {
     return (
       <div style={{ padding: '64px 32px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.06)' }}>
         <Briefcase size={24} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px', display: 'block' }} />
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
           No vendors match your filters.
         </p>
       </div>
@@ -85,7 +85,7 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage }) {
               {vendor.name}
             </p>
             {vendor.contact_person && (
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '2px 0 0', fontFamily: PJS }}>
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0', fontFamily: PJS }}>
                 {vendor.contact_person}
               </p>
             )}

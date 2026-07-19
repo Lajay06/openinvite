@@ -278,7 +278,7 @@ export default function VendorMarketplace() {
                   type="button"
                   onClick={() => setGeoCoords(null)}
                   title="Clear current location"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 0, flexShrink: 0 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 0, flexShrink: 0 }}
                 >
                   <X size={13} />
                 </button>
@@ -393,7 +393,7 @@ export default function VendorMarketplace() {
               style={{ appearance: 'none', border: 'none', background: 'none', fontSize: 12, fontWeight: 600, fontFamily: PJS, color: 'rgba(10,10,10,0.5)', cursor: 'pointer', paddingRight: 18, outline: 'none' }}>
               {SORT_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
-            <ChevronDown size={11} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.4)', pointerEvents: 'none' }} />
+            <ChevronDown size={11} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.6)', pointerEvents: 'none' }} />
           </div>
         </div>
       </div>
@@ -418,18 +418,18 @@ export default function VendorMarketplace() {
 
         {vendors === null ? (
           <div style={{ padding: '64px 0', textAlign: 'center' }}>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
               {apiStatus === 'searching' ? 'Searching Google Places…' : 'Search for wedding vendors by category and location to get started.'}
             </p>
           </div>
         ) : (
           <>
-            <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: '12px 0', marginBottom: 4 }}>
+            <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: '12px 0', marginBottom: 4 }}>
               {filtered.length} vendor{filtered.length !== 1 ? 's' : ''} found
             </div>
             {filtered.length === 0 ? (
               <div style={{ padding: '64px 0', textAlign: 'center' }}>
-                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                   No vendors found for this search. Try a different category, location, or clear your filters.
                 </p>
               </div>

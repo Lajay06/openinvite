@@ -16,7 +16,7 @@ const CATEGORY_COLOURS = {
 };
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -30,7 +30,7 @@ export default function UpcomingTasks({ schedule }) {
     <div>
       <div style={{ padding: '4px 0 16px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <p style={labelStyle}>Upcoming events</p>
-        <Link to={createPageUrl("Schedule")} style={{ ...labelStyle, fontSize: 9, color: 'rgba(10,10,10,0.4)', textDecoration: 'none' }}>View all</Link>
+        <Link to={createPageUrl("Schedule")} style={{ ...labelStyle, fontSize: 9, color: 'rgba(10,10,10,0.6)', textDecoration: 'none' }}>View all</Link>
       </div>
       <div>
         {upcoming.length > 0 ? upcoming.map(ev => {
@@ -41,7 +41,7 @@ export default function UpcomingTasks({ schedule }) {
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: colour, flexShrink: 0 }} />
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ev.event_name}</p>
-                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     {ev.start_time ? format(new Date(`2024-01-01T${ev.start_time}`), 'h:mm a') : ''}
                   </p>
                 </div>
@@ -58,7 +58,7 @@ export default function UpcomingTasks({ schedule }) {
           );
         }) : (
           <div style={{ padding: '32px 24px', textAlign: 'center' }}>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 12 }}>No events scheduled.</p>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 12 }}>No events scheduled.</p>
             <Link to={createPageUrl("Schedule")} className="btn-editorial-secondary" style={{ fontSize: 10, padding: '6px 16px' }}>Add event</Link>
           </div>
         )}

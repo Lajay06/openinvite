@@ -7,7 +7,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 600, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6,
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 6,
 };
 
 const row = {
@@ -450,7 +450,7 @@ export default function VenueSearch({
         {label && <div style={labelStyle}>{label}</div>}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          padding: '14px 0', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, fontSize: 13,
+          padding: '14px 0', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, fontSize: 13,
         }}>
           <Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite', flexShrink: 0 }} />
           Loading venue details…
@@ -526,7 +526,7 @@ export default function VenueSearch({
             ))
           ) : (
             <div style={{ padding: '16px', textAlign: 'center' }}>
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>
                 {searchError || 'No results found. Try a different search.'}
               </p>
             </div>

@@ -6,8 +6,8 @@
 - All text: sentence case only. No uppercase, no ALL CAPS anywhere.
 - Headings: font-weight 700, letter-spacing -0.02em, color #0A0A0A
 - Body: font-weight 400, color #0A0A0A
-- Muted text: color rgba(10,10,10,0.4) — never #888888
-- Labels/captions: font-size 11px, color rgba(10,10,10,0.4)
+- Muted text: color rgba(10,10,10,0.6) — never #888888
+- Labels/captions: font-size 11px, color rgba(10,10,10,0.6)
 
 ## Colours
 - Brand red/pink: #E03553
@@ -54,7 +54,7 @@
 - Used on every dashboard page
 - Padding: 10px 32px
 - Title: font-size 18px, font-weight 600, color #0A0A0A
-- Subtitle: font-size 12px, color rgba(10,10,10,0.4), inline beside title
+- Subtitle: font-size 12px, color rgba(10,10,10,0.6), inline beside title
 
 ### Buttons
 - Primary: background #E03553, color white, border-radius 999px,
@@ -71,7 +71,7 @@
 ### Form inputs
 - Underline style only: no box, border-bottom 1px solid rgba(10,10,10,0.15)
 - On focus: border-bottom color #E03553
-- Label: font-size 11px, font-weight 600, color rgba(10,10,10,0.4),
+- Label: font-size 11px, font-weight 600, color rgba(10,10,10,0.6),
   letter-spacing 0.06em, sentence case
 - Font-size: 14px, color #0A0A0A
 
@@ -86,7 +86,7 @@
 - Tab bar: border-bottom 1px solid rgba(10,10,10,0.08)
 - Active tab: color #0A0A0A, font-weight 600, 
   border-bottom 2px solid #0A0A0A
-- Inactive tab: color rgba(10,10,10,0.4), font-weight 400
+- Inactive tab: color rgba(10,10,10,0.6), font-weight 400
 - Tab label: font-size 13px, font-weight 600, sentence case — NO uppercase/text-transform
   (tabs.jsx TabsTrigger uses text-[13px] font-semibold, no uppercase class)
 
@@ -111,7 +111,7 @@
 - Active item: background rgba(224,53,83,0.08), color #E03553,
   border-left 2px solid #E03553
 - Section label: font-size 10px, letter-spacing 0.06em,
-  color rgba(10,10,10,0.4), sentence case
+  color rgba(10,10,10,0.6), sentence case
 - Icon size: 14px
 - Design studio is a regular NavItem (Sparkles icon), not a special red pill
 
@@ -148,4 +148,7 @@ Every dashboard page must follow this exact top-to-bottom order — no exception
 - Every dashboard page must use DashboardPageHeader
 - All data fetched via base44.entities.* authenticated client
 - Sentence case everywhere — headings, labels, tabs, buttons
-- Muted text minimum contrast: rgba(10,10,10,0.4), never #888888
+- Muted text minimum contrast: rgba(10,10,10,0.6), never #888888
+  (WCAG AA 4.5:1 against white; the previous 0.4 alpha only reached
+  ~2.7:1 — AUDIT_2026-07.md S13, corrected across ~150 files + the
+  src/styles/tokens.js textMuted/textPlaceholder tokens)

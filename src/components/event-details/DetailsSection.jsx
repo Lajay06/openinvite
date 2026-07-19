@@ -3,7 +3,7 @@ import { Save, ChevronDown, ChevronUp } from 'lucide-react';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -19,7 +19,7 @@ export default function DetailsSection({ title, icon: Icon, children, sectionKey
           {Icon && <Icon size={16} style={{ color: 'rgba(10,10,10,0.5)', flexShrink: 0 }} />}
           <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{title}</span>
         </div>
-        {open ? <ChevronUp size={14} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} /> : <ChevronDown size={14} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} />}
+        {open ? <ChevronUp size={14} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} /> : <ChevronDown size={14} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />}
       </button>
 
       {open && (
