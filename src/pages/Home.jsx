@@ -78,7 +78,16 @@ export default function Home() {
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: "40px 24px",
       }}>
-        <span style={{ fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
+        <span style={{
+          fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 800, color: "#FFFFFF",
+          letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center",
+          // The gradient's lighter stops (lime, orange) leave plain white
+          // text at ~1.2-2.8:1 contrast, well under the 3:1 minimum even
+          // for this large/bold size (AUDIT_2026-07.md S16). A dark outline
+          // keeps the white fill but gives every glyph a readable edge
+          // against any point in the gradient, without recoloring it.
+          textShadow: "-1.5px -1.5px 0 rgba(10,10,10,0.6), 1.5px -1.5px 0 rgba(10,10,10,0.6), -1.5px 1.5px 0 rgba(10,10,10,0.6), 1.5px 1.5px 0 rgba(10,10,10,0.6), 0 3px 14px rgba(10,10,10,0.4)",
+        }}>
           AI meets I Do. Say hello to Ava.
         </span>
       </div>
