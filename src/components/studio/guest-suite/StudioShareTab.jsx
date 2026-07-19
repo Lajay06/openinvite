@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
+import { isPending, isAttending, isDeclined } from '@/lib/guestRsvpTally';
 import toast from 'react-hot-toast';
 
 const sans = "'Plus Jakarta Sans', sans-serif";
@@ -180,9 +181,9 @@ export default function StudioShareTab({ details: propDetails }) {
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
               {[
                 { label: 'All Guests', count: guests.length, action: () => setSelectedGuests(guests.map(g => g.id)) },
-                { label: "Not Yet RSVP'd", count: guests.filter(g => !g.rsvp_status || g.rsvp_status === 'pending').length, action: () => setSelectedGuests(guests.filter(g => !g.rsvp_status || g.rsvp_status === 'pending').map(g => g.id)) },
-                { label: 'Attending', count: guests.filter(g => g.rsvp_status === 'attending').length, action: () => setSelectedGuests(guests.filter(g => g.rsvp_status === 'attending').map(g => g.id)) },
-                { label: 'Declined', count: guests.filter(g => g.rsvp_status === 'declined').length, action: () => setSelectedGuests(guests.filter(g => g.rsvp_status === 'declined').map(g => g.id)) },
+                { label: "Not Yet RSVP'd", count: guests.filter(isPending).length, action: () => setSelectedGuests(guests.filter(isPending).map(g => g.id)) },
+                { label: 'Attending', count: guests.filter(isAttending).length, action: () => setSelectedGuests(guests.filter(isAttending).map(g => g.id)) },
+                { label: 'Declined', count: guests.filter(isDeclined).length, action: () => setSelectedGuests(guests.filter(isDeclined).map(g => g.id)) },
               ].map(opt => (
                 <button key={opt.label} onClick={opt.action} style={{ padding: '6px 12px', border: '1px solid #EEEEEE', background: '#FAFAFA', fontSize: 12, fontWeight: 600, color: '#444', cursor: 'pointer', fontFamily: sans }}>{opt.label} ({opt.count})</button>
               ))}
@@ -205,7 +206,7 @@ export default function StudioShareTab({ details: propDetails }) {
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guest.name}</p>
                       <p style={{ margin: 0, fontSize: 11, color: '#888' }}>{guest.email || 'No email'}</p>
                     </div>
-                    <div style={{ fontSize: 11, padding: '2px 8px', background: guest.rsvp_status === 'attending' ? '#F0FDF4' : guest.rsvp_status === 'declined' ? '#FFF1F2' : '#F8F8F8', color: guest.rsvp_status === 'attending' ? '#16A34A' : guest.rsvp_status === 'declined' ? '#E03553' : '#888', fontWeight: 600, flexShrink: 0 }}>
+                    <div style={{ fontSize: 11, padding: '2px 8px', background: isAttending(guest) ? '#F0FDF4' : isDeclined(guest) ? '#FFF1F2' : '#F8F8F8', color: isAttending(guest) ? '#16A34A' : isDeclined(guest) ? '#E03553' : '#888', fontWeight: 600, flexShrink: 0 }}>
                       {guest.rsvp_status || 'Pending'}
                     </div>
                   </div>

@@ -7,6 +7,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
+import { isAttending } from "@/lib/guestRsvpTally";
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -165,7 +166,7 @@ function GuestSearch({ value, guests, onSelect, onClear, placeholder = 'Type a n
                 <span style={{ fontSize: 9, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS }}>{getInitials(g.name)}</span>
               </div>
               <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, flex: 1 }}>{g.name}</span>
-              {g.rsvp_status === 'attending' && (
+              {isAttending(g) && (
                 <span style={{ fontSize: 9, fontWeight: 700, color: '#065F46', background: '#D1FAE5', padding: '1px 6px', borderRadius: 999, fontFamily: PJS, flexShrink: 0 }}>
                   Attending
                 </span>

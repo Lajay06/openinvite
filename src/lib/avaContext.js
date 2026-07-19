@@ -1,4 +1,5 @@
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
+import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
 
 export async function buildWeddingContext() {
   const [guestsResult, budgetResult, vendorsResult, scheduleResult, wdResult] = await Promise.allSettled([
@@ -39,8 +40,9 @@ export async function buildWeddingContext() {
     ? Math.ceil((new Date(weddingDate) - new Date()) / 86400000)
     : null;
 
-  const confirmed     = guests.filter(g => g.rsvp_status === 'confirmed').length;
-  const pending       = guests.filter(g => g.rsvp_status === 'pending').length;
+  // AUDIT_2026-07.md S21: was checking for a 'confirmed' status that does
+  // not exist in the schema and could never match — always counted 0.
+  const { attending: confirmed, pending } = tallyGuestRsvp(guests);
   const totalBudget   = budget.reduce((s, b) => s + (b.total_amount  || 0), 0);
   const spent         = budget.reduce((s, b) => s + (b.spent_amount  || 0), 0);
   const bookedVendors = vendors.map(v => v.category).join(', ');

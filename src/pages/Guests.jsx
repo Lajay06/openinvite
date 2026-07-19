@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
 import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
+import { tallyGuestRsvp, isAttending, isDeclined, isAwaitingPrimary } from "@/lib/guestRsvpTally";
 const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -340,17 +341,11 @@ export default function Guests() {
 
     // A plus-one with their own identity (plus_one_email) has their own
     // rsvp_status, distinct from the primary guest's — counted in addition
-    // to the primary guest below. A plus-one with no email has no separate
-    // status to count (current behaviour: the primary answers for both),
-    // so they're intentionally left out of these counts, same as before
-    // this feature.
-    const plusOneAttending = guests.filter(g => g.plus_one_email && g.plus_one_rsvp_status === 'attending').length;
-    const plusOneDeclined = guests.filter(g => g.plus_one_email && g.plus_one_rsvp_status === 'declined').length;
-    const plusOneAwaiting = guests.filter(g => g.plus_one_email && g.invite_sent_at && (!g.plus_one_rsvp_status || g.plus_one_rsvp_status === 'pending')).length;
-
-    const attending = guests.filter(g => g.rsvp_status === 'attending').length + plusOneAttending;
-    const declined = guests.filter(g => g.rsvp_status === 'declined').length + plusOneDeclined;
-    const awaiting = guests.filter(g => g.invite_sent_at && (!g.rsvp_status || g.rsvp_status === 'pending')).length + plusOneAwaiting;
+    // to the primary guest via includePlusOnes. A plus-one with no email
+    // has no separate status to count (current behaviour: the primary
+    // answers for both), so they're intentionally left out of these
+    // counts, same as before this feature.
+    const { attending, declined, awaiting } = tallyGuestRsvp(guests, { includePlusOnes: true });
     return { total, invited, attending, declined, awaiting, plusOnes };
   }, [guests]);
 
@@ -375,9 +370,9 @@ export default function Guests() {
     if (!matchesSearch) return false;
     if (activeFilter === 'all') return true;
     if (activeFilter === 'not_invited') return !guest.invite_sent_at;
-    if (activeFilter === 'awaiting') return !!guest.invite_sent_at && (!guest.rsvp_status || guest.rsvp_status === 'pending');
-    if (activeFilter === 'attending') return guest.rsvp_status === 'attending';
-    if (activeFilter === 'declined') return guest.rsvp_status === 'declined';
+    if (activeFilter === 'awaiting') return isAwaitingPrimary(guest);
+    if (activeFilter === 'attending') return isAttending(guest);
+    if (activeFilter === 'declined') return isDeclined(guest);
     return true;
   });
 

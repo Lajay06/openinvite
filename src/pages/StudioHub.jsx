@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Globe, Sparkles, Eye, ChevronRight, Camera, Map } from 'lucide-react';
 import { getMyWeddingDetails, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
+import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
 
 export default function StudioHub() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export default function StudioHub() {
           getMyGuestsWithRsvp(),
         ]);
         setWedding(details || null);
-        setRsvpCount(guests.filter(g => g.rsvp_status === 'attending').length);
+        setRsvpCount(tallyGuestRsvp(guests).attending);
       } catch (e) {}
       setLoading(false);
     };
