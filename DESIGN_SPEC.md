@@ -6,8 +6,18 @@
 - All text: sentence case only. No uppercase, no ALL CAPS anywhere.
 - Headings: font-weight 700, letter-spacing -0.02em, color #0A0A0A
 - Body: font-weight 400, color #0A0A0A
-- Muted text: color rgba(10,10,10,0.4) — never #888888
-- Labels/captions: font-size 11px, color rgba(10,10,10,0.4)
+- Muted text: color rgba(10,10,10,0.6) — never #888888
+- Labels/captions: font-size 11px, color rgba(10,10,10,0.6)
+- Input placeholders/hint text: color rgba(10,10,10,0.58) — a touch
+  lighter than muted text, still WCAG AA 4.5:1
+- Disabled controls / purely decorative text: color rgba(10,10,10,0.3) —
+  WCAG exempts disabled UI; never use on text a user must read
+- Enabled icon-only controls (not disabled): color rgba(10,10,10,0.45) —
+  WCAG 1.4.11 non-text contrast (3:1), distinct from disabled/decorative
+  so an active icon button is never left below even that lenient floor
+- Named tokens for all four live in src/styles/tokens.js
+  (textMuted/textPlaceholder/textDisabled/iconMuted) — use these instead
+  of hand-rolling a new alpha
 
 ## Colours
 - Brand red/pink: #E03553
@@ -54,7 +64,7 @@
 - Used on every dashboard page
 - Padding: 10px 32px
 - Title: font-size 18px, font-weight 600, color #0A0A0A
-- Subtitle: font-size 12px, color rgba(10,10,10,0.4), inline beside title
+- Subtitle: font-size 12px, color rgba(10,10,10,0.6), inline beside title
 
 ### Buttons
 - Primary: background #E03553, color white, border-radius 999px,
@@ -71,7 +81,7 @@
 ### Form inputs
 - Underline style only: no box, border-bottom 1px solid rgba(10,10,10,0.15)
 - On focus: border-bottom color #E03553
-- Label: font-size 11px, font-weight 600, color rgba(10,10,10,0.4),
+- Label: font-size 11px, font-weight 600, color rgba(10,10,10,0.6),
   letter-spacing 0.06em, sentence case
 - Font-size: 14px, color #0A0A0A
 
@@ -86,7 +96,7 @@
 - Tab bar: border-bottom 1px solid rgba(10,10,10,0.08)
 - Active tab: color #0A0A0A, font-weight 600, 
   border-bottom 2px solid #0A0A0A
-- Inactive tab: color rgba(10,10,10,0.4), font-weight 400
+- Inactive tab: color rgba(10,10,10,0.6), font-weight 400
 - Tab label: font-size 13px, font-weight 600, sentence case — NO uppercase/text-transform
   (tabs.jsx TabsTrigger uses text-[13px] font-semibold, no uppercase class)
 
@@ -111,7 +121,7 @@
 - Active item: background rgba(224,53,83,0.08), color #E03553,
   border-left 2px solid #E03553
 - Section label: font-size 10px, letter-spacing 0.06em,
-  color rgba(10,10,10,0.4), sentence case
+  color rgba(10,10,10,0.6), sentence case
 - Icon size: 14px
 - Design studio is a regular NavItem (Sparkles icon), not a special red pill
 
@@ -148,4 +158,11 @@ Every dashboard page must follow this exact top-to-bottom order — no exception
 - Every dashboard page must use DashboardPageHeader
 - All data fetched via base44.entities.* authenticated client
 - Sentence case everywhere — headings, labels, tabs, buttons
-- Muted text minimum contrast: rgba(10,10,10,0.4), never #888888
+- Muted text minimum contrast: rgba(10,10,10,0.6), never #888888
+  (WCAG AA 4.5:1 against white; the previous 0.4 alpha only reached
+  ~2.7:1 — AUDIT_2026-07.md S13, corrected across ~150 files + the
+  src/styles/tokens.js textMuted token)
+- The same fix for the undocumented 0.3 variant (AUDIT_2026-07.md S14)
+  was role-aware, not a blanket bump — see the Typography section above
+  and src/styles/tokens.js's textPlaceholder/textDisabled/iconMuted
+  tokens for which value applies to which kind of text/control

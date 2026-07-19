@@ -98,7 +98,7 @@ export default function InvitationsPage() {
   if (view === 'empty') {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: 'rgba(10,10,10,0.4)', fontSize: 14 }}>
+        <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: 'rgba(10,10,10,0.6)', fontSize: 14 }}>
           No invitation has been created yet.
         </p>
       </div>

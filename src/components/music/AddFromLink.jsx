@@ -52,10 +52,10 @@ export default function AddFromLink({ onAdd, onClose }) {
     <div style={{ background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.08)', padding: '16px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Link2 size={13} style={{ color: 'rgba(10,10,10,0.4)' }} />
+          <Link2 size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
           <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>Add from a link</span>
         </div>
-        <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}>
+        <button type="button" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}>
           <X size={14} />
         </button>
       </div>
@@ -82,7 +82,7 @@ export default function AddFromLink({ onAdd, onClose }) {
               <input value={artist} onChange={e => setArtist(e.target.value)} placeholder="Artist" style={fieldStyle} />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                 Detected: {SOURCE_LABELS[parsed.source]}
               </span>
               <button type="button" onClick={handleAdd} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>

@@ -72,7 +72,7 @@ export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isS
             <>
               <StarRow rating={vendor.rating} />
               <span style={{ fontSize: 12, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{vendor.rating}</span>
-              <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>({vendor.reviewCount} reviews)</span>
+              <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>({vendor.reviewCount} reviews)</span>
             </>
           )}
           {vendor.priceRange && (
@@ -104,9 +104,9 @@ export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isS
         <button
           onClick={() => onSave(vendor)}
           disabled={isSaved || isSaving}
-          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, fontFamily: PJS, cursor: isSaved ? 'default' : 'pointer', border: 'none', background: 'none', color: isSaved ? '#10B981' : 'rgba(10,10,10,0.4)', padding: '2px 0', transition: 'color 0.12s' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, fontFamily: PJS, cursor: isSaved ? 'default' : 'pointer', border: 'none', background: 'none', color: isSaved ? '#10B981' : 'rgba(10,10,10,0.6)', padding: '2px 0', transition: 'color 0.12s' }}
           onMouseEnter={e => { if (!isSaved) e.currentTarget.style.color = '#0A0A0A'; }}
-          onMouseLeave={e => { if (!isSaved) e.currentTarget.style.color = 'rgba(10,10,10,0.4)'; }}
+          onMouseLeave={e => { if (!isSaved) e.currentTarget.style.color = 'rgba(10,10,10,0.6)'; }}
         >
           <Bookmark size={11} style={{ fill: isSaved ? '#10B981' : 'transparent' }} />
           {isSaving ? 'Saving…' : isSaved ? 'Saved' : 'Save'}

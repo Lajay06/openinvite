@@ -162,7 +162,7 @@ const NAV_SECTIONS = [
 const sectionLabelStyle = {
   fontSize: 10,
   fontWeight: 700,
-  color: "rgba(10,10,10,0.4)",
+  color: "rgba(10,10,10,0.6)",
   letterSpacing: "0.06em",
   padding: "0 16px",
   marginTop: 24,
@@ -175,8 +175,8 @@ function SectionLabel({ section }) {
   if (section.guestSuite) {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 16px", marginTop: 24, marginBottom: 2 }}>
-        <Globe size={10} style={{ color: "rgba(10,10,10,0.4)", flexShrink: 0 }} />
-        <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.4)", letterSpacing: "0.06em", fontFamily: PJS }}>
+        <Globe size={10} style={{ color: "rgba(10,10,10,0.6)", flexShrink: 0 }} />
+        <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.6)", letterSpacing: "0.06em", fontFamily: PJS }}>
           {section.label}
         </span>
         <span style={{
@@ -563,8 +563,8 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
               {/* Section label */}
               {section.guestSuite ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 16px", marginTop: 24, marginBottom: 2 }}>
-                  <Globe size={10} style={{ color: "rgba(10,10,10,0.4)", flexShrink: 0 }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.4)", letterSpacing: "0.06em", fontFamily: PJS }}>
+                  <Globe size={10} style={{ color: "rgba(10,10,10,0.6)", flexShrink: 0 }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.6)", letterSpacing: "0.06em", fontFamily: PJS }}>
                     {section.label}
                   </span>
                   <span style={{
@@ -639,7 +639,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
               {storedUser.full_name || "Your account"}
             </p>
             {storedUser.email && (
-              <p style={{ fontSize: 11, color: "rgba(10,10,10,0.4)", margin: "1px 0 0", fontFamily: PJS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              <p style={{ fontSize: 11, color: "rgba(10,10,10,0.6)", margin: "1px 0 0", fontFamily: PJS, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {storedUser.email}
               </p>
             )}

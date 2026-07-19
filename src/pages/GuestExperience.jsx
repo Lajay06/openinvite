@@ -23,7 +23,7 @@ const TABS = [
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -199,17 +199,17 @@ export default function GuestExperiencePage() {
               <div style={{ padding: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <MapPin size={13} style={{ color: 'rgba(10,10,10,0.4)' }} />
+                    <MapPin size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
                     <span style={{ fontSize: 13, color: '#0A0A0A' }}>{weddingCity}</span>
                   </div>
                   {dateRangeText && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Calendar size={13} style={{ color: 'rgba(10,10,10,0.4)' }} />
+                      <Calendar size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
                       <span style={{ fontSize: 13, color: '#0A0A0A' }}>{dateRangeText}</span>
                     </div>
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Users size={13} style={{ color: 'rgba(10,10,10,0.4)' }} />
+                    <Users size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
                     <span style={{ fontSize: 13, color: '#0A0A0A' }}>2 adults, 1 room</span>
                   </div>
                 </div>
@@ -229,10 +229,10 @@ export default function GuestExperiencePage() {
           ) : (
             <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#fff', padding: '16px', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <Hotel size={16} style={{ color: 'rgba(10,10,10,0.4)' }} />
+                <Hotel size={16} style={{ color: 'rgba(10,10,10,0.6)' }} />
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0 }}>Booking.com</p>
               </div>
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0 }}>Add wedding date in Event details to enable quick booking</p>
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Add wedding date in Event details to enable quick booking</p>
             </div>
           )}
 
@@ -246,17 +246,17 @@ export default function GuestExperiencePage() {
               <div style={{ padding: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <MapPin size={13} style={{ color: 'rgba(10,10,10,0.4)' }} />
+                    <MapPin size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
                     <span style={{ fontSize: 13, color: '#0A0A0A' }}>{weddingCity}</span>
                   </div>
                   {dateRangeText && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Calendar size={13} style={{ color: 'rgba(10,10,10,0.4)' }} />
+                      <Calendar size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
                       <span style={{ fontSize: 13, color: '#0A0A0A' }}>{dateRangeText}</span>
                     </div>
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Car size={13} style={{ color: 'rgba(10,10,10,0.4)' }} />
+                    <Car size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
                     <span style={{ fontSize: 13, color: '#0A0A0A' }}>All vehicle types</span>
                   </div>
                 </div>
@@ -276,10 +276,10 @@ export default function GuestExperiencePage() {
           ) : (
             <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#fff', padding: '16px', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <Car size={16} style={{ color: 'rgba(10,10,10,0.4)' }} />
+                <Car size={16} style={{ color: 'rgba(10,10,10,0.6)' }} />
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0 }}>Hertz car rental</p>
               </div>
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0 }}>Add wedding date in Event details to enable quick booking</p>
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Add wedding date in Event details to enable quick booking</p>
             </div>
           )}
 

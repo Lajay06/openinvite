@@ -63,7 +63,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
         <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           {vendor?.id ? 'Edit vendor' : 'Add vendor'}
         </span>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4, borderRadius: 999 }}>
+        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, borderRadius: 999 }}>
           <X size={16} />
         </button>
       </div>
@@ -81,7 +81,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
             {defaultCategory ? (
               <div style={{ borderBottom: '1px solid rgba(10,10,10,0.18)', padding: '6px 0', fontSize: 14, fontWeight: 500, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 8 }}>
                 {CATEGORIES.find(c => c.value === defaultCategory)?.label || defaultCategory}
-                <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontWeight: 400 }}>pre-selected</span>
+                <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontWeight: 400 }}>pre-selected</span>
               </div>
             ) : (
               <Select value={formData.category} onValueChange={v => set('category', v)} required>

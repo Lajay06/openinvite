@@ -30,7 +30,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS,
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
   marginBottom: 4, display: 'block',
 };
 
@@ -119,7 +119,7 @@ function OutfitCard({ outfit, onUpdate, onRemove, uploadState, onPhotoUpload, on
         <button
           onClick={() => onRemove(outfit.id)}
           title="Remove outfit"
-          style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(10,10,10,0.4)', flexShrink: 0, marginBottom: 2 }}
+          style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(10,10,10,0.6)', flexShrink: 0, marginBottom: 2 }}
         >
           <X size={12} />
         </button>
@@ -218,7 +218,7 @@ function OutfitCard({ outfit, onUpdate, onRemove, uploadState, onPhotoUpload, on
             </button>
             <button
               onClick={() => onUpdate(outfit.id, 'photoUrl', '')}
-              style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontFamily: PJS }}
+              style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontFamily: PJS }}
             >
               Remove
             </button>
@@ -439,7 +439,7 @@ export default function AttirePanel() {
         <SectionHead title="Outfits" onAdd={addOutfit} addLabel="Add outfit" />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
           {outfits.length === 0 && (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
               No outfits added yet. Click "Add outfit" to start planning.
             </p>
           )}
@@ -513,7 +513,7 @@ export default function AttirePanel() {
         <SectionHead title="Fittings" onAdd={addFitting} addLabel="Add fitting" />
         <div style={{ marginTop: 12 }}>
           {fittings.length === 0 && (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '8px 0 0' }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '8px 0 0' }}>
               No fittings scheduled yet.
             </p>
           )}
@@ -548,7 +548,7 @@ export default function AttirePanel() {
               </Field>
               <button
                 onClick={() => removeFitting(f.id)}
-                style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(10,10,10,0.4)', flexShrink: 0, marginBottom: 2 }}
+                style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(10,10,10,0.6)', flexShrink: 0, marginBottom: 2 }}
               >
                 <X size={12} />
               </button>
@@ -562,7 +562,7 @@ export default function AttirePanel() {
         <SectionHead title="Accessories" onAdd={addAccessory} addLabel="Add accessory" />
         <div style={{ marginTop: 12 }}>
           {accessories.length === 0 && (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '8px 0 0' }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '8px 0 0' }}>
               No accessories added yet. Click "Add accessory" to build your checklist.
             </p>
           )}
@@ -595,7 +595,7 @@ export default function AttirePanel() {
               />
               <button
                 onClick={() => removeAccessory(a.id)}
-                style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(10,10,10,0.4)', flexShrink: 0 }}
+                style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(10,10,10,0.6)', flexShrink: 0 }}
               >
                 <X size={12} />
               </button>
@@ -637,7 +637,7 @@ export default function AttirePanel() {
         </button>
 
         {dirty && !savedOk && (
-          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             Unsaved changes
           </span>
         )}

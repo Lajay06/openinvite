@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -37,10 +37,10 @@ export default function ShareRegistryModal({ onClose, registryData }) {
       <div style={{ width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Share2 size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />
+            <Share2 size={14} style={{ color: 'rgba(10,10,10,0.6)' }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Share your registry</span>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}><X size={16} /></button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
         </div>
 
         <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>

@@ -169,7 +169,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>Import guest list</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', padding: 4, marginTop: -2 }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4, marginTop: -2 }}>
             <X size={18} />
           </button>
         </div>
@@ -207,7 +207,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
           >
             <Upload size={24} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px', display: 'block' }} />
             <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 4px' }}>Drag and drop or click to upload</p>
-            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>Accepts .csv and .xlsx</p>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Accepts .csv and .xlsx</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -222,7 +222,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
         {rows && (
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
                 Preview — {validCount} of {rows.length} rows valid
               </p>
               <button
@@ -238,7 +238,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
                   <thead style={{ position: 'sticky', top: 0 }}>
                     <tr style={{ background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
                       {['Name', 'Email', 'Phone', '+1', 'Status'].map(h => (
-                        <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 700, fontSize: 11, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', whiteSpace: 'nowrap' }}>{h}</th>
+                        <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 700, fontSize: 11, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', whiteSpace: 'nowrap' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>

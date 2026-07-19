@@ -16,7 +16,7 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex w-full items-center justify-between whitespace-nowrap border-0 border-b border-[#0A0A0A] rounded-none bg-transparent px-0 py-3 text-sm font-semibold text-[#0A0A0A] data-[placeholder]:text-[rgba(10,10,10,0.4)] data-[placeholder]:font-normal focus:border-b-2 focus:border-[#E03553] focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 [&>span]:line-clamp-1 transition-all duration-200",
+      "flex w-full items-center justify-between whitespace-nowrap border-0 border-b border-[#0A0A0A] rounded-none bg-transparent px-0 py-3 text-sm font-semibold text-[#0A0A0A] data-[placeholder]:text-[rgba(10,10,10,0.6)] data-[placeholder]:font-normal focus:border-b-2 focus:border-[#E03553] focus:outline-none disabled:cursor-not-allowed disabled:opacity-40 [&>span]:line-clamp-1 transition-all duration-200",
       className
     )}
     {...props}>
@@ -75,7 +75,7 @@ SelectContent.displayName = SelectPrimitive.Content.displayName
 const SelectLabel = React.forwardRef(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn("px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[rgba(10,10,10,0.4)]", className)}
+    className={cn("px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[rgba(10,10,10,0.6)]", className)}
     {...props} />
 ))
 SelectLabel.displayName = SelectPrimitive.Label.displayName

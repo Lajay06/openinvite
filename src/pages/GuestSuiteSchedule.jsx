@@ -134,7 +134,7 @@ export default function GuestSuiteSchedule() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
                   <span style={{
                     fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-                    color: 'rgba(10,10,10,0.4)', fontFamily: PJS, whiteSpace: 'nowrap',
+                    color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap',
                   }}>
                     {fmtDateHeading(date)}
                   </span>
@@ -165,7 +165,7 @@ export default function GuestSuiteSchedule() {
                             {fmtTime(item.start_time) || '—'}
                           </span>
                           {item.end_time && (
-                            <span style={{ display: 'block', fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                            <span style={{ display: 'block', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                               {fmtTime(item.end_time)}
                             </span>
                           )}

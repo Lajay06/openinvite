@@ -351,7 +351,7 @@ const Universes = () => {
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 12,
             fontWeight: 600,
-            color: 'rgba(10,10,10,0.4)',
+            color: 'rgba(10,10,10,0.6)',
             letterSpacing: '0.15em',
             marginBottom: 24,
           }}>

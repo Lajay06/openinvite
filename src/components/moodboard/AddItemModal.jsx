@@ -7,7 +7,7 @@ import { X, Save, Image as ImageIcon } from 'lucide-react';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -31,10 +31,10 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <ImageIcon size={14} style={{ color: 'rgba(10,10,10,0.4)' }} />
+            <ImageIcon size={14} style={{ color: 'rgba(10,10,10,0.6)' }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add inspiration</span>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}><X size={16} /></button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
         </div>
 
         <div style={{ padding: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
@@ -77,7 +77,7 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
             <div style={{ aspectRatio: '1/1', border: '1px solid rgba(10,10,10,0.08)', background: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               {preview
                 ? <img src={preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setPreview('')} />
-                : <div style={{ textAlign: 'center', color: 'rgba(10,10,10,0.3)' }}>
+                : <div style={{ textAlign: 'center', color: 'rgba(10,10,10,0.6)' }}>
                     <ImageIcon size={36} style={{ margin: '0 auto 8px' }} />
                     <p style={{ fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Image preview</p>
                   </div>

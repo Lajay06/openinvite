@@ -150,9 +150,9 @@ export default function GuestSuiteLiveStream() {
             {/* Password */}
             {stream.password && (
               <div style={{ padding: '14px 18px', border: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Lock size={14} strokeWidth={1.8} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} />
+                <Lock size={14} strokeWidth={1.8} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
                 <div>
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, display: 'block', marginBottom: 2 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'block', marginBottom: 2 }}>
                     Password required
                   </span>
                   <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '0.05em' }}>
@@ -166,8 +166,8 @@ export default function GuestSuiteLiveStream() {
             {stream.notes && (
               <div style={{ padding: '14px 18px', background: 'rgba(10,10,10,0.02)', border: '1px solid rgba(10,10,10,0.06)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <FileText size={13} strokeWidth={1.8} style={{ color: 'rgba(10,10,10,0.4)', flexShrink: 0 }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                  <FileText size={13} strokeWidth={1.8} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                     Instructions
                   </span>
                 </div>

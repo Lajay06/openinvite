@@ -422,7 +422,7 @@ function AccordionSection({ features, borders, dots, openFeature, setOpenFeature
     <section ref={ref} style={{ background: "#F5F5F3", padding: "120px 0" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(32px, 6vw, 80px)" }}>
         <AnimDivider />
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(10,10,10,0.4)", margin: "24px 0 48px" }}>All features</p>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(10,10,10,0.6)", margin: "24px 0 48px" }}>All features</p>
         <div>
           {features.map((f, i) =>
           <div
@@ -440,7 +440,7 @@ function AccordionSection({ features, borders, dots, openFeature, setOpenFeature
               style={{ borderLeft: openFeature === i ? `3px solid ${borders[i]}` : "3px solid transparent", paddingLeft: 16, transition: "border-color 0.2s ease" }}>
               
                 <span style={{ color: "#0A0A0A", fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em" }}>{f.title}</span>
-                <span style={{ fontSize: 20, fontWeight: 300, marginLeft: 16, color: openFeature === i ? borders[i] : "rgba(10,10,10,0.4)" }}>{openFeature === i ? "−" : "+"}</span>
+                <span style={{ fontSize: 20, fontWeight: 300, marginLeft: 16, color: openFeature === i ? borders[i] : "rgba(10,10,10,0.6)" }}>{openFeature === i ? "−" : "+"}</span>
               </button>
               {openFeature === i &&
             <div style={{ paddingBottom: 32, paddingLeft: 20 }}>

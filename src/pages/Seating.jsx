@@ -56,7 +56,7 @@ function Pill({ label, active, onClick }) {
   );
 }
 
-const statLabel = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" };
+const statLabel = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" };
 const statValue = { fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 };
 
 const CANVAS_W = 1400;
@@ -589,7 +589,7 @@ export default function SeatingPage() {
                   <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                     <Users size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
                   </div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.3)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Add tables from the left panel</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Add tables from the left panel</p>
                   <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.2)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '4px 0 0' }}>Drag tables and assets to arrange your venue</p>
                 </div>
               )}
@@ -640,7 +640,7 @@ export default function SeatingPage() {
                         <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {selectedTable.name}
                         </span>
-                        <Pencil size={11} style={{ color: 'rgba(10,10,10,0.3)', flexShrink: 0 }} />
+                        <Pencil size={11} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
                       </button>
                     )}
                     <button onClick={() => { setSelectedTableId(null); setSelectedSeatIndex(null); }}
@@ -667,7 +667,7 @@ export default function SeatingPage() {
                 {/* Assigned guests list */}
                 <div style={{ flexShrink: 0, maxHeight: 200, overflowY: 'auto', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
                   <div style={{ padding: '8px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       Assigned ({(selectedTable.assigned_guests || []).length})
                     </span>
                   </div>
@@ -706,7 +706,7 @@ export default function SeatingPage() {
                 {!readOnly && (
                   <>
                     <div style={{ flexShrink: 0, padding: '8px 12px 4px', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'block', marginBottom: 6 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'block', marginBottom: 6 }}>
                         Add guest
                       </span>
                       <div style={{ position: 'relative' }}>
@@ -743,7 +743,7 @@ export default function SeatingPage() {
                                 {guest.plus_one ? <span style={{ fontWeight: 400, color: '#444444' }}> +1</span> : null}
                               </p>
                               {guest.dietary_restrictions && (
-                                <p style={{ fontSize: 9, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                <p style={{ fontSize: 9, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                   {guest.dietary_restrictions}
                                 </p>
                               )}
@@ -831,7 +831,7 @@ export default function SeatingPage() {
                               <p style={{ fontSize: 9, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '1px 0 0' }}>{tableName}</p>
                             )}
                             {guest.dietary_restrictions && (
-                              <p style={{ fontSize: 9, color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <p style={{ fontSize: 9, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {guest.dietary_restrictions}
                               </p>
                             )}
@@ -850,7 +850,7 @@ export default function SeatingPage() {
                         {showUnassigned && (
                           <>
                             <div style={{ padding: '8px 16px 4px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
-                              <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                 Unassigned ({unassigned.length})
                               </span>
                             </div>
@@ -863,7 +863,7 @@ export default function SeatingPage() {
                         {showAssigned && (
                           <>
                             <div style={{ padding: '8px 16px 4px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
-                              <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                 Assigned ({assigned.length})
                               </span>
                             </div>

@@ -12,7 +12,7 @@ const BADGE_OPTIONS = ['Closest to venue', 'Best value', 'Where most guests are 
 
 const sectionLabel = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8, display: 'block',
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block',
 };
 
 function photoProxy(ref, w = 600) {
@@ -63,10 +63,10 @@ function PlaceCard({ place, onRemove }) {
             </span>
           )}
           {place.price_level > 0 && (
-            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{'$'.repeat(place.price_level)}</span>
+            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{'$'.repeat(place.price_level)}</span>
           )}
           {place.address && (
-            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{place.address}</span>
+            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{place.address}</span>
           )}
         </div>
         {place.note && (
@@ -204,16 +204,16 @@ function AddPlaceCard({ destination, onAdd }) {
       {/* Search */}
       <div style={{ position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Search Google Places</span>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Search Google Places</span>
           {/* Geolocation control */}
           {geoState === 'idle' && (
             <button type="button" onClick={handleUseLocation}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: 0 }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: 0 }}>
               <Navigation size={11} /> Use my location
             </button>
           )}
           {geoState === 'loading' && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
               <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> Getting location…
             </span>
           )}
@@ -227,14 +227,14 @@ function AddPlaceCard({ destination, onAdd }) {
             </span>
           )}
           {geoState === 'error' && (
-            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
               Couldn't get location —{' '}
               <button type="button" onClick={handleUseLocation}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
             </span>
           )}
           {geoState === 'unavailable' && (
-            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Location not available</span>
+            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Location not available</span>
           )}
         </div>
 
@@ -245,7 +245,7 @@ function AddPlaceCard({ destination, onAdd }) {
           {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
           {selected && !searching && (
             <button type="button" onClick={() => { setSelected(null); setQuery(''); setNote(''); setBadge(''); }}
-              style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
+              style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 0 }}>
               <X size={13} />
             </button>
           )}
@@ -269,7 +269,7 @@ function AddPlaceCard({ destination, onAdd }) {
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{place.name}</p>
-                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
                 </div>
                 {place.rating && <span style={{ fontSize: 11, color: '#0A0A0A', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}><Star size={9} fill="#E03553" color="#E03553" /> {place.rating}</span>}
               </button>
@@ -291,7 +291,7 @@ function AddPlaceCard({ destination, onAdd }) {
       {/* Manual entry form */}
       {!selected && showManual && (
         <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '16px 16px 18px' }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
             <div>
               <label style={sectionLabel}>Name</label>
@@ -308,7 +308,7 @@ function AddPlaceCard({ destination, onAdd }) {
             <div>
               <label style={sectionLabel}>Highlight badge <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
               <select value={manualBadge} onChange={e => setManualBadge(e.target.value)}
-                style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: manualBadge ? '#0A0A0A' : 'rgba(10,10,10,0.4)', outline: 'none', cursor: 'pointer' }}>
+                style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: manualBadge ? '#0A0A0A' : 'rgba(10,10,10,0.6)', outline: 'none', cursor: 'pointer' }}>
                 <option value="">No badge</option>
                 {BADGE_OPTIONS.map(b => <option key={b} value={b}>{b}</option>)}
               </select>
@@ -348,7 +348,7 @@ function AddPlaceCard({ destination, onAdd }) {
               </span>
             )}
             <button type="button" onClick={() => { setSelected(null); setQuery(''); setNote(''); setBadge(''); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
               <X size={14} />
             </button>
           </div>
@@ -363,7 +363,7 @@ function AddPlaceCard({ destination, onAdd }) {
               <div>
                 <label style={sectionLabel}>Highlight badge <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>
                 <select value={badge} onChange={e => setBadge(e.target.value)}
-                  style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: badge ? '#0A0A0A' : 'rgba(10,10,10,0.4)', outline: 'none', cursor: 'pointer' }}>
+                  style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.2)', padding: '10px 0', fontSize: 13, fontFamily: PJS, color: badge ? '#0A0A0A' : 'rgba(10,10,10,0.6)', outline: 'none', cursor: 'pointer' }}>
                   <option value="">No badge</option>
                   {BADGE_OPTIONS.map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
@@ -491,7 +491,7 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
       <DashboardPageHeader
         title="Accommodation"
         subtitle="Places to stay near the wedding venue"
-        actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Saving…</span> : null}
+        actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Saving…</span> : null}
       />
 
       <div style={{ padding: '32px 32px 80px' }}>
@@ -511,7 +511,7 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
                 <AvaButton label="Ask Ava to recommend places to stay" onClick={handleAvaRecommend} />
               )}
               {!destination && (
-                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                   Add venue in Event Details to unlock Ava recommendations
                 </span>
               )}
@@ -520,7 +520,7 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
             {/* Ava suggestions */}
             {avaSuggestions.length > 0 && (
               <div style={{ marginBottom: 36 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                   Ava's recommendations — click Add to include in your guide
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
@@ -557,7 +557,7 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
             {/* Saved places */}
             {places.length > 0 ? (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                   {places.length} {places.length === 1 ? 'place' : 'places'} added
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>

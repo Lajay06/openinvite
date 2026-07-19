@@ -796,7 +796,7 @@ function AccordionItem({ item }) {
 
           {item._tips && item._tips.length > 0 && (
             <div style={{ marginTop: 18, padding: '14px 16px', background: 'rgba(10,10,10,0.03)', borderLeft: '3px solid rgba(10,10,10,0.12)' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 10px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px' }}>
                 Tips
               </p>
               <ul style={{ margin: 0, padding: '0 0 0 16px' }}>
@@ -810,7 +810,7 @@ function AccordionItem({ item }) {
           )}
 
           {item._why && (
-            <p style={{ fontSize: 12, fontStyle: 'italic', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '14px 0 0', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 12, fontStyle: 'italic', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '14px 0 0', lineHeight: 1.6 }}>
               Why this matters: {item._why}
             </p>
           )}
@@ -839,7 +839,7 @@ export default function Considerations() {
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite', color: 'rgba(10,10,10,0.4)' }} />
+      <Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite', color: 'rgba(10,10,10,0.6)' }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -859,7 +859,7 @@ export default function Considerations() {
       <div style={{ padding: '16px 32px 0', maxWidth: 860, margin: '0 auto' }}>
         {contextPills.length > 0 ? (
           <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Personalised for:</span>
+            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Personalised for:</span>
             {contextPills.map(pill => (
               <span key={pill} style={{
                 padding: '3px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600,
@@ -888,7 +888,7 @@ export default function Considerations() {
               style={{
                 padding: '12px 14px', border: 'none', background: 'none', cursor: 'pointer',
                 fontSize: 13, fontWeight: 600, fontFamily: PJS,
-                color: tab === t.key ? '#0A0A0A' : 'rgba(10,10,10,0.4)',
+                color: tab === t.key ? '#0A0A0A' : 'rgba(10,10,10,0.6)',
                 borderBottom: tab === t.key ? '2px solid #0A0A0A' : '2px solid transparent',
                 transition: 'color 0.15s', whiteSpace: 'nowrap',
               }}
@@ -903,7 +903,7 @@ export default function Considerations() {
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '8px 32px 80px' }}>
         {tabItems.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '64px 0' }}>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
               No considerations apply here based on your wedding profile.
             </p>
           </div>

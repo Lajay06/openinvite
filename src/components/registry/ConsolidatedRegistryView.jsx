@@ -3,7 +3,7 @@ import { Gift, ShoppingCart, DollarSign, ExternalLink, CheckCircle, Package, Arr
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 

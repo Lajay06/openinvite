@@ -9,7 +9,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 600, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6,
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 6,
 };
 
 function UInput({ label, value, onChange, placeholder = '', multiline = false }) {
@@ -86,7 +86,7 @@ function QnaAccordionItem({ item, id, onDelete }) {
               {item.answer}
             </p>
           ) : (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.3)', margin: 0, fontFamily: PJS, fontStyle: 'italic' }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, fontStyle: 'italic' }}>
               No answer added yet.
             </p>
           )}
@@ -146,7 +146,7 @@ export default function QandA() {
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite', color: 'rgba(10,10,10,0.4)' }} />
+      <Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite', color: 'rgba(10,10,10,0.6)' }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -203,7 +203,7 @@ export default function QandA() {
         {/* Q&A list — accordion */}
         {qna.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
               No questions yet. Add your first FAQ for guests above.
             </p>
           </div>

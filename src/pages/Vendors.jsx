@@ -64,7 +64,7 @@ const CATEGORY_FILTERS = [
 
 const statLabelStyle = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0, marginBottom: 8,
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, marginBottom: 8,
 };
 const statValueStyle = {
   fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A',
@@ -250,7 +250,7 @@ export default function VendorsPage() {
                 <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>No vendors added yet</p>
                 {!readOnly && (
                   <>
-                    <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 20px' }}>Click + Add vendor to start tracking your suppliers</p>
+                    <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 20px' }}>Click + Add vendor to start tracking your suppliers</p>
                     <button onClick={() => { setEditingVendor(null); setShowForm(true); }} className="btn-primary">
                       + Add vendor
                     </button>

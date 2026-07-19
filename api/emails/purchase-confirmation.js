@@ -34,7 +34,7 @@ export function purchaseConfirmationEmail({ plan, email, name }) {
           <!-- Hero -->
           <tr>
             <td style="padding:40px 40px 32px;">
-              <p style="margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:0.06em;color:rgba(10,10,10,0.4);">
+              <p style="margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:0.06em;color:rgba(10,10,10,0.6);">
                 Payment confirmed
               </p>
               <h1 style="margin:0 0 16px;font-size:26px;font-weight:700;color:#0A0A0A;letter-spacing:-0.02em;line-height:1.2;">
@@ -49,19 +49,19 @@ export function purchaseConfirmationEmail({ plan, email, name }) {
                      style="border:1px solid #E8E8E8;margin-bottom:32px;">
                 <tr>
                   <td style="padding:16px 20px;border-bottom:1px solid #F0F0F0;">
-                    <p style="margin:0;font-size:12px;font-weight:600;color:rgba(10,10,10,0.4);letter-spacing:0.04em;">Plan</p>
+                    <p style="margin:0;font-size:12px;font-weight:600;color:rgba(10,10,10,0.6);letter-spacing:0.04em;">Plan</p>
                     <p style="margin:4px 0 0;font-size:14px;font-weight:600;color:#0A0A0A;">Openinvite ${planLabel}</p>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding:16px 20px;border-bottom:1px solid #F0F0F0;">
-                    <p style="margin:0;font-size:12px;font-weight:600;color:rgba(10,10,10,0.4);letter-spacing:0.04em;">Amount paid</p>
+                    <p style="margin:0;font-size:12px;font-weight:600;color:rgba(10,10,10,0.6);letter-spacing:0.04em;">Amount paid</p>
                     <p style="margin:4px 0 0;font-size:14px;font-weight:600;color:#0A0A0A;">${planPrice} AUD — one-time</p>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding:16px 20px;">
-                    <p style="margin:0;font-size:12px;font-weight:600;color:rgba(10,10,10,0.4);letter-spacing:0.04em;">Access</p>
+                    <p style="margin:0;font-size:12px;font-weight:600;color:rgba(10,10,10,0.6);letter-spacing:0.04em;">Access</p>
                     <p style="margin:4px 0 0;font-size:14px;font-weight:600;color:#0A0A0A;">24 months from today</p>
                   </td>
                 </tr>

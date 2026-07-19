@@ -206,7 +206,7 @@ export default function Pricing() {
 
         {/* Free trial banner */}
         <div style={{ maxWidth: 700, margin: "0 auto 56px", textAlign: "center", padding: "36px 40px", background: "#F7F7F5", border: "1px solid rgba(10,10,10,0.08)" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(10,10,10,0.4)", margin: "0 0 10px", fontFamily: PJS }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(10,10,10,0.6)", margin: "0 0 10px", fontFamily: PJS }}>
             Free trial
           </p>
           <h3 style={{ fontSize: 22, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.01em", lineHeight: 1.2, margin: "0 0 8px", fontFamily: PJS }}>
@@ -243,13 +243,13 @@ export default function Pricing() {
             background: "#FAFAF9", padding: 32,
             display: "flex", flexDirection: "column",
           }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", marginBottom: 14, fontFamily: PJS }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(10,10,10,0.6)", marginBottom: 14, fontFamily: PJS }}>
               Pro
             </p>
             <div style={{ marginBottom: 4 }}>
               <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$79</span>
             </div>
-            <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
+            <p style={{ fontSize: 13, color: "rgba(10,10,10,0.6)", marginBottom: 16, fontFamily: PJS }}>
               24-month access · one-time payment
             </p>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 20, fontFamily: PJS }}>
@@ -292,19 +292,19 @@ export default function Pricing() {
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
                 <path d="M7 1L9 5.5L14 6.5L10.5 9.5L11.5 14L7 11.5L2.5 14L3.5 9.5L0 6.5L5 5.5Z" fill="#F59E0B" />
               </svg>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", margin: 0, fontFamily: PJS }}>Ultra</p>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(10,10,10,0.6)", margin: 0, fontFamily: PJS }}>Ultra</p>
             </div>
             <div style={{ marginBottom: 4 }}>
               <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$149</span>
             </div>
-            <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
+            <p style={{ fontSize: 13, color: "rgba(10,10,10,0.6)", marginBottom: 16, fontFamily: PJS }}>
               24-month access · one-time payment
             </p>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 20, fontFamily: PJS }}>
               Everything in Pro, plus the full digital wedding suite: website, invitations, and RSVP.
             </p>
             <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 14 }} />
-            <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(10,10,10,0.4)", marginBottom: 12, letterSpacing: "0.04em", fontFamily: PJS }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(10,10,10,0.6)", marginBottom: 12, letterSpacing: "0.04em", fontFamily: PJS }}>
               Everything in Pro, plus:
             </p>
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
@@ -335,10 +335,10 @@ export default function Pricing() {
         </div>
 
         {/* No upsells + AUD note */}
-        <p style={{ textAlign: "center", fontSize: 13, color: "rgba(10,10,10,0.4)", marginTop: 28, fontFamily: PJS }}>
+        <p style={{ textAlign: "center", fontSize: 13, color: "rgba(10,10,10,0.6)", marginTop: 28, fontFamily: PJS }}>
           No upsells, ever. Pay once, plan your entire wedding.
         </p>
-        <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.3)", marginTop: 6, fontFamily: PJS }}>
+        <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.6)", marginTop: 6, fontFamily: PJS }}>
           Prices in AUD · Approx. US$50 / US$95
         </p>
 
@@ -378,7 +378,7 @@ export default function Pricing() {
             Your data, photos, and memories stay safe. To keep full access to your wedding story,
             add an archive plan for a single $49 payment. No recurring fees, ever.
           </p>
-          <p style={{ fontSize: 12, color: "rgba(10,10,10,0.4)", margin: 0, fontFamily: PJS }}>
+          <p style={{ fontSize: 12, color: "rgba(10,10,10,0.6)", margin: 0, fontFamily: PJS }}>
             Archive access covers your guest list, photos, messages, and wedding website permanently.
           </p>
         </div>
@@ -395,7 +395,7 @@ export default function Pricing() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: PJS }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign: "left", fontSize: 12, fontWeight: 600, color: "rgba(10,10,10,0.4)", padding: "0 0 20px", width: "40%" }} />
+                  <th style={{ textAlign: "left", fontSize: 12, fontWeight: 600, color: "rgba(10,10,10,0.6)", padding: "0 0 20px", width: "40%" }} />
                   {["Free trial", "Pro", "Ultra"].map(label => (
                     <th key={label} style={{
                       textAlign: "center", fontSize: 13, fontWeight: 700,

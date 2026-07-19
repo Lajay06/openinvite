@@ -11,7 +11,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -31,9 +31,9 @@ function GoogleField({ label, value, onChange, placeholder }) {
         {value && (
           <a href={`https://www.google.com/search?q=${encodeURIComponent(value)}`} target="_blank" rel="noopener noreferrer"
             title="Search on Google"
-            style={{ color: 'rgba(10,10,10,0.3)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingBottom: 7 }}
+            style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingBottom: 7 }}
             onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.3)'}>
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.45)'}>
             <Search size={13} />
           </a>
         )}
@@ -281,7 +281,7 @@ export default function WeddingFavoursPage() {
                   <input value={item.quantity || ''} onChange={e => updateItem(i, 'quantity', e.target.value)} placeholder="100" style={inputStyle} />
                   <input value={item.costPerUnit || ''} onChange={e => updateItem(i, 'costPerUnit', e.target.value)} placeholder="£3.50" style={inputStyle} />
                   <input value={item.notes || ''} onChange={e => updateItem(i, 'notes', e.target.value)} placeholder="Packaging, colour…" style={inputStyle} />
-                  <button onClick={() => removeItem(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', display: 'flex', padding: '0 0 7px' }}>
+                  <button onClick={() => removeItem(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: '0 0 7px' }}>
                     <Trash2 size={13} />
                   </button>
                 </div>

@@ -13,7 +13,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: PJS,
 };
 
@@ -33,9 +33,9 @@ function GoogleField({ label, value, onChange, placeholder }) {
         {value && (
           <a href={`https://www.google.com/search?q=${encodeURIComponent(value)}`} target="_blank" rel="noopener noreferrer"
             title="Search on Google"
-            style={{ color: 'rgba(10,10,10,0.3)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingBottom: 7 }}
+            style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingBottom: 7 }}
             onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.3)'}>
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.45)'}>
             <Search size={13} />
           </a>
         )}
@@ -276,7 +276,7 @@ export default function AccommodationPage() {
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{property.name}</span>
                         <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                          <button onClick={() => { setEditingProperty(property); setShowModal(true); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}><Edit size={13} /></button>
+                          <button onClick={() => { setEditingProperty(property); setShowModal(true); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><Edit size={13} /></button>
                           <button onClick={() => deleteProperty(property.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', display: 'flex', padding: 4 }}><Trash2 size={13} /></button>
                         </div>
                       </div>

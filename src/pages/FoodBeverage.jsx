@@ -15,7 +15,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: PJS,
 };
 
@@ -182,7 +182,7 @@ export default function FoodBeveragePage() {
                   <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: 10, alignItems: 'flex-end' }}>
                     <input value={item.name || ''} onChange={e => updateMenuItem(i, 'name', e.target.value)} placeholder="Item name" style={{ ...inputStyle }} />
                     <input value={item.description || ''} onChange={e => updateMenuItem(i, 'description', e.target.value)} placeholder="Description" style={{ ...inputStyle }} />
-                    <button onClick={() => removeMenuItem(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', display: 'flex', padding: '0 0 7px' }}>
+                    <button onClick={() => removeMenuItem(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: '0 0 7px' }}>
                       <X size={14} />
                     </button>
                   </div>

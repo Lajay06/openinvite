@@ -24,7 +24,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
   margin: 0, marginBottom: 10,
 };
@@ -439,7 +439,7 @@ export default function MusicPage() {
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {playlists.length === 0 && (
                 <div style={{ padding: '24px 16px', textAlign: 'center' }}>
-                  <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+                  <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
                     No playlists yet. Create your first one below.
                   </p>
                 </div>
@@ -452,7 +452,7 @@ export default function MusicPage() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pl.name}</p>
-                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
                       {playlistTracks.filter(t => t.category === pl.id).length} songs
                     </p>
                   </div>
@@ -479,7 +479,7 @@ export default function MusicPage() {
                   </div>
                 ) : (
                   <button onClick={() => setAddingPlaylist(true)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: '2px 0', width: '100%' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: '2px 0', width: '100%' }}>
                     <Plus size={11} />Add playlist
                   </button>
                 )}
@@ -655,7 +655,7 @@ export default function MusicPage() {
               </button>
             </div>
             {musicVendors.length === 0 ? (
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textAlign: 'center', padding: '40px 0' }}>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textAlign: 'center', padding: '40px 0' }}>
                 No music vendors added yet. Click "Add music vendor" to get started.
               </p>
             ) : (
@@ -727,7 +727,7 @@ export default function MusicPage() {
           <div style={{ width: '100%', maxWidth: 440, background: '#FFFFFF' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Song request settings</span>
-              <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}><X size={16} /></button>
+              <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
             </div>
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 4 }}>
               {/* Spotify connection */}
@@ -735,7 +735,7 @@ export default function MusicPage() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', marginBottom: 12, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 2px' }}>Spotify connected</p>
-                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>{spotifyConnection.displayName}</p>
+                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>{spotifyConnection.displayName}</p>
                   </div>
                   <button onClick={handleDisconnectSpotify} style={{ fontSize: 12, color: '#E03553', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, padding: 0 }}>
                     Disconnect

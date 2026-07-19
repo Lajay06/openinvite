@@ -53,7 +53,7 @@ export default function PlanSelection() {
 
       {/* Header */}
       <div style={{ textAlign: 'center', maxWidth: 560, marginBottom: 56 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(10,10,10,0.4)', margin: '0 0 12px', fontFamily: PJS }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: PJS }}>
           YOUR 14-DAY TRIAL IS ENDING
         </p>
         <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', lineHeight: 1.15, margin: '0 0 14px', fontFamily: PJS }}>
@@ -69,11 +69,11 @@ export default function PlanSelection() {
 
         {/* Pro */}
         <div style={{ flex: '0 1 340px', minWidth: 280, border: '1px solid #E5E5E5', background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column' }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 14px', fontFamily: PJS }}>Pro</p>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS }}>Pro</p>
           <div style={{ marginBottom: 4 }}>
             <span style={{ fontSize: 44, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$79</span>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 20px', fontFamily: PJS }}>24-month access · one-time payment</p>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>24-month access · one-time payment</p>
           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: '0 0 20px', fontFamily: PJS }}>
             Your complete wedding planning command centre.
           </p>
@@ -108,17 +108,17 @@ export default function PlanSelection() {
         <div style={{ flex: '0 1 340px', minWidth: 280, border: '1px solid #E5E5E5', background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
             <Crown size={13} style={{ color: '#F59E0B', flexShrink: 0 }} />
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>Ultra</p>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>Ultra</p>
           </div>
           <div style={{ marginBottom: 4 }}>
             <span style={{ fontSize: 44, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$149</span>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 20px', fontFamily: PJS }}>24-month access · one-time payment</p>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>24-month access · one-time payment</p>
           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: '0 0 20px', fontFamily: PJS }}>
             Everything in Pro, plus the full digital wedding suite.
           </p>
           <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 12 }} />
-          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.4)', letterSpacing: '0.04em', margin: '0 0 12px', fontFamily: PJS }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.04em', margin: '0 0 12px', fontFamily: PJS }}>
             Everything in Pro, plus:
           </p>
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 9, flex: 1 }}>
@@ -174,13 +174,13 @@ export default function PlanSelection() {
       {plan === 'free' && (
         <button
           onClick={() => navigate('/Dashboard')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textDecoration: 'underline', textDecorationColor: 'rgba(10,10,10,0.2)' }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textDecoration: 'underline', textDecorationColor: 'rgba(10,10,10,0.2)' }}
         >
           Continue with free trial
         </button>
       )}
 
-      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.3)', margin: '20px 0 0', fontFamily: PJS }}>
+      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '20px 0 0', fontFamily: PJS }}>
         Prices in AUD · 14-day money-back guarantee · No recurring fees
       </p>
 

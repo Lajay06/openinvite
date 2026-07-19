@@ -64,7 +64,7 @@ export default function BulkActionBar({ count, selectedGuests, onSetCategory, on
           <button style={barBtn}><Tag size={12} /> Tags <ChevronDown size={12} /></button>
         </PopoverTrigger>
         <PopoverContent align="start" style={{ width: 260 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 8px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 8px' }}>
             Add a tag to {count} guest{count !== 1 ? 's' : ''}
           </p>
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
@@ -96,7 +96,7 @@ export default function BulkActionBar({ count, selectedGuests, onSetCategory, on
           </div>
           {tagsInSelection.length > 0 && (
             <>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 8px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 8px' }}>
                 Remove a tag from the selection
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>

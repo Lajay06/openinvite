@@ -11,7 +11,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -31,9 +31,9 @@ function GoogleField({ label, value, onChange, placeholder }) {
         {value && (
           <a href={`https://www.google.com/search?q=${encodeURIComponent(value)}`} target="_blank" rel="noopener noreferrer"
             title="Search on Google"
-            style={{ color: 'rgba(10,10,10,0.3)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingBottom: 7 }}
+            style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingBottom: 7 }}
             onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.3)'}>
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.45)'}>
             <Search size={13} />
           </a>
         )}

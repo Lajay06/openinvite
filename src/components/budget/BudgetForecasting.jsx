@@ -27,7 +27,7 @@ const fmt = n => `$${Math.round(n).toLocaleString()}`;
 const bodyFont = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 
 const labelStyle = {
-  color: 'rgba(10,10,10,0.4)', ...bodyFont, margin: 0,
+  color: 'rgba(10,10,10,0.6)', ...bodyFont, margin: 0,
 };
 
 const ChartTooltip = ({ active, payload, label }) => {
@@ -223,7 +223,7 @@ Be concise, specific, and use dollar figures.`,
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '16px 20px', background: '#F5F5F5', marginBottom: 20 }}>
             <div style={{ textAlign: 'center', flexShrink: 0 }}>
               <p style={{ fontSize: 28, fontWeight: 700, color: '#0A0A0A', margin: 0, lineHeight: 1, ...bodyFont }}>
-                {aiInsights.health_score}<span style={{ fontSize: 14, color: 'rgba(10,10,10,0.4)' }}>/10</span>
+                {aiInsights.health_score}<span style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)' }}>/10</span>
               </p>
               <p style={{ ...labelStyle, marginTop: 4 }}>health</p>
             </div>
@@ -286,13 +286,13 @@ Be concise, specific, and use dollar figures.`,
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(10,10,10,0.05)" />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 9, fill: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                tick={{ fontSize: 9, fill: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
                 tickFormatter={v => `$${(v / 1000).toFixed(0)}k`}
-                tick={{ fontSize: 9, fill: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                tick={{ fontSize: 9, fill: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 tickLine={false}
                 axisLine={false}
                 width={44}

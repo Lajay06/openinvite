@@ -50,7 +50,7 @@ function FilterPill({ label, active, onClick }) {
 
 const statLabelStyle = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, marginBottom: 10,
+  color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, marginBottom: 10,
 };
 const statValueStyle = {
   fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A',

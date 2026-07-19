@@ -11,7 +11,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -243,7 +243,7 @@ export default function EmergencyContactPage() {
                     style={inputStyle} />
                   <input value={v.role || ''} onChange={e => updateVendor(i, 'role', e.target.value)} placeholder="Role"
                     style={inputStyle} />
-                  <button onClick={() => removeVendor(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', display: 'flex', padding: '0 0 7px' }}>
+                  <button onClick={() => removeVendor(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: '0 0 7px' }}>
                     <X size={14} />
                   </button>
                 </div>

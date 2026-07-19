@@ -86,7 +86,7 @@ export default function GuestAccommodation() {
       {curatedPlaces.length > 0 && (
         <div style={{ padding: '40px 24px 0' }}>
           <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 4px', fontFamily: PJS }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 4px', fontFamily: PJS }}>
               Our picks
             </p>
             <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 'clamp(20px, 4vw, 26px)', color: '#0A0A0A', margin: 0 }}>
@@ -119,10 +119,10 @@ export default function GuestAccommodation() {
                       </span>
                     )}
                     {place.price_level > 0 && (
-                      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{'$'.repeat(place.price_level)}</span>
+                      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{'$'.repeat(place.price_level)}</span>
                     )}
                     {place.address && (
-                      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{place.address}</span>
+                      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{place.address}</span>
                     )}
                   </div>
                   {place.note && (
@@ -153,7 +153,7 @@ export default function GuestAccommodation() {
       {details.accommodation?.partnerRecommendationsEnabled && (
         <div style={{ padding: '48px 24px 0' }}>
           <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Partner Hotels
             </p>
             <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: 0 }}>
@@ -193,7 +193,7 @@ export default function GuestAccommodation() {
 function AccommodationHero({ details, city }) {
   return (
     <div style={{ padding: '60px 24px 40px', background: '#F8F7F5' }}>
-      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         Where to Stay
       </p>
       <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#0A0A0A', margin: '0 0 16px', lineHeight: 1.1 }}>
@@ -267,7 +267,7 @@ function CouplePicksSection({ properties, details }) {
       {pinned.length > 0 && (
         <>
           <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {details?.couple1Name} & {details?.couple2Name} Recommend
             </p>
             <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: 0 }}>

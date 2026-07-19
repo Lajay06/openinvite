@@ -90,7 +90,7 @@ function Portal({ u, isCurrent, onClick }) {
       </div>
       <div style={{ textAlign: 'center' }}>
         <p style={{ fontFamily: PJS, fontSize: 12, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>{u.name}</p>
-        <p style={{ fontFamily: PJS, fontSize: 10, color: 'rgba(10,10,10,0.4)', margin: '2px 0 0' }}>{u.tagline}</p>
+        <p style={{ fontFamily: PJS, fontSize: 10, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0' }}>{u.tagline}</p>
       </div>
     </button>
   );
@@ -172,7 +172,7 @@ export default function MockUniverseC() {
         <>
           {/* ── Header ── */}
           <div style={{ padding: '28px 32px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 6px' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 6px' }}>
               Design Studio — mock C · Entrance
             </p>
             <h1 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: 800, color: '#0A0A0A', margin: 0, letterSpacing: '-0.01em' }}>
@@ -222,7 +222,7 @@ export default function MockUniverseC() {
               <TypeSpecimen typography={opened.typography} />
             </div>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 12px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 12px' }}>
                 Assets in this world
               </p>
               <UniverseAssetQuintet universeId={opened.id} weddingDetails={weddingDetails} guests={guests} colors={opened.colors} />
@@ -234,7 +234,7 @@ export default function MockUniverseC() {
               >
                 Set as my universe
               </button>
-              <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: '8px 0 0' }}>
+              <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '8px 0 0' }}>
                 Restyles your existing invitations, website and RSVP — nothing is lost.
               </p>
             </div>

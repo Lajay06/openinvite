@@ -669,7 +669,7 @@ function AccordionItem({ item }) {
           ))}
           {item.tips && item.tips.length > 0 && (
             <div style={{ marginTop: 18, padding: '14px 16px', background: 'rgba(10,10,10,0.03)', borderLeft: '3px solid rgba(10,10,10,0.12)' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 10px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px' }}>
                 Tips
               </p>
               <ul style={{ margin: 0, padding: '0 0 0 16px' }}>
@@ -682,7 +682,7 @@ function AccordionItem({ item }) {
             </div>
           )}
           {item.why && (
-            <p style={{ fontSize: 12, fontStyle: 'italic', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '14px 0 0', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 12, fontStyle: 'italic', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '14px 0 0', lineHeight: 1.6 }}>
               Why this matters: {item.why}
             </p>
           )}
@@ -697,7 +697,7 @@ export default function PageConsiderations({ pageKey }) {
   if (items.length === 0) {
     return (
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 0', textAlign: 'center' }}>
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
           No considerations available for this page.
         </p>
       </div>

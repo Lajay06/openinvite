@@ -48,7 +48,7 @@ export default function UploadStatus({ status, error, onRetry, height = 120, sty
             }}
           />
         </div>
-        <span style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.5)' : 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.5)' : 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
           Uploading…
         </span>
       </div>

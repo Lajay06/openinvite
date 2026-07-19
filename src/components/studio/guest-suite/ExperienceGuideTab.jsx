@@ -37,7 +37,7 @@ const ITINERARY_LENGTHS = [1, 3, 5];
 
 const sectionLabel = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8, display: 'block',
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block',
 };
 
 function photoProxyUrl(ref, w = 600) {
@@ -180,7 +180,7 @@ export default function ExperienceGuideTab({ details }) {
           <h2 style={{ fontSize: 18, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
             Experience guide
           </h2>
-          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             Curate local recommendations for your guests
           </span>
         </div>
@@ -261,7 +261,7 @@ function CategoriesTab({ guide, onToggleCategory }) {
                     </span>
                   )}
                 </div>
-                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>{cat.desc}</p>
+                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>{cat.desc}</p>
               </div>
               <Switch checked={isEnabled} onCheckedChange={() => onToggleCategory(cat.key)} />
             </div>
@@ -381,15 +381,15 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
         {/* Search */}
         <div style={{ position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Search Google Places</span>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Search Google Places</span>
             {geoState === 'idle' && (
               <button type="button" onClick={handleUseLocation}
-                style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: 0 }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: 0 }}>
                 <Navigation size={11} /> Use my location
               </button>
             )}
             {geoState === 'loading' && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                 <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> Getting location…
               </span>
             )}
@@ -403,14 +403,14 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
               </span>
             )}
             {geoState === 'error' && (
-              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                 Couldn't get location —{' '}
                 <button type="button" onClick={handleUseLocation}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
               </span>
             )}
             {geoState === 'unavailable' && (
-              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Location not available</span>
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Location not available</span>
             )}
           </div>
 
@@ -421,7 +421,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
             {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
             {selectedPlace && !searching && (
               <button type="button" onClick={() => { setSelectedPlace(null); setQuery(''); setNote(''); setIsCouplePick(false); }}
-                style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
+                style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 0 }}>
                 <X size={13} />
               </button>
             )}
@@ -445,7 +445,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{place.name}</p>
-                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
+                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
                   </div>
                   {place.rating && (
                     <span style={{ fontSize: 11, color: '#0A0A0A', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
@@ -455,7 +455,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
                 </button>
               ))}
               <button onClick={() => setShowDropdown(false)}
-                style={{ width: '100%', padding: '8px 12px', background: 'rgba(10,10,10,0.02)', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                style={{ width: '100%', padding: '8px 12px', background: 'rgba(10,10,10,0.02)', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                 Close
               </button>
             </div>
@@ -475,7 +475,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
         {/* Manual entry form */}
         {!selectedPlace && showManual && (
           <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '16px 16px 18px' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
               <div>
                 <label style={sectionLabel}>Name</label>
@@ -535,7 +535,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
                 </span>
               )}
               <button type="button" onClick={() => { setSelectedPlace(null); setQuery(''); setNote(''); setIsCouplePick(false); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                 <X size={14} />
               </button>
             </div>
@@ -574,7 +574,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div>
             <label style={{ ...sectionLabel, marginBottom: 2 }}>Saved places</label>
-            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
               {allSavedPlaces.length} total across all categories
             </p>
           </div>
@@ -593,7 +593,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
 
         {visiblePlaces.length === 0 ? (
           <div style={{ padding: '40px 0', textAlign: 'center', borderTop: '1px solid rgba(10,10,10,0.06)' }}>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.3)', fontFamily: PJS, margin: 0 }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
               {allSavedPlaces.length === 0
                 ? 'Search above and click "Add place" to start building your guide.'
                 : 'No places in this category yet.'}
@@ -676,7 +676,7 @@ function SavedPlaceCard({ place, onRemove }) {
             </span>
           )}
           {place.price_level > 0 && (
-            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{'$'.repeat(place.price_level)}</span>
+            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{'$'.repeat(place.price_level)}</span>
           )}
         </div>
 
@@ -1018,7 +1018,7 @@ function ActivityRow({ activity, onRemove }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2, flexWrap: 'wrap' }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>{name}</p>
-          {activity.time && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>{activity.time}</span>}
+          {activity.time && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{activity.time}</span>}
           {activity.duration && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}>{activity.duration}</span>}
         </div>
         {activity.category && (
@@ -1067,7 +1067,7 @@ function AddActivityInline({ block, allSavedPlaces, onAdd }) {
     return (
       <button
         onClick={() => setOpen(true)}
-        style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0', fontWeight: 600 }}
+        style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0', fontWeight: 600 }}
       >
         <Plus size={12} /> Add activity
       </button>
@@ -1130,7 +1130,7 @@ function PublishTab({ details, guide, destination, onSaveField, onGenerateIntro,
               onChange={e => onSaveField('heroPhotoUrl', e.target.value)}
               placeholder="https://..."
             />
-            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '6px 0 0' }}>Full-screen banner on the guest-facing guide.</p>
+            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '6px 0 0' }}>Full-screen banner on the guest-facing guide.</p>
           </div>
         </div>
 

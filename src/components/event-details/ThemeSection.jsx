@@ -14,7 +14,7 @@ const SEASON_OPTIONS     = ['Spring', 'Summer', 'Autumn', 'Winter'];
 const SETTING_OPTIONS    = ['Indoor', 'Outdoor', 'Mix of both'];
 
 const headingStyle = { fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 14px' };
-const subLabelStyle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 10px', display: 'block' };
+const subLabelStyle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px', display: 'block' };
 
 function Pill({ label, selected, onClick, small, disabled }) {
   return (
@@ -186,7 +186,7 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
               style={{ maxWidth: 280 }}
             />
             <button type="button" onClick={() => { setLocal(prev => ({ ...prev, cultureOther: '' })); setShowCultureInput(false); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0, display: 'flex', alignItems: 'center' }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 0, display: 'flex', alignItems: 'center' }}>
               <X size={14} />
             </button>
           </div>

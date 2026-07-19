@@ -5,7 +5,7 @@ const WHATSAPP_GREEN = "#25D366";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -34,9 +34,9 @@ export default function WhatsAppConnect({ onConnect, isConnected, connectedPhone
             </div>
           </div>
           <button onClick={() => setShowDisconnect(true)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}
             onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.4)'}>
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}>
             <X size={14} />
           </button>
         </div>

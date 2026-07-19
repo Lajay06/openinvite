@@ -81,7 +81,7 @@ function ProductCard({ product }) {
       )}
       <div style={{ padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
         {product.category && product.category !== 'other' && (
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             {CATEGORY_LABELS[product.category] || product.category}
           </span>
         )}
@@ -106,7 +106,7 @@ function ProductCard({ product }) {
               </span>
             )}
             {remaining > 1 && (
-              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginLeft: 6 }}>
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginLeft: 6 }}>
                 × {remaining} needed
               </span>
             )}
@@ -246,7 +246,7 @@ export default function GuestSuiteRegistry() {
             {/* Registry platforms */}
             {platforms.length > 0 && (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 14px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
                   REGISTRY PLATFORMS
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -258,10 +258,10 @@ export default function GuestSuiteRegistry() {
             {/* Gift items grouped by category */}
             {availableProducts.length > 0 && (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 14px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
                   GIFT IDEAS · {availableProducts.length} item{availableProducts.length !== 1 ? 's' : ''}
                   {products.length > availableProducts.length && (
-                    <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.3)' }}>
+                    <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}>
                       {' '}({products.length - availableProducts.length} already purchased — hidden from guests)
                     </span>
                   )}
@@ -284,7 +284,7 @@ export default function GuestSuiteRegistry() {
             {/* Cash funds */}
             {cashFunds.length > 0 && (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 14px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
                   CASH FUNDS
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

@@ -19,7 +19,20 @@ var sourcing). Update it when you learn something new the same way.
 - All data via base44.entities.* authenticated client only
 - No imports from @/entities/* — use base44.entities.* instead
 - Font: Plus Jakarta Sans, always
-- Muted text: rgba(10,10,10,0.4) — never #888 or gray-400/500
+- Text/icon alpha tokens (src/styles/tokens.js `color`) — never hand-roll a
+  new rgba(10,10,10,X) muted value, use the role that matches:
+  - Muted/informational text the user must read: rgba(10,10,10,0.6)
+    (`textMuted`) — WCAG AA 4.5:1 against white (~5.25:1)
+  - Input placeholders/hint text: rgba(10,10,10,0.58) (`textPlaceholder`)
+    — also 4.5:1 (~4.89:1), deliberately a touch lighter than textMuted
+  - Disabled controls / purely decorative text: rgba(10,10,10,0.3)
+    (`textDisabled`) — WCAG exempts disabled UI from contrast requirements;
+    never use this for text a user must actually read
+  - Enabled icon-only controls (not disabled) and their equivalents (e.g.
+    a hover border): rgba(10,10,10,0.45) (`iconMuted`) — WCAG 1.4.11
+    non-text contrast, 3:1 minimum (~3.16:1)
+  Never #888 or gray-400/500. (AUDIT_2026-07.md S13/S14 — the previous
+  blanket rgba(10,10,10,0.4)/0.3 pair only reached ~2.7:1/~2.0:1.)
 - All accordions: defaultValue={[]} (collapsed by default)
 - Primary colour: #E03553
 - Black: #0A0A0A

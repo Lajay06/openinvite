@@ -23,7 +23,7 @@ function PollResultCard({ poll }) {
             <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.08)', borderRadius: 999 }}>
               {poll.category}
             </span>
-            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: poll.isActive ? '#DDF762' : 'rgba(10,10,10,0.05)', color: poll.isActive ? '#0A1930' : 'rgba(10,10,10,0.4)' }}>
+            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: poll.isActive ? '#DDF762' : 'rgba(10,10,10,0.05)', color: poll.isActive ? '#0A1930' : 'rgba(10,10,10,0.6)' }}>
               {poll.isActive ? 'Active' : 'Ended'}
             </span>
           </div>
@@ -33,7 +33,7 @@ function PollResultCard({ poll }) {
         </div>
         <div style={{ flexShrink: 0, textAlign: 'right' }}>
           <p style={{ fontFamily: PJS, fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>{totalVotes}</p>
-          <p style={{ fontFamily: PJS, fontSize: 10, color: 'rgba(10,10,10,0.4)', margin: '1px 0 0' }}>
+          <p style={{ fontFamily: PJS, fontSize: 10, color: 'rgba(10,10,10,0.6)', margin: '1px 0 0' }}>
             {totalVotes === 1 ? 'vote' : 'votes'}
           </p>
         </div>
@@ -50,7 +50,7 @@ function PollResultCard({ poll }) {
                 <span style={{ fontFamily: PJS, fontSize: 13, fontWeight: isLeading ? 700 : 400, color: isLeading ? '#0A0A0A' : 'rgba(10,10,10,0.7)' }}>
                   {opt.emoji && `${opt.emoji} `}{opt.label}
                   {opt.votes > 0 && (
-                    <span style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontWeight: 400, marginLeft: 6 }}>
+                    <span style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', fontWeight: 400, marginLeft: 6 }}>
                       ({opt.votes})
                     </span>
                   )}
@@ -94,7 +94,7 @@ function PollResultCard({ poll }) {
         <div style={{ padding: '0 20px 14px' }}>
           <button
             onClick={() => setShowComments(v => !v)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.4)', padding: 0, fontWeight: 600 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', padding: 0, fontWeight: 600 }}
           >
             {showComments ? 'Hide comments' : `${poll.comments.length} comment${poll.comments.length > 1 ? 's' : ''}`}
           </button>
@@ -160,7 +160,7 @@ export default function GuestSuitePolls() {
             { label: 'Total votes', value: totalVotesAll, last: true },
           ].map((s, i) => (
             <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '16px 32px', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.08)' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 4px' }}>{s.label}</p>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 4px' }}>{s.label}</p>
               <p style={{ fontSize: 24, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0, lineHeight: 1 }}>{s.value}</p>
             </div>
           ))}
@@ -195,7 +195,7 @@ export default function GuestSuitePolls() {
             {/* Active polls */}
             {activePolls.length > 0 && (
               <div style={{ marginBottom: endedPolls.length > 0 ? 40 : 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                   ACTIVE POLLS · {activePolls.length}
                 </p>
                 {activePolls.map(poll => <PollResultCard key={poll.id} poll={poll} />)}
@@ -205,7 +205,7 @@ export default function GuestSuitePolls() {
             {/* Ended polls */}
             {endedPolls.length > 0 && (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '0 0 16px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                   ENDED POLLS · {endedPolls.length}
                 </p>
                 {endedPolls.map(poll => <PollResultCard key={poll.id} poll={poll} />)}

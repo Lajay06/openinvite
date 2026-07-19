@@ -77,7 +77,7 @@ function GameCreateForm({ guests, onSave, onCancel, saving }) {
 
   return (
     <div>
-      <button onClick={onCancel} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.4)', padding: '0 0 20px', fontWeight: 600 }}>
+      <button onClick={onCancel} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', padding: '0 0 20px', fontWeight: 600 }}>
         <ChevronLeft size={13} /> Back to games
       </button>
 
@@ -128,14 +128,14 @@ function GameCreateForm({ guests, onSave, onCancel, saving }) {
                     </button>
                   </div>
                 ))}
-                <button onClick={() => addOption(q.id)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.4)', padding: '4px 0', fontWeight: 600 }}>
+                <button onClick={() => addOption(q.id)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', padding: '4px 0', fontWeight: 600 }}>
                   <Plus size={10} /> Add option
                 </button>
               </div>
             )}
           </div>
         ))}
-        <button onClick={addQuestion} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.4)', padding: '6px 0', fontWeight: 600 }}>
+        <button onClick={addQuestion} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', padding: '6px 0', fontWeight: 600 }}>
           <Plus size={12} /> Add question
         </button>
       </div>
@@ -153,7 +153,7 @@ function GameCreateForm({ guests, onSave, onCancel, saving }) {
 
         {recipientMode === 'tag' && (
           allTags.length === 0 ? (
-            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No tags found on your guest list yet.</p>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No tags found on your guest list yet.</p>
           ) : (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {allTags.map(tag => (
@@ -228,7 +228,7 @@ function GamePrintView({ questionnaire, recipients, responses, onClose }) {
               Q{i + 1}. {q.text}
             </p>
             {answersByQuestion(q.id).length === 0 ? (
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontStyle: 'italic', margin: 0 }}>No answers yet</p>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontStyle: 'italic', margin: 0 }}>No answers yet</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {answersByQuestion(q.id).map(({ guest_name, answer }, ai) => (
@@ -255,14 +255,14 @@ function GameResponses({ questionnaire, guests, responses, onBack, onCopyLinks, 
 
   return (
     <div>
-      <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.4)', padding: '0 0 20px', fontWeight: 600 }}>
+      <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', padding: '0 0 20px', fontWeight: 600 }}>
         <ChevronLeft size={13} /> Back to games
       </button>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6, gap: 12, flexWrap: 'wrap' }}>
         <div>
           <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>{questionnaire.title}</p>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: '4px 0 0' }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '4px 0 0' }}>
             {recipientSummary(questionnaire, guests.length)} · {responses.length}/{recipients.length} answered
           </p>
         </div>
@@ -281,7 +281,7 @@ function GameResponses({ questionnaire, guests, responses, onBack, onCopyLinks, 
         <div style={labelStyle}>Who's answered</div>
         <div style={{ border: '1px solid rgba(10,10,10,0.08)' }}>
           {recipients.length === 0 ? (
-            <p style={{ padding: 16, fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>No recipients match this game's settings.</p>
+            <p style={{ padding: 16, fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No recipients match this game's settings.</p>
           ) : recipients.map((g, i) => {
             const answered = answeredGuestIds.has(g.id);
             return (
@@ -309,7 +309,7 @@ function GameResponses({ questionnaire, guests, responses, onBack, onCopyLinks, 
             <div key={q.id} style={{ marginBottom: 20 }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 8px' }}>Q{i + 1}. {q.text}</p>
               {answers.length === 0 ? (
-                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, fontStyle: 'italic' }}>No answers yet</p>
+                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, fontStyle: 'italic' }}>No answers yet</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {answers.map(({ guest_name, answer }, ai) => (
@@ -468,7 +468,7 @@ export default function GamesManager() {
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
           <p style={{ fontSize: 32, margin: '0 0 12px' }}>🎲</p>
           <p style={{ fontFamily: PJS, fontSize: 15, fontWeight: 600, color: '#0A0A0A', margin: '0 0 6px' }}>No games yet</p>
-          <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.4)', margin: '0 0 24px' }}>
+          <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
             Create a private questionnaire for quizzes, the shoe game, or anything guests answer just for the two of you.
           </p>
           <button onClick={() => setView('create')} style={{ padding: '9px 20px', borderRadius: 999, background: '#E03553', color: '#FFFFFF', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 700 }}>
@@ -487,10 +487,10 @@ export default function GamesManager() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>{q.title}</p>
                       {q.is_active === false && (
-                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.05)', color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Closed</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.05)', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Closed</span>
                       )}
                     </div>
-                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, margin: 0 }}>
+                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
                       {recipientSummary(q, guests.length)} · {answeredCount}/{recipients.length} answered
                     </p>
                   </div>

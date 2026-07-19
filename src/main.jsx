@@ -9,7 +9,7 @@ import '@/lib/analytics.js' // initialises PostHog on app load
 function ErrorFallback() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
-      <p className="text-[11px] font-semibold tracking-widest text-[rgba(10,10,10,0.4)] mb-3">
+      <p className="text-[11px] font-semibold tracking-widest text-[rgba(10,10,10,0.6)] mb-3">
         Openinvite
       </p>
       <h1 className="text-2xl font-bold text-[#0A0A0A] tracking-tight mb-3">

@@ -64,7 +64,7 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
       </span>
 
       {/* Index */}
-      <span style={{ width: 20, textAlign: 'center', fontSize: 11, color: 'rgba(10,10,10,0.3)', flexShrink: 0, fontFamily: PJS }}>{index + 1}</span>
+      <span style={{ width: 20, textAlign: 'center', fontSize: 11, color: 'rgba(10,10,10,0.6)', flexShrink: 0, fontFamily: PJS }}>{index + 1}</span>
 
       {/* Artwork */}
       <div style={{ width: 48, height: 48, flexShrink: 0, background: 'rgba(10,10,10,0.06)', overflow: 'hidden', borderRadius: 4 }}>
@@ -97,7 +97,7 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
       </div>
 
       {/* Category */}
-      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', flexShrink: 0, width: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: PJS }}>
+      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', flexShrink: 0, width: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: PJS }}>
         {CATEGORY_LABELS[item.category] || item.category}
       </span>
 
@@ -122,7 +122,7 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
         {!readOnly && (
           <>
             <button onClick={() => onToggleApproval(item)}
-              style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: item.approved ? '#6b7700' : 'rgba(10,10,10,0.3)' }}
+              style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: item.approved ? '#6b7700' : 'rgba(10,10,10,0.45)' }}
               title={item.approved ? 'Approved' : 'Mark as approved'}>
               {item.approved ? <Check size={13} /> : <Clock size={13} />}
             </button>

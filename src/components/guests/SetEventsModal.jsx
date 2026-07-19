@@ -106,7 +106,7 @@ export default function SetEventsModal({ guests, weddingEvents, onUpdate, onClos
               {guests.length === 1 ? guestNames[0] : `${guests.length} guests selected`}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', padding: 4 }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4 }}>
             <X size={16} />
           </button>
         </div>
@@ -130,7 +130,7 @@ export default function SetEventsModal({ guests, weddingEvents, onUpdate, onClos
                     onChange={() => toggle(event)}
                     style={{ width: 15, height: 15, accentColor: '#E03553' }}
                   />
-                  <CalendarCheck size={13} color="rgba(10,10,10,0.4)" />
+                  <CalendarCheck size={13} color="rgba(10,10,10,0.6)" />
                   <span style={{ fontSize: 13, color: '#0A0A0A' }}>{event.name}</span>
                 </label>
               ))}

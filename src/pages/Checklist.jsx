@@ -10,7 +10,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS,
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 
 const ESSENTIALS_DEFAULT = [
@@ -377,7 +377,7 @@ export default function ChecklistPage({ embedded = false }) {
               <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, marginBottom: 8 }}>
                 Your checklist is empty
               </p>
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, maxWidth: 360, margin: '0 auto 24px' }}>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, maxWidth: 360, margin: '0 auto 24px' }}>
                 Switch to the Planning overview tab to track your key wedding milestones.
               </p>
               <button

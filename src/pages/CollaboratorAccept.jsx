@@ -94,11 +94,11 @@ export default function CollaboratorAccept() {
 
         {grantedPages.length > 0 && (
           <div style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.4)', letterSpacing: '0.06em', marginBottom: 6, fontFamily: PJS }}>you'll be able to help with</p>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.06em', marginBottom: 6, fontFamily: PJS }}>you'll be able to help with</p>
             {grantedPages.map(([page, p]) => (
               <div key={page} style={PAGE_LABEL_STYLE}>
-                {p.edit ? <PenSquare size={13} style={{ color: '#E03553' }} /> : <Eye size={13} style={{ color: 'rgba(10,10,10,0.4)' }} />}
-                {page} <span style={{ color: 'rgba(10,10,10,0.4)' }}>({p.edit ? 'view & edit' : 'view only'})</span>
+                {p.edit ? <PenSquare size={13} style={{ color: '#E03553' }} /> : <Eye size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />}
+                {page} <span style={{ color: 'rgba(10,10,10,0.6)' }}>({p.edit ? 'view & edit' : 'view only'})</span>
               </div>
             ))}
           </div>

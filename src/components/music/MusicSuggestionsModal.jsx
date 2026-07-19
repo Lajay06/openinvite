@@ -5,7 +5,7 @@ import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)',
+  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -15,7 +15,7 @@ const CATEGORY_COLORS = {
   dinner:          '#803D81',
   dancing:         '#6B2CAE',
   special_moments: '#3a7a96',
-  general:         'rgba(10,10,10,0.4)',
+  general:         'rgba(10,10,10,0.6)',
 };
 
 const DEFAULT_SUGGESTIONS = [
@@ -169,7 +169,7 @@ export default function MusicSuggestionsModal({ isOpen, onClose, onAddSuggestion
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Song suggestions</span>
             <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>Click Add to pre-fill the song form</p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 4 }}><X size={16} /></button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
         </div>
 
         {/* Tabs */}

@@ -14,7 +14,7 @@ function FieldInput({ label, value, onChange, placeholder }) {
   return (
     <div style={{ marginBottom: 16 }}>
       {label && (
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 6, display: 'block' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 6, display: 'block' }}>
           {label}
         </span>
       )}
@@ -28,7 +28,7 @@ function FieldInput({ label, value, onChange, placeholder }) {
   );
 }
 
-const sLabel = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', fontFamily: PJS, marginBottom: 8, display: 'block' };
+const sLabel = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block' };
 
 /**
  * Shared Places-powered venue search panel.
@@ -133,12 +133,12 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
           <div style={{ display: 'flex', gap: 10, flexShrink: 0, alignItems: 'center' }}>
             {venue.mapsUrl && (
               <a href={venue.mapsUrl} target="_blank" rel="noopener noreferrer"
-                style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3 }}>
+                style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3 }}>
                 <ExternalLink size={10} /> Map
               </a>
             )}
             <button type="button" onClick={() => onChange(null)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0, display: 'flex', alignItems: 'center' }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 0, display: 'flex', alignItems: 'center' }}>
               <X size={15} />
             </button>
           </div>
@@ -153,12 +153,12 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
         <span style={sLabel}>{label}</span>
         {geoState === 'idle' && (
           <button type="button" onClick={handleUseLocation}
-            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, padding: 0 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: 0 }}>
             <Navigation size={11} /> Use my location
           </button>
         )}
         {geoState === 'loading' && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} /> Getting location…
           </span>
         )}
@@ -169,12 +169,12 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
           </span>
         )}
         {geoState === 'error' && (
-          <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+          <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             Couldn't get location —{' '}
             <button type="button" onClick={handleUseLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
           </span>
         )}
-        {geoState === 'unavailable' && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Location not available</span>}
+        {geoState === 'unavailable' && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Location not available</span>}
       </div>
 
       {!showManual ? (
@@ -204,12 +204,12 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 1px', fontFamily: PJS }}>{place.name}</p>
-                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
+                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address}</p>
                   </div>
                 </button>
               ))}
               <button onClick={() => setShowDropdown(false)}
-                style={{ width: '100%', padding: '7px 12px', background: 'rgba(10,10,10,0.02)', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>
+                style={{ width: '100%', padding: '7px 12px', background: 'rgba(10,10,10,0.02)', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                 Close
               </button>
             </div>
@@ -225,7 +225,7 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
       ) : (
         <div style={{ border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '14px 16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.4)', fontFamily: PJS, letterSpacing: '0.06em' }}>Add venue manually</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, letterSpacing: '0.06em' }}>Add venue manually</span>
             <button type="button" onClick={() => setShowManual(false)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, padding: 0, fontWeight: 600 }}>
               ← Back to search

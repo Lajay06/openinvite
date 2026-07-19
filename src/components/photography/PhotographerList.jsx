@@ -69,7 +69,7 @@ export default function PhotographerList({ photographers, onEdit, onDelete }) {
               </div>
               <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
                 <button onClick={() => onEdit(photographer)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.4)', display: 'flex', padding: 6 }}>
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 6 }}>
                   <Edit size={14} />
                 </button>
                 <button onClick={() => onDelete(photographer.id)}

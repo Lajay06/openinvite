@@ -22,7 +22,7 @@ const textareaStyle = {
 };
 const fieldLabel = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 6, fontFamily: PJS,
+  color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 6, fontFamily: PJS,
 };
 
 function Toggle({ value, onChange }) {
@@ -48,7 +48,7 @@ function DisplayToggle({ value, onChange }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(10,10,10,0.06)' }}>
       <Toggle value={value} onChange={onChange} />
-      <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', fontFamily: PJS }}>Display on website</span>
+      <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Display on website</span>
     </div>
   );
 }
@@ -300,7 +300,7 @@ export default function GuestSuitePolicies() {
               <Toggle value={policies.stylingQuestionnaire.enabled} onChange={v => set('stylingQuestionnaire', 'enabled', v)} />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Show a quick "what to wear" questionnaire on the Styling page</span>
             </div>
-            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, lineHeight: 1.6 }}>
               Guests pick the events they're attending, their style, and their budget — we instantly suggest an outfit based on your dress codes. No account needed, nothing is saved.
             </p>
           </DetailsSection>
@@ -329,7 +329,7 @@ export default function GuestSuitePolicies() {
 
         </div>
 
-        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '20px 0 16px', fontStyle: 'italic', fontFamily: PJS }}>
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '20px 0 16px', fontStyle: 'italic', fontFamily: PJS }}>
           Policies marked "Display on website" will appear in the Policies section of your wedding website and Experience Guide.
         </p>
 
