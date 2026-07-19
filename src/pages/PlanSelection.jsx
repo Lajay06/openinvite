@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Loader2, Check, Crown } from 'lucide-react';
 import { track } from '@/lib/analytics';
+import { startCheckout } from '@/lib/checkoutSession';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
-
-const PRICE_IDS = {
-  pro:   import.meta.env.VITE_STRIPE_PRO_PRICE_ID   || 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
-  ultra: import.meta.env.VITE_STRIPE_ULTRA_PRICE_ID || 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
-};
 
 const PRO_FEATURES = [
   'Unlimited guests & full RSVP management',
@@ -43,39 +38,15 @@ function CheckIcon() {
   );
 }
 
-async function startCheckout(plan, setLoadingPlan) {
-  const priceId = PRICE_IDS[plan];
-  setLoadingPlan(plan);
-  try {
-    let userEmail = '';
-    let userId = '';
-    try {
-      const me = await base44.auth.me();
-      userEmail = me?.email || '';
-      userId = me?.id || '';
-    } catch {}
-
-    const res = await fetch('/api/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ priceId, userEmail, userId }),
-    });
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) { setLoadingPlan(null); return; }
-    const data = await res.json();
-    if (data.url) window.location.href = data.url;
-  } catch {}
-  setLoadingPlan(null);
-}
-
 export default function PlanSelection() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const plan = user?.plan || 'free';
   const [loadingPlan, setLoadingPlan] = useState(null);
+  const [checkoutError, setCheckoutError] = useState(null);
 
-  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: 79  }); startCheckout('pro',   setLoadingPlan); };
-  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: 149 }); startCheckout('ultra', setLoadingPlan); };
+  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: 79  }); startCheckout('pro',   setLoadingPlan, setCheckoutError); };
+  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: 149 }); startCheckout('ultra', setLoadingPlan, setCheckoutError); };
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 24px' }}>
@@ -177,6 +148,27 @@ export default function PlanSelection() {
         </div>
 
       </div>
+
+      {/* ── Checkout error banner ── */}
+      {checkoutError && (
+        <div style={{
+          maxWidth: 720, width: '100%', margin: '0 auto', marginBottom: 24,
+          background: '#FEF2F2', border: '1px solid #FECACA',
+          padding: '14px 20px',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16,
+        }}>
+          <p style={{ fontSize: 13, color: '#991B1B', margin: 0, lineHeight: 1.5, fontFamily: PJS, flex: 1 }}>
+            {checkoutError}
+          </p>
+          <button
+            onClick={() => setCheckoutError(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#991B1B', fontSize: 16, lineHeight: 1, padding: 0, flexShrink: 0 }}
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* Free trial continue */}
       {plan === 'free' && (
