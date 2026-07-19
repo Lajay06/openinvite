@@ -68,6 +68,36 @@ infrastructure, and reverted before any real test ran). Don't assume it
 solves the owner/collaborator access problem without testing it in
 isolation first, on a throwaway entity, with explicit authorization.
 
+## The built-in `User` entity accepts arbitrary custom fields, no schema needed
+
+Confirmed empirically 2026-07 (schema-drift-guard triage, investigating
+`User.tempUnit`/`User.deletionRequestedAt` flagged as "dropped" by
+`scripts/lib/schemaDropScan.mjs`'s static scan): both fields are actually
+fine — `list_entity_schemas` on `User` does return a real schema, and it
+already correctly declares both. The scanner's embedded snapshot was just
+wrong (never properly cross-checked against a live fetch).
+
+While investigating, went one step further: wrote a totally undeclared,
+made-up field name (`__persistence_probe_undeclared_field__`) via
+`PUT /apps/:id/entities/User/me`, then read it back with a fresh, separate
+`GET` — it round-tripped correctly. **The built-in User entity persists
+arbitrary custom fields regardless of schema declaration** — fundamentally
+different from every custom entity (`WeddingDetails`, `Guest`, `Note`,
+etc.), which silently drop anything not declared in their schema. This
+also explains `onboardingCompleted` (camelCase, used everywhere in the
+app): the live `User` schema only declares `onboarding_completed`
+(snake_case), yet the camelCase field round-trips fine in practice —
+confirmed directly, not just inferred.
+
+**Practical implication**: a "DROPPED" finding for `User` from
+`audit-schema.mjs`/`schema-drift-guard.mjs` is likely a false positive by
+the nature of this entity, not a real bug — treat it with much lower
+confidence than a DROPPED finding on a custom entity. This does NOT mean
+User is exempt from the separate "silently reverts later" schema-drift
+phenomenon below — only that immediate write-then-read-back of an
+undeclared field is not, itself, evidence of a problem for `User`
+specifically.
+
 ## The built-in `User` entity is a different subsystem entirely
 
 Every custom entity in this app authenticates equally well via
