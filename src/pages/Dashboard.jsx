@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 import { track, identify } from "@/lib/analytics";
+import toast from "react-hot-toast";
 
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
@@ -144,6 +145,8 @@ export default function Dashboard() {
           setGuests(data.Guest || []);
           setBudget(data.Budget || []);
           setSchedule(data.Schedule || []);
+        } else {
+          toast.error("Failed to load your dashboard data");
         }
         setLoading(false);
         return;
@@ -157,7 +160,9 @@ export default function Dashboard() {
         getMyGuestsWithRsvp(), getMyRecords('Budget'), getMyRecords('Schedule'),
       ]);
       setGuests(guestData); setBudget(budgetData); setSchedule(scheduleData);
-    } catch {}
+    } catch {
+      toast.error("Failed to load your dashboard data");
+    }
     setLoading(false);
   };
 

@@ -325,7 +325,7 @@ export default function SchedulePage({
                   ))}
                 </div>
               </div>
-              <ScheduleList items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} />
+              <ScheduleList items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} loading={loading} />
             </div>
           </TabsContent>
         </Tabs>

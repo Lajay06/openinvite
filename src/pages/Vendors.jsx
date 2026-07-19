@@ -242,7 +242,7 @@ export default function VendorsPage() {
             </div>
 
             {/* Vendor list */}
-            {vendors.length === 0 ? (
+            {loading ? null : vendors.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px solid rgba(10,10,10,0.06)' }}>
                 <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                   <Search size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
