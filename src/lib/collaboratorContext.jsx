@@ -1,5 +1,5 @@
 /**
- * src/lib/collaboratorContext.js
+ * src/lib/collaboratorContext.jsx
  *
  * Client-side collaboration state for the real dashboard shell. A
  * collaborator session is identified by a `?collabOwner=<ownerUserId>`
@@ -19,7 +19,7 @@
  * promises.
  */
 
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS } from './collaboratorPageMap';
 
@@ -52,7 +52,7 @@ const EMPTY = { permissions: {}, coupleNames: '', collaboratorEmail: '' };
  *   collaboratorEmail: string,
  * }}
  */
-export function useCollaboratorContext() {
+function useCollaboratorContextFetch() {
   const [searchParams] = useSearchParams();
   const ownerUserId = searchParams.get('collabOwner');
   const [state, setState] = useState({ loading: !!ownerUserId, ok: false, ...EMPTY });
@@ -86,4 +86,26 @@ export function useCollaboratorContext() {
   }, [ownerUserId]);
 
   return { ownerUserId, ...state };
+}
+
+// AUDIT_2026-07.md S5: every dashboard page called useCollaboratorContext()
+// independently, so each one fired its own /api/collaborator-context
+// request on mount — Layout.jsx plus whichever page was current meant 2
+// identical requests per navigation. CollaboratorProvider fetches once
+// (mounted here, in Layout.jsx) and every consumer reads the same value
+// from context instead of re-fetching.
+const CollaboratorContext = createContext(null);
+
+export function CollaboratorProvider({ children }) {
+  const value = useCollaboratorContextFetch();
+  return <CollaboratorContext.Provider value={value}>{children}</CollaboratorContext.Provider>;
+}
+
+export function useCollaboratorContext() {
+  const ctx = useContext(CollaboratorContext);
+  if (ctx) return ctx;
+  // Defensive fallback for any caller rendered outside CollaboratorProvider
+  // (none currently — every consumer is a dashboard page mounted inside
+  // Layout.jsx's provider).
+  return { ownerUserId: null, loading: false, ok: false, ...EMPTY };
 }
