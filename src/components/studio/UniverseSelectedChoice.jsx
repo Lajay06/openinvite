@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { interactiveDivProps } from '@/lib/a11y';
 
 export default function UniverseSelectedChoice({ universe, coupleName, onClose }) {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
         {/* Ava's Studio */}
         <div
           onClick={() => handleChoice('ava')}
+          {...interactiveDivProps(() => handleChoice('ava'), { label: "Ava's Studio" })}
           style={{ padding: '40px 32px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s ease', textAlign: 'left' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.background = 'rgba(224,53,83,0.05)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
@@ -55,6 +57,7 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
         {/* Website Builder */}
         <div
           onClick={() => handleChoice('builder')}
+          {...interactiveDivProps(() => handleChoice('builder'), { label: 'Website Builder' })}
           style={{ padding: '40px 32px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s ease', textAlign: 'left' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}

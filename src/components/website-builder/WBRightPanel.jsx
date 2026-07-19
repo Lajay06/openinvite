@@ -12,6 +12,7 @@ import {
 import { BlockFields } from './BlockFields';
 import { blockLabel } from '@/components/guest-website/blocks/blockTypes';
 import { TEXT_COLOR_OPTIONS, BACKGROUND_OPTIONS, SPACING_OPTIONS, JUSTIFY_CAPABLE_TYPES } from '@/components/guest-website/blocks/UniverseBlocks';
+import { interactiveDivProps } from '@/lib/a11y';
 
 // ── Extra primitives used only here ───────────────────────────
 function SLabel({ children, onClick, isOpen }) {
@@ -63,7 +64,7 @@ function ChipInput({ label, items = [], onAdd, onRemove }) {
         {items.map((it, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.08)', padding: '4px 10px', fontSize: 12, borderRadius: 999 }}>
             <span style={{ color: '#FFFFFF' }}>{it}</span>
-            <button onClick={() => onRemove(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: 0, lineHeight: 1, fontSize: 14 }}>×</button>
+            <button onClick={() => onRemove(i)} aria-label={`Remove ${it}`} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: 0, lineHeight: 1, fontSize: 14 }}>×</button>
           </div>
         ))}
       </div>
@@ -155,6 +156,7 @@ function FontDropdown({ value, onChange, previewSize = 14 }) {
               <div
                 key={font.id}
                 onClick={() => { onChange(font.id); setOpen(false); }}
+                {...interactiveDivProps(() => { onChange(font.id); setOpen(false); }, { label: font.label })}
                 style={{
                   padding: '6px 10px', cursor: 'pointer',
                   background: sel ? 'rgba(255,255,255,0.1)' : 'transparent',
@@ -495,7 +497,7 @@ function PhotoGrid({ photos, onChange }) {
           {photos.map((p, i) => (
             <div key={i} style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', background: 'rgba(255,255,255,0.08)' }}>
               <img src={p} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-              <button onClick={() => onChange(photos.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 2, right: 2, width: 18, height: 18, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: 11, cursor: 'pointer' }}>×</button>
+              <button onClick={() => onChange(photos.filter((_, j) => j !== i))} aria-label="Remove photo" style={{ position: 'absolute', top: 2, right: 2, width: 18, height: 18, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: 11, cursor: 'pointer' }}>×</button>
             </div>
           ))}
         </div>
@@ -516,7 +518,7 @@ function MilestoneEditor({ milestones, onChange }) {
       <FLabel>Timeline milestones</FLabel>
       {milestones.map((m, i) => (
         <div key={i} style={{ border: '1px solid rgba(255,255,255,0.08)', padding: 10, marginBottom: 8, position: 'relative' }}>
-          <button onClick={() => onChange(milestones.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 16 }}>×</button>
+          <button onClick={() => onChange(milestones.filter((_, j) => j !== i))} aria-label="Remove milestone" style={{ position: 'absolute', top: 6, right: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 16 }}>×</button>
           <UInputDark label="Date" value={m.date} onChange={v => update(i, 'date', v)} placeholder="e.g. June 2021" />
           <UInputDark label="What happened" value={m.text} onChange={v => update(i, 'text', v)} placeholder="e.g. Our first date" />
         </div>
@@ -643,6 +645,7 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
             key={opt.value}
             onClick={() => updateStyle(key, sel ? undefined : opt.value)}
             title={opt.label}
+            aria-label={opt.label}
             style={{
               aspectRatio: '1', padding: 0, cursor: 'pointer',
               border: sel ? `2px solid ${accent}` : '1px solid rgba(255,255,255,0.15)',
@@ -713,7 +716,7 @@ export default function WBRightPanel({ details, theme, universeTheme, onChange, 
                 <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)' }}>Editing block</p>
                 <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#FFFFFF' }}>{blockLabel(selectedBlock.type)}</p>
               </div>
-              <button onClick={onClearSelectedBlock} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}><X size={16} /></button>
+              <button onClick={onClearSelectedBlock} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}><X size={16} /></button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
               <BlockFields block={selectedBlock} updateContent={onUpdateSelectedBlockContent} />
@@ -736,7 +739,7 @@ export default function WBRightPanel({ details, theme, universeTheme, onChange, 
         ) : selectedAsset ? (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <button onClick={onClearAsset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 2, display: 'flex', alignItems: 'center' }}><ChevronLeft size={16} /></button>
+              <button onClick={onClearAsset} aria-label="Back" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 2, display: 'flex', alignItems: 'center' }}><ChevronLeft size={16} /></button>
               <div>
                 <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)' }}>Editing asset</p>
                 <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#FFFFFF', textTransform: 'capitalize' }}>{selectedAsset.replace(/([A-Z])/g, ' $1').trim()}</p>

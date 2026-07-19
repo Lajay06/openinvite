@@ -19,6 +19,7 @@ import React, { useState } from 'react';
 import { X, Search } from 'lucide-react';
 import { BLOCK_TYPES, CATEGORIES } from '@/components/guest-website/blocks/blockTypes';
 import { getUniverse } from '@/lib/universeCatalog';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const THUMB_KIND = {
   heading: 'text-lines-2', subheading: 'text-lines-1', paragraph: 'text-lines-3', quote: 'quote',
@@ -117,6 +118,7 @@ export default function ComponentLibraryModal({ onSelect, onClose, theme, typogr
     <div
       style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      {...interactiveDivProps(onClose, { label: 'Close' })}
     >
       <div style={{ width: '100%', maxWidth: 980, height: '82vh', maxHeight: 720, background: '#1C1C1E', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
@@ -126,7 +128,7 @@ export default function ComponentLibraryModal({ onSelect, onClose, theme, typogr
             <h2 style={{ margin: '0 0 4px', fontSize: 17, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add a section</h2>
             <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.4)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Styled automatically for your universe · {universeName}</p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}><X size={18} /></button>
         </div>
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>

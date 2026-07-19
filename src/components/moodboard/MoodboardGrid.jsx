@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Edit3, Trash2, Heart, ExternalLink, Eye, X, Save, Image as ImageIcon } from 'lucide-react';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -58,10 +59,10 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
             </span>
             {!readOnly && (
               <div style={{ display: 'flex', gap: 4 }}>
-                <button onClick={() => setIsEditing(true)} style={{ width: 28, height: 28, background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button onClick={() => setIsEditing(true)} aria-label="Edit" style={{ width: 28, height: 28, background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Edit3 size={12} />
                 </button>
-                <button onClick={() => onDelete(item.id)} style={{ width: 28, height: 28, background: 'rgba(224,53,83,0.3)', border: 'none', cursor: 'pointer', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button onClick={() => onDelete(item.id)} aria-label="Delete" style={{ width: 28, height: 28, background: 'rgba(224,53,83,0.3)', border: 'none', cursor: 'pointer', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Trash2 size={12} />
                 </button>
               </div>
@@ -70,10 +71,10 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
           <div>
             <p style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.title}</p>
             <div style={{ display: 'flex', gap: 4 }}>
-              <button onClick={() => setShowFull(true)} style={{ width: 28, height: 28, background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button onClick={() => setShowFull(true)} aria-label="View" style={{ width: 28, height: 28, background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Eye size={12} />
               </button>
-              <button onClick={() => setLiked(v => !v)} style={{ width: 28, height: 28, background: liked ? 'rgba(224,53,83,0.4)' : 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', color: liked ? '#E03553' : '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button onClick={() => setLiked(v => !v)} aria-label={liked ? 'Unlike' : 'Like'} style={{ width: 28, height: 28, background: liked ? 'rgba(224,53,83,0.4)' : 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', color: liked ? '#E03553' : '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Heart size={12} style={{ fill: liked ? '#E03553' : 'none' }} />
               </button>
               {item.source_url && (
@@ -88,11 +89,11 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
 
       {/* Edit modal */}
       {isEditing && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={() => setIsEditing(false)}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={() => setIsEditing(false)} {...interactiveDivProps(() => setIsEditing(false), { label: 'Close' })}>
           <div style={{ width: '100%', maxWidth: 440, background: '#FFFFFF' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Edit item</span>
-              <button onClick={() => setIsEditing(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={14} /></button>
+              <button onClick={() => setIsEditing(false)} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={14} /></button>
             </div>
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -120,7 +121,7 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
 
       {/* Full view modal */}
       {showFull && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={() => setShowFull(false)}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={() => setShowFull(false)} {...interactiveDivProps(() => setShowFull(false), { label: 'Close' })}>
           <div style={{ display: 'flex', maxWidth: 1100, width: '100%', maxHeight: '90vh', overflow: 'hidden', background: '#FFFFFF' }} onClick={e => e.stopPropagation()}>
             <div style={{ flex: 1, background: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               <img src={item.image_url} alt={item.title} style={{ maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain' }} />
@@ -128,7 +129,7 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
             <div style={{ width: 320, padding: 24, display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", flex: 1, margin: 0 }}>{item.title}</p>
-                <button onClick={() => setShowFull(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, flexShrink: 0 }}><X size={16} /></button>
+                <button onClick={() => setShowFull(false)} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, flexShrink: 0 }}><X size={16} /></button>
               </div>
               <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 {item.category}

@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
 import { validateUploadFile } from '@/lib/uploadValidation';
 import UploadStatus from '@/components/shared/UploadStatus';
+import { interactiveDivProps } from '@/lib/a11y';
 
 let queueItemId = 0;
 
@@ -165,6 +166,7 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
     <div
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      {...interactiveDivProps(onClose, { label: 'Close' })}
     >
       <div style={{ background: '#1A1A1A', width: '90vw', maxWidth: 1000, height: '82vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
 
@@ -179,6 +181,7 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
           </button>
           <button
             onClick={onClose}
+            aria-label="Close"
             style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'rgba(255,255,255,0.5)', lineHeight: 1, padding: '2px 4px' }}
           >
             ×
@@ -248,6 +251,7 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onClick={() => fileInputRef.current?.click()}
+                {...interactiveDivProps(() => fileInputRef.current?.click(), { label: 'Upload photos or videos' })}
                 style={{
                   border: `1px dashed ${dragOver ? '#E03553' : 'rgba(255,255,255,0.15)'}`,
                   background: dragOver ? 'rgba(224,53,83,0.05)' : 'rgba(255,255,255,0.02)',
@@ -394,6 +398,7 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
                         <div
                           key={photo.id}
                           onClick={() => !importing && handleSelectStockPhoto(photo)}
+                          {...interactiveDivProps(importing ? null : () => handleSelectStockPhoto(photo), { label: photo.alt || 'Select stock photo' })}
                           style={{
                             aspectRatio: '1', position: 'relative', overflow: 'hidden', cursor: importing ? 'default' : 'pointer',
                             background: 'rgba(255,255,255,0.06)',
@@ -488,6 +493,7 @@ function MediaGrid({ items, selected, onSelect }) {
           <div
             key={item.id || idx}
             onClick={() => onSelect(item)}
+            {...interactiveDivProps(() => onSelect(item), { label: item.name })}
             style={{
               aspectRatio: '1',
               overflow: 'hidden',

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { interactiveDivProps } from '@/lib/a11y';
 
-function ToggleSwitch({ value, onChange }) {
+function ToggleSwitch({ value, onChange, label }) {
   return (
     <button
       onClick={() => onChange(!value)}
+      aria-label={label ? `Toggle ${label}` : 'Toggle'}
+      aria-pressed={value}
       style={{
         width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
         background: value ? '#E03553' : '#CCCCCC', position: 'relative', flexShrink: 0,
@@ -79,13 +82,14 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     <div
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       onClick={e => e.target === e.currentTarget && onClose()}
+      {...interactiveDivProps(onClose, { label: 'Close' })}
     >
       <div style={{ background: '#FFFFFF', width: 620, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #EEE', display: 'flex', alignItems: 'center' }}>
           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, flex: 1 }}>Share Your Wedding</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888', lineHeight: 1 }}>×</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888', lineHeight: 1 }}>×</button>
         </div>
 
         {/* Tabs */}
@@ -155,7 +159,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                   <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>Password Protection</p>
                   <p style={{ margin: 0, fontSize: 12, color: '#888' }}>Require guests to enter a password</p>
                 </div>
-                <ToggleSwitch value={!!details?.websitePasswordEnabled} onChange={v => updateField('websitePasswordEnabled', v)} />
+                <ToggleSwitch value={!!details?.websitePasswordEnabled} onChange={v => updateField('websitePasswordEnabled', v)} label="Password protection" />
               </div>
               {details?.websitePasswordEnabled && (
                 <input
