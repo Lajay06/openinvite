@@ -41,7 +41,7 @@
 import { runSchemaDropScan } from '../../scripts/lib/schemaDropScan.mjs';
 import { pass, fail } from './_shared.mjs';
 
-const GUARDED_ENTITIES = ['WeddingDetails', 'Guest', 'Note', 'Music'];
+const GUARDED_ENTITIES = ['WeddingDetails', 'Guest', 'Note', 'Music', 'Notification'];
 
 export async function runSchemaDriftGuard() {
   const results = [];

@@ -192,6 +192,32 @@ snapshot refreshed by hand via that MCP tool, not a true live fetch — it
 degrades silently back to the exact blind spot it exists to catch if that
 snapshot isn't kept current after future schema changes.
 
+## Registration requires real email-OTP verification — no bypass
+
+Confirmed empirically 2026-07 (creating a second test account for
+Notification RLS two-account verification): `POST /apps/:id/auth/register`
+succeeds and creates a `User` row immediately, but returns no
+`access_token` — just `{id, message: "...check your email for the
+verification code", otp_expires_in_minutes}`. `POST /apps/:id/auth/login`
+for that account then fails `400` with `"Please verify your email before
+logging in"` until `POST /apps/:id/auth/verify-otp` (body:
+`{email, otp_code}` — **snake_case**, not the SDK's `otpCode`; sending
+`otpCode` raw gets a `422 Field required` on `otp_code`) is called with the
+real 6-digit code from that email. No admin-key/dev bypass exists — the
+code must come from an inbox someone can actually read. `POST
+/apps/:id/auth/resend-otp` (body: `{email}`) reissues a fresh code if
+needed. Once verified, normal password login works from then on.
+
+**Practical implication**: any test/script needing a *second* real,
+independently-authenticated account (not just the one `BASE44_TEST_EMAIL`)
+requires a human to relay one OTP code once, since Gmail `+alias` addresses
+(`you+something@gmail.com`) land in the same inbox as the base address and
+pass the disposable-email-domain check. A second such account now exists
+for this repo's test suite — see `BASE44_TEST_EMAIL_2`/
+`BASE44_TEST_PASSWORD_2` in `.env.local` (gitignored, not reproduced here).
+Reuse it for any future two-account RLS/collaborator verification instead
+of registering a third.
+
 ## The scripted-login 401 — unresolved, parked, not user-facing
 
 A freshly-obtained, verified-valid bearer token (confirmed against
