@@ -1,7 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Printer, Edit2, Clock } from 'lucide-react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 const CATEGORY_CONFIG = {
   ceremony:       { label: 'Ceremony',       bg: '#E03553',               text: '#FFFFFF' },
@@ -114,6 +112,10 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
   const handleExportPDF = async () => {
     if (!printRef.current) return;
     setIsExporting(true);
+    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+      import('jspdf'),
+      import('html2canvas'),
+    ]);
     await new Promise(r => setTimeout(r, 80));
     const canvas = await html2canvas(printRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
     const imgData = canvas.toDataURL('image/png');

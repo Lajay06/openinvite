@@ -20,8 +20,20 @@
  * waitForFontsReady() below.
  */
 
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+// jsPDF/html2canvas are loaded on demand (only when an export actually
+// runs) rather than bundled into the main app chunk — neither is needed
+// until a couple clicks an export button.
+let _libsPromise = null;
+function loadExportLibs() {
+  if (!_libsPromise) {
+    _libsPromise = Promise.all([import('jspdf'), import('html2canvas')])
+      .then(([jsPDFMod, html2canvasMod]) => ({
+        jsPDF: jsPDFMod.default,
+        html2canvas: html2canvasMod.default,
+      }));
+  }
+  return _libsPromise;
+}
 
 /**
  * Per-asset physical export spec. 'pdf' assets get their real-world print
@@ -49,6 +61,7 @@ export async function waitForFontsReady() {
 }
 
 async function rasterise(element) {
+  const { html2canvas } = await loadExportLibs();
   return html2canvas(element, { scale: 2, useCORS: true, backgroundColor: null });
 }
 
@@ -77,6 +90,7 @@ export async function exportAsset(element, assetKey, filename) {
     return;
   }
 
+  const { jsPDF } = await loadExportLibs();
   const orientation = spec.widthMm >= spec.heightMm ? 'landscape' : 'portrait';
   const pdf = new jsPDF({ orientation, unit: 'mm', format: [spec.widthMm, spec.heightMm] });
   const imgData = canvas.toDataURL('image/png');
@@ -99,6 +113,7 @@ export async function exportMultiPagePdf(pageElements, pageSize, filename) {
   if (!pageElements || pageElements.length === 0) throw new Error('exportMultiPagePdf: no pages to export');
   await waitForFontsReady();
 
+  const { jsPDF } = await loadExportLibs();
   const orientation = pageSize.widthMm >= pageSize.heightMm ? 'landscape' : 'portrait';
   const pdf = new jsPDF({ orientation, unit: 'mm', format: [pageSize.widthMm, pageSize.heightMm] });
 
