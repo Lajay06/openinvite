@@ -6,6 +6,7 @@ import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
+import { interactiveDivProps } from "@/lib/a11y";
 import AvaButton from '@/components/shared/AvaButton';
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -47,14 +48,15 @@ function AvaModal({ onClose }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-      onClick={onClose}>
+      onClick={onClose}
+      {...interactiveDivProps(onClose, { label: 'Close' })}>
       <div onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', width: '100%', maxWidth: 520, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ background: '#0A1930', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Lightbulb size={16} style={{ color: '#DDF762' }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Ask Ava — emergency contacts</span>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
         </div>
         <div style={{ padding: 24, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -243,7 +245,7 @@ export default function EmergencyContactPage() {
                     style={inputStyle} />
                   <input value={v.role || ''} onChange={e => updateVendor(i, 'role', e.target.value)} placeholder="Role"
                     style={inputStyle} />
-                  <button onClick={() => removeVendor(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: '0 0 7px' }}>
+                  <button onClick={() => removeVendor(i)} aria-label="Remove vendor contact" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: '0 0 7px' }}>
                     <X size={14} />
                   </button>
                 </div>

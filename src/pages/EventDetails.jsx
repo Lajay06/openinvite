@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
+import { interactiveDivProps } from "@/lib/a11y";
 import { Loader2, Plus, X, MapPin, Trash2, Edit2, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -277,7 +278,7 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
             {modalTitle}
           </span>
-          <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, borderRadius: 999 }}>
+          <button onClick={onCancel} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, borderRadius: 999 }}>
             <X size={16} />
           </button>
         </div>
@@ -836,6 +837,7 @@ export default function EventDetailsPage() {
               const sel = r.guestType === g.id;
               return (
                 <div key={g.id} onClick={readOnly ? undefined : () => update({ guestType: sel ? '' : g.id })}
+                  {...interactiveDivProps(readOnly ? undefined : () => update({ guestType: sel ? '' : g.id }), { disabled: readOnly })}
                   style={{ border: `2px solid ${sel ? '#E03553' : 'rgba(10,10,10,0.1)'}`, borderRadius: 0, padding: '14px 12px', cursor: readOnly ? 'default' : 'pointer', background: sel ? 'rgba(224,53,83,0.04)' : '#FAFAFA', textAlign: 'center', transition: 'all 0.15s', opacity: readOnly && !sel ? 0.6 : 1 }}>
                   <p style={{ fontSize: 13, fontWeight: 700, color: sel ? '#E03553' : '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{g.label}</p>
                   <p style={{ fontSize: 11, fontWeight: 600, color: sel ? '#E03553' : 'rgba(10,10,10,0.6)', margin: '0 0 4px', fontFamily: PJS }}>{g.range}</p>

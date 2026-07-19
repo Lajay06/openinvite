@@ -9,6 +9,7 @@ import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users, Pencil, Monitor } fr
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 import { validateUploadFile } from '@/lib/uploadValidation';
+import { interactiveDivProps } from '@/lib/a11y';
 
 import VisualTable from '../components/seating/VisualTable';
 import VisualAsset from '../components/seating/VisualAsset';
@@ -458,6 +459,7 @@ export default function SeatingPage() {
             <button
               onClick={() => setZoom(z => Math.max(MIN_ZOOM, +(z - 0.25).toFixed(2)))}
               disabled={zoom <= MIN_ZOOM}
+              aria-label="Zoom out"
               style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: zoom <= MIN_ZOOM ? 0.4 : 1 }}
             >
               <ZoomOut size={12} style={{ color: '#0A0A0A' }} />
@@ -468,6 +470,7 @@ export default function SeatingPage() {
             <button
               onClick={() => setZoom(z => Math.min(MAX_ZOOM, +(z + 0.25).toFixed(2)))}
               disabled={zoom >= MAX_ZOOM}
+              aria-label="Zoom in"
               style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: zoom >= MAX_ZOOM ? 0.4 : 1 }}
             >
               <ZoomIn size={12} style={{ color: '#0A0A0A' }} />
@@ -551,6 +554,7 @@ export default function SeatingPage() {
                   {!readOnly && hoveredId === `t-${table.id}` && (
                     <button
                       onClick={e => { e.stopPropagation(); handleDeleteItem(table.id, 'table'); }}
+                      aria-label="Delete table"
                       style={{
                         position: 'absolute', top: 4, right: 4,
                         width: 20, height: 20, borderRadius: '50%',
@@ -578,6 +582,7 @@ export default function SeatingPage() {
                   {!readOnly && hoveredId === `a-${asset.id}` && (
                     <button
                       onClick={e => { e.stopPropagation(); handleDeleteItem(asset.id, 'asset'); }}
+                      aria-label="Delete item"
                       style={{
                         position: 'absolute', top: -8, right: -8,
                         width: 20, height: 20, borderRadius: '50%',
@@ -737,6 +742,7 @@ export default function SeatingPage() {
                         .map(guest => (
                           <div key={guest.id}
                             onClick={() => handleGuestPanelClick(guest)}
+                            {...interactiveDivProps(() => handleGuestPanelClick(guest))}
                             style={{ display: 'flex', alignItems: 'center', padding: '7px 16px', borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer', transition: 'background 0.12s' }}
                             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(224,53,83,0.04)'; }}
                             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
