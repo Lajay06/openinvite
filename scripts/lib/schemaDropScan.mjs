@@ -108,14 +108,34 @@ export const SCHEMAS = {
   },
 
   User: {
+    // IMPORTANT, confirmed empirically 2026-07 (schema-drift-guard triage):
+    // Base44's built-in User entity persists ARBITRARY custom fields
+    // regardless of schema declaration — a totally undeclared probe field
+    // written via PUT /entities/User/me round-tripped correctly on a fresh
+    // GET. This is fundamentally different from every custom entity above
+    // (WeddingDetails, Guest, Note, etc.), which silently drop anything not
+    // declared in their schema. Practically: a "DROPPED" finding for User
+    // from this scanner is likely a false positive by the nature of this
+    // entity, not a real bug — treat it with much lower confidence than a
+    // DROPPED finding on a custom entity. tempUnit/deletionRequestedAt were
+    // both wrongly flagged as dropped for exactly this reason before this
+    // list was corrected; onboardingCompleted (camelCase, used everywhere
+    // in the app) and the plan/Stripe fields below are further confirmed-
+    // or-inferred examples of the same thing.
     language:1, currency:1, onboarding_completed:1, onboardingCompleted:1, onboardingPath:1,
+    tempUnit:1, deletionRequestedAt:1,
     // Auth-level system fields: always stored by Base44 auth, not governed by entity schema.
     // These appear in the login response and GET /entities/User/me regardless of schema.
     // Updating them via updateMe() DOES persist (tested) — treat as registered.
     full_name:1, email:1, role:1, is_verified:1,
-    // plan fields: written by PaymentSuccess.jsx — UNCERTAIN whether they persist
-    // (not in entity schema; may be silently dropped or stored via different mechanism)
-    _uncertain: ['planActivatedAt', 'planName', 'planTier', 'stripeCustomerId'],
+    // plan fields: written by PaymentSuccess.jsx. planActivatedAt confirmed
+    // persisting via a live round-trip; planName/planTier/stripeCustomerId
+    // not force-tested (didn't want to write test values into billing-
+    // adjacent state on a real account) but are very likely fine given the
+    // arbitrary-field behavior confirmed above — kept in _uncertain out of
+    // caution, not because they're suspected dropped.
+    planActivatedAt:1,
+    _uncertain: ['planName', 'planTier', 'stripeCustomerId'],
     _nested: {},
   },
 
