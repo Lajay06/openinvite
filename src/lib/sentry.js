@@ -17,7 +17,14 @@ if (dsn) {
     dsn,
     integrations: [
       Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration(),
+      // Explicit rather than relying on SDK defaults (which mask/block by
+      // default today, but that's an upgrade-fragile assumption) — the
+      // privacy policy's "masked session replay" claim should be enforced
+      // by our own config, not by whatever the installed version defaults to.
+      Sentry.replayIntegration({
+        maskAllText: true,
+        blockAllMedia: true,
+      }),
     ],
     // Performance: capture 20% of transactions
     tracesSampleRate: 0.2,
