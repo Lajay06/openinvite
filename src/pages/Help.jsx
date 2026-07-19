@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { LayoutDashboard, Sparkles, Globe, Mail, Users, Wallet } from 'lucide-react';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const ICON_MAP = { LayoutDashboard, Sparkles, Globe, Mail, Users, Wallet };
 
@@ -833,6 +834,7 @@ export default function Help() {
                       key={ai}
                       style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderTop: '1px solid #F5F5F5', cursor: 'pointer' }}
                       onClick={() => setSelectedArticle({ ...article, category: cat.title })}
+                      {...interactiveDivProps(() => setSelectedArticle({ ...article, category: cat.title }))}
                     >
                       <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 500 }}>{article.title}</span>
                       <span style={{ fontSize: 11, color: '#AAAAAA', whiteSpace: 'nowrap', marginLeft: 8 }}>{article.time}</span>

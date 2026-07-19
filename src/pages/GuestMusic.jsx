@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft, Music } from 'lucide-react';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
@@ -157,6 +158,7 @@ export default function GuestMusic() {
             <div
               key={track.id}
               onClick={() => setSelectedTrack(track)}
+              {...interactiveDivProps(() => setSelectedTrack(track))}
               style={{
                 display: 'flex', gap: 12, padding: '12px',
                 marginBottom: 8,
@@ -185,7 +187,7 @@ export default function GuestMusic() {
                   <p style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF', margin: 0 }}>{selectedTrack.title}</p>
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{selectedTrack.artist}</p>
                 </div>
-                <button onClick={() => setSelectedTrack(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 20 }}>×</button>
+                <button onClick={() => setSelectedTrack(null)} aria-label="Remove selected song" style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 20 }}>×</button>
               </div>
 
               <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="Your name" style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: 16, outline: 'none', marginBottom: 10, boxSizing: 'border-box' }} />

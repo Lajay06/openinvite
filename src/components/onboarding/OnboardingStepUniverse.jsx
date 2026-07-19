@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AmanUniverseView from '@/components/studio/AmanUniverseView';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const UNIVERSES = [
   { id: 'aman', name: 'AMAN', tagline: 'Quiet Luxury', number: '01', photo: 'https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg', available: true },
@@ -110,6 +111,7 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
               <div
                 key={u.id}
                 onClick={() => u.id === 'aman' ? setPreviewUniverse(u) : setSelectedUniverse(u.id)}
+                {...interactiveDivProps(() => u.id === 'aman' ? setPreviewUniverse(u) : setSelectedUniverse(u.id))}
                 style={{
                   width: 220, flexShrink: 0, height: 280,
                   position: 'relative', overflow: 'hidden',

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Printer, Edit2, Clock } from 'lucide-react';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const CATEGORY_CONFIG = {
   ceremony:       { label: 'Ceremony',       bg: '#E03553',               text: '#FFFFFF' },
@@ -248,6 +249,7 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
                     onDragStart={readOnly ? undefined : (e) => handleDragStart(e, item)}
                     onDragEnd={readOnly ? undefined : handleDragEnd}
                     onClick={readOnly ? undefined : () => !isDragging && onEdit && onEdit(item)}
+                    {...interactiveDivProps(readOnly ? undefined : () => !isDragging && onEdit && onEdit(item), { disabled: readOnly })}
                     style={{
                       position: 'absolute', left: 6, right: 6,
                       top: top + 'px', height: Math.max(height, 32) + 'px',
@@ -303,6 +305,7 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
               <div
                 key={item.id}
                 onClick={() => onEdit && onEdit(item)}
+                {...interactiveDivProps(() => onEdit && onEdit(item))}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', cursor: 'pointer',
                   borderBottom: idx < sorted.length - 1 ? '1px solid rgba(10,10,10,0.06)' : 'none',

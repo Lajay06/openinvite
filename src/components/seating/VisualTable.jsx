@@ -1,5 +1,6 @@
 import React from 'react';
 import GuestAvatar from '@/components/shared/GuestAvatar';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const SEAT = 20;
 
@@ -107,6 +108,7 @@ export default function VisualTable({ table, guests, onSeatClick, selected, sele
             key={i}
             className={isSeatSelected ? 'seating-seat-selected' : undefined}
             onClick={(e) => { e.stopPropagation(); onSeatClick && onSeatClick(table.id, i, guest?.id); }}
+            {...interactiveDivProps(() => onSeatClick && onSeatClick(table.id, i, guest?.id), { label: guest ? guest.name : 'Empty seat' })}
             title={guest ? guest.name : 'Empty seat'}
             style={{
               position: 'absolute',

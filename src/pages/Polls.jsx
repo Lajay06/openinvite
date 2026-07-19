@@ -6,6 +6,7 @@ import { Loader2, Trash2, Share2, Plus, X, ChevronLeft } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
 import GamesManager from "@/components/games/GamesManager";
+import { interactiveDivProps } from '@/lib/a11y';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -133,7 +134,7 @@ function PollCard({ poll, onEnd, onDelete, onShare, onInsightGenerated }) {
           </button>
         )}
         <div style={{ flex: 1 }} />
-        <button onClick={onDelete} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 4 }}
+        <button onClick={onDelete} aria-label="Delete poll" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 4 }}
           onMouseEnter={e => { e.currentTarget.style.color = '#E03553'; }}
           onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.25)'; }}>
           <Trash2 size={13} />
@@ -152,6 +153,7 @@ function TemplateCard({ tpl, onClick }) {
       onClick={onClick}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
+      {...interactiveDivProps(onClick)}
       style={{ border: `1px solid ${hov ? 'rgba(10,10,10,0.18)' : 'rgba(10,10,10,0.08)'}`, padding: '16px', cursor: 'pointer', background: hov ? 'rgba(10,10,10,0.02)' : 'transparent', transition: 'all 0.15s' }}
     >
       <div style={{ fontSize: 22, marginBottom: 8 }}>{tpl.emoji}</div>
@@ -212,7 +214,7 @@ function PollEditor({ initial, onSave, onCancel, saving }) {
               style={{ flex: 1, border: 'none', borderBottom: '1px solid rgba(10,10,10,0.12)', background: 'transparent', fontFamily: PJS, fontSize: 13, color: '#0A0A0A', padding: '5px 0', outline: 'none' }}
             />
             {options.length > 2 && (
-              <button onClick={() => removeOption(opt.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 4 }}>
+              <button onClick={() => removeOption(opt.id)} aria-label="Remove option" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 4 }}>
                 <X size={12} />
               </button>
             )}
@@ -228,6 +230,7 @@ function PollEditor({ initial, onSave, onCancel, saving }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
         <button
           onClick={() => setAllowComments(v => !v)}
+          aria-label="Toggle guest comments"
           style={{ width: 32, height: 18, borderRadius: 999, border: 'none', cursor: 'pointer', background: allowComments ? '#E03553' : 'rgba(10,10,10,0.12)', position: 'relative', flexShrink: 0, padding: 0 }}
         >
           <div style={{ position: 'absolute', width: 14, height: 14, borderRadius: '50%', background: '#FFFFFF', top: 2, left: allowComments ? 16 : 2, transition: 'left 0.2s ease' }} />
