@@ -145,6 +145,7 @@ function TopBar({ weddingDetails, unreadCount, overrideCoupleName }) {
         {/* Bell */}
         <button
           onClick={() => navigate(createPageUrl('Messages'))}
+          aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : 'Notifications'}
           style={{
             background: 'transparent', border: 'none', cursor: 'pointer',
             color: 'rgba(255,255,255,0.55)', padding: 6, borderRadius: 999,
@@ -466,6 +467,7 @@ export default function Layout({ children, currentPageName }) {
         />
         <button
           onClick={() => setMobileMenuOpen(true)}
+          aria-label="Open menu"
           style={{
             background: 'transparent', border: 'none', cursor: 'pointer',
             color: '#0A0A0A', padding: 8, borderRadius: 999,
@@ -498,6 +500,7 @@ export default function Layout({ children, currentPageName }) {
         {chatOpen && <AvaChatPod onClose={() => setChatOpen(false)} />}
         <button
           onClick={() => setChatOpen(prev => !prev)}
+          aria-label={chatOpen ? 'Close Ava' : 'Chat with Ava'}
           style={{
             width: 44, height: 44, borderRadius: '50%',
             background: chatOpen ? '#0A0A0A' : 'linear-gradient(135deg, #ec4899, #9333ea)',
