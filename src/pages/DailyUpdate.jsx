@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
+import { tallyGuestRsvp, isAttending } from '@/lib/guestRsvpTally';
 import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -137,11 +138,11 @@ export default function DailyUpdate() {
       : null;
     setDaysUntil(days);
 
-    const confirmedGuests = guests.filter(g => g.rsvp_status === 'confirmed' || g.rsvp_status === 'attending').length;
-    const pendingGuests   = guests.filter(g => !g.rsvp_status || g.rsvp_status === 'pending').length;
-    const unseatedGuests  = guests.filter(g =>
-      !g.table_assignment && (g.rsvp_status === 'confirmed' || g.rsvp_status === 'attending')
-    ).length;
+    // AUDIT_2026-07.md S21: 'confirmed' is not a valid rsvp_status value —
+    // that half of the check could never match, harmless only because it
+    // was OR'd with the correct 'attending' check.
+    const { attending: confirmedGuests, pending: pendingGuests } = tallyGuestRsvp(guests);
+    const unseatedGuests  = guests.filter(g => !g.table_assignment && isAttending(g)).length;
     const totalBudget   = budgetItems.reduce((s, b) => s + (b.total_amount || b.budgeted_amount || 0), 0);
     const budgetSpent   = budgetItems.reduce((s, b) => s + (b.spent_amount || b.actual_amount || 0), 0);
     const budgetPercent = totalBudget ? Math.round((budgetSpent / totalBudget) * 100) : 0;

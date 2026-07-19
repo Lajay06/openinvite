@@ -14,6 +14,7 @@ import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import TipsModal from "../components/dashboard/TipsModal";
 import { getMyRecords, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
+import { tallyGuestRsvp } from "@/lib/guestRsvpTally";
 import { useCollaboratorContext, hasPagePermission } from "@/lib/collaboratorContext";
 
 const QUICK_LINKS = [
@@ -162,9 +163,11 @@ export default function Dashboard() {
 
   const stats = React.useMemo(() => {
     const totalGuests = guests.length;
-    const responded = guests.filter(g => g.rsvp_status !== 'pending').length;
-    const attending = guests.filter(g => g.rsvp_status === 'attending').length;
-    const declined = guests.filter(g => g.rsvp_status === 'declined').length;
+    // AUDIT_2026-07.md S21: previously rsvp_status !== 'pending', which
+    // silently counted an unset/undefined status as "responded" — every
+    // sibling tally in the app treats a falsy status as not-yet-responded,
+    // same as tallyGuestRsvp does.
+    const { responded, attending, declined } = tallyGuestRsvp(guests);
     const totalBudget = budget.reduce((s, i) => s + (i.budgeted_amount || 0), 0);
     const totalSpent = budget.reduce((s, i) => s + (i.actual_amount || 0), 0);
     const budgetPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;

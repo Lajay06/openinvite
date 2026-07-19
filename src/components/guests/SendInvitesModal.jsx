@@ -9,6 +9,7 @@ import {
 import { X, Mail, MessageCircle, Check, Loader2, Search, ArrowLeft, ArrowRight, Send, AlertCircle, FlaskConical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import GuestAvatar from '@/components/shared/GuestAvatar';
+import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
@@ -224,9 +225,9 @@ export default function SendInvitesModal({
   const filteredGuests = useMemo(() => {
     let list = guests;
     if (filter === 'not_invited') list = guests.filter(g => !g.invite_sent_at);
-    else if (filter === 'awaiting') list = guests.filter(g => g.invite_sent_at && (!g.rsvp_status || g.rsvp_status === 'pending'));
-    else if (filter === 'attending') list = guests.filter(g => g.rsvp_status === 'attending');
-    else if (filter === 'declined') list = guests.filter(g => g.rsvp_status === 'declined');
+    else if (filter === 'awaiting') list = guests.filter(isAwaitingPrimary);
+    else if (filter === 'attending') list = guests.filter(isAttending);
+    else if (filter === 'declined') list = guests.filter(isDeclined);
     // 'all' — no filter
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -660,7 +661,7 @@ export default function SendInvitesModal({
                         {g.invite_sent_at && (
                           <span style={{ fontSize: 10, fontWeight: 700, color: '#22C55E', background: '#F0FDF4', padding: '2px 7px', borderRadius: 999 }}>Invited</span>
                         )}
-                        {(g.rsvp_status === 'attending') && (
+                        {isAttending(g) && (
                           <span style={{ fontSize: 10, fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '2px 7px', borderRadius: 999 }}>Attending</span>
                         )}
                       </div>
