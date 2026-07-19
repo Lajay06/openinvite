@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAY_NAMES = ['Su','Mo','Tu','We','Th','Fr','Sa'];
@@ -52,7 +53,10 @@ export default function DatePicker({ value, onChange, label, placeholder = 'Sele
       {label && <p style={labelStyle}>{label}</p>}
 
       {/* Trigger */}
-      <div onClick={() => { if (!disabled) setOpen(o => !o); }} style={{
+      <div
+        onClick={() => { if (!disabled) setOpen(o => !o); }}
+        {...interactiveDivProps(() => { if (!disabled) setOpen(o => !o); }, { disabled })}
+        style={{
         display: 'flex', alignItems: 'center', gap: 8,
         borderBottom: `1px solid ${open ? '#E03553' : dark ? '#333' : '#DDDDDD'}`,
         padding: '8px 0', cursor: disabled ? 'default' : 'pointer', transition: 'border-color 0.2s',
@@ -66,7 +70,7 @@ export default function DatePicker({ value, onChange, label, placeholder = 'Sele
           {value ? formatDateDisplay(value) : placeholder}
         </span>
         {value && !disabled && (
-          <button onClick={e => { e.stopPropagation(); onChange(''); }} style={{ background: 'none', border: 'none', color: '#AAAAAA', cursor: 'pointer', fontSize: 18, padding: 0, lineHeight: 1 }}>×</button>
+          <button onClick={e => { e.stopPropagation(); onChange(''); }} aria-label="Clear date" style={{ background: 'none', border: 'none', color: '#AAAAAA', cursor: 'pointer', fontSize: 18, padding: 0, lineHeight: 1 }}>×</button>
         )}
       </div>
 
@@ -80,9 +84,9 @@ export default function DatePicker({ value, onChange, label, placeholder = 'Sele
         }}>
           {/* Month nav */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <button onClick={() => setViewMonth(new Date(year, month - 1))} style={{ background: 'none', border: '1px solid #EEEEEE', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#444' }}>‹</button>
+            <button onClick={() => setViewMonth(new Date(year, month - 1))} aria-label="Previous month" style={{ background: 'none', border: '1px solid #EEEEEE', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#444' }}>‹</button>
             <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A' }}>{MONTH_NAMES[month]} {year}</span>
-            <button onClick={() => setViewMonth(new Date(year, month + 1))} style={{ background: 'none', border: '1px solid #EEEEEE', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#444' }}>›</button>
+            <button onClick={() => setViewMonth(new Date(year, month + 1))} aria-label="Next month" style={{ background: 'none', border: '1px solid #EEEEEE', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#444' }}>›</button>
           </div>
           {/* Day headers */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', marginBottom: 4 }}>
@@ -96,7 +100,7 @@ export default function DatePicker({ value, onChange, label, placeholder = 'Sele
               const sel = isSelected(day);
               const tod = isToday(day);
               return (
-                <div key={day} onClick={() => selectDay(day)} style={{
+                <div key={day} onClick={() => selectDay(day)} {...interactiveDivProps(() => selectDay(day))} style={{
                   textAlign: 'center', padding: '6px 0', borderRadius: 6, cursor: 'pointer', fontSize: 13,
                   background: sel ? 'linear-gradient(135deg, #E03553, #803D81)' : tod ? 'rgba(224,53,83,0.08)' : 'transparent',
                   color: sel ? '#FFFFFF' : tod ? '#E03553' : '#0A0A0A',

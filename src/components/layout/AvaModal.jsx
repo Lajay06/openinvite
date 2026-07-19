@@ -5,6 +5,7 @@ import { InvokeLLM } from '@/integrations/Core';
 import { base44 } from '@/api/base44Client';
 import { buildWeddingContext } from '@/lib/avaContext';
 import toast from 'react-hot-toast';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -190,6 +191,7 @@ export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions =
     <div
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={onClose}
+      {...interactiveDivProps(onClose, { label: 'Close Ava modal' })}
     >
       <div
         onClick={e => e.stopPropagation()}
@@ -204,7 +206,7 @@ export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions =
             </div>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', fontFamily: PJS, marginTop: 2 }}>{pageTitle}</div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.8)', display: 'flex', padding: 4 }}>
+          <button onClick={onClose} aria-label="Close Ava modal" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.8)', display: 'flex', padding: 4 }}>
             <X size={16} />
           </button>
         </div>
@@ -295,6 +297,7 @@ export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions =
           <button
             onClick={() => sendMessage()}
             disabled={loading || !input.trim()}
+            aria-label="Send message"
             style={{ width: 32, height: 32, borderRadius: 999, border: 'none', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', background: loading || !input.trim() ? 'rgba(10,10,10,0.1)' : 'linear-gradient(135deg, #ec4899, #9333ea)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}
           >
             <Send size={13} style={{ color: loading || !input.trim() ? 'rgba(10,10,10,0.3)' : '#fff' }} />

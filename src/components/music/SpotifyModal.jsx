@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { X, Search, Loader2, Plus, Music2 } from 'lucide-react';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -102,6 +103,7 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
       className="fixed inset-0 flex items-center justify-center z-[9999]"
       style={{ background: 'rgba(0,0,0,0.55)', padding: 24 }}
       onClick={onClose}
+      {...interactiveDivProps(onClose, { label: 'Close Spotify search modal' })}
     >
       <div
         onClick={e => e.stopPropagation()}
@@ -118,7 +120,7 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
               </span>
             )}
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4 }}>
+          <button onClick={onClose} aria-label="Close Spotify search modal" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4 }}>
             <X size={16} />
           </button>
         </div>
@@ -185,6 +187,7 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
                 <button
                   onClick={() => !added && handleAdd(track)}
                   disabled={added}
+                  aria-label={added ? `Added ${track.name}` : `Add ${track.name}`}
                   style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: added ? 'rgba(10,10,10,0.06)' : 'none', border: added ? 'none' : '1px solid rgba(10,10,10,0.15)', borderRadius: 4, cursor: added ? 'default' : 'pointer', color: added ? 'rgba(10,10,10,0.3)' : '#0A0A0A', flexShrink: 0 }}
                 >
                   <Plus size={13} />

@@ -7,6 +7,7 @@ import CurrencyModal from '@/components/layout/CurrencyModal';
 import { useAuth } from '@/lib/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { base44 } from '@/api/base44Client';
+import { interactiveDivProps } from '@/lib/a11y';
 import toast from 'react-hot-toast';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -551,7 +552,11 @@ function SecurityTab({ user }) {
       )}
 
       {deleteOpen && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-6" onClick={() => setDeleteOpen(false)}>
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-6"
+          onClick={() => setDeleteOpen(false)}
+          {...interactiveDivProps(() => setDeleteOpen(false), { label: 'Close account deletion modal' })}
+        >
           <div
             style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', width: '100%', maxWidth: 440 }}
             onClick={e => e.stopPropagation()}
