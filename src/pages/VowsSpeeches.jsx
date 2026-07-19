@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
+import { interactiveDivProps } from '@/lib/a11y';
 import { Plus, Edit, Trash2, Mic, Heart, Printer, Sparkles, Loader2, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -180,6 +181,7 @@ export default function VowsSpeechesPage() {
               ) : (
                 listItems.map(item => (
                   <div key={item.id} onClick={() => { setSelectedItem(item); setIsEditing(false); }}
+                    {...interactiveDivProps(() => { setSelectedItem(item); setIsEditing(false); })}
                     style={{ padding: '12px 16px', borderBottom: '1px solid rgba(10,10,10,0.06)', cursor: 'pointer', borderLeft: `3px solid ${selectedItem?.id === item.id ? '#E03553' : 'transparent'}`, background: selectedItem?.id === item.id ? 'rgba(224,53,83,0.04)' : 'transparent' }}
                     onMouseEnter={e => { if (selectedItem?.id !== item.id) e.currentTarget.style.background = 'rgba(10,10,10,0.02)'; }}
                     onMouseLeave={e => { if (selectedItem?.id !== item.id) e.currentTarget.style.background = 'transparent'; }}>
@@ -191,11 +193,11 @@ export default function VowsSpeechesPage() {
                         </p>
                       </div>
                       <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
-                        <button onClick={e => { e.stopPropagation(); setSelectedItem(item); setIsEditing(true); }}
+                        <button onClick={e => { e.stopPropagation(); setSelectedItem(item); setIsEditing(true); }} aria-label="Edit"
                           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: 4, display: 'flex' }}>
                           <Edit size={13} />
                         </button>
-                        <button onClick={e => { e.stopPropagation(); handleDelete(item.id); }}
+                        <button onClick={e => { e.stopPropagation(); handleDelete(item.id); }} aria-label="Delete"
                           style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 4, display: 'flex' }}>
                           <Trash2 size={13} />
                         </button>

@@ -8,6 +8,7 @@ import AvaButton from '@/components/shared/AvaButton';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
 import { isAttending } from "@/lib/guestRsvpTally";
+import { interactiveDivProps } from "@/lib/a11y";
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -75,6 +76,7 @@ function GuestChip({ name, onRemove }) {
       <button
         type="button"
         onClick={onRemove}
+        aria-label={`Remove ${name}`}
         style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 0, marginLeft: 2 }}
       >
         <X size={11} />
@@ -222,6 +224,7 @@ function MemberRow({ member, onChange, onRemove, guests }) {
       />
       <button
         onClick={onRemove}
+        aria-label="Remove member"
         style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: '0 0 7px' }}
       >
         <Trash2 size={13} />
@@ -251,6 +254,7 @@ function AvaModal({ onClose }) {
     <div
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={onClose}
+      {...interactiveDivProps(onClose, { label: 'Close' })}
     >
       <div onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', width: '100%', maxWidth: 520, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ background: '#0A1930', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
@@ -258,7 +262,7 @@ function AvaModal({ onClose }) {
             <Lightbulb size={16} style={{ color: '#DDF762' }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS }}>Ask Ava — wedding party</span>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
         </div>
         <div style={{ padding: 24, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

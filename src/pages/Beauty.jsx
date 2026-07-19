@@ -11,6 +11,7 @@ import VendorList from '../components/vendors/VendorList';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
+import { interactiveDivProps } from "@/lib/a11y";
 const WeddingDetails = base44.entities.WeddingDetails;
 const Vendor = base44.entities.Vendor;
 
@@ -59,6 +60,7 @@ function StarRating({ value, onChange }) {
           key={n}
           type="button"
           onClick={() => onChange(n === value ? 0 : n)}
+          aria-label={`Rate ${n} star${n === 1 ? '' : 's'}`}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}
         >
           <Star
@@ -316,7 +318,7 @@ export default function BeautyPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }}
+                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} aria-label="Add hair artist vendor"
                         style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus size={13} />
                       </button>
@@ -324,7 +326,7 @@ export default function BeautyPage() {
                   ) : (
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <input style={{ ...inputStyle, flex: 1 }} placeholder="Hair artist name" value={beautyData.hairArtist || ''} onChange={e => update({ hairArtist: e.target.value })} />
-                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }}
+                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} aria-label="Add hair artist vendor"
                         style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus size={13} />
                       </button>
@@ -345,7 +347,7 @@ export default function BeautyPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }}
+                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} aria-label="Add makeup artist vendor"
                         style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus size={13} />
                       </button>
@@ -353,7 +355,7 @@ export default function BeautyPage() {
                   ) : (
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <input style={{ ...inputStyle, flex: 1 }} placeholder="Makeup artist name" value={beautyData.makeupArtist || ''} onChange={e => update({ makeupArtist: e.target.value })} />
-                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }}
+                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} aria-label="Add makeup artist vendor"
                         style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus size={13} />
                       </button>
@@ -426,7 +428,7 @@ export default function BeautyPage() {
                           <option value="makeup">Makeup</option>
                           <option value="both">Both</option>
                         </select>
-                        <button onClick={() => removePerson(p.id)}
+                        <button onClick={() => removePerson(p.id)} aria-label="Remove person"
                           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
                           <X size={14} />
                         </button>
@@ -512,6 +514,7 @@ export default function BeautyPage() {
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <button
                     onClick={() => updateMilestone(m.id, 'done', !m.done)}
+                    aria-label={m.done ? 'Mark milestone as not done' : 'Mark milestone as done'}
                     style={{
                       width: 20, height: 20, borderRadius: 4, border: `2px solid ${m.done ? '#E03553' : 'rgba(10,10,10,0.25)'}`,
                       background: m.done ? '#E03553' : 'transparent', cursor: 'pointer',
@@ -572,7 +575,7 @@ export default function BeautyPage() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         {t.rating > 0 && <StarRating value={t.rating} onChange={() => {}} />}
-                        <button onClick={() => removeTrial(t.id)}
+                        <button onClick={() => removeTrial(t.id)} aria-label="Remove trial"
                           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: 2 }}>
                           <X size={14} />
                         </button>
@@ -618,7 +621,8 @@ export default function BeautyPage() {
       {/* Vendor form modal */}
       {showVendorForm && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-          onClick={() => { setShowVendorForm(false); setEditingVendor(null); }}>
+          onClick={() => { setShowVendorForm(false); setEditingVendor(null); }}
+          {...interactiveDivProps(() => { setShowVendorForm(false); setEditingVendor(null); }, { label: 'Close' })}>
           <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
             onClick={e => e.stopPropagation()}>
             <VendorForm
@@ -649,7 +653,7 @@ function TrialForm({ onSubmit, onCancel }) {
     <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 24, marginBottom: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>Schedule a trial</span>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={15} /></button>
+        <button onClick={onCancel} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={15} /></button>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>

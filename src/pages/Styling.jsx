@@ -16,6 +16,7 @@ import AvaModal from '@/components/layout/AvaModal';
 import AttirePanel from '../components/styling/AttirePanel';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
+import { interactiveDivProps } from '@/lib/a11y';
 const WeddingDetails = base44.entities.WeddingDetails;
 const Vendor = base44.entities.Vendor;
 
@@ -196,7 +197,7 @@ const [activeTab, setActiveTab] = useState("attire");
                           ))}
                         </SelectContent>
                       </Select>
-                      <button type="button" onClick={() => { setVendorFormCategory('flowers'); setShowVendorForm(true); }}
+                      <button type="button" onClick={() => { setVendorFormCategory('flowers'); setShowVendorForm(true); }} aria-label="Add florist vendor"
                         style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus className="w-3 h-3" />
                       </button>
@@ -209,7 +210,7 @@ const [activeTab, setActiveTab] = useState("attire");
                         placeholder="Florist name and contact"
                         className="flex-1 h-9 text-sm"
                       />
-                      <button type="button" onClick={() => { setVendorFormCategory('flowers'); setShowVendorForm(true); }}
+                      <button type="button" onClick={() => { setVendorFormCategory('flowers'); setShowVendorForm(true); }} aria-label="Add florist vendor"
                         style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus className="w-3 h-3" />
                       </button>
@@ -306,7 +307,7 @@ const [activeTab, setActiveTab] = useState("attire");
                           ))}
                         </SelectContent>
                       </Select>
-                      <button type="button" onClick={() => { setVendorFormCategory('decorations'); setShowVendorForm(true); }}
+                      <button type="button" onClick={() => { setVendorFormCategory('decorations'); setShowVendorForm(true); }} aria-label="Add decoration vendor"
                         style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus className="w-3 h-3" />
                       </button>
@@ -319,7 +320,7 @@ const [activeTab, setActiveTab] = useState("attire");
                         placeholder="Decorator name and contact"
                         className="flex-1 h-9 text-sm"
                       />
-                      <button type="button" onClick={() => { setVendorFormCategory('decorations'); setShowVendorForm(true); }}
+                      <button type="button" onClick={() => { setVendorFormCategory('decorations'); setShowVendorForm(true); }} aria-label="Add decoration vendor"
                         style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Plus className="w-3 h-3" />
                       </button>
@@ -406,7 +407,8 @@ const [activeTab, setActiveTab] = useState("attire");
       {/* Vendor form modal */}
       {showVendorForm && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-          onClick={() => setShowVendorForm(false)}>
+          onClick={() => setShowVendorForm(false)}
+          {...interactiveDivProps(() => setShowVendorForm(false), { label: 'Close' })}>
           <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
             onClick={e => e.stopPropagation()}>
             <VendorForm
