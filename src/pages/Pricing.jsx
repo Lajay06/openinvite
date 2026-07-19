@@ -338,7 +338,7 @@ export default function Pricing() {
         <p style={{ textAlign: "center", fontSize: 13, color: "rgba(10,10,10,0.6)", marginTop: 28, fontFamily: PJS }}>
           No upsells, ever. Pay once, plan your entire wedding.
         </p>
-        <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.3)", marginTop: 6, fontFamily: PJS }}>
+        <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.6)", marginTop: 6, fontFamily: PJS }}>
           Prices in AUD · Approx. US$50 / US$95
         </p>
 

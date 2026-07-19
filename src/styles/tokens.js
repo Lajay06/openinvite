@@ -21,13 +21,34 @@ export const color = {
   bgSubtle:  '#F5F5F5',
   bgDark:    '#0A0A0A',
 
-  // Text
+  // Text — alphas chosen so we stop hand-rolling contrast values
+  // (AUDIT_2026-07.md S13/S14). Role-specific, not a single blanket value:
+  //   textMuted       — informational/secondary text the user needs to
+  //                      read. WCAG AA 4.5:1 against white (~5.25:1).
+  //   textPlaceholder — input placeholders/hint text. Also WCAG AA 4.5:1
+  //                      (~4.89:1), deliberately a touch lighter than
+  //                      textMuted so filled values still read as more
+  //                      prominent than the hint.
+  //   textDisabled    — disabled controls, or text that is purely
+  //                      decorative/non-informational. WCAG's contrast
+  //                      requirements exempt disabled UI (guideline 1.4.3);
+  //                      do not use this for any text a user must read.
+  //   iconMuted       — icon-only interactive controls (enabled, not
+  //                      disabled) and their equivalents (e.g. a hover
+  //                      border on a filter pill). Icons/UI-component
+  //                      boundaries fall under WCAG 1.4.11 Non-text
+  //                      Contrast, a more lenient 3:1 minimum (~3.16:1) —
+  //                      distinct from textDisabled specifically so an
+  //                      enabled icon button is never left at a value
+  //                      that fails even the lenient non-text threshold.
   textPrimary:     '#0A0A0A',
   textSecondary:   '#444444',
   textMuted:       'rgba(10,10,10,0.6)',
   textOnDark:      '#FFFFFF',
   textOnDarkMuted: 'rgba(255,255,255,0.4)',
-  textPlaceholder: 'rgba(10,10,10,0.6)',
+  textPlaceholder: 'rgba(10,10,10,0.58)',
+  textDisabled:    'rgba(10,10,10,0.3)',
+  iconMuted:       'rgba(10,10,10,0.45)',
 
   // Borders
   border:       'rgba(10,10,10,0.08)',

@@ -245,7 +245,7 @@ function AddPlaceCard({ destination, onAdd }) {
           {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
           {selected && !searching && (
             <button type="button" onClick={() => { setSelected(null); setQuery(''); setNote(''); setBadge(''); }}
-              style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
+              style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 0 }}>
               <X size={13} />
             </button>
           )}
@@ -348,7 +348,7 @@ function AddPlaceCard({ destination, onAdd }) {
               </span>
             )}
             <button type="button" onClick={() => { setSelected(null); setQuery(''); setNote(''); setBadge(''); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
               <X size={14} />
             </button>
           </div>

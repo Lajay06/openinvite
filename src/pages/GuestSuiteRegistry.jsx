@@ -261,7 +261,7 @@ export default function GuestSuiteRegistry() {
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
                   GIFT IDEAS · {availableProducts.length} item{availableProducts.length !== 1 ? 's' : ''}
                   {products.length > availableProducts.length && (
-                    <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.3)' }}>
+                    <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}>
                       {' '}({products.length - availableProducts.length} already purchased — hidden from guests)
                     </span>
                   )}

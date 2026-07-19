@@ -222,7 +222,7 @@ function MemberRow({ member, onChange, onRemove, guests }) {
       />
       <button
         onClick={onRemove}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', display: 'flex', padding: '0 0 7px' }}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: '0 0 7px' }}
       >
         <Trash2 size={13} />
       </button>

@@ -77,7 +77,7 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
             <div style={{ aspectRatio: '1/1', border: '1px solid rgba(10,10,10,0.08)', background: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               {preview
                 ? <img src={preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setPreview('')} />
-                : <div style={{ textAlign: 'center', color: 'rgba(10,10,10,0.3)' }}>
+                : <div style={{ textAlign: 'center', color: 'rgba(10,10,10,0.6)' }}>
                     <ImageIcon size={36} style={{ margin: '0 auto 8px' }} />
                     <p style={{ fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Image preview</p>
                   </div>

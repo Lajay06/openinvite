@@ -642,7 +642,7 @@ export default function AccountPage() {
           <div style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.06)' }}>
             <button
               onClick={() => navigate('/admin')}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.3)', fontFamily: PJS, textDecoration: 'underline', textDecorationColor: 'rgba(10,10,10,0.2)' }}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textDecoration: 'underline', textDecorationColor: 'rgba(10,10,10,0.2)' }}
             >
               Admin dashboard →
             </button>

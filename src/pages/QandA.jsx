@@ -86,7 +86,7 @@ function QnaAccordionItem({ item, id, onDelete }) {
               {item.answer}
             </p>
           ) : (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.3)', margin: 0, fontFamily: PJS, fontStyle: 'italic' }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, fontStyle: 'italic' }}>
               No answer added yet.
             </p>
           )}

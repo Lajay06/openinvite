@@ -34,7 +34,7 @@ function QnaItem({ item }) {
               {item.answer}
             </p>
           ) : (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.3)', fontFamily: PJS, margin: 0, fontStyle: 'italic' }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, fontStyle: 'italic' }}>
               No answer added yet.
             </p>
           )}

@@ -140,7 +140,7 @@ const CHANNEL_LABELS = { email: 'Email', whatsapp: 'WhatsApp', 'email+whatsapp':
 
 function LastSentCell({ guest }) {
   if (!guest.invite_sent_at) {
-    return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>Not sent</span>;
+    return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Not sent</span>;
   }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -256,7 +256,7 @@ function PlusOneCell({ guest, onUpdate, readOnly }) {
   const badge = guest.plus_one ? (
     <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', fontFamily: PJS }}>+1 ✓</span>
   ) : (
-    <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.3)', fontFamily: PJS }}>—</span>
+    <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>—</span>
   );
   if (readOnly) return badge;
   return (
@@ -500,7 +500,7 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly 
                   }}
                 >
                   <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>{event.name}</span>
-                  <span style={{ fontSize: 12, color: r.invited ? '#0A0A0A' : 'rgba(10,10,10,0.3)', fontFamily: PJS }}>
+                  <span style={{ fontSize: 12, color: r.invited ? '#0A0A0A' : 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                     {r.invited ? 'Yes' : 'No'}
                   </span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: r.invited ? (STATUS_COLORS[r.status] || STATUS_COLORS.pending) : 'rgba(10,10,10,0.25)', fontFamily: PJS }}>

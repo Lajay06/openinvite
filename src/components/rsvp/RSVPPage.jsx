@@ -56,7 +56,7 @@ function PageShell({ coupleName, dateStr, venue, theme, typography, universeConf
         </SectionReveal>
         <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', marginBottom: 36 }} />
         {children}
-        <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(10,10,10,0.3)', marginTop: 48, ...F }}>
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 48, ...F }}>
           Powered by openinvite.com.au
         </p>
       </div>
@@ -683,7 +683,7 @@ export default function RSVPPage() {
         </form>
 
         {/* Footer */}
-        <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(10,10,10,0.3)', marginTop: 48 }}>
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 48 }}>
           Powered by openinvite.com.au
         </p>
       </div>

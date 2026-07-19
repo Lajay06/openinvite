@@ -229,7 +229,7 @@ export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions =
         {/* Chat area */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 4, minHeight: 0 }}>
           {messages.length === 0 && !loading && (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: 'rgba(10,10,10,0.3)', fontSize: 13, fontFamily: PJS }}>
+            <div style={{ textAlign: 'center', padding: '32px 0', color: 'rgba(10,10,10,0.6)', fontSize: 13, fontFamily: PJS }}>
               Ask me anything or choose a quick action above.
             </div>
           )}

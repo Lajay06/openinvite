@@ -421,7 +421,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
             {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
             {selectedPlace && !searching && (
               <button type="button" onClick={() => { setSelectedPlace(null); setQuery(''); setNote(''); setIsCouplePick(false); }}
-                style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0 }}>
+                style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 0 }}>
                 <X size={13} />
               </button>
             )}
@@ -535,7 +535,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
                 </span>
               )}
               <button type="button" onClick={() => { setSelectedPlace(null); setQuery(''); setNote(''); setIsCouplePick(false); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 4, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                 <X size={14} />
               </button>
             </div>
@@ -593,7 +593,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
 
         {visiblePlaces.length === 0 ? (
           <div style={{ padding: '40px 0', textAlign: 'center', borderTop: '1px solid rgba(10,10,10,0.06)' }}>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.3)', fontFamily: PJS, margin: 0 }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
               {allSavedPlaces.length === 0
                 ? 'Search above and click "Add place" to start building your guide.'
                 : 'No places in this category yet.'}

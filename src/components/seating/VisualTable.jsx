@@ -125,7 +125,7 @@ export default function VisualTable({ table, guests, onSeatClick, selected, sele
               // assigned/empty look so all three states (selected, assigned,
               // empty) stay visually distinct even in combination.
               background: guest ? '#0A1930' : (isSeatSelected ? 'rgba(224,53,83,0.14)' : 'transparent'),
-              border: isSeatSelected ? '2px solid #E03553' : (guest ? '2px solid #FFFFFF' : '1.5px dashed rgba(10,10,10,0.3)'),
+              border: isSeatSelected ? '2px solid #E03553' : (guest ? '2px solid #FFFFFF' : '1.5px dashed rgba(10,10,10,0.45)'),
               boxShadow: isSeatSelected
                 ? '0 0 0 3px rgba(224,53,83,0.22), 0 2px 10px rgba(224,53,83,0.35)'
                 : (guest ? '0 1px 4px rgba(10,10,10,0.35)' : 'none'),

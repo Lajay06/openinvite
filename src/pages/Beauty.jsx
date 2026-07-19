@@ -427,7 +427,7 @@ export default function BeautyPage() {
                           <option value="both">Both</option>
                         </select>
                         <button onClick={() => removePerson(p.id)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
                           <X size={14} />
                         </button>
                       </div>
@@ -573,7 +573,7 @@ export default function BeautyPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         {t.rating > 0 && <StarRating value={t.rating} onChange={() => {}} />}
                         <button onClick={() => removeTrial(t.id)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', display: 'flex', padding: 2 }}>
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: 2 }}>
                           <X size={14} />
                         </button>
                       </div>

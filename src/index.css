@@ -239,7 +239,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     transition: border-color 0.2s ease, border-width 0.2s ease;
   }
   .input-editorial::placeholder {
-    color: rgba(10,10,10,0.6);
+    color: rgba(10,10,10,0.58);
     font-weight: 400;
   }
   .input-editorial:focus {
@@ -1050,7 +1050,7 @@ body {
   transition: border-color 0.2s ease, border-width 0.2s ease;
 }
 .input-user:focus { border-bottom: 2px solid #E03553 !important; }
-.input-user::placeholder { color: rgba(10,10,10,0.6) !important; font-weight: 400 !important; }
+.input-user::placeholder { color: rgba(10,10,10,0.58) !important; font-weight: 400 !important; }
 
 /* ── Dropdown menus in user area ───────────────────────────── */
 [data-radix-popper-content-wrapper] [role="listbox"],
@@ -1153,7 +1153,7 @@ body {
   border-color: #0A0A0A;
 }
 .filter-pill:hover:not(.active) {
-  border-color: rgba(10,10,10,0.3);
+  border-color: rgba(10,10,10,0.45);
   color: #0A0A0A;
 }
 

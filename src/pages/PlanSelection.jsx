@@ -180,7 +180,7 @@ export default function PlanSelection() {
         </button>
       )}
 
-      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.3)', margin: '20px 0 0', fontFamily: PJS }}>
+      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '20px 0 0', fontFamily: PJS }}>
         Prices in AUD · 14-day money-back guarantee · No recurring fees
       </p>
 

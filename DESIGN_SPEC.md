@@ -8,6 +8,16 @@
 - Body: font-weight 400, color #0A0A0A
 - Muted text: color rgba(10,10,10,0.6) — never #888888
 - Labels/captions: font-size 11px, color rgba(10,10,10,0.6)
+- Input placeholders/hint text: color rgba(10,10,10,0.58) — a touch
+  lighter than muted text, still WCAG AA 4.5:1
+- Disabled controls / purely decorative text: color rgba(10,10,10,0.3) —
+  WCAG exempts disabled UI; never use on text a user must read
+- Enabled icon-only controls (not disabled): color rgba(10,10,10,0.45) —
+  WCAG 1.4.11 non-text contrast (3:1), distinct from disabled/decorative
+  so an active icon button is never left below even that lenient floor
+- Named tokens for all four live in src/styles/tokens.js
+  (textMuted/textPlaceholder/textDisabled/iconMuted) — use these instead
+  of hand-rolling a new alpha
 
 ## Colours
 - Brand red/pink: #E03553
@@ -151,4 +161,8 @@ Every dashboard page must follow this exact top-to-bottom order — no exception
 - Muted text minimum contrast: rgba(10,10,10,0.6), never #888888
   (WCAG AA 4.5:1 against white; the previous 0.4 alpha only reached
   ~2.7:1 — AUDIT_2026-07.md S13, corrected across ~150 files + the
-  src/styles/tokens.js textMuted/textPlaceholder tokens)
+  src/styles/tokens.js textMuted token)
+- The same fix for the undocumented 0.3 variant (AUDIT_2026-07.md S14)
+  was role-aware, not a blanket bump — see the Typography section above
+  and src/styles/tokens.js's textPlaceholder/textDisabled/iconMuted
+  tokens for which value applies to which kind of text/control

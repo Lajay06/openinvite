@@ -589,7 +589,7 @@ export default function SeatingPage() {
                   <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                     <Users size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
                   </div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.3)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Add tables from the left panel</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Add tables from the left panel</p>
                   <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.2)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '4px 0 0' }}>Drag tables and assets to arrange your venue</p>
                 </div>
               )}
@@ -640,7 +640,7 @@ export default function SeatingPage() {
                         <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {selectedTable.name}
                         </span>
-                        <Pencil size={11} style={{ color: 'rgba(10,10,10,0.3)', flexShrink: 0 }} />
+                        <Pencil size={11} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
                       </button>
                     )}
                     <button onClick={() => { setSelectedTableId(null); setSelectedSeatIndex(null); }}

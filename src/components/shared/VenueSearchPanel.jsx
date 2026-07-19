@@ -138,7 +138,7 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
               </a>
             )}
             <button type="button" onClick={() => onChange(null)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0, display: 'flex', alignItems: 'center' }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 0, display: 'flex', alignItems: 'center' }}>
               <X size={15} />
             </button>
           </div>

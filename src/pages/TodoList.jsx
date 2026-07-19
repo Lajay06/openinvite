@@ -212,12 +212,12 @@ export default function TodoList({ embedded = false }) {
             <div style={{ marginTop: 0 }}>
               {loading ? (
                 <div style={{ padding: '48px 0', textAlign: 'center' }}>
-                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.3)', fontFamily: PJS, margin: 0 }}>Loading…</p>
+                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Loading…</p>
                 </div>
               ) : filtered.length === 0 ? (
                 <div style={{ padding: '64px 0', textAlign: 'center' }}>
                   <CheckSquare size={32} style={{ color: 'rgba(10,10,10,0.1)', margin: '0 auto 12px', display: 'block' }} />
-                  <p style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.3)', fontFamily: PJS, margin: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
                     No tasks yet — add one above
                   </p>
                 </div>
@@ -355,7 +355,7 @@ function TaskRow({ task, onToggle, onDelete }) {
 
       <span style={{
         flex: 1, fontSize: 14, fontWeight: 500, fontFamily: PJS,
-        color: task.completed ? 'rgba(10,10,10,0.3)' : '#0A0A0A',
+        color: task.completed ? 'rgba(10,10,10,0.6)' : '#0A0A0A',
         textDecoration: task.completed ? 'line-through' : 'none',
       }}>
         {task.title}

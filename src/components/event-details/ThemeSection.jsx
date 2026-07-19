@@ -186,7 +186,7 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
               style={{ maxWidth: 280 }}
             />
             <button type="button" onClick={() => { setLocal(prev => ({ ...prev, cultureOther: '' })); setShowCultureInput(false); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', padding: 0, display: 'flex', alignItems: 'center' }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 0, display: 'flex', alignItems: 'center' }}>
               <X size={14} />
             </button>
           </div>

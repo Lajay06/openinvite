@@ -137,7 +137,7 @@ export default function MockVendorTemplateBeauty() {
                       <span style={{ fontSize: 13, fontFamily: PJS, color: '#0A0A0A' }}>{p.name}</span>
                       <span style={{ fontSize: 13, fontFamily: PJS, color: '#444444' }}>{p.role}</span>
                       <span style={{ fontSize: 12, fontFamily: PJS, color: 'rgba(10,10,10,0.5)', textTransform: 'capitalize' }}>{p.service}</span>
-                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.3)', display: 'flex' }}><X size={13} /></button>
+                      <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex' }}><X size={13} /></button>
                     </div>
                   ))}
                   <div style={{ background: 'rgba(10,10,10,0.03)', padding: '12px 14px', marginTop: 10 }}>
