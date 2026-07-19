@@ -5,7 +5,7 @@ import { getGuestTableName, propagateTableRename } from '@/lib/tableAssignment';
 const Guest = base44.entities.Guest;
 const Table = base44.entities.Table;
 const VenueAsset = base44.entities.VenueAsset;
-import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users, Pencil } from 'lucide-react';
+import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users, Pencil, Monitor } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 import { validateUploadFile } from '@/lib/uploadValidation';
@@ -420,6 +420,15 @@ export default function SeatingPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Seating" subtitle="Design your venue layout and assign guests to tables" />
+
+      {/* AUDIT_2026-07.md S19: the layout canvas + side panels need far more
+          width than a phone provides — this is a notice, not a redesign. */}
+      <div className="lg:hidden flex" style={{ alignItems: 'center', gap: 10, padding: '14px 24px', background: 'rgba(224,53,83,0.05)', borderBottom: '1px solid rgba(224,53,83,0.15)' }}>
+        <Monitor size={16} style={{ color: '#E03553', flexShrink: 0 }} />
+        <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.7)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          Seating is best viewed on a larger screen — the layout tools need more room than a phone provides.
+        </span>
+      </div>
 
       {/* Stat strip */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

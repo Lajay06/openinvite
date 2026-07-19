@@ -261,7 +261,7 @@ function AddPlaceCard({ destination, onAdd }) {
                 onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
               >
                 {place.photo_reference ? (
-                  <img src={photoProxy(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                  <img src={photoProxy(place.photo_reference, 60)} alt={place.name} style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
                 ) : (
                   <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Hotel size={12} color="rgba(10,10,10,0.2)" />
@@ -332,7 +332,7 @@ function AddPlaceCard({ destination, onAdd }) {
           {/* Place header row */}
           <div style={{ display: 'flex', gap: 12, padding: '12px 14px', alignItems: 'center', background: 'rgba(224,53,83,0.04)', borderBottom: '1px solid rgba(224,53,83,0.1)' }}>
             {selected.photo_reference ? (
-              <img src={photoProxy(selected.photo_reference, 80)} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+              <img src={photoProxy(selected.photo_reference, 80)} alt={selected.name} style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
             ) : (
               <div style={{ width: 44, height: 44, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Hotel size={16} color="rgba(10,10,10,0.2)" />

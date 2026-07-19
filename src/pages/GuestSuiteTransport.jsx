@@ -477,7 +477,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
                         onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
                       >
                         {place.photo_reference ? (
-                          <img src={photoProxy(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                          <img src={photoProxy(place.photo_reference, 60)} alt={place.name} style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
                         ) : (
                           <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <MapPin size={12} color="rgba(10,10,10,0.2)" />
@@ -542,7 +542,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
                   {/* Place header row */}
                   <div style={{ display: 'flex', gap: 12, padding: '12px 14px', alignItems: 'center', background: 'rgba(224,53,83,0.04)', borderBottom: '1px solid rgba(224,53,83,0.1)' }}>
                     {selectedPlace.photo_reference ? (
-                      <img src={photoProxy(selectedPlace.photo_reference, 80)} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                      <img src={photoProxy(selectedPlace.photo_reference, 80)} alt={selectedPlace.name} style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
                     ) : (
                       <div style={{ width: 44, height: 44, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <MapPin size={16} color="rgba(10,10,10,0.2)" />

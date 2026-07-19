@@ -77,7 +77,7 @@ function PropertyModal({ property, onSave, onClose }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <label style={labelStyle}>Photo URL</label>
             <input value={form.photoUrl} onChange={e => set('photoUrl', e.target.value)} placeholder="https://…" style={inputStyle} />
-            {form.photoUrl && <img src={form.photoUrl} alt="" style={{ width: '100%', height: 120, objectFit: 'cover', marginTop: 6 }} onError={e => e.target.style.display = 'none'} />}
+            {form.photoUrl && <img src={form.photoUrl} alt={form.name} style={{ width: '100%', height: 120, objectFit: 'cover', marginTop: 6 }} onError={e => e.target.style.display = 'none'} />}
           </div>
           <GoogleField label="Property name" value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. The Grand Hotel" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

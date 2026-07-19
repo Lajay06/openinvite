@@ -120,7 +120,7 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
         <span style={sLabel}>{label}</span>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, background: '#FAFAFA' }}>
           {venue.photoUrl ? (
-            <img src={venue.photoUrl} alt="" style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
+            <img src={venue.photoUrl} alt={venue.name} style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
           ) : (
             <div style={{ width: 52, height: 52, background: 'rgba(10,10,10,0.05)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <MapPin size={20} color="rgba(10,10,10,0.2)" />
@@ -196,7 +196,7 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
                   onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
                 >
                   {place.photo_reference ? (
-                    <img src={photoProxy(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                    <img src={photoProxy(place.photo_reference, 60)} alt={place.name} style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
                   ) : (
                     <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <MapPin size={12} color="rgba(10,10,10,0.2)" />
