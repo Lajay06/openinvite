@@ -27,6 +27,7 @@ import { detectHeroVideoType } from '@/lib/heroVideo';
 import { normalizeUniverseKey } from '@/lib/websiteThemes';
 import { getEntranceConfig, MAX_HOLD_MS } from '@/lib/entranceConfig';
 import HairlineRule from './layouts/HairlineRule';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const SKIP_REVEAL_MS = 300;
 const CUE_VISIBLE_MS = 1800;
@@ -172,6 +173,7 @@ export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typ
 
   const variants = nameVariants(config.nameMotion, config.ease);
   const kicker = formatEntranceKicker(universeConfig);
+  const { tabIndex: skipTabIndex, onKeyDown: skipOnKeyDown } = interactiveDivProps(skip);
 
   return (
     <div
@@ -179,6 +181,8 @@ export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typ
       onTouchStart={skip}
       role="button"
       aria-label="Skip entrance animation"
+      tabIndex={skipTabIndex}
+      onKeyDown={skipOnKeyDown}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         display: 'flex', alignItems: 'center', justifyContent: 'center',

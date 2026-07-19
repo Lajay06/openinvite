@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
+import { interactiveDivProps } from '@/lib/a11y';
 
 export default function WeddingPhotosPage({ weddingDetails, theme, typography, universeConfig }) {
   const content = weddingDetails.photosContent || {};
@@ -31,6 +32,7 @@ export default function WeddingPhotosPage({ weddingDetails, theme, typography, u
               <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
                 <div
                   onClick={() => setSelectedIndex(i)}
+                  {...interactiveDivProps(() => setSelectedIndex(i))}
                   style={{
                     position: 'relative',
                     cursor: 'pointer',
@@ -99,6 +101,7 @@ export default function WeddingPhotosPage({ weddingDetails, theme, typography, u
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedIndex(null)}
+            {...interactiveDivProps(() => setSelectedIndex(null), { label: 'Close photo viewer' })}
             style={{
               position: 'fixed',
               inset: 0,
