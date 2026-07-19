@@ -54,6 +54,7 @@ import { runCollaboratorInvite } from '../tests/persistence/collaborator-invite.
 import { runCollaboratorPageMap } from '../tests/persistence/collaborator-page-map.mjs';
 import { runCheckoutErrorHandling } from '../tests/persistence/checkout-error-handling.mjs';
 import { runGuestRsvpTally } from '../tests/persistence/guest-rsvp-tally.mjs';
+import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -137,6 +138,7 @@ async function run() {
     await runModule('runCollaboratorPageMap', () => runCollaboratorPageMap());
     await runModule('runCheckoutErrorHandling', () => runCheckoutErrorHandling());
     await runModule('runGuestRsvpTally', () => runGuestRsvpTally());
+    await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
     // itself, or a bug in runModule) — this is the actual safety net the
