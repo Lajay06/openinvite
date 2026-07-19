@@ -28,5 +28,18 @@ export default defineConfig({
   build: {
     // Source maps are required for Sentry to map minified errors back to source
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        // AUDIT_2026-07.md B1: react/react-dom/react-router are needed by
+        // every single route, so they go in one shared vendor chunk the
+        // browser caches once across navigations, rather than being
+        // duplicated into (or re-fetched with) every lazy-loaded route
+        // chunk. Everything else's per-route splitting is automatic once
+        // a page is behind React.lazy() — no manual list needed for those.
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
+    },
   },
 });

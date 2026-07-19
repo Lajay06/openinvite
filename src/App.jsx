@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import { Toaster } from "@/components/ui/toaster"
 import ScrollToTop from "@/components/ScrollToTop"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -8,77 +8,82 @@ import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
-import NotFound from './pages/NotFound';
-import Unauthorized from './pages/Unauthorized';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
-import DevReset from './pages/DevReset';
-import About from './pages/About';
-import Ava from './pages/Ava';
-import Pricing from './pages/Pricing';
-import Contact from './pages/Contact';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import CookiePolicy from './pages/CookiePolicy';
-import DataDeletion from './pages/DataDeletion';
-import RefundPolicy from './pages/RefundPolicy';
-import ScrollMorph from './pages/ScrollMorph';
-import Universes from './pages/Universes';
-import Onboarding from './pages/Onboarding';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import MultiPageWeddingWebsite from './components/guest-website/MultiPageWeddingWebsite';
-import RSVPPage from './components/rsvp/RSVPPage';
-import GamesPage from './components/games/GamesPage';
-import CollaboratorAccept from './pages/CollaboratorAccept';
-import CollaboratorGuests from './pages/CollaboratorGuests';
+import RouteLoadingFallback from '@/components/shared/RouteLoadingFallback';
+
+// AUDIT_2026-07.md B1: every page below is lazy-loaded so each becomes its
+// own chunk — a marketing-site visitor no longer downloads the entire
+// authenticated dashboard's code, and vice versa.
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Unauthorized = lazy(() => import('./pages/Unauthorized'));
+const DevReset = lazy(() => import('./pages/DevReset'));
+const About = lazy(() => import('./pages/About'));
+const Ava = lazy(() => import('./pages/Ava'));
+const Pricing = lazy(() => import('./pages/Pricing'));
+const Contact = lazy(() => import('./pages/Contact'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
+const DataDeletion = lazy(() => import('./pages/DataDeletion'));
+const RefundPolicy = lazy(() => import('./pages/RefundPolicy'));
+const ScrollMorph = lazy(() => import('./pages/ScrollMorph'));
+const Universes = lazy(() => import('./pages/Universes'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const MultiPageWeddingWebsite = lazy(() => import('./components/guest-website/MultiPageWeddingWebsite'));
+const RSVPPage = lazy(() => import('./components/rsvp/RSVPPage'));
+const GamesPage = lazy(() => import('./components/games/GamesPage'));
+const CollaboratorAccept = lazy(() => import('./pages/CollaboratorAccept'));
+const CollaboratorGuests = lazy(() => import('./pages/CollaboratorGuests'));
 // Dev-only shared vendor-template mocks — not linked from any nav, not
 // reachable without the URL. Does NOT touch Beauty.jsx/FoodBeverage.jsx or
 // any real page; own new files only (src/components/mocks/VendorTemplateMock.jsx,
 // src/pages/MockVendorTemplateBeauty.jsx, src/pages/MockVendorTemplateFoodBeverage.jsx).
-import MockVendorTemplateBeauty from './pages/MockVendorTemplateBeauty';
-import MockVendorTemplateFoodBeverage from './pages/MockVendorTemplateFoodBeverage';
-import GuestRSVPRetired from './pages/GuestRSVPRetired';
-import UniverseStudio from './pages/UniverseStudio';
-import StudioHub from './pages/StudioHub';
-import StudioWebsite from './pages/StudioWebsite';
-import FoodBeverage from './pages/FoodBeverage';
-import PhotographyDetails from './pages/PhotographyDetails';
-import Florals from './pages/Florals';
-import EntertainmentDetails from './pages/EntertainmentDetails';
-import Transport from './pages/Transport';
-import Accommodation from './pages/Accommodation';
-import GuestAccommodation from './pages/GuestAccommodation';
-import GuestMusic from './pages/GuestMusic';
-import Music from './pages/Music';
-import CeremonyDetails from './pages/CeremonyDetails';
-import Honeymoon from './pages/Honeymoon';
-import EmergencyContact from './pages/EmergencyContact';
-import LiveStreaming from './pages/LiveStreaming';
-import WeddingParty from './pages/WeddingParty';
-import WeddingFavours from './pages/WeddingFavours';
-import EventDetails from './pages/EventDetails';
-import PaymentSuccess from './pages/PaymentSuccess';
-import AvaStudio from './pages/AvaStudio';
-import AvaStudioWebsite from './pages/AvaStudioWebsite';
-import AvaStudioAssets from './pages/AvaStudioAssets';
-import Help from './pages/Help';
-import Account from './pages/Account';
-import Admin from './pages/Admin';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import StudioGuestSuite from './pages/StudioGuestSuite';
+const MockVendorTemplateBeauty = lazy(() => import('./pages/MockVendorTemplateBeauty'));
+const MockVendorTemplateFoodBeverage = lazy(() => import('./pages/MockVendorTemplateFoodBeverage'));
+const GuestRSVPRetired = lazy(() => import('./pages/GuestRSVPRetired'));
+const UniverseStudio = lazy(() => import('./pages/UniverseStudio'));
+const StudioHub = lazy(() => import('./pages/StudioHub'));
+const StudioWebsite = lazy(() => import('./pages/StudioWebsite'));
+const FoodBeverage = lazy(() => import('./pages/FoodBeverage'));
+const PhotographyDetails = lazy(() => import('./pages/PhotographyDetails'));
+const Florals = lazy(() => import('./pages/Florals'));
+const EntertainmentDetails = lazy(() => import('./pages/EntertainmentDetails'));
+const Transport = lazy(() => import('./pages/Transport'));
+const Accommodation = lazy(() => import('./pages/Accommodation'));
+const GuestAccommodation = lazy(() => import('./pages/GuestAccommodation'));
+const GuestMusic = lazy(() => import('./pages/GuestMusic'));
+const Music = lazy(() => import('./pages/Music'));
+const CeremonyDetails = lazy(() => import('./pages/CeremonyDetails'));
+const Honeymoon = lazy(() => import('./pages/Honeymoon'));
+const EmergencyContact = lazy(() => import('./pages/EmergencyContact'));
+const LiveStreaming = lazy(() => import('./pages/LiveStreaming'));
+const WeddingParty = lazy(() => import('./pages/WeddingParty'));
+const WeddingFavours = lazy(() => import('./pages/WeddingFavours'));
+const EventDetails = lazy(() => import('./pages/EventDetails'));
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
+const AvaStudio = lazy(() => import('./pages/AvaStudio'));
+const AvaStudioWebsite = lazy(() => import('./pages/AvaStudioWebsite'));
+const AvaStudioAssets = lazy(() => import('./pages/AvaStudioAssets'));
+const Help = lazy(() => import('./pages/Help'));
+const Account = lazy(() => import('./pages/Account'));
+const Admin = lazy(() => import('./pages/Admin'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const StudioGuestSuite = lazy(() => import('./pages/StudioGuestSuite'));
 // Dev-only Design Studio redesign mocks — not linked from any nav, not
 // used by the real DesignStudio (UniverseStudio.jsx) route. See each
 // file's header comment.
-import MockUniverseA from './pages/MockUniverseA';
-import MockUniverseB from './pages/MockUniverseB';
-import MockUniverseC from './pages/MockUniverseC';
-import Features from './pages/Features';
-import Home from './pages/Home';
+const MockUniverseA = lazy(() => import('./pages/MockUniverseA'));
+const MockUniverseB = lazy(() => import('./pages/MockUniverseB'));
+const MockUniverseC = lazy(() => import('./pages/MockUniverseC'));
+const Features = lazy(() => import('./pages/Features'));
+const Home = lazy(() => import('./pages/Home'));
 
 // ── Public paths — bypass auth check entirely ─────────────────────────────────
 const PUBLIC_PATH_SET = new Set([
@@ -274,7 +279,9 @@ function App() {
           <Router>
             <ScrollToTop />
             <NavigationTracker />
-            <AuthenticatedApp />
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <AuthenticatedApp />
+            </Suspense>
           </Router>
           <Toaster />
           <VisualEditAgent />
