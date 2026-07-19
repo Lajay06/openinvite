@@ -2,11 +2,14 @@
  * tests/persistence/guestlist-editable.mjs
  *
  * Covers feat/guestlist-editable's overhaul of the guest list:
- *  - Live round-trip: a Guest created with no `category` stays genuinely
- *    blank (the Base44 schema used to default category to 'family' — that
- *    default has been removed; this is the actual regression test for "no
- *    category on import", since the earlier default applied server-side
- *    regardless of what the import code sent).
+ *  - Live round-trip: a Guest created with no `category` gets the schema's
+ *    own default of 'family' (AUDIT_2026-07.md schema-drift re-verification,
+ *    2026-07: this test previously asserted the field stays blank, on the
+ *    assumption the default had been removed — re-checked the live schema
+ *    directly and the enum + "family" default are actually declared and
+ *    intentional, so the old assertion was stale, not a real regression).
+ *    "No category on import" is still covered — see the separate structural
+ *    check below that rowToGuest() never sets category itself.
  *  - Live round-trip: `tags` (already a registered array field) persists
  *    through both a plain update and an add/remove-style read-modify-write,
  *    the same shape the bulk-edit tag actions perform.
@@ -28,7 +31,7 @@ const read = (p) => readFileSync(resolve(__dir, '..', '..', p), 'utf8');
 export async function runGuestlistEditable(token) {
   const results = [];
 
-  console.log('\n  Guest list editable — category has no schema default (live round-trip):\n');
+  console.log('\n  Guest list editable — category defaults to "family" (live round-trip):\n');
 
   let blankCategoryId = null;
   try {
@@ -36,11 +39,11 @@ export async function runGuestlistEditable(token) {
       { name: '__PERSISTENCE_TEST_NO_CATEGORY__', is_test: true }, token);
     blankCategoryId = created.id;
     const back = await api('GET', `/apps/${APP_ID}/entities/Guest/${blankCategoryId}`, undefined, token);
-    results.push(!back.category
-      ? pass('Guest created with no category stays blank (not defaulted to "family")', JSON.stringify(back.category))
-      : fail('Guest created with no category stays blank (not defaulted to "family")', 'blank/undefined', back.category));
+    results.push(back.category === 'family'
+      ? pass('Guest created with no category gets the schema default ("family")', back.category)
+      : fail('Guest created with no category gets the schema default ("family")', 'family', back.category));
   } catch (err) {
-    console.log(`  ❌ FAIL  category-blank-on-create — error: ${err.message}`);
+    console.log(`  ❌ FAIL  category-defaults-to-family — error: ${err.message}`);
     results.push(false);
   } finally {
     if (blankCategoryId) {

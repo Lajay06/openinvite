@@ -124,6 +124,44 @@ incident was caught before PR #140 shipped (the persistence suite's own
 `Collaborator.status/invite_token persist on create` assertion failed,
 which is why that check exists and shouldn't be removed).
 
+**Recurred again, 2026-07**: `WeddingDetails.assetContent`,
+`onboardingDraft`, and `onboardingStepIndex` — all three previously fixed
+(per `audit-schema.mjs`'s own comments, `assetContent` specifically was
+"registered 2026-06-03") — had reverted to absent by the time
+AUDIT_2026-07.md's schema-drift re-verification ran `list_entity_schemas`
+fresh. Restored via `update_entity_schema` (full-schema replace, not a
+patch — see the warning below) and re-verified with a second, independent
+`list_entity_schemas` call immediately after the push, per this section's
+own standing mitigation. A standing guard now exists for this specific
+recurrence class: `tests/persistence/schema-drift-guard.mjs` (via
+`scripts/lib/schemaDropScan.mjs`), registered in the main persistence
+suite — see that file's header for what it can and can't actually check.
+
+**`update_entity_schema` replaces the whole schema, not a patch.** Its own
+tool description confirms: "Fields and constraints not included in this
+object will be removed." Always `list_entity_schemas` first, take the full
+returned object, add/change only what you mean to, and submit the complete
+merged schema back — including the `rls` block explicitly (the tool docs
+say entity-level RLS is preserved when omitted, but submitting it
+unchanged-but-explicit removes any ambiguity about what's actually being
+pushed to a security-relevant entity).
+
+**Base44's schema metadata is not reachable from a plain script.**
+Confirmed empirically, 2026-07: `GET /apps/:id/entities/:entity/schema`,
+`GET /apps/:id/schema`, and `GET /apps/:id/entities/:entity/meta` all `404`
+against the live REST API using the admin key — the first two as if
+"schema"/"meta" were being parsed as a record id, the app-level one as "App
+not found" entirely. `@base44/sdk`'s shipped types expose no runtime
+schema-fetch method either (only build-time CLI codegen via "Dynamic
+Types"). This means only the `mcp__claude_ai_Base44__list_entity_schemas`
+tool (used interactively, by me) can read the live schema — no test script
+run via `npm run test:persistence`/CI can do this itself. Any
+drift-detection guard that needs to run as a plain script (like
+`schema-drift-guard.mjs` above) is necessarily working off an embedded
+snapshot refreshed by hand via that MCP tool, not a true live fetch — it
+degrades silently back to the exact blind spot it exists to catch if that
+snapshot isn't kept current after future schema changes.
+
 ## The scripted-login 401 — unresolved, parked, not user-facing
 
 A freshly-obtained, verified-valid bearer token (confirmed against
