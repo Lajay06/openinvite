@@ -6,6 +6,26 @@ import { hasPagePermission } from "@/lib/collaboratorContext";
 import { COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS } from "@/lib/collaboratorPageMap";
 
 /**
+ * AUDIT_2026-07.md B2: every nav row here is a styled <div onClick>, not a
+ * real <button> — invisible to keyboard/screen-reader users. Spread onto
+ * each row alongside its existing onClick to make Enter/Space activate it
+ * exactly like a real button, without changing its click behavior or look.
+ */
+function interactiveRowProps(onClick, disabled = false) {
+  if (!onClick || disabled) return { role: 'button', 'aria-disabled': disabled || undefined, tabIndex: -1 };
+  return {
+    role: 'button',
+    tabIndex: 0,
+    onKeyDown: (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onClick(e);
+      }
+    },
+  };
+}
+
+/**
  * Builds the collaborator's own nav sections directly from
  * COLLABORATOR_PAGE_MAP, grouped by navSection, in map-declaration order —
  * deliberately NOT filtered from NAV_SECTIONS below, since several granted
@@ -178,6 +198,8 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disable
     <div
       onClick={disabled ? undefined : onClick}
       title={disabled ? disabledTooltip : undefined}
+      aria-label={label}
+      {...interactiveRowProps(onClick, disabled)}
       style={{
         display: "flex",
         alignItems: "center",
@@ -330,6 +352,8 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
         {!isCollaborator && onOpenTips && (
           <div
             onClick={onOpenTips}
+            aria-label="Quick tips"
+            {...interactiveRowProps(onOpenTips)}
             style={{
               display: "flex", alignItems: "center", gap: 8,
               padding: "7px 12px", cursor: "pointer",
@@ -348,6 +372,8 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
         {/* Help Centre */}
         <div
           onClick={() => navigate("/help")}
+          aria-label="Help centre"
+          {...interactiveRowProps(() => navigate("/help"))}
           style={{
             display: "flex", alignItems: "center", gap: 8,
             padding: "7px 12px", cursor: "pointer",
@@ -369,6 +395,8 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
         {!isCollaborator && onCollaborate && (
           <div
             onClick={onCollaborate}
+            aria-label="Collaborate"
+            {...interactiveRowProps(onCollaborate)}
             style={{
               display: "flex", alignItems: "center", gap: 8,
               padding: "7px 12px", cursor: "pointer",
@@ -387,6 +415,8 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
         {/* Leave Dashboard / Exit collaboration */}
         <div
           onClick={() => { window.location.href = isCollaborator ? createPageUrl("Dashboard") : createPageUrl("Home"); }}
+          aria-label={isCollaborator ? "Exit collaboration" : "Leave dashboard"}
+          {...interactiveRowProps(() => { window.location.href = isCollaborator ? createPageUrl("Dashboard") : createPageUrl("Home"); })}
           style={{
             display: "flex", alignItems: "center", gap: 8,
             padding: "7px 12px", cursor: "pointer",
@@ -459,6 +489,8 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
           return (
             <div
               onClick={() => handleNav("/studio")}
+              aria-label="Design studio"
+              {...interactiveRowProps(() => handleNav("/studio"))}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "10px 16px", cursor: "pointer",
@@ -481,6 +513,8 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
           return (
             <div
               onClick={() => handleNav("/event-details")}
+              aria-label="Event details"
+              {...interactiveRowProps(() => handleNav("/event-details"))}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "10px 16px", cursor: "pointer",
@@ -504,6 +538,8 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
             <div
               key={i}
               onClick={() => handleNav(item.url)}
+              aria-label={item.label}
+              {...interactiveRowProps(() => handleNav(item.url))}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "10px 16px", cursor: "pointer",
@@ -551,6 +587,8 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
                     key={ii}
                     onClick={guestSuiteDisabled ? undefined : () => handleNav(item.url)}
                     title={guestSuiteDisabled ? "Upgrade to Ultra to unlock your wedding website" : undefined}
+                    aria-label={item.label}
+                    {...interactiveRowProps(() => handleNav(item.url), guestSuiteDisabled)}
                     style={{
                       display: "flex", alignItems: "center", gap: 10,
                       padding: "10px 16px",
@@ -616,6 +654,8 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
           <div
             key={i}
             onClick={item.action}
+            aria-label={item.label}
+            {...interactiveRowProps(item.action)}
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", cursor: "pointer", transition: "background 0.15s ease" }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(10,10,10,0.04)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
@@ -630,6 +670,8 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
         {/* Log out */}
         <div
           onClick={mobileLogout}
+          aria-label="Log out"
+          {...interactiveRowProps(mobileLogout)}
           style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px 14px", cursor: "pointer", transition: "background 0.15s ease" }}
           onMouseEnter={e => { e.currentTarget.style.background = "rgba(224,53,83,0.04)"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
