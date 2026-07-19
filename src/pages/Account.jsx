@@ -8,6 +8,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { base44 } from '@/api/base44Client';
 import { interactiveDivProps } from '@/lib/a11y';
+import { Switch } from '@/components/ui/switch';
+import { getNotificationPrefs } from '@/lib/notificationPrefs';
 import toast from 'react-hot-toast';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -68,6 +70,10 @@ const ADMIN_EMAIL = 'lajay@openinvite.com.au';
 
 const TABS = [
   { id: 'settings', label: 'Settings' },
+  // Explicit aria-label — the top-bar bell also has an accessible name of
+  // "Notifications" (Layout.jsx), so this tab's plain text content alone
+  // would collide with it on this exact page.
+  { id: 'notifications', label: 'Notifications', ariaLabel: 'Notifications settings' },
   { id: 'billing', label: 'Billing' },
   { id: 'security', label: 'Security' },
 ];
@@ -262,6 +268,68 @@ function SettingsTab({ user, refreshUser }) {
       {currencyModalOpen && (
         <CurrencyModal onClose={() => setCurrencyModalOpen(false)} />
       )}
+    </div>
+  );
+}
+
+const NOTIFICATION_PREF_ROWS = [
+  { key: 'instant_email_rsvp', title: 'Instant email on RSVP', description: 'Get emailed as soon as a guest responds' },
+  { key: 'instant_email_collaborator', title: 'Instant email on collaborator activity', description: 'Get emailed when a collaborator joins or makes changes' },
+  { key: 'weekly_digest', title: 'Weekly digest', description: 'A weekly summary of RSVPs, tasks and activity' },
+  { key: 'in_app_only', title: 'In-app only', description: "Turn off all emails above — you'll still see everything in the bell" },
+];
+
+function NotificationsTab({ user, refreshUser }) {
+  const [prefs, setPrefs] = useState(() => getNotificationPrefs(user));
+  const [savingKey, setSavingKey] = useState(null);
+
+  const handleToggle = async (key, value) => {
+    const previous = prefs;
+    const next = { ...prefs, [key]: value };
+    setPrefs(next);
+    setSavingKey(key);
+    try {
+      await base44.auth.updateMe({ notification_prefs: next });
+      try {
+        const stored = JSON.parse(localStorage.getItem('oi_user') || '{}');
+        localStorage.setItem('oi_user', JSON.stringify({ ...stored, notification_prefs: next }));
+      } catch {}
+      refreshUser?.();
+    } catch {
+      setPrefs(previous);
+      toast.error('Failed to save — please try again');
+    }
+    setSavingKey(null);
+  };
+
+  return (
+    <div>
+      <p style={sectionTitleStyle}>Notification preferences</p>
+      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '-12px 0 24px', fontFamily: PJS }}>
+        In-app notifications (the bell) are always on. These control email.
+      </p>
+
+      {NOTIFICATION_PREF_ROWS.map(row => {
+        const disabled = row.key !== 'in_app_only' && prefs.in_app_only;
+        return (
+          <div key={row.key} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '14px 0', borderTop: '1px solid rgba(10,10,10,0.06)',
+            opacity: disabled ? 0.4 : 1,
+          }}>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>{row.title}</p>
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>{row.description}</p>
+            </div>
+            <Switch
+              checked={!!prefs[row.key]}
+              disabled={disabled || savingKey === row.key}
+              onCheckedChange={checked => handleToggle(row.key, checked)}
+              aria-label={row.title}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -624,6 +692,7 @@ export default function AccountPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
+            aria-label={t.ariaLabel}
             style={{
               padding: '14px 18px', fontSize: 13, fontWeight: tab === t.id ? 700 : 500, fontFamily: PJS,
               cursor: 'pointer', border: 'none', background: 'none',
@@ -639,6 +708,7 @@ export default function AccountPage() {
 
       <div style={{ padding: '32px 32px 48px', maxWidth: 720 }}>
         {tab === 'settings' && <SettingsTab user={user} refreshUser={checkAppState} />}
+        {tab === 'notifications' && <NotificationsTab user={user} refreshUser={checkAppState} />}
         {tab === 'billing' && <BillingTab user={user} />}
         {tab === 'security' && <SecurityTab user={user} />}
 
