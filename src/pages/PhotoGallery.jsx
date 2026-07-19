@@ -368,6 +368,7 @@ export default function PhotoGalleryPage() {
                 <img
                   src={photo.image_url}
                   alt={photo.title || 'Photo'}
+                  loading="lazy"
                   className="w-full h-64 object-cover rounded-lg"
                 />
                 

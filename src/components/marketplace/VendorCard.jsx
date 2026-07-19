@@ -41,6 +41,7 @@ function VendorThumbnail({ vendor, cfg }) {
       <img
         src={`/api/places-photo?ref=${encodeURIComponent(vendor.photoReference)}&maxwidth=120`}
         alt={vendor.name}
+        loading="lazy"
         onError={() => setFailed(true)}
         style={{ width: 56, height: 56, objectFit: 'cover', flexShrink: 0, marginTop: 2 }}
       />

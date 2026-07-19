@@ -283,7 +283,7 @@ function PhotoBlock({ content, theme, typography, editable }) {
   }
   return (
     <figure style={{ margin: 0, maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' }}>
-      <img src={content.url} alt={content.caption || ''} style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
+      <img src={content.url} alt={content.caption || ''} loading="lazy" style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
       {content.caption && <figcaption style={{ fontSize: 13, color: theme.lightText, opacity: 0.6, textAlign: 'center', marginTop: 10 }}>{content.caption}</figcaption>}
     </figure>
   );
@@ -295,7 +295,7 @@ function FullWidthImageBlock({ content, theme, typography, editable }) {
   }
   return (
     <figure style={{ margin: '0 -24px' }}>
-      <img src={content.url} alt={content.caption || ''} style={{ width: '100%', height: 'auto', maxHeight: 560, display: 'block', objectFit: 'cover' }} />
+      <img src={content.url} alt={content.caption || ''} loading="lazy" style={{ width: '100%', height: 'auto', maxHeight: 560, display: 'block', objectFit: 'cover' }} />
       {content.caption && <figcaption style={{ fontSize: 13, textAlign: 'center', marginTop: 10, opacity: 0.6 }}>{content.caption}</figcaption>}
     </figure>
   );
@@ -308,7 +308,7 @@ function ImageWithTextBlock({ content, theme, typography, editable }) {
   const imageFirst = (content.imageSide || 'left') === 'left';
   const image = content.url && (
     <div style={{ flex: 1, minWidth: 240 }}>
-      <img src={content.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', aspectRatio: '4/3' }} />
+      <img src={content.url} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', aspectRatio: '4/3' }} />
     </div>
   );
   const text = (
@@ -338,7 +338,7 @@ function GalleryBlock({ content, theme, typography, editable }) {
     <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${minWidth}px, 1fr))`, gap: 16 }}>
       {photos.map((url, i) => (
         <div key={i} style={{ aspectRatio: '1', overflow: 'hidden' }}>
-          <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img src={url} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         </div>
       ))}
     </div>
@@ -352,7 +352,7 @@ function VideoBlock({ content, theme, typography, editable }) {
   }
   if (video.type === 'file') {
     return (
-      <video controls playsInline style={{ width: '100%', maxWidth: 900, display: 'block', margin: '0 auto' }}>
+      <video controls playsInline preload="metadata" style={{ width: '100%', maxWidth: 900, display: 'block', margin: '0 auto' }}>
         <source src={video.url} />
       </video>
     );
@@ -516,7 +516,7 @@ function PersonCard({ name, role, bio, photoUrl, theme, typography }) {
   return (
     <div style={{ textAlign: 'center', maxWidth: 260 }}>
       {photoUrl ? (
-        <img src={photoUrl} alt={name} style={{ width: 120, height: 120, borderRadius: '50%', objectFit: 'cover', margin: '0 auto 16px' }} />
+        <img src={photoUrl} alt={name} loading="lazy" style={{ width: 120, height: 120, borderRadius: '50%', objectFit: 'cover', margin: '0 auto 16px' }} />
       ) : (
         <div style={{ width: 120, height: 120, borderRadius: '50%', background: `${theme.lightText}0d`, margin: '0 auto 16px' }} />
       )}

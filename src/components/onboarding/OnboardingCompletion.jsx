@@ -21,17 +21,22 @@ export default function OnboardingCompletion({ onDone, data, theme }) {
   const itemBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
 
   useEffect(() => {
+    // AUDIT_2026-07.md N4: none of these were captured/cleared before — if
+    // this component unmounts early (user navigates away mid-animation),
+    // any still-pending timer called setState on an unmounted component.
+    const timers = [];
+
     CHECKLIST_ITEMS.forEach((item, i) => {
-      setTimeout(() => {
+      timers.push(setTimeout(() => {
         setCompletedItems(prev => [...prev, item.id]);
-      }, (i + 1) * 600);
+      }, (i + 1) * 600));
     });
 
     const buttonDelay = CHECKLIST_ITEMS.length * 600 + 300;
-    setTimeout(() => setShowButton(true), buttonDelay);
+    timers.push(setTimeout(() => setShowButton(true), buttonDelay));
 
     // Confetti burst when the checklist finishes
-    setTimeout(() => {
+    timers.push(setTimeout(() => {
       confetti({
         particleCount: 120,
         spread: 80,
@@ -39,7 +44,7 @@ export default function OnboardingCompletion({ onDone, data, theme }) {
         colors: ['#E03553', '#ec4899', '#9333ea', '#DDF762', '#FFFFFF'],
       });
       // Second smaller burst 400ms later
-      setTimeout(() => {
+      timers.push(setTimeout(() => {
         confetti({
           particleCount: 60,
           spread: 100,
@@ -52,8 +57,10 @@ export default function OnboardingCompletion({ onDone, data, theme }) {
           origin: { x: 0.8, y: 0.6 },
           colors: ['#DDF762', '#FFFFFF', '#9333ea'],
         });
-      }, 400);
-    }, buttonDelay - 200);
+      }, 400));
+    }, buttonDelay - 200));
+
+    return () => timers.forEach(clearTimeout);
   }, []);
 
   return (

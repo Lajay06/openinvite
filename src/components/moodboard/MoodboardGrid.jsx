@@ -48,7 +48,7 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <img src={item.image_url} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s', transform: hovered ? 'scale(1.04)' : 'scale(1)' }} />
+        <img src={item.image_url} alt={item.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s', transform: hovered ? 'scale(1.04)' : 'scale(1)' }} />
 
         {/* Hover overlay */}
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', opacity: hovered ? 1 : 0, transition: 'opacity 0.25s', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 12 }}>

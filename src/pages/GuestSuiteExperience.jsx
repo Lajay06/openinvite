@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ExperienceGuideTab from '@/components/studio/guest-suite/ExperienceGuideTab';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 export default function GuestSuiteExperience() {
   const [details, setDetails] = useState(null);
@@ -24,6 +25,7 @@ export default function GuestSuiteExperience() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+      <DashboardPageHeader title="Experience guide" subtitle="Local recommendations for your guests" />
       <ExperienceGuideTab details={details} />
     </div>
   );
