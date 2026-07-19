@@ -293,6 +293,11 @@ export const SCHEMAS = {
     vibes:1, is_religious:1, religious_details:1, is_cultural:1, cultural_details:1,
     season:1, setting:1, _nested: {},
   },
+
+  Notification: {
+    recipient_user_id:1, type:1, title:1, body:1, link:1, read:1, is_test:1,
+    _nested: {},
+  },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
