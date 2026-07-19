@@ -102,7 +102,9 @@ const PRICE_IDS = {
 
 async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
   const priceId = PRICE_IDS[plan];
-  console.log('[Checkout] Button clicked — plan:', plan, '| priceId:', priceId);
+  // AUDIT_2026-07.md N8: this used to also log priceId — visible to any
+  // visitor's devtools, unnecessary noise on a payment page.
+  console.log('[Checkout] Button clicked — plan:', plan);
   setLoadingPlan(plan);
   setCheckoutError(null);
 
@@ -151,10 +153,9 @@ async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
       return;
     }
 
-    console.log('[Checkout] Response data:', data);
-
     if (data.url) {
-      console.log('[Checkout] Redirecting to Stripe:', data.url);
+      // AUDIT_2026-07.md N8: previously logged the full response object
+      // (including this redirect URL) — visible to any visitor's devtools.
       window.location.href = data.url;
     } else {
       const msg = data.error || 'Checkout session could not be created.';

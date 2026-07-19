@@ -165,7 +165,7 @@ export default function GuestMusic() {
                 cursor: 'pointer',
               }}
             >
-              <img src={track.albumArt} style={{ width: 52, height: 52, objectFit: 'cover', flexShrink: 0 }} />
+              <img src={track.albumArt} alt={`${track.title} album art`} loading="lazy" style={{ width: 52, height: 52, objectFit: 'cover', flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', margin: '0 0 4px' }}>{track.title}</p>
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{track.artist}</p>
@@ -180,7 +180,7 @@ export default function GuestMusic() {
           {selectedTrack && (
             <div style={{ marginTop: 24 }}>
               <div style={{ display: 'flex', gap: 12, padding: '14px', background: 'rgba(29,185,84,0.08)', border: '1px solid rgba(29,185,84,0.2)', marginBottom: 20, alignItems: 'center' }}>
-                <img src={selectedTrack.albumArt} style={{ width: 44, height: 44, objectFit: 'cover', flexShrink: 0 }} />
+                <img src={selectedTrack.albumArt} alt={`${selectedTrack.title} album art`} style={{ width: 44, height: 44, objectFit: 'cover', flexShrink: 0 }} />
                 <div>
                   <p style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF', margin: 0 }}>{selectedTrack.title}</p>
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{selectedTrack.artist}</p>

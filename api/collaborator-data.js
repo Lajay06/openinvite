@@ -96,16 +96,23 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: `You do not have permission to view ${page} for this wedding.` });
     }
 
-    const data = {};
-    for (const entity of pageConfig.entities) {
-      if (entity === 'WeddingDetails') continue; // handled below — allowlisted sub-fields only
-      const query = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
-      const rows = excludeTestRecords(unwrapList(await adminFetch(`/apps/${BASE44_APP_ID}/entities/${entity}?q=${query}`)));
-      data[entity] = rows;
-    }
-
+    // AUDIT_2026-07.md S9: these entities are independent of each other and
+    // of the WeddingDetails fetch below — fired in parallel instead of one
+    // await per entity, since each round trip is otherwise fully serial for
+    // no reason (Seating/Registry/Music pages have 3 entities each).
+    const query = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
+    const entitiesToFetch = pageConfig.entities.filter(e => e !== 'WeddingDetails');
     const weddingQuery = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
-    const weddings = excludeTestRecords(unwrapList(await adminFetch(`/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`)));
+
+    const [entityResults, weddings] = await Promise.all([
+      Promise.all(entitiesToFetch.map(entity =>
+        adminFetch(`/apps/${BASE44_APP_ID}/entities/${entity}?q=${query}`).then(unwrapList).then(excludeTestRecords)
+      )),
+      adminFetch(`/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`).then(unwrapList).then(excludeTestRecords),
+    ]);
+
+    const data = {};
+    entitiesToFetch.forEach((entity, i) => { data[entity] = entityResults[i]; });
     const wedding = weddings.length > 0
       ? weddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
       : null;
