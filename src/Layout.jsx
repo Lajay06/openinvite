@@ -14,7 +14,7 @@ import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'react-hot-toast';
-import { useCollaboratorContext, permissionKeyForPageName, hasPagePermission } from '@/lib/collaboratorContext';
+import { CollaboratorProvider, useCollaboratorContext, permissionKeyForPageName, hasPagePermission } from '@/lib/collaboratorContext';
 
 const SIDEBAR_WIDTH = 200;
 const TOP_BAR_H = 48;
@@ -258,6 +258,15 @@ function CollaboratorAccessDenied() {
 }
 
 export default function Layout({ children, currentPageName }) {
+  if (noLayoutPages.includes(currentPageName)) return <>{children}</>;
+  return (
+    <CollaboratorProvider>
+      <LayoutShell currentPageName={currentPageName}>{children}</LayoutShell>
+    </CollaboratorProvider>
+  );
+}
+
+function LayoutShell({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [showCollaborateModal, setShowCollaborateModal] = React.useState(false);
   const [showTipsModal, setShowTipsModal] = React.useState(false);
@@ -341,8 +350,6 @@ export default function Layout({ children, currentPageName }) {
     if (daysLeft === 0) return { expired: true, daysLeft: 0 };
     return { expired: false, daysLeft };
   }, [user]);
-
-  if (noLayoutPages.includes(currentPageName)) return <>{children}</>;
 
   // Resolving whether this is a real, accepted collaboration — brief, but
   // avoids a flash of the wrong sidebar/topbar before the real permission
