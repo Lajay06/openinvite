@@ -36,7 +36,8 @@ const fmtTime = (t) => {
   try { return format(new Date(`2024-01-01T${t}`), 'h:mm a'); } catch { return t; }
 };
 
-export default function ScheduleList({ items, onEdit, onDelete, readOnly = false }) {
+export default function ScheduleList({ items, onEdit, onDelete, readOnly = false, loading = false }) {
+  if (loading) return null;
   if (items.length === 0) {
     return (
       <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>

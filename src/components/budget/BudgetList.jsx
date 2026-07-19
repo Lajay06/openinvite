@@ -34,7 +34,8 @@ const BadgePill = ({ style, children }) => (
   <span style={{ ...pillBase, background: 'transparent', ...style }}>{children}</span>
 );
 
-export default function BudgetList({ items, onEdit, onDelete, readOnly = false }) {
+export default function BudgetList({ items, onEdit, onDelete, readOnly = false, loading = false }) {
+  if (loading) return null;
   if (items.length === 0) {
     return (
       <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>

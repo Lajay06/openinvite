@@ -369,7 +369,7 @@ export default function BudgetPage() {
               </div>
             </div>
 
-            <BudgetList items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} />
+            <BudgetList items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} loading={loading} />
           </TabsContent>
         </Tabs>
       </div>
