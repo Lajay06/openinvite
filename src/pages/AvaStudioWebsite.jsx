@@ -123,7 +123,7 @@ const makeSteps = (data, update, mode) => [
         <MasterRef label="CEREMONY VENUE" value={data?.mainCeremony?.venueName} mode={mode} />
         <MasterRef label="DATE & TIME" value={data?.weddingDate ? `${data.weddingDate}${data?.mainCeremony?.startTime ? ' · ' + data.mainCeremony.startTime : ''}` : null} mode={mode} />
         <MasterRef label="DRESS CODE" value={data?.mainCeremony?.dressCode} mode={mode} />
-        <a href="/EventDetails" style={{ fontSize: 12, color: '#E03553', fontWeight: 600, textDecoration: 'none' }}>Edit in Planner →</a>
+        <a href="/event-details" style={{ fontSize: 12, color: '#E03553', fontWeight: 600, textDecoration: 'none' }}>Edit in Planner →</a>
       </div>
     ),
   },

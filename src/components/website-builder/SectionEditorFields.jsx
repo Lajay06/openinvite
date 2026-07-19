@@ -296,7 +296,7 @@ export function MasterDataReference({ label, value, fieldName }) {
         <span style={{ flex: 1, fontSize: 13, color: value ? '#0A0A0A' : '#AAAAAA', fontWeight: value ? 500 : 400 }}>
           {value || 'Not set in planner'}
         </span>
-        <a href="/EventDetails" style={{ fontSize: 11, color: '#E03553', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>Edit in Planner →</a>
+        <a href="/event-details" style={{ fontSize: 11, color: '#E03553', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>Edit in Planner →</a>
       </div>
     </div>
   );

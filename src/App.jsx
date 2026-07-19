@@ -115,6 +115,29 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
+// AUDIT_2026-07.md S20: pages.config.js's auto-loop below registers every
+// PAGES key at its literal PascalCase URL (e.g. "/EventDetails"), but for
+// the keys here a differently-formatted URL is the one actually linked
+// from the sidebar/collaboratorPageMap.js — confirmed by grepping every
+// createPageUrl()/href/navigate() reference in src/, not guessed from
+// casing alone. Redirect the auto-generated URL to the real one instead
+// of rendering the exact same page at two live URLs.
+const AUTO_ROUTE_REDIRECTS = {
+  CeremonyDetails: '/ceremony-details',
+  Transport: '/transport',
+  Accommodation: '/accommodation',
+  EmergencyContact: '/emergency-contact',
+  Honeymoon: '/honeymoon',
+  EventDetails: '/event-details',
+};
+// Features has its own dedicated route below with no LayoutWrapper — it's
+// a marketing page also reachable while logged in, not a dashboard page
+// (confirmed live: the dashboard-wrapped auto-route never actually won —
+// visiting /Features authenticated renders the plain marketing chrome).
+// Excluded here rather than given a redirect, since both routes already
+// resolve to the exact same path.
+const AUTO_ROUTE_EXCLUDE = new Set(['Features']);
+
 const AuthenticatedApp = () => {
   const location = useLocation();
 
@@ -174,17 +197,24 @@ const AuthenticatedApp = () => {
           </LayoutWrapper>
         } />
         <Route path="/Features" element={<Features />} />
-        {Object.entries(Pages).map(([path, Page]) => (
-          <Route
-            key={path}
-            path={`/${path}`}
-            element={
-              <LayoutWrapper currentPageName={path}>
-                <Page />
-              </LayoutWrapper>
-            }
-          />
-        ))}
+        {Object.entries(Pages).map(([path, Page]) => {
+          if (AUTO_ROUTE_EXCLUDE.has(path)) return null;
+          const redirectTo = AUTO_ROUTE_REDIRECTS[path];
+          if (redirectTo) {
+            return <Route key={path} path={`/${path}`} element={<Navigate to={redirectTo} replace />} />;
+          }
+          return (
+            <Route
+              key={path}
+              path={`/${path}`}
+              element={
+                <LayoutWrapper currentPageName={path}>
+                  <Page />
+                </LayoutWrapper>
+              }
+            />
+          );
+        })}
         <Route path="/About" element={<About />} />
         <Route path="/ava" element={<Ava />} />
         <Route path="/collaborate/guests" element={<CollaboratorGuests />} />
@@ -232,21 +262,36 @@ const AuthenticatedApp = () => {
         <Route path="/mocks/universe/a" element={<LayoutWrapper currentPageName="MockUniverseA"><MockUniverseA /></LayoutWrapper>} />
         <Route path="/mocks/universe/b" element={<LayoutWrapper currentPageName="MockUniverseB"><MockUniverseB /></LayoutWrapper>} />
         <Route path="/mocks/universe/c" element={<LayoutWrapper currentPageName="MockUniverseC"><MockUniverseC /></LayoutWrapper>} />
-        <Route path="/food-beverage" element={<LayoutWrapper currentPageName="FoodBeverage"><FoodBeverage /></LayoutWrapper>} />
+        {/* AUDIT_2026-07.md S20: canonical for these is the PascalCase
+            auto-route (createPageUrl() is what the sidebar actually uses,
+            confirmed via grep — none of these are linked internally at
+            all, so the PAGES-map default wins) — redirect the unused
+            kebab-case duplicate rather than rendering the page twice.
+            /music and /florals need no redirect route of their own:
+            React Router v6 matches paths case-insensitively by default,
+            so they already resolve to the earlier-declared /Music and
+            /Florals auto-routes directly — confirmed live, a separate
+            redirect route for either is unreachable dead code. */}
+        <Route path="/food-beverage" element={<Navigate to="/FoodBeverage" replace />} />
+        <Route path="/photography-details" element={<Navigate to="/PhotographyDetails" replace />} />
+        <Route path="/entertainment-details" element={<Navigate to="/EntertainmentDetails" replace />} />
         {/* Dev-only vendor-template mocks (Beauty/Music/Food & beverage/Photography
             unification) — see import comment above. */}
         <Route path="/mocks/vendor-template/beauty" element={<LayoutWrapper currentPageName="MockVendorTemplateBeauty"><MockVendorTemplateBeauty /></LayoutWrapper>} />
         <Route path="/mocks/vendor-template/food" element={<LayoutWrapper currentPageName="MockVendorTemplateFoodBeverage"><MockVendorTemplateFoodBeverage /></LayoutWrapper>} />
-        <Route path="/photography-details" element={<LayoutWrapper currentPageName="PhotographyDetails"><PhotographyDetails /></LayoutWrapper>} />
-        <Route path="/florals" element={<LayoutWrapper currentPageName="Florals"><Florals /></LayoutWrapper>} />
-        <Route path="/entertainment-details" element={<LayoutWrapper currentPageName="EntertainmentDetails"><EntertainmentDetails /></LayoutWrapper>} />
+        {/* Canonical for these five — confirmed via grep that the sidebar
+            hardcodes exactly this kebab-case URL for each. The PascalCase
+            auto-route (AUTO_ROUTE_REDIRECTS above) redirects here instead
+            of rendering the page a second time. */}
         <Route path="/transport" element={<LayoutWrapper currentPageName="Transport"><Transport /></LayoutWrapper>} />
-        <Route path="/music" element={<LayoutWrapper currentPageName="Music"><Music /></LayoutWrapper>} />
         <Route path="/accommodation" element={<LayoutWrapper currentPageName="Accommodation"><Accommodation /></LayoutWrapper>} />
         <Route path="/ceremony-details" element={<LayoutWrapper currentPageName="CeremonyDetails"><CeremonyDetails /></LayoutWrapper>} />
         <Route path="/honeymoon" element={<LayoutWrapper currentPageName="Honeymoon"><Honeymoon /></LayoutWrapper>} />
         <Route path="/emergency-contact" element={<LayoutWrapper currentPageName="EmergencyContact"><EmergencyContact /></LayoutWrapper>} />
-        <Route path="/LiveStreaming" element={<LayoutWrapper currentPageName="LiveStreaming"><LiveStreaming /></LayoutWrapper>} />
+        {/* LiveStreaming: this used to be a literal duplicate of the
+            auto-loop's own /LiveStreaming route (identical path, not just
+            a casing difference) — removed, the auto-loop already renders
+            it. Not linked anywhere internally either way. */}
         <Route path="/wedding-party" element={<LayoutWrapper currentPageName="WeddingParty"><WeddingParty /></LayoutWrapper>} />
         <Route path="/wedding-favours" element={<LayoutWrapper currentPageName="WeddingFavours"><WeddingFavours /></LayoutWrapper>} />
         <Route path="/event-details" element={<LayoutWrapper currentPageName="EventDetails"><EventDetails /></LayoutWrapper>} />
