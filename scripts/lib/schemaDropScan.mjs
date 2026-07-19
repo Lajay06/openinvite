@@ -138,7 +138,11 @@ export const SCHEMAS = {
 
   Note: {
     title:1, description:1, category:1, priority:1, completed:1, due_date:1,
-    reminder_date:1, is_suggested:1, wedding_timeline:1, _nested: {},
+    reminder_date:1, is_suggested:1, wedding_timeline:1,
+    // Registered 2026-07 (real drop, not a snapshot omission — TodoList.jsx's
+    // kanban board writes AND reads both; see schema-drift-guard triage)
+    status:1, view_type:1,
+    _nested: {},
   },
 
   Task: {
@@ -206,6 +210,11 @@ export const SCHEMAS = {
   Music: {
     song_title:1, artist:1, spotify_track_id:1, album:1, duration:1, preview_url:1,
     image_url:1, category:1, added_by:1, guest_suggestion:1, approved:1, notes:1,
+    // Present in the live schema (confirmed via list_entity_schemas 2026-07)
+    // but missing from this embedded snapshot until now — was producing a
+    // false-positive DROPPED finding for Music.jsx:162. Not a real drift
+    // incident, unlike Note.status/view_type below.
+    source:1, embed_url:1,
     _nested: {},
   },
 

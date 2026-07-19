@@ -23,33 +23,37 @@
  * snapshot goes stale, this guard degrades back to exactly the blind spot
  * it exists to catch — it is a mitigation, not a guarantee.
  *
- * Scoped to WeddingDetails and Guest specifically — the two entities this
- * incident class has actually hit (assetContent/onboardingDraft/
- * onboardingStepIndex on WeddingDetails, this session; Guest.plus_one_rsvp_link_id/
- * RsvpResponse.is_plus_one/Collaborator.status+co previously). `npm run
- * audit:schema` covers every other entity too and should be run
- * periodically by hand — deliberately not wired into this pass/fail gate,
- * since its other findings (as of 2026-07: User.tempUnit,
- * User.deletionRequestedAt, Music.source, Note.status, Note.view_type) are
- * unvetted and out of scope for this guard to silently start failing on.
+ * Scoped to the entities this incident class has actually hit:
+ * WeddingDetails (assetContent/onboardingDraft/onboardingStepIndex),
+ * Guest (plus_one_rsvp_link_id previously), Note (status/view_type — a
+ * real drop, not a snapshot omission, caught in the same 2026-07 triage
+ * that also found Music.source was a false positive in this snapshot, not
+ * real drift — added to the snapshot instead of the guard's fail-on list).
+ * Music is included here too since it's now a live-verified baseline, in
+ * case it ever regresses for real. `npm run audit:schema` covers every
+ * other entity and should be run periodically by hand — deliberately not
+ * wired into this pass/fail gate, since its other findings (as of 2026-07:
+ * User.tempUnit, User.deletionRequestedAt) are still under investigation —
+ * see BASE44_PLATFORM_NOTES.md for why the built-in User entity needs a
+ * different approach before anything is registered for it.
  */
 
 import { runSchemaDropScan } from '../../scripts/lib/schemaDropScan.mjs';
 import { pass, fail } from './_shared.mjs';
 
-const GUARDED_ENTITIES = ['WeddingDetails', 'Guest'];
+const GUARDED_ENTITIES = ['WeddingDetails', 'Guest', 'Note', 'Music'];
 
 export async function runSchemaDriftGuard() {
   const results = [];
 
-  console.log('\n  Schema-drift guard — every WeddingDetails/Guest field the code writes to is registered in the embedded schema snapshot:\n');
+  console.log('\n  Schema-drift guard — every guarded-entity field the code writes to is registered in the embedded schema snapshot:\n');
 
   const { droppedDeduped } = runSchemaDropScan();
   const guardedDrops = droppedDeduped.filter(d => GUARDED_ENTITIES.includes(d.entity));
 
   if (guardedDrops.length === 0) {
     results.push(pass(
-      `No dropped WeddingDetails/Guest fields found (static scan vs. embedded schema snapshot)`,
+      `No dropped fields found for any guarded entity (static scan vs. embedded schema snapshot)`,
       '0 dropped'
     ));
   } else {
