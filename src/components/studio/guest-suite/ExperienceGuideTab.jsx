@@ -423,7 +423,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
                   onMouseLeave={e => { e.currentTarget.style.background = '#FFFFFF'; }}
                 >
                   {place.photo_reference ? (
-                    <img src={photoProxyUrl(place.photo_reference, 60)} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                    <img src={photoProxyUrl(place.photo_reference, 60)} alt={place.name} style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
                   ) : (
                     <div style={{ width: 36, height: 36, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <MapPin size={12} color="rgba(10,10,10,0.2)" />
@@ -505,7 +505,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
             {/* Place header row */}
             <div style={{ display: 'flex', gap: 12, padding: '12px 14px', alignItems: 'center', background: 'rgba(224,53,83,0.04)', borderBottom: '1px solid rgba(224,53,83,0.1)' }}>
               {selectedPlace.photo_reference ? (
-                <img src={photoProxyUrl(selectedPlace.photo_reference, 80)} alt="" style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                <img src={photoProxyUrl(selectedPlace.photo_reference, 80)} alt={selectedPlace.name} style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
               ) : (
                 <div style={{ width: 44, height: 44, background: 'rgba(10,10,10,0.04)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <MapPin size={16} color="rgba(10,10,10,0.2)" />
@@ -994,7 +994,7 @@ function ActivityRow({ activity, onRemove }) {
       {/* Thumbnail */}
       <div style={{ width: 56, height: 56, flexShrink: 0, overflow: 'hidden', borderRadius: 4, background: 'rgba(10,10,10,0.04)' }}>
         {activity.photo_url ? (
-          <img src={activity.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { e.target.style.display = 'none'; }} />
+          <img src={activity.photo_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { e.target.style.display = 'none'; }} />
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <MapPin size={14} color="rgba(10,10,10,0.2)" />

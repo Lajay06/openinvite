@@ -623,7 +623,7 @@ export default function MusicPage() {
                 filteredRequests.map(req => (
                   <div key={req.id} style={{ border: '1px solid rgba(10,10,10,0.08)' }}>
                     <div style={{ display: 'flex', gap: 10, padding: 12 }}>
-                      {req.albumArt && <img src={req.albumArt} style={{ width: 44, height: 44, objectFit: 'cover', flexShrink: 0 }} alt="" />}
+                      {req.albumArt && <img src={req.albumArt} style={{ width: 44, height: 44, objectFit: 'cover', flexShrink: 0 }} alt={`${req.title} album art`} />}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.title}</p>
                         <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0' }}>{req.artist}</p>

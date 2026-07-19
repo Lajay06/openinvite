@@ -299,7 +299,7 @@ function CouplePicksSection({ properties, details }) {
 function FeaturedPropertyCard({ property }) {
   return (
     <div style={{ border: '2px solid #E03553', overflow: 'hidden', marginBottom: 12 }}>
-      {property.photoUrl && <img src={property.photoUrl} alt="" style={{ width: '100%', height: 240, objectFit: 'cover' }} />}
+      {property.photoUrl && <img src={property.photoUrl} alt={property.name} style={{ width: '100%', height: 240, objectFit: 'cover' }} />}
       <div style={{ padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
         </div>
@@ -328,7 +328,7 @@ function FeaturedPropertyCard({ property }) {
 function ManualPropertyGuestCard({ property }) {
   return (
     <div style={{ border: '1px solid #EEEEEE', overflow: 'hidden' }}>
-      {property.photoUrl && <img src={property.photoUrl} alt="" style={{ width: '100%', height: 180, objectFit: 'cover' }} />}
+      {property.photoUrl && <img src={property.photoUrl} alt={property.name} style={{ width: '100%', height: 180, objectFit: 'cover' }} />}
       <div style={{ padding: '16px 20px' }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: 'Plus Jakarta Sans' }}>{property.name}</h3>
         <p style={{ fontSize: 13, color: '#888', margin: '0 0 12px', fontFamily: 'Plus Jakarta Sans' }}>{property.address}</p>
@@ -358,7 +358,7 @@ function AccommodationCard({ hotel, venue }) {
   return (
     <div style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', overflow: 'hidden' }}>
       <div style={{ position: 'relative', height: 200, background: '#F0F0F0' }}>
-        {hotel.image && <img src={hotel.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />}
+        {hotel.image && <img src={hotel.image} alt={hotel.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />}
         <div style={{ position: 'absolute', bottom: 12, left: 12, background: 'rgba(0,0,0,0.65)', padding: '3px 8px' }}>
           <p style={{ fontSize: 10, color: '#FFFFFF', fontWeight: 700, margin: 0, letterSpacing: '0.05em', fontFamily: 'Plus Jakarta Sans' }}>
             {hotel.source === 'booking' ? 'Booking.com' : 'Expedia'}
