@@ -28,7 +28,7 @@ const TOP_BAR_H = 48;
 export const LAYOUT_QUERY_KEY = 'layoutData';
 
 const noLayoutPages = [
-  "Home", "Features", "Pricing", "CouplesStudio", "PlanSelection",
+  "Home", "Features", "Pricing", "PlanSelection",
   "Onboarding", "PaymentWall",
 ];
 
