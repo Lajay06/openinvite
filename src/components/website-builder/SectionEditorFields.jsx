@@ -1,6 +1,7 @@
 import React, { useState, useRef, useContext, createContext } from 'react';
 import { Plus } from 'lucide-react';
 import DatePicker from '@/components/shared/DatePicker';
+import { interactiveDivProps } from '@/lib/a11y';
 
 // ── Media Library Context ─────────────────────────────────────
 export const MediaLibraryContext = createContext(null);
@@ -40,7 +41,7 @@ export function Toggle({ label, value, onChange }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12, marginBottom: 4 }}>
       <span style={{ fontSize: 13, color: '#333' }}>{label}</span>
-      <button onClick={() => onChange(!value)} style={{ width: 38, height: 21, borderRadius: 11, border: 'none', cursor: 'pointer', flexShrink: 0, background: value ? '#E03553' : '#DDD', position: 'relative', transition: 'background 0.2s' }}>
+      <button onClick={() => onChange(!value)} aria-label={label ? `Toggle ${label}` : 'Toggle'} aria-pressed={value} style={{ width: 38, height: 21, borderRadius: 11, border: 'none', cursor: 'pointer', flexShrink: 0, background: value ? '#E03553' : '#DDD', position: 'relative', transition: 'background 0.2s' }}>
         <div style={{ position: 'absolute', width: 17, height: 17, borderRadius: '50%', background: '#fff', top: 2, left: value ? 19 : 2, transition: 'left 0.2s' }} />
       </button>
     </div>
@@ -110,7 +111,7 @@ export function RichTextField({ label, value, onChange, rows = 4, placeholder })
         ))}
         <div style={{ width: 1, background: '#DDD', margin: '0 3px' }} />
         <button onMouseDown={e => { e.preventDefault(); applyFormat('quote'); }}
-          style={{ width: 26, height: 24, border: '1px solid #DDD', background: '#FFF', borderRadius: 3, cursor: 'pointer', fontSize: 15, fontFamily: 'inherit' }} title="Block quote">❝</button>
+          style={{ width: 26, height: 24, border: '1px solid #DDD', background: '#FFF', borderRadius: 3, cursor: 'pointer', fontSize: 15, fontFamily: 'inherit' }} title="Block quote" aria-label="Block quote">❝</button>
         <div style={{ width: 1, background: '#DDD', margin: '0 3px' }} />
         {[{ id: 'uppercase', label: 'AA' }, { id: 'lowercase', label: 'aa' }].map(btn => (
           <button key={btn.id} onMouseDown={e => { e.preventDefault(); applyFormat(btn.id); }}
@@ -159,12 +160,13 @@ export function MediaPicker({ label, value, onChange, aspectRatio = '16/9' }) {
           <img src={value} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt="" />
           <div style={{ position: 'absolute', bottom: 6, right: 6, display: 'flex', gap: 5 }}>
             <button onClick={handleClick} style={{ background: 'rgba(0,0,0,0.75)', color: '#FFF', border: 'none', borderRadius: 4, padding: '5px 10px', fontSize: 11, cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit' }}>Change</button>
-            <button onClick={() => onChange('')} style={{ background: 'rgba(200,0,0,0.8)', color: '#FFF', border: 'none', borderRadius: 4, padding: '5px 8px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>×</button>
+            <button onClick={() => onChange('')} aria-label="Remove image" style={{ background: 'rgba(200,0,0,0.8)', color: '#FFF', border: 'none', borderRadius: 4, padding: '5px 8px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>×</button>
           </div>
         </div>
       ) : (
         <div
           onClick={handleClick}
+          {...interactiveDivProps(handleClick, { label: label || 'Select from library' })}
           style={{ border: '2px dashed #DDDDDD', borderRadius: 8, padding: '28px 16px', textAlign: 'center', cursor: 'pointer', background: '#FAFAFA', transition: 'all 0.2s' }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.background = 'rgba(224,53,83,0.03)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = '#DDDDDD'; e.currentTarget.style.background = '#FAFAFA'; }}
@@ -186,7 +188,7 @@ export function ColorField({ label, value, onChange }) {
       <FLabel>{label}</FLabel>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
         {presets.map(color => (
-          <div key={color} onClick={() => onChange(color)} style={{ width: 22, height: 22, borderRadius: '50%', background: color, border: value === color ? '3px solid #E03553' : '2px solid #EEE', cursor: 'pointer', boxSizing: 'border-box', flexShrink: 0 }} />
+          <div key={color} onClick={() => onChange(color)} {...interactiveDivProps(() => onChange(color), { label: color })} style={{ width: 22, height: 22, borderRadius: '50%', background: color, border: value === color ? '3px solid #E03553' : '2px solid #EEE', cursor: 'pointer', boxSizing: 'border-box', flexShrink: 0 }} />
         ))}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

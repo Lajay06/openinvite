@@ -5,6 +5,7 @@ import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { MediaLibraryContext } from '@/components/website-builder/SectionEditorFields';
 import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import toast from 'react-hot-toast';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const sans = "'Plus Jakarta Sans', sans-serif";
 
@@ -42,7 +43,7 @@ function AvaToggleRow({ label, value, onChange, mode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : '#F5F5F5'}` }}>
       <span style={{ fontSize: 14, color: dark ? 'rgba(255,255,255,0.75)' : '#333' }}>{label}</span>
-      <button onClick={() => onChange(!value)} style={{ width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer', background: value ? '#E03553' : dark ? 'rgba(255,255,255,0.15)' : '#DDD', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
+      <button onClick={() => onChange(!value)} aria-label={label ? `Toggle ${label}` : 'Toggle'} aria-pressed={value} style={{ width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer', background: value ? '#E03553' : dark ? 'rgba(255,255,255,0.15)' : '#DDD', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
         <div style={{ position: 'absolute', width: 16, height: 16, borderRadius: '50%', background: '#fff', top: 3, left: value ? 21 : 3, transition: 'left 0.2s' }} />
       </button>
     </div>
@@ -60,11 +61,11 @@ function AvaMediaPicker({ label, value, onChange, mode }) {
           <img src={value} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt="" />
           <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
             <button onClick={() => ctx?.open(onChange)} style={{ background: 'rgba(0,0,0,0.75)', color: '#FFF', border: 'none', padding: '5px 12px', fontSize: 11, cursor: 'pointer', fontWeight: 600, fontFamily: sans }}>Change</button>
-            <button onClick={() => onChange('')} style={{ background: 'rgba(200,0,0,0.8)', color: '#FFF', border: 'none', padding: '5px 10px', fontSize: 12, cursor: 'pointer', fontFamily: sans }}>×</button>
+            <button onClick={() => onChange('')} aria-label="Remove image" style={{ background: 'rgba(200,0,0,0.8)', color: '#FFF', border: 'none', padding: '5px 10px', fontSize: 12, cursor: 'pointer', fontFamily: sans }}>×</button>
           </div>
         </div>
       ) : (
-        <div onClick={() => ctx?.open(onChange)} style={{ border: `2px dashed ${dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'}`, padding: '32px 16px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s', borderRadius: 4 }}
+        <div onClick={() => ctx?.open(onChange)} {...interactiveDivProps(() => ctx?.open(onChange), { label: label || 'Select a photo' })} style={{ border: `2px dashed ${dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'}`, padding: '32px 16px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s', borderRadius: 4 }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'; }}
         >
@@ -188,7 +189,7 @@ const makeSteps = (data, update, mode) => [
                 style={{ flex: 1, border: 'none', borderBottom: `1px solid ${mode === 'dark' ? 'rgba(255,255,255,0.15)' : '#DDD'}`, background: 'transparent', color: mode === 'dark' ? '#FFF' : '#0A0A0A', padding: '6px 0', fontSize: 13, outline: 'none', fontFamily: sans }} />
               <input value={link.url || ''} onChange={e => { const n = [...links]; n[i] = { ...link, url: e.target.value }; upd('registryLinks', n); }} placeholder="https://..."
                 style={{ flex: 2, border: 'none', borderBottom: `1px solid ${mode === 'dark' ? 'rgba(255,255,255,0.15)' : '#DDD'}`, background: 'transparent', color: mode === 'dark' ? '#FFF' : '#0A0A0A', padding: '6px 0', fontSize: 13, outline: 'none', fontFamily: sans }} />
-              <button onClick={() => upd('registryLinks', links.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: '#E03553', cursor: 'pointer', fontSize: 18, padding: 0 }}>×</button>
+              <button onClick={() => upd('registryLinks', links.filter((_, j) => j !== i))} aria-label="Remove registry link" style={{ background: 'none', border: 'none', color: '#E03553', cursor: 'pointer', fontSize: 18, padding: 0 }}>×</button>
             </div>
           ))}
           <button onClick={() => upd('registryLinks', [...links, { label: '', url: '' }])} style={{ background: 'transparent', border: `1px dashed ${mode === 'dark' ? 'rgba(255,255,255,0.15)' : '#DDD'}`, color: mode === 'dark' ? 'rgba(255,255,255,0.4)' : '#888', padding: '8px 16px', fontSize: 12, cursor: 'pointer', fontFamily: sans, width: '100%', marginTop: 4 }}>
@@ -226,7 +227,7 @@ const makeSteps = (data, update, mode) => [
         <div>
           {items.map((item, i) => (
             <div key={i} style={{ border: `1px solid ${mode === 'dark' ? 'rgba(255,255,255,0.08)' : '#EEEEEE'}`, padding: 16, marginBottom: 10, position: 'relative' }}>
-              <button onClick={() => upd(items.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 8, right: 10, background: 'none', border: 'none', color: mode === 'dark' ? 'rgba(255,255,255,0.3)' : '#CCC', fontSize: 18, cursor: 'pointer' }}>×</button>
+              <button onClick={() => upd(items.filter((_, j) => j !== i))} aria-label="Remove FAQ" style={{ position: 'absolute', top: 8, right: 10, background: 'none', border: 'none', color: mode === 'dark' ? 'rgba(255,255,255,0.3)' : '#CCC', fontSize: 18, cursor: 'pointer' }}>×</button>
               <AvaInput label="QUESTION" value={item.question} onChange={v => { const n = [...items]; n[i] = { ...item, question: v }; upd(n); }} mode={mode} />
               <AvaInput label="ANSWER" value={item.answer} onChange={v => { const n = [...items]; n[i] = { ...item, answer: v }; upd(n); }} rows={2} mode={mode} />
             </div>

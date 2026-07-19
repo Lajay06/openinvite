@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const sans = "'Plus Jakarta Sans', sans-serif";
 
@@ -171,6 +172,7 @@ function ActionCard({ emoji, title, subtitle, cta, ctaColor, border, cardBg, fg,
   return (
     <div
       onClick={onClick}
+      {...interactiveDivProps(onClick, { label: title })}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{

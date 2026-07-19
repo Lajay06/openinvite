@@ -4,12 +4,13 @@ import { base44 } from '@/api/base44Client';
 import { getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { isPending, isAttending, isDeclined } from '@/lib/guestRsvpTally';
 import toast from 'react-hot-toast';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const sans = "'Plus Jakarta Sans', sans-serif";
 
-function ToggleSwitch({ value, onChange }) {
+function ToggleSwitch({ value, onChange, label }) {
   return (
-    <button onClick={() => onChange(!value)} style={{ width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: value ? '#22C55E' : '#DDDDDD', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
+    <button onClick={() => onChange(!value)} aria-label={label ? `Toggle ${label}` : 'Toggle'} aria-pressed={value} style={{ width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: value ? '#22C55E' : '#DDDDDD', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
       <div style={{ position: 'absolute', width: 18, height: 18, borderRadius: '50%', background: '#fff', top: 3, left: value ? 23 : 3, transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
     </button>
   );
@@ -165,7 +166,7 @@ export default function StudioShareTab({ details: propDetails }) {
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Password Protection</p>
                 <p style={{ margin: 0, fontSize: 11, color: '#888' }}>Guests must enter password</p>
               </div>
-              <ToggleSwitch value={!!(details?.websitePassword?.trim())} onChange={v => updateField('websitePassword', v ? 'password' : '')} />
+              <ToggleSwitch value={!!(details?.websitePassword?.trim())} onChange={v => updateField('websitePassword', v ? 'password' : '')} label="Password protection" />
             </div>
             {details?.websitePassword?.trim() && (
               <input value={details?.websitePassword || ''} onChange={e => updateField('websitePassword', e.target.value)} placeholder="Set password..." style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans, marginBottom: 12 }} />
@@ -198,7 +199,7 @@ export default function StudioShareTab({ details: propDetails }) {
                 {filteredGuests.length === 0 ? (
                   <p style={{ padding: '16px 12px', fontSize: 13, color: '#888', margin: 0 }}>No guests yet. <a href="/Guests" style={{ color: '#E03553', fontWeight: 600 }}>Add guests →</a></p>
                 ) : filteredGuests.map(guest => (
-                  <div key={guest.id} onClick={() => toggleGuest(guest.id)} style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', borderBottom: '1px solid #F5F5F5', background: selectedGuests.includes(guest.id) ? 'rgba(224,53,83,0.04)' : '#FFF' }}>
+                  <div key={guest.id} onClick={() => toggleGuest(guest.id)} {...interactiveDivProps(() => toggleGuest(guest.id), { label: guest.name })} style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', borderBottom: '1px solid #F5F5F5', background: selectedGuests.includes(guest.id) ? 'rgba(224,53,83,0.04)' : '#FFF' }}>
                     <div style={{ width: 16, height: 16, border: `1px solid ${selectedGuests.includes(guest.id) ? '#E03553' : '#DDD'}`, background: selectedGuests.includes(guest.id) ? '#E03553' : '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       {selectedGuests.includes(guest.id) && <span style={{ color: '#FFF', fontSize: 10, fontWeight: 700 }}>✓</span>}
                     </div>
@@ -220,7 +221,7 @@ export default function StudioShareTab({ details: propDetails }) {
                 { id: 'rsvp-reminder', label: 'RSVP Reminder', desc: 'Nudge non-responders' },
                 { id: 'update', label: 'Wedding Update', desc: 'Share new information' },
               ].map(type => (
-                <div key={type.id} onClick={() => setEmailType(type.id)} style={{ padding: '12px', border: `1px solid ${emailType === type.id ? '#0A0A0A' : '#EEEEEE'}`, background: emailType === type.id ? '#0A0A0A' : '#FFF', cursor: 'pointer' }}>
+                <div key={type.id} onClick={() => setEmailType(type.id)} {...interactiveDivProps(() => setEmailType(type.id), { label: type.label })} style={{ padding: '12px', border: `1px solid ${emailType === type.id ? '#0A0A0A' : '#EEEEEE'}`, background: emailType === type.id ? '#0A0A0A' : '#FFF', cursor: 'pointer' }}>
                   <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: emailType === type.id ? '#FFF' : '#0A0A0A' }}>{type.label}</p>
                   <p style={{ margin: 0, fontSize: 11, color: emailType === type.id ? 'rgba(255,255,255,0.6)' : '#888' }}>{type.desc}</p>
                 </div>
@@ -263,14 +264,14 @@ export default function StudioShareTab({ details: propDetails }) {
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Password Protection</p>
                 <p style={{ margin: 0, fontSize: 11, color: '#888' }}>Guests must enter a password</p>
               </div>
-              <ToggleSwitch value={!!(details?.websitePassword?.trim())} onChange={v => updateField('websitePassword', v ? 'password' : '')} />
+              <ToggleSwitch value={!!(details?.websitePassword?.trim())} onChange={v => updateField('websitePassword', v ? 'password' : '')} label="Password protection" />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #F5F5F5', paddingTop: 16 }}>
               <div>
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Hide from Search</p>
                 <p style={{ margin: 0, fontSize: 11, color: '#888' }}>Don't index in Google</p>
               </div>
-              <ToggleSwitch value={details?.hideFromSearch || false} onChange={v => updateField('hideFromSearch', v)} />
+              <ToggleSwitch value={details?.hideFromSearch || false} onChange={v => updateField('hideFromSearch', v)} label="Hide from search" />
             </div>
           </div>
         </div>

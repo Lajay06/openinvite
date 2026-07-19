@@ -6,6 +6,7 @@ import { ASSET_PREVIEW_MAP } from '@/components/website-builder/AssetPreviews';
 import { MediaLibraryContext } from '@/components/website-builder/SectionEditorFields';
 import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import toast from 'react-hot-toast';
+import { interactiveDivProps } from '@/lib/a11y';
 
 const sans = "'Plus Jakarta Sans', sans-serif";
 
@@ -42,11 +43,11 @@ function AvaMediaPicker({ label, value, onChange, mode }) {
           <img src={value} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt="" />
           <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
             <button onClick={() => ctx?.open(onChange)} style={{ background: 'rgba(0,0,0,0.75)', color: '#FFF', border: 'none', padding: '5px 12px', fontSize: 11, cursor: 'pointer', fontWeight: 600, fontFamily: sans }}>Change</button>
-            <button onClick={() => onChange('')} style={{ background: 'rgba(200,0,0,0.8)', color: '#FFF', border: 'none', padding: '5px 10px', fontSize: 12, cursor: 'pointer', fontFamily: sans }}>×</button>
+            <button onClick={() => onChange('')} aria-label="Remove image" style={{ background: 'rgba(200,0,0,0.8)', color: '#FFF', border: 'none', padding: '5px 10px', fontSize: 12, cursor: 'pointer', fontFamily: sans }}>×</button>
           </div>
         </div>
       ) : (
-        <div onClick={() => ctx?.open(onChange)} style={{ border: `2px dashed ${dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'}`, padding: '28px 16px', textAlign: 'center', cursor: 'pointer', borderRadius: 4 }}
+        <div onClick={() => ctx?.open(onChange)} {...interactiveDivProps(() => ctx?.open(onChange), { label: label || 'Select a photo' })} style={{ border: `2px dashed ${dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'}`, padding: '28px 16px', textAlign: 'center', cursor: 'pointer', borderRadius: 4 }}
           onMouseEnter={e => e.currentTarget.style.borderColor = '#E03553'}
           onMouseLeave={e => e.currentTarget.style.borderColor = dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'}
         >

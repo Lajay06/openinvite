@@ -4,6 +4,7 @@ import { Globe, Sparkles, Eye, ChevronRight, Camera, Map } from 'lucide-react';
 import { getMyWeddingDetails, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import { interactiveDivProps } from '@/lib/a11y';
 
 export default function StudioHub() {
   const navigate = useNavigate();
@@ -96,6 +97,7 @@ export default function StudioHub() {
                 <div
                   key={i}
                   onClick={card.action}
+                  {...interactiveDivProps(card.action, { label: card.title })}
                   style={{
                     height: 100, display: 'flex', alignItems: 'center',
                     padding: '0 24px', border: '1px solid #EEEEEE', background: '#FFFFFF',

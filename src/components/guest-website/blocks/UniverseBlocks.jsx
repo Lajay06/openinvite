@@ -40,6 +40,8 @@ import { Plus, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroVideo';
+import { blockLabel } from './blockTypes';
+import { interactiveDivProps } from '@/lib/a11y';
 
 import HairlineRule from '../layouts/HairlineRule';
 import ZelligeDivider from '../layouts/ZelligeDivider';
@@ -604,6 +606,7 @@ function InsertPoint({ index, onRequestInsert, theme }) {
         onClick={() => onRequestInsert(index)}
         style={{ position: 'relative', zIndex: 1, width: 26, height: 26, borderRadius: '50%', border: 'none', background: theme.accent, color: theme.darkBg, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }}
         title="Add a section"
+        aria-label="Add a section"
       >
         <Plus size={15} />
       </button>
@@ -623,6 +626,7 @@ function BlockCanvasWrapper({ block, index, count, isSelected, onSelectBlock, on
   return (
     <div
       onClick={() => onSelectBlock(block.id)}
+      {...interactiveDivProps(() => onSelectBlock(block.id), { label: `Edit ${blockLabel(block.type)}` })}
       style={{
         position: 'relative', cursor: 'pointer',
         outline: isSelected ? `2px solid ${theme.accent}` : `1px dashed ${theme.lightText}30`,
@@ -635,9 +639,9 @@ function BlockCanvasWrapper({ block, index, count, isSelected, onSelectBlock, on
           onClick={e => e.stopPropagation()}
           style={{ position: 'absolute', top: 8, right: 8, zIndex: 5, display: 'flex', gap: 2, background: theme.darkBg, borderRadius: 4, padding: 3 }}
         >
-          <button onClick={() => onMoveBlock(block.id, 'up')} disabled={index === 0} title="Move up" style={{ background: 'none', border: 'none', cursor: index === 0 ? 'default' : 'pointer', color: index === 0 ? `${theme.darkText}40` : theme.darkText, padding: 4, display: 'flex' }}><ChevronUp size={13} /></button>
-          <button onClick={() => onMoveBlock(block.id, 'down')} disabled={index === count - 1} title="Move down" style={{ background: 'none', border: 'none', cursor: index === count - 1 ? 'default' : 'pointer', color: index === count - 1 ? `${theme.darkText}40` : theme.darkText, padding: 4, display: 'flex' }}><ChevronDown size={13} /></button>
-          <button onClick={() => onDeleteBlock(block.id)} title="Delete" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 4, display: 'flex' }}><Trash2 size={13} /></button>
+          <button onClick={() => onMoveBlock(block.id, 'up')} disabled={index === 0} title="Move up" aria-label="Move up" style={{ background: 'none', border: 'none', cursor: index === 0 ? 'default' : 'pointer', color: index === 0 ? `${theme.darkText}40` : theme.darkText, padding: 4, display: 'flex' }}><ChevronUp size={13} /></button>
+          <button onClick={() => onMoveBlock(block.id, 'down')} disabled={index === count - 1} title="Move down" aria-label="Move down" style={{ background: 'none', border: 'none', cursor: index === count - 1 ? 'default' : 'pointer', color: index === count - 1 ? `${theme.darkText}40` : theme.darkText, padding: 4, display: 'flex' }}><ChevronDown size={13} /></button>
+          <button onClick={() => onDeleteBlock(block.id)} title="Delete" aria-label="Delete" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 4, display: 'flex' }}><Trash2 size={13} /></button>
         </div>
       )}
     </div>

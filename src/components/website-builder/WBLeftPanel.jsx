@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, CalendarCheck, Send, UtensilsCrossed, LayoutGrid, Clapperboard, Instagram, Signpost, Tag, Heart, Sparkles, BarChart2 } from 'lucide-react';
 import { WEDDING_PAGES, WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS } from '@/lib/websiteThemes';
 import { resolveColors } from '@/lib/universeStyling';
+import { interactiveDivProps } from '@/lib/a11y';
 import NewPageModal from './NewPageModal';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -29,10 +30,12 @@ function PageIcon({ name, active }) {
   return <Icon size={13} strokeWidth={1.5} color={active ? '#FFFFFF' : 'rgba(255,255,255,0.4)'} fill="none" />;
 }
 
-function Toggle({ enabled, onToggle }) {
+function Toggle({ enabled, onToggle, label }) {
   return (
     <button
       onClick={e => { e.stopPropagation(); onToggle(); }}
+      aria-label={label ? `Toggle ${label}` : 'Toggle'}
+      aria-pressed={enabled}
       style={{
         width: 28, height: 16, borderRadius: 999, border: 'none', cursor: 'pointer',
         background: enabled ? '#E03553' : '#2C2C2E',
@@ -57,6 +60,7 @@ function SLabel({ children, onClick, isOpen }) {
   return (
     <p
       onClick={onClick}
+      {...(collapsible ? { ...interactiveDivProps(onClick, { label: children }), 'aria-expanded': isOpen } : {})}
       style={{
         fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
         color: 'rgba(255,255,255,0.4)', margin: 0,
@@ -142,6 +146,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
             <div
               key={slug}
               onClick={() => { if (clickable) onPageChange(slug); }}
+              {...interactiveDivProps(clickable ? () => onPageChange(slug) : null, { label })}
               onMouseEnter={() => { if (!active && clickable) setHoveredPage(slug); }}
               onMouseLeave={() => setHoveredPage(null)}
               style={{
@@ -164,7 +169,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
               }}>{label}</span>
 
               {slug !== 'home' ? (
-                <Toggle enabled={enabled} onToggle={() => toggle(slug)} />
+                <Toggle enabled={enabled} onToggle={() => toggle(slug)} label={label} />
               ) : (
                 <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', fontWeight: 600, fontFamily: PJS }}>Req</span>
               )}
@@ -185,6 +190,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
               <div
                 key={page.slug}
                 onClick={() => onPageChange(page.slug)}
+                {...interactiveDivProps(() => onPageChange(page.slug), { label: page.name })}
                 onMouseEnter={() => { if (!active) setHoveredPage(page.slug); }}
                 onMouseLeave={() => setHoveredPage(null)}
                 style={{
@@ -205,6 +211,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
                 }}>{page.name}</span>
                 <button
                   onClick={e => handleDeleteCustomPage(e, page.slug)}
+                  aria-label={`Delete ${page.name}`}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 14, padding: '0 2px', lineHeight: 1, flexShrink: 0 }}
                   title="Delete page"
                 >×</button>
@@ -218,6 +225,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
       <Divider />
       <div
         onClick={() => setShowNewPage(true)}
+        {...interactiveDivProps(() => setShowNewPage(true), { label: 'New page' })}
         onMouseEnter={() => setHoverNewPage(true)}
         onMouseLeave={() => setHoverNewPage(false)}
         style={{
@@ -246,6 +254,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, fontFamily: PJS }}>{themeLabel}</span>
           <span
             onClick={() => navigate('/studio/universe')}
+            {...interactiveDivProps(() => navigate('/studio/universe'), { label: 'Change theme' })}
             onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
             onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
             style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', cursor: 'pointer', marginLeft: 'auto', fontFamily: PJS, transition: 'color 0.15s', flexShrink: 0 }}
@@ -258,6 +267,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, fontFamily: PJS }}>{typo.name}</span>
           <span
             onClick={() => navigate('/studio/universe')}
+            {...interactiveDivProps(() => navigate('/studio/universe'), { label: 'Change theme' })}
             onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
             onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
             style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', cursor: 'pointer', marginLeft: 'auto', fontFamily: PJS, transition: 'color 0.15s', flexShrink: 0 }}
@@ -277,6 +287,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
           <div
             key={id}
             onClick={() => onAssetSelect(id)}
+            {...interactiveDivProps(() => onAssetSelect(id), { label: name })}
             onMouseEnter={() => { if (!active) setHoveredAsset(id); }}
             onMouseLeave={() => setHoveredAsset(null)}
             style={{
