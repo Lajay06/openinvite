@@ -20,7 +20,7 @@
  *                            Falls back to deriving from request headers.
  */
 
-import { parseCookies, serializeCookie, expireCookie } from './_lib/security.js';
+import { parseCookies, serializeCookie, expireCookie, checkRateLimit, getClientIp } from './_lib/security.js';
 
 const STATE_COOKIE = 'spotify_oauth_state';
 const PENDING_COOKIE = 'spotify_pending_connection';
@@ -33,6 +33,18 @@ export default async function handler(req, res) {
   const host  = req.headers['x-forwarded-host'] || req.headers.host || 'openinvite.com.au';
   const APP_URL = process.env.APP_URL || `${proto}://${host}`;
   const REDIRECT_URI = 'https://www.openinvite.com.au/api/spotify-callback';
+
+  // ── Rate limiting: 10 requests/min per IP ──────────────────────────────
+  // No auth check at all on this endpoint (only CSRF state validation
+  // below) — each hit triggers 2 external calls to Spotify (token exchange
+  // + profile fetch), so it's worth bounding even though state validation
+  // already blocks the classic OAuth login-CSRF abuse.
+  const ip = getClientIp(req);
+  const { limited } = checkRateLimit(ip, 'spotify-callback', 10);
+  if (limited) {
+    console.warn('[spotify-callback] Rate limited:', ip);
+    return res.redirect(`${APP_URL}/Music?spotify_error=rate_limited`);
+  }
 
   // The state cookie is single-use regardless of outcome — clear it now.
   res.setHeader('Set-Cookie', expireCookie(STATE_COOKIE));

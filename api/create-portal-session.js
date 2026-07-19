@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { applyCors } from './_lib/security.js';
+import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -12,6 +12,16 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // ── Rate limiting: 10 requests/min per IP ──────────────────────────────
+  const ip = getClientIp(req);
+  const { limited, remaining } = checkRateLimit(ip, 'portal-session', 10);
+  res.setHeader('X-RateLimit-Limit', '10');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    console.warn('[portal] Rate limited:', ip);
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
   }
 
   // ── Auth: customerId is derived from the verified caller, never trusted

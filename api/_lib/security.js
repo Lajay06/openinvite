@@ -97,6 +97,11 @@ function gcRateLimitStore() {
  *   'places-photo'    — 60 req/min  (places-photo.js — several photos per page load)
  *   'spotify-search'  — 20 req/min  (spotify-search.js — search-as-you-type)
  *   'spotify-refresh' — 10 req/min  (spotify-refresh.js — infrequent, security-sensitive)
+ *   'spotify-callback'      — 10 req/min  (spotify-callback.js — OAuth callback, 2 external calls per hit)
+ *   'spotify-session-fetch' — 30 req/min  (spotify-session-fetch.js — cheap cookie read, generous)
+ *   'on-signup'       — 5 req/min   (on-signup.js — sends an email per call, not idempotent)
+ *   'admin-stats'     — 20 req/min  (admin/stats.js — up to 200 Stripe API reads per call)
+ *   'portal-session'  — 10 req/min  (create-portal-session.js — live Stripe API call per hit)
  *
  * @param {string} ip
  * @param {string} bucket

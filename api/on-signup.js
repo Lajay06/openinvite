@@ -55,6 +55,7 @@
 
 import { Resend } from 'resend';
 import { onboardingDay1Email } from './emails/onboarding-day1.js';
+import { checkRateLimit, getClientIp } from './_lib/security.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -83,6 +84,19 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // ── Rate limiting: 5 requests/min per IP ───────────────────────────────
+  // Not idempotent (always sends the email when called) and hits Base44 +
+  // Resend on every request, so a valid-but-repeated call still costs real
+  // API calls and mail credits.
+  const ip = getClientIp(req);
+  const { limited, remaining } = checkRateLimit(ip, 'on-signup', 5);
+  res.setHeader('X-RateLimit-Limit', '5');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    console.warn('[on-signup] Rate limited:', ip);
+    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
   }
 
   const { email, name, token } = req.body || {};
