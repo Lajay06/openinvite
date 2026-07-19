@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPin, Utensils, Heart, Clock, DollarSign, Users, Sparkles, Phone, AlertCircle } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { color } from '@/styles/tokens';
 
 export default function LocalTips({ weddingCity }) {
   const tipsCategories = [
@@ -98,7 +99,7 @@ export default function LocalTips({ weddingCity }) {
     <div className="space-y-6">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900">Local Tips & Information</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm mt-1" style={{ color: color.textMuted }}>
           Everything you need to know to make the most of your visit to {weddingCity}
         </p>
       </div>
@@ -121,7 +122,7 @@ export default function LocalTips({ weddingCity }) {
                 <ul className="space-y-2 pl-7">
                   {category.tips.map((tip, tipIndex) => (
                     <li key={tipIndex} className="text-sm text-gray-600 flex items-start gap-2">
-                      <span className="text-gray-400 mt-0.5 flex-shrink-0">•</span>
+                      <span className="mt-0.5 flex-shrink-0" style={{ color: color.textDisabled }}>•</span>
                       <span>{tip}</span>
                     </li>
                   ))}
@@ -140,7 +141,7 @@ export default function LocalTips({ weddingCity }) {
             <p className="text-xs text-gray-600 mb-2">
               Don't hesitate to reach out if you need any assistance during your visit. We want to make sure you have an amazing time!
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs" style={{ color: color.textMuted }}>
               You can also ask hotel staff or locals - people in {weddingCity} are generally friendly and happy to help visitors.
             </p>
           </div>

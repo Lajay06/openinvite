@@ -9,7 +9,7 @@ export const useMediaLibrary = () => useContext(MediaLibraryContext);
 
 // ── Shared Primitives ──────────────────────────────────────────
 export function FLabel({ children, style = {} }) {
-  return <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#999', display: 'block', marginBottom: 5, ...style }}>{children}</label>;
+  return <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 5, ...style }}>{children}</label>;
 }
 
 export function UInput({ label, value, onChange, type = 'text', placeholder = '' }) {
@@ -31,7 +31,7 @@ export function Divider() {
 
 export function AddBtn({ children, onClick }) {
   return (
-    <button onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#888', background: 'none', border: '1px dashed #DDD', padding: '7px 12px', cursor: 'pointer', fontWeight: 600, borderRadius: 4, width: '100%', justifyContent: 'center', fontFamily: 'inherit' }}>
+    <button onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'rgba(10,10,10,0.6)', background: 'none', border: '1px dashed #DDD', padding: '7px 12px', cursor: 'pointer', fontWeight: 600, borderRadius: 4, width: '100%', justifyContent: 'center', fontFamily: 'inherit' }}>
       <Plus size={12} /> {children}
     </button>
   );
@@ -137,7 +137,7 @@ export function RichTextField({ label, value, onChange, rows = 4, placeholder })
           borderColor: focused ? '#0A0A0A' : '#DDD', transition: 'border-color 0.15s',
         }}
       />
-      <p style={{ fontSize: 11, color: '#AAAAAA', margin: '3px 0 0' }}>Select text then click B, I, H1, H2, or ❝</p>
+      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '3px 0 0' }}>Select text then click B, I, H1, H2, or ❝</p>
     </div>
   );
 }
@@ -173,7 +173,7 @@ export function MediaPicker({ label, value, onChange, aspectRatio = '16/9' }) {
         >
           <div style={{ fontSize: 26, marginBottom: 8 }}>🖼</div>
           <p style={{ fontSize: 12, fontWeight: 600, color: '#444', margin: '0 0 3px' }}>Click to select from library</p>
-          <p style={{ fontSize: 11, color: '#AAA', margin: 0 }}>or drag and drop a file</p>
+          <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0 }}>or drag and drop a file</p>
         </div>
       )}
     </div>
@@ -292,10 +292,10 @@ export function DatePickerField({ label, value, onChange }) {
 export function MasterDataReference({ label, value, fieldName }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <p style={{ fontSize: 11, fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{label}</p>
+      <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{label}</p>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: '#F8F8F8', borderRadius: 6, border: '1px solid #EEEEEE' }}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        <span style={{ flex: 1, fontSize: 13, color: value ? '#0A0A0A' : '#AAAAAA', fontWeight: value ? 500 : 400 }}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(10,10,10,0.45)" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span style={{ flex: 1, fontSize: 13, color: value ? '#0A0A0A' : 'rgba(10,10,10,0.58)', fontWeight: value ? 500 : 400 }}>
           {value || 'Not set in planner'}
         </span>
         <a href="/event-details" style={{ fontSize: 11, color: '#E03553', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>Edit in Planner →</a>

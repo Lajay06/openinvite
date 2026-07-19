@@ -39,7 +39,7 @@ export default function StudioHub() {
       title: 'Guest Suite',
       subtitle: 'Build your wedding website, invitation assets, and guest experience.',
       badge: wedding?.websiteEnabled ? 'LIVE' : 'DRAFT',
-      badgeColor: wedding?.websiteEnabled ? '#22C55E' : '#888888',
+      badgeColor: wedding?.websiteEnabled ? '#22C55E' : 'rgba(10,10,10,0.6)',
       badgeBg: wedding?.websiteEnabled ? '#F0FDF4' : '#F5F5F5',
       action: () => navigate('/studio/guest-suite'),
     },
@@ -75,7 +75,7 @@ export default function StudioHub() {
       }}>
         <button
           onClick={() => navigate('/Dashboard')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888888', fontSize: 13, padding: 0 }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', fontSize: 13, padding: 0 }}
         >
           ← Dashboard
         </button>
@@ -111,7 +111,7 @@ export default function StudioHub() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 3px' }}>{card.title}</p>
-                    <p style={{ fontSize: 13, color: '#888888', margin: 0 }}>{card.subtitle}</p>
+                    <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0 }}>{card.subtitle}</p>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                     {card.badge && (
@@ -122,7 +122,7 @@ export default function StudioHub() {
                       }}>{card.badge}</span>
                     )}
                     {card.rightLabel && (
-                      <span style={{ fontSize: 11, color: '#AAAAAA', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {card.rightLabel}
                       </span>
                     )}
@@ -142,7 +142,7 @@ export default function StudioHub() {
             ].map((stat, i) => (
               <div key={i} style={{ padding: '24px 16px', textAlign: 'center', borderRight: '1px solid #EEEEEE', borderBottom: '1px solid #EEEEEE' }}>
                 <p style={{ fontSize: 30, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', margin: '0 0 4px' }}>{stat.value}</p>
-                <p style={{ fontSize: 10, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.15em', margin: 0 }}>{stat.label}</p>
+                <p style={{ fontSize: 10, color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: 0 }}>{stat.label}</p>
               </div>
             ))}
           </div>

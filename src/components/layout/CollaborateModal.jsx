@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { Badge } from "@/components/ui/badge"; // Added this import
 import { X, Users, Send, Edit, Trash2, Eye, PenSquare, RotateCw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { color } from '@/styles/tokens';
 
 const Collaborator = base44.entities.Collaborator;
 
@@ -247,7 +248,7 @@ export default function CollaborateModal({ onClose }) {
                             <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 font-normal">Pending</Badge>
                           )}
                         </div>
-                        <p className="text-sm text-gray-500">{collab.email}</p>
+                        <p className="text-sm" style={{ color: color.textMuted }}>{collab.email}</p>
                       </div>
                       <div className="flex gap-1">
                         {collab.status !== 'accepted' && (
@@ -280,8 +281,8 @@ export default function CollaborateModal({ onClose }) {
               </div>
             ) : (
               <div className="text-center py-10 border-2 border-dashed rounded-xl">
-                <Users className="mx-auto w-10 h-10 text-gray-400 mb-2" />
-                <p className="text-gray-500">You haven't invited any collaborators yet.</p>
+                <Users className="mx-auto w-10 h-10 mb-2" style={{ color: color.textDisabled }} />
+                <p style={{ color: color.textMuted }}>You haven't invited any collaborators yet.</p>
               </div>
             )}
           </div>

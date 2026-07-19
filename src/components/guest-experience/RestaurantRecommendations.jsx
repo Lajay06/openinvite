@@ -5,6 +5,7 @@ import { Utensils, Star, MapPin, ArrowRight, Loader2, Heart, RefreshCw } from 'l
 import { InvokeLLM } from '@/integrations/Core';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
+import { color } from '@/styles/tokens';
 
 export default function RestaurantRecommendations({ weddingLocation, weddingCity }) {
   const [aiRestaurants, setAiRestaurants] = useState([]);
@@ -111,7 +112,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />
                 <span className="font-medium">{restaurant.rating || 'N/A'}</span>
                 {restaurant.reviewCount && (
-                  <span className="text-gray-400">({restaurant.reviewCount})</span>
+                  <span style={{ color: color.textMuted }}>({restaurant.reviewCount})</span>
                 )}
               </div>
               {restaurant.distance && (
@@ -186,7 +187,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Restaurant Recommendations</h2>
-          <p className="text-sm text-gray-500 mt-1">Best dining experiences in {weddingCity}</p>
+          <p className="text-sm mt-1" style={{ color: color.textMuted }}>Best dining experiences in {weddingCity}</p>
         </div>
         {aiRestaurants.length === 0 && hasLoaded && (
           <Button
@@ -223,9 +224,9 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
 
       {aiRestaurants.length === 0 && hasLoaded && customRestaurants.length === 0 && (
         <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-          <Utensils className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <Utensils className="w-12 h-12 mx-auto mb-3" style={{ color: color.textDisabled }} />
           <p className="text-gray-600 mb-2">Unable to load restaurant recommendations</p>
-          <p className="text-sm text-gray-500 mb-4">Network error occurred. Please try again.</p>
+          <p className="text-sm mb-4" style={{ color: color.textMuted }}>Network error occurred. Please try again.</p>
           <Button onClick={loadAIRestaurants} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Try Again

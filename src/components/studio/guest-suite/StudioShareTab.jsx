@@ -110,7 +110,7 @@ export default function StudioShareTab({ details: propDetails }) {
     toast.success('URL saved!');
   };
 
-  if (!details) return <div style={{ padding: 40, textAlign: 'center', color: '#888', fontFamily: sans }}>Loading…</div>;
+  if (!details) return <div style={{ padding: 40, textAlign: 'center', color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Loading…</div>;
 
   const siteUrl = `${window.location.origin}/w/${details.slug || 'your-wedding'}`;
 
@@ -121,7 +121,7 @@ export default function StudioShareTab({ details: propDetails }) {
         <div style={{ width: 10, height: 10, borderRadius: '50%', background: details?.websiteEnabled ? '#22C55E' : '#DDDDDD', flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 180 }}>
           <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#0A0A0A' }}>{details?.websiteEnabled ? 'Your website is live' : 'Your website is not published yet'}</p>
-          <p style={{ margin: 0, fontSize: 13, color: '#888', fontFamily: 'monospace' }}>{siteUrl}</p>
+          <p style={{ margin: 0, fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: 'monospace' }}>{siteUrl}</p>
         </div>
         <button onClick={togglePublish} style={{ padding: '10px 24px', background: details?.websiteEnabled ? 'transparent' : 'linear-gradient(135deg, #E03553, #803D81)', color: details?.websiteEnabled ? '#E03553' : '#FFF', border: details?.websiteEnabled ? '1px solid #E03553' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: sans }}>
           {details?.websiteEnabled ? 'Unpublish' : 'Publish Website'}
@@ -155,16 +155,16 @@ export default function StudioShareTab({ details: propDetails }) {
             </div>
           </div>
           <div style={{ border: '1px solid #EEEEEE', padding: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#888', margin: '0 0 6px' }}>Your URL</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', margin: '0 0 6px' }}>Your URL</p>
             <div style={{ display: 'flex', border: '1px solid #DDD', marginBottom: 12 }}>
-              <span style={{ padding: '8px 10px', background: '#F8F8F8', fontSize: 11, color: '#888', flexShrink: 0, fontFamily: 'monospace' }}>openinvite.com.au/w/</span>
+              <span style={{ padding: '8px 10px', background: '#F8F8F8', fontSize: 11, color: 'rgba(10,10,10,0.6)', flexShrink: 0, fontFamily: 'monospace' }}>openinvite.com.au/w/</span>
               <input value={slugInput} onChange={e => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))} style={{ flex: 1, border: 'none', padding: '8px 10px', fontSize: 12, outline: 'none', fontFamily: 'monospace', minWidth: 0 }} />
               <button onClick={() => saveSlug(slugInput)} style={{ padding: '8px 12px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: sans }}>Save</button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingTop: 8, borderTop: '1px solid #F5F5F5' }}>
               <div>
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Password Protection</p>
-                <p style={{ margin: 0, fontSize: 11, color: '#888' }}>Guests must enter password</p>
+                <p style={{ margin: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>Guests must enter password</p>
               </div>
               <ToggleSwitch value={!!(details?.websitePassword?.trim())} onChange={v => updateField('websitePassword', v ? 'password' : '')} label="Password protection" />
             </div>
@@ -178,7 +178,7 @@ export default function StudioShareTab({ details: propDetails }) {
         <div style={{ flex: 1, minWidth: 0, marginRight: 24 }}>
           <div style={{ border: '1px solid #EEEEEE', padding: 24 }}>
             <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px' }}>Email Your Guests</p>
-            <p style={{ fontSize: 13, color: '#888', margin: '0 0 20px' }}>Send your wedding website directly to your guest list.</p>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>Send your wedding website directly to your guest list.</p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
               {[
                 { label: 'All Guests', count: guests.length, action: () => setSelectedGuests(guests.map(g => g.id)) },
@@ -192,12 +192,12 @@ export default function StudioShareTab({ details: propDetails }) {
             <div style={{ border: '1px solid #EEEEEE', marginBottom: 16 }}>
               <div style={{ padding: '8px 12px', borderBottom: '1px solid #EEEEEE', display: 'flex', gap: 8, alignItems: 'center' }}>
                 <input placeholder="Search guests..." value={guestSearch} onChange={e => setGuestSearch(e.target.value)} style={{ flex: 1, border: 'none', fontSize: 13, outline: 'none', fontFamily: sans }} />
-                <span style={{ fontSize: 12, color: '#888', flexShrink: 0 }}>{selectedGuests.length} selected</span>
-                {selectedGuests.length > 0 && <button onClick={() => setSelectedGuests([])} style={{ fontSize: 11, color: '#888', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sans }}>Clear</button>}
+                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', flexShrink: 0 }}>{selectedGuests.length} selected</span>
+                {selectedGuests.length > 0 && <button onClick={() => setSelectedGuests([])} style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: sans }}>Clear</button>}
               </div>
               <div style={{ maxHeight: 200, overflowY: 'auto' }}>
                 {filteredGuests.length === 0 ? (
-                  <p style={{ padding: '16px 12px', fontSize: 13, color: '#888', margin: 0 }}>No guests yet. <a href="/Guests" style={{ color: '#E03553', fontWeight: 600 }}>Add guests →</a></p>
+                  <p style={{ padding: '16px 12px', fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0 }}>No guests yet. <a href="/Guests" style={{ color: '#E03553', fontWeight: 600 }}>Add guests →</a></p>
                 ) : filteredGuests.map(guest => (
                   <div key={guest.id} onClick={() => toggleGuest(guest.id)} {...interactiveDivProps(() => toggleGuest(guest.id), { label: guest.name })} style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', borderBottom: '1px solid #F5F5F5', background: selectedGuests.includes(guest.id) ? 'rgba(224,53,83,0.04)' : '#FFF' }}>
                     <div style={{ width: 16, height: 16, border: `1px solid ${selectedGuests.includes(guest.id) ? '#E03553' : '#DDD'}`, background: selectedGuests.includes(guest.id) ? '#E03553' : '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -205,9 +205,9 @@ export default function StudioShareTab({ details: propDetails }) {
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#0A0A0A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{guest.name}</p>
-                      <p style={{ margin: 0, fontSize: 11, color: '#888' }}>{guest.email || 'No email'}</p>
+                      <p style={{ margin: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>{guest.email || 'No email'}</p>
                     </div>
-                    <div style={{ fontSize: 11, padding: '2px 8px', background: isAttending(guest) ? '#F0FDF4' : isDeclined(guest) ? '#FFF1F2' : '#F8F8F8', color: isAttending(guest) ? '#16A34A' : isDeclined(guest) ? '#E03553' : '#888', fontWeight: 600, flexShrink: 0 }}>
+                    <div style={{ fontSize: 11, padding: '2px 8px', background: isAttending(guest) ? '#F0FDF4' : isDeclined(guest) ? '#FFF1F2' : '#F8F8F8', color: isAttending(guest) ? '#16A34A' : isDeclined(guest) ? '#E03553' : 'rgba(10,10,10,0.6)', fontWeight: 600, flexShrink: 0 }}>
                       {guest.rsvp_status || 'Pending'}
                     </div>
                   </div>
@@ -223,14 +223,14 @@ export default function StudioShareTab({ details: propDetails }) {
               ].map(type => (
                 <div key={type.id} onClick={() => setEmailType(type.id)} {...interactiveDivProps(() => setEmailType(type.id), { label: type.label })} style={{ padding: '12px', border: `1px solid ${emailType === type.id ? '#0A0A0A' : '#EEEEEE'}`, background: emailType === type.id ? '#0A0A0A' : '#FFF', cursor: 'pointer' }}>
                   <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: emailType === type.id ? '#FFF' : '#0A0A0A' }}>{type.label}</p>
-                  <p style={{ margin: 0, fontSize: 11, color: emailType === type.id ? 'rgba(255,255,255,0.6)' : '#888' }}>{type.desc}</p>
+                  <p style={{ margin: 0, fontSize: 11, color: emailType === type.id ? 'rgba(255,255,255,0.6)' : 'rgba(10,10,10,0.6)' }}>{type.desc}</p>
                 </div>
               ))}
             </div>
             <input value={emailSubject} onChange={e => setEmailSubject(e.target.value)} style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 14, outline: 'none', marginBottom: 16, boxSizing: 'border-box', fontFamily: sans }} />
             <textarea value={emailMessage} onChange={e => setEmailMessage(e.target.value)} rows={5} style={{ width: '100%', border: '1px solid #EEEEEE', padding: '12px', fontSize: 14, outline: 'none', resize: 'vertical', fontFamily: sans, lineHeight: 1.6, marginBottom: 4, boxSizing: 'border-box' }} />
-            <p style={{ fontSize: 11, color: '#AAAAAA', margin: '0 0 16px' }}>Tip: Use {'{guestName}'} to personalise each email automatically.</p>
-            <button disabled={selectedGuests.length === 0 || sending} onClick={handleSend} style={{ width: '100%', padding: '14px', background: selectedGuests.length === 0 ? '#EEEEEE' : 'linear-gradient(135deg, #E03553, #803D81)', color: selectedGuests.length === 0 ? '#AAAAAA' : '#FFF', border: 'none', fontSize: 14, fontWeight: 700, cursor: selectedGuests.length === 0 ? 'not-allowed' : 'pointer', fontFamily: sans }}>
+            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px' }}>Tip: Use {'{guestName}'} to personalise each email automatically.</p>
+            <button disabled={selectedGuests.length === 0 || sending} onClick={handleSend} style={{ width: '100%', padding: '14px', background: selectedGuests.length === 0 ? '#EEEEEE' : 'linear-gradient(135deg, #E03553, #803D81)', color: selectedGuests.length === 0 ? 'rgba(10,10,10,0.3)' : '#FFF', border: 'none', fontSize: 14, fontWeight: 700, cursor: selectedGuests.length === 0 ? 'not-allowed' : 'pointer', fontFamily: sans }}>
               {sending ? 'Sending…' : selectedGuests.length === 0 ? 'Select guests to send' : `Send to ${selectedGuests.length} guest${selectedGuests.length !== 1 ? 's' : ''}`}
             </button>
             {sentHistory.length > 0 && (
@@ -239,7 +239,7 @@ export default function StudioShareTab({ details: propDetails }) {
                   <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F5F5F5' }}>
                     <div>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>{send.type.replace(/-/g, ' ')}</p>
-                      <p style={{ margin: 0, fontSize: 11, color: '#888' }}>{send.count} guests · {send.date}</p>
+                      <p style={{ margin: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>{send.count} guests · {send.date}</p>
                     </div>
                   </div>
                 ))}
@@ -252,7 +252,7 @@ export default function StudioShareTab({ details: propDetails }) {
         <div style={{ width: 280, flexShrink: 0 }}>
           <div style={{ border: '1px solid #EEEEEE', padding: 20, marginBottom: 16, textAlign: 'center' }}>
             <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(siteUrl)}&color=0A0A0A&bgcolor=FFFFFF`} alt="QR Code" style={{ width: 160, height: 160, display: 'block', margin: '0 auto 12px' }} />
-            <p style={{ fontSize: 12, color: '#888', margin: '0 0 16px', fontFamily: 'monospace', wordBreak: 'break-all' }}>openinvite.com.au/w/{details?.slug || 'your-wedding'}</p>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: 'monospace', wordBreak: 'break-all' }}>openinvite.com.au/w/{details?.slug || 'your-wedding'}</p>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={downloadQR} style={{ flex: 1, padding: '10px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans }}>Download</button>
               <button onClick={() => window.print()} style={{ flex: 1, padding: '10px', border: '1px solid #0A0A0A', background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans }}>Print</button>
@@ -262,14 +262,14 @@ export default function StudioShareTab({ details: propDetails }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div>
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Password Protection</p>
-                <p style={{ margin: 0, fontSize: 11, color: '#888' }}>Guests must enter a password</p>
+                <p style={{ margin: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>Guests must enter a password</p>
               </div>
               <ToggleSwitch value={!!(details?.websitePassword?.trim())} onChange={v => updateField('websitePassword', v ? 'password' : '')} label="Password protection" />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #F5F5F5', paddingTop: 16 }}>
               <div>
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Hide from Search</p>
-                <p style={{ margin: 0, fontSize: 11, color: '#888' }}>Don't index in Google</p>
+                <p style={{ margin: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>Don't index in Google</p>
               </div>
               <ToggleSwitch value={details?.hideFromSearch || false} onChange={v => updateField('hideFromSearch', v)} label="Hide from search" />
             </div>

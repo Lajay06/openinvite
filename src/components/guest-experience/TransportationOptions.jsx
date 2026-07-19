@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 import toast from 'react-hot-toast';
+import { color } from '@/styles/tokens';
 
 export default function TransportationOptions({ weddingLocation, weddingCity }) {
   const [options, setOptions] = useState([]);
@@ -94,7 +95,7 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Transportation Options</h2>
-          <p className="text-sm text-gray-500 mt-1">Getting around {weddingCity}</p>
+          <p className="text-sm mt-1" style={{ color: color.textMuted }}>Getting around {weddingCity}</p>
         </div>
       </div>
 

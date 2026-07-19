@@ -179,11 +179,11 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
-                  <p style={{ fontSize: 11, color: '#999999', fontFamily: PJS, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {track.artists}{track.album ? ` · ${track.album}` : ''}
                   </p>
                 </div>
-                <span style={{ fontSize: 11, color: '#999999', flexShrink: 0, fontFamily: PJS }}>{fmt(track.duration_ms)}</span>
+                <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', flexShrink: 0, fontFamily: PJS }}>{fmt(track.duration_ms)}</span>
                 <button
                   onClick={() => !added && handleAdd(track)}
                   disabled={added}

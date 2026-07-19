@@ -220,7 +220,7 @@ function QuickStartSection() {
           <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#E03553,#803D81)", marginBottom: 24 }} />
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#C2E5F3", marginBottom: 16 }}>Getting started</p>
           <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Quick start wizard</h2>
-          <p style={{ color: "#AAAAAA", lineHeight: 1.7, fontSize: 16 }}>Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
+          <p style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.7, fontSize: 16 }}>Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
         </div>
       </div>
     </section>);

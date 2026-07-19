@@ -8,6 +8,7 @@ import { Trash2, Eye, Sparkles, Wand2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import toast from 'react-hot-toast';
+import { color } from '@/styles/tokens';
 import { InvokeLLM } from '@/integrations/Core';
 
 export default function InvitationDesigner({ invitation, onDesignUpdate, weddingDetails }) {
@@ -356,7 +357,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">{section.name}</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm" style={{ color: color.textMuted }}>
                           {section.components?.length || 0} elements
                         </div>
                       </div>

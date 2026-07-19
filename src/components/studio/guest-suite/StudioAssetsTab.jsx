@@ -40,7 +40,7 @@ function AssetMiniPreview({ assetKey, details, theme, typography, tables, guests
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 28, marginBottom: 8, opacity: 0.3 }}>✦</div>
-        <p style={{ fontSize: 12, color: '#AAAAAA', margin: 0 }}>Preview</p>
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Preview</p>
       </div>
     </div>
   );
@@ -124,7 +124,7 @@ function AssetEditorOverlay({ asset, details, theme, typography, tables, guests,
     <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: '#FFFFFF', display: 'flex', flexDirection: 'column', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {/* Top bar */}
       <div style={{ height: 56, borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', padding: '0 20px', flexShrink: 0 }}>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
           ← Back
         </button>
         <p style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>{asset.name}</p>
@@ -143,12 +143,12 @@ function AssetEditorOverlay({ asset, details, theme, typography, tables, guests,
             </div>
             <div>
               <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#0A0A0A' }}>{asset.name}</p>
-              <p style={{ margin: 0, fontSize: 12, color: '#888' }}>{asset.description}</p>
+              <p style={{ margin: 0, fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>{asset.description}</p>
             </div>
           </div>
 
           <div style={{ background: '#F8F8F8', border: '1px solid #EEEEEE', padding: 16, marginBottom: 24 }}>
-            <p style={{ margin: 0, fontSize: 12, color: '#888', lineHeight: 1.6 }}>
+            <p style={{ margin: 0, fontSize: 12, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6 }}>
               This asset is personalised with your couple names, wedding date, venue, and universe styling from Event Details.
             </p>
           </div>
@@ -156,7 +156,7 @@ function AssetEditorOverlay({ asset, details, theme, typography, tables, guests,
           {EditorComp ? (
             <EditorComp content={content} onChange={handleChange} />
           ) : (
-            <p style={{ fontSize: 13, color: '#AAAAAA' }}>No editor for this asset yet.</p>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>No editor for this asset yet.</p>
           )}
         </div>
 
@@ -167,7 +167,7 @@ function AssetEditorOverlay({ asset, details, theme, typography, tables, guests,
               <PreviewComp details={details} content={content} theme={theme} typography={typography} tables={tables} guests={guests} />
             </div>
           ) : (
-            <div style={{ background: '#FFF', padding: 80, textAlign: 'center', color: '#888', fontSize: 14 }}>
+            <div style={{ background: '#FFF', padding: 80, textAlign: 'center', color: 'rgba(10,10,10,0.6)', fontSize: 14 }}>
               <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.2 }}>✦</div>
               <p style={{ margin: 0 }}>Preview not available yet</p>
             </div>
@@ -224,7 +224,7 @@ export default function StudioAssetsTab({ details, onDetailsChange }) {
     <div style={{ padding: 24 }}>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your 10 Design Pieces</h2>
-        <p style={{ fontSize: 14, color: '#888', margin: 0 }}>Every piece is personalised with your wedding details and designed in your chosen universe aesthetic.</p>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Every piece is personalised with your wedding details and designed in your chosen universe aesthetic.</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
@@ -253,7 +253,7 @@ export default function StudioAssetsTab({ details, onDetailsChange }) {
               <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{asset.name}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#888', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{asset.description}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{asset.description}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexShrink: 0, marginLeft: 12 }}>
                   <button

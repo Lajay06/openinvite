@@ -91,7 +91,7 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
         {images.length + queue.length < 6 && (
           <label className="block mb-6">
             <div className="border-2 border-dashed border-[#333] rounded-2xl p-12 cursor-pointer hover:border-[#E03553] transition-colors">
-              <Upload className="w-8 h-8 text-[#888888] mx-auto mb-3" />
+              <Upload className="w-8 h-8 text-[rgba(255,255,255,0.4)] mx-auto mb-3" />
               <p className="text-white font-medium">Upload images</p>
               <p className="text-[#666666] text-sm mt-1">
                 {images.length + queue.length}/6 images

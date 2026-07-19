@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const sans = "'Plus Jakarta Sans', sans-serif";
 
 function FLabel({ children }) {
-  return <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#888', margin: '0 0 6px', fontFamily: sans }}>{children}</p>;
+  return <p style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: sans }}>{children}</p>;
 }
 function UInput({ label, value, onChange, placeholder = '' }) {
   return (
@@ -67,7 +67,7 @@ function CourseBuilder({ label, items, onUpdate }) {
           <input value={item.name || ''} onChange={e => updateItem(i, 'name', e.target.value)} placeholder="Dish name"
             style={{ width: '100%', border: 'none', borderBottom: '1px solid #EEE', background: 'transparent', fontSize: 13, padding: '4px 0', outline: 'none', fontFamily: sans, marginBottom: 4 }} />
           <input value={item.description || ''} onChange={e => updateItem(i, 'description', e.target.value)} placeholder="Description (optional)"
-            style={{ width: '100%', border: 'none', borderBottom: '1px solid #EEE', background: 'transparent', fontSize: 12, padding: '4px 0', outline: 'none', fontFamily: sans, color: '#888' }} />
+            style={{ width: '100%', border: 'none', borderBottom: '1px solid #EEE', background: 'transparent', fontSize: 12, padding: '4px 0', outline: 'none', fontFamily: sans, color: 'rgba(10,10,10,0.6)' }} />
         </div>
       ))}
     </div>
@@ -79,8 +79,8 @@ function Section({ title, children, defaultOpen = false }) {
   return (
     <div style={{ borderBottom: '1px solid #F0F0F0', marginBottom: 0 }}>
       <button onClick={() => setOpen(v => !v)} style={{ width: '100%', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: sans }}>
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888' }}>{title}</span>
-        <span style={{ fontSize: 14, color: '#888' }}>{open ? '−' : '+'}</span>
+        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(10,10,10,0.6)' }}>{title}</span>
+        <span style={{ fontSize: 14, color: 'rgba(10,10,10,0.45)' }}>{open ? '−' : '+'}</span>
       </button>
       {open && <div style={{ padding: '4px 16px 16px' }}>{children}</div>}
     </div>
@@ -164,7 +164,7 @@ export function SeatingChartEditor({ content, onChange }) {
         </div>
       </Section>
       <Section title="Note" defaultOpen={false}>
-        <p style={{ fontSize: 12, color: '#888', fontFamily: sans, lineHeight: 1.6 }}>Seating data is pulled automatically from your Guest List & Seating planner.</p>
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: sans, lineHeight: 1.6 }}>Seating data is pulled automatically from your Guest List & Seating planner.</p>
       </Section>
     </div>
   );

@@ -61,7 +61,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
             className={`p-4 rounded-none border-2 transition-colors duration-150 text-sm font-medium ${
               selected.includes(type)
                 ? 'bg-black border-black text-white'
-                : 'bg-transparent border-[#333] text-[#888888] hover:bg-black hover:border-black hover:text-white active:bg-neutral-900'
+                : 'bg-transparent border-[#333] text-[rgba(255,255,255,0.4)] hover:bg-black hover:border-black hover:text-white active:bg-neutral-900'
             }`}
           >
             <input

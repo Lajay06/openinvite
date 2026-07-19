@@ -91,7 +91,7 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
             </span>
           )}
         </div>
-        <p style={{ fontSize: 11, color: '#999999', fontFamily: PJS, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {item.artist}{item.album ? ` · ${item.album}` : ''}
         </p>
       </div>
@@ -102,7 +102,7 @@ export default function MusicTrackRow({ item, index, onEdit, onDelete, onToggleA
       </span>
 
       {/* Duration */}
-      <span style={{ fontSize: 11, color: '#999999', flexShrink: 0, width: 36, textAlign: 'right', fontFamily: PJS }}>{item.duration || '—'}</span>
+      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', flexShrink: 0, width: 36, textAlign: 'right', fontFamily: PJS }}>{item.duration || '—'}</span>
 
       {/* Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>

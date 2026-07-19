@@ -85,7 +85,7 @@ export default function TipsModal({ onClose }) {
               <div>
                 <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Here's how to get started</h2>
               </div>
-              <button onClick={handleClose} aria-label="Close tips modal" style={{ marginLeft: 'auto', background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888', lineHeight: 1 }}>×</button>
+              <button onClick={handleClose} aria-label="Close tips modal" style={{ marginLeft: 'auto', background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'rgba(10,10,10,0.45)', lineHeight: 1 }}>×</button>
             </div>
 
             {/* Step dots */}

@@ -10,6 +10,7 @@ const Invitation = base44.entities.Invitation;
 
 import InvitationDesigner from './InvitationDesigner';
 import InvitationPreviewWithNav from './InvitationPreviewWithNav';
+import { color } from '@/styles/tokens';
 
 export default function InvitationStudio({ invitation, weddingDetails, onBack, onSave, readOnly = false }) {
   const [previewMode, setPreviewMode] = useState(false);
@@ -97,7 +98,7 @@ export default function InvitationStudio({ invitation, weddingDetails, onBack, o
               <h1 className="text-2xl font-bold text-gray-900">
                 {currentInvitation.couple_names || 'Wedding Invitation'}
               </h1>
-              <p className="text-sm text-gray-500">Guest Suite Studio</p>
+              <p className="text-sm" style={{ color: color.textMuted }}>Guest Suite Studio</p>
             </div>
           </div>
           <div className="flex items-center gap-3">

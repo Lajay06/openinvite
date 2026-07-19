@@ -41,6 +41,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import toast from 'react-hot-toast';
 import InteractiveMap from '../components/guest-experience/InteractiveMap';
 import OurStoryTimeline from '../components/wedding-website/OurStoryTimeline';
+import { color } from '@/styles/tokens';
 
 export default function WeddingWebsite() {
   const [searchParams] = useSearchParams();
@@ -387,8 +388,9 @@ export default function WeddingWebsite() {
       className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-all relative ${
         activeSection === section
           ? 'text-gray-900'
-          : 'text-gray-500 hover:text-gray-700'
+          : 'hover:text-gray-700'
       }`}
+      style={activeSection === section ? undefined : { color: color.textMuted }}
     >
       <Icon className="w-4 h-4" />
       <span className="hidden sm:inline">{label}</span>
@@ -463,8 +465,8 @@ export default function WeddingWebsite() {
         <div className="w-px h-12 bg-gray-200 mx-auto mb-6" />
         <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-wide">{page.title}</h2>
         {page.date && (
-          <p className="text-gray-500">
-            {new Date(page.date).toLocaleDateString('en-US', { 
+          <p style={{ color: color.textMuted }}>
+            {new Date(page.date).toLocaleDateString('en-US', {
               month: 'long', 
               day: 'numeric', 
               year: 'numeric',
@@ -485,7 +487,7 @@ export default function WeddingWebsite() {
         <div className="grid gap-6">
           {page.venue_name && (
             <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+              <MapPin className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: color.iconMuted }} />
               <div>
                 <p className="font-medium text-gray-900">{page.venue_name}</p>
                 {page.venue_address && (
@@ -497,7 +499,7 @@ export default function WeddingWebsite() {
 
           {page.dress_code && (
             <div className="flex items-start gap-3">
-              <Sparkles className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+              <Sparkles className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: color.iconMuted }} />
               <div>
                 <p className="font-medium text-gray-900">Dress Code</p>
                 <p className="text-sm text-gray-600">{page.dress_code}</p>
@@ -703,7 +705,7 @@ export default function WeddingWebsite() {
             <div className="text-center mb-16">
               <div className="w-px h-12 bg-gray-200 mx-auto mb-6" />
               <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-wide">Our Story</h2>
-              <p className="text-gray-500 max-w-2xl mx-auto">
+              <p className="max-w-2xl mx-auto" style={{ color: color.textMuted }}>
                 The journey that brought us here
               </p>
             </div>
@@ -718,7 +720,7 @@ export default function WeddingWebsite() {
             <div className="text-center mb-16">
               <div className="w-px h-12 bg-gray-200 mx-auto mb-6" />
               <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-wide">Wedding Details</h2>
-              <p className="text-gray-500 max-w-2xl mx-auto">
+              <p className="max-w-2xl mx-auto" style={{ color: color.textMuted }}>
                 Join us for a celebration of love and commitment
               </p>
             </div>
@@ -740,14 +742,14 @@ export default function WeddingWebsite() {
                       {weddingDetails?.mainCeremony?.venueName || 'Garden Chapel at Riverside Estate'}
                     </p>
                     <p className="flex items-start gap-2 text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 mt-0.5 text-gray-400" />
+                      <MapPin className="w-4 h-4 mt-0.5" style={{ color: color.iconMuted }} />
                       {weddingDetails?.mainCeremony?.address || '123 Garden Lane, Riverside, CA 92501'}
                     </p>
                     <p className="flex items-center gap-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4 text-gray-400" />
+                      <Clock className="w-4 h-4" style={{ color: color.iconMuted }} />
                       {weddingDetails?.mainCeremony?.startTime || '4:00 PM'}
                     </p>
-                    <p className="text-sm text-gray-500 italic pt-2 border-t border-gray-100">
+                    <p className="text-sm italic pt-2 border-t border-gray-100" style={{ color: color.textMuted }}>
                       Please arrive 15 minutes early. The ceremony begins promptly.
                     </p>
                   </div>
@@ -770,14 +772,14 @@ export default function WeddingWebsite() {
                       {weddingDetails?.reception?.venueName || 'Grand Ballroom at Riverside Estate'}
                     </p>
                     <p className="flex items-start gap-2 text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 mt-0.5 text-gray-400" />
+                      <MapPin className="w-4 h-4 mt-0.5" style={{ color: color.iconMuted }} />
                       {weddingDetails?.reception?.address || '123 Garden Lane, Riverside, CA 92501'}
                     </p>
                     <p className="flex items-center gap-2 text-sm text-gray-600">
-                      <Clock className="w-4 h-4 text-gray-400" />
+                      <Clock className="w-4 h-4" style={{ color: color.iconMuted }} />
                       {weddingDetails?.reception?.startTime || '5:30 PM'} - {weddingDetails?.reception?.endTime || '11:00 PM'}
                     </p>
-                    <p className="text-sm text-gray-500 italic pt-2 border-t border-gray-100">
+                    <p className="text-sm italic pt-2 border-t border-gray-100" style={{ color: color.textMuted }}>
                       Cocktail hour, dinner, and dancing to follow the ceremony.
                     </p>
                   </div>
@@ -797,11 +799,11 @@ export default function WeddingWebsite() {
                 <AccordionContent className="px-8 pb-6">
                   <div className="space-y-4 pt-2">
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">Service</p>
+                      <p className="text-xs uppercase tracking-wider mb-2" style={{ color: color.textMuted }}>Service</p>
                       <p className="text-gray-700">Plated Dinner Service</p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">Menu</p>
+                      <p className="text-xs uppercase tracking-wider mb-2" style={{ color: color.textMuted }}>Menu</p>
                       <div className="space-y-2">
                         <div className="pl-3 border-l border-gray-200">
                           <p className="font-medium text-gray-900">Herb-Crusted Filet Mignon</p>
@@ -818,7 +820,7 @@ export default function WeddingWebsite() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">Bar</p>
+                      <p className="text-xs uppercase tracking-wider mb-2" style={{ color: color.textMuted }}>Bar</p>
                       <p className="text-gray-700">Open Bar - Beer, Wine & Signature Cocktails</p>
                     </div>
                   </div>
@@ -843,7 +845,7 @@ export default function WeddingWebsite() {
                           <p className="font-medium text-gray-900 mb-1">{event.name}</p>
                           {event.date && <p className="text-sm text-gray-600">{event.date} {event.time && `at ${event.time}`}</p>}
                           {event.venue && <p className="text-sm text-gray-600">{event.venue}</p>}
-                          {event.notes && <p className="text-sm text-gray-500 mt-1 italic">{event.notes}</p>}
+                          {event.notes && <p className="text-sm mt-1 italic" style={{ color: color.textMuted }}>{event.notes}</p>}
                         </div>
                       ))
                     ) : (
@@ -851,7 +853,7 @@ export default function WeddingWebsite() {
                         <p className="font-medium text-gray-900 mb-1">Welcome Dinner</p>
                         <p className="text-sm text-gray-600">Friday, 7:00 PM</p>
                         <p className="text-sm text-gray-600">Riverside Restaurant, 456 Main Street</p>
-                        <p className="text-sm text-gray-500 mt-1 italic">Join us for a casual dinner the night before the wedding. Optional but encouraged!</p>
+                        <p className="text-sm mt-1 italic" style={{ color: color.textMuted }}>Join us for a casual dinner the night before the wedding. Optional but encouraged!</p>
                       </div>
                     )}
                   </div>
@@ -876,7 +878,7 @@ export default function WeddingWebsite() {
                           <p className="font-medium text-gray-900 mb-1">{event.name}</p>
                           {event.date && <p className="text-sm text-gray-600">{event.date} {event.time && `at ${event.time}`}</p>}
                           {event.venue && <p className="text-sm text-gray-600">{event.venue}</p>}
-                          {event.notes && <p className="text-sm text-gray-500 mt-1 italic">{event.notes}</p>}
+                          {event.notes && <p className="text-sm mt-1 italic" style={{ color: color.textMuted }}>{event.notes}</p>}
                         </div>
                       ))
                     ) : (
@@ -884,7 +886,7 @@ export default function WeddingWebsite() {
                         <p className="font-medium text-gray-900 mb-1">Farewell Brunch</p>
                         <p className="text-sm text-gray-600">Sunday, 11:00 AM</p>
                         <p className="text-sm text-gray-600">Garden Terrace at Riverside Estate</p>
-                        <p className="text-sm text-gray-500 mt-1 italic">Join us for a relaxed brunch before heading home. A wonderful way to say goodbye!</p>
+                        <p className="text-sm mt-1 italic" style={{ color: color.textMuted }}>Join us for a relaxed brunch before heading home. A wonderful way to say goodbye!</p>
                       </div>
                     )}
                   </div>
@@ -951,7 +953,7 @@ export default function WeddingWebsite() {
             <div className="text-center mb-16">
               <div className="w-px h-12 bg-gray-200 mx-auto mb-6" />
               <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-wide">Live Stream</h2>
-              <p className="text-gray-500 max-w-2xl mx-auto">
+              <p className="max-w-2xl mx-auto" style={{ color: color.textMuted }}>
                 Join us virtually as we celebrate
               </p>
             </div>
@@ -979,7 +981,7 @@ export default function WeddingWebsite() {
                         <div>
                           <h3 className="text-xl font-medium text-gray-900">{stream.title}</h3>
                           {stream.scheduled_start && (
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm mt-1" style={{ color: color.textMuted }}>
                               {new Date(stream.scheduled_start).toLocaleString('en-US', {
                                 month: 'long',
                                 day: 'numeric',
@@ -1101,7 +1103,7 @@ export default function WeddingWebsite() {
             {streams.length === 0 && (
               <div className="text-center py-16">
                 <Video className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500">No streams available at this time</p>
+                <p style={{ color: color.textMuted }}>No streams available at this time</p>
               </div>
             )}
           </div>
@@ -1113,7 +1115,7 @@ export default function WeddingWebsite() {
             <div className="text-center mb-16">
               <div className="w-px h-12 bg-gray-200 mx-auto mb-6" />
               <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-wide">Photo Gallery</h2>
-              <p className="text-gray-500 max-w-2xl mx-auto">
+              <p className="max-w-2xl mx-auto" style={{ color: color.textMuted }}>
                 Cherished moments from our journey
               </p>
             </div>
@@ -1183,7 +1185,7 @@ export default function WeddingWebsite() {
             {photos.length === 0 && (
               <div className="text-center py-16">
                 <Camera className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500">No photos available yet</p>
+                <p style={{ color: color.textMuted }}>No photos available yet</p>
               </div>
             )}
           </div>
@@ -1196,7 +1198,7 @@ export default function WeddingWebsite() {
               <div className="w-px h-12 bg-gray-200 mx-auto mb-6" />
               <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-wide">RSVP</h2>
               {invitation?.rsvp_deadline && (
-                <p className="text-gray-500">
+                <p style={{ color: color.textMuted }}>
                   Kindly respond by {new Date(invitation.rsvp_deadline).toLocaleDateString('en-US', { 
                     month: 'long', 
                     day: 'numeric', 
@@ -1230,12 +1232,12 @@ export default function WeddingWebsite() {
                   </div>
                   <div className="bg-gray-50 rounded-lg p-6 text-left space-y-3">
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Status</p>
+                      <p className="text-xs uppercase tracking-wider mb-1" style={{ color: color.textMuted }}>Status</p>
                       <p className="text-gray-900">{guest.rsvp_status === 'attending' ? 'Attending' : 'Unable to attend'}</p>
                     </div>
                     {guest.rsvp_status === 'attending' && guest.meal_choice && (
                       <div>
-                        <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Meal Selection</p>
+                        <p className="text-xs uppercase tracking-wider mb-1" style={{ color: color.textMuted }}>Meal Selection</p>
                         <p className="text-gray-900 capitalize">{guest.meal_choice}</p>
                       </div>
                     )}
@@ -1389,7 +1391,7 @@ export default function WeddingWebsite() {
             <div className="text-center mb-16">
               <div className="w-px h-12 bg-gray-200 mx-auto mb-6" />
               <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-wide">Guest Experience</h2>
-              <p className="text-gray-500 max-w-2xl mx-auto">
+              <p className="max-w-2xl mx-auto" style={{ color: color.textMuted }}>
                 Everything you need for a wonderful visit
               </p>
             </div>
@@ -1454,7 +1456,7 @@ export default function WeddingWebsite() {
                   <Sparkles className="w-3 h-3 mr-1" />
                   Personalized for you
                 </Badge>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs" style={{ color: color.textMuted }}>
                   Showing recommendations based on: {preferences.map(p => p.replace(/_/g, ' ')).join(', ')}
                 </span>
               </div>
@@ -1597,22 +1599,22 @@ export default function WeddingWebsite() {
                   <div className="space-y-6 pt-2">
                     {/* Friday */}
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500 mb-4">Friday</p>
+                      <p className="text-xs uppercase tracking-wider mb-4" style={{ color: color.textMuted }}>Friday</p>
                       <div className="space-y-4">
                         {weddingDetails?.preWeddingEvents && weddingDetails.preWeddingEvents.length > 0 ? (
                           weddingDetails.preWeddingEvents.map((event, idx) => (
                             <div key={event.id || idx} className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-lg">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
-                                  <Clock className="w-4 h-4 text-gray-400" />
+                                  <Clock className="w-4 h-4" style={{ color: color.iconMuted }} />
                                   <p className="text-sm font-medium text-gray-900">{event.time || '7:00 PM'}</p>
                                 </div>
                                 <p className="font-medium text-gray-900 mb-1">{event.name}</p>
                                 <p className="text-sm text-gray-600 flex items-start gap-2">
-                                  <MapPin className="w-4 h-4 mt-0.5 text-gray-400 flex-shrink-0" />
+                                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: color.iconMuted }} />
                                   {event.venue || 'TBD'}
                                 </p>
-                                {event.notes && <p className="text-sm text-gray-500 mt-2">{event.notes}</p>}
+                                {event.notes && <p className="text-sm mt-2" style={{ color: color.textMuted }}>{event.notes}</p>}
                               </div>
                               <Button 
                                 size="sm" 
@@ -1632,15 +1634,15 @@ export default function WeddingWebsite() {
                           <div className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-lg">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <Clock className="w-4 h-4 text-gray-400" />
+                                <Clock className="w-4 h-4" style={{ color: color.iconMuted }} />
                                 <p className="text-sm font-medium text-gray-900">7:00 PM</p>
                               </div>
                               <p className="font-medium text-gray-900 mb-1">Welcome Dinner</p>
                               <p className="text-sm text-gray-600 flex items-start gap-2">
-                                <MapPin className="w-4 h-4 mt-0.5 text-gray-400 flex-shrink-0" />
+                                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: color.iconMuted }} />
                                 Riverside Restaurant
                               </p>
-                              <p className="text-sm text-gray-500 mt-2">Casual gathering the night before</p>
+                              <p className="text-sm mt-2" style={{ color: color.textMuted }}>Casual gathering the night before</p>
                             </div>
                             <Button 
                               size="sm" 
@@ -1664,17 +1666,17 @@ export default function WeddingWebsite() {
 
                     {/* Saturday - Wedding Day */}
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500 mb-4">Saturday - Wedding Day</p>
+                      <p className="text-xs uppercase tracking-wider mb-4" style={{ color: color.textMuted }}>Saturday - Wedding Day</p>
                       <div className="space-y-4">
                         <div className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-lg">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                              <Clock className="w-4 h-4 text-gray-400" />
+                              <Clock className="w-4 h-4" style={{ color: color.iconMuted }} />
                               <p className="text-sm font-medium text-gray-900">{weddingDetails?.mainCeremony?.startTime || '4:00 PM'}</p>
                             </div>
                             <p className="font-medium text-gray-900 mb-1">Ceremony</p>
                             <p className="text-sm text-gray-600 flex items-start gap-2">
-                              <MapPin className="w-4 h-4 mt-0.5 text-gray-400 flex-shrink-0" />
+                              <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: color.iconMuted }} />
                               {weddingDetails?.mainCeremony?.venueName || 'Garden Chapel at Riverside Estate'}
                             </p>
                           </div>
@@ -1700,15 +1702,15 @@ export default function WeddingWebsite() {
                         <div className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-lg">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                              <Clock className="w-4 h-4 text-gray-400" />
+                              <Clock className="w-4 h-4" style={{ color: color.iconMuted }} />
                               <p className="text-sm font-medium text-gray-900">{weddingDetails?.reception?.startTime || '5:30 PM'}</p>
                             </div>
                             <p className="font-medium text-gray-900 mb-1">Reception</p>
                             <p className="text-sm text-gray-600 flex items-start gap-2">
-                              <MapPin className="w-4 h-4 mt-0.5 text-gray-400 flex-shrink-0" />
+                              <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: color.iconMuted }} />
                               {weddingDetails?.reception?.venueName || 'Grand Ballroom at Riverside Estate'}
                             </p>
-                            <p className="text-sm text-gray-500 mt-2">Cocktails, dinner, and dancing</p>
+                            <p className="text-sm mt-2" style={{ color: color.textMuted }}>Cocktails, dinner, and dancing</p>
                           </div>
                           <Button 
                             size="sm" 
@@ -1736,22 +1738,22 @@ export default function WeddingWebsite() {
 
                     {/* Sunday */}
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-gray-500 mb-4">Sunday</p>
+                      <p className="text-xs uppercase tracking-wider mb-4" style={{ color: color.textMuted }}>Sunday</p>
                       <div className="space-y-4">
                         {weddingDetails?.postWeddingEvents && weddingDetails.postWeddingEvents.length > 0 ? (
                           weddingDetails.postWeddingEvents.map((event, idx) => (
                             <div key={event.id || idx} className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-lg">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
-                                  <Clock className="w-4 h-4 text-gray-400" />
+                                  <Clock className="w-4 h-4" style={{ color: color.iconMuted }} />
                                   <p className="text-sm font-medium text-gray-900">{event.time || '11:00 AM'}</p>
                                 </div>
                                 <p className="font-medium text-gray-900 mb-1">{event.name}</p>
                                 <p className="text-sm text-gray-600 flex items-start gap-2">
-                                  <MapPin className="w-4 h-4 mt-0.5 text-gray-400 flex-shrink-0" />
+                                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: color.iconMuted }} />
                                   {event.venue || 'TBD'}
                                 </p>
-                                {event.notes && <p className="text-sm text-gray-500 mt-2">{event.notes}</p>}
+                                {event.notes && <p className="text-sm mt-2" style={{ color: color.textMuted }}>{event.notes}</p>}
                               </div>
                               <Button 
                                 size="sm" 
@@ -1771,15 +1773,15 @@ export default function WeddingWebsite() {
                           <div className="flex items-start justify-between gap-4 p-4 bg-gray-50 rounded-lg">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <Clock className="w-4 h-4 text-gray-400" />
+                                <Clock className="w-4 h-4" style={{ color: color.iconMuted }} />
                                 <p className="text-sm font-medium text-gray-900">11:00 AM</p>
                               </div>
                               <p className="font-medium text-gray-900 mb-1">Farewell Brunch</p>
                               <p className="text-sm text-gray-600 flex items-start gap-2">
-                                <MapPin className="w-4 h-4 mt-0.5 text-gray-400 flex-shrink-0" />
+                                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: color.iconMuted }} />
                                 Garden Terrace at Riverside Estate
                               </p>
-                              <p className="text-sm text-gray-500 mt-2">Relaxed brunch before heading home</p>
+                              <p className="text-sm mt-2" style={{ color: color.textMuted }}>Relaxed brunch before heading home</p>
                             </div>
                             <Button 
                               size="sm" 
@@ -1825,8 +1827,8 @@ export default function WeddingWebsite() {
                         <p className="text-sm text-gray-600 mb-2">{option.description}</p>
                         <div className="flex items-center gap-4 text-sm">
                           <span className="font-medium text-gray-900">{option.cost}</span>
-                          <span className="text-gray-400">•</span>
-                          <span className="text-gray-500 text-xs italic">{option.tips}</span>
+                          <span style={{ color: color.textDisabled }}>•</span>
+                          <span className="text-xs italic" style={{ color: color.textMuted }}>{option.tips}</span>
                         </div>
                       </div>
                     ))}
@@ -1983,7 +1985,7 @@ export default function WeddingWebsite() {
                               </div>
                             </div>
                             <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
-                            <p className="text-xs text-gray-500">Best time: {activity.bestTime}</p>
+                            <p className="text-xs" style={{ color: color.textMuted }}>Best time: {activity.bestTime}</p>
                           </div>
                         </div>
                       </div>
@@ -2007,7 +2009,7 @@ export default function WeddingWebsite() {
                     {localTips.map((category, idx) => (
                       <div key={idx}>
                         <div className="flex items-center gap-2 mb-3">
-                          <category.icon className="w-4 h-4 text-gray-400" />
+                          <category.icon className="w-4 h-4" style={{ color: color.iconMuted }} />
                           <h4 className="font-medium text-gray-900 text-sm">{category.title}</h4>
                         </div>
                         <ul className="space-y-2 pl-6">
@@ -2033,7 +2035,7 @@ export default function WeddingWebsite() {
             <div className="text-center mb-12">
               <div className="w-px h-12 bg-gray-200 mx-auto mb-6" />
               <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-wide">Gift Registry</h2>
-              <p className="text-gray-500">
+              <p style={{ color: color.textMuted }}>
                 Your presence is the greatest gift
               </p>
             </div>
@@ -2073,7 +2075,7 @@ export default function WeddingWebsite() {
             <div className="text-center mb-12">
               <div className="w-px h-12 bg-gray-200 mx-auto mb-6" />
               <h2 className="text-4xl font-light text-gray-900 mb-4 tracking-wide">Get in Touch</h2>
-              <p className="text-gray-500">
+              <p style={{ color: color.textMuted }}>
                 We'd love to hear from you
               </p>
             </div>
@@ -2135,7 +2137,7 @@ export default function WeddingWebsite() {
       <div className="border-t border-gray-100 py-12 mt-24">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <div className="w-px h-12 bg-gray-200 mx-auto mb-6" />
-          <p className="text-sm text-gray-400 tracking-wider uppercase">
+          <p className="text-sm tracking-wider uppercase" style={{ color: color.textMuted }}>
             {invitation?.couple_names || 'Wedding'} • {invitation?.wedding_date ? new Date(invitation.wedding_date).getFullYear() : ''}
           </p>
         </div>

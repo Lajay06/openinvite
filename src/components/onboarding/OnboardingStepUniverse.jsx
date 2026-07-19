@@ -46,7 +46,7 @@ function ComingSoonOverlay({ universe, onBack }) {
         <img src={universe.photo} alt={universe.name} style={{ width: '100%', maxWidth: 400, height: 260, objectFit: 'cover', opacity: 0.2, marginBottom: 48 }} />
         <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 300, fontSize: 'clamp(60px, 10vw, 100px)', color: '#FFFFFF', letterSpacing: '0.2em', margin: '0 0 16px', lineHeight: 1 }}>{universe.name}</h1>
         <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', fontSize: 20, color: 'rgba(255,255,255,0.4)', margin: '0 0 32px' }}>{universe.tagline}</p>
-        <p style={{ fontSize: 14, color: '#888888', margin: '0 0 8px' }}>Coming Soon</p>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', margin: '0 0 8px' }}>Coming Soon</p>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', maxWidth: 360, lineHeight: 1.7 }}>We're working on this universe. Stay tuned.</p>
       </div>
     </motion.div>

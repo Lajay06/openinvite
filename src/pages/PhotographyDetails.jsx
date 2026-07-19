@@ -79,7 +79,7 @@ export default function PhotographyDetailsPage() {
     update({ stylePreferences: arr.includes(s) ? arr.filter(x => x !== s) : [...arr, s] });
   };
 
-  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}><Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite', color: '#888' }} /><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>;
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}><Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite', color: 'rgba(10,10,10,0.45)' }} /><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>;
 
   const styles = data.stylePreferences || [];
 
@@ -88,7 +88,7 @@ export default function PhotographyDetailsPage() {
       <DashboardPageHeader title="Photography & videography" subtitle="Plan your photography, videography, and visual storytelling" />
       <div style={{ padding: '32px', maxWidth: 760, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 8 }}>
-          <div style={{ fontSize: 12, color: saveStatus === 'saved' ? '#22C55E' : '#888', fontWeight: saveStatus === 'saved' ? 600 : 400 }}>
+          <div style={{ fontSize: 12, color: saveStatus === 'saved' ? '#22C55E' : 'rgba(10,10,10,0.6)', fontWeight: saveStatus === 'saved' ? 600 : 400 }}>
             {saveStatus === 'saving' && 'Saving…'}
             {saveStatus === 'saved' && '✓ Saved'}
           </div>
@@ -106,7 +106,7 @@ export default function PhotographyDetailsPage() {
           {PHOTO_STYLES.map(s => {
             const sel = styles.includes(s);
             return (
-              <button key={s} onClick={() => toggleStyle(s)} style={{ padding: '6px 14px', borderRadius: 0, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', border: sel ? 'none' : '1px solid #E5E5E5', background: sel ? 'linear-gradient(135deg,#E03553,#803D81)' : 'transparent', color: sel ? '#FFFFFF' : '#888888', transition: 'all 0.15s' }}>
+              <button key={s} onClick={() => toggleStyle(s)} style={{ padding: '6px 14px', borderRadius: 0, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', border: sel ? 'none' : '1px solid #E5E5E5', background: sel ? 'linear-gradient(135deg,#E03553,#803D81)' : 'transparent', color: sel ? '#FFFFFF' : 'rgba(10,10,10,0.6)', transition: 'all 0.15s' }}>
                 {s}
               </button>
             );

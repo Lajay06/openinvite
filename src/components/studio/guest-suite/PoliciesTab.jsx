@@ -20,7 +20,7 @@ function PolicySection({ title, children }) {
         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: open ? '#FAFAFA' : '#FFFFFF', border: 'none', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", borderBottom: open ? '1px solid #EEEEEE' : 'none' }}
       >
         <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A' }}>{title}</span>
-        {open ? <ChevronUp size={16} color="#888" /> : <ChevronDown size={16} color="#888" />}
+        {open ? <ChevronUp size={16} color="rgba(10,10,10,0.45)" /> : <ChevronDown size={16} color="rgba(10,10,10,0.45)" />}
       </button>
       {open && <div style={{ padding: '20px' }}>{children}</div>}
     </div>
@@ -34,7 +34,7 @@ function DisplayToggle({ value, onChange }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, paddingTop: 16, borderTop: '1px solid #F5F5F5' }}>
       <Toggle value={value} onChange={onChange} />
-      <span style={{ fontSize: 12, color: '#888', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Display on website</span>
+      <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Display on website</span>
     </div>
   );
 }
@@ -82,7 +82,7 @@ export default function PoliciesTab({ details }) {
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Wedding Policies</h2>
-        <p style={{ fontSize: 14, color: '#888', margin: 0 }}>Set clear expectations for your guests. These can be displayed on your wedding website and included in your Experience Guide.</p>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Set clear expectations for your guests. These can be displayed on your wedding website and included in your Experience Guide.</p>
       </div>
 
       {/* Photography */}
@@ -185,7 +185,7 @@ export default function PoliciesTab({ details }) {
       <PolicySection title="Dress Code">
         <div style={{ marginBottom: 12 }}>
           <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 6 }}>From Event Details</label>
-          <input style={{ ...inputStyle, color: '#888' }} value={details?.mainCeremony?.dressCode || ''} readOnly placeholder="Set in Event Details" />
+          <input style={{ ...inputStyle, color: 'rgba(10,10,10,0.3)' }} value={details?.mainCeremony?.dressCode || ''} readOnly placeholder="Set in Event Details" />
         </div>
         <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 6 }}>Expanded Guidance</label>
         <textarea style={textareaStyle} value={policies.dressCode.guidance} onChange={e => set('dressCode', 'guidance', e.target.value)} placeholder="Formal attire — suits and ties for men, cocktail or formal dresses for women..." />
@@ -207,7 +207,7 @@ export default function PoliciesTab({ details }) {
         <DisplayToggle value={policies.other.display} onChange={v => set('other', 'display', v)} />
       </PolicySection>
 
-      <p style={{ fontSize: 12, color: '#888', marginBottom: 16, marginTop: 8, fontStyle: 'italic' }}>
+      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginBottom: 16, marginTop: 8, fontStyle: 'italic' }}>
         Policies marked "Display on website" will appear in the Policies section of your wedding website and Experience Guide.
       </p>
 

@@ -199,8 +199,8 @@ export function GuestTagsPreview({ details, content, theme = DEFAULT_THEME, typo
     <div style={{ width: 480, margin: '0 auto' }}>
       {tagList.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 0', fontFamily: typography.bodyFont }}>
-          <p style={{ fontSize: 13, color: '#888', margin: '0 0 6px' }}>No guests yet</p>
-          <p style={{ fontSize: 11, color: '#AAAAAA', margin: 0 }}>Add guests to your Guest List to generate name tags.</p>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 6px' }}>No guests yet</p>
+          <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Add guests to your Guest List to generate name tags.</p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>

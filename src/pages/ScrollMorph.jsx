@@ -230,7 +230,7 @@ function ScrollMorphHero() {
         <h2 style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", marginBottom: "12px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Your wedding, beautifully planned.
         </h2>
-        <p style={{ fontSize: "16px", color: "#888888", maxWidth: "500px", margin: "0 auto", fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.6 }}>
+        <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.5)", maxWidth: "500px", margin: "0 auto", fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.6 }}>
           Scroll through the moments that make your day unforgettable.
         </p>
       </motion.div>

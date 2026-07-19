@@ -50,7 +50,7 @@ export default function NewPageModal({ onClose, onCreate, weddingSlug }) {
         {/* Header */}
         <div style={{ padding: '24px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>Create a New Page</h2>
-          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)' }}>
             <X size={18} />
           </button>
         </div>
@@ -58,7 +58,7 @@ export default function NewPageModal({ onClose, onCreate, weddingSlug }) {
         <div style={{ padding: 24 }}>
           {/* Name */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888', display: 'block', marginBottom: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 6 }}>
               Page Name
             </label>
             <input
@@ -74,11 +74,11 @@ export default function NewPageModal({ onClose, onCreate, weddingSlug }) {
 
           {/* URL slug */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888', display: 'block', marginBottom: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 6 }}>
               Page URL
             </label>
             <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #EEE', borderRadius: 6, overflow: 'hidden' }}>
-              <span style={{ padding: '10px 10px', fontSize: 12, color: '#999', background: '#F9F9F9', borderRight: '1px solid #EEE', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <span style={{ padding: '10px 10px', fontSize: 12, color: 'rgba(10,10,10,0.6)', background: '#F9F9F9', borderRight: '1px solid #EEE', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 /w/{weddingSlug || 'your-names'}/
               </span>
               <input
@@ -92,7 +92,7 @@ export default function NewPageModal({ onClose, onCreate, weddingSlug }) {
 
           {/* Template */}
           <div style={{ marginBottom: 24 }}>
-            <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888', display: 'block', marginBottom: 8 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 8 }}>
               Page Template
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -114,7 +114,7 @@ export default function NewPageModal({ onClose, onCreate, weddingSlug }) {
                   </div>
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>{t.name}</p>
-                    <p style={{ fontSize: 11, color: '#888', margin: 0 }}>{t.description}</p>
+                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0 }}>{t.description}</p>
                   </div>
                 </div>
               ))}

@@ -174,7 +174,7 @@ export default function About() {
       {/* ── S3: FULL BLEED PHOTO ─────────────────────────── */}
       <section id="story" style={{ width: "100vw", height: "85vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
         <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100477/DTS_SILVER_HOUR_Franco_Dupuy_Photos_ID14690_mjiupn.jpg" alt="An older couple walking arm in arm outside a cafe" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
-        <p style={{ position: "absolute", bottom: 40, left: "50%", transform: "translateX(-50%)", fontSize: 12, color: "#888888", fontStyle: "italic", textAlign: "center", maxWidth: 400 }}>
+        <p style={{ position: "absolute", bottom: 40, left: "50%", transform: "translateX(-50%)", fontSize: 12, color: "rgba(10,10,10,0.6)", fontStyle: "italic", textAlign: "center", maxWidth: 400 }}>
           Built for every kind of love, every kind of celebration.
         </p>
       </section>
@@ -220,7 +220,7 @@ function EditorialIntro() {
           Openinvite was built out of a simple frustration: wedding planning tools were outdated, overwhelming, and frankly ugly. We believed that one of the most exciting moments of your life deserved a platform that matched that energy. So we built one.
         </p>
 
-        <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em", marginBottom: 24 }}>Deliverables</p>
+        <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.6)", letterSpacing: "0.15em", marginBottom: 24 }}>Deliverables</p>
         <div>
           {DELIVERABLES.map((item, i) => (
             <div key={i} style={{ padding: "10px 0", borderBottom: "1px solid #E8E8E8", fontSize: 14, color: "#0A0A0A", opacity: visible ? 1 : 0, animation: visible ? `fadeIn 0.6s ease ${i * 0.05}s forwards` : "none" }}>
@@ -242,7 +242,7 @@ function TwoColumnSection({ id, number, title, headline, body, background, belie
     <section ref={ref} id={id} style={{ background: background || "#FFFFFF", padding: "120px 80px", maxWidth: 1100, margin: "0 auto", borderBottom: "1px solid #E0E0DC" }}>
       {/* Content */}
       <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: "opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s" }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em", marginBottom: 16 }}>{title}</p>
+        <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.6)", letterSpacing: "0.15em", marginBottom: 16 }}>{title}</p>
         <h2 style={{ fontSize: "clamp(28px, 3vw, 42px)", fontWeight: 700, color: "#0A0A0A", marginBottom: 32, hyphens: "none" }}>
           {headline}
         </h2>
@@ -290,7 +290,7 @@ function StatsSection() {
             <div style={{ fontSize: 72, fontWeight: 700, lineHeight: 1, marginBottom: 12, letterSpacing: "-0.02em" }}>
               <CountUp target={stat.num} display={stat.display} />
             </div>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em" }}>{stat.label}</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.5)", letterSpacing: "0.15em" }}>{stat.label}</p>
           </div>
         ))}
       </div>

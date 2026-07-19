@@ -247,7 +247,7 @@ function AccommodationFilters({ filter, onChange }) {
           style={{
             padding: '12px 16px', background: 'transparent', border: 'none',
             borderBottom: `2px solid ${filter === f.key ? '#0A0A0A' : 'transparent'}`,
-            fontSize: 12, fontWeight: 600, color: filter === f.key ? '#0A0A0A' : '#888',
+            fontSize: 12, fontWeight: 600, color: filter === f.key ? '#0A0A0A' : 'rgba(10,10,10,0.6)',
             cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'Plus Jakarta Sans', minHeight: 48, flexShrink: 0,
           }}
         >
@@ -304,7 +304,7 @@ function FeaturedPropertyCard({ property }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
         </div>
         <h3 style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', fontFamily: 'Plus Jakarta Sans' }}>{property.name}</h3>
-        <p style={{ fontSize: 13, color: '#888', margin: '0 0 12px', fontFamily: 'Plus Jakarta Sans' }}>{property.address}</p>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: 'Plus Jakarta Sans' }}>{property.address}</p>
         {property.coupleNote && (
           <div style={{ background: 'rgba(224,53,83,0.04)', borderLeft: '2px solid #E03553', padding: '10px 14px', marginBottom: 14 }}>
             <p style={{ fontSize: 13, color: '#555', fontStyle: 'italic', margin: 0, lineHeight: 1.5, fontFamily: 'Plus Jakarta Sans' }}>"{property.coupleNote}"</p>
@@ -331,7 +331,7 @@ function ManualPropertyGuestCard({ property }) {
       {property.photoUrl && <img src={property.photoUrl} alt={property.name} style={{ width: '100%', height: 180, objectFit: 'cover' }} />}
       <div style={{ padding: '16px 20px' }}>
         <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: 'Plus Jakarta Sans' }}>{property.name}</h3>
-        <p style={{ fontSize: 13, color: '#888', margin: '0 0 12px', fontFamily: 'Plus Jakarta Sans' }}>{property.address}</p>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: 'Plus Jakarta Sans' }}>{property.address}</p>
         {property.tags?.length > 0 && (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
             {property.tags.map(tag => (
@@ -390,13 +390,13 @@ function AccommodationCard({ hotel, venue }) {
         <div style={{ display: 'flex', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
           {hotel.distanceFromVenue && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(10,10,10,0.45)" strokeWidth="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
               <p style={{ fontSize: 12, color: '#666', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>{hotel.distanceFromVenue}</p>
             </div>
           )}
           {hotel.uberTime && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.8"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(10,10,10,0.45)" strokeWidth="1.8"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
               <p style={{ fontSize: 12, color: '#666', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>{hotel.uberTime}</p>
             </div>
           )}
@@ -414,7 +414,7 @@ function AccommodationCard({ hotel, venue }) {
           <div>
             {hotel.pricePerNight && (
               <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>
-                {hotel.pricePerNight} <span style={{ fontSize: 12, fontWeight: 400, color: '#888' }}>/ night</span>
+                {hotel.pricePerNight} <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}>/ night</span>
               </p>
             )}
             {hotel.freeCancellation && (
@@ -432,7 +432,7 @@ function AccommodationCard({ hotel, venue }) {
           </a>
         </div>
 
-        <p style={{ fontSize: 10, color: '#AAAAAA', marginTop: 8, lineHeight: 1.5, fontFamily: 'Plus Jakarta Sans' }}>
+        <p style={{ fontSize: 10, color: 'rgba(10,10,10,0.6)', marginTop: 8, lineHeight: 1.5, fontFamily: 'Plus Jakarta Sans' }}>
           Bookings are completed through our accommodation partners. Availability and pricing may change.
         </p>
       </div>
@@ -457,14 +457,14 @@ function SkeletonAccommodationCard() {
 function AccommodationFallback({ details }) {
   return (
     <div style={{ padding: '40px 24px', textAlign: 'center' }}>
-      <p style={{ fontSize: 14, color: '#888', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 24px', fontFamily: 'Plus Jakarta Sans' }}>
+      <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 24px', fontFamily: 'Plus Jakarta Sans' }}>
         We couldn't load live accommodation results right now. Here are the places we've personally recommended:
       </p>
       {details?.accommodation?.manualProperties?.map(p => (
         <ManualPropertyGuestCard key={p.id} property={p} />
       ))}
       {!details?.accommodation?.manualProperties?.length && (
-        <p style={{ fontSize: 14, color: '#AAAAAA', fontFamily: 'Plus Jakarta Sans' }}>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: 'Plus Jakarta Sans' }}>
           Accommodation recommendations coming soon.
         </p>
       )}
