@@ -19,7 +19,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -64,6 +64,65 @@ function ToggleRow({ label, value, onChange }) {
       <button onClick={() => onChange(!value)} aria-label={label} style={{ width: 40, height: 22, borderRadius: 11, border: 'none', background: value ? '#E03553' : 'rgba(10,10,10,0.12)', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
         <span style={{ position: 'absolute', top: 2, left: value ? 20 : 2, width: 18, height: 18, borderRadius: '50%', background: '#FFFFFF', transition: 'left 0.18s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
       </button>
+    </div>
+  );
+}
+
+function VendorFormModal({ vendor, onSubmit, onClose }) {
+  const dialogRef = useModalFocusTrap(onClose);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      onClick={onClose}
+      {...interactiveDivProps(onClose, { label: 'Close' })}>
+      <div ref={dialogRef} tabIndex={-1} style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
+        onClick={e => e.stopPropagation()}>
+        <VendorForm
+          vendor={vendor}
+          defaultCategory="music"
+          onSubmit={onSubmit}
+          onCancel={onClose}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SettingsModal({ isSpotifyConnected, spotifyConnection, handleDisconnectSpotify, details, updateMusic, onClose }) {
+  const dialogRef = useModalFocusTrap(onClose);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div ref={dialogRef} tabIndex={-1} style={{ width: '100%', maxWidth: 440, background: '#FFFFFF' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Song request settings</span>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
+        </div>
+        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {/* Spotify connection */}
+          {isSpotifyConnected && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', marginBottom: 12, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 2px' }}>Spotify connected</p>
+                <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>{spotifyConnection.displayName}</p>
+              </div>
+              <button onClick={handleDisconnectSpotify} style={{ fontSize: 12, color: '#E03553', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, padding: 0 }}>
+                Disconnect
+              </button>
+            </div>
+          )}
+          <ToggleRow label="Enable guest song requests" value={details?.music?.guestRequestsEnabled} onChange={v => updateMusic('guestRequestsEnabled', v)} />
+          <ToggleRow label="Require approval before adding" value={details?.music?.requestsRequireApproval} onChange={v => updateMusic('requestsRequireApproval', v)} />
+          <ToggleRow label="One request per guest" value={details?.music?.limitOnePerGuest} onChange={v => updateMusic('limitOnePerGuest', v)} />
+          <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span style={labelStyle}>Message to guests</span>
+            <Textarea value={details?.music?.requestMessage || ''} onChange={e => updateMusic('requestMessage', e.target.value)} placeholder="Tell guests about your song request policy…" />
+          </div>
+        </div>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={onClose} className="btn-primary" style={{ fontSize: 13 }}>Done</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -709,55 +768,23 @@ export default function MusicPage() {
 
       {/* Vendor form modal */}
       {showVendorForm && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-          onClick={() => { setShowVendorForm(false); setEditingVendor(null); }}
-          {...interactiveDivProps(() => { setShowVendorForm(false); setEditingVendor(null); }, { label: 'Close' })}>
-          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
-            onClick={e => e.stopPropagation()}>
-            <VendorForm
-              vendor={editingVendor}
-              defaultCategory="music"
-              onSubmit={handleVendorSubmit}
-              onCancel={() => { setShowVendorForm(false); setEditingVendor(null); }}
-            />
-          </div>
-        </div>
+        <VendorFormModal
+          vendor={editingVendor}
+          onSubmit={handleVendorSubmit}
+          onClose={() => { setShowVendorForm(false); setEditingVendor(null); }}
+        />
       )}
 
       {/* Settings modal */}
       {showSettings && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ width: '100%', maxWidth: 440, background: '#FFFFFF' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-              <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Song request settings</span>
-              <button onClick={() => setShowSettings(false)} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
-            </div>
-            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {/* Spotify connection */}
-              {isSpotifyConnected && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', marginBottom: 12, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 2px' }}>Spotify connected</p>
-                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>{spotifyConnection.displayName}</p>
-                  </div>
-                  <button onClick={handleDisconnectSpotify} style={{ fontSize: 12, color: '#E03553', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, padding: 0 }}>
-                    Disconnect
-                  </button>
-                </div>
-              )}
-              <ToggleRow label="Enable guest song requests" value={details?.music?.guestRequestsEnabled} onChange={v => updateMusic('guestRequestsEnabled', v)} />
-              <ToggleRow label="Require approval before adding" value={details?.music?.requestsRequireApproval} onChange={v => updateMusic('requestsRequireApproval', v)} />
-              <ToggleRow label="One request per guest" value={details?.music?.limitOnePerGuest} onChange={v => updateMusic('limitOnePerGuest', v)} />
-              <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <span style={labelStyle}>Message to guests</span>
-                <Textarea value={details?.music?.requestMessage || ''} onChange={e => updateMusic('requestMessage', e.target.value)} placeholder="Tell guests about your song request policy…" />
-              </div>
-            </div>
-            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowSettings(false)} className="btn-primary" style={{ fontSize: 13 }}>Done</button>
-            </div>
-          </div>
-        </div>
+        <SettingsModal
+          isSpotifyConnected={isSpotifyConnected}
+          spotifyConnection={spotifyConnection}
+          handleDisconnectSpotify={handleDisconnectSpotify}
+          details={details}
+          updateMusic={updateMusic}
+          onClose={() => setShowSettings(false)}
+        />
       )}
 
       <AvaModal

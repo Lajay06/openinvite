@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Edit3, Trash2, Heart, ExternalLink, Eye, X, Save, Image as ImageIcon } from 'lucide-react';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -26,6 +26,80 @@ const CATEGORY_COLORS = {
   lighting:     { color: '#FFFFFF', bg: '#8a9a00' },
   other:        { color: '#FFFFFF', bg: 'rgba(10,10,10,0.6)' },
 };
+
+function EditItemModal({ item, editData, setEditData, onSave, onClose }) {
+  const dialogRef = useModalFocusTrap(onClose);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={onClose} {...interactiveDivProps(onClose, { label: 'Close' })}>
+      <div ref={dialogRef} tabIndex={-1} style={{ width: '100%', maxWidth: 440, background: '#FFFFFF' }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Edit item</span>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={14} /></button>
+        </div>
+        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Label style={labelStyle}>Title</Label>
+            <Input value={editData.title} onChange={e => setEditData(p => ({ ...p, title: e.target.value }))} placeholder="Title" />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Label style={labelStyle}>Tags</Label>
+            <Input value={editData.tags} onChange={e => setEditData(p => ({ ...p, tags: e.target.value }))} placeholder="romantic, vintage, outdoor" />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Label style={labelStyle}>Notes</Label>
+            <Textarea value={editData.notes} onChange={e => setEditData(p => ({ ...p, notes: e.target.value }))} placeholder="What you love about this…" />
+          </div>
+        </div>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
+          <button onClick={onSave} className="btn-primary" style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Save size={13} />Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FullViewModal({ item, onClose }) {
+  const dialogRef = useModalFocusTrap(onClose);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={onClose} {...interactiveDivProps(onClose, { label: 'Close' })}>
+      <div ref={dialogRef} tabIndex={-1} style={{ display: 'flex', maxWidth: 1100, width: '100%', maxHeight: '90vh', overflow: 'hidden', background: '#FFFFFF' }} onClick={e => e.stopPropagation()}>
+        <div style={{ flex: 1, background: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <img src={item.image_url} alt={item.title} style={{ maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain' }} />
+        </div>
+        <div style={{ width: 320, padding: 24, display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", flex: 1, margin: 0 }}>{item.title}</p>
+            <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, flexShrink: 0 }}><X size={16} /></button>
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {item.category}
+          </span>
+          {item.notes && <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.6 }}>{item.notes}</p>}
+          {item.tags?.length > 0 && (
+            <div>
+              <p style={{ ...labelStyle, marginBottom: 8 }}>Tags</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {item.tags.map((tag, i) => (
+                  <span key={i} style={{ fontSize: 11, padding: '2px 10px', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{tag}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {item.source_url && (
+            <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none', marginTop: 'auto' }}>
+              <ExternalLink size={12} />View source
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
   const [hovered, setHovered] = useState(false);
@@ -89,70 +163,18 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
 
       {/* Edit modal */}
       {isEditing && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={() => setIsEditing(false)} {...interactiveDivProps(() => setIsEditing(false), { label: 'Close' })}>
-          <div style={{ width: '100%', maxWidth: 440, background: '#FFFFFF' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Edit item</span>
-              <button onClick={() => setIsEditing(false)} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={14} /></button>
-            </div>
-            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Label style={labelStyle}>Title</Label>
-                <Input value={editData.title} onChange={e => setEditData(p => ({ ...p, title: e.target.value }))} placeholder="Title" />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Label style={labelStyle}>Tags</Label>
-                <Input value={editData.tags} onChange={e => setEditData(p => ({ ...p, tags: e.target.value }))} placeholder="romantic, vintage, outdoor" />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Label style={labelStyle}>Notes</Label>
-                <Textarea value={editData.notes} onChange={e => setEditData(p => ({ ...p, notes: e.target.value }))} placeholder="What you love about this…" />
-              </div>
-            </div>
-            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button onClick={() => setIsEditing(false)} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
-              <button onClick={handleSave} className="btn-primary" style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Save size={13} />Save
-              </button>
-            </div>
-          </div>
-        </div>
+        <EditItemModal
+          item={item}
+          editData={editData}
+          setEditData={setEditData}
+          onSave={handleSave}
+          onClose={() => setIsEditing(false)}
+        />
       )}
 
       {/* Full view modal */}
       {showFull && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={() => setShowFull(false)} {...interactiveDivProps(() => setShowFull(false), { label: 'Close' })}>
-          <div style={{ display: 'flex', maxWidth: 1100, width: '100%', maxHeight: '90vh', overflow: 'hidden', background: '#FFFFFF' }} onClick={e => e.stopPropagation()}>
-            <div style={{ flex: 1, background: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-              <img src={item.image_url} alt={item.title} style={{ maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain' }} />
-            </div>
-            <div style={{ width: 320, padding: 24, display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", flex: 1, margin: 0 }}>{item.title}</p>
-                <button onClick={() => setShowFull(false)} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, flexShrink: 0 }}><X size={16} /></button>
-              </div>
-              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {item.category}
-              </span>
-              {item.notes && <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.6 }}>{item.notes}</p>}
-              {item.tags?.length > 0 && (
-                <div>
-                  <p style={{ ...labelStyle, marginBottom: 8 }}>Tags</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                    {item.tags.map((tag, i) => (
-                      <span key={i} style={{ fontSize: 11, padding: '2px 10px', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{tag}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {item.source_url && (
-                <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none', marginTop: 'auto' }}>
-                  <ExternalLink size={12} />View source
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
+        <FullViewModal item={item} onClose={() => setShowFull(false)} />
       )}
     </>
   );

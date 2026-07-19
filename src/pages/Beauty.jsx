@@ -11,7 +11,7 @@ import VendorList from '../components/vendors/VendorList';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
-import { interactiveDivProps } from "@/lib/a11y";
+import { interactiveDivProps, useModalFocusTrap } from "@/lib/a11y";
 const WeddingDetails = base44.entities.WeddingDetails;
 const Vendor = base44.entities.Vendor;
 
@@ -81,6 +81,26 @@ const TABS = [
   { key: 'trials',        label: 'Trial planning' },
   { key: 'considerations',label: 'Considerations' },
 ];
+
+function VendorFormModal({ vendor, onSubmit, onClose }) {
+  const dialogRef = useModalFocusTrap(onClose);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      onClick={onClose}
+      {...interactiveDivProps(onClose, { label: 'Close' })}>
+      <div ref={dialogRef} tabIndex={-1} style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
+        onClick={e => e.stopPropagation()}>
+        <VendorForm
+          vendor={vendor}
+          defaultCategory="beauty"
+          onSubmit={onSubmit}
+          onCancel={onClose}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function BeautyPage() {
   const [vendors, setVendors] = useState([]);
@@ -620,19 +640,11 @@ export default function BeautyPage() {
 
       {/* Vendor form modal */}
       {showVendorForm && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-          onClick={() => { setShowVendorForm(false); setEditingVendor(null); }}
-          {...interactiveDivProps(() => { setShowVendorForm(false); setEditingVendor(null); }, { label: 'Close' })}>
-          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
-            onClick={e => e.stopPropagation()}>
-            <VendorForm
-              vendor={editingVendor}
-              defaultCategory="beauty"
-              onSubmit={handleVendorSubmit}
-              onCancel={() => { setShowVendorForm(false); setEditingVendor(null); }}
-            />
-          </div>
-        </div>
+        <VendorFormModal
+          vendor={editingVendor}
+          onSubmit={handleVendorSubmit}
+          onClose={() => { setShowVendorForm(false); setEditingVendor(null); }}
+        />
       )}
 
       <AvaModal

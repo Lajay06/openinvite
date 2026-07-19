@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { X, CalendarCheck } from 'lucide-react';
 import { getGuestEventResponse, toggleEventInvite } from '@/lib/weddingEvents';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 
@@ -90,10 +90,12 @@ export default function SetEventsModal({ guests, weddingEvents, onUpdate, onClos
     }
   };
 
+  const dialogRef = useModalFocusTrap(onClose);
+
   return (
     <>
       <div onClick={onClose} {...interactiveDivProps(onClose, { label: 'Close set events modal' })} style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(10,10,10,0.55)' }} />
-      <div style={{
+      <div ref={dialogRef} tabIndex={-1} style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
         zIndex: 1000, width: 'min(90vw, 420px)', background: '#FFFFFF',
         border: '1px solid rgba(10,10,10,0.08)', ...F,

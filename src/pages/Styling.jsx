@@ -16,7 +16,7 @@ import AvaModal from '@/components/layout/AvaModal';
 import AttirePanel from '../components/styling/AttirePanel';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 const WeddingDetails = base44.entities.WeddingDetails;
 const Vendor = base44.entities.Vendor;
 
@@ -27,6 +27,25 @@ const initialDetailsState = {
     decorations: {},
     attire: {}
 };
+
+function VendorFormModal({ vendorFormCategory, onSubmit, onClose }) {
+  const dialogRef = useModalFocusTrap(onClose);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      onClick={onClose}
+      {...interactiveDivProps(onClose, { label: 'Close' })}>
+      <div ref={dialogRef} tabIndex={-1} style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
+        onClick={e => e.stopPropagation()}>
+        <VendorForm
+          defaultCategory={vendorFormCategory}
+          onSubmit={onSubmit}
+          onCancel={onClose}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function StylingPage() {
   const [details, setDetails] = useState(initialDetailsState);
@@ -406,18 +425,11 @@ const [activeTab, setActiveTab] = useState("attire");
 
       {/* Vendor form modal */}
       {showVendorForm && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-          onClick={() => setShowVendorForm(false)}
-          {...interactiveDivProps(() => setShowVendorForm(false), { label: 'Close' })}>
-          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
-            onClick={e => e.stopPropagation()}>
-            <VendorForm
-              defaultCategory={vendorFormCategory}
-              onSubmit={handleVendorFormSubmit}
-              onCancel={() => setShowVendorForm(false)}
-            />
-          </div>
-        </div>
+        <VendorFormModal
+          vendorFormCategory={vendorFormCategory}
+          onSubmit={handleVendorFormSubmit}
+          onClose={() => setShowVendorForm(false)}
+        />
       )}
 
       <AvaModal

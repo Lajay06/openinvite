@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Search, Check } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -23,6 +23,8 @@ export default function CurrencyModal({ onClose }) {
     onClose();
   };
 
+  const dialogRef = useModalFocusTrap(onClose);
+
   return (
     <div
       className="fixed inset-0 flex items-center justify-center z-[9999]"
@@ -31,6 +33,8 @@ export default function CurrencyModal({ onClose }) {
       {...interactiveDivProps(onClose, { label: 'Close currency modal' })}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         onClick={e => e.stopPropagation()}
         style={{ background: '#FFFFFF', border: '1px solid #E5E5E5', width: '100%', maxWidth: 400, padding: 32 }}
       >
@@ -44,7 +48,6 @@ export default function CurrencyModal({ onClose }) {
         <div style={{ position: 'relative', marginBottom: 16 }}>
           <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
           <input
-            autoFocus
             placeholder="Search currency…"
             value={query}
             onChange={e => setQuery(e.target.value)}

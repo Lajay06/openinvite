@@ -19,7 +19,7 @@ import React, { useState } from 'react';
 import { X, Search } from 'lucide-react';
 import { BLOCK_TYPES, CATEGORIES } from '@/components/guest-website/blocks/blockTypes';
 import { getUniverse } from '@/lib/universeCatalog';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const THUMB_KIND = {
   heading: 'text-lines-2', subheading: 'text-lines-1', paragraph: 'text-lines-3', quote: 'quote',
@@ -114,13 +114,15 @@ export default function ComponentLibraryModal({ onSelect, onClose, theme, typogr
 
   const universeName = getUniverse(activeUniverse)?.name || 'Your universe';
 
+  const dialogRef = useModalFocusTrap(onClose);
+
   return (
     <div
       style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       {...interactiveDivProps(onClose, { label: 'Close' })}
     >
-      <div style={{ width: '100%', maxWidth: 980, height: '82vh', maxHeight: 720, background: '#1C1C1E', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div ref={dialogRef} tabIndex={-1} style={{ width: '100%', maxWidth: 980, height: '82vh', maxHeight: 720, background: '#1C1C1E', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>

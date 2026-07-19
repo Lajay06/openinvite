@@ -7,7 +7,7 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { interactiveDivProps } from '@/lib/a11y';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -60,11 +60,13 @@ function PropertyModal({ property, onSave, onClose }) {
   const set = (field, value) => setForm(f => ({ ...f, [field]: value }));
   const toggleTag = (tag) => set('tags', form.tags.includes(tag) ? form.tags.filter(t => t !== tag) : [...form.tags, tag]);
 
+  const dialogRef = useModalFocusTrap(onClose);
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflowY: 'auto' }}
       onClick={onClose}
       {...interactiveDivProps(onClose, { label: 'Close' })}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', width: '100%', maxWidth: 560, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+      <div ref={dialogRef} tabIndex={-1} onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', width: '100%', maxWidth: 560, maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ background: '#0A1930', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Hotel size={16} style={{ color: '#DDF762' }} />
