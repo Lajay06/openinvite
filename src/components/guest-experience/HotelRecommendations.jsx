@@ -6,6 +6,7 @@ import { InvokeLLM } from '@/integrations/Core';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
+import { color } from '@/styles/tokens';
 
 const Hotel = base44.entities.Hotel;
 import HotelForm from './HotelForm';
@@ -156,7 +157,7 @@ export default function HotelRecommendations({ weddingLocation, weddingCity }) {
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />
                 <span className="font-medium">{hotel.rating || 'N/A'}</span>
                 {hotel.reviewCount && (
-                  <span className="text-gray-400">({hotel.reviewCount})</span>
+                  <span style={{ color: color.textMuted }}>({hotel.reviewCount})</span>
                 )}
               </div>
               {hotel.distance && (
@@ -237,7 +238,7 @@ export default function HotelRecommendations({ weddingLocation, weddingCity }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Hotel Recommendations</h2>
-          <p className="text-sm text-gray-500 mt-1">Handpicked accommodations near {weddingCity}</p>
+          <p className="text-sm mt-1" style={{ color: color.textMuted }}>Handpicked accommodations near {weddingCity}</p>
         </div>
         <div className="flex gap-2">
           {aiHotels.length === 0 && hasLoaded && (
@@ -294,9 +295,9 @@ export default function HotelRecommendations({ weddingLocation, weddingCity }) {
 
       {aiHotels.length === 0 && hasLoaded && customHotels.length === 0 && (
         <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-          <HotelIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <HotelIcon className="w-12 h-12 mx-auto mb-3" style={{ color: color.textDisabled }} />
           <p className="text-gray-600 mb-2">Unable to load hotel recommendations</p>
-          <p className="text-sm text-gray-500 mb-4">Network error occurred. Please try again.</p>
+          <p className="text-sm mb-4" style={{ color: color.textMuted }}>Network error occurred. Please try again.</p>
           <Button onClick={loadAIHotels} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Try Again

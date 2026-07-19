@@ -182,7 +182,7 @@ export default function Contact() {
           ) : (
             <div style={{ textAlign: "center", opacity: 1 }}>
               <p style={{ fontSize: 32, fontWeight: 700, color: "#0A0A0A", marginBottom: 16 }}>Wow, so nice of you ✦</p>
-              <p style={{ fontSize: 16, color: "#888888" }}>We'll be in touch shortly.</p>
+              <p style={{ fontSize: 16, color: "rgba(10,10,10,0.6)" }}>We'll be in touch shortly.</p>
             </div>
           )}
         </div>
@@ -206,7 +206,7 @@ export default function Contact() {
             <div style={{ borderBottom: "1px solid #E0E0DC", marginBottom: 32 }} />
 
             <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "#888888", letterSpacing: "0.15em", marginBottom: 6 }}>Email</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.6)", letterSpacing: "0.15em", marginBottom: 6 }}>Email</p>
               <p style={{ fontSize: 16, color: "#0A0A0A", fontWeight: 500 }}>hello@openinvite.com.au</p>
             </div>
 
@@ -214,10 +214,10 @@ export default function Contact() {
 
             {/* Social */}
             <div style={{ display: "flex", gap: 16 }}>
-              <a href="#" style={{ color: "#AAAAAA", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#E03553")} onMouseLeave={(e) => (e.target.style.color = "#AAAAAA")}>
+              <a href="#" style={{ color: "rgba(10,10,10,0.45)", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#E03553")} onMouseLeave={(e) => (e.target.style.color = "rgba(10,10,10,0.45)")}>
                 <Instagram size={20} strokeWidth={1.5} />
               </a>
-              <a href="#" style={{ color: "#AAAAAA", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#E03553")} onMouseLeave={(e) => (e.target.style.color = "#AAAAAA")}>
+              <a href="#" style={{ color: "rgba(10,10,10,0.45)", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#E03553")} onMouseLeave={(e) => (e.target.style.color = "rgba(10,10,10,0.45)")}>
                 <Facebook size={20} strokeWidth={1.5} />
               </a>
             </div>

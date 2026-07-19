@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, X, MapPin, Clock, ExternalLink, Star, Hotel } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { interactiveDivProps } from '@/lib/a11y';
+import { color } from '@/styles/tokens';
 
 export default function InvitationPreviewWithNav({ invitation, weddingDetails, onElementSelect, currentPage, onPageChange }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -53,7 +54,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
         <div className="flex items-start justify-between">
           <div className="flex-1 space-y-3">
             <div className="flex items-center gap-3">
-              <Hotel className="w-5 h-5 text-gray-400" />
+              <Hotel className="w-5 h-5" style={{ color: color.iconMuted }} />
               <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                 {content.name}
               </h3>
@@ -82,7 +83,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
           </div>
           
           <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <ExternalLink className="w-4 h-4 text-gray-400" />
+            <ExternalLink className="w-4 h-4" style={{ color: color.iconMuted }} />
           </div>
         </div>
       </div>
@@ -182,8 +183,8 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
       default:
         return (
           <div
-            style={baseStyles}
-            className="border border-dashed border-gray-300 p-4 rounded-lg text-center text-gray-500"
+            style={{ ...baseStyles, color: color.textMuted }}
+            className="border border-dashed border-gray-300 p-4 rounded-lg text-center"
             onClick={() => onElementSelect?.(component.id)}
             {...interactiveDivProps(() => onElementSelect?.(component.id))}
           >

@@ -139,7 +139,7 @@ export default function PublicNav() {
           {open && (
             <div className="bg-[#0A0A0A] border-t border-[#222222] px-6 py-6 space-y-4">
               {NAV_LINKS.map((link) => (
-                <Link key={link.to} to={link.to} onClick={() => setOpen(false)} className="block text-[#888888] hover:text-white text-sm transition-colors">{link.label}</Link>
+                <Link key={link.to} to={link.to} onClick={() => setOpen(false)} className="block text-[rgba(255,255,255,0.4)] hover:text-white text-sm transition-colors">{link.label}</Link>
               ))}
               <div className="flex items-center gap-3 pt-2">
                 <button onClick={handleLogin} className="text-white text-sm font-semibold" style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -213,7 +213,7 @@ export default function PublicNav() {
         {open && (
           <div className="md:hidden bg-[#0A0A0A] border-t border-[#222222] px-6 py-6 space-y-4">
             {NAV_LINKS.map((link) => (
-              <Link key={link.to} to={link.to} onClick={() => setOpen(false)} className="block text-[#888888] hover:text-white text-sm transition-colors">{link.label}</Link>
+              <Link key={link.to} to={link.to} onClick={() => setOpen(false)} className="block text-[rgba(255,255,255,0.4)] hover:text-white text-sm transition-colors">{link.label}</Link>
             ))}
             <button onClick={handleLogin} className="flex items-center gap-2 text-white text-sm font-semibold">
               <UserIcon /> Log in

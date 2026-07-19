@@ -431,11 +431,11 @@ export default function VenueSearch({
           onClick={handleClear}
           style={{
             marginTop: 10, background: 'none', border: 'none', padding: 0,
-            cursor: 'pointer', fontSize: 13, fontFamily: PJS, color: '#999',
+            cursor: 'pointer', fontSize: 13, fontFamily: PJS, color: 'rgba(10,10,10,0.6)',
             display: 'inline-block', transition: 'color 0.15s',
           }}
           onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
-          onMouseLeave={e => e.currentTarget.style.color = '#999'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}
         >
           Change venue
         </button>
@@ -518,7 +518,7 @@ export default function VenueSearch({
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {venue.name}
                   </p>
-                  <p style={{ fontSize: 12, color: '#999', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {venue.address}
                   </p>
                 </div>

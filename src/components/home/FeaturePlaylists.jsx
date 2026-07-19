@@ -84,7 +84,7 @@ export default function FeaturePlaylists() {
         <p style={{
           fontSize: 16,
           fontWeight: 400,
-          color: "#AAAAAA",
+          color: "rgba(255,255,255,0.4)",
           maxWidth: "60ch",
           margin: "0 auto 48px",
           lineHeight: 1.7,
@@ -145,7 +145,7 @@ export default function FeaturePlaylists() {
           
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {BULLETS.map((b, i) =>
-            <li key={i} style={{ padding: "12px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none", color: "#AAAAAA", fontSize: 14, lineHeight: 1.5, textAlign: "center" }}>
+            <li key={i} style={{ padding: "12px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none", color: "rgba(255,255,255,0.4)", fontSize: 14, lineHeight: 1.5, textAlign: "center" }}>
                 {b}
               </li>
             )}

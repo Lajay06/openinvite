@@ -255,7 +255,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
         borderBottom: '1px solid #E8E8E5',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24,
       }}>
-        <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: '#AAAAAA' }}>
+        <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(10,10,10,0.6)' }}>
           Openinvite daily
         </span>
 
@@ -265,7 +265,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
               {coupleName}
             </div>
           )}
-          <div style={{ fontFamily: PJS, fontSize: 11, color: '#888888', letterSpacing: '0.06em', marginTop: coupleName ? 2 : 0 }}>
+          <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.06em', marginTop: coupleName ? 2 : 0 }}>
             {dateLabel}
           </div>
         </div>

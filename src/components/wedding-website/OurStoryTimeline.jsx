@@ -1,13 +1,14 @@
 import React from 'react';
 import { Calendar, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { color } from '@/styles/tokens';
 
 export default function OurStoryTimeline({ milestones = [] }) {
   if (!milestones || milestones.length === 0) {
     return (
       <div className="text-center py-16">
         <Heart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-        <p className="text-gray-500">Our story is being written...</p>
+        <p style={{ color: color.textMuted }}>Our story is being written...</p>
       </div>
     );
   }
@@ -51,7 +52,7 @@ export default function OurStoryTimeline({ milestones = [] }) {
                   
                   {/* Text content */}
                   <div className={`p-6 ${milestone.image_url ? 'md:w-1/2' : 'w-full'}`}>
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                    <div className="flex items-center gap-2 text-xs mb-3" style={{ color: color.textMuted }}>
                       <Calendar className="w-3 h-3" />
                       <span>
                         {new Date(milestone.date).toLocaleDateString('en-US', {

@@ -751,16 +751,16 @@ function ArticlePanel({ article, onClose }) {
       background: '#FFFFFF', boxShadow: '-8px 0 40px rgba(0,0,0,0.1)',
       zIndex: 1000, padding: '32px 36px', overflowY: 'auto', boxSizing: 'border-box',
     }}>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#888', marginBottom: 24, fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'block', padding: 0 }}>← Back to Help Centre</button>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.6)', marginBottom: 24, fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'block', padding: 0 }}>← Back to Help Centre</button>
       <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 4, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>{article.title}</h2>
-      <p style={{ fontSize: 12, color: '#AAAAAA', marginBottom: 32, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 4 }}>{article.time}</p>
+      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginBottom: 32, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 4 }}>{article.time}</p>
       <div style={{ fontSize: 15, color: '#333', lineHeight: 1.8, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
         {content || (
           <p style={S.p}>Content for this article is coming soon.</p>
         )}
       </div>
       <div style={{ borderTop: '1px solid #EEEEEE', marginTop: 40, paddingTop: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <p style={{ fontSize: 13, color: '#888', margin: 0, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Was this helpful?</p>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Was this helpful?</p>
         <button style={{ padding: '6px 16px', border: '1px solid #EEEEEE', background: 'transparent', color: '#444', fontSize: 13, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Yes</button>
         <button style={{ padding: '6px 16px', border: '1px solid #EEEEEE', background: 'transparent', color: '#444', fontSize: 13, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>No</button>
       </div>
@@ -799,7 +799,7 @@ export default function Help() {
       <div style={{ padding: '40px 40px 80px', maxWidth: 1100, margin: '0 auto', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 600, margin: '0 auto 48px', textAlign: 'center' }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, color: '#0A0A0A', marginBottom: 8, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>How can we help?</h2>
-          <p style={{ fontSize: 15, color: '#888', marginBottom: 24 }}>Search our guides, tutorials, and FAQs</p>
+          <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', marginBottom: 24 }}>Search our guides, tutorials, and FAQs</p>
           <div style={{ position: 'relative' }}>
             <input
               value={searchQuery}
@@ -807,7 +807,7 @@ export default function Help() {
               placeholder="Search help articles..."
               style={{ width: '100%', border: '1px solid #EEEEEE', padding: '14px 20px 14px 44px', fontSize: 15, outline: 'none', boxSizing: 'border-box', background: '#FAFAFA', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
             />
-            <svg style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#AAAAAA" strokeWidth="2">
+            <svg style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(10,10,10,0.45)" strokeWidth="2">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
           </div>
@@ -827,7 +827,7 @@ export default function Help() {
                   {Icon && <Icon size={20} strokeWidth={1.5} />}
                 </div>
                 <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', marginBottom: 4, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>{cat.title}</p>
-                <p style={{ fontSize: 13, color: '#888', marginBottom: 20, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>{cat.description}</p>
+                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', marginBottom: 20, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>{cat.description}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                   {cat.articles.map((article, ai) => (
                     <div
@@ -837,7 +837,7 @@ export default function Help() {
                       {...interactiveDivProps(() => setSelectedArticle({ ...article, category: cat.title }))}
                     >
                       <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 500 }}>{article.title}</span>
-                      <span style={{ fontSize: 11, color: '#AAAAAA', whiteSpace: 'nowrap', marginLeft: 8 }}>{article.time}</span>
+                      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', whiteSpace: 'nowrap', marginLeft: 8 }}>{article.time}</span>
                     </div>
                   ))}
                 </div>
@@ -848,7 +848,7 @@ export default function Help() {
 
         <div style={{ textAlign: 'center', borderTop: '1px solid #EEEEEE', paddingTop: 40, marginTop: 40 }}>
           <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', marginBottom: 8, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>Still need help?</p>
-          <p style={{ fontSize: 14, color: '#888', marginBottom: 24 }}>Our team is here Monday to Friday, 9am–5pm AEST</p>
+          <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 24 }}>Our team is here Monday to Friday, 9am–5pm AEST</p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
             <button className="btn-primary" style={{ padding: '12px 24px', fontSize: 13 }}>
               Contact Support

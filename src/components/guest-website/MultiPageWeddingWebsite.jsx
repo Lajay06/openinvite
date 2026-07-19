@@ -29,7 +29,7 @@ function PasswordGateSimple({ slug, onUnlock }) {
       <div style={{ maxWidth: 340, width: '100%', textAlign: 'center' }}>
         <p style={{ fontSize: 24, marginBottom: 8 }}>🔒</p>
         <h2 style={{ color: '#fff', fontSize: 20, fontWeight: 700, marginBottom: 8 }}>This site is password protected</h2>
-        <p style={{ color: '#888', fontSize: 13, marginBottom: 24 }}>Enter the password to continue</p>
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 24 }}>Enter the password to continue</p>
         <input type="password" value={val} onChange={e => { setVal(e.target.value); setError(false); }} onKeyDown={e => e.key === 'Enter' && submit()}
           placeholder="Password" style={{ width: '100%', padding: '12px 16px', background: '#1a1a1a', border: `1px solid ${error ? '#E03553' : '#333'}`, color: '#fff', fontSize: 14, outline: 'none', borderRadius: 4, marginBottom: 12, boxSizing: 'border-box' }} />
         {error && <p style={{ color: '#E03553', fontSize: 12, marginBottom: 8 }}>Incorrect password</p>}

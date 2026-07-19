@@ -12,7 +12,7 @@ const sans = "'Plus Jakarta Sans', sans-serif";
 // ── Shared primitives ─────────────────────────────────────────
 function Label({ children, mode }) {
   const dark = mode === 'dark';
-  return <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : '#999', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>{children}</p>;
+  return <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>{children}</p>;
 }
 
 function AvaInput({ label, value, onChange, placeholder, rows, mode }) {
@@ -70,7 +70,7 @@ function AvaMediaPicker({ label, value, onChange, mode }) {
           onMouseLeave={e => { e.currentTarget.style.borderColor = dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'; }}
         >
           <div style={{ fontSize: 28, marginBottom: 8 }}>🖼</div>
-          <p style={{ fontSize: 13, color: dark ? 'rgba(255,255,255,0.4)' : '#888', margin: 0 }}>Click to select a photo</p>
+          <p style={{ fontSize: 13, color: dark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.6)', margin: 0 }}>Click to select a photo</p>
         </div>
       )}
     </div>
@@ -81,8 +81,8 @@ function MasterRef({ label, value, mode }) {
   const dark = mode === 'dark';
   return (
     <div style={{ marginBottom: 16, padding: '12px 16px', background: dark ? 'rgba(255,255,255,0.04)' : '#F8F8F8', border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : '#EEEEEE'}` }}>
-      <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.3)' : '#999', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>{label}</p>
-      <p style={{ fontSize: 14, color: value ? (dark ? '#FFFFFF' : '#0A0A0A') : (dark ? 'rgba(255,255,255,0.25)' : '#AAAAAA'), margin: 0 }}>{value || 'Not set in planner'}</p>
+      <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>{label}</p>
+      <p style={{ fontSize: 14, color: value ? (dark ? '#FFFFFF' : '#0A0A0A') : (dark ? 'rgba(255,255,255,0.25)' : 'rgba(10,10,10,0.58)'), margin: 0 }}>{value || 'Not set in planner'}</p>
     </div>
   );
 }
@@ -103,7 +103,7 @@ const makeSteps = (data, update, mode) => [
     renderInput: () => (
       <div>
         <AvaInput label="WELCOME MESSAGE" value={data.welcomeMessage} onChange={v => update('welcomeMessage', v)} placeholder="Write a warm message to your guests..." rows={3} mode={mode} />
-        <p style={{ fontSize: 12, color: mode === 'dark' ? 'rgba(255,255,255,0.3)' : '#AAA', marginTop: -8 }}>Keep it short and personal. 1-2 sentences is perfect.</p>
+        <p style={{ fontSize: 12, color: mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(10,10,10,0.6)', marginTop: -8 }}>Keep it short and personal. 1-2 sentences is perfect.</p>
       </div>
     ),
   },
@@ -192,7 +192,7 @@ const makeSteps = (data, update, mode) => [
               <button onClick={() => upd('registryLinks', links.filter((_, j) => j !== i))} aria-label="Remove registry link" style={{ background: 'none', border: 'none', color: '#E03553', cursor: 'pointer', fontSize: 18, padding: 0 }}>×</button>
             </div>
           ))}
-          <button onClick={() => upd('registryLinks', [...links, { label: '', url: '' }])} style={{ background: 'transparent', border: `1px dashed ${mode === 'dark' ? 'rgba(255,255,255,0.15)' : '#DDD'}`, color: mode === 'dark' ? 'rgba(255,255,255,0.4)' : '#888', padding: '8px 16px', fontSize: 12, cursor: 'pointer', fontFamily: sans, width: '100%', marginTop: 4 }}>
+          <button onClick={() => upd('registryLinks', [...links, { label: '', url: '' }])} style={{ background: 'transparent', border: `1px dashed ${mode === 'dark' ? 'rgba(255,255,255,0.15)' : '#DDD'}`, color: mode === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.6)', padding: '8px 16px', fontSize: 12, cursor: 'pointer', fontFamily: sans, width: '100%', marginTop: 4 }}>
             + Add Registry
           </button>
         </div>
@@ -232,7 +232,7 @@ const makeSteps = (data, update, mode) => [
               <AvaInput label="ANSWER" value={item.answer} onChange={v => { const n = [...items]; n[i] = { ...item, answer: v }; upd(n); }} rows={2} mode={mode} />
             </div>
           ))}
-          <button onClick={() => upd([...items, { question: '', answer: '' }])} style={{ background: 'transparent', border: `1px dashed ${mode === 'dark' ? 'rgba(255,255,255,0.15)' : '#DDD'}`, color: mode === 'dark' ? 'rgba(255,255,255,0.4)' : '#888', padding: '10px 16px', fontSize: 12, cursor: 'pointer', fontFamily: sans, width: '100%' }}>
+          <button onClick={() => upd([...items, { question: '', answer: '' }])} style={{ background: 'transparent', border: `1px dashed ${mode === 'dark' ? 'rgba(255,255,255,0.15)' : '#DDD'}`, color: mode === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.6)', padding: '10px 16px', fontSize: 12, cursor: 'pointer', fontFamily: sans, width: '100%' }}>
             + Add FAQ
           </button>
         </div>
@@ -261,7 +261,7 @@ export default function AvaStudioWebsite() {
   const dark = mode === 'dark';
   const bg = dark ? '#0A0A0A' : '#FFFFFF';
   const fg = dark ? '#FFFFFF' : '#0A0A0A';
-  const sub = dark ? 'rgba(255,255,255,0.4)' : '#888';
+  const sub = dark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.6)';
 
   useEffect(() => {
     getMyWeddingDetails().then(details => {

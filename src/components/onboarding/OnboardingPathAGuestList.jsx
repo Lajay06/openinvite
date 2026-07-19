@@ -49,7 +49,7 @@ export default function OnboardingPathAGuestList({ onNext, data }) {
           <div>
             <label className="block mb-4">
               <div className="border-2 border-dashed border-[#333] rounded-none p-12 cursor-pointer hover:border-[#E03553] transition-colors">
-                <Upload className="w-8 h-8 text-[#888888] mx-auto mb-3" />
+                <Upload className="w-8 h-8 text-[rgba(255,255,255,0.4)] mx-auto mb-3" />
                 <p className="text-white font-medium">Upload CSV or Excel file</p>
                 <p className="text-[#666666] text-sm mt-1">Expected columns: Name, Email, Phone, Group</p>
               </div>

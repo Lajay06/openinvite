@@ -12,6 +12,7 @@ import AIWeddingAssistant from '../components/shared/AIWeddingAssistant';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import UploadStatus from '@/components/shared/UploadStatus';
+import { color } from '@/styles/tokens';
 
 export default function OurStoryPage() {
   const [milestones, setMilestones] = useState([]);
@@ -178,7 +179,7 @@ export default function OurStoryPage() {
         {/* Header */}
         <div>
           <h1 className="text-5xl font-bold text-gray-900 mb-2">Our Story</h1>
-          <p className="text-gray-500 text-base">
+          <p className="text-base" style={{ color: color.textMuted }}>
             Create a beautiful timeline of your relationship journey
           </p>
         </div>
@@ -268,8 +269,8 @@ export default function OurStoryPage() {
                   ) : imageUpload.status === 'uploading' || imageUpload.status === 'error' ? null : (
                     <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <ImageIcon className="w-8 h-8 mb-2 text-gray-400" />
-                        <p className="text-sm text-gray-500">Click to upload photo</p>
+                        <ImageIcon className="w-8 h-8 mb-2" style={{ color: color.iconMuted }} />
+                        <p className="text-sm" style={{ color: color.textMuted }}>Click to upload photo</p>
                       </div>
                       <input
                         type="file"
@@ -305,7 +306,7 @@ export default function OurStoryPage() {
           {milestones.length === 0 ? (
             <Card className="border-0 shadow-sm">
               <CardContent className="p-12 text-center">
-                <p className="text-gray-500">
+                <p style={{ color: color.textMuted }}>
                   No milestones yet. Add your first milestone above!
                 </p>
               </CardContent>
@@ -337,7 +338,7 @@ export default function OurStoryPage() {
                                   {...provided.dragHandleProps}
                                   className="mt-2 cursor-grab active:cursor-grabbing"
                                 >
-                                  <GripVertical className="w-5 h-5 text-gray-400" />
+                                  <GripVertical className="w-5 h-5" style={{ color: color.iconMuted }} />
                                 </div>
                                 
                                 {milestone.image_url && (
@@ -352,7 +353,7 @@ export default function OurStoryPage() {
                                   <h3 className="font-medium text-gray-900 mb-1">
                                     {milestone.title}
                                   </h3>
-                                  <p className="text-sm text-gray-500 mb-2">
+                                  <p className="text-sm mb-2" style={{ color: color.textMuted }}>
                                     {new Date(milestone.date).toLocaleDateString('en-US', {
                                       month: 'long',
                                       day: 'numeric',

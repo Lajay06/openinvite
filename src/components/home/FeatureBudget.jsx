@@ -123,12 +123,12 @@ export default function FeatureBudget() {
           >
             Smart <span style={{ background: "linear-gradient(135deg, #E03553, #803D81)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Budget</span> Tracking
           </h2>
-          <p ref={bodyRef} className="feature-body-text" style={{ color: "#AAAAAA", lineHeight: 1.7, marginBottom: 32, fontSize: 16, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+          <p ref={bodyRef} className="feature-body-text" style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.7, marginBottom: 32, fontSize: 16, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
             Plan like a pro. Our budgeting tools give you full visibility, clear control, and a few clever nudges to keep things beautifully on track.
           </p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {BULLETS.map((b, i) => (
-              <li key={i} style={{ padding: "11px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none", color: "#AAAAAA", fontSize: 14, lineHeight: 1.5 }}>
+              <li key={i} style={{ padding: "11px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none", color: "rgba(255,255,255,0.4)", fontSize: 14, lineHeight: 1.5 }}>
                 {b}
               </li>
             ))}

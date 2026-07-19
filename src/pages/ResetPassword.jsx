@@ -130,7 +130,7 @@ export default function ResetPassword() {
             <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", margin: "0 0 12px", fontFamily: PJS }}>
               Invalid link.
             </h1>
-            <p style={{ fontSize: 14, color: "#999999", fontFamily: PJS, lineHeight: 1.55, margin: "0 0 24px" }}>
+            <p style={{ fontSize: 14, color: "rgba(10,10,10,0.6)", fontFamily: PJS, lineHeight: 1.55, margin: "0 0 24px" }}>
               This reset link is missing or has expired. Please request a new one.
             </p>
             <a
@@ -176,7 +176,7 @@ export default function ResetPassword() {
                 <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", margin: "0 0 8px", fontFamily: PJS }}>
                   Password updated.
                 </h1>
-                <p style={{ fontSize: 14, color: "#999999", fontFamily: PJS, lineHeight: 1.55, margin: 0 }}>
+                <p style={{ fontSize: 14, color: "rgba(10,10,10,0.6)", fontFamily: PJS, lineHeight: 1.55, margin: 0 }}>
                   Your password has been successfully reset. You can now sign in with your new password.
                 </p>
               </motion.div>
@@ -215,7 +215,7 @@ export default function ResetPassword() {
                 <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", margin: "0 0 8px", fontFamily: PJS }}>
                   Set a new password.
                 </h1>
-                <p style={{ fontSize: 14, color: "#999999", fontFamily: PJS, lineHeight: 1.55, margin: 0 }}>
+                <p style={{ fontSize: 14, color: "rgba(10,10,10,0.6)", fontFamily: PJS, lineHeight: 1.55, margin: 0 }}>
                   Choose a strong password for your account.
                 </p>
               </motion.div>
@@ -264,7 +264,7 @@ export default function ResetPassword() {
                 </PrimaryBtn>
               </form>
 
-              <p style={{ textAlign: "center", fontSize: 13, color: "#999", marginTop: 20, fontFamily: PJS }}>
+              <p style={{ textAlign: "center", fontSize: 13, color: "rgba(10,10,10,0.6)", marginTop: 20, fontFamily: PJS }}>
                 <a
                   href="/login"
                   style={{ color: "#E03553", textDecoration: "none", fontWeight: 600, fontSize: 13, fontFamily: PJS }}

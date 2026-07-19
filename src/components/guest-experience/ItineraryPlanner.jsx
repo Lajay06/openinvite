@@ -10,6 +10,7 @@ import {
   Sunset,
   Moon
 } from 'lucide-react';
+import { color } from '@/styles/tokens';
 
 export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
   const [activeItinerary, setActiveItinerary] = useState('1-day');
@@ -119,7 +120,7 @@ export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
           </div>
           <p className="text-xs text-gray-600 mb-2">{activity.description}</p>
           
-          <div className="flex items-center gap-3 text-xs text-gray-500">
+          <div className="flex items-center gap-3 text-xs" style={{ color: color.textMuted }}>
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
               <span>{activity.duration}</span>
@@ -140,7 +141,7 @@ export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Itinerary Planner</h2>
-          <p className="text-sm text-gray-500 mt-1">Day-by-day guides for your visit to {weddingCity}</p>
+          <p className="text-sm mt-1" style={{ color: color.textMuted }}>Day-by-day guides for your visit to {weddingCity}</p>
         </div>
       </div>
 

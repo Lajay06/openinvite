@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { color } from '@/styles/tokens';
 
 export default function OutfitSurvey({ settings, onUpdate }) {
   
@@ -14,7 +15,7 @@ export default function OutfitSurvey({ settings, onUpdate }) {
     <Card>
       <CardHeader>
         <CardTitle className="text-sm">Outfit Inspiration Survey</CardTitle>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs" style={{ color: color.textMuted }}>
           Collect outfit ideas from your guests to create a fun, collaborative lookbook!
         </p>
       </CardHeader>

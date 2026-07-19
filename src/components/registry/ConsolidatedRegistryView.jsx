@@ -34,7 +34,7 @@ export default function ConsolidatedRegistryView({ storeItems, products, customG
           { label: 'Completion', value: `${completionRate}%` },
         ].map((s, i, arr) => (
           <div key={i} style={{ paddingRight: i < arr.length - 1 ? 32 : 0, borderRight: i < arr.length - 1 ? '1px solid #E5E5E5' : 'none' }}>
-            <p style={{ ...labelStyle, color: '#999999', marginBottom: 6 }}>{s.label}</p>
+            <p style={{ ...labelStyle, color: 'rgba(10,10,10,0.6)', marginBottom: 6 }}>{s.label}</p>
             <p style={{ fontSize: 28, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</p>
           </div>
         ))}

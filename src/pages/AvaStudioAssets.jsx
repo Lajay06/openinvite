@@ -15,7 +15,7 @@ function AvaInput({ label, value, onChange, placeholder, rows, mode }) {
   const shared = { width: '100%', background: 'transparent', fontFamily: sans, fontSize: 15, color: dark ? '#FFF' : '#0A0A0A', outline: 'none', boxSizing: 'border-box', border: 'none', borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'}`, padding: '8px 0' };
   return (
     <div style={{ marginBottom: 18 }}>
-      {label && <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : '#999', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>{label}</p>}
+      {label && <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>{label}</p>}
       {rows ? (
         <textarea value={value || ''} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows}
           style={{ ...shared, resize: 'vertical', lineHeight: 1.6 }}
@@ -37,7 +37,7 @@ function AvaMediaPicker({ label, value, onChange, mode }) {
   const ctx = React.useContext(MediaLibraryContext);
   return (
     <div style={{ marginBottom: 18 }}>
-      {label && <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : '#999', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>{label}</p>}
+      {label && <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>{label}</p>}
       {value ? (
         <div style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', aspectRatio: '16/9' }}>
           <img src={value} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt="" />
@@ -52,7 +52,7 @@ function AvaMediaPicker({ label, value, onChange, mode }) {
           onMouseLeave={e => e.currentTarget.style.borderColor = dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'}
         >
           <div style={{ fontSize: 26, marginBottom: 8 }}>🖼</div>
-          <p style={{ fontSize: 13, color: dark ? 'rgba(255,255,255,0.35)' : '#888', margin: 0 }}>Click to select a photo</p>
+          <p style={{ fontSize: 13, color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(10,10,10,0.6)', margin: 0 }}>Click to select a photo</p>
         </div>
       )}
     </div>
@@ -121,7 +121,7 @@ export default function AvaStudioAssets() {
   const dark = mode === 'dark';
   const bg = dark ? '#0A0A0A' : '#FFFFFF';
   const fg = dark ? '#FFFFFF' : '#0A0A0A';
-  const sub = dark ? 'rgba(255,255,255,0.4)' : '#888';
+  const sub = dark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.6)';
 
   useEffect(() => {
     getMyWeddingDetails().then(r => {

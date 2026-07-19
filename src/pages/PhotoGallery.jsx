@@ -22,6 +22,7 @@ import toast from 'react-hot-toast';
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import { useFileUpload } from '@/hooks/useFileUpload';
 import UploadStatus from '@/components/shared/UploadStatus';
+import { color } from '@/styles/tokens';
 
 export default function PhotoGalleryPage() {
   const [photos, setPhotos] = useState([]);
@@ -172,7 +173,7 @@ export default function PhotoGalleryPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: color.iconMuted }} />
       </div>
     );
   }
@@ -185,7 +186,7 @@ export default function PhotoGalleryPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-1">Photo Gallery</h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm" style={{ color: color.textMuted }}>
               Upload and manage your wedding photos
             </p>
           </div>
@@ -201,19 +202,19 @@ export default function PhotoGalleryPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="text-xs text-gray-500 mb-1">Total Photos</div>
+            <div className="text-xs mb-1" style={{ color: color.textMuted }}>Total Photos</div>
             <div className="text-2xl font-bold text-gray-900">{stats.totalPhotos}</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="text-xs text-gray-500 mb-1">Visible to Guests</div>
+            <div className="text-xs mb-1" style={{ color: color.textMuted }}>Visible to Guests</div>
             <div className="text-2xl font-bold text-green-600">{stats.visiblePhotos}</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="text-xs text-gray-500 mb-1">Engagement</div>
+            <div className="text-xs mb-1" style={{ color: color.textMuted }}>Engagement</div>
             <div className="text-2xl font-bold text-gray-900">{stats.byCategory.engagement || 0}</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="text-xs text-gray-500 mb-1">Ceremony</div>
+            <div className="text-xs mb-1" style={{ color: color.textMuted }}>Ceremony</div>
             <div className="text-2xl font-bold text-gray-900">{stats.byCategory.ceremony || 0}</div>
           </div>
         </div>

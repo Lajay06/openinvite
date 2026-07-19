@@ -118,7 +118,7 @@ function AssetCard({ asset, universe, weddingDetails, guests, onEdit }) {
       {/* Info */}
       <div style={{ padding: '12px 14px 14px' }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', marginBottom: 2 }}>{asset.label}</p>
-        <p style={{ fontSize: 11, color: '#888888' }}>{asset.description}</p>
+        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>{asset.description}</p>
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>

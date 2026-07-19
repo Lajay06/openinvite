@@ -6,6 +6,7 @@ import { Sparkles, Send, X, User, Lightbulb, Calendar, DollarSign, Palette, User
 import { motion, AnimatePresence } from "framer-motion";
 import { InvokeLLM } from "@/integrations/Core";
 import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
+import { color } from '@/styles/tokens';
 
 export default function AIWeddingAssistant() {
   const [isOpen, setIsOpen] = useState(false);
@@ -233,7 +234,7 @@ export default function AIWeddingAssistant() {
                       </div>
                       <div>
                         <CardTitle className="text-lg text-gray-900">Ask Ava</CardTitle>
-                        <p className="text-sm text-gray-500">Your personal wedding planning expert</p>
+                        <p className="text-sm" style={{ color: color.textMuted }}>Your personal wedding planning expert</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
@@ -264,7 +265,7 @@ export default function AIWeddingAssistant() {
                           }`}>
                             <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1 px-2">
+                          <p className="text-xs mt-1 px-2" style={{ color: color.textMuted }}>
                             {formatTime(message.timestamp)}
                           </p>
                         </div>
@@ -297,7 +298,7 @@ export default function AIWeddingAssistant() {
                   {messages.length <= 2 && (
                     <div className="p-4 border-t border-gray-100 bg-white">
                       <div className="flex items-center gap-2 mb-3">
-                        <Lightbulb className="w-4 h-4 text-gray-500" />
+                        <Lightbulb className="w-4 h-4" style={{ color: color.iconMuted }} />
                         <span className="text-sm font-medium text-gray-700">I can help you with:</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2">

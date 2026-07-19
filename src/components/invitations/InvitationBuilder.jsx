@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { base44 } from "@/api/base44Client";
+import { color } from '@/styles/tokens';
 const Invitation = base44.entities.Invitation;
 
 // This is now a simple, one-step builder to gather initial details.
@@ -76,7 +77,7 @@ export default function InvitationBuilder({ onInvitationSaved, onBack }) {
               <Sparkles className="w-8 h-8 text-pink-500" />
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Create Your Wedding Website</h1>
-                <p className="text-gray-500">Let's start with the basics. You can design everything else in the studio.</p>
+                <p style={{ color: color.textMuted }}>Let's start with the basics. You can design everything else in the studio.</p>
               </div>
             </div>
             {/* The onBack button is removed as this is now the initial step if no invitation exists */}

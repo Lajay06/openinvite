@@ -374,7 +374,7 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
             {[{ color: '#0A0A0A', label: 'Obsidian' }, { color: '#F8F7F5', label: 'Linen' }, { color: '#C4956A', label: 'Sand' }, { color: '#FFFFFF', label: 'Pure', border: true }].map(swatch => (
               <div key={swatch.label}>
                 <div style={{ width: 60, height: 60, background: swatch.color, border: swatch.border ? '1px solid #FFFFFF' : 'none', marginBottom: 8 }} />
-                <p style={{ fontSize: 11, color: '#888888', margin: 0 }}>{swatch.label}</p>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{swatch.label}</p>
               </div>
             ))}
           </div>
@@ -383,11 +383,11 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
         <div>
           <div style={{ marginBottom: 24 }}>
             <p style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 48, color: '#FFFFFF', margin: 0 }}>Cormorant Garamond</p>
-            <p style={{ fontSize: 11, color: '#888888', letterSpacing: '0.15em', marginTop: 8 }}>Light 300 · Uppercase · Tracked</p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.15em', marginTop: 8 }}>Light 300 · Uppercase · Tracked</p>
           </div>
           <div>
             <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 16, color: 'rgba(255,255,255,0.5)', margin: 0 }}>Plus Jakarta Sans</p>
-            <p style={{ fontSize: 11, color: '#888888', marginTop: 8 }}>Regular 400 · Body text</p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 8 }}>Regular 400 · Body text</p>
           </div>
         </div>
       </div>
@@ -402,7 +402,7 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
           fontSize: 'clamp(40px, 7vw, 88px)', color: '#FFFFFF',
           letterSpacing: '0.08em', lineHeight: 1, marginBottom: 24,
         }}>Your suite awaits.</h2>
-        <p style={{ fontSize: 14, color: '#888888', maxWidth: 480, margin: '0 auto 16px', lineHeight: 1.8, textAlign: 'center' }}>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', maxWidth: 480, margin: '0 auto 16px', lineHeight: 1.8, textAlign: 'center' }}>
           Select the AMAN universe and we'll apply this aesthetic across all 10 pieces in your Guest Suite — personalised for {coupleName}{details?.weddingDate ? `, ${weddingDate}` : ''}.
         </p>
 

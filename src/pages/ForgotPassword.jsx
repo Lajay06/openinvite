@@ -131,14 +131,14 @@ export default function ForgotPassword() {
                 <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", margin: "0 0 8px", fontFamily: PJS }}>
                   Check your email.
                 </h1>
-                <p style={{ fontSize: 14, color: "#999999", fontFamily: PJS, lineHeight: 1.55, margin: 0 }}>
+                <p style={{ fontSize: 14, color: "rgba(10,10,10,0.6)", fontFamily: PJS, lineHeight: 1.55, margin: 0 }}>
                   We've sent a password reset link to{" "}
                   <strong style={{ color: "#0A0A0A", fontWeight: 600 }}>{email}</strong>.
                   Follow the link in your inbox to set a new password.
                 </p>
               </motion.div>
 
-              <motion.p variants={fadeUp} style={{ fontSize: 13, color: "#999", fontFamily: PJS, marginBottom: 16 }}>
+              <motion.p variants={fadeUp} style={{ fontSize: 13, color: "rgba(10,10,10,0.6)", fontFamily: PJS, marginBottom: 16 }}>
                 Didn't receive it? Check your spam folder, or{" "}
                 <button
                   type="button"
@@ -149,7 +149,7 @@ export default function ForgotPassword() {
                 </button>.
               </motion.p>
 
-              <motion.p variants={fadeUp} style={{ fontSize: 13, color: "#999", fontFamily: PJS }}>
+              <motion.p variants={fadeUp} style={{ fontSize: 13, color: "rgba(10,10,10,0.6)", fontFamily: PJS }}>
                 <a
                   href="/login"
                   style={{ color: "#E03553", textDecoration: "none", fontWeight: 600, fontSize: 13, fontFamily: PJS }}
@@ -166,7 +166,7 @@ export default function ForgotPassword() {
                 <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", margin: "0 0 8px", fontFamily: PJS }}>
                   Forgot your password?
                 </h1>
-                <p style={{ fontSize: 14, color: "#999999", fontFamily: PJS, lineHeight: 1.55, margin: 0 }}>
+                <p style={{ fontSize: 14, color: "rgba(10,10,10,0.6)", fontFamily: PJS, lineHeight: 1.55, margin: 0 }}>
                   Enter your email address and we'll send you a link to reset your password.
                 </p>
               </motion.div>
@@ -201,7 +201,7 @@ export default function ForgotPassword() {
                 </PrimaryBtn>
               </form>
 
-              <p style={{ textAlign: "center", fontSize: 13, color: "#999", marginTop: 20, fontFamily: PJS }}>
+              <p style={{ textAlign: "center", fontSize: 13, color: "rgba(10,10,10,0.6)", marginTop: 20, fontFamily: PJS }}>
                 <a
                   href="/login"
                   style={{ color: "#E03553", textDecoration: "none", fontWeight: 600, fontSize: 13, fontFamily: PJS }}

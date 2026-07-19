@@ -142,7 +142,7 @@ export default function StudioGuestSuite() {
       }}>
         <button
           onClick={() => navigate('/studio')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4, padding: '4px 0', flexShrink: 0 }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4, padding: '4px 0', flexShrink: 0 }}
         >
           <ChevronLeft size={15} /> Studio
         </button>
@@ -178,7 +178,7 @@ export default function StudioGuestSuite() {
               style={{
                 height: 48, padding: '0 18px', background: 'transparent', border: 'none',
                 borderBottom: isActive ? '2px solid #E03553' : '2px solid transparent',
-                color: isActive ? '#0A0A0A' : '#888888', fontSize: 13, fontWeight: 600,
+                color: isActive ? '#0A0A0A' : 'rgba(10,10,10,0.6)', fontSize: 13, fontWeight: 600,
                 cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
                 transition: 'color 0.15s, border-color 0.15s', whiteSpace: 'nowrap',
               }}
