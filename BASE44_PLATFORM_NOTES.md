@@ -192,6 +192,43 @@ snapshot refreshed by hand via that MCP tool, not a true live fetch — it
 degrades silently back to the exact blind spot it exists to catch if that
 snapshot isn't kept current after future schema changes.
 
+## The built-in `User` entity cannot be bulk-listed via the admin key at all
+
+Confirmed empirically 2026-07 while building the weekly digest cron
+(needs to iterate "every user with digest emails on"). Building on the
+"different subsystem entirely" finding above:
+
+| Call | Result |
+|---|---|
+| `GET /entities/User` with `Authorization: Bearer <ADMIN_KEY>` | `401 "Authentication required to list users"` |
+| `GET /entities/User?api_key=<ADMIN_KEY>` | `200 []` — succeeds, but the array is empty, even with real users in the app |
+| `GET /entities/User/:id?api_key=<ADMIN_KEY>` (a single known id) | `200`, full record — works fine |
+
+The `?api_key=` fix documented above for the single-record path does
+**not** carry over to the bulk-list path — it only avoids the 401, the
+list itself still comes back empty regardless of query params tried
+(`limit`, `q={}`, `sort`). Combining both `Authorization: Bearer` and
+`?api_key=` on the same request 401s (the Bearer form wins). There is
+currently no known way to bulk-list every User via the admin key.
+
+**Workaround, and the one every "for every user" cron should use**:
+iterate a different entity that DOES list correctly (`WeddingDetails.read`
+is `null`/unscoped and lists fine via the ordinary `Authorization: Bearer`
+form — confirmed working), extract each record's `created_by_id`, then
+resolve each owner's `User` record individually via the proven
+single-record path (`api/_lib/base44Admin.js`'s `getBase44User`). This is
+usually a better fit anyway, since most "for every user" jobs actually
+mean "for every user who has X" (a wedding, in the digest cron's case),
+not literally every registered account.
+
+`api/cron/send-onboarding-emails.js` still has its original bug (plain
+`Authorization: Bearer` on the User list call, 401 on every run) — flagged
+again here, still not fixed as part of any session that has touched this
+area so far; even fixing it to the `?api_key=` form would only trade one
+silent-failure mode (401) for another (200, but nothing to iterate).
+Fixing it for real means porting it to the same WeddingDetails-first
+pattern `api/cron/send-weekly-digest.js` uses.
+
 ## Registration requires real email-OTP verification — no bypass
 
 Confirmed empirically 2026-07 (creating a second test account for
