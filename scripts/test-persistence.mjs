@@ -57,6 +57,7 @@ import { runGuestRsvpTally } from '../tests/persistence/guest-rsvp-tally.mjs';
 import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
 import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 import { runNotifications } from '../tests/persistence/notifications.mjs';
+import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -142,6 +143,7 @@ async function run() {
     await runModule('runGuestRsvpTally', () => runGuestRsvpTally());
     await runModule('runTodoListSchema', () => runTodoListSchema(token));
     await runModule('runNotifications', () => runNotifications(token));
+    await runModule('runOnboardingCronWindow', () => runOnboardingCronWindow());
     await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
