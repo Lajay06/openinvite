@@ -66,7 +66,7 @@ async function adminFetch(path) {
   return unwrapList(await res.json());
 }
 
-function realOnly(rows) {
+export function realOnly(rows) {
   return (rows || []).filter(r => !r.is_test);
 }
 
@@ -82,7 +82,7 @@ function dedupeOwners(weddings) {
   return byOwner;
 }
 
-async function buildDigestForWedding(wedding, allQuestionnaireResponses, weekAgo) {
+export async function buildDigestForWedding(wedding, allQuestionnaireResponses, weekAgo) {
   const ownerQuery = encodeURIComponent(JSON.stringify({ created_by_id: wedding.created_by_id }));
   const guests = realOnly(await adminFetch(`/apps/${BASE44_APP_ID}/entities/Guest?q=${ownerQuery}`));
 
