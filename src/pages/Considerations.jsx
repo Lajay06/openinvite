@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { Loader2, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";

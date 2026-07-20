@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
 import { interactiveDivProps } from "@/lib/a11y";
-import { Loader2, Plus, X, MapPin, Trash2, Edit2, Calendar } from "lucide-react";
+import { Loader2, X, MapPin, Trash2, Edit2, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";

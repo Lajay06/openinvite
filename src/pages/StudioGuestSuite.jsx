@@ -4,7 +4,6 @@ import { ChevronLeft, Crown } from 'lucide-react';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { useAuth } from '@/lib/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
 
 const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gift, ShoppingCart, DollarSign, ExternalLink, CheckCircle, Package, ArrowRight } from 'lucide-react';
+import { Gift, ShoppingCart, DollarSign, ExternalLink, CheckCircle, ArrowRight } from 'lucide-react';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,

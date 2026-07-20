@@ -5,13 +5,21 @@ import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginUnusedImports from "eslint-plugin-unused-imports";
 
 export default [
+  // A global-ignores entry (an object with ONLY `ignores`, no `files`) tells
+  // ESLint to skip these files outright. Putting the same `ignores` list
+  // inside the files-scoped object below instead only narrows which files
+  // get THAT config's rules — it doesn't stop ESLint from still visiting
+  // them, so an inline `eslint-disable-next-line react-hooks/exhaustive-deps`
+  // comment in src/lib/a11y.js failed with "Definition for rule ... was not
+  // found" (the react-hooks plugin was never registered for that file, so
+  // its own disable comment couldn't be validated against it).
+  { ignores: ["src/lib/**/*", "src/components/ui/**/*"] },
   {
     files: [
       "src/components/**/*.{js,mjs,cjs,jsx}",
       "src/pages/**/*.{js,mjs,cjs,jsx}",
       "src/Layout.jsx",
     ],
-    ignores: ["src/lib/**/*", "src/components/ui/**/*"],
     ...pluginJs.configs.recommended,
     ...pluginReact.configs.flat.recommended,
     languageOptions: {

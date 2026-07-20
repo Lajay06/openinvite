@@ -4,7 +4,6 @@
  * Scroll-driven curtain reveal with monochrome bullets
  */
 import React, { useRef, useEffect, useState } from "react";
-import { PHOTOS } from "@/lib/photos";
 import { useAppleReveal } from "@/hooks/useAppleReveal";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";

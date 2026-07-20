@@ -3,7 +3,7 @@
  * Dark variant (default): glass on dark bg
  * Light variant: glass on light bg
  */
-import React, { useState } from "react";
+import React from "react";
 
 export default function ApplePillButton({ children, onClick, href, light = false, theme = "dark", style = {}, className = "" }) {
   const [hovered, setHovered] = React.useState(false);

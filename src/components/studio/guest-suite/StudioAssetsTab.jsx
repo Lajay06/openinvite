@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Calendar, Mail, CheckSquare, UtensilsCrossed, Grid3X3, Play, Smartphone, MapPin, Tag, Heart, X, Download } from 'lucide-react';
+import { Calendar, Mail, CheckSquare, UtensilsCrossed, Grid3X3, Play, Smartphone, MapPin, Tag, Heart } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import { resolveColors, resolveTypography, resolveUniverseConfig } from '@/lib/universeStyling';
