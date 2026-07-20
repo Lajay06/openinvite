@@ -29,6 +29,7 @@ import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/s
 import { verifyBase44User } from './_lib/auth.js';
 import { verifyInvite } from './_lib/collaboratorInviteToken.js';
 import { hashId } from './_lib/collaboratorAuth.js';
+import { notify } from './_lib/notify.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -86,6 +87,15 @@ export default async function handler(req, res) {
       const body = await createRes.text().catch(() => '');
       throw new Error(`CollaboratorGrant create failed (${createRes.status}): ${body.slice(0, 200)}`);
     }
+
+    await notify({
+      recipientUserId: invite.ownerUserId,
+      type: 'collaborator_joined',
+      title: `${caller.full_name || caller.email} joined as a collaborator`,
+      body: 'They can now help plan your wedding.',
+      link: '/Dashboard',
+      emailCta: 'Go to dashboard',
+    });
 
     return res.status(200).json({ ok: true, ownerUserId: invite.ownerUserId });
   } catch (err) {

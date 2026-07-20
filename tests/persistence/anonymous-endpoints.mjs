@@ -33,7 +33,7 @@
  * — a schema/security decision, not a test-harness bug.
  */
 
-import { APP_ID, api, pass, fail, login, cleanupEntity } from './_shared.mjs';
+import { APP_ID, api, pass, fail, login, cleanupEntity, snapshotNotificationIds, cleanupNewNotifications } from './_shared.mjs';
 import { pickGuestSafeFields, NEVER_RETURN_FIELDS } from '../../api/_lib/guestSafeWedding.js';
 import weddingBySlugHandler from '../../api/wedding-by-slug.js';
 import rsvpLookupHandler from '../../api/rsvp-lookup.js';
@@ -471,6 +471,7 @@ export async function runAnonymousEndpoints() {
   let rsvpWeddingId = null;
   let rsvpGuestId = null;
   const rsvpResponseIdsToClean = [];
+  const notifIdsBefore = await snapshotNotificationIds(token);
   try {
     const wedding = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
       couple1Name: 'Alex', couple2Name: 'Sam', slug: `test-rsvp-submit-wedding-${Date.now()}`,
@@ -562,6 +563,7 @@ export async function runAnonymousEndpoints() {
     if (rsvpWeddingId) {
       await cleanupEntity(token, 'WeddingDetails', rsvpWeddingId);
     }
+    await cleanupNewNotifications(token, notifIdsBefore);
   }
 
   // ── RsvpResponse per-event tallies aggregate correctly across guests ────────
@@ -570,6 +572,7 @@ export async function runAnonymousEndpoints() {
   let tallyGuestAId = null;
   let tallyGuestBId = null;
   const tallyRowIdsToClean = [];
+  const tallyNotifIdsBefore = await snapshotNotificationIds(token);
   try {
     const wedding = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
       couple1Name: 'Alex', couple2Name: 'Sam', slug: `test-rsvp-tally-wedding-${Date.now()}`,
@@ -611,6 +614,7 @@ export async function runAnonymousEndpoints() {
     if (tallyWeddingId) {
       await cleanupEntity(token, 'WeddingDetails', tallyWeddingId);
     }
+    await cleanupNewNotifications(token, tallyNotifIdsBefore);
   }
 
   return results;

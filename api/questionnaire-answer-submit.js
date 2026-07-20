@@ -50,6 +50,7 @@ import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/s
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 import { isEligibleRecipient } from '../src/lib/questionnaireRecipients.js';
 import { hashId, encryptPayload } from './_lib/questionnaireCrypto.js';
+import { notify } from './_lib/notify.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -137,6 +138,18 @@ export default async function handler(req, res) {
       guest_id_hash: hashId(guest.id),
       encrypted_answers,
       submitted_at,
+    });
+
+    // Deliberately no guest name/answer content here — encrypted_answers
+    // encrypts guest_name too (see this file's own header), so the
+    // notification shouldn't leak identity outside that decrypt flow.
+    await notify({
+      recipientUserId: wedding.created_by_id,
+      type: 'questionnaire_answered',
+      title: 'New questionnaire response',
+      body: `Someone answered "${questionnaire.title}"`,
+      link: '/Polls',
+      emailCta: 'View responses',
     });
 
     return res.status(200).json({ ok: true });

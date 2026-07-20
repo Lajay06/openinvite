@@ -46,6 +46,7 @@
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail } from './_lib/security.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
+import { notify } from './_lib/notify.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -159,6 +160,28 @@ export default async function handler(req, res) {
     ]);
 
     console.log('[rsvp-submit] RSVP recorded for token', token.slice(0, 8) + '…');
+
+    // Awaited (not fire-and-forget) — a Vercel serverless function can
+    // freeze right after the response is sent, so background work isn't
+    // guaranteed to finish. notify() already swallows and logs its own
+    // errors internally, so this can never turn a successful RSVP into a
+    // failed response even if the notification/email step has trouble.
+    const attendingCount = eventResponses.filter(r => r.status === 'yes').length;
+    const declinedCount = eventResponses.filter(r => r.status === 'no').length;
+    const responseSummary = attendingCount > 0
+      ? `Attending${eventResponses.length > 1 ? ` (${attendingCount} of ${eventResponses.length} events)` : ''}`
+      : declinedCount > 0 ? 'Declined' : 'Responded';
+    await notify({
+      recipientUserId: wedding.created_by_id,
+      type: 'rsvp_received',
+      title: isPlusOne
+        ? `${guest.plus_one_name || `${guest.name}'s plus-one`} responded`
+        : `New RSVP from ${guest.name}`,
+      body: responseSummary,
+      link: '/Guests',
+      emailCta: 'View guest list',
+    });
+
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('[rsvp-submit] Error:', err.message);
