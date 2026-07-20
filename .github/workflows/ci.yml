@@ -76,6 +76,14 @@ jobs:
             if curl -sf http://localhost:4173 > /dev/null; then break; fi
             sleep 1
           done
+          # A basic curl response doesn't mean the server is warmed up for a
+          # real navigation yet — on a first CI run, the very first Playwright
+          # route (waitUntil: networkidle) timed out at 30s here while every
+          # other route (same page, ~2s each right after) passed fine
+          # locally and in this same run. A few more real HTTP round-trips
+          # before Playwright's first navigation avoids paying that cold-start
+          # cost inside the 30s budget the smoke test itself enforces.
+          for i in $(seq 1 5); do curl -sf http://localhost:4173/ > /dev/null; done
           CAPTURE_BASE_URL=http://localhost:4173 npm run test:marketing-routes
           TEST_EXIT=$?
           kill "$SERVER_PID" 2>/dev/null || true
