@@ -11,7 +11,7 @@
  * untouched, and mergePlusOneEventResponses' pure default-pending logic.
  */
 
-import { APP_ID, api, pass, fail, cleanupEntity } from './_shared.mjs';
+import { APP_ID, api, pass, fail, cleanupEntity, snapshotNotificationIds, cleanupNewNotifications } from './_shared.mjs';
 import rsvpLookupHandler from '../../api/rsvp-lookup.js';
 import rsvpSubmitHandler from '../../api/rsvp-submit.js';
 import { latestEventResponses, latestGuestLevel, mergePlusOneEventResponses, deriveRsvpStatus } from '../../src/lib/rsvpAggregation.js';
@@ -33,6 +33,7 @@ export async function runPlusOneIdentity(token) {
   let weddingId = null;
   let guestId = null;
   const rsvpResponseIds = [];
+  const notifIdsBefore = await snapshotNotificationIds(token);
   try {
     const wedding = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
       couple1Name: 'Alex', couple2Name: 'Sam', slug: `test-plus-one-${Date.now()}`,
@@ -147,6 +148,7 @@ export async function runPlusOneIdentity(token) {
     for (const id of rsvpResponseIds) await cleanupEntity(token, 'RsvpResponse', id);
     if (guestId) await cleanupEntity(token, 'Guest', guestId);
     if (weddingId) await cleanupEntity(token, 'WeddingDetails', weddingId);
+    await cleanupNewNotifications(token, notifIdsBefore);
   }
 
   // ── mergePlusOneEventResponses — defaults an unanswered inherited event to pending ──

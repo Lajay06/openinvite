@@ -23,7 +23,7 @@
  * throughout; it just can't prove two distinct humans, only the mechanism.
  */
 
-import { APP_ID, api, pass, fail, cleanupEntity } from './_shared.mjs';
+import { APP_ID, api, pass, fail, cleanupEntity, snapshotNotificationIds, cleanupNewNotifications } from './_shared.mjs';
 import { renderCollaboratorInviteEmail } from '../../src/lib/collaboratorEmailTemplate.js';
 import { signInvite, verifyInvite } from '../../api/_lib/collaboratorInviteToken.js';
 import collaboratorAcceptHandler from '../../api/collaborator-accept.js';
@@ -129,6 +129,7 @@ export async function runCollaboratorInvite(token) {
     let testGuestId = null;
     let testBudgetId = null;
     let grantId = null;
+    const notifIdsBefore = await snapshotNotificationIds(token);
     try {
       const me = await api('GET', `/apps/${APP_ID}/entities/User/me`, undefined, token);
       const myId = me.id;
@@ -199,6 +200,7 @@ export async function runCollaboratorInvite(token) {
       if (testGuestId) await cleanupEntity(token, 'Guest', testGuestId);
       if (testBudgetId) await cleanupEntity(token, 'Budget', testBudgetId);
       if (grantId) await cleanupEntity(token, 'CollaboratorGrant', grantId);
+      await cleanupNewNotifications(token, notifIdsBefore);
     }
   }
 

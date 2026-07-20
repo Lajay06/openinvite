@@ -120,6 +120,28 @@ export async function cleanupEntity(token, entityType, id) {
   }
 }
 
+/**
+ * Notifications Part 4: rsvp-submit.js/collaborator-accept.js/
+ * questionnaire-answer-submit.js now call notify() as a real side effect —
+ * unlike every other entity these tests create directly, there's no id to
+ * capture up front (notify() creates it internally, server-side). Snapshot
+ * the recipient's Notification ids before invoking the handler, then diff
+ * after, so tests that exercise these endpoints can clean up exactly the
+ * rows their own run produced without guessing by title/content matching.
+ */
+export async function snapshotNotificationIds(token) {
+  const rows = await api('GET', `/apps/${APP_ID}/entities/Notification`, undefined, token);
+  return new Set((Array.isArray(rows) ? rows : (rows?.data || rows?.results || [])).map(n => n.id));
+}
+
+export async function cleanupNewNotifications(token, beforeIds) {
+  const rows = await api('GET', `/apps/${APP_ID}/entities/Notification`, undefined, token);
+  const list = Array.isArray(rows) ? rows : (rows?.data || rows?.results || []);
+  for (const n of list) {
+    if (!beforeIds.has(n.id)) await cleanupEntity(token, 'Notification', n.id);
+  }
+}
+
 export async function cleanupWeddingDetails(token, id) {
   if (!id) return;
   process.stdout.write('  Deleting sentinel record… ');
