@@ -13,9 +13,13 @@
  * wedding and one recipient instead of iterating every real owner.
  *
  * Delete this file once the one-off send it exists for is done — it has
- * no reason to exist as a permanent route.
+ * no reason to exist as a permanent route. Also remove the DEV_DIGEST_SECRET
+ * env var from Vercel (Production) in that same cleanup — it exists only
+ * to authenticate this one endpoint.
  *
- * Auth: same CRON_SECRET as every other cron/dev endpoint in this app.
+ * Auth: DEV_DIGEST_SECRET, a dedicated one-off secret generated specifically
+ * for this endpoint (not CRON_SECRET or any other existing production
+ * secret).
  */
 
 import { Resend } from 'resend';
@@ -53,13 +57,14 @@ async function adminFetch(path) {
 }
 
 export default async function handler(req, res) {
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const auth = req.headers.authorization || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
-    if (token !== cronSecret) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+  const devSecret = process.env.DEV_DIGEST_SECRET;
+  if (!devSecret) {
+    return res.status(500).json({ error: 'DEV_DIGEST_SECRET not set' });
+  }
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
+  if (token !== devSecret) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   if (!BASE44_ADMIN_KEY) {
