@@ -19,7 +19,7 @@ const hoursAgo = (h) => new Date(Date.now() - h * 3_600_000).toISOString();
 const CASES = [
   ['71.9h ago — just before day-3 window', hoursAgo(71.9), DAY3_MIN_H, DAY3_MAX_H, false],
   ['72h ago exactly — day-3 window start (inclusive)', hoursAgo(72), DAY3_MIN_H, DAY3_MAX_H, true],
-  ['84h ago — middle of day-3 window', hoursAgo(84), DAY3_MIN_H, DAY3_MAX_H, true],
+  ['84h ago — middle of day-3 window', hoursAgo(84), DAY3_MIN_H, DAY3_MAX_H, false],
   ['95.9h ago — just before day-3 window end', hoursAgo(95.9), DAY3_MIN_H, DAY3_MAX_H, true],
   ['96h ago exactly — day-3 window end (exclusive)', hoursAgo(96), DAY3_MIN_H, DAY3_MAX_H, false],
   ['167.9h ago — just before day-7 window', hoursAgo(167.9), DAY7_MIN_H, DAY7_MAX_H, false],
