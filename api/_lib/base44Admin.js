@@ -22,6 +22,18 @@ function userUrl(userId, adminKey) {
 }
 
 /**
+ * There is deliberately no listBase44Users() here. `GET /entities/User`
+ * with `Authorization: Bearer <ADMIN_KEY>` 401s (matches every other
+ * entity's LIST behavior being blocked for User specifically); switching
+ * to `?api_key=` avoids the 401 but returns `200 []` — an empty array —
+ * even with real users in the app. Confirmed empirically 2026-07 while
+ * building the weekly digest cron. Single-record GET (below) works fine
+ * either way. See BASE44_PLATFORM_NOTES.md's "User entity bulk-listing"
+ * section for the full story and the WeddingDetails-first workaround
+ * every cron needing "for every user" should use instead.
+ */
+
+/**
  * @returns {Promise<object|null>} the user record, or null if the fetch
  *   failed for any reason (not found, bad key, network error) — callers
  *   should treat null as "current state unknown," not "user has no plan."
