@@ -105,6 +105,10 @@ npm run build
 `main` has branch protection enabled:
 - PR required before merging (no direct pushes)
 - Vercel deployment check must pass before merging (optional but recommended)
+- CI / Build & test check (`.github/workflows/ci.yml`) must pass before merging —
+  install, build, the full persistence suite, and the marketing-routes smoke test, so a
+  red PR can never be merged silently, matching the pre-merge steps this file already
+  describes above
 
 To update protection rules: GitHub repo → Settings → Branches → main → Edit.
 
