@@ -10,6 +10,15 @@ const FONT = "'Plus Jakarta Sans', Helvetica, Arial, sans-serif";
 const ACCENT = '#E03553';
 const BLACK = '#0A0A0A';
 
+// Native asset is 1434x331 (dark wordmark on a transparent background — see
+// src/Layout.jsx's brightness(0)/invert(1) filter needed to show it on a
+// dark bar). Email clients need an absolute, hosted URL, so this reuses the
+// same wordmark AnimatedSidebar.jsx renders unfiltered on white. The header
+// <td> below is given an explicit white background for the same reason —
+// so the dark logo stays legible even in a mail client's dark mode, which
+// can otherwise flip an implicit/inherited white to black.
+const LOGO_URL = 'https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png';
+
 function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
@@ -29,13 +38,14 @@ function statRow(label, value) {
  *   newRsvpCount: number, newAttending: number, newDeclined: number,
  *   totals: { attending: number, declined: number, pending: number, maybe: number, responded: number, total: number },
  *   pollActivity: number, questionnaireActivity: number,
+ *   recommendedActions?: Array<{ text: string, url: string }>,
  *   accountUrl: string,
  * }} params
  * @returns {{ subject: string, html: string }}
  */
 export function renderWeeklyDigestEmail({
   coupleNames, daysUntil, newRsvpCount, newAttending, newDeclined,
-  totals, pollActivity, questionnaireActivity, accountUrl,
+  totals, pollActivity, questionnaireActivity, recommendedActions, accountUrl,
 }) {
   const subject = daysUntil != null
     ? `Your week in review — ${daysUntil} day${daysUntil === 1 ? '' : 's'} to go`
@@ -64,6 +74,21 @@ export function renderWeeklyDigestEmail({
             </td>
           </tr>` : '';
 
+  const actionsHtml = (recommendedActions && recommendedActions.length > 0) ? `
+          <tr>
+            <td style="padding:24px 40px 0;">
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);letter-spacing:0.04em;font-family:${FONT};">This week</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
+                ${recommendedActions.map(a => `
+                <tr>
+                  <td style="padding:10px 0;border-top:1px solid rgba(0,0,0,0.06);font-size:14px;line-height:1.5;color:${BLACK};font-family:${FONT};">
+                    ${escapeHtml(a.text)} <a href="${escapeHtml(a.url)}" style="color:${ACCENT};font-weight:700;text-decoration:none;">Go &rarr;</a>
+                  </td>
+                </tr>`).join('')}
+              </table>
+            </td>
+          </tr>` : '';
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -80,8 +105,8 @@ export function renderWeeklyDigestEmail({
 
           <!-- Header -->
           <tr>
-            <td style="padding:36px 40px 24px;border-bottom:1px solid rgba(0,0,0,0.06);">
-              <p style="margin:0;font-size:13px;font-weight:700;color:${BLACK};letter-spacing:0.02em;font-family:${FONT};">openinvite</p>
+            <td bgcolor="#FFFFFF" style="background:#FFFFFF;padding:28px 40px;border-bottom:1px solid rgba(0,0,0,0.06);">
+              <img src="${LOGO_URL}" width="140" height="32" alt="Openinvite" style="display:block;width:140px;height:32px;border:0;outline:none;" />
             </td>
           </tr>
 
@@ -116,6 +141,7 @@ export function renderWeeklyDigestEmail({
             </td>
           </tr>
 
+${actionsHtml}
 ${activityHtml}
 
           <!-- CTA -->

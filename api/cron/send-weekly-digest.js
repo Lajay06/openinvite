@@ -82,6 +82,82 @@ function dedupeOwners(weddings) {
   return byOwner;
 }
 
+/**
+ * Urgency-scored "This week" suggestions — each rule's condition is checked
+ * independently, only rules whose condition is actually true contribute an
+ * entry, and the caller caps the result at 4 (most urgent first). Base
+ * scores are a rough priority ordering between rule types (outstanding
+ * RSVPs affect headcount planning most broadly, so it's weighted highest);
+ * the count/deadline terms added on top are just tie-breaks within that.
+ */
+async function buildRecommendedActions({ ownerQuery, wedding, guests, eventsByGuest, totals, daysUntil, APP_URL }) {
+  const actions = [];
+
+  const pendingShare = totals.total > 0 ? totals.pending / totals.total : 0;
+  if (totals.pending > 0 && pendingShare >= 0.2 && (daysUntil == null || daysUntil > 0)) {
+    actions.push({
+      score: 100 + pendingShare * 20 + (daysUntil != null && daysUntil <= 30 ? 30 : daysUntil != null && daysUntil <= 90 ? 10 : 0),
+      text: `A good week to send RSVP reminders. ${totals.pending} guest${totals.pending === 1 ? '' : 's'} ${totals.pending === 1 ? "hasn't" : "haven't"} responded yet.`,
+      url: `${APP_URL}/Guests`,
+    });
+  }
+
+  let mealMissingCount = 0;
+  for (const g of guests) {
+    const rows = eventsByGuest.get(g.id) || [];
+    if (deriveRsvpStatus(rows) === 'attending' && rows.some(r => r.status === 'yes' && !r.meal_choice)) mealMissingCount++;
+  }
+  if (mealMissingCount > 0) {
+    actions.push({
+      score: 50 + Math.min(mealMissingCount, 20),
+      text: `A good week to collect meal choices. ${mealMissingCount} attending guest${mealMissingCount === 1 ? '' : 's'} still ${mealMissingCount === 1 ? 'needs' : 'need'} to pick one.`,
+      url: `${APP_URL}/Guests`,
+    });
+  }
+
+  const tables = realOnly(await adminFetch(`/apps/${BASE44_APP_ID}/entities/Table?q=${ownerQuery}`));
+  if (tables.length > 0) {
+    let unassigned = 0;
+    for (const g of guests) {
+      const rows = eventsByGuest.get(g.id) || [];
+      if (deriveRsvpStatus(rows) === 'attending' && !g.table_assignment) unassigned++;
+    }
+    if (unassigned > 0) {
+      actions.push({
+        score: 45 + Math.min(unassigned, 20),
+        text: `A good week to finish seating. ${unassigned} attending guest${unassigned === 1 ? '' : 's'} still ${unassigned === 1 ? 'needs' : 'need'} a table.`,
+        url: `${APP_URL}/Seating`,
+      });
+    }
+  }
+
+  const in7Days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const notes = realOnly(await adminFetch(`/apps/${BASE44_APP_ID}/entities/Note?q=${encodeURIComponent(JSON.stringify({ created_by_id: wedding.created_by_id, view_type: 'todo' }))}`));
+  const dueTasks = notes.filter(n => n.status !== 'Done' && n.due_date && new Date(n.due_date) <= in7Days);
+  if (dueTasks.length > 0) {
+    actions.push({
+      score: 90 + Math.min(dueTasks.length, 20),
+      text: `A good week to close out your checklist. ${dueTasks.length} task${dueTasks.length === 1 ? '' : 's'} ${dueTasks.length === 1 ? 'is' : 'are'} due this week.`,
+      url: `${APP_URL}/TodoList`,
+    });
+  }
+
+  // Budget has no forward-looking due date (only payment_date once paid), so
+  // VendorTask.due_date is the closest real signal for "a payment or vendor
+  // item is coming up" — it's managed from the Vendors page, not Budget.
+  const vendorTasks = realOnly(await adminFetch(`/apps/${BASE44_APP_ID}/entities/VendorTask?q=${ownerQuery}`));
+  const dueVendorTasks = vendorTasks.filter(t => !t.completed && t.due_date && new Date(t.due_date) <= in7Days);
+  if (dueVendorTasks.length > 0) {
+    actions.push({
+      score: 85 + Math.min(dueVendorTasks.length, 20),
+      text: `A good week to check in with vendors. ${dueVendorTasks.length} vendor task${dueVendorTasks.length === 1 ? '' : 's'} ${dueVendorTasks.length === 1 ? 'is' : 'are'} due this week.`,
+      url: `${APP_URL}/Vendors`,
+    });
+  }
+
+  return actions.sort((a, b) => b.score - a.score).slice(0, 4).map(({ text, url }) => ({ text, url }));
+}
+
 export async function buildDigestForWedding(wedding, allQuestionnaireResponses, weekAgo) {
   const ownerQuery = encodeURIComponent(JSON.stringify({ created_by_id: wedding.created_by_id }));
   const guests = realOnly(await adminFetch(`/apps/${BASE44_APP_ID}/entities/Guest?q=${ownerQuery}`));
@@ -138,6 +214,10 @@ export async function buildDigestForWedding(wedding, allQuestionnaireResponses, 
     ? Math.ceil((new Date(wedding.weddingDate) - Date.now()) / (24 * 60 * 60 * 1000))
     : null;
 
+  const recommendedActions = await buildRecommendedActions({
+    ownerQuery, wedding, guests, eventsByGuest, totals, daysUntil, APP_URL,
+  });
+
   return {
     coupleNames: wedding.coupleNames || [wedding.couple1Name, wedding.couple2Name].filter(Boolean).join(' & '),
     daysUntil,
@@ -147,6 +227,7 @@ export async function buildDigestForWedding(wedding, allQuestionnaireResponses, 
     totals,
     pollActivity: pollVotes.length + pollComments.length,
     questionnaireActivity: questionnaireResponsesThisWeek.length,
+    recommendedActions,
     accountUrl: `${APP_URL}/account`,
   };
 }
