@@ -4,7 +4,6 @@
  * Scroll-driven curtain with monochrome white bullets
  */
 import React, { useRef, useEffect, useState } from "react";
-import { PHOTOS } from "@/lib/photos";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import { useSpotlight } from "@/hooks/useSpotlight";
 import { useAppleReveal } from "@/hooks/useAppleReveal";

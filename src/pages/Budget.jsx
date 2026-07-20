@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import toast from 'react-hot-toast';
 
 import BudgetForm from "../components/budget/BudgetForm";

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Eye, Download, Share2, ExternalLink } from 'lucide-react';
+import { Edit2, Eye, Share2, ExternalLink } from 'lucide-react';
 import SaveTheDatePreview from './assets/SaveTheDatePreview';
 import MenuCardPreview from './assets/MenuCardPreview';
 import SeatingChartPreview from './assets/SeatingChartPreview';

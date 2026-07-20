@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Trash2, Image as ImageIcon, Sparkles, Loader2, GripVertical } from 'lucide-react';
+import { Trash2, Image as ImageIcon, Sparkles, Loader2, GripVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AIWeddingAssistant from '../components/shared/AIWeddingAssistant';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';

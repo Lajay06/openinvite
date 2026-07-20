@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Copy, CheckCircle, Share2, Mail, MessageCircle, Users, Music } from 'lucide-react';
+import { X, Copy, CheckCircle, Share2, Users, Music } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const labelStyle = {

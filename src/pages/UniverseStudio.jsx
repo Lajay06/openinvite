@@ -26,7 +26,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReducedMotion, motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Loader2, Calendar, MapPin, ArrowRight, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Calendar, MapPin, ArrowRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';

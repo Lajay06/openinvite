@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, CheckCircle, AlertCircle, X } from 'lucide-react';
+import { Sparkles, CheckCircle, X } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 import toast from 'react-hot-toast';
 

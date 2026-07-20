@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { BarChart2, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
 

@@ -5,7 +5,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Plus, Palette, Flower, Sparkles, User, Camera } from "lucide-react";
 import toast from 'react-hot-toast';
-import { createPageUrl } from "@/utils";
 
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";

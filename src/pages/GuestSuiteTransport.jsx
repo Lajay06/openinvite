@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { Loader2, Car, MapPin, Star, ExternalLink, X, Search, Plus, Plane, Train, Bus, FileText, Navigation } from 'lucide-react';
+import { Loader2, Car, MapPin, ExternalLink, X, Search, Plus, Plane, Train, Bus, FileText, Navigation } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import { Input } from '@/components/ui/input';

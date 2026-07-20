@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Globe, Sparkles, Eye, ChevronRight, Camera, Map } from 'lucide-react';
+import { Globe, Sparkles, Eye, ChevronRight } from 'lucide-react';
 import { getMyWeddingDetails, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';

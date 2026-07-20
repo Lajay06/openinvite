@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import { UploadFile } from '@/integrations/Core';
 import { validateUploadFile } from '@/lib/uploadValidation';
-import { Plus, Search, Upload, Image as ImageIcon, Sparkles, Loader2 } from 'lucide-react';
+import { Plus, Search, Upload, Loader2 } from 'lucide-react';
 import MoodboardGrid from '../components/moodboard/MoodboardGrid';
 import AddItemModal from '../components/moodboard/AddItemModal';
 import PinterestConnect from '../components/moodboard/PinterestConnect';

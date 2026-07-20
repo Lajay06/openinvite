@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { getMyLiveStream } from '@/lib/resolveMyWedding';
-import { Video, Loader2, Check, Radio, ExternalLink } from "lucide-react";
+import { Loader2, Check, Radio, ExternalLink } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit2, Trash2, Calendar, Clock, MapPin, User } from "lucide-react";
+import { MoreHorizontal, Edit2, Trash2, Calendar, MapPin, User } from "lucide-react";
 import { format } from "date-fns";
 
 const CATEGORY_CONFIG = {

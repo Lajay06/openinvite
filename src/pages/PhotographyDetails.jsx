@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { Loader2, Check } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 function SLabel({ children }) {

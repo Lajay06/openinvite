@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyLiveStream } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
-import { Loader2, Video, ExternalLink, ArrowRight, Calendar, Clock, Lock, FileText, Radio } from 'lucide-react';
+import { Loader2, Video, ExternalLink, ArrowRight, Calendar, Lock, FileText, Radio } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
