@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from "react-router-dom";
-import { X, Bell, Search, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut } from "lucide-react";
+import { X, Search, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut } from "lucide-react";
 import { getWeddingWeather } from '@/lib/weather';
 import { track, reset as analyticsReset } from '@/lib/analytics';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AnimatedSidebar, MobileSidebarContent } from "./components/layout/AnimatedSidebar";
 import TipsModal from "./components/dashboard/TipsModal";
+import NotificationBell from "./components/layout/NotificationBell";
 import CollaborateModal from "./components/layout/CollaborateModal";
 import AvaChatPod from "./components/layout/AvaChatPod";
 import { base44 } from '@/api/base44Client';
@@ -39,7 +40,7 @@ function getStoredUser() {
 }
 
 // ── Full-width top navigation bar ────────────────────────────────────────────
-function TopBar({ weddingDetails, unreadCount, overrideCoupleName }) {
+function TopBar({ weddingDetails, user, overrideCoupleName }) {
   const navigate = useNavigate();
   const [weather, setWeather] = useState(null);
 
@@ -152,23 +153,7 @@ function TopBar({ weddingDetails, unreadCount, overrideCoupleName }) {
       {/* Right: bell + avatar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {/* Bell */}
-        <button
-          onClick={() => navigate(createPageUrl('Messages'))}
-          aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : 'Notifications'}
-          style={{
-            background: 'transparent', border: 'none', cursor: 'pointer',
-            color: 'rgba(255,255,255,0.55)', padding: 6, borderRadius: 999,
-            display: 'flex', alignItems: 'center', position: 'relative',
-            transition: 'color 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
-        >
-          <Bell size={16} strokeWidth={1.8} />
-          {unreadCount > 0 && (
-            <span style={{ position: 'absolute', top: 5, right: 5, width: 5, height: 5, borderRadius: '50%', background: '#E03553' }} />
-          )}
-        </button>
+        <NotificationBell userId={user?.id} />
 
         {/* Avatar + dropdown */}
         <DropdownMenu>
@@ -324,7 +309,6 @@ function LayoutShell({ children, currentPageName }) {
   });
 
   const user = layoutData?.user ?? null;
-  const unreadMessagesCount = layoutData?.unreadMessagesCount ?? 0;
   const weddingName = layoutData?.weddingName ?? '';
   const weddingDetails = layoutData?.weddingDetails ?? null;
 
@@ -414,7 +398,7 @@ function LayoutShell({ children, currentPageName }) {
       {/* ── Full-width top nav bar (desktop only) ─────────── */}
       <TopBar
         weddingDetails={weddingDetails}
-        unreadCount={unreadMessagesCount}
+        user={user}
         overrideCoupleName={collab.ok ? collab.coupleNames : undefined}
       />
 
