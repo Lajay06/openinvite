@@ -30,6 +30,20 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Lint
+        run: npm run lint
+
+      # Credential-free subset of the persistence suite — no live Base44
+      # login, no BASE44_ADMIN_KEY. That key is full production database
+      # access and deliberately does not live in GitHub secrets; the live
+      # round-trip suite (npm run test:persistence) stays a required LOCAL
+      # pre-merge step instead (WORKFLOW.md), partly so PR/push-triggered CI
+      # runs can never collide with a live local test run against the same
+      # production data. See scripts/test-ci.mjs for exactly which modules
+      # this covers and why.
+      - name: Run CI test suite (credential-free)
+        run: npm run test:ci
+
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         id: playwright-cache
@@ -49,21 +63,6 @@ jobs:
       - name: Install Playwright OS dependencies
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
-
-      # Full Base44 round-trip suite (876 assertions as of this workflow's
-      # authoring) — same script and same test account WORKFLOW.md documents
-      # for local runs. Requires BASE44_TEST_EMAIL/BASE44_TEST_PASSWORD at
-      # minimum; BASE44_TEST_EMAIL_2/BASE44_TEST_PASSWORD_2 and
-      # BASE44_ADMIN_KEY unlock additional coverage (the two-account
-      # Notification RLS check) and are skipped gracefully if absent.
-      - name: Run persistence test suite
-        run: npm run test:persistence
-        env:
-          BASE44_TEST_EMAIL: ${{ secrets.BASE44_TEST_EMAIL }}
-          BASE44_TEST_PASSWORD: ${{ secrets.BASE44_TEST_PASSWORD }}
-          BASE44_TEST_EMAIL_2: ${{ secrets.BASE44_TEST_EMAIL_2 }}
-          BASE44_TEST_PASSWORD_2: ${{ secrets.BASE44_TEST_PASSWORD_2 }}
-          BASE44_ADMIN_KEY: ${{ secrets.BASE44_ADMIN_KEY }}
 
       # Serves this PR's own build (not production — CAPTURE_BASE_URL
       # defaults to https://openinvite.com.au otherwise, which would test
