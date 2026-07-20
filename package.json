@@ -11,6 +11,7 @@
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
     "test:persistence": "node scripts/test-persistence.mjs",
+    "test:ci": "node scripts/test-ci.mjs",
     "reset:test": "node scripts/reset-test-account.mjs",
     "audit:schema": "node scripts/audit-schema.mjs",
     "audit:images": "node scripts/audit-image-repeats.mjs",

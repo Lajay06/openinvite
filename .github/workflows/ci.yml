@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build & test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      # Credential-free subset of the persistence suite — no live Base44
+      # login, no BASE44_ADMIN_KEY. That key is full production database
+      # access and deliberately does not live in GitHub secrets; the live
+      # round-trip suite (npm run test:persistence) stays a required LOCAL
+      # pre-merge step instead (WORKFLOW.md), partly so PR/push-triggered CI
+      # runs can never collide with a live local test run against the same
+      # production data. See scripts/test-ci.mjs for exactly which modules
+      # this covers and why.
+      - name: Run CI test suite (credential-free)
+        run: npm run test:ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      # Chromium's own binary is restored from cache above, but its OS-level
+      # shared library dependencies (installed via --with-deps) are NOT part
+      # of that cache — they live in system package directories, not
+      # ~/.cache/ms-playwright. A cache hit still needs them installed on
+      # this fresh runner, just not re-downloading the (large) browser.
+      - name: Install Playwright OS dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      # Serves this PR's own build (not production — CAPTURE_BASE_URL
+      # defaults to https://openinvite.com.au otherwise, which would test
+      # whatever's already live instead of the change under review) and
+      # points the marketing-routes smoke test at it.
+      - name: Marketing-routes smoke test (against this build)
+        run: |
+          npx vite preview --port 4173 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4173 > /dev/null; then break; fi
+            sleep 1
+          done
+          # A basic curl response doesn't mean the server is warmed up for a
+          # real navigation yet — on a first CI run, the very first Playwright
+          # route (waitUntil: networkidle) timed out at 30s here while every
+          # other route (same page, ~2s each right after) passed fine
+          # locally and in this same run. A few more real HTTP round-trips
+          # before Playwright's first navigation avoids paying that cold-start
+          # cost inside the 30s budget the smoke test itself enforces.
+          for i in $(seq 1 5); do curl -sf http://localhost:4173/ > /dev/null; done
+          CAPTURE_BASE_URL=http://localhost:4173 npm run test:marketing-routes
+          TEST_EXIT=$?
+          kill "$SERVER_PID" 2>/dev/null || true
+          exit $TEST_EXIT

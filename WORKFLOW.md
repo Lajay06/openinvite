@@ -105,6 +105,16 @@ npm run build
 `main` has branch protection enabled:
 - PR required before merging (no direct pushes)
 - Vercel deployment check must pass before merging (optional but recommended)
+- CI / Build & test check (`.github/workflows/ci.yml`) must pass before merging —
+  install, build, lint, the credential-free subset of the persistence suite
+  (`npm run test:ci`, see `scripts/test-ci.mjs`), and the marketing-routes smoke test
+  (against this build's own local preview, not production), so a red PR can never be
+  merged silently. The live, credential-requiring persistence suite
+  (`npm run test:persistence`) is deliberately NOT part of CI — `BASE44_ADMIN_KEY` is
+  full production database access and does not live in GitHub secrets, and every
+  PR/push run hitting the live production database would risk colliding with a local
+  test run. It stays a required LOCAL pre-merge step, same standing as the
+  marketing-routes test above.
 
 To update protection rules: GitHub repo → Settings → Branches → main → Edit.
 
