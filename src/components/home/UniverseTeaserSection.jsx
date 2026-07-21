@@ -1,7 +1,7 @@
 /**
  * UniverseTeaserSection — universes were missing from the homepage
  * entirely after round 2 removed the carousel's Universes card and the
- * old "Invitations x Guest Suite" section. High-level only: four real
+ * old "Invitations x Guest Suite" section. High-level only: five real
  * universe photos as a taste of the range, not the full 20-universe grid
  * (that's the dedicated Universes page's job). Dark, confident, minimal —
  * matches the rest of the homepage.
@@ -14,7 +14,9 @@ const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const PREVIEW_IDS = ["tulum", "kyoto", "capri", "paris"];
+// marrakech added as the 5th (round-4-followups) — pairs naturally with
+// UniverseMiniHero's own Marrakech-garden photo right above this section.
+const PREVIEW_IDS = ["tulum", "kyoto", "capri", "paris", "marrakech"];
 const PREVIEW = PREVIEW_IDS
   .map((id) => UNIVERSE_CATALOG.find((u) => u.id === id))
   .filter(Boolean);

@@ -9,7 +9,6 @@ import ScrollProgress from "@/components/motion/ScrollProgress";
 import AnimDivider from "@/components/motion/AnimDivider";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 import FeatureTimeline from "@/components/home/FeatureTimeline";
-import FeaturePlaylists from "@/components/home/FeaturePlaylists";
 import FeatureGuests from "@/components/home/FeatureGuests";
 import FeatureBudget from "@/components/home/FeatureBudget";
 import ScrollCue from "@/components/motion/ScrollCue";
@@ -105,7 +104,6 @@ export default function Features() {
       {/* ── S7: FEATURE DEEP DIVES ───────────────────────── */}
       <div style={{ background: "#FFFFFF" }}>
         <FeatureTimeline />
-        <FeaturePlaylists />
         <FeatureGuests />
         <FeatureBudget />
       </div>
