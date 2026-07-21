@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from "react-router-dom";
-import { X, Search, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut } from "lucide-react";
+import { X, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut, Loader2 } from "lucide-react";
 import { getWeddingWeather } from '@/lib/weather';
 import { track, reset as analyticsReset } from '@/lib/analytics';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -16,9 +16,28 @@ import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolv
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'react-hot-toast';
 import { CollaboratorProvider, useCollaboratorContext, permissionKeyForPageName, hasPagePermission } from '@/lib/collaboratorContext';
+import TopBarSearch from './components/layout/TopBarSearch';
 
 const SIDEBAR_WIDTH = 200;
 const TOP_BAR_H = 48;
+
+// fix/dashboard-round6: the app used to have ONE top-level <Suspense> (in
+// App.jsx) wrapping the entire authenticated tree, sidebar and top bar
+// included. Since a Suspense boundary unmounts everything beneath it — not
+// just the node that's actually suspending — every in-app navigation to a
+// not-yet-downloaded page chunk blanked the whole screen (sidebar/top bar
+// disappeared too) behind a full-white fallback, then remounted everything
+// once the chunk arrived. This local boundary, placed around ONLY the
+// content slot below, means a lazy page chunk suspends just that slot —
+// the sidebar/top bar (siblings outside it) never unmount.
+function ContentAreaFallback() {
+  return (
+    <div style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Loader2 size={20} style={{ color: 'rgba(10,10,10,0.25)', animation: 'oi-content-spin 0.8s linear infinite' }} />
+      <style>{'@keyframes oi-content-spin { to { transform: rotate(360deg); } }'}</style>
+    </div>
+  );
+}
 
 // AUDIT_2026-07.md S3/S4: exported so any component that mutates data the
 // layout shell displays (unread message count, wedding name/countdown)
@@ -141,13 +160,7 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
 
       {/* Center: search pill */}
       <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 999, padding: '5px 14px', width: 220 }}>
-          <Search size={13} style={{ color: 'rgba(255,255,255,0.45)', flexShrink: 0 }} />
-          <input
-            placeholder="Search…"
-            style={{ background: 'none', border: 'none', outline: 'none', color: '#fff', fontSize: 13, fontFamily: PJS, width: '100%' }}
-          />
-        </div>
+        <TopBarSearch />
       </div>
 
       {/* Right: bell + avatar */}
@@ -541,7 +554,9 @@ function LayoutShell({ children, currentPageName }) {
         className="hidden lg:block page-content"
         style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: contentTopOffset }}
       >
-        {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
+        <Suspense fallback={<ContentAreaFallback />}>
+          {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
+        </Suspense>
       </div>
 
       {/* Mobile: full width, below mobile top bar */}
@@ -549,7 +564,9 @@ function LayoutShell({ children, currentPageName }) {
         className="lg:hidden page-content"
         style={{ paddingTop: 64 }}
       >
-        {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
+        <Suspense fallback={<ContentAreaFallback />}>
+          {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
+        </Suspense>
       </div>
     </div>
   );
