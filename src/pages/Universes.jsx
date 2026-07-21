@@ -18,6 +18,14 @@ const FALLBACK_IMAGE = {
 
 const PJS = 'Plus Jakarta Sans, sans-serif';
 
+// The 5 strongest, most-established universes for the full-bleed crossfade
+// — walking through all 20 full-bleed is a lot of scrolling for little
+// payoff; these 5 lead into the plain grid below, which covers the
+// remaining 15 (plus these 5 again) statically. London excluded
+// deliberately — no dedicated photography exists for it yet, so it would
+// undercut a showcase specifically meant to show off the strongest work.
+const SHOWCASE_UNIVERSE_IDS = ['tulum', 'kyoto', 'marrakech', 'capri', 'paris'];
+
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -55,16 +63,6 @@ function UniverseTile({ universe, index, onExplore }) {
           : 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0) 100%)',
         transition: 'background 0.4s ease',
       }} />
-
-      {universe.isUltra && (
-        <span style={{
-          position: 'absolute', top: 20, right: 20, zIndex: 2,
-          fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: '#0A0A0A',
-          background: '#DDF762', borderRadius: 999, padding: '4px 10px', fontFamily: PJS,
-        }}>
-          Ultra
-        </span>
-      )}
 
       <div style={{ position: 'absolute', inset: 0, zIndex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 24 }}>
         <p style={{ fontSize: 11, fontStyle: 'italic', color: 'rgba(255,255,255,0.6)', margin: '0 0 6px', fontFamily: PJS }}>
@@ -180,14 +178,6 @@ function UniverseCrossfadeShowcase({ universes, onExplore }) {
             {String(activeIndex + 1).padStart(2, '0')} / {universes.length}
           </p>
           <div key={activeIndex} style={{ animation: 'universeCrossfadeIn 0.5s ease' }}>
-            {active.isUltra && (
-              <span style={{
-                display: 'inline-block', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: '#0A0A0A',
-                background: '#DDF762', borderRadius: 999, padding: '4px 10px', fontFamily: PJS, marginBottom: 16,
-              }}>
-                Ultra
-              </span>
-            )}
             <h2 style={{
               fontFamily: PJS, fontWeight: 700, fontSize: 'clamp(48px, 8vw, 120px)', color: '#FFFFFF',
               letterSpacing: '-0.02em', lineHeight: 1, margin: '0 0 16px',
@@ -349,16 +339,6 @@ const Universes = () => {
         padding: '128px clamp(24px, 8vw, 120px)',
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <p style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontSize: 12,
-            fontWeight: 600,
-            color: 'rgba(10,10,10,0.6)',
-            letterSpacing: '0.15em',
-            marginBottom: 24,
-          }}>
-            The concept
-          </p>
           <h2 style={{
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontWeight: 800,
@@ -399,110 +379,109 @@ const Universes = () => {
         background: '#0A0A0A',
         padding: '100px 80px',
       }}>
-        <p style={{
-          fontSize: 10,
-          fontWeight: 600,
-          color: 'rgba(255,255,255,0.4)',
-          letterSpacing: '0.25em',
-          marginBottom: 16,
-          fontFamily: 'Plus Jakarta Sans',
-        }}>
-          Your guest suite
-        </p>
-        <h2 style={{
-          fontFamily: 'Plus Jakarta Sans, sans-serif',
-          fontWeight: 700,
-          fontSize: 'clamp(32px, 5vw, 56px)',
-          color: '#FFFFFF',
-          letterSpacing: '-0.01em',
-          margin: '0 0 12px',
-        }}>
-          10 pieces. One vision.
-        </h2>
-        <p style={{
-          fontSize: 14,
-          fontWeight: 400,
-          color: 'rgba(255,255,255,0.6)',
-          marginBottom: 60,
-          maxWidth: 600,
-          fontFamily: 'Plus Jakarta Sans',
-        }}>
-          Every universe includes all 10 pieces, personalised with your names, date and venue. Edit each one in the asset editor or let Ava fill them for you.
-        </p>
+        {/* Same maxWidth/margin:auto convention as the section above (The
+            concept, maxWidth 1200) — this section previously had none, so
+            its heading and grid sat flush to the section's own 80px
+            padding while every neighbouring section's content optically
+            centred within ~1200-1400px, reading as misaligned on wide
+            screens. */}
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <h2 style={{
+            fontFamily: 'Plus Jakarta Sans, sans-serif',
+            fontWeight: 700,
+            fontSize: 'clamp(32px, 5vw, 56px)',
+            color: '#FFFFFF',
+            letterSpacing: '-0.01em',
+            margin: '0 0 12px',
+          }}>
+            10 pieces. One vision.
+          </h2>
+          <p style={{
+            fontSize: 14,
+            fontWeight: 400,
+            color: 'rgba(255,255,255,0.6)',
+            marginBottom: 60,
+            maxWidth: 600,
+            fontFamily: 'Plus Jakarta Sans',
+          }}>
+            Every universe includes all 10 pieces, personalised with your names, date and venue. Edit each one in the asset editor or let Ava fill them for you.
+          </p>
 
-        <style>{`
-          .assets-grid { grid-template-columns: repeat(2, 1fr); }
-          @media (min-width: 640px) { .assets-grid { grid-template-columns: repeat(3, 1fr); } }
-          @media (min-width: 900px) { .assets-grid { grid-template-columns: repeat(5, 1fr); } }
-        `}</style>
-        <div className="assets-grid" style={{
-          display: 'grid',
-          gap: '1px',
-          background: 'rgba(255,255,255,0.06)',
-          padding: '1px',
-        }}>
-          {assets.map((asset, i) => (
-            <div key={i} style={{
-              background: '#0A0A0A',
-              padding: '32px 24px',
-              position: 'relative',
-              overflow: 'hidden',
-              transition: 'background 0.3s ease',
-              cursor: 'default',
-            }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-              onMouseLeave={e => e.currentTarget.style.background = '#0A0A0A'}
-            >
-              <p style={{
-                fontSize: 10,
-                fontWeight: 600,
-                color: 'rgba(255,255,255,0.25)',
-                letterSpacing: '0.2em',
-                marginBottom: 16,
-                margin: 0,
-                fontFamily: 'Plus Jakarta Sans',
-              }}>
-                0{i + 1}
-              </p>
-              <p style={{
-                fontSize: 15,
-                fontWeight: 600,
-                color: '#FFFFFF',
-                marginBottom: 8,
-                margin: '12px 0 8px',
-                fontFamily: 'Plus Jakarta Sans',
-              }}>
-                {asset.name}
-              </p>
-              <p style={{
-                fontSize: 13,
-                color: 'rgba(255,255,255,0.45)',
-                lineHeight: 1.5,
-                fontFamily: 'Plus Jakarta Sans',
-                margin: 0,
-              }}>
-                {asset.description}
-              </p>
-            </div>
-          ))}
+          {/* 2 -> 5 columns only (never 3 or 4) — those don't divide 10
+              pieces evenly, so the last row was left with 1-2 orphaned
+              tiles instead of aligning flush with the grid's right edge. */}
+          <style>{`
+            .assets-grid { grid-template-columns: repeat(2, 1fr); }
+            @media (min-width: 900px) { .assets-grid { grid-template-columns: repeat(5, 1fr); } }
+          `}</style>
+          <div className="assets-grid" style={{
+            display: 'grid',
+            gap: '1px',
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.06)',
+          }}>
+            {assets.map((asset, i) => (
+              <div key={i} style={{
+                background: '#0A0A0A',
+                padding: '32px 24px',
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'background 0.3s ease',
+                cursor: 'default',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                onMouseLeave={e => e.currentTarget.style.background = '#0A0A0A'}
+              >
+                <p style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.25)',
+                  letterSpacing: '0.2em',
+                  margin: 0,
+                  fontFamily: 'Plus Jakarta Sans',
+                }}>
+                  0{i + 1}
+                </p>
+                <p style={{
+                  fontSize: 15,
+                  fontWeight: 600,
+                  color: '#FFFFFF',
+                  margin: '12px 0 8px',
+                  fontFamily: 'Plus Jakarta Sans',
+                }}>
+                  {asset.name}
+                </p>
+                <p style={{
+                  fontSize: 13,
+                  color: 'rgba(255,255,255,0.45)',
+                  lineHeight: 1.5,
+                  fontFamily: 'Plus Jakarta Sans',
+                  margin: 0,
+                }}>
+                  {asset.description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* SECTION 4: UNIVERSE SHOWCASE — the "Every one of them, real."
-          heading/kicker piece had a visual glitch and is removed entirely,
-          not just fixed. The full-bleed-panels-then-grid layout that
-          replaced the original pinned crossfade is gone too — restored
-          the crossfade: pins on screen, scrolling fades between universes
-          while the screen stays still, for all 20. The plain grid below it
-          stays as-is (it's also the reduced-motion fallback surface, and
-          keeps every universe crawlable/linkable without scroll state). */}
-      <UniverseCrossfadeShowcase universes={UNIVERSE_CATALOG} onExplore={() => navigate('/studio/universe')} />
+      {/* SECTION 4: UNIVERSE SHOWCASE — the pinned crossfade previously ran
+          across the full 20-universe catalog, ~20 screen-heights of
+          scrolling for one photo swap each. Cut to the 5 strongest (see
+          SHOWCASE_UNIVERSE_IDS above), then the plain grid right below it
+          takes over for the rest — it's also the reduced-motion fallback
+          surface, and keeps every universe crawlable/linkable without
+          scroll state regardless. */}
+      <UniverseCrossfadeShowcase
+        universes={SHOWCASE_UNIVERSE_IDS.map(id => UNIVERSE_CATALOG.find(u => u.id === id)).filter(Boolean)}
+        onExplore={() => navigate('/studio/universe')}
+      />
 
       <section style={{ background: '#0A0A0A', padding: '120px clamp(24px, 6vw, 80px) 120px' }}>
         <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', marginBottom: 60, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-            All {UNIVERSE_CATALOG.length} worlds
-          </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
             {UNIVERSE_CATALOG.map((u, i) => (
               <UniverseTile key={u.id} universe={u} index={i} onExplore={() => navigate('/studio/universe')} />
@@ -516,16 +495,6 @@ const Universes = () => {
         background: '#0A0A0A',
         padding: '100px 80px',
       }}>
-        <p style={{
-          fontSize: 10,
-          fontWeight: 600,
-          color: 'rgba(255,255,255,0.4)',
-          letterSpacing: '0.25em',
-          marginBottom: 16,
-          fontFamily: 'Plus Jakarta Sans',
-        }}>
-          The editor
-        </p>
         <h2 style={{
           fontFamily: 'Plus Jakarta Sans, sans-serif',
           fontWeight: 700,
@@ -588,16 +557,6 @@ const Universes = () => {
         textAlign: 'center',
       }}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <p style={{
-            fontSize: 10,
-            fontWeight: 600,
-            color: 'rgba(255,255,255,0.3)',
-            letterSpacing: '0.3em',
-            marginBottom: 24,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Start today
-          </p>
           <h2 style={{
             fontFamily: 'Plus Jakarta Sans, sans-serif',
             fontWeight: 700,

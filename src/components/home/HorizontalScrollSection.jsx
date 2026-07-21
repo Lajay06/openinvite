@@ -137,7 +137,6 @@ export default function HorizontalScrollSection() {
     return (
       <section style={{ background: "#0A0A0A", padding: "60px 0" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(32px, 6vw, 80px)" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#DDF762", marginBottom: 60 }}>Features</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             {CARDS.map((card, i) =>
             <div
@@ -203,7 +202,6 @@ export default function HorizontalScrollSection() {
             padding: "40px clamp(32px, 6vw, 80px)"
           }}>
           
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#DDF762", marginBottom: 16 }}>Features</p>
           <div style={{ width: "100%", height: 2, background: "#222", borderRadius: 0 }}>
             <div
               ref={progressRef}

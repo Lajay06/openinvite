@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
-import { Instagram, Facebook } from "lucide-react";
+import { Instagram, Facebook, ChevronDown } from "lucide-react";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -26,10 +26,6 @@ export default function Contact() {
     return () => timeouts.forEach(clearTimeout);
   }, []);
 
-  const handleTopic = (item) => {
-    setFormData((p) => ({ ...p, topic: p.topic === item ? "" : item }));
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
@@ -41,11 +37,21 @@ export default function Contact() {
 
   const topics = ["Guest management", "Budget tracking", "Universes", "Ava", "Pricing", "Something else"];
 
-  const formLines = [
-    { text: "Hi, my name is ", input: "name", inputText: "(your name)" },
-    { text: ", and you can reach me at ", input: "email", inputText: "(email)", type: "email" },
-    { text: ". I'd love to know more about:" },
-  ];
+  const labelStyle = { display: "block", fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.6)", letterSpacing: "0.15em", marginBottom: 10 };
+  const fieldStyle = {
+    width: "100%",
+    background: "none",
+    border: "none",
+    borderBottom: "2px solid #CCCCCC",
+    color: "#0A0A0A",
+    fontSize: 16,
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    padding: "8px 0",
+    outline: "none",
+    transition: "border-color 0.2s ease",
+  };
+  const focusField = (e) => (e.target.style.borderBottomColor = "#E03553");
+  const blurField = (e) => (e.target.style.borderBottomColor = "#CCCCCC");
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -58,14 +64,13 @@ export default function Contact() {
           content underneath it. */}
       <section style={{ width: "100%", height: "clamp(280px, 40vh, 480px)", overflow: "hidden" }}>
         <img
-          src="https://static.wixstatic.com/media/d2df22_5f864fb8dc374942930cb254fc220681~mv2.jpg"
-          alt="Openinvite"
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BY_WATER_Daniel_Farò_Photos_ID7930_auruje.jpg"
+          alt="A couple laughing together"
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
         />
       </section>
 
       <section style={{ padding: "64px clamp(32px, 6vw, 80px) 0", textAlign: "center", borderBottom: "1px solid #E0E0DC", paddingBottom: 64 }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: "#E03553", letterSpacing: "0.15em", marginBottom: 16 }}>Get in touch</p>
         <h1 style={{ fontSize: 48, fontWeight: 700, color: "#0A0A0A", lineHeight: 1.1, hyphens: "none", maxWidth: 600, margin: "0 auto" }}>
           Let's plan something beautiful.
         </h1>
@@ -76,107 +81,75 @@ export default function Contact() {
         {/* LEFT: FORM */}
         <div style={{ padding: "80px clamp(32px, 6vw, 80px)", display: "flex", flexDirection: "column", justifyContent: "center", borderRight: "1px solid #E0E0DC" }}>
           {!submitted ? (
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24, opacity: formPhase >= 1 ? 1 : 0, transform: formPhase >= 1 ? "translateY(0)" : "translateY(20px)", transition: `opacity 0.6s ${EASE}, transform 0.6s ${EASE}` }}>
-                {formLines.map((line, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      opacity: formPhase > i ? 1 : 0,
-                      transform: formPhase > i ? "translateY(0)" : "translateY(20px)",
-                      transition: `opacity 0.6s ${EASE} ${i * 0.08}s, transform 0.6s ${EASE} ${i * 0.08}s`,
-                    }}
-                  >
-                    {i < 2 ? (
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{ color: "#0A0A0A", fontSize: 20, fontWeight: 400 }}>{line.text}</span>
-                        <input
-                          type={line.type || "text"}
-                          required
-                          placeholder={line.inputText}
-                          value={formData[line.input]}
-                          onChange={(e) => setFormData({ ...formData, [line.input]: e.target.value })}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            borderBottom: "2px solid #CCCCCC",
-                            color: "#0A0A0A",
-                            fontSize: 20,
-                            fontFamily: "'Plus Jakarta Sans', sans-serif",
-                            padding: "4px 8px",
-                            outline: "none",
-                            minWidth: 120,
-                            transition: "border-color 0.2s ease",
-                          }}
-                          onFocus={(e) => (e.target.style.borderBottomColor = "#E03553")}
-                          onBlur={(e) => (e.target.style.borderBottomColor = "#CCCCCC")}
-                        />
-                      </div>
-                    ) : (
-                      <p style={{ color: "#0A0A0A", fontSize: 20, marginBottom: 16 }}>{line.text}</p>
-                    )}
-                  </div>
-                ))}
-
-                {/* Topic selector — single-select */}
-                <div style={{ opacity: formPhase >= 3 ? 1 : 0, transform: formPhase >= 3 ? "translateY(0)" : "translateY(20px)", transition: `opacity 0.6s ${EASE} 0.2s, transform 0.6s ${EASE} 0.2s`, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 24 }}>
-                  {topics.map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => handleTopic(item)}
-                      style={{
-                        padding: "10px 16px",
-                        border: `1px solid ${formData.topic === item ? "#E03553" : "#CCCCCC"}`,
-                        borderRadius: "100px",
-                        background: formData.topic === item ? "linear-gradient(135deg, #E03553 0%, #803D81 100%)" : "transparent",
-                        color: formData.topic === item ? "#FFFFFF" : "#0A0A0A",
-                        fontSize: 12,
-                        fontWeight: 500,
-                        letterSpacing: "0.02em",
-                        cursor: "pointer",
-                        transition: "all 0.2s ease",
-                        transform: formData.topic === item ? "scale(1.05)" : "scale(1)",
-                      }}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Message */}
-                <div style={{ opacity: formPhase >= 3 ? 1 : 0, transform: formPhase >= 3 ? "translateY(0)" : "translateY(20px)", transition: `opacity 0.6s ${EASE} 0.25s, transform 0.6s ${EASE} 0.25s` }}>
-                  <p style={{ color: "#0A0A0A", fontSize: 20, marginBottom: 12 }}>What's on your mind?</p>
-                  <textarea
-                    placeholder="(optional)"
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    style={{
-                      width: "100%",
-                      background: "none",
-                      border: "none",
-                      borderBottom: "2px solid #CCCCCC",
-                      color: "#0A0A0A",
-                      fontSize: 16,
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                      padding: "12px 8px",
-                      outline: "none",
-                      minHeight: 60,
-                      resize: "none",
-                      transition: "border-color 0.2s ease",
-                    }}
-                    onFocus={(e) => (e.target.style.borderBottomColor = "#E03553")}
-                    onBlur={(e) => (e.target.style.borderBottomColor = "#CCCCCC")}
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 28, opacity: formPhase >= 1 ? 1 : 0, transform: formPhase >= 1 ? "translateY(0)" : "translateY(20px)", transition: `opacity 0.6s ${EASE}, transform 0.6s ${EASE}` }}>
+                <div>
+                  <label htmlFor="contact-name" style={labelStyle}>Name</label>
+                  <input
+                    id="contact-name"
+                    type="text"
+                    required
+                    autoComplete="name"
+                    placeholder="Your name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    style={fieldStyle}
+                    onFocus={focusField}
+                    onBlur={blurField}
                   />
                 </div>
 
-                {/* Submit button */}
-                <div style={{
-                  marginTop: 24,
-                  opacity: formPhase >= 3 ? 1 : 0,
-                  transform: formPhase >= 3 ? "translateY(0)" : "translateY(20px)",
-                  transition: `opacity 0.6s ${EASE} 0.3s, transform 0.6s ${EASE} 0.3s`,
-                }}>
-                  <ApplePillButton light={false} onClick={handleSubmit}>Send it →</ApplePillButton>
+                <div>
+                  <label htmlFor="contact-email" style={labelStyle}>Email</label>
+                  <input
+                    id="contact-email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    style={fieldStyle}
+                    onFocus={focusField}
+                    onBlur={blurField}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="contact-topic" style={labelStyle}>Topic</label>
+                  <div style={{ position: "relative" }}>
+                    <select
+                      id="contact-topic"
+                      required
+                      value={formData.topic}
+                      onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
+                      style={{ ...fieldStyle, appearance: "none", cursor: "pointer", paddingRight: 28 }}
+                      onFocus={focusField}
+                      onBlur={blurField}
+                    >
+                      <option value="" disabled>Choose a topic</option>
+                      {topics.map((item) => (
+                        <option key={item} value={item}>{item}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} strokeWidth={1.75} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", color: "rgba(10,10,10,0.45)", pointerEvents: "none" }} />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="contact-message" style={labelStyle}>Message</label>
+                  <textarea
+                    id="contact-message"
+                    placeholder="Tell us what's on your mind"
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    style={{ ...fieldStyle, minHeight: 100, resize: "vertical" }}
+                    onFocus={focusField}
+                    onBlur={blurField}
+                  />
+                </div>
+
+                <div style={{ marginTop: 8 }}>
+                  <ApplePillButton light={false} onClick={handleSubmit}>Send message →</ApplePillButton>
                 </div>
             </form>
           ) : (

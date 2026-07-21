@@ -145,8 +145,8 @@ export default function FeatureGuests({ children }) {
           transition: prefersReduced() ? "none" : `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`,
         }}>
         <img
-          src="https://static.wixstatic.com/media/d2df22_b014095a4e4f42a9a415f314cad6b260~mv2.jpg"
-          alt="A couple reviewing their guest list together"
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SOJOURN_Franco_Dupuy_Photos_ID10730_je7niq.jpg"
+          alt="A person managing their wedding plans on a laptop"
           style={{
             width: "100%",
             height: "100%",

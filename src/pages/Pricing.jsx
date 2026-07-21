@@ -207,9 +207,6 @@ export default function Pricing() {
 
         {/* Free trial banner */}
         <div style={{ maxWidth: 700, margin: "0 auto 56px", textAlign: "center", padding: "36px 40px", background: "#F7F7F5", border: "1px solid rgba(10,10,10,0.08)" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(10,10,10,0.6)", margin: "0 0 10px", fontFamily: PJS }}>
-            Free trial
-          </p>
           <h3 style={{ fontSize: 22, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.01em", lineHeight: 1.2, margin: "0 0 8px", fontFamily: PJS }}>
             Try everything free for 14 days
           </h3>

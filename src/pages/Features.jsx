@@ -42,13 +42,6 @@ function useScrollReveal(threshold = 0.2) {
   return [ref, visible];
 }
 
-const ESSENTIALS = [
-{ title: "Smart budget tracker", accent: "#E03553", label: "Budget", desc: "Track everything in one place, from flowers to favours, with real-time visuals and Ava's tips." },
-{ title: "Registry tool", accent: "#803D81", label: "Registry", desc: "Connect your dream registry or build your own: stylish, mobile, guest-friendly." },
-{ title: "Ultimate planner", accent: "#6B2CAE", label: "Planning", desc: "The all-in-one planning workspace. Every detail, every vendor, every task." },
-{ title: "AI integration", accent: "#DDF762", label: "Ava", desc: "Smart suggestions, personalised insights, and Ava always one step ahead." }];
-
-
 const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3", "#0A1930", "#E03553"];
 const ALL_FEATURES = [
 { title: "Advanced guest management", bullets: ["Unlimited guest lists", "Real-time RSVP tracking", "Dietary preference tracking", "Smart table assignments", "Guest tagging & categories", "Centralised contact management"] },
@@ -99,9 +92,6 @@ export default function Features() {
 
       {/* ── S3: DASHBOARD ────────────────────────────────── */}
       <DashboardSection />
-
-      {/* ── S4: AVA / ESSENTIALS ─────────────────────────── */}
-      <AvaSection essentials={ESSENTIALS} />
 
       {/* ── S5b: SEATING, REAL PRODUCT VIDEO ─────────────── */}
       <SeatingSection />
@@ -211,14 +201,13 @@ function QuickStartSection() {
   return (
     <section ref={ref} style={{ background: "#0A0A0A", minHeight: "100vh", display: "flex", flexDirection: "row", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-1" style={{ position: "relative", minHeight: 320, overflow: "hidden", flexShrink: 0 }}>
-        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779246464/manuel-moreno-DGa0LQ0yDPc-unsplash_nbgivs.jpg" alt="A quiet resort terrace at sunset" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-100px)", transition: `opacity 0.9s ${EASE}, transform 1s ${EASE}` }} />
+        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_INFLUENCER_Daniel_Farò_Photos_ID8195_hcbnri.jpg" alt="A person setting up their wedding plan on a laptop" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-100px)", transition: `opacity 0.9s ${EASE}, transform 1s ${EASE}` }} />
         <div style={{ position: "absolute", inset: 0, background: "rgba(194,229,243,0.12)", mixBlendMode: "multiply", pointerEvents: "none" }} />
         <div className="lg:hidden" style={{ paddingBottom: "66.66%", position: "relative" }} />
       </div>
       <div className="w-full lg:w-1/2 order-2 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: `opacity 0.9s ${EASE} 0.2s, transform 0.9s ${EASE} 0.2s` }}>
         <div style={{ maxWidth: 480 }}>
           <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#E03553,#803D81)", marginBottom: 24 }} />
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#C2E5F3", marginBottom: 16 }}>Getting started</p>
           <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Quick start wizard</h2>
           <p style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.7, fontSize: 16 }}>Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
         </div>
@@ -250,7 +239,6 @@ function DashboardSection() {
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 480 }}>
           <div style={{ width: 40, height: 2, background: "#803D81", marginBottom: 24 }} />
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#803D81", marginBottom: 16 }}>Collaboration</p>
           <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#0A0A0A", marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Customisable Dashboard</h2>
           <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16, marginBottom: 32 }}>Invite your partner, planner, or mum. Set who sees what, and assign tasks like a pro.</p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
@@ -269,61 +257,6 @@ function DashboardSection() {
     </section>);
 
 }
-
-function AvaSection({ essentials }) {
-  const [ref, curtainUp] = useScrollReveal(0);
-  return (
-    <section ref={ref} style={{ position: "relative", padding: "140px clamp(24px, 6vw, 80px)", background: "#0A0A0A" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 64, opacity: curtainUp ? 1 : 0, transition: `opacity 0.8s ${EASE} 0.15s` }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", color: "#DDF762", fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 16 }}>
-            What's included
-          </p>
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", margin: 0, overflow: "visible", hyphens: "none" }}>The essentials</h2>
-        </div>
-        <EssentialsGrid items={essentials} visible={curtainUp} />
-      </div>
-    </section>);
-
-}
-
-// A clean, considered grid on a solid background — no photo behind it, no
-// per-row left/right text split (the round-2 layout put the title on the
-// left and the description on the right of the same row, which broke
-// awkwardly at in-between widths). Each cell is one consistent vertical
-// stack: label, title, description, all left-aligned, same hierarchy in
-// every cell.
-function EssentialsGrid({ items, visible }) {
-  return (
-    <div style={{
-      display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1px",
-      background: "rgba(255,255,255,0.08)",
-    }}>
-      {items.map((item, i) => (
-        <div
-          key={item.title}
-          style={{
-            background: "#0A0A0A", padding: "48px 40px",
-            opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
-            transition: `opacity 0.6s ${EASE} ${0.1 + i * 0.08}s, transform 0.6s ${EASE} ${0.1 + i * 0.08}s`,
-          }}
-        >
-          <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: item.accent, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 20 }}>
-            {item.label}
-          </span>
-          <h3 style={{ color: "#FFF", fontWeight: 700, fontSize: "clamp(24px, 2.2vw, 32px)", letterSpacing: "-0.02em", lineHeight: 1.15, margin: "0 0 14px" }}>
-            {item.title}
-          </h3>
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.6, margin: 0, maxWidth: 280 }}>
-            {item.desc}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-
 
 // Shared grid for the seating/budget video showcases — the video column
 // gets more room than the text (1.15fr vs 1fr) so the media reads as the
@@ -362,9 +295,6 @@ function SeatingSection() {
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
           transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
         }}>
-          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", color: "#803D81", marginBottom: 20, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Seating
-          </p>
           <h2 style={{ fontSize: "clamp(32px, 4.2vw, 56px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.08, marginBottom: 28 }}>
             A real canvas for a real guest list.
           </h2>
@@ -400,9 +330,6 @@ function BudgetSection() {
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
           transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
         }}>
-          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", color: "#E03553", marginBottom: 20, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Budget
-          </p>
           <h2 style={{ fontSize: "clamp(32px, 4.2vw, 56px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.08, marginBottom: 28 }}>
             Every dollar, in real time.
           </h2>
@@ -422,7 +349,6 @@ function AccordionSection({ features, borders, dots, openFeature, setOpenFeature
     <section ref={ref} style={{ background: "#F5F5F3", padding: "120px 0" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(32px, 6vw, 80px)" }}>
         <AnimDivider />
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: "rgba(10,10,10,0.6)", margin: "24px 0 48px" }}>All features</p>
         <div>
           {features.map((f, i) =>
           <div
