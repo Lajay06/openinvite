@@ -17,9 +17,14 @@ const CATEGORY_CONFIG = {
   other:          { color: '#444444', border: '1px solid rgba(10,10,10,0.25)', bg: 'transparent' },
 };
 
+// Same pill language as VendorList.jsx's status/category Pill — rounded,
+// padded chips, not outlined boxy tags (dashboard round 6, item 8).
 const pillBase = {
-  display: 'inline-block', fontFamily: "'Plus Jakarta Sans', sans-serif",
-  fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+  display: 'inline-flex', alignItems: 'center',
+  padding: '2px 8px', borderRadius: 999,
+  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontSize: 10, fontWeight: 600, letterSpacing: '0.04em',
+  whiteSpace: 'nowrap',
 };
 
 const CategoryPill = ({ category }) => {
@@ -85,7 +90,7 @@ export default function ScheduleList({ items, onEdit, onDelete, readOnly = false
                 <TableCell>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <Clock size={11} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
-                    <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {fmtTime(item.start_time)}{item.end_time ? ` – ${fmtTime(item.end_time)}` : ''}
                     </span>
                   </div>
@@ -94,20 +99,20 @@ export default function ScheduleList({ items, onEdit, onDelete, readOnly = false
                   {item.location ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       <MapPin size={11} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
-                      <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{item.location}</span>
+                      <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{item.location}</span>
                     </div>
                   ) : (
-                    <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>—</span>
+                    <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>—</span>
                   )}
                 </TableCell>
                 <TableCell>
                   {item.responsible_person ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       <User size={11} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
-                      <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{item.responsible_person}</span>
+                      <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{item.responsible_person}</span>
                     </div>
                   ) : (
-                    <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>—</span>
+                    <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>—</span>
                   )}
                 </TableCell>
                 <TableCell>

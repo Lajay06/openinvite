@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from "react-router-dom";
-import { X, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut, Loader2 } from "lucide-react";
+import { X, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut, Loader2, User, Bell, CreditCard, HelpCircle } from "lucide-react";
 import { getWeddingWeather } from '@/lib/weather';
 import { track, reset as analyticsReset } from '@/lib/analytics';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -186,7 +186,7 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
               {initials}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" style={{ minWidth: 220, borderRadius: 0, fontFamily: PJS }}>
+          <DropdownMenuContent align="end" style={{ minWidth: 240, borderRadius: 0, fontFamily: PJS }}>
             <DropdownMenuLabel style={{ fontFamily: PJS, padding: '10px 14px' }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>
                 {storedUser.full_name || coupleName || 'Your account'}
@@ -199,10 +199,25 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate('/account')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
-              Account
+              <User size={14} style={{ marginRight: 8, color: 'rgba(10,10,10,0.5)' }} />
+              Profile & account
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/account?tab=notifications')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+              <Bell size={14} style={{ marginRight: 8, color: 'rgba(10,10,10,0.5)' }} />
+              Notification preferences
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/account?tab=billing')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+              <CreditCard size={14} style={{ marginRight: 8, color: 'rgba(10,10,10,0.5)' }} />
+              Plan & billing
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/help')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+              <HelpCircle size={14} style={{ marginRight: 8, color: 'rgba(10,10,10,0.5)' }} />
+              Help centre
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer', color: '#E03553' }}>
+              <LogOut size={14} style={{ marginRight: 8, color: '#E03553' }} />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -540,7 +540,19 @@ const ARTICLES = {
       </ul>
       <h3 style={S.h3}>The Guest Suite Seating Chart asset</h3>
       <p style={S.p}>Once your seating is set up, your Seating Chart asset pulls this data live. It displays guest names alphabetically (or by table) with the table name next to each guest. Download as a PDF or PNG — ready to print or display at your venue entrance.</p>
+      <h3 style={S.h3}>Seeing who's who while you seat people</h3>
+      <p style={S.p}>Guest tags (college friends, work, family, and so on — set from the Guest List) show up next to each name in the seating panel and on hover over a seat, so you can tell who people are and group them sensibly without switching back to the guest list.</p>
       <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> Finalise your seating 2 weeks before the wedding when most RSVPs are in. Before that, use the seating page to plan approximate groupings.</p></div>
+    </div>
+  ),
+  'Secret questionnaires and games': (
+    <div>
+      <p style={S.p}>Polls & games lets you send guests private questions — a "how well do you know the couple" quiz, a first-dance song vote, anything you like. Answers go straight to you; no other guest ever sees them.</p>
+      <h3 style={S.h3}>Creating one</h3>
+      <p style={S.p}>Go to Polls & games → "+ New game." Add your questions, choose who can answer (all guests, or a specific group), and share the link — guests answer from their phone, no account needed.</p>
+      <h3 style={S.h3}>Reading responses</h3>
+      <p style={S.p}>Responses appear on the game's own page as they come in, grouped by guest. Nothing is public — this is the one place in Openinvite built specifically so guests can't see each other's answers.</p>
+      <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> A short "get to know the couple" quiz is a nice icebreaker to send with your Save the Date.</p></div>
     </div>
   ),
   'Sending emails to your guest list': (
@@ -672,6 +684,39 @@ const ARTICLES = {
       <div style={S.tip}><p style={S.tipText}><strong>Using Ava for budget advice:</strong> Open the Ava chat (✦ button) and ask "Is my budget allocation realistic for 80 guests in Sydney?", "Where can I save without affecting the experience?", or "My florals are over budget — what are my options?" Ava benchmarks your spend against typical costs for your guest count, location, and wedding style.</p></div>
     </div>
   ),
+  'Forecasting your budget': (
+    <div>
+      <p style={S.p}>The Forecasting tab (Budget → Forecasting) projects where you'll land if your current spending pattern continues — useful before you're fully booked, when the breakdown view alone can't tell you much yet.</p>
+      <p style={S.p}>It shows a projected total based on your booked and quoted expenses, flags categories trending over their allocation, and estimates what's still unaccounted for based on typical costs for your guest count.</p>
+      <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> Check Forecasting after adding a few quotes for a category you haven't booked yet — it's the fastest way to see if you're heading over budget before you sign anything.</p></div>
+    </div>
+  ),
+  'Building your run sheet': (
+    <div>
+      <p style={S.p}>Your run sheet (Schedule → Run sheet) is the minute-by-minute plan for the day — different from your general schedule, which just lists events. The run sheet is what you'd hand to your photographer, MC, or venue coordinator.</p>
+      <p style={S.p}>Add each event with a start and end time, location, and category (ceremony, reception, transportation, and so on) — category shows as a coloured pill so the sheet is scannable at a glance. Build it backwards from your ceremony time: hair and makeup, vendor arrivals, transport, then every reception moment (entrances, speeches, first dance, cake cutting, band/DJ sets).</p>
+      <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> Share the run sheet with anyone helping on the day — your MC and venue coordinator especially. It's the document that keeps everyone on time without needing you.</p></div>
+    </div>
+  ),
+  'Managing notification preferences': (
+    <div>
+      <p style={S.p}>Control what Openinvite emails you and what just shows up in the bell, from Account → Notifications.</p>
+      <ul style={S.ul}>
+        <li style={S.li}><strong>Instant email on RSVP</strong> — get emailed as soon as a guest responds</li>
+        <li style={S.li}><strong>Instant email on collaborator activity</strong> — get emailed when a collaborator joins or makes changes</li>
+        <li style={S.li}><strong>Weekly digest</strong> — a weekly summary of RSVPs, tasks and activity</li>
+        <li style={S.li}><strong>In-app only</strong> — turn off every email above; you'll still see it all in the bell</li>
+      </ul>
+      <div style={S.tip}><p style={S.tipText}>Turning on "In-app only" doesn't turn off notifications — it just keeps them out of your inbox.</p></div>
+    </div>
+  ),
+  'Your weekly digest email': (
+    <div>
+      <p style={S.p}>If Weekly digest is on (Account → Notifications), you'll get one email a week summarising new RSVPs, upcoming tasks, and recent activity — a quick way to stay on top of planning without checking the dashboard every day.</p>
+      <p style={S.p}>Every digest links straight back to the relevant page, so you can go from "3 new RSVPs" in your inbox to the guest list in one click.</p>
+      <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> Turn this off from Account → Notifications, or from the "Manage this" link at the bottom of any digest email.</p></div>
+    </div>
+  ),
 };
 
 const helpCategories = [
@@ -684,6 +729,8 @@ const helpCategories = [
       { title: 'Setting up your Event Details', time: '3 min read' },
       { title: 'Understanding the dashboard', time: '2 min read' },
       { title: 'Inviting a collaborator', time: '1 min read' },
+      { title: 'Managing notification preferences', time: '1 min read' },
+      { title: 'Your weekly digest email', time: '1 min read' },
     ]
   },
   {
@@ -728,6 +775,8 @@ const helpCategories = [
       { title: 'Tracking RSVPs and responses', time: '2 min read' },
       { title: 'Setting up your seating chart', time: '4 min read' },
       { title: 'Sending emails to your guest list', time: '3 min read' },
+      { title: 'Secret questionnaires and games', time: '2 min read' },
+      { title: 'Building your run sheet', time: '2 min read' },
     ]
   },
   {
@@ -739,6 +788,7 @@ const helpCategories = [
       { title: 'Adding and tracking vendors', time: '3 min read' },
       { title: 'Recording payments and deposits', time: '2 min read' },
       { title: 'Using the budget breakdown view', time: '2 min read' },
+      { title: 'Forecasting your budget', time: '1 min read' },
     ]
   },
 ];
@@ -846,18 +896,6 @@ export default function Help() {
           })}
         </div>
 
-        <div style={{ textAlign: 'center', borderTop: '1px solid #EEEEEE', paddingTop: 40, marginTop: 40 }}>
-          <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', marginBottom: 8, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>Still need help?</p>
-          <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 24 }}>Our team is here Monday to Friday, 9am–5pm AEST</p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            <button className="btn-primary" style={{ padding: '12px 24px', fontSize: 13 }}>
-              Contact Support
-            </button>
-            <button className="btn-editorial-secondary" style={{ padding: '12px 24px', fontSize: 13 }}>
-              ✦ Ask Ava
-            </button>
-          </div>
-        </div>
       </div>
 
       {selectedArticle && (

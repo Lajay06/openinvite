@@ -5,20 +5,23 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, Edit2, Trash2, DollarSign, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
+// Filled, not outlined (dashboard round 6, item 10) — same colour-per-
+// category grouping as before, now as a solid background + contrasting
+// text instead of a transparent chip with a coloured border.
 const CATEGORY_COLORS = {
-  venue:          { color: '#E03553', border: '1px solid #E03553' },
-  catering:       { color: '#6b7700', border: '1px solid #DDF762' },
-  photography:    { color: '#803D81', border: '1px solid #803D81' },
-  flowers:        { color: '#803D81', border: '1px solid #803D81' },
-  music:          { color: '#0A1930', border: '1px solid #0A1930' },
-  attire:         { background: '#0A1930', color: '#FFFFFF', border: 'none' },
-  transportation: { color: '#444444',  border: '1px solid rgba(10,10,10,0.25)' },
-  decorations:    { color: '#E03553',  border: '1px solid #E03553' },
-  rings:          { color: '#803D81',  border: '1px solid #803D81' },
-  stationery:     { color: '#0A1930',  border: '1px solid #0A1930' },
-  beauty:         { color: '#803D81',  border: '1px solid #803D81' },
-  honeymoon:      { color: '#E03553',  border: '1px solid #E03553' },
-  miscellaneous:  { color: '#444444',  border: '1px solid rgba(10,10,10,0.25)' },
+  venue:          { background: '#E03553', color: '#FFFFFF' },
+  catering:       { background: '#6b7700', color: '#FFFFFF' },
+  photography:    { background: '#803D81', color: '#FFFFFF' },
+  flowers:        { background: '#803D81', color: '#FFFFFF' },
+  music:          { background: '#0A1930', color: '#FFFFFF' },
+  attire:         { background: '#0A1930', color: '#FFFFFF' },
+  transportation: { background: 'rgba(10,10,10,0.08)', color: '#444444' },
+  decorations:    { background: '#E03553', color: '#FFFFFF' },
+  rings:          { background: '#803D81', color: '#FFFFFF' },
+  stationery:     { background: '#0A1930', color: '#FFFFFF' },
+  beauty:         { background: '#803D81', color: '#FFFFFF' },
+  honeymoon:      { background: '#E03553', color: '#FFFFFF' },
+  miscellaneous:  { background: 'rgba(10,10,10,0.08)', color: '#444444' },
 };
 
 const PAID_STYLE   = { background: '#DDF762', color: '#0A1930', border: 'none' };
