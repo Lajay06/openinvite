@@ -6,7 +6,7 @@ import ScrollProgress from "@/components/motion/ScrollProgress";
 import HeroCollage from "@/components/home/HeroCollage";
 import ValuePropSection from "@/components/home/ValuePropSection";
 import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
-import WhyUsSection from "@/components/home/WhyUsSection";
+import UniverseMiniHero from "@/components/home/UniverseMiniHero";
 import UniverseTeaserSection from "@/components/home/UniverseTeaserSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
@@ -44,15 +44,17 @@ export default function Home() {
         scrollToExpand="Scroll to explore"
       />
 
-      {/* 3. "So, why us?" — three emotional moments, not a feature list */}
-      <WhyUsSection />
-
       {/* 4. HORIZONTAL SCROLL */}
       <div id="section-features" style={{ background: "#0A0A0A" }}>
         <HorizontalScrollSection />
       </div>
 
-      {/* 4b. UNIVERSES TEASER — universes had no presence on the homepage
+      {/* 4b. UNIVERSES MINI-HERO — a full-width typographic beat that signals
+          universes are a big deal before expanding into the actual teaser
+          content right below it. */}
+      <UniverseMiniHero />
+
+      {/* 4c. UNIVERSES TEASER — universes had no presence on the homepage
           at all after the carousel's Universes card and the old
           Invitations/guest-suite section were both removed. High level
           only (4 real photos, not the full 20-universe grid — that's the
@@ -164,13 +166,6 @@ function PricingSection({ onCTA }) {
 
   return (
     <section ref={ref} style={{ background: "#0A0A0A", padding: "clamp(100px, 12vw, 180px) clamp(24px, 6vw, 80px)", textAlign: "center" }}>
-      <p style={{
-        fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", color: "#DDF762",
-        fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 24,
-        opacity: visible ? 1 : 0, transition: reduced ? "none" : `opacity 0.6s ${EASE}`,
-      }}>
-        One-time. Lifetime access.
-      </p>
       <h2 style={{
         fontSize: "clamp(40px, 6vw, 76px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05,
         color: "#FFFFFF", margin: "0 0 20px", fontFamily: "'Plus Jakarta Sans', sans-serif",

@@ -161,3 +161,24 @@ pointed at an unrelated Wix-hosted desert/countryside couple photo
 (`d2df22_8e79926ce6c74e55aa7ee84c8a8be77c`), not a London or even an
 Aman-appropriate image — a pre-existing mismatch, now pointed at the
 same Cloudinary fallback as everywhere else.
+
+## Round 5 (marketing round 4 — photo swaps)
+
+Checked already-uploaded Cloudinary assets (Admin API, cloud `dsr84xknv`)
+against this manifest's used-list before assigning any of these, to keep
+the no-repeat rule real rather than assumed.
+
+| public_id | Folder | Used on |
+|---|---|---|
+| `DTS_BY_WATER_Daniel_Farò_Photos_ID7930_auruje` | Couple | Contact.jsx hero (replaces a Wix-hosted generic photo) |
+| `DTS_INFLUENCER_Daniel_Farò_Photos_ID8195_hcbnri` | (unfoldered) | Features.jsx — Quick Start section (replaces `manuel-moreno-...`, itself freed up by Aman's rename — see Round 3/4 above) |
+| `DTS_SOJOURN_Franco_Dupuy_Photos_ID10730_je7niq` | (unfoldered) | FeatureGuests.jsx — Advanced guest management (replaces a Wix-hosted photo) |
+
+`manuel-moreno-DGa0LQ0yDPc-unsplash_nbgivs` (previously Quick Start) and
+the Contact.jsx hero's old Wix URL are now unused anywhere in `src/`.
+FeatureGuests.jsx's old Wix URL (`d2df22_b014095a4e4f42a9a415f314cad6b260`)
+still has one reference left, in `src/pages/ScrollMorph.jsx` — that page
+isn't registered in `pages.config.js` or linked from anywhere live
+(pre-existing orphaned code, not part of this pass), so it's not a real
+no-repeat conflict, just noting it rather than silently overclaiming
+"fully unused."

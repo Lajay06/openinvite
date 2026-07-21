@@ -34,13 +34,6 @@ export default function UniverseTeaserSection() {
   return (
     <section ref={ref} style={{ background: "#0A0A0A", padding: "140px clamp(24px, 6vw, 80px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
-        <p style={{
-          fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", color: "#DDF762",
-          fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 20,
-          opacity: visible ? 1 : 0, transition: `opacity 0.6s ${EASE}`,
-        }}>
-          20 aesthetic universes
-        </p>
         <h2 style={{
           fontSize: "clamp(32px, 5vw, 60px)", fontWeight: 700, color: "#FFFFFF",
           letterSpacing: "-0.03em", lineHeight: 1.08, margin: "0 auto 20px", maxWidth: 760,

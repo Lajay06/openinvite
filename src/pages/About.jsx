@@ -124,19 +124,6 @@ export default function About() {
       boxSizing: "border-box"
     }}
   >
-    <p
-      style={{
-        fontSize: 11,
-        fontWeight: 500,
-        letterSpacing: "0.25em",
-        color: "#E03553",
-        margin: 0,
-        lineHeight: 1.4
-      }}
-    >
-      Our story
-    </p>
-
     <h1
       style={{
         fontSize: "clamp(36px, 5vw, 64px)",
@@ -220,7 +207,6 @@ function EditorialIntro() {
           Openinvite was built out of a simple frustration: wedding planning tools were outdated, overwhelming, and frankly ugly. We believed that one of the most exciting moments of your life deserved a platform that matched that energy. So we built one.
         </p>
 
-        <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.6)", letterSpacing: "0.15em", marginBottom: 24 }}>Deliverables</p>
         <div>
           {DELIVERABLES.map((item, i) => (
             <div key={i} style={{ padding: "10px 0", borderBottom: "1px solid #E8E8E8", fontSize: 14, color: "#0A0A0A", opacity: visible ? 1 : 0, animation: visible ? `fadeIn 0.6s ease ${i * 0.05}s forwards` : "none" }}>
@@ -242,7 +228,6 @@ function TwoColumnSection({ id, number, title, headline, body, background, belie
     <section ref={ref} id={id} style={{ background: background || "#FFFFFF", padding: "120px 80px", maxWidth: 1100, margin: "0 auto", borderBottom: "1px solid #E0E0DC" }}>
       {/* Content */}
       <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: "opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s" }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.6)", letterSpacing: "0.15em", marginBottom: 16 }}>{title}</p>
         <h2 style={{ fontSize: "clamp(28px, 3vw, 42px)", fontWeight: 700, color: "#0A0A0A", marginBottom: 32, hyphens: "none" }}>
           {headline}
         </h2>
