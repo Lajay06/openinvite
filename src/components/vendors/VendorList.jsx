@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit2, Trash2, Briefcase, Phone, Mail, Star, DollarSign, ExternalLink, FolderOpen } from "lucide-react";
@@ -36,6 +36,44 @@ const CATEGORY_LABELS = {
   attire: "Attire", transportation: "Transport", planning: "Planning",
   decorations: "Decorations", entertainment: "Entertainment", other: "Other",
 };
+
+function domainFromWebsite(website) {
+  if (!website) return null;
+  try {
+    return new URL(/^https?:\/\//i.test(website) ? website : `https://${website}`).hostname;
+  } catch {
+    return null;
+  }
+}
+
+// Google's favicon service for a lightweight per-vendor logo — falls back to
+// an initial-letter avatar when there's no website or the favicon 404s.
+function VendorLogo({ vendor }) {
+  const domain = domainFromWebsite(vendor.website);
+  const [failed, setFailed] = useState(false);
+
+  if (!domain || failed) {
+    return (
+      <div style={{
+        width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+        background: 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(10,10,10,0.5)', fontFamily: PJS }}>
+          {vendor.name?.[0]?.toUpperCase() || '?'}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`}
+      alt=""
+      onError={() => setFailed(true)}
+      style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, objectFit: 'contain', background: 'rgba(10,10,10,0.03)' }}
+    />
+  );
+}
 
 function Pill({ value, styleMap, labelMap }) {
   const s = styleMap[value] || styleMap.other || styleMap.researching;
@@ -79,16 +117,19 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage }) {
             borderBottom: '1px solid rgba(10,10,10,0.05)',
           }}
         >
-          {/* Name + contact */}
-          <div style={{ flex: '0 0 200px', minWidth: 0 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {vendor.name}
-            </p>
-            {vendor.contact_person && (
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0', fontFamily: PJS }}>
-                {vendor.contact_person}
+          {/* Logo + name + contact */}
+          <div style={{ flex: '0 0 200px', minWidth: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <VendorLogo vendor={vendor} />
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {vendor.name}
               </p>
-            )}
+              {vendor.contact_person && (
+                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0', fontFamily: PJS }}>
+                  {vendor.contact_person}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Category + Status + Rating */}

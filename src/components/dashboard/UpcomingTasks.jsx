@@ -22,7 +22,11 @@ const labelStyle = {
 
 export default function UpcomingTasks({ schedule }) {
   const upcoming = React.useMemo(() =>
-    [...schedule].sort((a, b) => a.start_time?.localeCompare(b.start_time)).slice(0, 6),
+    [...schedule].sort((a, b) => {
+      const dateCompare = (a.event_date || '').localeCompare(b.event_date || '');
+      if (dateCompare !== 0) return dateCompare;
+      return (a.start_time || '').localeCompare(b.start_time || '');
+    }).slice(0, 6),
     [schedule]
   );
 
@@ -42,6 +46,8 @@ export default function UpcomingTasks({ schedule }) {
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ev.event_name}</p>
                   <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {ev.event_date ? format(new Date(`${ev.event_date}T00:00:00`), 'MMM d') : ''}
+                    {ev.event_date && ev.start_time ? ' · ' : ''}
                     {ev.start_time ? format(new Date(`2024-01-01T${ev.start_time}`), 'h:mm a') : ''}
                   </p>
                 </div>

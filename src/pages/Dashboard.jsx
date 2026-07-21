@@ -104,6 +104,9 @@ export default function Dashboard() {
   const [guests, setGuests] = useState([]);
   const [budget, setBudget] = useState([]);
   const [schedule, setSchedule] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [notes, setNotes] = useState([]);
+  const [questionnaireResponses, setQuestionnaireResponses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
   const [showTipsModal, setShowTipsModal] = useState(false);
@@ -131,6 +134,25 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Best-effort — a failure here (e.g. no questionnaires created yet)
+  // shouldn't block the rest of the dashboard from loading.
+  const fetchQuestionnaireResponses = async () => {
+    try {
+      const res = await fetch('/api/questionnaire-responses-for-owner', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+        },
+      });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.responses || [];
+    } catch {
+      return [];
+    }
+  };
+
   const init = async () => {
     try {
       if (isCollaborating) {
@@ -155,10 +177,12 @@ export default function Dashboard() {
       if (currentUser && !currentUser.onboardingCompleted) setShowWelcomeBanner(true);
       const tipsShown = localStorage.getItem('openinvite_tips_shown');
       if (!tipsShown) setShowTipsModal(true);
-      const [guestData, budgetData, scheduleData] = await Promise.all([
+      const [guestData, budgetData, scheduleData, taskData, noteData, questionnaireData] = await Promise.all([
         getMyGuestsWithRsvp(), getMyRecords('Budget'), getMyRecords('Schedule'),
+        getMyRecords('Task'), getMyRecords('Note'), fetchQuestionnaireResponses(),
       ]);
       setGuests(guestData); setBudget(budgetData); setSchedule(scheduleData);
+      setTasks(taskData); setNotes(noteData); setQuestionnaireResponses(questionnaireData);
     } catch {
       toast.error("Failed to load your dashboard data");
     }
@@ -250,7 +274,7 @@ export default function Dashboard() {
         {/* Right: grey panel */}
         <div className="flex flex-col gap-8 min-w-0 border-t border-[rgba(10,10,10,0.08)] lg:border-t-0 lg:border-l lg:flex-[1_1_0]" style={{ background: '#F7F7F7', padding: '32px 24px 48px' }}>
           <UpcomingTasks schedule={schedule} />
-          <RecentActivity guests={guests} budget={budget} />
+          <RecentActivity guests={guests} budget={budget} tasks={tasks} notes={notes} questionnaireResponses={questionnaireResponses} />
         </div>
 
       </div>

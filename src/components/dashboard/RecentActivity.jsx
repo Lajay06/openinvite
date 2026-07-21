@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Check, X, DollarSign, CheckSquare, MessageCircle } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -9,10 +10,12 @@ const labelStyle = {
 };
 
 function getPill(type) {
-  if (type === 'attending') return { label: 'Attending', bg: '#E03553', color: '#FFFFFF', border: 'none' };
-  if (type === 'declined')  return { label: 'Declined',  bg: '#0A0A0A', color: '#FFFFFF', border: 'none' };
-  if (type === 'payment')   return { label: 'Payment',   bg: '#DDF762', color: '#0A0A0A', border: 'none' };
-  return { label: 'Update', bg: '#F5F4F0', color: '#0A0A0A', border: '1px solid #E5E5E5' };
+  if (type === 'attending') return { label: 'Attending', bg: '#E03553', color: '#FFFFFF', border: 'none', Icon: Check };
+  if (type === 'declined')  return { label: 'Declined',  bg: '#0A0A0A', color: '#FFFFFF', border: 'none', Icon: X };
+  if (type === 'payment')   return { label: 'Payment',   bg: '#DDF762', color: '#0A0A0A', border: 'none', Icon: DollarSign };
+  if (type === 'task')      return { label: 'Task done',  bg: '#803D81', color: '#FFFFFF', border: 'none', Icon: CheckSquare };
+  if (type === 'questionnaire') return { label: 'Questionnaire', bg: '#6B2CAE', color: '#FFFFFF', border: 'none', Icon: MessageCircle };
+  return { label: 'Update', bg: '#F5F4F0', color: '#0A0A0A', border: '1px solid #E5E5E5', Icon: null };
 }
 
 function timeAgo(d) {
@@ -22,7 +25,7 @@ function timeAgo(d) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-export default function RecentActivity({ guests, budget }) {
+export default function RecentActivity({ guests, budget, tasks = [], notes = [], questionnaireResponses = [] }) {
   const activities = useMemo(() => {
     const ga = guests.filter(g => g.rsvp_date).map(g => ({
       desc: g.name,
@@ -34,8 +37,18 @@ export default function RecentActivity({ guests, budget }) {
       date: b.payment_date,
       type: 'payment',
     }));
-    return [...ga, ...ba].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
-  }, [guests, budget]);
+    const ta = [...tasks, ...notes].filter(t => t.completed).map(t => ({
+      desc: `Completed: ${t.title}`,
+      date: t.updated_date,
+      type: 'task',
+    }));
+    const qa = questionnaireResponses.map(r => ({
+      desc: `${r.guest_name} answered a questionnaire`,
+      date: r.submitted_at,
+      type: 'questionnaire',
+    }));
+    return [...ga, ...ba, ...ta, ...qa].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+  }, [guests, budget, tasks, notes, questionnaireResponses]);
 
   return (
     <div>
@@ -45,6 +58,7 @@ export default function RecentActivity({ guests, budget }) {
       <div>
         {activities.length > 0 ? activities.map((a, i) => {
           const pill = getPill(a.type);
+          const Icon = pill.Icon;
           return (
             <div key={i} style={{ padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid rgba(10,10,10,0.05)' }}>
               <p style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, margin: 0, minWidth: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.desc}</p>
@@ -53,8 +67,10 @@ export default function RecentActivity({ guests, budget }) {
                   background: pill.bg, color: pill.color,
                   border: pill.border, borderRadius: 999,
                   fontSize: 12, fontWeight: 600, fontFamily: PJS,
-                  padding: '4px 12px', whiteSpace: 'nowrap',
+                  padding: '4px 12px 4px 8px', whiteSpace: 'nowrap',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
                 }}>
+                  {Icon && <Icon size={12} strokeWidth={2.25} />}
                   {pill.label}
                 </span>
                 <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
