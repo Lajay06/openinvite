@@ -4,6 +4,7 @@ import { createPageUrl } from "@/utils";
 import { useAuth } from "@/lib/AuthContext";
 import { hasPagePermission } from "@/lib/collaboratorContext";
 import { COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS } from "@/lib/collaboratorPageMap";
+import { preloadPageChunk } from "@/pagePreload";
 
 /**
  * AUDIT_2026-07.md B2: every nav row here is a styled <div onClick>, not a
@@ -77,7 +78,10 @@ const COLLABORATOR_ICONS = {
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const NAV_SECTIONS = [
+// Exported so TopBarSearch.jsx can search "pages/sections by name" against
+// the exact same list the sidebar renders — one source of truth, no risk of
+// a page existing in one but not the other.
+export const NAV_SECTIONS = [
   {
     label: "Planning",
     items: [
@@ -211,7 +215,10 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disable
         background: isActive ? "rgba(224,53,83,0.08)" : "transparent",
         transition: "background 0.15s ease",
       }}
-      onMouseEnter={e => { if (!isActive && !disabled) e.currentTarget.style.background = "rgba(10,10,10,0.04)"; }}
+      onMouseEnter={e => {
+        if (!isActive && !disabled) e.currentTarget.style.background = "rgba(10,10,10,0.04)";
+        if (!disabled) preloadPageChunk(url);
+      }}
       onMouseLeave={e => { if (!isActive && !disabled) e.currentTarget.style.background = "transparent"; }}
     >
       <Icon
