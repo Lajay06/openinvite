@@ -145,7 +145,7 @@ export default function FoodBeveragePage() {
         {/* Catering tab */}
         {activeTab === 'catering' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Catering" icon={UtensilsCrossed} defaultOpen>
+            <DetailsSection title="Catering" icon={UtensilsCrossed}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <SectionInput label="Caterer name" value={data.catererName} onChange={e => update({ catererName: e.target.value })} placeholder="e.g. Fine Foods Co." />
                 <SectionInput label="Contact person" value={data.contactPerson} onChange={e => update({ contactPerson: e.target.value })} />
@@ -175,7 +175,7 @@ export default function FoodBeveragePage() {
         {/* Menu tab */}
         {activeTab === 'menu' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Menu" icon={BookOpen} defaultOpen>
+            <DetailsSection title="Menu" icon={BookOpen}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={labelStyle}>Menu items</label>
                 {menuItems.map((item, i) => (
@@ -200,7 +200,7 @@ export default function FoodBeveragePage() {
         {/* Bar tab */}
         {activeTab === 'bar' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Bar & drinks" icon={Wine} defaultOpen>
+            <DetailsSection title="Bar & drinks" icon={Wine}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={labelStyle}>Bar type</label>
                 <Select value={data.barType || ''} onValueChange={v => update({ barType: v })}>
@@ -222,7 +222,7 @@ export default function FoodBeveragePage() {
         {/* Notes tab */}
         {activeTab === 'notes' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Notes" icon={FileText} defaultOpen>
+            <DetailsSection title="Notes" icon={FileText}>
               <SectionInput label="Additional catering notes" isTextarea value={data.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else your caterer should know…" />
             </DetailsSection>
           </div>

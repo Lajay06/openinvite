@@ -57,6 +57,27 @@ function Pill({ label, active, onClick }) {
   );
 }
 
+// Compact tag pills for guest rows while seating — same colour language as
+// GuestList's TagsDisplay, sized down for the narrow seating side panel.
+function MiniTags({ tags }) {
+  const items = Array.isArray(tags) ? tags.filter(Boolean) : [];
+  if (items.length === 0) return null;
+  const first2 = items.slice(0, 2);
+  const rest = items.length - first2.length;
+  const pillStyle = {
+    display: 'inline-block', fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontSize: 8, fontWeight: 600, padding: '1px 6px', borderRadius: 999,
+    whiteSpace: 'nowrap', background: 'rgba(128,61,129,0.08)', color: '#803D81',
+    border: '1px solid rgba(128,61,129,0.25)',
+  };
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 2 }} title={items.join(', ')}>
+      {first2.map(t => <span key={t} style={pillStyle}>{t}</span>)}
+      {rest > 0 && <span style={{ ...pillStyle, background: 'rgba(10,10,10,0.06)', color: '#444444', border: 'none' }}>+{rest}</span>}
+    </span>
+  );
+}
+
 const statLabel = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" };
 const statValue = { fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 };
 
@@ -692,15 +713,18 @@ export default function SeatingPage() {
                       const g = guests.find(x => x.id === a.guest_id);
                       if (!g) return null;
                       return (
-                        <div key={a.guest_id} style={{ display: 'flex', alignItems: 'center', padding: '6px 16px', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
+                        <div key={a.guest_id} title={(g.tags || []).join(', ')} style={{ display: 'flex', alignItems: 'center', padding: '6px 16px', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
                           <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#E03553', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8 }}>
                             <span style={{ fontSize: 8, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                               {g.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                             </span>
                           </div>
-                          <span style={{ flex: 1, fontSize: 11, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {g.name}
-                          </span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {g.name}
+                            </span>
+                            <MiniTags tags={g.tags} />
+                          </div>
                           {!readOnly && (
                             <button
                               onClick={() => handleUnassignGuest(selectedTableId, a.seat_index, a.guest_id)}
@@ -762,6 +786,7 @@ export default function SeatingPage() {
                                   {guest.dietary_restrictions}
                                 </p>
                               )}
+                              <MiniTags tags={guest.tags} />
                             </div>
                             <span style={{ fontSize: 10, color: '#E03553', fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", flexShrink: 0 }}>+</span>
                           </div>
@@ -850,6 +875,7 @@ export default function SeatingPage() {
                                 {guest.dietary_restrictions}
                               </p>
                             )}
+                            <MiniTags tags={guest.tags} />
                           </div>
                           {isAsgn && (
                             <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.04em', color: '#0A1930', fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#DDF762', padding: '1px 5px', borderRadius: 999, flexShrink: 0 }}>

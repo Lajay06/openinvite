@@ -354,6 +354,22 @@ export default function BeautyPage() {
                   )}
                 </div>
 
+                {/* Hair artist — Contact person / Phone / Email, same field set as Photography/FoodBeverage's vendor-contact blocks */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label style={labelStyle}>Contact person</label>
+                    <input style={inputStyle} placeholder="Contact name" value={beautyData.hairArtistContact || ''} onChange={e => update({ hairArtistContact: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label style={labelStyle}>Phone</label>
+                    <input style={inputStyle} placeholder="Phone number" value={beautyData.hairArtistPhone || ''} onChange={e => update({ hairArtistPhone: e.target.value })} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={labelStyle}>Email</label>
+                  <input type="email" style={inputStyle} placeholder="Email address" value={beautyData.hairArtistEmail || ''} onChange={e => update({ hairArtistEmail: e.target.value })} />
+                </div>
+
                 {/* Makeup artist */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <label style={labelStyle}>Makeup artist</label>
@@ -381,6 +397,22 @@ export default function BeautyPage() {
                       </button>
                     </div>
                   )}
+                </div>
+
+                {/* Makeup artist — Contact person / Phone / Email, same field set as Photography/FoodBeverage's vendor-contact blocks */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label style={labelStyle}>Contact person</label>
+                    <input style={inputStyle} placeholder="Contact name" value={beautyData.makeupArtistContact || ''} onChange={e => update({ makeupArtistContact: e.target.value })} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label style={labelStyle}>Phone</label>
+                    <input style={inputStyle} placeholder="Phone number" value={beautyData.makeupArtistPhone || ''} onChange={e => update({ makeupArtistPhone: e.target.value })} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={labelStyle}>Email</label>
+                  <input type="email" style={inputStyle} placeholder="Email address" value={beautyData.makeupArtistEmail || ''} onChange={e => update({ makeupArtistEmail: e.target.value })} />
                 </div>
 
                 {/* Style notes */}

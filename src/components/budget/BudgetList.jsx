@@ -24,10 +24,17 @@ const CATEGORY_COLORS = {
 const PAID_STYLE   = { background: '#DDF762', color: '#0A1930', border: 'none' };
 const UNPAID_STYLE = { background: 'rgba(224,53,83,0.1)', color: '#E03553', border: '1px solid rgba(224,53,83,0.3)' };
 
+// Same pill language as VendorList.jsx's status/category Pill — rounded,
+// padded chips, not outlined boxy tags — so budget category badges read
+// consistently with the rest of the app (AUDIT_2026-07 dashboard review).
 const pillBase = {
-  display: 'inline-block',
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: '2px 8px',
+  borderRadius: 999,
   fontFamily: "'Plus Jakarta Sans', sans-serif",
-  fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+  fontSize: 10, fontWeight: 600, letterSpacing: '0.04em',
+  whiteSpace: 'nowrap',
 };
 
 const BadgePill = ({ style, children }) => (

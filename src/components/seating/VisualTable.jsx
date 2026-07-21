@@ -109,7 +109,7 @@ export default function VisualTable({ table, guests, onSeatClick, selected, sele
             className={isSeatSelected ? 'seating-seat-selected' : undefined}
             onClick={(e) => { e.stopPropagation(); onSeatClick && onSeatClick(table.id, i, guest?.id); }}
             {...interactiveDivProps(() => onSeatClick && onSeatClick(table.id, i, guest?.id), { label: guest ? guest.name : 'Empty seat' })}
-            title={guest ? guest.name : 'Empty seat'}
+            title={guest ? (guest.tags?.length ? `${guest.name} — ${guest.tags.join(', ')}` : guest.name) : 'Empty seat'}
             style={{
               position: 'absolute',
               left: Math.round(pos.left),

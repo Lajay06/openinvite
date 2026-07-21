@@ -120,23 +120,25 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 // the keys here a differently-formatted URL is the one actually linked
 // from the sidebar/collaboratorPageMap.js — confirmed by grepping every
 // createPageUrl()/href/navigate() reference in src/, not guessed from
-// casing alone. Redirect the auto-generated URL to the real one instead
-// of rendering the exact same page at two live URLs.
-const AUTO_ROUTE_REDIRECTS = {
-  CeremonyDetails: '/ceremony-details',
-  Transport: '/transport',
-  Accommodation: '/accommodation',
-  EmergencyContact: '/emergency-contact',
-  Honeymoon: '/honeymoon',
-  EventDetails: '/event-details',
-};
-// Features has its own dedicated route below with no LayoutWrapper — it's
-// a marketing page also reachable while logged in, not a dashboard page
-// (confirmed live: the dashboard-wrapped auto-route never actually won —
-// visiting /Features authenticated renders the plain marketing chrome).
-// Excluded here rather than given a redirect, since both routes already
-// resolve to the exact same path.
-const AUTO_ROUTE_EXCLUDE = new Set(['Features']);
+// casing alone. These six get their own dedicated kebab-case route below
+// instead (same pattern as Transport/Accommodation etc. further down) and
+// are excluded here rather than redirected: a redirect route doesn't work
+// for them, because React Router v6 matches paths case-insensitively by
+// default, so "/transport" also matches the earlier-declared "/Transport"
+// auto-route and wins the tie-break (earlier declaration wins). That auto
+// -route redirected to "/transport" — a no-op self-redirect to the exact
+// path already being visited — leaving the page blank. Excluding them
+// removes the colliding duplicate entirely, same fix already applied to
+// Features/Music/Florals below.
+const AUTO_ROUTE_EXCLUDE = new Set([
+  'Features',
+  'CeremonyDetails',
+  'Transport',
+  'Accommodation',
+  'EmergencyContact',
+  'Honeymoon',
+  'EventDetails',
+]);
 
 const AuthenticatedApp = () => {
   const location = useLocation();
@@ -199,10 +201,6 @@ const AuthenticatedApp = () => {
         <Route path="/Features" element={<Features />} />
         {Object.entries(Pages).map(([path, Page]) => {
           if (AUTO_ROUTE_EXCLUDE.has(path)) return null;
-          const redirectTo = AUTO_ROUTE_REDIRECTS[path];
-          if (redirectTo) {
-            return <Route key={path} path={`/${path}`} element={<Navigate to={redirectTo} replace />} />;
-          }
           return (
             <Route
               key={path}
@@ -281,8 +279,9 @@ const AuthenticatedApp = () => {
         <Route path="/mocks/vendor-template/food" element={<LayoutWrapper currentPageName="MockVendorTemplateFoodBeverage"><MockVendorTemplateFoodBeverage /></LayoutWrapper>} />
         {/* Canonical for these five — confirmed via grep that the sidebar
             hardcodes exactly this kebab-case URL for each. The PascalCase
-            auto-route (AUTO_ROUTE_REDIRECTS above) redirects here instead
-            of rendering the page a second time. */}
+            auto-route is excluded above (AUTO_ROUTE_EXCLUDE) rather than
+            redirected here, since a same-path self-redirect left these
+            pages blank — see the AUTO_ROUTE_EXCLUDE comment for why. */}
         <Route path="/transport" element={<LayoutWrapper currentPageName="Transport"><Transport /></LayoutWrapper>} />
         <Route path="/accommodation" element={<LayoutWrapper currentPageName="Accommodation"><Accommodation /></LayoutWrapper>} />
         <Route path="/ceremony-details" element={<LayoutWrapper currentPageName="CeremonyDetails"><CeremonyDetails /></LayoutWrapper>} />

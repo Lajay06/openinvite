@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, X, Check, Loader2, Image } from 'lucide-react';
+import { Plus, X, Check, Loader2, Image, Shirt, User, Sparkles, FileText } from 'lucide-react';
 import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
@@ -9,6 +9,9 @@ import { base44 } from '@/api/base44Client';
 import { validateUploadFile } from '@/lib/uploadValidation';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import UploadStatus from '@/components/shared/UploadStatus';
+import { Accordion } from '@/components/ui/accordion';
+import DetailsSection from '@/components/event-details/DetailsSection';
+import SectionInput from '@/components/event-details/SectionInput';
 
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -49,21 +52,16 @@ function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
 
-// ── Section heading with optional Add button ──────────────────────────────────
-function SectionHead({ title, onAdd, addLabel }) {
+// ── Add-item button, right-aligned above a repeatable list ─────────────────────
+function AddButtonRow({ onAdd, addLabel }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-      <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.01em' }}>
-        {title}
-      </span>
-      {onAdd && (
-        <button
-          onClick={onAdd}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: PJS, color: '#0A0A0A' }}
-        >
-          <Plus size={12} /> {addLabel}
-        </button>
-      )}
+    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <button
+        onClick={onAdd}
+        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: PJS, color: '#0A0A0A' }}
+      >
+        <Plus size={12} /> {addLabel}
+      </button>
     </div>
   );
 }
@@ -434,196 +432,158 @@ export default function AttirePanel() {
   return (
     <div style={{ fontFamily: PJS, display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-      {/* ── A. Outfits ────────────────────────────────────────────────────── */}
-      <div>
-        <SectionHead title="Outfits" onAdd={addOutfit} addLabel="Add outfit" />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
-          {outfits.length === 0 && (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
-              No outfits added yet. Click "Add outfit" to start planning.
-            </p>
-          )}
-          {outfits.map(outfit => (
-            <OutfitCard
-              key={outfit.id}
-              outfit={outfit}
-              onUpdate={updateOutfit}
-              onRemove={removeOutfit}
-              uploadState={uploadStates[outfit.id]}
-              onPhotoUpload={handlePhotoUpload}
-              onPhotoRetry={retryPhotoUpload}
-              fileRefs={fileRefs}
-            />
-          ))}
-        </div>
-      </div>
+      <Accordion type="multiple" className="w-full space-y-4">
 
-      {/* ── B. Tailor ────────────────────────────────────────────────────────── */}
-      <div style={{ paddingTop: 32 }}>
-        <SectionHead title="Tailor" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
-          <Field lbl="Tailor / studio name">
-            <input
-              value={tailor.name || ''}
-              onChange={e => setTailorField('name', e.target.value)}
-              style={inputStyle}
-              placeholder="Studio or tailor name"
-            />
-          </Field>
-          <Field lbl="Contact person">
-            <input
-              value={tailor.contact || ''}
-              onChange={e => setTailorField('contact', e.target.value)}
-              style={inputStyle}
-              placeholder="Contact name"
-            />
-          </Field>
-          <Field lbl="Phone">
-            <input
-              value={tailor.phone || ''}
-              onChange={e => setTailorField('phone', e.target.value)}
-              style={inputStyle}
-              placeholder="Phone number"
-            />
-          </Field>
-          <Field lbl="Email">
-            <input
-              type="email"
-              value={tailor.email || ''}
-              onChange={e => setTailorField('email', e.target.value)}
-              style={inputStyle}
-              placeholder="Email address"
-            />
-          </Field>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <Field lbl="Notes">
-              <textarea
-                value={tailor.notes || ''}
-                onChange={e => setTailorField('notes', e.target.value)}
-                style={textareaStyle}
-                placeholder="Deposit, deadlines, special instructions"
+        {/* ── A. Outfits ────────────────────────────────────────────────────── */}
+        <DetailsSection title="Outfits" icon={Shirt}>
+          <AddButtonRow onAdd={addOutfit} addLabel="Add outfit" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {outfits.length === 0 && (
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
+                No outfits added yet. Click "Add outfit" to start planning.
+              </p>
+            )}
+            {outfits.map(outfit => (
+              <OutfitCard
+                key={outfit.id}
+                outfit={outfit}
+                onUpdate={updateOutfit}
+                onRemove={removeOutfit}
+                uploadState={uploadStates[outfit.id]}
+                onPhotoUpload={handlePhotoUpload}
+                onPhotoRetry={retryPhotoUpload}
+                fileRefs={fileRefs}
               />
-            </Field>
+            ))}
           </div>
-        </div>
-      </div>
+        </DetailsSection>
 
-      {/* ── Fittings (sub-section of tailor) ─────────────────────────────── */}
-      <div style={{ paddingTop: 24 }}>
-        <SectionHead title="Fittings" onAdd={addFitting} addLabel="Add fitting" />
-        <div style={{ marginTop: 12 }}>
-          {fittings.length === 0 && (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '8px 0 0' }}>
-              No fittings scheduled yet.
-            </p>
-          )}
-          {fittings.map(f => (
-            <div
-              key={f.id}
-              style={{ display: 'grid', gridTemplateColumns: '160px 1fr 2fr auto', gap: 12, alignItems: 'end', padding: '12px 0', borderBottom: '1px solid rgba(10,10,10,0.06)' }}
-            >
-              <Field lbl="Date">
-                <input
-                  type="date"
-                  value={f.date || ''}
-                  onChange={e => updateFitting(f.id, 'date', e.target.value)}
-                  style={inputStyle}
-                />
-              </Field>
-              <Field lbl="Who">
-                <input
-                  value={f.who || ''}
-                  onChange={e => updateFitting(f.id, 'who', e.target.value)}
-                  style={inputStyle}
-                  placeholder="e.g. Bride"
-                />
-              </Field>
-              <Field lbl="Notes">
-                <input
-                  value={f.notes || ''}
-                  onChange={e => updateFitting(f.id, 'notes', e.target.value)}
-                  style={inputStyle}
-                  placeholder="What to bring, alterations needed"
-                />
-              </Field>
-              <button
-                onClick={() => removeFitting(f.id)}
-                style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(10,10,10,0.6)', flexShrink: 0, marginBottom: 2 }}
+        {/* ── B. Tailor & fittings ─────────────────────────────────────────── */}
+        <DetailsSection title="Tailor & fittings" icon={User}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <SectionInput label="Tailor / studio name" value={tailor.name} onChange={e => setTailorField('name', e.target.value)} placeholder="Studio or tailor name" />
+            <SectionInput label="Contact person" value={tailor.contact} onChange={e => setTailorField('contact', e.target.value)} placeholder="Contact name" />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <SectionInput label="Phone" value={tailor.phone} onChange={e => setTailorField('phone', e.target.value)} placeholder="Phone number" />
+            <SectionInput label="Email" type="email" value={tailor.email} onChange={e => setTailorField('email', e.target.value)} placeholder="Email address" />
+          </div>
+          <SectionInput label="Notes" isTextarea value={tailor.notes} onChange={e => setTailorField('notes', e.target.value)} placeholder="Deposit, deadlines, special instructions" />
+
+          <div style={{ paddingTop: 8 }}>
+            <AddButtonRow onAdd={addFitting} addLabel="Add fitting" />
+          </div>
+          <div>
+            {fittings.length === 0 && (
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '8px 0 0' }}>
+                No fittings scheduled yet.
+              </p>
+            )}
+            {fittings.map(f => (
+              <div
+                key={f.id}
+                style={{ display: 'grid', gridTemplateColumns: '160px 1fr 2fr auto', gap: 12, alignItems: 'end', padding: '12px 0', borderBottom: '1px solid rgba(10,10,10,0.06)' }}
               >
-                <X size={12} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
+                <Field lbl="Date">
+                  <input
+                    type="date"
+                    value={f.date || ''}
+                    onChange={e => updateFitting(f.id, 'date', e.target.value)}
+                    style={inputStyle}
+                  />
+                </Field>
+                <Field lbl="Who">
+                  <input
+                    value={f.who || ''}
+                    onChange={e => updateFitting(f.id, 'who', e.target.value)}
+                    style={inputStyle}
+                    placeholder="e.g. Bride"
+                  />
+                </Field>
+                <Field lbl="Notes">
+                  <input
+                    value={f.notes || ''}
+                    onChange={e => updateFitting(f.id, 'notes', e.target.value)}
+                    style={inputStyle}
+                    placeholder="What to bring, alterations needed"
+                  />
+                </Field>
+                <button
+                  onClick={() => removeFitting(f.id)}
+                  style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(10,10,10,0.6)', flexShrink: 0, marginBottom: 2 }}
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </DetailsSection>
 
-      {/* ── C. Accessories ───────────────────────────────────────────────────── */}
-      <div style={{ paddingTop: 32 }}>
-        <SectionHead title="Accessories" onAdd={addAccessory} addLabel="Add accessory" />
-        <div style={{ marginTop: 12 }}>
-          {accessories.length === 0 && (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '8px 0 0' }}>
-              No accessories added yet. Click "Add accessory" to build your checklist.
-            </p>
-          )}
-          {accessories.map(a => (
-            <div
-              key={a.id}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid rgba(10,10,10,0.06)' }}
-            >
-              <input
-                type="checkbox"
-                checked={a.done || false}
-                onChange={e => updateAccessory(a.id, 'done', e.target.checked)}
-                style={{ width: 16, height: 16, accentColor: '#E03553', flexShrink: 0, cursor: 'pointer' }}
-              />
-              <input
-                value={a.item || ''}
-                onChange={e => updateAccessory(a.id, 'item', e.target.value)}
-                style={{
-                  ...inputStyle, flex: 2,
-                  textDecoration: a.done ? 'line-through' : 'none',
-                  color: a.done ? 'rgba(10,10,10,0.35)' : '#0A0A0A',
-                }}
-                placeholder="Item (e.g. veil, cufflinks, garter)"
-              />
-              <input
-                value={a.forWhom || ''}
-                onChange={e => updateAccessory(a.id, 'forWhom', e.target.value)}
-                style={{ ...inputStyle, flex: 1 }}
-                placeholder="For whom"
-              />
-              <button
-                onClick={() => removeAccessory(a.id)}
-                style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(10,10,10,0.6)', flexShrink: 0 }}
+        {/* ── C. Accessories ───────────────────────────────────────────────── */}
+        <DetailsSection title="Accessories" icon={Sparkles}>
+          <AddButtonRow onAdd={addAccessory} addLabel="Add accessory" />
+          <div>
+            {accessories.length === 0 && (
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '8px 0 0' }}>
+                No accessories added yet. Click "Add accessory" to build your checklist.
+              </p>
+            )}
+            {accessories.map(a => (
+              <div
+                key={a.id}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid rgba(10,10,10,0.06)' }}
               >
-                <X size={12} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
+                <input
+                  type="checkbox"
+                  checked={a.done || false}
+                  onChange={e => updateAccessory(a.id, 'done', e.target.checked)}
+                  style={{ width: 16, height: 16, accentColor: '#E03553', flexShrink: 0, cursor: 'pointer' }}
+                />
+                <input
+                  value={a.item || ''}
+                  onChange={e => updateAccessory(a.id, 'item', e.target.value)}
+                  style={{
+                    ...inputStyle, flex: 2,
+                    textDecoration: a.done ? 'line-through' : 'none',
+                    color: a.done ? 'rgba(10,10,10,0.35)' : '#0A0A0A',
+                  }}
+                  placeholder="Item (e.g. veil, cufflinks, garter)"
+                />
+                <input
+                  value={a.forWhom || ''}
+                  onChange={e => updateAccessory(a.id, 'forWhom', e.target.value)}
+                  style={{ ...inputStyle, flex: 1 }}
+                  placeholder="For whom"
+                />
+                <button
+                  onClick={() => removeAccessory(a.id)}
+                  style={{ width: 28, height: 28, borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(10,10,10,0.6)', flexShrink: 0 }}
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </DetailsSection>
 
-      {/* ── D. Notes ─────────────────────────────────────────────────────────── */}
-      <div style={{ paddingTop: 32 }}>
-        <SectionHead title="Notes" />
-        <div style={{ marginTop: 16 }}>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: '0 0 12px', fontFamily: PJS }}>
+        {/* ── D. Notes ──────────────────────────────────────────────────────── */}
+        <DetailsSection title="Notes" icon={FileText}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS }}>
             Dress code is set per event in{' '}
             <a href="/event-details" style={{ color: '#E03553', fontWeight: 600, textDecoration: 'none' }}>
               Event Details → Venue
             </a>.
           </p>
-          <Field lbl="Attire notes">
-            <textarea
-              value={attire.notes || ''}
-              onChange={e => setTopField('notes', e.target.value)}
-              style={{ ...textareaStyle, minHeight: 100 }}
-              placeholder="e.g. Ceremony is on grass — consider heel-friendly footwear. Bridesmaids can choose their own shoes in dusty rose."
-            />
-          </Field>
-        </div>
-      </div>
+          <SectionInput
+            label="Attire notes"
+            isTextarea
+            value={attire.notes}
+            onChange={e => setTopField('notes', e.target.value)}
+            placeholder="e.g. Ceremony is on grass — consider heel-friendly footwear. Bridesmaids can choose their own shoes in dusty rose."
+          />
+        </DetailsSection>
+
+      </Accordion>
 
       {/* ── Save bar ─────────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 28, marginTop: 16, borderTop: '1px solid rgba(10,10,10,0.08)' }}>

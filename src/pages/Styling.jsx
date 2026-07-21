@@ -238,6 +238,11 @@ const [activeTab, setActiveTab] = useState("attire");
                     <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No florist vendors added yet. Click + to add one.</p>
                   )}
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <SectionInput label="Contact person" value={details.flowers?.floristContact} onChange={e => handleUpdate('flowers', 'floristContact', e.target.value)} placeholder="Contact name" />
+                  <SectionInput label="Phone" value={details.flowers?.floristPhone} onChange={e => handleUpdate('flowers', 'floristPhone', e.target.value)} placeholder="Phone number" />
+                </div>
+                <SectionInput label="Email" type="email" value={details.flowers?.floristEmail} onChange={e => handleUpdate('flowers', 'floristEmail', e.target.value)} placeholder="Email address" />
               </DetailsSection>
 
               <DetailsSection title="Bouquets & Personal Flowers" icon={Flower} sectionKey="bouquets" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
@@ -348,6 +353,11 @@ const [activeTab, setActiveTab] = useState("attire");
                     <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No decoration vendors added yet. Click + to add one.</p>
                   )}
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <SectionInput label="Contact person" value={details.decorations?.decoratorContact} onChange={e => handleUpdate('decorations', 'decoratorContact', e.target.value)} placeholder="Contact name" />
+                  <SectionInput label="Phone" value={details.decorations?.decoratorPhone} onChange={e => handleUpdate('decorations', 'decoratorPhone', e.target.value)} placeholder="Phone number" />
+                </div>
+                <SectionInput label="Email" type="email" value={details.decorations?.decoratorEmail} onChange={e => handleUpdate('decorations', 'decoratorEmail', e.target.value)} placeholder="Email address" />
               </DetailsSection>
 
               <DetailsSection title="Theme & Colors" icon={Palette} sectionKey="theme-colors" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>

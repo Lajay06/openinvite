@@ -18,7 +18,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   // Supports a ?next= redirect target (e.g. back to a collaborator accept
-  // page after signing in) — falls back to the normal /Dashboard landing
+  // page after signing in) — falls back to the normal /DailyUpdate landing
   // when absent, so every existing login link behaves exactly as before.
   const next = new URLSearchParams(window.location.search).get('next');
 
@@ -28,7 +28,7 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = next || "/Dashboard";
+      window.location.href = next || "/DailyUpdate";
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -37,7 +37,7 @@ export default function Login() {
   };
 
   const handleProvider = (provider) => {
-    base44.auth.loginWithProvider(provider, next || "/Dashboard");
+    base44.auth.loginWithProvider(provider, next || "/DailyUpdate");
   };
 
   return (
