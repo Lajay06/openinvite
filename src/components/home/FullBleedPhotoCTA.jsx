@@ -36,9 +36,9 @@ export default function FullBleedPhotoCTA({ onCTA }) {
       }}>
       
       {/* Background image */}
-      <img src="https://media.base44.com/images/public/68731d183f075e406eda2236/700612442_DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654.jpg"
+      <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3.jpg"
 
-      alt="Wedding moment"
+      alt="A couple running together, laughing"
       style={{
         position: "absolute",
         inset: 0,

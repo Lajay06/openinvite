@@ -57,21 +57,17 @@ export default function Contact() {
     <div className="min-h-screen bg-white font-sans">
       <PublicNav />
 
-      {/* BANNER — full-width image, no text overlaid on it. The heading
-          used to sit on top of the image behind a near-opaque white wash
-          (rgba(245,245,243,0.88)), which mostly hid the photo anyway. Now
-          the banner is just the photo, and the heading is normal page
-          content underneath it. */}
-      <section style={{ width: "100%", height: "clamp(280px, 40vh, 480px)", overflow: "hidden" }}>
+      {/* HERO — one taller full-bleed image with the heading overlaid
+          directly on it (bottom-anchored, dark scrim), replacing the
+          previous stacked photo-then-heading layout. */}
+      <section style={{ position: "relative", width: "100%", height: "clamp(420px, 55vh, 640px)", overflow: "hidden", display: "flex", alignItems: "flex-end" }}>
         <img
-          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BY_WATER_Daniel_Farò_Photos_ID7930_auruje.jpg"
-          alt="A couple laughing together"
-          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/asso-myron-aOWUqj5vuOE-unsplash_yptsz1.jpg"
+          alt="A couple holding hands, walking together"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
         />
-      </section>
-
-      <section style={{ padding: "64px clamp(32px, 6vw, 80px) 0", textAlign: "center", borderBottom: "1px solid #E0E0DC", paddingBottom: 64 }}>
-        <h1 style={{ fontSize: 48, fontWeight: 700, color: "#0A0A0A", lineHeight: 1.1, hyphens: "none", maxWidth: 600, margin: "0 auto" }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0.15) 55%, rgba(10,10,10,0) 100%)" }} />
+        <h1 style={{ position: "relative", zIndex: 2, width: "100%", textAlign: "center", padding: "0 clamp(24px, 6vw, 80px) 56px", fontSize: 48, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.1, hyphens: "none", maxWidth: 700, margin: "0 auto" }}>
           Let's plan something beautiful.
         </h1>
       </section>

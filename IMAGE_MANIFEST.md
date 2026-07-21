@@ -182,3 +182,20 @@ isn't registered in `pages.config.js` or linked from anywhere live
 (pre-existing orphaned code, not part of this pass), so it's not a real
 no-repeat conflict, just noting it rather than silently overclaiming
 "fully unused."
+
+## Round 6 (marketing round 4 follow-ups)
+
+| public_id | Folder | Used on |
+|---|---|---|
+| `alex-plesovskich-VPrTqd8B230-unsplash_gwgyej` | Universe | UniverseMiniHero.jsx — homepage full-bleed photo moment (was uploaded but never referenced anywhere; confirmed via Admin API against this manifest before assigning) |
+| `DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3` | Couple | FullBleedPhotoCTA.jsx — "Your wedding deserves this." (replaces a base44.com-proxied copy of `DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654`, itself freed up back in Round 3; ID1042 is a different, previously-unused sibling shot from ID1041, already used on About.jsx) |
+| `asso-myron-aOWUqj5vuOE-unsplash_yptsz1` | (unfoldered) | Contact.jsx — merged hero (photo + heading now one component; was uploaded but never referenced) |
+
+`manuel-moreno-DGa0LQ0yDPc-unsplash_nbgivs` (Universe folder) is unused
+again after Round 5 moved Quick Start to `DTS_INFLUENCER_...` — left
+unused rather than reassigned here, no section needed it this round.
+
+UniverseTeaserSection.jsx's preview row grew from 4 to 5 universes
+(added `marrakech`) — same precedent as the existing Tulum/Kyoto/Capri/
+Paris reuse noted above (the app's own canonical per-universe
+photography, shown again deliberately), not a no-repeat violation.
