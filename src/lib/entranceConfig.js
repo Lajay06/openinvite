@@ -6,7 +6,7 @@
  * data object per universe, resolved with a safe default fallback so a
  * universe with no bespoke entry still gets a complete, sensible entrance.
  *
- * Bespoke treatment (explicitly tuned per the brief): aman, marrakech,
+ * Bespoke treatment (explicitly tuned per the brief): london, marrakech,
  * brooklyn, bali, kyoto.
  * Everyone else (tulum, capri, mykonos, paris, capetown) gets
  * DEFAULT_ENTRANCE_CONFIG — the locked base concept ("names rise up"),
@@ -33,7 +33,7 @@ export const MAX_HOLD_MS = 4000;
 export const NAME_MOTIONS = ['rise', 'dissolve', 'unfold', 'snap', 'drift', 'stillness'];
 
 export const ENTRANCE_CONFIGS = {
-  aman: {
+  london: {
     character: 'reverent-dissolve',
     totalDuration: 3000,
     beats: { scrim: 0, kicker: 500, names: 1300, settle: 2200 },

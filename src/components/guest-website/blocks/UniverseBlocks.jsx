@@ -86,7 +86,7 @@ import ShanghaiSectionMark from '../layouts/ShanghaiSectionMark';
 // here is one of the already-built, reused-as-is primitives from
 // ../layouts, keyed off universeConfig.layout.
 const DIVIDER_BY_LAYOUT = {
-  'aman-minimal': HairlineRule,
+  'london-minimal': HairlineRule,
   'kyoto-vertical': EnsoRing,
   'editorial-masthead': ZelligeDivider,
   'brooklyn-offgrid': TicketStub,
@@ -109,7 +109,7 @@ const DIVIDER_BY_LAYOUT = {
 
 // Per-universe kicker mark for `heading`'s optional kicker label.
 const KICKER_BY_LAYOUT = {
-  'aman-minimal': MinimalSectionMark,
+  'london-minimal': MinimalSectionMark,
   'kyoto-vertical': KyotoSectionMark,
   'editorial-masthead': EditorialSectionKicker,
   'brooklyn-offgrid': BrooklynSectionMark,

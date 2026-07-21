@@ -20,7 +20,7 @@ import { CURATED_FONTS, UNIVERSE_DEFAULT_FONT_IDS } from './curatedFonts.js';
  *
  * feat/block-styling-curated: previously, a universe's own `typography`
  * field had unconditional priority over weddingDetails.activeTypography —
- * and since every real wedding has an activeUniverse (defaults to 'aman'),
+ * and since every real wedding has an activeUniverse (defaults to 'london'),
  * the activeTypography picker was permanently dead code (confirmed root
  * cause of "the Typography selector does nothing"). Fixed by reading a new
  * per-wedding override, weddingDetails.fontOverride = { headingFontId,

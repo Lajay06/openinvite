@@ -93,8 +93,8 @@ export default function UniverseStudio() {
       .finally(() => setLoading(false));
   }, []);
 
-  const activeId = weddingDetails?.activeUniverse || 'aman';
-  const active = getUniverse(activeId) || getUniverse('aman');
+  const activeId = weddingDetails?.activeUniverse || 'london';
+  const active = getUniverse(activeId) || getUniverse('london');
   const opened = openId ? getUniverse(openId) : null;
 
   // Rehomed from GuestSuite.jsx's "Overview" page (now retired) — the one

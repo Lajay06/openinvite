@@ -1,9 +1,9 @@
 /**
- * MinimalSectionMark — the "aman-minimal" layout's section opener: a tiny
+ * MinimalSectionMark — the "london-minimal" layout's section opener: a tiny
  * wide-tracked centred kicker + a single hairline rule. The centred,
  * symmetric, hairline-only counterpart to EditorialSectionKicker (which is
  * left-aligned and uses the woven ZelligeDivider) — shared by every page
- * component that opts into `layout: 'aman-minimal'`.
+ * component that opts into `layout: 'london-minimal'`.
  */
 import React from 'react';
 import HairlineRule from './HairlineRule';

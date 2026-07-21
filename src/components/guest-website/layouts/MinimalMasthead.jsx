@@ -1,5 +1,5 @@
 /**
- * MinimalMasthead — the "aman-minimal" layout's hero treatment: a tiny,
+ * MinimalMasthead — the "london-minimal" layout's hero treatment: a tiny,
  * wide-tracked kicker, a single hairline rule, then the couple's names set
  * large and quiet — centred and symmetric (unlike EditorialMasthead's
  * asymmetric two-line break), in a narrow measure with vast surrounding
@@ -7,7 +7,7 @@
  * asymmetric offset, no oversized numerals — just restraint.
  *
  * Generic like EditorialMasthead — takes theme/typography/copy as props so
- * any future universe opting into `layout: 'aman-minimal'` can reuse this
+ * any future universe opting into `layout: 'london-minimal'` can reuse this
  * with its own palette/type/kicker text.
  */
 import React from 'react';

@@ -5,13 +5,15 @@ import PublicFooter from '@/components/public/PublicFooter';
 import ScrollCue from '@/components/motion/ScrollCue';
 import { UNIVERSE_CATALOG } from '@/lib/universeCatalog';
 
-// Aman is the one universe with no dedicated /universes/*.jpg photography
-// yet (UNIVERSE_CONFIGS' aman.imageUrl is null — quiet-luxury identity, no
-// real photography shot for it as of this overhaul). Falls back to a
-// Cloudinary photo whose own mood ("Quiet Glamour") matches the universe's
-// actual tone, rather than leaving a tile with no image at all.
+// London is the one universe with no dedicated /universes/*.jpg photography
+// yet (UNIVERSE_CONFIGS' london.imageUrl is null — renamed from Aman for
+// trademark caution, and no real photography has ever been shot for this
+// universe under either name). Falls back to a Cloudinary photo whose own
+// mood ("Quiet Glamour") is at least in the neighbourhood of the universe's
+// tone, rather than leaving a tile with no image at all — flagged for real
+// London photography. See IMAGE_MANIFEST.md.
 const FALLBACK_IMAGE = {
-  aman: 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355_zhr0xb.jpg',
+  london: 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355_zhr0xb.jpg',
 };
 
 const PJS = 'Plus Jakarta Sans, sans-serif';
@@ -258,7 +260,7 @@ const Universes = () => {
     const meta = document.querySelector('meta[name="description"]');
     const prevDescription = meta?.getAttribute('content') ?? null;
     if (meta) {
-      meta.setAttribute('content', 'Explore all 20 Openinvite universes, a complete visual system for your wedding, from Aman to Shanghai. Every invitation, website and printed piece follows one aesthetic vision.');
+      meta.setAttribute('content', 'Explore all 20 Openinvite universes, a complete visual system for your wedding, from London to Shanghai. Every invitation, website and printed piece follows one aesthetic vision.');
     }
     return () => {
       document.title = prevTitle;

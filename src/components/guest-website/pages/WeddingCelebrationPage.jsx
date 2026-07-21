@@ -88,7 +88,7 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
 
   const hasEvents = allEvents.length > 0;
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
-  const isMinimal = universeConfig?.layout === 'aman-minimal';
+  const isMinimal = universeConfig?.layout === 'london-minimal';
   const isKyoto = universeConfig?.layout === 'kyoto-vertical';
   const isBrooklyn = universeConfig?.layout === 'brooklyn-offgrid';
   const isBali = universeConfig?.layout === 'bali-organic';

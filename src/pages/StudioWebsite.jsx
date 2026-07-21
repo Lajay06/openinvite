@@ -18,8 +18,8 @@ import ComponentLibraryModal from '@/components/website-builder/ComponentLibrary
 import { newBlock } from '@/components/guest-website/blocks/blockTypes';
 
 const UNIVERSE_THEMES = {
-  aman: {
-    name: 'Aman',
+  london: {
+    name: 'London',
     primary: '#0A0A0A',
     secondary: '#C4956A',
     background: '#F8F7F5',
@@ -27,7 +27,7 @@ const UNIVERSE_THEMES = {
     accent: '#C4956A',
     fontDisplay: '"Cormorant Garamond", serif',
     fontBody: '"Plus Jakarta Sans", sans-serif',
-    feeling: 'Quiet luxury',
+    feeling: 'Classical grandeur',
   },
   tulum: {
     name: 'Tulum',
@@ -333,7 +333,7 @@ export default function StudioWebsite({ onBack }) {
   // BUILDER_UNIVERSE_AUDIT.md item 3 for that separate, still-open bug) but
   // its colour fields are now derived from the same resolveColors() output
   // as `theme` above, so the two objects can no longer drift out of sync.
-  const baseUniverseTheme = UNIVERSE_THEMES[normalizeUniverseKey(details?.activeUniverse)] || UNIVERSE_THEMES.aman;
+  const baseUniverseTheme = UNIVERSE_THEMES[normalizeUniverseKey(details?.activeUniverse)] || UNIVERSE_THEMES.london;
   const universeTheme = {
     ...baseUniverseTheme,
     primary: theme.navBg,

@@ -22,7 +22,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // comments in src/lib/websiteThemes.js and UNIVERSE_DESIGN_SYSTEM.md §4,
 // not invented for this mock.
 export const MOTIF_NOTES = {
-  aman: 'Fine cross-hatch linen-weave grain, barely visible on dark sections.',
+  london: 'A slender fluted column line, the same quiet order as a Georgian townhouse façade.',
   tulum: 'Warm canvas-weave texture across section grounds.',
   kyoto: 'Fine washi-paper grain; a single ensō ring as the only ornament.',
   capri: 'A scalloped citrus-pith rule (repeating semicircle bumps) under kickers and names.',

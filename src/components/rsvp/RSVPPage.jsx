@@ -15,9 +15,9 @@ const MEAL_OPTIONS = [
 // Matches this page's original, pre-universe hardcoded look exactly — used
 // when a wedding has no active universe, per BUILDER_UNIVERSE_AUDIT.md item
 // 1's "graceful fallback" requirement. Deliberately NOT resolveColors()'s own
-// internal default (which falls back to the Aman palette) — a wedding that
+// internal default (which falls back to the London palette) — a wedding that
 // never chose a universe should see OpenInvite's own brand look, not a
-// phantom Aman theme it never selected.
+// phantom London theme it never selected.
 const FALLBACK_THEME = {
   darkBg: '#FAFAFA', lightBg: '#FAFAFA', darkText: '#0A0A0A', lightText: '#0A0A0A',
   accent: '#E03553', accentSecondary: '#E03553', navBg: '#FAFAFA',
@@ -219,7 +219,7 @@ export default function RSVPPage() {
 
   // A wedding with no active universe (or an unrecognised one) falls back to
   // OpenInvite's own brand look rather than silently borrowing resolveColors'/
-  // resolveTypography's own internal default (the Aman palette) — see
+  // resolveTypography's own internal default (the London palette) — see
   // FALLBACK_THEME's comment.
   const universeConfig = wedding ? resolveUniverseConfig(wedding) : null;
   const theme = universeConfig ? resolveColors(wedding) : FALLBACK_THEME;

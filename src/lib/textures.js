@@ -9,7 +9,7 @@
  *
  * `grain` is token #1 — migrated byte-for-byte from the original C1
  * GrainOverlay.jsx (feTurbulence fractalNoise, baseFrequency 0.65,
- * numOctaves 4, fully desaturated) so Aman's default renders with zero
+ * numOctaves 4, fully desaturated) so London's default renders with zero
  * visual change.
  *
  * Default opacities are calibrated against the C1 "barely-there" standard
@@ -20,7 +20,7 @@
  * produces larger contiguous blobs that also read stronger, so it sits
  * slightly below grain too. These are engineering-judgment starting points
  * per the spec's own build-sequence note ("verify live before merge") —
- * fine-tune visually against Aman on preview before shipping wider.
+ * fine-tune visually against London on preview before shipping wider.
  */
 
 function svgDataUri(svgMarkup) {
@@ -93,7 +93,7 @@ export const TEXTURE_REGISTRY = {
     system: 'procedural',
     backgroundImage: GRAIN_URI,
     backgroundSize: '200px 200px',
-    defaultOpacity: 0.025, // reference value — C1's tuned Aman default
+    defaultOpacity: 0.025, // reference value — C1's tuned London default
   },
   plaster: {
     id: 'plaster',

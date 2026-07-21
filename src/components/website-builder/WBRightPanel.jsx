@@ -190,8 +190,8 @@ function DesignTab({ details, onChange, universeTheme }) {
   // falls back to the universe's own default, unchanged. Pairing presets
   // stay per-universe curated shortcuts (universePairingPresets), not a
   // restriction on what the dropdowns themselves offer.
-  const universeKey = normalizeUniverseKey(details.activeUniverse) || 'aman';
-  const universeDefaults = UNIVERSE_DEFAULT_FONT_IDS[universeKey] || UNIVERSE_DEFAULT_FONT_IDS.aman;
+  const universeKey = normalizeUniverseKey(details.activeUniverse) || 'london';
+  const universeDefaults = UNIVERSE_DEFAULT_FONT_IDS[universeKey] || UNIVERSE_DEFAULT_FONT_IDS.london;
   const pairingPresets = universePairingPresets(universeKey);
 
   const activeHeadingId = details.fontOverride?.headingFontId || universeDefaults.headingFontId;
@@ -216,7 +216,7 @@ function DesignTab({ details, onChange, universeTheme }) {
     });
   }, [activeHeadingId, activeBodyId]);
 
-  const universeName    = universeTheme?.name    || 'Aman';
+  const universeName    = universeTheme?.name    || 'London';
   const universeAccent  = universeTheme?.accent  || '#C4956A';
   const universeFeeling = universeTheme?.feeling || 'Quiet luxury';
 

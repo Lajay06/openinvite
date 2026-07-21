@@ -167,7 +167,7 @@ function dividerHtml(style, accent) {
 
 /**
  * @param {object} opts
- * @param {string} opts.universeId — one of UNIVERSE_EMAIL_STYLES' keys; falls back to 'aman'
+ * @param {string} opts.universeId — one of UNIVERSE_EMAIL_STYLES' keys; falls back to 'london'
  * @param {'invite'|'reminder'|'update'|'thank_you_attending'|'thank_you_declined'} [opts.type='invite']
  * @param {string} [opts.guestName] — used only to build the default personalMessage when omitted
  * @param {string} opts.coupleNames

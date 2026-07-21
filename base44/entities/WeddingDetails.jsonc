@@ -450,7 +450,7 @@
     },
     "activeUniverse": {
       "type": "string",
-      "default": "aman"
+      "default": "london"
     },
     "menuItems": {
       "type": "array",

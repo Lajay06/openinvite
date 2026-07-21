@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import AmanUniverseView from '@/components/studio/AmanUniverseView';
+import LondonUniverseView from '@/components/studio/LondonUniverseView';
 import { interactiveDivProps } from '@/lib/a11y';
 
 const UNIVERSES = [
-  { id: 'aman', name: 'AMAN', tagline: 'Quiet Luxury', number: '01', photo: 'https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg', available: true },
+  // No dedicated London photo exists yet (same gap the old Aman entry had —
+  // this photo was never actually Aman-appropriate either, a mismatched
+  // desert/countryside shot). Uses the same interim Cloudinary placeholder
+  // as UNIVERSE_CONFIGS.london / Universes.jsx's FALLBACK_IMAGE until real
+  // London photography is shot. See IMAGE_MANIFEST.md.
+  { id: 'london', name: 'LONDON', tagline: 'Classical Grandeur', number: '01', photo: 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355_zhr0xb.jpg', available: true },
   { id: 'tulum', name: 'TULUM', tagline: 'Desert Bloom', number: '02', photo: 'https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg', available: true },
   { id: 'kyoto', name: 'KYOTO', tagline: 'Zen & Ceremony', number: '03', photo: 'https://static.wixstatic.com/media/d2df22_40822e26660c4112aef53ff2526c0345~mv2.jpg', available: true },
   { id: 'capri', name: 'CAPRI', tagline: 'Italian Coast', number: '04', photo: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg', available: true },
@@ -64,7 +69,7 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
   const textFaint = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
 
   const handleContinue = () => {
-    onNext({ activeUniverse: selectedUniverse || 'aman', websiteMode });
+    onNext({ activeUniverse: selectedUniverse || 'london', websiteMode });
   };
 
   const handleSelectFromOverlay = () => {
@@ -110,8 +115,8 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
             return (
               <div
                 key={u.id}
-                onClick={() => u.id === 'aman' ? setPreviewUniverse(u) : setSelectedUniverse(u.id)}
-                {...interactiveDivProps(() => u.id === 'aman' ? setPreviewUniverse(u) : setSelectedUniverse(u.id))}
+                onClick={() => u.id === 'london' ? setPreviewUniverse(u) : setSelectedUniverse(u.id)}
+                {...interactiveDivProps(() => u.id === 'london' ? setPreviewUniverse(u) : setSelectedUniverse(u.id))}
                 style={{
                   width: 220, flexShrink: 0, height: 280,
                   position: 'relative', overflow: 'hidden',
@@ -210,14 +215,14 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
 
       {/* Overlays */}
       <AnimatePresence>
-        {previewUniverse && previewUniverse.id === 'aman' && (
+        {previewUniverse && previewUniverse.id === 'london' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             style={{ position: 'fixed', inset: 0, zIndex: 9999, overflowY: 'auto' }}
           >
-            <AmanUniverseView
+            <LondonUniverseView
               isOnboarding={true}
               onBack={() => setPreviewUniverse(null)}
               onSelect={handleSelectFromOverlay}

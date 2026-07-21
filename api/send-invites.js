@@ -12,7 +12,7 @@
  *   {
  *     type?: 'invite' | 'reminder' | 'update' | 'thank_you_attending' | 'thank_you_declined',
  *       // defaults to 'invite'
- *     universeId?: string,      // one of UNIVERSE_EMAIL_STYLES' keys, falls back to 'aman'
+ *     universeId?: string,      // one of UNIVERSE_EMAIL_STYLES' keys, falls back to 'london'
  *     isTest?: boolean,         // "send test to me" — prefixes the subject, skipped from guest-count logging
  *     guests: [{ email: string, name: string, rsvpUrl: string, events?: Array<{name,date,startTime,venue}> }],
  *       // events — the events THIS guest is invited to; per-guest since invite

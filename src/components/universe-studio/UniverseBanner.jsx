@@ -8,7 +8,7 @@
  *
  * Universes with a real photo (imageUrl set) get the full-bleed treatment
  * with a bottom-only scrim. Universes without one (imageUrl null — just
- * Aman today, the only universe with no source photo yet) get a designed
+ * London today, the only universe with no source photo yet) get a designed
  * composition instead of a flat block: a gradient wash in the universe's
  * own palette, oversized type in its own display face, and its actual
  * documented signature motif (not a fake illustration) as a real accent
@@ -43,7 +43,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // blown-up "loud" version that would violate the design system's own
 // "woven, not printed" bar.
 const MOTIF_ACCENT = {
-  aman: (color) => <HairlineRule color={color} opacity={0.5} width={120} thickness={1} />,
+  london: (color) => <HairlineRule color={color} opacity={0.5} width={120} thickness={1} />,
   tulum: (color) => <SunRayArc color={color} opacity={0.5} width={140} height={36} />,
   kyoto: (color) => <EnsoRing color={color} opacity={0.7} size={56} />,
   capri: (color) => <CitrusScallop color={color} bumpSize={9} style={{ maxWidth: 200 }} />,

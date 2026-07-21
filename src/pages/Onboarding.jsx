@@ -86,7 +86,7 @@ export default function Onboarding() {
     vendors: [],
     culturalNotes: '',
     inspirationPhotos: [],
-    activeUniverse: 'aman',
+    activeUniverse: 'london',
     websiteMode: 'dark',
   });
 

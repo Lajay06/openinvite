@@ -30,7 +30,7 @@ export default function WeddingRSVPPage({ weddingDetails, theme, typography, uni
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
-  const isMinimal = universeConfig?.layout === 'aman-minimal';
+  const isMinimal = universeConfig?.layout === 'london-minimal';
   const isKyoto = universeConfig?.layout === 'kyoto-vertical';
   const isBrooklyn = universeConfig?.layout === 'brooklyn-offgrid';
   const isBali = universeConfig?.layout === 'bali-organic';

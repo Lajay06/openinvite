@@ -3,7 +3,7 @@
  *
  * Covers fix/builder-published-sync's per-block-colour bug: the swatch
  * grid for a block's Text colour/Background must reflect the ACTIVE
- * UNIVERSE's own palette (Brooklyn = concrete/rust, Aman = warm paper/
+ * UNIVERSE's own palette (Brooklyn = concrete/rust, London = warm paper/
  * espresso, Marrakech = terracotta/brass, ...), not a fixed set.
  *
  * The actual bug was a prop-plumbing mistake: WBRightPanel.jsx's
@@ -32,7 +32,7 @@ import { resolveColors } from '../../src/lib/universeStyling.js';
 import { pass, fail } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const SAMPLE_UNIVERSES = ['aman', 'brooklyn', 'marrakech'];
+const SAMPLE_UNIVERSES = ['london', 'brooklyn', 'marrakech'];
 
 export async function runBlockStylingUniverse() {
   const results = [];

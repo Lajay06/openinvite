@@ -26,7 +26,7 @@ export const STYLE_TAGS = [
 ];
 
 const DISPLAY_NAME = {
-  aman: 'Aman',
+  london: 'London',
   tulum: 'Tulum',
   kyoto: 'Kyoto',
   capri: 'Capri',

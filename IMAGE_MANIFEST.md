@@ -41,7 +41,7 @@ pools (Couple/Food/Party/Planning/Relax) instead.
 | `alex-boyd-HhFi1gKYosc-unsplash_*` (prtm0n on-site; folder copy is `_oe7e8n`, same source photo, different upload) | Paris | Universes.jsx — Paris |
 | `alex-bertha-Jyg7xHRmXiU-unsplash_ypu0wy` | Universe | Universes.jsx — Tulum |
 | `anne-laure-p-PbemriYGLoQ-unsplash_*` (rgyetw on-site; folder copy is `_qssibt`, same source photo, different upload) | Kyoto | Universes.jsx — Kyoto |
-| `manuel-moreno-DGa0LQ0yDPc-unsplash_nbgivs` | Universe | Universes.jsx — Aman |
+| `manuel-moreno-DGa0LQ0yDPc-unsplash_nbgivs` | Universe | Universes.jsx — London |
 
 `ScrollMorphSection.jsx`'s "So, why us?" ring (20 wixstatic-hosted images) is
 being replaced entirely in this overhaul (task 1) — those wixstatic URLs are
@@ -69,7 +69,7 @@ render-time override that relabelled the "Digital Invitations" card as
 "Universes". Replaced with 7 honest cards, real Cloudinary photos, no
 runtime title swap.
 
-| `DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355_zhr0xb` | Food | Universes.jsx grid — Aman fallback (only universe with no dedicated `/universes/*.jpg`) |
+| `DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355_zhr0xb` | Food | Universes.jsx grid — London fallback (only universe with no dedicated `/universes/*.jpg`, renamed from Aman for trademark caution) |
 
 Universes.jsx's grid (all 20 worlds) otherwise uses the pre-existing local
 `public/universes/{id}.jpg` photography (already the app's own canonical
@@ -145,3 +145,19 @@ no-repeat violation. Not caught by `audit-image-repeats.mjs` (the URLs
 are resolved at runtime from `UNIVERSE_CATALOG`, not literal strings in
 source) — a known limitation, acceptable here since the reuse is
 intentional and documented.
+
+## Round 4 (Aman → London rename)
+
+The Aman universe was renamed to London (trademark caution — Aman is a
+real luxury hotel brand). No dedicated London photography exists (same
+gap Aman had — it never got one either); the same `DTS_Quiet_Glamour`
+fallback above stays in place, now keyed to `london` instead of `aman`
+everywhere it's referenced (`Universes.jsx`'s `FALLBACK_IMAGE`,
+`OnboardingStepUniverse.jsx`'s universe list). Flagged for real London
+photography (grand, classical, city-elegant) when available.
+
+Also fixed in passing: `OnboardingStepUniverse.jsx`'s old Aman entry
+pointed at an unrelated Wix-hosted desert/countryside couple photo
+(`d2df22_8e79926ce6c74e55aa7ee84c8a8be77c`), not a London or even an
+Aman-appropriate image — a pre-existing mismatch, now pointed at the
+same Cloudinary fallback as everywhere else.

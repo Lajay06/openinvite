@@ -6,7 +6,7 @@
  * - Respects prefers-reduced-motion: if the OS preference is set, animations
  *   are skipped entirely (element is always visible).
  * - If no universeConfig is provided (or universe has no motion config), falls
- *   back to a sensible default fade — so non-Aman pages are not broken.
+ *   back to a sensible default fade — so non-London pages are not broken.
  * - `viewport={{ once: true }}` means each section reveals once, then stays.
  * - `disabled` is the builder's on/off switch (weddingDetails.scrollAnimation
  *   === 'none', via src/lib/universeStyling.js's isMotionEnabled) — when true,

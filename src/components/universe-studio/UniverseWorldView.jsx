@@ -75,7 +75,7 @@ import MotionGraphicPreview from '@/components/universe-studio/assets/MotionGrap
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const MASTHEAD_BY_LAYOUT = {
-  'aman-minimal': MinimalMasthead,
+  'london-minimal': MinimalMasthead,
   'kyoto-vertical': KyotoMasthead,
   'capri-citrus': CapriMasthead,
   'editorial-masthead': EditorialMasthead,
@@ -102,7 +102,7 @@ const MASTHEAD_BY_LAYOUT = {
 // its own real editorial-masthead motif (ZelligeDivider) rather than a
 // second, redundant primitive.
 const MOTIF_LARGE = {
-  aman: (color) => <HairlineRule color={color} opacity={0.6} width={220} thickness={1} />,
+  london: (color) => <HairlineRule color={color} opacity={0.6} width={220} thickness={1} />,
   tulum: (color) => <SunRayArc color={color} opacity={0.55} width={260} height={64} />,
   kyoto: (color) => <EnsoRing color={color} opacity={0.8} size={140} />,
   capri: (color) => <CitrusScallop color={color} bumpSize={16} style={{ maxWidth: 360 }} />,

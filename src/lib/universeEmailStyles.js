@@ -7,7 +7,7 @@
  * duplicate object that had drifted badly out of sync with the real
  * roster — it still had 'tokyo' and 'santorini' (ids that don't exist in
  * UNIVERSE_CONFIGS any more) and was missing brooklyn/capetown/mykonos
- * entirely, so those three silently fell back to Aman's email styling.
+ * entirely, so those three silently fell back to London's email styling.
  * Now every value is computed from UNIVERSE_CATALOG (universeCatalog.js),
  * so a universe's email styling can never drift from its real theme, and a
  * new universe gets correct styling the moment it's added to config —
@@ -65,7 +65,7 @@ export const UNIVERSE_EMAIL_STYLES = Object.fromEntries(
   }])
 );
 
-const DEFAULT_UNIVERSE_ID = 'aman';
+const DEFAULT_UNIVERSE_ID = 'london';
 
 export function getUniverseEmailStyle(universeId) {
   return UNIVERSE_EMAIL_STYLES[universeId] || UNIVERSE_EMAIL_STYLES[DEFAULT_UNIVERSE_ID];

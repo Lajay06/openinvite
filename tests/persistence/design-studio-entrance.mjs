@@ -79,7 +79,7 @@ export async function runDesignStudioEntrance() {
   console.log('\n  Design Studio — real photography wired for 19 of 20 universes, optimised:\n');
 
   // feat/universe-experience-fixes — real photography now covers every
-  // universe except Aman (no source photo exists for it yet). Marrakech/
+  // universe except London (no source photo exists for it yet). Marrakech/
   // Bali/Capetown were already wired in an earlier PR; this round added
   // photos for the remaining 16.
   const PHOTO_UNIVERSES = {
@@ -91,7 +91,7 @@ export async function runDesignStudioEntrance() {
     monaco: '/universes/monaco.jpg', florence: '/universes/florence.jpg', seoul: '/universes/seoul.jpg',
     shanghai: '/universes/shanghai.jpg',
   };
-  const NO_PHOTO_UNIVERSES = ['aman'];
+  const NO_PHOTO_UNIVERSES = ['london'];
 
   for (const [id, expectedPath] of Object.entries(PHOTO_UNIVERSES)) {
     const m = websiteThemesSource.match(new RegExp(`${id}: \\{[\\s\\S]*?\\n  \\},`));
@@ -142,7 +142,7 @@ export async function runDesignStudioEntrance() {
 
   console.log('\n  Design Studio — every universe has complete tile metadata (tagline/tags/description/motif/story):\n');
 
-  const UNIVERSE_IDS = ['aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
+  const UNIVERSE_IDS = ['london', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
   const missingMeta = UNIVERSE_IDS.filter(id => {
     const m = websiteThemesSource.match(new RegExp(`${id}: \\{[\\s\\S]*?\\n  \\},`));
     const block = m ? m[0] : '';

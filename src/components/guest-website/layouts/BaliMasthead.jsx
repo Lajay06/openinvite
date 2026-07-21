@@ -2,7 +2,7 @@
  * BaliMasthead — the "bali-organic" layout's hero treatment: a small
  * flowing LeafCurve accent, a warm kicker, the couple's names set large in
  * a soft humanist serif with relaxed, easy alignment (left, generous
- * measure — not deeply centred like Aman, not asymmetrically broken like
+ * measure — not deeply centred like London, not asymmetrically broken like
  * Marrakech), and a WaveDivider beneath instead of a straight rule.
  */
 import React from 'react';

@@ -128,7 +128,7 @@ function AssetCard({ asset, isHovered, onHover, onLeave, coupleName, weddingDate
 }
 
 /**
- * Shared AMAN universe page content.
+ * Shared LONDON universe page content.
  * 
  * Props:
  *  - isOnboarding (bool): if true, "← Back" + calls onSelect(); if false, "← Guest Suite" + saves to DB + navigates
@@ -136,7 +136,7 @@ function AssetCard({ asset, isHovered, onHover, onLeave, coupleName, weddingDate
  *  - onSelect (fn): called when a select button is clicked (onboarding mode only)
  *  - navigate (fn): react-router navigate (studio mode only)
  */
-export default function AmanUniverseView({ isOnboarding = false, onBack, onSelect, navigate }) {
+export default function LondonUniverseView({ isOnboarding = false, onBack, onSelect, navigate }) {
   const [details, setDetails] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [hoveredAsset, setHoveredAsset] = useState(null);
@@ -163,7 +163,7 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
 
   const venue = details?.mainCeremony?.venueName || 'Your Venue';
   const location = details?.mainCeremony?.address || '';
-  const isAlreadySelected = details?.activeUniverse === 'aman';
+  const isAlreadySelected = details?.activeUniverse === 'london';
 
   const handleSelectUniverse = async () => {
     if (selectState === 'loading') return;
@@ -176,7 +176,7 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
     setSelectState('loading');
     try {
       if (details?.id) {
-        await base44.entities.WeddingDetails.update(details.id, { activeUniverse: 'aman', activeTheme: 'still' });
+        await base44.entities.WeddingDetails.update(details.id, { activeUniverse: 'london', activeTheme: 'still' });
       }
       setSelectState('choice');
     } catch {
@@ -189,13 +189,13 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
     : selectState === 'loading'
     ? 'Applying…'
     : isOnboarding
-    ? 'Select AMAN →'
-    : 'Select AMAN Universe';
+    ? 'Select LONDON →'
+    : 'Select LONDON Universe';
 
   if (!isOnboarding && selectState === 'choice') {
     return (
       <UniverseSelectedChoice
-        universe={{ name: 'AMAN', id: 'aman' }}
+        universe={{ name: 'LONDON', id: 'london' }}
         coupleName={coupleName}
         onClose={() => setSelectState('idle')}
       />
@@ -230,7 +230,7 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
             transition: 'all 0.3s ease',
           }}
         >
-          {isAlreadySelected && !isOnboarding ? 'SELECTED' : 'Select AMAN'}
+          {isAlreadySelected && !isOnboarding ? 'SELECTED' : 'Select LONDON'}
         </button>
       </div>
 
@@ -262,7 +262,7 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
           <h1 style={{
             fontFamily: 'Cormorant Garamond, serif', fontWeight: 300,
             fontSize: 'clamp(80px, 15vw, 180px)', color: '#FFFFFF',
-          }}>AMAN</h1>
+          }}>LONDON</h1>
 
           <p style={{
             fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontStyle: 'italic',
@@ -318,10 +318,10 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.9, marginBottom: 24 }}>
-            The AMAN universe was designed for couples who understand that less communicates more. Every element is intentional. Every space has a reason.
+            The LONDON universe was designed for couples who understand that less communicates more. Every element is intentional. Every space has a reason.
           </p>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.9, marginBottom: 24 }}>
-            Inspired by Aman Resorts — the standard for quiet luxury in hospitality — this suite strips away everything unnecessary and leaves only what matters.
+            Inspired by London's grand hotels and Georgian townhouses, this suite strips away everything unnecessary and leaves only what matters.
           </p>
           {loaded && (
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.9, transition: 'opacity 0.4s ease', opacity: 1 }}>
@@ -378,7 +378,7 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>The AMAN palette speaks in whispers. Deep blacks, warm linens, touches of gold.</p>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>The LONDON palette speaks in whispers. Deep blacks, warm linens, touches of gold.</p>
         </div>
         <div>
           <div style={{ marginBottom: 24 }}>
@@ -395,7 +395,7 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
       {/* SECTION 6: Final CTA */}
       <div style={{ padding: '160px 80px', textAlign: 'center' }}>
         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: 16 }}>
-          {loaded ? coupleName : 'AMAN UNIVERSE'}
+          {loaded ? coupleName : 'LONDON UNIVERSE'}
         </p>
         <h2 style={{
           fontFamily: 'Cormorant Garamond, serif', fontWeight: 300,
@@ -403,7 +403,7 @@ export default function AmanUniverseView({ isOnboarding = false, onBack, onSelec
           letterSpacing: '0.08em', lineHeight: 1, marginBottom: 24,
         }}>Your suite awaits.</h2>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', maxWidth: 480, margin: '0 auto 16px', lineHeight: 1.8, textAlign: 'center' }}>
-          Select the AMAN universe and we'll apply this aesthetic across all 10 pieces in your Guest Suite — personalised for {coupleName}{details?.weddingDate ? `, ${weddingDate}` : ''}.
+          Select the LONDON universe and we'll apply this aesthetic across all 10 pieces in your Guest Suite — personalised for {coupleName}{details?.weddingDate ? `, ${weddingDate}` : ''}.
         </p>
 
         {venue !== 'Your Venue' && loaded && (

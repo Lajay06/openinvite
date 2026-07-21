@@ -1,11 +1,11 @@
 export const WEBSITE_THEMES = [
   {
-    // ── Aman universe theme — deep black, warm linen, #C4956A gold, Cormorant Garamond ──
-    // This entry is written when the couple selects the Aman universe. It faithfully
-    // expresses Aman's identity (dark bg, gold accent) inside the existing theme system
+    // ── London universe theme — deep black, warm linen, #C4956A gold, Cormorant Garamond ──
+    // This entry is written when the couple selects the London universe. It faithfully
+    // expresses London's identity (dark bg, gold accent) inside the existing theme system
     // so MultiPageWeddingWebsite renders it without any changes to its read path.
-    id: 'aman',
-    name: 'Aman',
+    id: 'london',
+    name: 'London',
     mood: 'Quiet Luxury',
     darkBg: '#0A0A0A',
     lightBg: '#F8F7F5',
@@ -457,17 +457,23 @@ export const WEDDING_PAGES = [
 // shape TYPOGRAPHY_PAIRINGS derives (headingFont/bodyFont/googleFonts) so one
 // font-loading + CSS-var mechanism serves both systems. `texture.type` is a
 // TEXTURE_REGISTRY id (src/lib/textures.js); `motion` and `pageTransition`
-// use the same shape as Aman's original config. All 10 use the same fade+
+// use the same shape as London's original config. All 10 use the same fade+
 // translate reveal *type* (per the "no per-universe forked CSS" rule) —
 // only the calibration (duration/yOffset) varies per universe personality.
 export const UNIVERSE_CONFIGS = {
-  aman: {
+  london: {
+    // Renamed from "Aman" (trademark caution — Aman is a real luxury hotel
+    // brand). Visual system (typography/colors/texture/motion) is
+    // unchanged, since it already reads as restrained, classical luxury;
+    // only the id, display name, and identity copy below changed to
+    // describe London on its own terms instead of referencing a brand.
+    //
     // Quiet luxury — the minimal pole, opposite Marrakech's ornamental
     // editorial (UNIVERSE_DESIGN_SYSTEM.md §4): confident restraint, the
     // luxury is what's removed. Typography/texture unchanged from the
-    // original C1/Aman-only config; ground/text warmed toward paper/
-    // espresso, motion slowed to the most reverent of all 10, and its own
-    // `layout`/`copy` added per the architecture PR #87 established.
+    // original C1 config; ground/text warmed toward paper/espresso, motion
+    // slowed to the most reverent of all 10, and its own `layout`/`copy`
+    // added per the architecture PR #87 established.
     typography: {
       headingFont: '"Cormorant Garamond", serif',
       bodyFont:    '"Jost", sans-serif',
@@ -511,7 +517,7 @@ export const UNIVERSE_CONFIGS = {
     // component branches on this id, using the primitives in
     // src/components/guest-website/layouts/ (MinimalMasthead,
     // MinimalSectionMark, MinimalFooter, HairlineRule).
-    layout: 'aman-minimal',
+    layout: 'london-minimal',
     // Quiet, gracious micro-copy — same optional-key-with-fallback
     // pattern Marrakech's `copy` established; every consumer falls back
     // to the exact pre-existing string when a key (or `copy` itself) is
@@ -531,11 +537,11 @@ export const UNIVERSE_CONFIGS = {
     // tileDescription is a one-line, in-voice line for the tile itself;
     // imageUrl is an optional per-universe photography slot, unset until
     // real photography exists — never faked.
-    tags: ['minimal', 'luxury'],
-    tagline: 'Quiet luxury',
-    tileDescription: "Quiet rooms, warm paper, restraint as the whole point. Nothing here shouts for attention.",
-    motifNote: 'Fine cross-hatch linen-weave grain, barely visible on dark sections.',
-    worldStory: 'Aman is the art of subtraction. Every surface is quiet enough to hear your own thoughts, every material honest enough to age well. This is a wedding that trusts silence.',
+    tags: ['classic', 'urban'],
+    tagline: 'Classical grandeur',
+    tileDescription: 'Marble stairs, gilt mirrors, a city that has always known how to dress up.',
+    motifNote: 'A slender fluted column line, the same quiet order as a Georgian townhouse façade.',
+    worldStory: 'London wears its grandeur quietly, all marble staircases and gilt-edged mirrors, a city dressed for occasion without ever raising its voice. Paper feels pressed and cool, ink feels considered. This is a wedding for grand entrances.',
     imageUrl: null,
     tier: 'free',
   },
@@ -553,7 +559,7 @@ export const UNIVERSE_CONFIGS = {
     },
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
     pageTransition: { type: 'dissolve', duration: 0.7 },
-    // Design Studio tile metadata (fix/design-studio-entrance) — see aman's
+    // Design Studio tile metadata (fix/design-studio-entrance) — see london's
     // tags/tileDescription/imageUrl comment above for what these do.
     tags: ['tropical', 'coastal'],
     tagline: 'Organic luxury',
@@ -584,7 +590,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#4B5A6E', accentSecondary: '#333E4C', navBg: '#1A1A1A',
     },
     // Slow, still, deliberate — a touch slower than the original, with
-    // the shortest travel distance outside Aman, fitting "spare and
+    // the shortest travel distance outside London, fitting "spare and
     // serene" rather than "gentle lift."
     motion: { sectionReveal: 'fade', duration: 0.8, yOffset: 10, ease: 'easeOut', intensity: 'subtle' },
     pageTransition: { type: 'fade', duration: 0.7 },
@@ -863,9 +869,9 @@ export const UNIVERSE_CONFIGS = {
     // Per-universe SECTION LAYOUT — a fashion-plate caption card: a fine
     // full-width HairlineRule above AND below the centred kicker/names
     // (framed, not just a single quiet mark beneath), structured evenly-
-    // spaced whitespace. Reuses HairlineRule (Aman's own bare-line
+    // spaced whitespace. Reuses HairlineRule (London's own bare-line
     // primitive) since "thin rules" is mechanically the same mark — the
-    // overall composition (framed caption card vs. Aman's vast unframed
+    // overall composition (framed caption card vs. London's vast unframed
     // centre) is what keeps the two universes distinct. Primitives:
     // ParisMasthead, ParisSectionMark, ParisFooter.
     layout: 'paris-couture',
@@ -1359,7 +1365,7 @@ export const UNIVERSE_CONFIGS = {
   },
 };
 
-/** Case-insensitive, whitespace-tolerant universe key lookup — 'Aman'/'aman'/' AMAN ' all resolve the same config. */
+/** Case-insensitive, whitespace-tolerant universe key lookup — 'London'/'london'/' LONDON ' all resolve the same config. */
 export function normalizeUniverseKey(activeUniverse) {
   return typeof activeUniverse === 'string' ? activeUniverse.trim().toLowerCase() : null;
 }
