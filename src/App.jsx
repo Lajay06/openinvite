@@ -122,14 +122,23 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 // createPageUrl()/href/navigate() reference in src/, not guessed from
 // casing alone. These six get their own dedicated kebab-case route below
 // instead (same pattern as Transport/Accommodation etc. further down) and
-// are excluded here rather than redirected: a redirect route doesn't work
-// for them, because React Router v6 matches paths case-insensitively by
-// default, so "/transport" also matches the earlier-declared "/Transport"
-// auto-route and wins the tie-break (earlier declaration wins). That auto
-// -route redirected to "/transport" — a no-op self-redirect to the exact
-// path already being visited — leaving the page blank. Excluding them
-// removes the colliding duplicate entirely, same fix already applied to
-// Features/Music/Florals below.
+// are excluded here rather than redirected.
+//
+// Of the six, only Transport/Accommodation/Honeymoon are single-word
+// PascalCase names that actually collide case-insensitively with their own
+// kebab-case route ("Transport".toLowerCase() === "transport" — no hyphen
+// gets inserted for a single word). React Router v6 matches paths
+// case-insensitively by default and resolves ties in declaration order, so
+// the earlier-declared "/Transport" auto-route (a `<Navigate to=
+// "/transport">`) won every visit to "/transport" — a no-op self-redirect
+// to the page already being visited, leaving it blank. Confirmed live for
+// all three. CeremonyDetails/EmergencyContact/EventDetails are multi-word,
+// so their kebab-case form gains a hyphen their PascalCase form never had
+// ("ceremony-details" vs "ceremonydetails") — those three were never
+// actually collision-prone, but are excluded anyway as a harmless
+// belt-and-braces measure, same fix applied uniformly rather than three
+// separate one-offs. scripts/test-route-collisions.mjs asserts both the
+// real collisions and this exclusion stay fixed.
 const AUTO_ROUTE_EXCLUDE = new Set([
   'Features',
   'CeremonyDetails',
@@ -216,7 +225,12 @@ const AuthenticatedApp = () => {
         <Route path="/About" element={<About />} />
         <Route path="/ava" element={<Ava />} />
         <Route path="/collaborate/guests" element={<CollaboratorGuests />} />
-        <Route path="/Pricing" element={<Pricing />} />
+        {/* No explicit /Pricing route here — "Pricing" is also a
+            pages.config.js PAGES key, so the auto-loop above already
+            declares "/Pricing" (LayoutWrapper-wrapped) earlier in this same
+            block; an identical duplicate declared again here was always
+            fully shadowed by it, never reachable. Caught by
+            scripts/test-route-collisions.mjs. */}
         <Route path="/Contact" element={<Contact />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
@@ -300,7 +314,12 @@ const AuthenticatedApp = () => {
         <Route path="/studio/ava/website/:step" element={<AvaStudioWebsite />} />
         <Route path="/studio/ava/assets" element={<AvaStudioAssets />} />
         <Route path="/studio/ava/assets/:step" element={<AvaStudioAssets />} />
-        <Route path="/onboarding" element={<Onboarding />} />
+        {/* No explicit /onboarding route here — "Onboarding" is also a
+            pages.config.js PAGES key, so the auto-loop above already
+            declares "/Onboarding" (case-insensitively equal, earlier in
+            this same block); a lowercase duplicate declared again here was
+            always fully shadowed by it, never reachable. Caught by
+            scripts/test-route-collisions.mjs. */}
         <Route path="/help" element={<LayoutWrapper currentPageName="Help"><Help /></LayoutWrapper>} />
         <Route path="/account" element={<LayoutWrapper currentPageName="Account"><Account /></LayoutWrapper>} />
         <Route path="/admin" element={<LayoutWrapper currentPageName="Admin"><Admin /></LayoutWrapper>} />
