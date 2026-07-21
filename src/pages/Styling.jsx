@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Accordion } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Plus, Palette, Flower, Sparkles, User, Camera } from "lucide-react";
+import { Palette, Flower, Sparkles, User, Camera } from "lucide-react";
 import toast from 'react-hot-toast';
 
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
-import VendorForm from "../components/vendors/VendorForm";
+import VendorContactSection from "../components/vendors/VendorContactSection";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import AttirePanel from '../components/styling/AttirePanel';
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 const WeddingDetails = base44.entities.WeddingDetails;
-const Vendor = base44.entities.Vendor;
 
 // Dress code is now managed per-event in Event Details → Venue tab.
 
@@ -27,35 +23,13 @@ const initialDetailsState = {
     attire: {}
 };
 
-function VendorFormModal({ vendorFormCategory, onSubmit, onClose }) {
-  const dialogRef = useModalFocusTrap(onClose);
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-      onClick={onClose}
-      {...interactiveDivProps(onClose, { label: 'Close' })}>
-      <div ref={dialogRef} tabIndex={-1} style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
-        onClick={e => e.stopPropagation()}>
-        <VendorForm
-          defaultCategory={vendorFormCategory}
-          onSubmit={onSubmit}
-          onCancel={onClose}
-        />
-      </div>
-    </div>
-  );
-}
-
 export default function StylingPage() {
   const [details, setDetails] = useState(initialDetailsState);
   const [detailsId, setDetailsId] = useState(null);
-  const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 const [activeTab, setActiveTab] = useState("attire");
-  const [showVendorForm, setShowVendorForm] = useState(false);
-  const [vendorFormCategory, setVendorFormCategory] = useState('');
-  
+
   const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => {
@@ -65,17 +39,12 @@ const [activeTab, setActiveTab] = useState("attire");
   const loadDetails = async () => {
     setLoading(true);
     try {
-      const [myDetails, vendorData] = await Promise.all([
-        getMyWeddingDetails(),
-        getMyRecords('Vendor')
-      ]);
+      const myDetails = await getMyWeddingDetails();
 
       if (myDetails) {
         setDetails(myDetails);
         setDetailsId(myDetails.id);
       }
-
-      setVendors(vendorData);
     } catch (error) {
       console.error("Error loading styling details:", error);
       toast.error("Failed to load details.");
@@ -91,29 +60,6 @@ const [activeTab, setActiveTab] = useState("attire");
         [field]: value,
       },
     }));
-  };
-  
-  const handleVendorSelect = (section, vendorId) => {
-    const vendor = vendors.find(v => v.id === vendorId);
-    if (vendor) {
-      // Store vendor ID and name for reference
-      handleUpdate(section, 'vendorId', vendorId);
-      handleUpdate(section, 'vendorName', vendor.name);
-    }
-  };
-
-  const handleVendorFormSubmit = async (vendorData) => {
-    const tid = toast.loading('Adding vendor…');
-    try {
-      const created = await Vendor.create({ ...vendorData, category: vendorFormCategory || vendorData.category });
-      toast.success('Vendor added', { id: tid });
-      setShowVendorForm(false);
-      const refreshed = await getMyRecords('Vendor');
-      setVendors(refreshed);
-      if (vendorFormCategory) handleVendorSelect(vendorFormCategory, created.id);
-    } catch {
-      toast.error('Failed to add vendor', { id: tid });
-    }
   };
 
   const handleSectionSave = async (sectionKey) => {
@@ -136,10 +82,6 @@ const [activeTab, setActiveTab] = useState("attire");
     }
     setIsSaving(false);
   };
-
-  // Filter vendors by category
-  const floristVendors = vendors.filter(v => v.category === 'flowers');
-  const decorationVendors = vendors.filter(v => v.category === 'decorations');
 
   if (loading) {
     return (
@@ -197,52 +139,11 @@ const [activeTab, setActiveTab] = useState("attire");
           <TabsContent value="flowers" className="mt-8">
             <Accordion type="multiple" className="w-full space-y-4">
               <DetailsSection title="Florist" icon={User} sectionKey="florist" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
-                <div>
-                  {floristVendors.length > 0 ? (
-                    <div className="flex gap-2">
-                      <Select
-                        value={details.flowers?.vendorId || ''}
-                        onValueChange={(value) => handleVendorSelect('flowers', value)}
-                      >
-                        <SelectTrigger className="flex-1 h-9 text-sm">
-                          <SelectValue placeholder="Select a florist from your vendors" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {floristVendors.map(vendor => (
-                            <SelectItem key={vendor.id} value={vendor.id}>
-                              {vendor.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <button type="button" onClick={() => { setVendorFormCategory('flowers'); setShowVendorForm(true); }} aria-label="Add florist vendor"
-                        style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Input
-                        value={details.flowers?.florist || ''}
-                        onChange={e => handleUpdate('flowers', 'florist', e.target.value)}
-                        placeholder="Florist name and contact"
-                        className="flex-1 h-9 text-sm"
-                      />
-                      <button type="button" onClick={() => { setVendorFormCategory('flowers'); setShowVendorForm(true); }} aria-label="Add florist vendor"
-                        style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-                  {floristVendors.length === 0 && (
-                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No florist vendors added yet. Click + to add one.</p>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <SectionInput label="Contact person" value={details.flowers?.floristContact} onChange={e => handleUpdate('flowers', 'floristContact', e.target.value)} placeholder="Contact name" />
-                  <SectionInput label="Phone" value={details.flowers?.floristPhone} onChange={e => handleUpdate('flowers', 'floristPhone', e.target.value)} placeholder="Phone number" />
-                </div>
-                <SectionInput label="Email" type="email" value={details.flowers?.floristEmail} onChange={e => handleUpdate('flowers', 'floristEmail', e.target.value)} placeholder="Email address" />
+                <VendorContactSection
+                  category="flowers"
+                  vendorId={details.flowers?.vendorId}
+                  onVendorIdChange={id => handleUpdate('flowers', 'vendorId', id)}
+                />
               </DetailsSection>
 
               <DetailsSection title="Bouquets & Personal Flowers" icon={Flower} sectionKey="bouquets" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
@@ -312,52 +213,11 @@ const [activeTab, setActiveTab] = useState("attire");
           <TabsContent value="decorations" className="mt-8">
             <Accordion type="multiple" className="w-full space-y-4">
               <DetailsSection title="Decorator / Designer" icon={User} sectionKey="decorator" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>
-                <div>
-                  {decorationVendors.length > 0 ? (
-                    <div className="flex gap-2">
-                      <Select
-                        value={details.decorations?.vendorId || ''}
-                        onValueChange={(value) => handleVendorSelect('decorations', value)}
-                      >
-                        <SelectTrigger className="flex-1 h-9 text-sm">
-                          <SelectValue placeholder="Select a decorator from your vendors" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {decorationVendors.map(vendor => (
-                            <SelectItem key={vendor.id} value={vendor.id}>
-                              {vendor.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <button type="button" onClick={() => { setVendorFormCategory('decorations'); setShowVendorForm(true); }} aria-label="Add decoration vendor"
-                        style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Input
-                        value={details.decorations?.decorator || ''}
-                        onChange={e => handleUpdate('decorations', 'decorator', e.target.value)}
-                        placeholder="Decorator name and contact"
-                        className="flex-1 h-9 text-sm"
-                      />
-                      <button type="button" onClick={() => { setVendorFormCategory('decorations'); setShowVendorForm(true); }} aria-label="Add decoration vendor"
-                        style={{ width: 36, height: 36, borderRadius: 999, border: '1px solid rgba(10,10,10,0.15)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-                  {decorationVendors.length === 0 && (
-                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No decoration vendors added yet. Click + to add one.</p>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <SectionInput label="Contact person" value={details.decorations?.decoratorContact} onChange={e => handleUpdate('decorations', 'decoratorContact', e.target.value)} placeholder="Contact name" />
-                  <SectionInput label="Phone" value={details.decorations?.decoratorPhone} onChange={e => handleUpdate('decorations', 'decoratorPhone', e.target.value)} placeholder="Phone number" />
-                </div>
-                <SectionInput label="Email" type="email" value={details.decorations?.decoratorEmail} onChange={e => handleUpdate('decorations', 'decoratorEmail', e.target.value)} placeholder="Email address" />
+                <VendorContactSection
+                  category="decorations"
+                  vendorId={details.decorations?.vendorId}
+                  onVendorIdChange={id => handleUpdate('decorations', 'vendorId', id)}
+                />
               </DetailsSection>
 
               <DetailsSection title="Theme & Colors" icon={Palette} sectionKey="theme-colors" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>
@@ -431,15 +291,6 @@ const [activeTab, setActiveTab] = useState("attire");
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Vendor form modal */}
-      {showVendorForm && (
-        <VendorFormModal
-          vendorFormCategory={vendorFormCategory}
-          onSubmit={handleVendorFormSubmit}
-          onClose={() => setShowVendorForm(false)}
-        />
-      )}
 
       <AvaModal
         isOpen={avaOpen}

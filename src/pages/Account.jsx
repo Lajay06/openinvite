@@ -638,7 +638,7 @@ function DeleteAccountModal({ user, deleteConfirmText, setDeleteConfirmText, del
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-6"
+      className="fixed inset-0 bg-black/[0.55] flex items-center justify-center z-[9999] p-6"
       onClick={onClose}
       {...interactiveDivProps(onClose, { label: 'Close account deletion modal' })}
     >

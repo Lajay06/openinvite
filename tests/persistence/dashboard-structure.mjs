@@ -69,7 +69,10 @@ export async function runDashboardStructure() {
     { file: 'src/pages/WeddingParty.jsx', label: 'Wedding party' },
     { file: 'src/pages/CeremonyDetails.jsx', label: 'Ceremony details' },
     { file: 'src/pages/EmergencyContact.jsx', label: 'Emergency contact' },
-    { file: 'src/pages/Florals.jsx', label: 'Florals & décor (holdout)' },
+    // Florals.jsx was here as a "holdout" — deleted outright in the
+    // round-6 vendor-consolidation pass (dashboard round 6, item 5): it
+    // was an orphaned, unreachable duplicate of Styling.jsx's Flowers tab,
+    // not a page that still needed converting.
     { file: 'src/pages/EntertainmentDetails.jsx', label: 'Entertainment (holdout)' },
     { file: 'src/pages/Honeymoon.jsx', label: 'Honeymoon (holdout)' },
     { file: 'src/pages/GuestSuitePolicies.jsx', label: 'Policies (holdout)' },

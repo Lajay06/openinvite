@@ -7,6 +7,7 @@ import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+import VendorContactSection from '../components/vendors/VendorContactSection';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 const WeddingDetails = base44.entities.WeddingDetails;
@@ -146,14 +147,11 @@ export default function FoodBeveragePage() {
         {activeTab === 'catering' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <DetailsSection title="Catering" icon={UtensilsCrossed}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <SectionInput label="Caterer name" value={data.catererName} onChange={e => update({ catererName: e.target.value })} placeholder="e.g. Fine Foods Co." />
-                <SectionInput label="Contact person" value={data.contactPerson} onChange={e => update({ contactPerson: e.target.value })} />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <SectionInput label="Phone" value={data.phone} onChange={e => update({ phone: e.target.value })} />
-                <SectionInput label="Email" value={data.email} onChange={e => update({ email: e.target.value })} />
-              </div>
+              <VendorContactSection
+                category="catering"
+                vendorId={data.vendorId}
+                onVendorIdChange={id => update({ vendorId: id })}
+              />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label style={labelStyle}>Service style</label>
                 <Select value={data.serviceStyle || ''} onValueChange={v => update({ serviceStyle: v })}>

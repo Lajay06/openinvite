@@ -129,19 +129,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
   const poNoneActive = poDietarySelected.length === 0;
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
-
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
-          {guest ? 'Edit guest' : 'Add new guest'}
-        </span>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, borderRadius: 999 }}>
-          <X size={16} />
-        </button>
-      </div>
-
-      <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} style={{ padding: 24 }}>
+      <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }}>
 
         {/* ── 2-column grid ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px 32px' }}>
@@ -383,6 +371,5 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
           </button>
         </div>
       </form>
-    </div>
   );
 }

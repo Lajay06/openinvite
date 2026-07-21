@@ -11,7 +11,7 @@ import SharePlaylist from '../components/music/SharePlaylist';
 import MusicList from '../components/music/MusicList';
 import MusicForm from '../components/music/MusicForm';
 import AddFromLink from '../components/music/AddFromLink';
-import VendorForm from '../components/vendors/VendorForm';
+import VendorFormModal from '../components/vendors/VendorFormModal';
 import VendorList from '../components/vendors/VendorList';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { Textarea } from '@/components/ui/textarea';
@@ -64,26 +64,6 @@ function ToggleRow({ label, value, onChange }) {
       <button onClick={() => onChange(!value)} aria-label={label} style={{ width: 40, height: 22, borderRadius: 11, border: 'none', background: value ? '#E03553' : 'rgba(10,10,10,0.12)', cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
         <span style={{ position: 'absolute', top: 2, left: value ? 20 : 2, width: 18, height: 18, borderRadius: '50%', background: '#FFFFFF', transition: 'left 0.18s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
       </button>
-    </div>
-  );
-}
-
-function VendorFormModal({ vendor, onSubmit, onClose }) {
-  const dialogRef = useModalFocusTrap(onClose);
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-      onClick={onClose}
-      {...interactiveDivProps(onClose, { label: 'Close' })}>
-      <div ref={dialogRef} tabIndex={-1} style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
-        onClick={e => e.stopPropagation()}>
-        <VendorForm
-          vendor={vendor}
-          defaultCategory="music"
-          onSubmit={onSubmit}
-          onCancel={onClose}
-        />
-      </div>
     </div>
   );
 }
@@ -766,14 +746,13 @@ export default function MusicPage() {
         />
       )}
 
-      {/* Vendor form modal */}
-      {showVendorForm && (
-        <VendorFormModal
-          vendor={editingVendor}
-          onSubmit={handleVendorSubmit}
-          onClose={() => { setShowVendorForm(false); setEditingVendor(null); }}
-        />
-      )}
+      <VendorFormModal
+        open={showVendorForm}
+        vendor={editingVendor}
+        defaultCategory="music"
+        onSubmit={handleVendorSubmit}
+        onCancel={() => { setShowVendorForm(false); setEditingVendor(null); }}
+      />
 
       {/* Settings modal */}
       {showSettings && (

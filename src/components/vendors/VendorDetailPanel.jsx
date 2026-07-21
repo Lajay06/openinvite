@@ -8,6 +8,7 @@ import {
 import toast from 'react-hot-toast';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import UploadStatus from '@/components/shared/UploadStatus';
+import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const VendorLog = base44.entities.VendorLog;
 const VendorTask = base44.entities.VendorTask;
@@ -103,9 +104,13 @@ export default function VendorDetailPanel({ vendor, onClose }) {
     { key: 'tasks', label: `Tasks (${completedTasks}/${tasks.length})`, icon: CheckSquare },
   ];
 
+  const dialogRef = useModalFocusTrap(onClose);
+
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 640, maxHeight: '90vh', background: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      onClick={onClose}
+      {...interactiveDivProps(onClose, { label: 'Close vendor details' })}>
+      <div ref={dialogRef} tabIndex={-1} onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 640, maxHeight: '90vh', background: '#FFFFFF', display: 'flex', flexDirection: 'column' }}>
 
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
