@@ -16,6 +16,7 @@
     "audit:schema": "node scripts/audit-schema.mjs",
     "audit:images": "node scripts/audit-image-repeats.mjs",
     "test:marketing-routes": "node scripts/test-marketing-routes.mjs",
+    "test:route-collisions": "node scripts/test-route-collisions.mjs",
     "capture": "node scripts/capture/run-all.mjs",
     "capture:preflight": "node scripts/capture/preflight.mjs",
     "capture:stills": "node scripts/capture/stills.mjs",

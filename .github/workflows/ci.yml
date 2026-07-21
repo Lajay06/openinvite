@@ -33,6 +33,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Static source analysis, no credentials — catches the case-insensitive
+      # route-collision/self-redirect bug class (fix/dashboard-round5) that
+      # silently left Transport/Accommodation/Honeymoon blank in production
+      # with no build or lint failure. See scripts/test-route-collisions.mjs.
+      - name: Route collision guard
+        run: npm run test:route-collisions
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live
