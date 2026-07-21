@@ -76,22 +76,16 @@ export default function Home() {
           more inside the now-deleted Invitations section), and each one's
           release/re-engage handoff briefly showed a static, empty black
           frame. Fewer sticky sections, no dead handoffs. */}
+      {/* Reverted to the original pre-AUDIT_2026-07.md-S16 gradient and
+          plain white text (no outline, no deepened stops) — the lower
+          contrast on this one decorative banner is an accepted tradeoff,
+          confirmed against git history (f2a0914^) rather than approximated. */}
       <div className="min-h-[140px] md:min-h-[180px]" style={{
-        // Deepened from the original lighter stops (#DDF762/#F0A050/
-        // #D4896A/#C99BBF), which left plain white text at ~1.2-2.8:1
-        // contrast (AUDIT_2026-07.md S16) — a dark text-shadow outline
-        // used to compensate, but it read as a cheap effect. Fixed at the
-        // colour level instead: every stop below is the same hue, deepened
-        // until white text clears 4.5:1 against it, so the text itself can
-        // stay a plain, clean fill with no outline/stroke.
-        background: "linear-gradient(to right, #6A7F06, #B4610F, #BA5C36, #A75D97, #9B58CC)",
+        background: "linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: "40px 24px",
       }}>
-        <span style={{
-          fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 800, color: "#FFFFFF",
-          letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center",
-        }}>
+        <span style={{ fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
           AI meets I Do. Say hello to Ava.
         </span>
       </div>

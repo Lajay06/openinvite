@@ -1,8 +1,11 @@
 /**
  * UniverseMiniHero — a full-bleed photo moment between the features
- * carousel and UniverseTeaserSection. Fades in as it enters the viewport,
- * a dark overlay keeps the headline legible against the photo (no text
- * outline/stroke effect), and a short taster row previews what a universe
+ * carousel and UniverseTeaserSection. The WHOLE section (photo, overlay,
+ * and text) fades in together as it enters the viewport — not just the
+ * text — with the text given a touch of extra motion on top so the
+ * moment reads as layered rather than a single flat cut-in. A dark
+ * overlay keeps the headline legible against the photo (no text outline/
+ * stroke effect), and a short taster row previews what a universe
  * actually covers before UniverseTeaserSection expands into the real
  * photos and copy.
  */
@@ -20,15 +23,23 @@ export default function UniverseMiniHero() {
 
   useEffect(() => {
     if (prefersReduced()) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.25 });
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.2 });
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
 
   return (
-    <section ref={ref} style={{ position: "relative", width: "100%", minHeight: "90vh", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <section
+      ref={ref}
+      style={{
+        position: "relative", width: "100%", minHeight: "90vh", overflow: "hidden",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        opacity: visible ? 1 : 0,
+        transition: `opacity 1.1s ${EASE}`,
+      }}
+    >
       <img
-        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/alex-plesovskich-VPrTqd8B230-unsplash_gwgyej.jpg"
+        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14260_s1kb8c.jpg"
         alt=""
         loading="lazy"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
@@ -42,7 +53,7 @@ export default function UniverseMiniHero() {
       <div style={{
         position: "relative", zIndex: 2, textAlign: "center", padding: "clamp(80px, 12vw, 160px) clamp(24px, 6vw, 80px)", maxWidth: 900,
         opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(28px)",
-        transition: `opacity 1s ${EASE}, transform 1s ${EASE}`,
+        transition: `opacity 1s ${EASE} 0.2s, transform 1s ${EASE} 0.2s`,
       }}>
         <p style={{
           fontSize: "clamp(16px, 2vw, 22px)", color: "rgba(255,255,255,0.75)",

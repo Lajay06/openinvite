@@ -18,12 +18,6 @@ const BULLETS = [
 "Centralised contact management"];
 
 
-const GW = ({ children }) =>
-<span style={{ background: "linear-gradient(135deg, #E03553, #803D81)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-    {children}
-  </span>;
-
-
 export default function FeatureGuests({ children }) {
   const sectionRef = useRef(null);
   const h2Ref = useRef(null);
@@ -114,7 +108,7 @@ export default function FeatureGuests({ children }) {
               overflowWrap: "break-word",
               fontFamily: "'Plus Jakarta Sans',sans-serif",
             }}>
-            Advanced <span style={{ background: "linear-gradient(135deg, #E03553, #803D81)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Guest</span> Management
+            Advanced Guest Management
             </h2>
 
           <p ref={bodyRef} className="feature-body-text" style={{ color: "#444444", lineHeight: 1.7, marginBottom: 32, fontSize: 16, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>

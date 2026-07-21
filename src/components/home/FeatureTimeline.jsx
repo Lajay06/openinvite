@@ -19,12 +19,6 @@ const BULLETS = [
   "Create your seamless day-of rundown",
 ];
 
-const GW = ({ children }) => (
-  <span style={{ background: "linear-gradient(135deg, #E03553, #803D81)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-    {children}
-  </span>
-);
-
 export default function FeatureTimeline() {
   const sectionRef = useRef(null);
   const h2Ref = useRef(null);
@@ -142,7 +136,7 @@ export default function FeatureTimeline() {
                fontFamily: "'Plus Jakarta Sans',sans-serif",
              }}
            >
-             Timeline & <span style={{ color: '#E03553' }}>Schedule</span> Planning
+             Timeline & Schedule Planning
            </h2>
           <p
             ref={bodyRef}

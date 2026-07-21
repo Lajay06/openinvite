@@ -199,3 +199,14 @@ UniverseTeaserSection.jsx's preview row grew from 4 to 5 universes
 (added `marrakech`) — same precedent as the existing Tulum/Kyoto/Capri/
 Paris reuse noted above (the app's own canonical per-universe
 photography, shown again deliberately), not a no-repeat violation.
+
+## Round 7 (dashboard/site review pass)
+
+| public_id | Folder | Used on |
+|---|---|---|
+| `DTS_AURA_Fanette_Guilloud_Photos_ID12987_rupmuq` | (unfoldered) | Contact.jsx — merged hero (replaces `asso-myron-...`, itself freed up here — never referenced elsewhere) |
+| `DTS_BANDITS_PALI_MENDEZ_Photos_ID14260_s1kb8c` | Couple | UniverseMiniHero.jsx — homepage full-bleed photo (replaces `alex-plesovskich-...`, itself freed up here — never referenced elsewhere) |
+
+Both `asso-myron-aOWUqj5vuOE-unsplash_yptsz1` and
+`alex-plesovskich-VPrTqd8B230-unsplash_gwgyej` are now unused anywhere
+in `src/`.

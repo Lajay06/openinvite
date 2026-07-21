@@ -22,12 +22,6 @@ const BULLETS = [
   "Subtle cost-saving suggestions",
 ];
 
-const GW = ({ children }) => (
-  <span style={{ background: "linear-gradient(135deg, #E03553, #803D81)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-    {children}
-  </span>
-);
-
 export default function FeatureBudget() {
   const sectionRef = useRef(null);
   const imgRef = useRef(null);
@@ -120,7 +114,7 @@ export default function FeatureBudget() {
               fontFamily: "'Plus Jakarta Sans',sans-serif",
             }}
           >
-            Smart <span style={{ background: "linear-gradient(135deg, #E03553, #803D81)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Budget</span> Tracking
+            Smart Budget Tracking
           </h2>
           <p ref={bodyRef} className="feature-body-text" style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.7, marginBottom: 32, fontSize: 16, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
             Plan like a pro. Our budgeting tools give you full visibility, clear control, and a few clever nudges to keep things beautifully on track.
