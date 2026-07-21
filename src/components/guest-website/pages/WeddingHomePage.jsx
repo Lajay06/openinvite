@@ -191,7 +191,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
   const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || 'We are overjoyed to celebrate with you.';
   const prefersReduced = useReducedMotion();
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
-  const isMinimal = universeConfig?.layout === 'aman-minimal';
+  const isMinimal = universeConfig?.layout === 'london-minimal';
   const isKyoto = universeConfig?.layout === 'kyoto-vertical';
   const isBrooklyn = universeConfig?.layout === 'brooklyn-offgrid';
   const isBali = universeConfig?.layout === 'bali-organic';

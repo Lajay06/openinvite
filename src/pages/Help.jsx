@@ -261,7 +261,7 @@ const ARTICLES = {
     <div>
       <p style={S.p}>Your theme and typography define the visual identity of your wedding website. Changes apply instantly across all pages in the preview.</p>
       <h3 style={S.h3}>Themes (21 available)</h3>
-      <p style={S.p}>Themes control your colour palette — dark background, light background, and accent colour. Notable themes include: AMAN, STILL (Obsidian dark, Linen light — AMAN's default), DUSK (Deep brown, Warm cream, Gold), SAGE (Dark green, Sage, Forest), BLUSH (Dark plum, Blush, Rose), NOIR (Black, Pure white, Red), plus SLATE, IVORY, MIDNIGHT, TERRA, FOREST, CORAL, LAVENDER, BRONZE, ARCTIC, DESERT, PLUM, JADE, CHARCOAL, CHAMPAGNE, and OBSIDIAN.</p>
+      <p style={S.p}>Themes control your colour palette — dark background, light background, and accent colour. Notable themes include: LONDON, STILL (Obsidian dark, Linen light — LONDON's default), DUSK (Deep brown, Warm cream, Gold), SAGE (Dark green, Sage, Forest), BLUSH (Dark plum, Blush, Rose), NOIR (Black, Pure white, Red), plus SLATE, IVORY, MIDNIGHT, TERRA, FOREST, CORAL, LAVENDER, BRONZE, ARCTIC, DESERT, PLUM, JADE, CHARCOAL, CHAMPAGNE, and OBSIDIAN.</p>
       <h3 style={S.h3}>How to change theme</h3>
       <ol style={S.ol}>
         <li style={S.li}>In the Guest Suite → Website tab, click the Design tab in the right panel (when nothing is selected)</li>
@@ -288,7 +288,7 @@ const ARTICLES = {
         <li style={S.li}><strong>Scroll animation:</strong> None / Subtle / Dramatic</li>
         <li style={S.li}><strong>Hero effect:</strong> Parallax / Zoom Out / Static</li>
       </ul>
-      <div style={S.tip}><p style={S.tipText}><strong>Note:</strong> Your active universe pre-selects a recommended theme. AMAN defaults to STILL + Classic typography.</p></div>
+      <div style={S.tip}><p style={S.tipText}><strong>Note:</strong> Your active universe pre-selects a recommended theme. LONDON defaults to STILL + Classic typography.</p></div>
     </div>
   ),
   'Setting up your RSVP page': (
@@ -369,7 +369,7 @@ const ARTICLES = {
       <p style={S.p}>Your universe defines the complete aesthetic of all 10 Guest Suite pieces — colours, typography, layout style, and mood. You choose one universe that applies across everything.</p>
       <h3 style={S.h3}>Available universes (all 10 are live)</h3>
       <ul style={S.ul}>
-        <li style={S.li}><strong>AMAN</strong> — Quiet Luxury. Deep black, warm linen, Cormorant Garamond typography. Inspired by Aman Resorts.</li>
+        <li style={S.li}><strong>LONDON</strong> — Classical Grandeur. Deep black, warm linen, Cormorant Garamond typography. Inspired by London's grand hotels and Georgian townhouses.</li>
         <li style={S.li}><strong>TULUM</strong> — Desert Bloom</li>
         <li style={S.li}><strong>KYOTO</strong> — Zen & Ceremony</li>
         <li style={S.li}><strong>CAPRI</strong> — Italian Coast</li>

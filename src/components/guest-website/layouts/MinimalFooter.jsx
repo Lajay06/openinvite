@@ -1,5 +1,5 @@
 /**
- * MinimalFooter — the "aman-minimal" layout's closing mark: a centred,
+ * MinimalFooter — the "london-minimal" layout's closing mark: a centred,
  * vertically stacked sequence (date, a hairline, an RSVP-style link) in a
  * narrow measure with generous space between each line — the quiet,
  * symmetric counterpart to EditorialGridFooter's horizontal column grid.

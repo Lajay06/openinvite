@@ -19,11 +19,11 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 // here (relying on DEFAULT_ENTRANCE_CONFIG) — included below to confirm
 // the fallback resolves a complete, valid config for them too.
 const ALL_UNIVERSES = [
-  'aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos',
+  'london', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos',
   'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
 ];
 // The brief explicitly named these five for bespoke treatment.
-const REQUIRED_BESPOKE = ['aman', 'marrakech', 'brooklyn', 'bali', 'kyoto'];
+const REQUIRED_BESPOKE = ['london', 'marrakech', 'brooklyn', 'bali', 'kyoto'];
 
 function isValidConfig(cfg) {
   if (!cfg || !cfg.beats) return false;
@@ -42,8 +42,8 @@ export async function runEntranceMoment() {
   console.log('\n  Entrance moment — per-universe config completeness:\n');
 
   results.push(REQUIRED_BESPOKE.every(u => BESPOKE_ENTRANCE_UNIVERSES.includes(u))
-    ? pass('All 5 brief-named universes (aman/marrakech/brooklyn/bali/kyoto) have bespoke configs', BESPOKE_ENTRANCE_UNIVERSES.join(', '))
-    : fail('All 5 brief-named universes (aman/marrakech/brooklyn/bali/kyoto) have bespoke configs', REQUIRED_BESPOKE.join(', '), BESPOKE_ENTRANCE_UNIVERSES.join(', ')));
+    ? pass('All 5 brief-named universes (london/marrakech/brooklyn/bali/kyoto) have bespoke configs', BESPOKE_ENTRANCE_UNIVERSES.join(', '))
+    : fail('All 5 brief-named universes (london/marrakech/brooklyn/bali/kyoto) have bespoke configs', REQUIRED_BESPOKE.join(', '), BESPOKE_ENTRANCE_UNIVERSES.join(', ')));
 
   results.push(isValidConfig(DEFAULT_ENTRANCE_CONFIG)
     ? pass('DEFAULT_ENTRANCE_CONFIG is well-formed (valid beat ordering, known nameMotion)', DEFAULT_ENTRANCE_CONFIG.character)

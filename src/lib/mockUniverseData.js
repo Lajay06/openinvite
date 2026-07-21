@@ -19,7 +19,7 @@ import { UNIVERSE_CONFIGS } from './websiteThemes';
 export const ULTRA_UNIVERSE_IDS = new Set(['marrakech', 'paris']);
 
 const META = {
-  aman:      { name: 'Aman',      tagline: 'Quiet luxury' },
+  london:    { name: 'London',    tagline: 'Classical grandeur' },
   tulum:     { name: 'Tulum',     tagline: 'Organic luxury' },
   kyoto:     { name: 'Kyoto',     tagline: 'Japanese minimalism' },
   capri:     { name: 'Capri',     tagline: 'Mediterranean summer' },
@@ -33,7 +33,7 @@ const META = {
 
 // Display order — leads with the two universes this mock must show in
 // full (Capri open, Marrakech locked), rest follow the config's own order.
-const ORDER = ['capri', 'marrakech', 'aman', 'tulum', 'kyoto', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
+const ORDER = ['capri', 'marrakech', 'london', 'tulum', 'kyoto', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos'];
 
 export const MOCK_UNIVERSES = ORDER.map(id => {
   const cfg = UNIVERSE_CONFIGS[id] || {};

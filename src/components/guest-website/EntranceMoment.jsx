@@ -59,7 +59,7 @@ const ACTIVE_PHASES = new Set(['scrim', 'kicker', 'names', 'holding']);
 
 export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typography, universeConfig, forcePlay = false, onDone }) {
   const prefersReducedOS = useReducedMotion();
-  const universeKey = normalizeUniverseKey(weddingDetails?.activeUniverse) || 'aman';
+  const universeKey = normalizeUniverseKey(weddingDetails?.activeUniverse) || 'london';
   const config = getEntranceConfig(universeKey);
   const storageKey = `oi_entrance_${weddingSlug || 'default'}`;
 

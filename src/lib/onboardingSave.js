@@ -29,7 +29,7 @@ export function buildWeddingDetailsPayload(data) {
     // guestType uses lowercase tile ids matching the enum: 'intimate' | 'celebration' | 'grand'
     guestCount: data.guestCount != null ? String(data.guestCount) : undefined,
     guestType:  data.guestType  || undefined,
-    activeUniverse: data.activeUniverse || 'aman',
+    activeUniverse: data.activeUniverse || 'london',
     websiteMode: data.websiteMode || 'dark',
     activeTheme: (data.websiteMode || 'dark') === 'light' ? 'ivory' : 'still',
     // culturalNotes (OnboardingPathACultural's free-text "any cultural or

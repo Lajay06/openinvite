@@ -61,10 +61,10 @@ export async function runCuratedFonts() {
   console.log('\n  Curated fonts — fontOverride actually changes the resolved typography (the fixed bug):\n');
 
   {
-    const withoutOverride = resolveTypography({ activeUniverse: 'aman' });
-    const opts = UNIVERSE_FONT_OPTIONS.aman;
+    const withoutOverride = resolveTypography({ activeUniverse: 'london' });
+    const opts = UNIVERSE_FONT_OPTIONS.london;
     const altHeadingId = opts.headingFontIds[1];
-    const withOverride = resolveTypography({ activeUniverse: 'aman', fontOverride: { headingFontId: altHeadingId, bodyFontId: opts.bodyFontIds[0] } });
+    const withOverride = resolveTypography({ activeUniverse: 'london', fontOverride: { headingFontId: altHeadingId, bodyFontId: opts.bodyFontIds[0] } });
     results.push(withOverride.headingFont !== withoutOverride.headingFont
       ? pass('resolveTypography — setting fontOverride.headingFontId actually changes headingFont (previously inert)', `${withoutOverride.headingFont} → ${withOverride.headingFont}`)
       : fail('resolveTypography — setting fontOverride.headingFontId actually changes headingFont (previously inert)', 'a different font', 'unchanged — override still has no effect'));
@@ -75,10 +75,10 @@ export async function runCuratedFonts() {
     // silently apply to a different universe's resolution (each call is
     // scoped to its own weddingDetails.activeUniverse).
     const kyotoDefault = resolveTypography({ activeUniverse: 'kyoto' });
-    const kyotoWithAmanOverrideIgnored = resolveTypography({ activeUniverse: 'kyoto' }); // no override — control
-    results.push(kyotoDefault.headingFont === kyotoWithAmanOverrideIgnored.headingFont
+    const kyotoWithLondonOverrideIgnored = resolveTypography({ activeUniverse: 'kyoto' }); // no override — control
+    results.push(kyotoDefault.headingFont === kyotoWithLondonOverrideIgnored.headingFont
       ? pass('resolveTypography — identical calls are deterministic (no hidden state)', kyotoDefault.headingFont)
-      : fail('resolveTypography — identical calls are deterministic (no hidden state)', kyotoDefault.headingFont, kyotoWithAmanOverrideIgnored.headingFont));
+      : fail('resolveTypography — identical calls are deterministic (no hidden state)', kyotoDefault.headingFont, kyotoWithLondonOverrideIgnored.headingFont));
   }
 
   console.log('\n  Curated fonts — pairing presets are real and universe-scoped:\n');
@@ -131,7 +131,7 @@ export async function runCuratedFonts() {
   {
     const arbitraryHeading = FONT_CATALOG[FONT_CATALOG.length - 1].id;
     const arbitraryBody = FONT_CATALOG[0].id;
-    const resolved = resolveTypography({ activeUniverse: 'aman', fontOverride: { headingFontId: arbitraryHeading, bodyFontId: arbitraryBody } });
+    const resolved = resolveTypography({ activeUniverse: 'london', fontOverride: { headingFontId: arbitraryHeading, bodyFontId: arbitraryBody } });
     const expectedHeadingFont = CURATED_FONTS[arbitraryHeading].family;
     const expectedBodyFont = CURATED_FONTS[arbitraryBody].family;
     results.push(resolved.headingFont === expectedHeadingFont && resolved.bodyFont === expectedBodyFont

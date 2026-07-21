@@ -25,7 +25,7 @@ import { pass, fail } from './_shared.mjs';
 
 // feat/universes-expansion-10 added 10 more (all Ultra-gated) — 20 total.
 const UNIVERSES = [
-  'aman', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos',
+  'london', 'tulum', 'kyoto', 'capri', 'marrakech', 'brooklyn', 'bali', 'paris', 'capetown', 'mykonos',
   'amalfi', 'sedona', 'aspen', 'taj', 'havana', 'edinburgh', 'monaco', 'florence', 'seoul', 'shanghai',
 ];
 
@@ -67,9 +67,9 @@ export async function runUniverseStyling() {
   console.log('\n  Font resolution — case-insensitive, whitespace-tolerant, and falls back correctly:\n');
 
   {
-    const lower = resolveTypography({ activeUniverse: 'aman' });
-    const upper = resolveTypography({ activeUniverse: 'AMAN' });
-    const padded = resolveTypography({ activeUniverse: '  Aman  ' });
+    const lower = resolveTypography({ activeUniverse: 'london' });
+    const upper = resolveTypography({ activeUniverse: 'LONDON' });
+    const padded = resolveTypography({ activeUniverse: '  London  ' });
     results.push(lower.headingFont === upper.headingFont && upper.headingFont === padded.headingFont
       ? pass('resolveTypography — case/whitespace-insensitive universe lookup', lower.headingFont)
       : fail('resolveTypography — case/whitespace-insensitive universe lookup', lower.headingFont, `${upper.headingFont} / ${padded.headingFont}`));
@@ -133,14 +133,14 @@ export async function runUniverseStyling() {
   const resolvedTransitions = UNIVERSES.map(id => UNIVERSE_CONFIGS[id]?.pageTransition);
 
   results.push(resolvedTransitions.every(t => t != null)
-    ? pass('UNIVERSE_CONFIGS — every universe declares a pageTransition (fix/universe-cleanup, was aman-only)', resolvedTransitions.map(t => t.type).join(', '))
-    : fail('UNIVERSE_CONFIGS — every universe declares a pageTransition (fix/universe-cleanup, was aman-only)', 'all non-null', resolvedTransitions.map(t => t?.type ?? 'MISSING').join(', ')));
+    ? pass('UNIVERSE_CONFIGS — every universe declares a pageTransition (fix/universe-cleanup, was london-only)', resolvedTransitions.map(t => t.type).join(', '))
+    : fail('UNIVERSE_CONFIGS — every universe declares a pageTransition (fix/universe-cleanup, was london-only)', 'all non-null', resolvedTransitions.map(t => t?.type ?? 'MISSING').join(', ')));
 
   results.push(new Set(resolvedTransitions.map(t => `${t.type}-${t.duration}`)).size === 20
     ? pass('UNIVERSE_CONFIGS — pageTransition (type, duration) is distinct across all 20 universes', resolvedTransitions.map(t => `${t.type}/${t.duration}`).join(', '))
     : fail('UNIVERSE_CONFIGS — pageTransition (type, duration) is distinct across all 20 universes', '20 distinct', `${new Set(resolvedTransitions.map(t => `${t.type}-${t.duration}`)).size} distinct: ${resolvedTransitions.map(t => `${t.type}/${t.duration}`).join(', ')}`));
 
-  console.log('\n  Colour resolution — distinct per universe, no fallback to Aman (fix/universe-palettes):\n');
+  console.log('\n  Colour resolution — distinct per universe, no fallback to London (fix/universe-palettes):\n');
 
   const resolvedColors = UNIVERSES.map(id => resolveColors({ activeUniverse: id }));
 
@@ -149,19 +149,19 @@ export async function runUniverseStyling() {
     : fail('resolveColors — every universe declares a full palette', 'all non-null with darkBg/accent', JSON.stringify(resolvedColors)));
 
   results.push(new Set(resolvedColors.map(c => c.darkBg)).size === 20
-    ? pass('resolveColors — darkBg is distinct across all 20 universes (none fall back to Aman)', resolvedColors.map(c => c.darkBg).join(', '))
-    : fail('resolveColors — darkBg is distinct across all 20 universes (none fall back to Aman)', '20 distinct', `${new Set(resolvedColors.map(c => c.darkBg)).size} distinct: ${resolvedColors.map(c => c.darkBg).join(', ')}`));
+    ? pass('resolveColors — darkBg is distinct across all 20 universes (none fall back to London)', resolvedColors.map(c => c.darkBg).join(', '))
+    : fail('resolveColors — darkBg is distinct across all 20 universes (none fall back to London)', '20 distinct', `${new Set(resolvedColors.map(c => c.darkBg)).size} distinct: ${resolvedColors.map(c => c.darkBg).join(', ')}`));
 
   results.push(new Set(resolvedColors.map(c => c.accent)).size === 20
     ? pass('resolveColors — accent is distinct across all 20 universes', resolvedColors.map(c => c.accent).join(', '))
     : fail('resolveColors — accent is distinct across all 20 universes', '20 distinct', `${new Set(resolvedColors.map(c => c.accent)).size} distinct: ${resolvedColors.map(c => c.accent).join(', ')}`));
 
   {
-    const amanColors = resolveColors({ activeUniverse: 'aman' });
-    const amanLegacyTheme = WEBSITE_THEMES.find(t => t.id === 'aman');
-    results.push(amanColors.darkBg === amanLegacyTheme.darkBg && amanColors.accent === amanLegacyTheme.accent
-      ? pass('resolveColors(\'aman\') — matches the legacy WEBSITE_THEMES aman entry exactly (already-correct universe unchanged)', amanColors.accent)
-      : fail('resolveColors(\'aman\') — matches the legacy WEBSITE_THEMES aman entry exactly (already-correct universe unchanged)', amanLegacyTheme.accent, amanColors.accent));
+    const londonColors = resolveColors({ activeUniverse: 'london' });
+    const londonLegacyTheme = WEBSITE_THEMES.find(t => t.id === 'london');
+    results.push(londonColors.darkBg === londonLegacyTheme.darkBg && londonColors.accent === londonLegacyTheme.accent
+      ? pass('resolveColors(\'london\') — matches the legacy WEBSITE_THEMES london entry exactly (already-correct universe unchanged)', londonColors.accent)
+      : fail('resolveColors(\'london\') — matches the legacy WEBSITE_THEMES london entry exactly (already-correct universe unchanged)', londonLegacyTheme.accent, londonColors.accent));
   }
 
   {
@@ -176,7 +176,7 @@ export async function runUniverseStyling() {
   }
 
   {
-    // No universe AND no activeTheme → WEBSITE_THEMES[0] (aman), not a crash.
+    // No universe AND no activeTheme → WEBSITE_THEMES[0] (london), not a crash.
     const noSettings = resolveColors({});
     results.push(noSettings.darkBg === WEBSITE_THEMES[0].darkBg
       ? pass('resolveColors — no universe or activeTheme set → WEBSITE_THEMES[0] default, not a crash', noSettings.darkBg)

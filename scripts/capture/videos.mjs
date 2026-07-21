@@ -83,7 +83,7 @@ results.push(await record('flow-01-choosing-a-universe', `${BASE_URL}/studio/uni
   await page.waitForTimeout(900);
   // Hover a couple of cards before opening one — motion sells without
   // needing to touch anything write-worthy.
-  const cards = page.locator('[class], article, div').filter({ hasText: /Kyoto|Aman|Tulum|Marrakech/i });
+  const cards = page.locator('[class], article, div').filter({ hasText: /Kyoto|London|Tulum|Marrakech/i });
   const count = await cards.count();
   if (count > 0) await cards.first().hover().catch(() => {});
   await page.waitForTimeout(700);

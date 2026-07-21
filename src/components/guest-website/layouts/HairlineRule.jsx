@@ -1,7 +1,7 @@
 /**
- * HairlineRule — the "aman-minimal" layout's signature mark: a single bare
+ * HairlineRule — the "london-minimal" layout's signature mark: a single bare
  * rule, no pattern, no ornament. The deliberate anti-motif to
- * ZelligeDivider's woven zellige — Aman's "confident restraint" idiom uses
+ * ZelligeDivider's woven zellige — London's "confident restraint" idiom uses
  * *removal* as the decorative gesture, so its one recurring mark is the
  * plainest possible line, appearing sparingly (once per section boundary),
  * never tiled or repeated as texture.

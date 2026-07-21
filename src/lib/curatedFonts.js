@@ -5,7 +5,7 @@
  * picker, which was completely inert: resolveTypography() in
  * universeStyling.js gave a universe's own `typography` field unconditional
  * priority over weddingDetails.activeTypography, and every real wedding has
- * an activeUniverse (defaults to 'aman' — see the Base44 WeddingDetails
+ * an activeUniverse (defaults to 'london' — see the Base44 WeddingDetails
  * schema), so the activeTypography branch was permanently dead code.
  *
  * Design principle (locked): couples choose FROM a small, curated,
@@ -116,7 +116,7 @@ export const FONT_CATALOG = [
 
 /** Each universe's own default heading/body font, expressed as CURATED_FONTS ids. */
 export const UNIVERSE_DEFAULT_FONT_IDS = {
-  aman: { headingFontId: 'cormorant-garamond', bodyFontId: 'jost' },
+  london: { headingFontId: 'cormorant-garamond', bodyFontId: 'jost' },
   tulum: { headingFontId: 'fraunces', bodyFontId: 'karla' },
   kyoto: { headingFontId: 'shippori-mincho', bodyFontId: 'zen-kaku-gothic-new' },
   capri: { headingFontId: 'yeseva-one', bodyFontId: 'poppins' },
@@ -145,7 +145,7 @@ export const UNIVERSE_DEFAULT_FONT_IDS = {
  * default" is always the first, most visible option in the picker.
  */
 export const UNIVERSE_FONT_OPTIONS = {
-  aman: { headingFontIds: ['cormorant-garamond', 'playfair-display', 'eb-garamond'], bodyFontIds: ['jost', 'karla', 'mulish'] },
+  london: { headingFontIds: ['cormorant-garamond', 'playfair-display', 'eb-garamond'], bodyFontIds: ['jost', 'karla', 'mulish'] },
   tulum: { headingFontIds: ['fraunces', 'lora', 'amiri'], bodyFontIds: ['karla', 'mulish', 'jost'] },
   kyoto: { headingFontIds: ['shippori-mincho', 'eb-garamond', 'cormorant-garamond'], bodyFontIds: ['zen-kaku-gothic-new', 'jost', 'josefin-sans'] },
   capri: { headingFontIds: ['yeseva-one', 'fraunces', 'playfair-display'], bodyFontIds: ['poppins', 'nunito-sans', 'lato'] },
