@@ -62,8 +62,8 @@ export default function Contact() {
           previous stacked photo-then-heading layout. */}
       <section style={{ position: "relative", width: "100%", height: "clamp(420px, 55vh, 640px)", overflow: "hidden", display: "flex", alignItems: "flex-end" }}>
         <img
-          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/asso-myron-aOWUqj5vuOE-unsplash_yptsz1.jpg"
-          alt="A couple holding hands, walking together"
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_AURA_Fanette_Guilloud_Photos_ID12987_rupmuq.jpg"
+          alt="Soft, dreamy light and colour"
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
         />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0.15) 55%, rgba(10,10,10,0) 100%)" }} />
