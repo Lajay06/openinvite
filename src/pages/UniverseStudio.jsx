@@ -168,69 +168,64 @@ export default function UniverseStudio() {
         <>
           <DashboardPageHeader title="Design studio" subtitle="Choose the aesthetic for your entire wedding suite" />
 
-          {/* Header — neutral chrome, current universe as a declaration.
-              Padding normalised to the same 16px 32px every other page's
-              Ava/actions bar uses (round 7 ask #8) — was 28px/24px, making
-              this the one page whose combined header stack read taller
-              than the rest of the app. */}
-          <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 8px' }}>
-              Design Studio
-            </p>
-            <h1 style={{ fontSize: 'clamp(1.6rem, 2.6vw, 2.2rem)', fontWeight: 800, color: '#0A0A0A', margin: 0, letterSpacing: '-0.01em' }}>
-              You're in {active.name} — {active.tagline}
-            </h1>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', margin: '8px 0 0', maxWidth: 620 }}>
-              Every universe restyles your invitations, website, RSVP and print pieces at once. Press a world below to step inside it — switching is never destructive.
-            </p>
-
-            {/* Rehomed from GuestSuite.jsx's "Overview" page (retired,
-                chore/consolidate-overview) — venue/date/photo had no other
-                home in the app; couple name + countdown stay out since
-                Layout.jsx's top bar already shows those on every page. */}
-            <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-              {hasEventDetails ? (
-                (weddingDateStr || venueName) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    {venuePhotoUrl && (
-                      <div style={{ width: 48, height: 48, flexShrink: 0, overflow: 'hidden', background: '#ECE7E1' }}>
-                        <img
-                          src={venuePhotoUrl}
-                          alt={venueName || 'Venue'}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                          onError={e => { e.target.style.display = 'none'; }}
-                        />
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                      {weddingDateStr && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>
-                          <Calendar size={13} style={{ color: 'rgba(10,10,10,0.6)' }} /> {weddingDateStr}
-                        </span>
-                      )}
-                      {venueName && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>
-                          <MapPin size={13} style={{ color: 'rgba(10,10,10,0.6)' }} /> {venueName}
-                        </span>
-                      )}
+          {/* Round 8 ask #8 (repeat): the previous fix only normalised this
+              block's OWN padding, but the actual reason the combined header
+              stack read taller than every other page was content, not
+              padding — an eyebrow label duplicating DashboardPageHeader's
+              own title, a full second h1-scale heading, and a generic
+              instructional paragraph, stacked above the venue/date/Ava row.
+              Measured before this fix: 357px total header stack on Design
+              studio vs 239px on Guests (the tallest comparable page) — a
+              118px gap driven entirely by that redundant content, not
+              spacing. Collapsed to one compact row — current universe name
+              + venue/date + Ava button — matching the single toolbar-row
+              pattern every other dashboard page already uses (Guests/
+              Budget's "Ava button left, actions right" row). */}
+          <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                You're in {active.name}
+              </span>
+              {hasEventDetails && (weddingDateStr || venueName) && (
+                <>
+                  <span style={{ width: 1, height: 14, background: 'rgba(10,10,10,0.12)', flexShrink: 0 }} />
+                  {venuePhotoUrl && (
+                    <div style={{ width: 28, height: 28, flexShrink: 0, overflow: 'hidden', background: '#ECE7E1', borderRadius: 4 }}>
+                      <img
+                        src={venuePhotoUrl}
+                        alt={venueName || 'Venue'}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        onError={e => { e.target.style.display = 'none'; }}
+                      />
                     </div>
-                  </div>
-                )
-              ) : (
+                  )}
+                  {weddingDateStr && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                      <Calendar size={13} style={{ color: 'rgba(10,10,10,0.6)' }} /> {weddingDateStr}
+                    </span>
+                  )}
+                  {venueName && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                      <MapPin size={13} style={{ color: 'rgba(10,10,10,0.6)' }} /> {venueName}
+                    </span>
+                  )}
+                </>
+              )}
+              {!hasEventDetails && (
                 <button
                   onClick={() => navigate('/event-details')}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0,
                     fontSize: 13, fontWeight: 700, color: '#E03553', fontFamily: PJS,
                     background: 'none', border: '1px solid rgba(224,53,83,0.3)', borderRadius: 999,
-                    padding: '8px 16px', cursor: 'pointer',
+                    padding: '6px 14px', cursor: 'pointer',
                   }}
                 >
                   Complete event details <ArrowRight size={13} />
                 </button>
               )}
-              <AvaButton label="Ask Ava about your design & guest experience" onClick={() => setAvaOpen(true)} />
             </div>
+            <AvaButton label="Ask Ava about your design & guest experience" onClick={() => setAvaOpen(true)} />
           </div>
 
           {/* Style filter */}

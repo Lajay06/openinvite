@@ -142,7 +142,14 @@ export default function DailyUpdate() {
         const hit = localStorage.getItem(cacheKey());
         if (hit) {
           const cached = JSON.parse(hit);
-          setBriefing(cached.briefing);
+          // round 8 ask #7 (repeat): the safety net only ran at generation
+          // time, so a briefing cached before this pass existed — or from
+          // any other gap in it — kept showing spelled-out numbers on every
+          // subsequent load that hit the cache, since this branch returned
+          // early with the raw cached value. Run it here too so the net
+          // actually covers every path the briefing can reach the screen by,
+          // not just the freshly-generated one.
+          setBriefing(numeralizeBriefing(cached.briefing));
           setDaysUntil(cached.daysUntil);
           if (cached.snapStats) setSnapStats(cached.snapStats);
           if (cached.coupleName) setCoupleName(cached.coupleName);
@@ -220,6 +227,8 @@ export default function DailyUpdate() {
       const today = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
 
       const aiPrompt = `You are Ava, a premium wedding planning AI. Generate a daily briefing for ${user?.full_name || 'the couple'}.
+
+Hard rule, applies to every field below: write every number and percentage as a numeral (10, 68%, 3), never spelled out as a word (never "ten", "sixty-eight percent", "three").
 
 Today is ${today}.
 

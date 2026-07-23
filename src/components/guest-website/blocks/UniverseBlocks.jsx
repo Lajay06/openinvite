@@ -35,7 +35,7 @@
  * renders a visible placeholder instead when editable and empty, so a
  * couple can always see what they added and click it to fill it in.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
@@ -592,19 +592,39 @@ export const RENDERERS = {
   'wedding-party': WeddingPartyBlock,
 };
 
-// Always-visible insert affordance (feat/canvas-builder — no longer
-// hover-only) sitting on the dotted boundary between/around blocks. Clicking
-// calls onRequestInsert with the exact index to insert at; the actual
-// library modal lives in the builder (StudioWebsite.jsx), not here — this
-// stays a pure content renderer plus an optional, inert-by-default overlay
-// hook.
+// Round 8 ask #10: back to hover-only (this had been made always-visible
+// by feat/canvas-builder, which reserved a permanent 28px slot between
+// every pair of blocks — sections never actually touched, even with the
+// outer stack's own gap set to 0 for editable mode). Collapsed by default
+// to a thin, effectively invisible hoverable strip so sections butt up
+// against each other; hovering (or focusing, for keyboard/touch users who
+// can't hover) expands it to the same dashed-line-plus-button affordance,
+// still reachable at the same boundary, just not reserving space when idle.
 function InsertPoint({ index, onRequestInsert, theme }) {
+  const [active, setActive] = useState(false);
   return (
-    <div style={{ position: 'relative', height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: `1px dashed ${theme.lightText}30` }} />
+    <div
+      onMouseEnter={() => setActive(true)}
+      onMouseLeave={() => setActive(false)}
+      onFocus={() => setActive(true)}
+      onBlur={() => setActive(false)}
+      style={{
+        position: 'relative', height: active ? 28 : 8,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'height 0.12s ease',
+      }}
+    >
+      <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: `1px dashed ${theme.lightText}30`, opacity: active ? 1 : 0, transition: 'opacity 0.12s ease' }} />
       <button
         onClick={() => onRequestInsert(index)}
-        style={{ position: 'relative', zIndex: 1, width: 26, height: 26, borderRadius: '50%', border: 'none', background: theme.accent, color: theme.darkBg, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }}
+        style={{
+          position: 'relative', zIndex: 1, width: 26, height: 26, borderRadius: '50%', border: 'none',
+          background: theme.accent, color: theme.darkBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+          opacity: active ? 1 : 0, transform: active ? 'scale(1)' : 'scale(0.6)',
+          pointerEvents: active ? 'auto' : 'none',
+          transition: 'opacity 0.12s ease, transform 0.12s ease',
+        }}
         title="Add a section"
         aria-label="Add a section"
       >
@@ -742,7 +762,7 @@ export default function UniverseBlocks({ blocks, weddingDetails, theme, typograp
         );
         return (
           <React.Fragment key={block.id}>
-            <div style={{ margin: editable ? '4px 0' : 0 }}>
+            <div style={{ margin: 0 }}>
               {editable ? (
                 <BlockCanvasWrapper
                   block={block} index={i} count={sorted.length}

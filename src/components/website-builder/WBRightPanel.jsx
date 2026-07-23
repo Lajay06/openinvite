@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, X, Trash2 } from 'lucide-react';
+import { ChevronLeft, X, Trash2, Music } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
 import { TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, normalizeUniverseKey } from '@/lib/websiteThemes';
 import { CURATED_FONTS, FONT_CATALOG, UNIVERSE_DEFAULT_FONT_IDS, universePairingPresets } from '@/lib/curatedFonts';
 import toast from 'react-hot-toast';
+import { base44 } from '@/api/base44Client';
+import { validateUploadFile } from '@/lib/uploadValidation';
 import {
   FLabel, UInput, MediaPicker,
   Toggle, Divider, AddBtn,
@@ -308,6 +310,7 @@ function DesignTab({ details, onChange, universeTheme }) {
 // ── SETTINGS TAB ──────────────────────────────────────────────
 function SettingsTab({ details, onChange }) {
   const [copied, setCopied] = useState(false);
+  const [musicUploading, setMusicUploading] = useState(false);
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const siteUrl = details.slug ? `${origin}/w/${details.slug}` : '';
   const copyLink = () => {
@@ -316,6 +319,35 @@ function SettingsTab({ details, onChange }) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  // Same guestExperienceSettings.backgroundMusic field GuestSuitePolicies.jsx
+  // (Guest suite -> Policies -> Guest experience tab) reads/writes — one
+  // setting, two places a couple might look for it. `details` here is the
+  // same WeddingDetails record either way (StudioWebsite.jsx's doSave()
+  // persists the whole details object on every save, so nothing about this
+  // field gets dropped by editing it from this panel instead).
+  const backgroundMusic = details.guestExperienceSettings?.backgroundMusic || { enabled: false, url: '', trackName: '' };
+  const setBGMusic = (patch) => onChange('guestExperienceSettings', {
+    ...(details.guestExperienceSettings || {}),
+    backgroundMusic: { ...backgroundMusic, ...patch },
+  });
+  const handleMusicUpload = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const err = validateUploadFile(file, 'audio');
+    if (err) { toast.error(err); return; }
+    setMusicUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setBGMusic({ enabled: true, source: 'upload', url: file_url, trackId: '', trackName: file.name });
+      toast.success('Track uploaded');
+    } catch {
+      toast.error('Failed to upload track');
+    }
+    setMusicUploading(false);
+  };
+
   return (
     <div>
       <SLabel>Your site URL</SLabel>
@@ -333,6 +365,33 @@ function SettingsTab({ details, onChange }) {
       <Divider />
       <SLabel>Status</SLabel>
       <Toggle label={`Website is ${details.websiteEnabled ? 'Live' : 'Hidden'}`} value={details.websiteEnabled} onChange={v => onChange('websiteEnabled', v)} />
+      <Divider />
+      <SLabel>Background music</SLabel>
+      <Toggle label="Play music on your invite/website" value={backgroundMusic.enabled} onChange={v => setBGMusic({ enabled: v })} />
+      {backgroundMusic.enabled && (
+        <div style={{ marginTop: 10 }}>
+          {backgroundMusic.url ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.08)', padding: '7px 10px' }}>
+              <Music size={13} style={{ color: '#E03553', flexShrink: 0 }} />
+              <span style={{ flex: 1, fontSize: 12, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {backgroundMusic.trackName || 'Selected track'}
+              </span>
+              <button
+                onClick={() => setBGMusic({ enabled: false, source: '', url: '', trackId: '', trackName: '' })}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', flexShrink: 0 }}
+                aria-label="Remove track"
+              >
+                <X size={13} />
+              </button>
+            </div>
+          ) : (
+            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, border: '1px dashed rgba(255,255,255,0.2)', padding: '10px 0', cursor: musicUploading ? 'default' : 'pointer', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>
+              {musicUploading ? 'Uploading…' : 'Upload a track (MP3, WAV)'}
+              <input type="file" accept="audio/*" onChange={handleMusicUpload} disabled={musicUploading} style={{ display: 'none' }} />
+            </label>
+          )}
+        </div>
+      )}
       <Divider />
       <SLabel>Password protection</SLabel>
       <Toggle label="Require password" value={!!(details.websitePassword?.trim())} onChange={v => onChange('websitePassword', v ? ' ' : '')} />

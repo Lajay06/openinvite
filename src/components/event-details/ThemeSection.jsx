@@ -5,9 +5,10 @@ import toast from 'react-hot-toast';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const AESTHETIC_OPTIONS  = ['Classic', 'Modern', 'Minimalist', 'Romantic', 'Rustic', 'Boho', 'Glamorous', 'Vintage', 'Luxury', 'Garden', 'Beach'];
-const FAITH_OPTIONS      = ['Christian', 'Catholic', 'Jewish', 'Muslim', 'Hindu', 'Sikh', 'Buddhist', 'Non-religious', 'Interfaith'];
-const FAITH_FOR_INTERFAITH = ['Christian', 'Catholic', 'Jewish', 'Muslim', 'Hindu', 'Sikh', 'Buddhist'];
+// Round 8 ask #11: every option list on this page ordered alphabetically.
+const AESTHETIC_OPTIONS  = ['Beach', 'Boho', 'Classic', 'Garden', 'Glamorous', 'Luxury', 'Minimalist', 'Modern', 'Romantic', 'Rustic', 'Vintage'];
+const FAITH_OPTIONS      = ['Buddhist', 'Catholic', 'Christian', 'Hindu', 'Interfaith', 'Jewish', 'Muslim', 'Non-religious', 'Sikh'];
+const FAITH_FOR_INTERFAITH = ['Buddhist', 'Catholic', 'Christian', 'Hindu', 'Jewish', 'Muslim', 'Sikh'];
 
 // Cultures and traditions — round 7 ask #11. Stored on the same
 // theme.culture array WeddingDetails already declares (already registered
@@ -19,47 +20,47 @@ const CULTURE_REGIONS = [
   {
     region: 'Asia & Middle East',
     items: [
-      'Indian (Hindu, Sikh, Muslim, Christian)', 'Sri Lankan', 'Pakistani', 'Bangladeshi',
-      'Chinese', 'Japanese', 'Korean', 'Thai', 'Vietnamese', 'Filipino', 'Indonesian',
-      'Malay/Singaporean', 'Khmer (Cambodian)', 'Nepali',
-      'Persian/Iranian', 'Arab', 'Turkish', 'Lebanese', 'Armenian',
+      'Arab', 'Armenian', 'Bangladeshi', 'Chinese', 'Filipino',
+      'Indian (Hindu, Sikh, Muslim, Christian)', 'Indonesian', 'Japanese',
+      'Khmer (Cambodian)', 'Korean', 'Lebanese', 'Malay/Singaporean', 'Nepali',
+      'Pakistani', 'Persian/Iranian', 'Sri Lankan', 'Thai', 'Turkish', 'Vietnamese',
     ],
   },
   {
     region: 'Africa',
     items: [
-      'Nigerian (Yoruba, Igbo, Hausa)', 'Ghanaian', 'South African (Zulu, Xhosa, Sotho)',
-      'Moroccan', 'Ethiopian/Eritrean', 'Somali', 'East African (Kenyan/Tanzanian)',
+      'East African (Kenyan/Tanzanian)', 'Ethiopian/Eritrean', 'Ghanaian', 'Moroccan',
+      'Nigerian (Yoruba, Igbo, Hausa)', 'Somali', 'South African (Zulu, Xhosa, Sotho)',
     ],
   },
   {
     region: 'Europe',
     items: [
-      'Greek', 'Italian', 'French', 'Irish', 'Spanish', 'Portuguese',
-      'Russian/Eastern European', 'Polish', 'Ukrainian', 'German', 'Dutch',
-      'Scandinavian/Nordic', 'British', 'Jewish (Ashkenazi & Sephardic)',
+      'British', 'Dutch', 'French', 'German', 'Greek', 'Irish', 'Italian',
+      'Jewish (Ashkenazi & Sephardic)', 'Polish', 'Portuguese', 'Russian/Eastern European',
+      'Scandinavian/Nordic', 'Spanish', 'Ukrainian',
     ],
   },
   {
     region: 'North & South America',
     items: [
-      'American (Contemporary, Black American, Southern)', 'Mexican', 'Brazilian',
-      'Caribbean', 'Indigenous North American', 'Colombian/Andean', 'Peruvian', 'Argentine',
+      'American (Contemporary, Black American, Southern)', 'Argentine', 'Brazilian',
+      'Caribbean', 'Colombian/Andean', 'Indigenous North American', 'Mexican', 'Peruvian',
     ],
   },
   {
     region: 'Oceania & Pacific',
     items: [
-      'Australian (incl. Aboriginal and Torres Strait Islander)', 'New Zealand Māori',
-      'Samoan/Tongan/Fijian', 'Hawaiian',
+      'Australian (incl. Aboriginal and Torres Strait Islander)', 'Hawaiian',
+      'New Zealand Māori', 'Samoan/Tongan/Fijian',
     ],
   },
 ];
-const CULTURE_CROSS_CUTTING = ['Interfaith/fusion', 'LGBTQ+ inclusive', 'Minimalist/non-traditional', 'Destination'];
+const CULTURE_CROSS_CUTTING = ['Destination', 'Interfaith/fusion', 'LGBTQ+ inclusive', 'Minimalist/non-traditional'];
 
-const ATMOSPHERE_OPTIONS = ['Intimate & relaxed', 'Big party', 'Formal & elegant', 'Outdoor & nature', 'Destination', 'Multi-day'];
-const SEASON_OPTIONS     = ['Spring', 'Summer', 'Autumn', 'Winter'];
-const SETTING_OPTIONS    = ['Indoor', 'Outdoor', 'Mix of both'];
+const ATMOSPHERE_OPTIONS = ['Big party', 'Destination', 'Formal & elegant', 'Intimate & relaxed', 'Multi-day', 'Outdoor & nature'];
+const SEASON_OPTIONS     = ['Autumn', 'Spring', 'Summer', 'Winter'];
+const SETTING_OPTIONS    = ['Indoor', 'Mix of both', 'Outdoor'];
 
 const headingStyle = { fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 14px' };
 const subLabelStyle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px', display: 'block' };
