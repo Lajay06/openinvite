@@ -542,7 +542,7 @@ export const UNIVERSE_CONFIGS = {
     tileDescription: 'Marble stairs, gilt mirrors, a city that has always known how to dress up.',
     motifNote: 'A slender fluted column line, the same quiet order as a Georgian townhouse façade.',
     worldStory: 'London wears its grandeur quietly, all marble staircases and gilt-edged mirrors, a city dressed for occasion without ever raising its voice. Paper feels pressed and cool, ink feels considered. This is a wedding for grand entrances.',
-    imageUrl: null,
+    imageUrl: '/universes/london.jpg',
     tier: 'free',
   },
   tulum: {

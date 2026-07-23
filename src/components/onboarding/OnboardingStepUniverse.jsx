@@ -4,12 +4,7 @@ import LondonUniverseView from '@/components/studio/LondonUniverseView';
 import { interactiveDivProps } from '@/lib/a11y';
 
 const UNIVERSES = [
-  // No dedicated London photo exists yet (same gap the old Aman entry had —
-  // this photo was never actually Aman-appropriate either, a mismatched
-  // desert/countryside shot). Uses the same interim Cloudinary placeholder
-  // as UNIVERSE_CONFIGS.london / Universes.jsx's FALLBACK_IMAGE until real
-  // London photography is shot. See IMAGE_MANIFEST.md.
-  { id: 'london', name: 'LONDON', tagline: 'Classical Grandeur', number: '01', photo: 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355_zhr0xb.jpg', available: true },
+  { id: 'london', name: 'LONDON', tagline: 'Classical Grandeur', number: '01', photo: '/universes/london.jpg', available: true },
   { id: 'tulum', name: 'TULUM', tagline: 'Desert Bloom', number: '02', photo: 'https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg', available: true },
   { id: 'kyoto', name: 'KYOTO', tagline: 'Zen & Ceremony', number: '03', photo: 'https://static.wixstatic.com/media/d2df22_40822e26660c4112aef53ff2526c0345~mv2.jpg', available: true },
   { id: 'capri', name: 'CAPRI', tagline: 'Italian Coast', number: '04', photo: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg', available: true },

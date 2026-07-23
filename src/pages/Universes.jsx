@@ -5,25 +5,19 @@ import PublicFooter from '@/components/public/PublicFooter';
 import ScrollCue from '@/components/motion/ScrollCue';
 import { UNIVERSE_CATALOG } from '@/lib/universeCatalog';
 
-// London is the one universe with no dedicated /universes/*.jpg photography
-// yet (UNIVERSE_CONFIGS' london.imageUrl is null — renamed from Aman for
-// trademark caution, and no real photography has ever been shot for this
-// universe under either name). Falls back to a Cloudinary photo whose own
-// mood ("Quiet Glamour") is at least in the neighbourhood of the universe's
-// tone, rather than leaving a tile with no image at all — flagged for real
-// London photography. See IMAGE_MANIFEST.md.
-const FALLBACK_IMAGE = {
-  london: 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355_zhr0xb.jpg',
-};
+// Every universe now has its own dedicated /universes/*.jpg photography
+// (UNIVERSE_CONFIGS' imageUrl). Kept as a safety net for any future
+// universe added without one yet — see IMAGE_MANIFEST.md.
+const FALLBACK_IMAGE = {};
 
 const PJS = 'Plus Jakarta Sans, sans-serif';
 
 // The 5 strongest, most-established universes for the full-bleed crossfade
 // — walking through all 20 full-bleed is a lot of scrolling for little
 // payoff; these 5 lead into the plain grid below, which covers the
-// remaining 15 (plus these 5 again) statically. London excluded
-// deliberately — no dedicated photography exists for it yet, so it would
-// undercut a showcase specifically meant to show off the strongest work.
+// remaining 15 (plus these 5 again) statically. London now has its own
+// photography too but isn't in this curated 5 — a separate editorial call
+// from whether it has a photo at all.
 const SHOWCASE_UNIVERSE_IDS = ['tulum', 'kyoto', 'marrakech', 'capri', 'paris'];
 
 const prefersReducedMotion = () =>
