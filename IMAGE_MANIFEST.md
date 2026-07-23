@@ -248,3 +248,29 @@ in for London, so out of scope for this photo swap. Also not touched:
 5-universe curated showcase; that's a separate editorial call from
 whether it has a photo at all, and the comment there was updated to say
 so rather than imply it's still photo-blocked.
+
+## Round 9 (marketing round 7 — About + Contact photo swaps)
+
+| public_id | Folder | Used on |
+|---|---|---|
+| `DTS_Young_Latin_Martin_Pisotti_Photos_ID6999_p6ixxt` | (unfoldered) | About.jsx — S3 offset photo pair, large photo (replaces `DTS_SILVER_HOUR_Franco_Dupuy_Photos_ID14690_mjiupn`, now unused anywhere in `src/`) |
+| `DTS_Grand_Design_Daniel_Farò_Photos_ID4152_auimyj` | Couple | About.jsx — S3 offset photo pair, small inset photo |
+| `DTS_Weirdly_Ever_After_Agustín_Farías_Photos_ID8960_nspx4l` | Couple | Contact.jsx — right panel, full-height (replaces `DTS_AURA_Fanette_Guilloud_Photos_ID12987_rupmuq`, now unused anywhere in `src/`) |
+
+`DTS_Grand_Design_...ID4152` and `DTS_Weirdly_Ever_After_...ID8960` were
+both already assigned to `ScrollMorph.jsx` ("Home (ScrollMorph ring)"
+above). Same as the FeatureGuests.jsx/ScrollMorph note in Round 5:
+`ScrollMorph.jsx` has a route in `App.jsx` (`/scroll-morph`) but isn't
+registered in `pages.config.js` or linked from anywhere live, so this
+isn't a real no-repeat conflict on any page a user can actually reach —
+noting the overlap rather than silently overclaiming these are
+first-use. Both assignments were user-directed (specific Cloudinary IDs
+given), not a choice made without checking this manifest first.
+
+Contact.jsx's hero banner was removed entirely (round 7 ask #4): the
+"Let's plan something beautiful." tagline moved from a centred overlay
+on the old banner photo into the left form panel, left-aligned above
+the form; the right info panel's background/card treatment was replaced
+by the full-height photo, with email + social overlaid at its base on a
+scrim so that contact info isn't lost. Page is now nav + one two-panel
+section, no banner-then-panels stack — everything fits above the fold.

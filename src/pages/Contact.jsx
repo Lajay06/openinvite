@@ -57,25 +57,15 @@ export default function Contact() {
     <div className="min-h-screen bg-white font-sans">
       <PublicNav />
 
-      {/* HERO — one taller full-bleed image with the heading overlaid
-          directly on it (bottom-anchored, dark scrim), replacing the
-          previous stacked photo-then-heading layout. */}
-      <section style={{ position: "relative", width: "100%", height: "clamp(420px, 55vh, 640px)", overflow: "hidden", display: "flex", alignItems: "flex-end" }}>
-        <img
-          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_AURA_Fanette_Guilloud_Photos_ID12987_rupmuq.jpg"
-          alt="Soft, dreamy light and colour"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
-        />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0.15) 55%, rgba(10,10,10,0) 100%)" }} />
-        <h1 style={{ position: "relative", zIndex: 2, width: "100%", textAlign: "center", padding: "0 clamp(24px, 6vw, 80px) 56px", fontSize: 48, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.1, hyphens: "none", maxWidth: 700, margin: "0 auto" }}>
-          Let's plan something beautiful.
-        </h1>
-      </section>
-
-
-      <div style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-        {/* LEFT: FORM */}
-        <div style={{ padding: "80px clamp(32px, 6vw, 80px)", display: "flex", flexDirection: "column", justifyContent: "center", borderRight: "1px solid #E0E0DC" }}>
+      {/* No banner — the tagline lives directly above the form so the
+          whole page (tagline + form) sits above the fold, zero scrolling
+          required to start filling it in. */}
+      <div style={{ paddingTop: 64, height: "100vh", boxSizing: "border-box", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+        {/* LEFT: TAGLINE + FORM */}
+        <div style={{ padding: "40px clamp(32px, 6vw, 80px)", display: "flex", flexDirection: "column", justifyContent: "center", borderRight: "1px solid #E0E0DC" }}>
+          <h1 style={{ fontSize: "clamp(30px, 3.6vw, 42px)", fontWeight: 700, color: "#0A0A0A", lineHeight: 1.15, letterSpacing: "-0.02em", margin: "0 0 32px", maxWidth: 440 }}>
+            Let's plan something beautiful.
+          </h1>
           {!submitted ? (
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 28, opacity: formPhase >= 1 ? 1 : 0, transform: formPhase >= 1 ? "translateY(0)" : "translateY(20px)", transition: `opacity 0.6s ${EASE}, transform 0.6s ${EASE}` }}>
                 <div>
@@ -156,44 +146,41 @@ export default function Contact() {
           )}
         </div>
 
-        {/* RIGHT: INFO */}
+        {/* RIGHT: FULL-HEIGHT IMAGE — email/social overlaid at the base
+            with a scrim, so contact details survive the panel becoming
+            a photo instead of a card. */}
         <div
           style={{
-            background: "#F5F5F3",
-            padding: "80px clamp(32px, 6vw, 80px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             position: "relative",
+            overflow: "hidden",
             opacity: formPhase >= 1 ? 1 : 0,
             transform: formPhase >= 1 ? "translateX(0)" : "translateX(80px)",
             transition: `opacity 0.8s ${EASE} 0.1s, transform 0.8s ${EASE} 0.1s`,
           }}
         >
-          <div style={{ maxWidth: 400 }}>
-            <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" alt="openinvite" style={{ height: 32, marginBottom: 24 }} />
-            <div style={{ borderBottom: "1px solid #E0E0DC", marginBottom: 32 }} />
+          <img
+            src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Weirdly_Ever_After_Agust%C3%ADn_Far%C3%ADas_Photos_ID8960_nspx4l.jpg"
+            alt="A couple sharing a warm, unposed moment together"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+          />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0.1) 45%, rgba(10,10,10,0) 70%)" }} />
 
-            <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.6)", letterSpacing: "0.15em", marginBottom: 6 }}>Email</p>
-              <p style={{ fontSize: 16, color: "#0A0A0A", fontWeight: 500 }}>hello@openinvite.com.au</p>
+          <div style={{ position: "relative", zIndex: 2, height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "40px clamp(32px, 6vw, 80px)" }}>
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", letterSpacing: "0.15em", marginBottom: 6 }}>Email</p>
+              <p style={{ fontSize: 16, color: "#FFFFFF", fontWeight: 500 }}>hello@openinvite.com.au</p>
             </div>
-
-            <div style={{ borderBottom: "1px solid #E0E0DC", marginBottom: 32 }} />
 
             {/* Social */}
             <div style={{ display: "flex", gap: 16 }}>
-              <a href="#" style={{ color: "rgba(10,10,10,0.45)", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#E03553")} onMouseLeave={(e) => (e.target.style.color = "rgba(10,10,10,0.45)")}>
+              <a href="#" style={{ color: "rgba(255,255,255,0.75)", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#FFFFFF")} onMouseLeave={(e) => (e.target.style.color = "rgba(255,255,255,0.75)")}>
                 <Instagram size={20} strokeWidth={1.5} />
               </a>
-              <a href="#" style={{ color: "rgba(10,10,10,0.45)", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#E03553")} onMouseLeave={(e) => (e.target.style.color = "rgba(10,10,10,0.45)")}>
+              <a href="#" style={{ color: "rgba(255,255,255,0.75)", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#FFFFFF")} onMouseLeave={(e) => (e.target.style.color = "rgba(255,255,255,0.75)")}>
                 <Facebook size={20} strokeWidth={1.5} />
               </a>
             </div>
           </div>
-
-          {/* Background decoration */}
-          <div style={{ position: "absolute", bottom: 40, right: 40, fontSize: 200, color: "#EEEEEE", lineHeight: 1, zIndex: 0 }}>✦</div>
         </div>
       </div>
 

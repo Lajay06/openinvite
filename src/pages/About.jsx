@@ -158,10 +158,15 @@ export default function About() {
       {/* ── S2: EDITORIAL INTRO ──────────────────────────── */}
       <EditorialIntro />
 
-      {/* ── S3: FULL BLEED PHOTO ─────────────────────────── */}
+      {/* ── S3: OFFSET PHOTO PAIR ────────────────────────── */}
       <section id="story" style={{ width: "100vw", height: "85vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
-        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100477/DTS_SILVER_HOUR_Franco_Dupuy_Photos_ID14690_mjiupn.jpg" alt="An older couple walking arm in arm outside a cafe" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
-        <p style={{ position: "absolute", bottom: 40, left: "50%", transform: "translateX(-50%)", fontSize: 12, color: "rgba(10,10,10,0.6)", fontStyle: "italic", textAlign: "center", maxWidth: 400 }}>
+        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Young_Latin_Martin_Pisotti_Photos_ID6999_p6ixxt.jpg" alt="A young couple sharing a joyful moment together" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
+        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj.jpg" alt="An elegantly designed wedding venue" style={{
+          position: "absolute", right: "clamp(24px, 6vw, 80px)", bottom: "clamp(24px, 6vw, 80px)",
+          width: "clamp(220px, 28vw, 380px)", height: "clamp(280px, 36vh, 460px)",
+          objectFit: "cover", border: "6px solid #FFFFFF",
+        }} />
+        <p style={{ position: "absolute", bottom: 40, left: 40, fontSize: 12, color: "rgba(255,255,255,0.85)", fontStyle: "italic", maxWidth: 320, textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>
           Built for every kind of love, every kind of celebration.
         </p>
       </section>
