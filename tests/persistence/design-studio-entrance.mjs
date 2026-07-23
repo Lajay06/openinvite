@@ -76,12 +76,13 @@ export async function runDesignStudioEntrance() {
     ? pass("UNIVERSE_CONFIGS.capri.accent is the corrected muted gold, not the old flagged neon lemon", '#C4A130')
     : fail("UNIVERSE_CONFIGS.capri.accent is the corrected muted gold, not the old flagged neon lemon", '#C4A130', 'not found / regressed'));
 
-  console.log('\n  Design Studio — real photography wired for 19 of 20 universes, optimised:\n');
+  console.log('\n  Design Studio — real photography wired for 20 of 20 universes, optimised:\n');
 
-  // feat/universe-experience-fixes — real photography now covers every
-  // universe except London (no source photo exists for it yet). Marrakech/
-  // Bali/Capetown were already wired in an earlier PR; this round added
-  // photos for the remaining 16.
+  // feat/universe-experience-fixes wired real photography for 19 of 20
+  // universes; fix/london-universe-photo closed the last gap with London's
+  // own dedicated shoot (IMAGE_MANIFEST.md Round 8), so NO_PHOTO_UNIVERSES
+  // is empty now — kept as an array (not deleted) since it's the natural
+  // home for any future universe added without a photo yet.
   const PHOTO_UNIVERSES = {
     marrakech: '/universes/marrakech.jpg', bali: '/universes/bali.jpg', capetown: '/universes/cape-town.jpg',
     tulum: '/universes/tulum.jpg', kyoto: '/universes/kyoto.jpg', capri: '/universes/capri.jpg',
@@ -89,9 +90,9 @@ export async function runDesignStudioEntrance() {
     amalfi: '/universes/amalfi.jpg', sedona: '/universes/sedona.jpg', aspen: '/universes/aspen.jpg',
     taj: '/universes/taj.jpg', havana: '/universes/havana.jpg', edinburgh: '/universes/edinburgh.jpg',
     monaco: '/universes/monaco.jpg', florence: '/universes/florence.jpg', seoul: '/universes/seoul.jpg',
-    shanghai: '/universes/shanghai.jpg',
+    shanghai: '/universes/shanghai.jpg', london: '/universes/london.jpg',
   };
-  const NO_PHOTO_UNIVERSES = ['london'];
+  const NO_PHOTO_UNIVERSES = [];
 
   for (const [id, expectedPath] of Object.entries(PHOTO_UNIVERSES)) {
     const m = websiteThemesSource.match(new RegExp(`${id}: \\{[\\s\\S]*?\\n  \\},`));
@@ -118,7 +119,7 @@ export async function runDesignStudioEntrance() {
     'marrakech.jpg', 'bali.jpg', 'cape-town.jpg',
     'tulum.jpg', 'kyoto.jpg', 'capri.jpg', 'brooklyn.jpg', 'paris.jpg', 'mykonos.jpg',
     'amalfi.jpg', 'sedona.jpg', 'aspen.jpg', 'taj.jpg', 'havana.jpg', 'edinburgh.jpg',
-    'monaco.jpg', 'florence.jpg', 'seoul.jpg', 'shanghai.jpg',
+    'monaco.jpg', 'florence.jpg', 'seoul.jpg', 'shanghai.jpg', 'london.jpg',
   ]) {
     const fullPath = resolve(repoRoot, 'public/universes', file);
     const smallPath = resolve(repoRoot, 'public/universes', file.replace(/\.jpg$/, '-800.jpg'));
