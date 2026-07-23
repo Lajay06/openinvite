@@ -210,3 +210,41 @@ photography, shown again deliberately), not a no-repeat violation.
 Both `asso-myron-aOWUqj5vuOE-unsplash_yptsz1` and
 `alex-plesovskich-VPrTqd8B230-unsplash_gwgyej` are now unused anywhere
 in `src/`.
+
+## Round 8 (London real photography)
+
+| public_id | Folder | Used on |
+|---|---|---|
+| `DTS_Streets_of_London_Richard_Harris_Photos_ID942_q3iyyy` | (unfoldered) | `public/universes/london.jpg` + `london-800.jpg` (1600×1148 native, 800×574 resized) — London's first dedicated photography, replacing the interim `DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355` placeholder everywhere it was standing in |
+
+Real photography now exists for London, closing the last gap from
+Round 4's Aman→London rename. `UNIVERSE_CONFIGS.london.imageUrl` in
+`websiteThemes.js` changed from `null` to `/universes/london.jpg`,
+matching the local-file convention all other 19 universes already use.
+This alone propagates to every surface that reads the shared catalog:
+`UniverseBanner.jsx` (Design Studio universe selector, switches from
+the composition/motif fallback to the real photo), `UniverseWorldView.jsx`
+(world page), and `Universes.jsx`'s grid/showcase tiles (via
+`universe.imageUrl`).
+
+Two surfaces don't read the shared catalog and had their own hardcoded
+copies of the `ID8355` interim placeholder, fixed separately:
+`OnboardingStepUniverse.jsx`'s universe-picker card (now points at
+`/universes/london.jpg` instead of the Cloudinary placeholder URL), and
+`Universes.jsx`'s `FALLBACK_IMAGE.london` (removed — dead now that
+`imageUrl` is set, left as an empty object as a safety net for any
+future photo-less universe).
+
+`DTS_Quiet_Glamour_DTS_Studio_Photos_ID8355_zhr0xb` is now unused
+anywhere in `src/`.
+
+Not touched: `LondonUniverseView.jsx`'s (the onboarding preview overlay,
+`src/components/studio/LondonUniverseView.jsx`) hero/mood-grid images —
+those are generic Wix-hosted mood/atmosphere stock photos shared across
+several universes' onboarding cards (e.g. the same URLs back Tulum's and
+Kyoto's picker thumbnails), not location-specific placeholders standing
+in for London, so out of scope for this photo swap. Also not touched:
+`Universes.jsx`'s `SHOWCASE_UNIVERSE_IDS` — London still isn't in the
+5-universe curated showcase; that's a separate editorial call from
+whether it has a photo at all, and the comment there was updated to say
+so rather than imply it's still photo-blocked.
