@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 
@@ -8,7 +8,55 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const AESTHETIC_OPTIONS  = ['Classic', 'Modern', 'Minimalist', 'Romantic', 'Rustic', 'Boho', 'Glamorous', 'Vintage', 'Luxury', 'Garden', 'Beach'];
 const FAITH_OPTIONS      = ['Christian', 'Catholic', 'Jewish', 'Muslim', 'Hindu', 'Sikh', 'Buddhist', 'Non-religious', 'Interfaith'];
 const FAITH_FOR_INTERFAITH = ['Christian', 'Catholic', 'Jewish', 'Muslim', 'Hindu', 'Sikh', 'Buddhist'];
-const CULTURE_OPTIONS    = ['Indian', 'Chinese', 'Vietnamese', 'Korean', 'Filipino', 'Greek', 'Italian', 'Lebanese/Arabic', 'Persian', 'Pacific Islander', 'Latin American', 'African'];
+
+// Cultures and traditions — round 7 ask #11. Stored on the same
+// theme.culture array WeddingDetails already declares (already registered
+// in schemaDropScan.mjs's _nested.theme list; no schema change needed for
+// a wider set of string values in an already-unconstrained string array).
+// Organised by region exactly as specified, plus the additions called out
+// as missing, plus the cross-cutting options shown separately below.
+const CULTURE_REGIONS = [
+  {
+    region: 'Asia & Middle East',
+    items: [
+      'Indian (Hindu, Sikh, Muslim, Christian)', 'Sri Lankan', 'Pakistani', 'Bangladeshi',
+      'Chinese', 'Japanese', 'Korean', 'Thai', 'Vietnamese', 'Filipino', 'Indonesian',
+      'Malay/Singaporean', 'Khmer (Cambodian)', 'Nepali',
+      'Persian/Iranian', 'Arab', 'Turkish', 'Lebanese', 'Armenian',
+    ],
+  },
+  {
+    region: 'Africa',
+    items: [
+      'Nigerian (Yoruba, Igbo, Hausa)', 'Ghanaian', 'South African (Zulu, Xhosa, Sotho)',
+      'Moroccan', 'Ethiopian/Eritrean', 'Somali', 'East African (Kenyan/Tanzanian)',
+    ],
+  },
+  {
+    region: 'Europe',
+    items: [
+      'Greek', 'Italian', 'French', 'Irish', 'Spanish', 'Portuguese',
+      'Russian/Eastern European', 'Polish', 'Ukrainian', 'German', 'Dutch',
+      'Scandinavian/Nordic', 'British', 'Jewish (Ashkenazi & Sephardic)',
+    ],
+  },
+  {
+    region: 'North & South America',
+    items: [
+      'American (Contemporary, Black American, Southern)', 'Mexican', 'Brazilian',
+      'Caribbean', 'Indigenous North American', 'Colombian/Andean', 'Peruvian', 'Argentine',
+    ],
+  },
+  {
+    region: 'Oceania & Pacific',
+    items: [
+      'Australian (incl. Aboriginal and Torres Strait Islander)', 'New Zealand Māori',
+      'Samoan/Tongan/Fijian', 'Hawaiian',
+    ],
+  },
+];
+const CULTURE_CROSS_CUTTING = ['Interfaith/fusion', 'LGBTQ+ inclusive', 'Minimalist/non-traditional', 'Destination'];
+
 const ATMOSPHERE_OPTIONS = ['Intimate & relaxed', 'Big party', 'Formal & elegant', 'Outdoor & nature', 'Destination', 'Multi-day'];
 const SEASON_OPTIONS     = ['Spring', 'Summer', 'Autumn', 'Winter'];
 const SETTING_OPTIONS    = ['Indoor', 'Outdoor', 'Mix of both'];
@@ -60,6 +108,7 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
   });
 
   const [showCultureInput, setShowCultureInput] = useState(false);
+  const [cultureSearch, setCultureSearch] = useState('');
 
   // Interfaith two-picks tracked locally (re-derived from faithSecondary on init)
   const [interfaithPicks, setInterfaithPicks] = useState(() => {
@@ -153,20 +202,77 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
         )}
       </div>
 
-      {/* 3. Culture / heritage */}
+      {/* 3. Cultures and traditions */}
       <div>
-        <p style={headingStyle}>Culture or heritage</p>
+        <p style={headingStyle}>Cultures and traditions</p>
         <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, margin: '0 0 12px', lineHeight: 1.5 }}>
-          Separate from faith — you can be culturally Indian and non-religious, for example.
+          Separate from faith — you can be culturally Indian and non-religious, for example. Select as many as apply; this shapes Ava's suggestions and checklists.
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-          {CULTURE_OPTIONS.map(opt => (
-            <Pill key={opt} label={opt}
-              selected={(local.culture || []).includes(opt)}
-              onClick={() => toggleMulti('culture', opt)}
-              disabled={readOnly} />
-          ))}
-        </div>
+
+        {!readOnly && (
+          <div style={{ position: 'relative', maxWidth: 320, marginBottom: 16 }}>
+            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+            <Input
+              value={cultureSearch}
+              onChange={e => setCultureSearch(e.target.value)}
+              placeholder="Search cultures and traditions…"
+              style={{ paddingLeft: 30 }}
+            />
+          </div>
+        )}
+
+        {(() => {
+          const q = cultureSearch.trim().toLowerCase();
+          const selected = local.culture || [];
+          const visibleRegions = CULTURE_REGIONS
+            .map(r => ({ ...r, items: q ? r.items.filter(opt => opt.toLowerCase().includes(q)) : r.items }))
+            // While read-only, only ever show regions that have a selection —
+            // no point rendering 50+ unselectable pills on someone else's view.
+            .filter(r => readOnly ? r.items.some(opt => selected.includes(opt)) : r.items.length > 0);
+          const visibleCrossCutting = CULTURE_CROSS_CUTTING
+            .filter(opt => !q || opt.toLowerCase().includes(q))
+            .filter(opt => !readOnly || selected.includes(opt));
+
+          if (q && visibleRegions.length === 0 && visibleCrossCutting.length === 0) {
+            return (
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, margin: '0 0 12px' }}>
+                No matches for "{cultureSearch.trim()}" — try "Add your own" below.
+              </p>
+            );
+          }
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 12 }}>
+              {visibleRegions.map(r => (
+                <div key={r.region}>
+                  <span style={subLabelStyle}>{r.region}</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {(readOnly ? r.items.filter(opt => selected.includes(opt)) : r.items).map(opt => (
+                      <Pill key={opt} label={opt} small
+                        selected={selected.includes(opt)}
+                        onClick={() => toggleMulti('culture', opt)}
+                        disabled={readOnly} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {visibleCrossCutting.length > 0 && (
+                <div>
+                  <span style={subLabelStyle}>Also relevant</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {visibleCrossCutting.map(opt => (
+                      <Pill key={opt} label={opt} small
+                        selected={selected.includes(opt)}
+                        onClick={() => toggleMulti('culture', opt)}
+                        disabled={readOnly} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {readOnly ? (
           local.cultureOther && (

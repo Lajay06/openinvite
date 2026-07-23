@@ -391,7 +391,7 @@ export default function BudgetPage() {
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Budget advisor"
-        systemPrompt={`You are Ava, a wedding budget advisor. The couple is tracking their budget in ${currencyCode} (${symbol}). Help couples allocate budget, find savings, and track spending across all wedding categories. When giving budget estimates or comparisons, use ${currencyCode}.`}
+        systemPrompt={`You are Ava, a wedding budget advisor. The couple is tracking their budget in ${currencyCode} (${symbol}). Help couples allocate budget, find savings, and track spending across all wedding categories. When giving budget estimates or comparisons, use ${currencyCode}. If the couple has selected cultures and traditions, factor in typical costs for culturally-specific elements (e.g. Mehndi night, tea ceremony, sofreh aghd) where relevant.`}
         quickActions={["What's a typical wedding budget breakdown?", "Where can I save money?", "Am I spending too much on vendors?", "Help me negotiate with vendors"]}
       />
     </div>

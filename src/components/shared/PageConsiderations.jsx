@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -622,6 +623,75 @@ const CONSIDERATIONS = {
   ],
 };
 
+// Round 7 ask #12 — culture-specific considerations, shown only when the
+// couple has actually selected a matching entry in theme.culture (Event
+// details → Theme → Cultures and traditions). Matched by substring against
+// each selected culture string since the picker's options carry
+// parentheticals (e.g. "Indian (Hindu, Sikh, Muslim, Christian)") — a
+// couple who picked that entry should still surface the Mehndi item, which
+// matches on "Pakistani" OR the S. Asian umbrella entry. Starts with the
+// three traditions named explicitly in the brief; same shape extends to
+// more cultures/pages over time without touching the render logic.
+const CULTURE_CONSIDERATIONS = {
+  schedule: [
+    {
+      id: 'c-mehndi',
+      matchCultures: ['Pakistani', 'Indian'],
+      title: 'Planning a Mehndi night',
+      tag: 'Cultural touch',
+      body: [
+        'Mehndi night is typically held 1–2 days before the wedding — an evening of intricate henna application for the couple and close family, alongside music, dancing, and bright colour. It runs separately from the main ceremony and reception, so it needs its own slot on the overall wedding timeline, not a squeeze-in.',
+        'Book a henna artist (or several, for larger guest counts) well in advance — the same booking-window pressure as any other wedding-day specialist applies. Application can take 30–90 minutes per person for detailed designs, so plan the evening around that pace rather than a fixed end time.',
+      ],
+      tips: [
+        'Confirm how many henna artists you need based on guest count and how detailed the designs are',
+        'Give the henna time to dry/set before guests need to use their hands — build that into the evening, not just the application time',
+        'Coordinate Mehndi night colours/decor with the rest of the wedding so it reads as part of the same celebration, not a separate event',
+      ],
+      why: 'Mehndi night has its own pace and its own vendors — treating it as a full event on the timeline, not an add-on, is what keeps it from crowding the days around it.',
+    },
+    {
+      id: 'c-tea-ceremony',
+      matchCultures: ['Chinese'],
+      title: 'Including a tea ceremony',
+      tag: 'Cultural touch',
+      body: [
+        'The Chinese tea ceremony — the couple formally serving tea to parents and elders as a sign of respect and gratitude — is traditionally held on the wedding morning, though some couples move it to the reception so more guests can witness it. Either placement needs its own clearly marked slot on the day-of schedule; it is a distinct moment, not something that can be rushed between other events.',
+        'Confirm with both families in advance which relatives are included and in what order — the order of serving generally follows seniority, and getting it right matters to the families involved.',
+      ],
+      tips: [
+        'Decide with both families whether the ceremony happens at the family home in the morning or as part of the reception',
+        'Brief your photographer specifically — this is a moment families will want fully documented',
+        'Confirm the tea set and any specific tea variety with whoever is coordinating the ceremony',
+      ],
+      why: 'This is one of the most meaningful moments of the day for the families involved — giving it real time on the schedule, not a rushed few minutes, matters.',
+    },
+    {
+      id: 'c-sofreh',
+      matchCultures: ['Persian', 'Iranian'],
+      title: 'The sofreh aghd setup',
+      tag: 'Cultural touch',
+      body: [
+        'The sofreh aghd is the ceremonial spread laid out for a Persian wedding ceremony — mirror, candelabras, decorated eggs, herbs, sweets, and other symbolic items — and it needs real setup time before the ceremony, plus a specialist vendor in many cities who designs and installs it.',
+        'Because it is visually central to the ceremony (and to photos), confirm its placement with your venue and photographer well ahead of time — sightlines matter, and it typically needs to be visible to seated guests throughout the ceremony.',
+      ],
+      tips: [
+        'Book a sofreh specialist early — like florists and other design vendors, the good ones are booked out well ahead of your date',
+        'Confirm setup and breakdown time with your venue — a full sofreh can take longer to install than a standard ceremony backdrop',
+        'Walk your photographer through which items on the sofreh carry personal or family significance, so they know what to capture up close',
+      ],
+      why: 'The sofreh aghd is the visual centrepiece of a Persian ceremony — giving its setup enough lead time protects both the moment itself and the photos of it.',
+    },
+  ],
+};
+
+function culturesMatchItem(item, cultures) {
+  if (!item.matchCultures?.length || !cultures?.length) return false;
+  return item.matchCultures.some(needle =>
+    cultures.some(c => c.toLowerCase().includes(needle.toLowerCase()))
+  );
+}
+
 function TagPill({ tag }) {
   return (
     <span style={{
@@ -693,7 +763,16 @@ function AccordionItem({ item }) {
 }
 
 export default function PageConsiderations({ pageKey }) {
-  const items = CONSIDERATIONS[pageKey] || [];
+  const [cultures, setCultures] = useState([]);
+
+  useEffect(() => {
+    getMyWeddingDetails()
+      .then(wd => setCultures(wd?.theme?.culture || []))
+      .catch(() => {});
+  }, []);
+
+  const cultureItems = (CULTURE_CONSIDERATIONS[pageKey] || []).filter(item => culturesMatchItem(item, cultures));
+  const items = [...(CONSIDERATIONS[pageKey] || []), ...cultureItems];
   if (items.length === 0) {
     return (
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 0', textAlign: 'center' }}>

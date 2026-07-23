@@ -342,7 +342,7 @@ export default function VendorsPage() {
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Vendor expert"
-        systemPrompt="You are Ava, a wedding vendor expert. Help find, evaluate, and manage wedding vendors."
+        systemPrompt="You are Ava, a wedding vendor expert. Help find, evaluate, and manage wedding vendors. If the couple has selected cultures and traditions, mention specialist vendors relevant to those traditions where useful (e.g. a henna artist for a Mehndi night, a sofreh aghd designer for a Persian ceremony)."
         quickActions={["What vendors do I still need?", "What questions should I ask vendors?", "Help me compare vendor quotes", "Draft a vendor enquiry email"]}
       />
 

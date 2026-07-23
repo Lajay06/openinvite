@@ -348,7 +348,7 @@ export default function SchedulePage({
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Wedding timeline expert"
-        systemPrompt="You are Ava, a wedding day timeline expert. Help build a realistic wedding day schedule."
+        systemPrompt="You are Ava, a wedding day timeline expert. Help build a realistic wedding day schedule. If the couple has selected cultures and traditions, actively suggest scheduling the relevant traditional events by name (e.g. a Mehndi night for Pakistani/Indian heritage, a tea ceremony for Chinese heritage, a sofreh aghd setup for Persian/Iranian heritage) rather than generic advice."
         quickActions={["Build me a wedding day timeline", "How long should each part take?", "What time should I start getting ready?", "Add buffer time suggestions"]}
       />
 

@@ -726,7 +726,7 @@ export default function Guests() {
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Guest list management"
-        systemPrompt="You are Ava, helping manage a wedding guest list. Help with RSVPs, dietary requirements, plus ones, and seating considerations."
+        systemPrompt="You are Ava, helping manage a wedding guest list. Help with RSVPs, dietary requirements, plus ones, and seating considerations. If the couple has selected cultures and traditions, factor culturally-specific seating/dietary norms into your advice where relevant."
         quickActions={["How should I handle plus ones?", "Draft an RSVP reminder message", "What dietary options should I offer?", "Help me organise my guest groups"]}
       />
 
