@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { Volume2, VolumeX } from 'lucide-react';
 import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroVideo';
 import UniverseBlocks from '../blocks/UniverseBlocks';
 import EditorialMasthead from '../layouts/EditorialMasthead';
@@ -68,6 +69,34 @@ const IFRAME_COVER_STYLE = {
 };
 
 /**
+ * Small floating on-brand affordance to unmute the hero video — browsers
+ * block autoplay-with-sound outright, so every autoplaying hero video
+ * starts muted and needs an explicit, visible way for a guest to turn
+ * sound on (round 7 ask #14). Bottom-right, out of the way of the
+ * masthead/footer content every universe lays over this background.
+ */
+function UnmuteButton({ unmuted, onToggle }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={unmuted ? 'Mute video' : 'Unmute video'}
+      title={unmuted ? 'Mute video' : 'Unmute video'}
+      style={{
+        position: 'absolute', bottom: 24, right: 24, zIndex: 5,
+        width: 40, height: 40, borderRadius: '50%',
+        background: 'rgba(10,10,10,0.45)', backdropFilter: 'blur(4px)',
+        border: '1px solid rgba(255,255,255,0.3)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', color: '#FFFFFF',
+      }}
+    >
+      {unmuted ? <Volume2 size={16} /> : <VolumeX size={16} />}
+    </button>
+  );
+}
+
+/**
  * Renders the hero's background media: a real video (direct file or
  * YouTube/Vimeo embed) when the couple has set one, falling back to the
  * existing static cover-photo image otherwise — or if the video fails to
@@ -77,6 +106,8 @@ const IFRAME_COVER_STYLE = {
  */
 function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
   const [videoFailed, setVideoFailed] = useState(false);
+  const [unmuted, setUnmuted] = useState(false);
+  const videoRef = useRef(null);
   const video = useMemo(() => detectHeroVideoType(heroVideoUrl), [heroVideoUrl]);
 
   // Network Information API — not supported everywhere; absence just means
@@ -99,12 +130,17 @@ function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
   if (!showVideo) return imageFallback;
 
   if (video.type === 'file') {
+    const toggleMute = () => {
+      if (videoRef.current) videoRef.current.muted = unmuted;
+      setUnmuted(v => !v);
+    };
     return (
       <>
         {/* Poster shows immediately; swapped for the playing video once it
             can play, and shown again permanently if the video errors. */}
         {imageFallback}
         <video
+          ref={videoRef}
           autoPlay
           muted
           loop
@@ -115,6 +151,7 @@ function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
         >
           <source src={video.url} />
         </video>
+        <UnmuteButton unmuted={unmuted} onToggle={toggleMute} />
       </>
     );
   }
@@ -122,19 +159,26 @@ function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
   // YouTube / Vimeo — privacy-friendly embed, no controls, autoplay muted
   // loop. No reliable onError signal for cross-origin iframes, so a
   // malformed embed just renders an empty/black frame over the image
-  // fallback rather than crashing.
-  const embedUrl = video.type === 'youtube' ? youtubeEmbedUrl(video.id) : vimeoEmbedUrl(video.id);
+  // fallback rather than crashing. Neither embed exposes a live mute
+  // toggle without the full player JS API, so unmuting remounts the
+  // iframe (key change) with sound on from the start of the loop — a
+  // small restart, but a real, working unmute rather than none at all.
+  const embedUrl = video.type === 'youtube'
+    ? youtubeEmbedUrl(video.id).replace('mute=1', unmuted ? 'mute=0' : 'mute=1')
+    : vimeoEmbedUrl(video.id).replace('muted=1', unmuted ? 'muted=0' : 'muted=1');
   return (
     <>
       {imageFallback}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <iframe
+          key={unmuted ? 'unmuted' : 'muted'}
           src={embedUrl}
           title="Wedding hero video"
           allow="autoplay; encrypted-media"
           style={IFRAME_COVER_STYLE}
         />
       </div>
+      <UnmuteButton unmuted={unmuted} onToggle={() => setUnmuted(v => !v)} />
     </>
   );
 }

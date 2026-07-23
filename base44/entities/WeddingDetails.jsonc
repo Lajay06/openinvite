@@ -916,6 +916,24 @@
       "type": "boolean",
       "default": false,
       "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
+    },
+    "guestExperienceSettings": {
+      "type": "object",
+      "description": "Owner-controlled guest-facing experience toggles (round 7 asks #15/#16) — background music on the invite/website, and the two who's-coming visibility toggles. Both who's-coming toggles default OFF (privacy-first); enforced server-side by the guest-facing API, not just hidden in the UI.",
+      "properties": {
+        "backgroundMusic": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "source": { "type": "string", "enum": ["upload", "curated"] },
+            "url": { "type": "string" },
+            "trackId": { "type": "string" },
+            "trackName": { "type": "string" }
+          }
+        },
+        "showAttending": { "type": "boolean", "default": false },
+        "showCircle": { "type": "boolean", "default": false }
+      }
     }
   },
   "rls": {

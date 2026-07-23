@@ -5,6 +5,7 @@ import { resolveUniverseConfig } from '@/lib/websiteThemes';
 import { resolveTypography, resolveColors, googleFontsHref } from '@/lib/universeStyling';
 import TextureOverlay from './TextureOverlay';
 import EntranceMoment from './EntranceMoment';
+import BackgroundMusicPlayer from './BackgroundMusicPlayer';
 import GuestSiteSkeleton from './GuestSiteSkeleton';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 
@@ -215,6 +216,15 @@ export default function MultiPageWeddingWebsite() {
         theme={theme}
         typography={typography}
         universeConfig={universeConfig}
+      />
+
+      {/* Top-level sibling of the page-transition area below, not inside
+          it — so the track keeps playing across page navigation instead
+          of restarting on every click. */}
+      <BackgroundMusicPlayer
+        weddingSlug={weddingSlug}
+        musicSettings={weddingDetails?.guestExperienceSettings?.backgroundMusic}
+        accentColor={theme?.accent}
       />
 
       {/* Site-wide texture overlay — one instance covers every page (not just

@@ -59,6 +59,13 @@ export const GUEST_SAFE_WEDDING_FIELDS = [
   'weddingStyle',
   'venueType',
   'mealOptions',
+  // Round 7 ask #15 — background-music settings for the invite/website
+  // player. The showAttending/showCircle flags here are just feature
+  // toggles, not guest data — the actual attendee names they gate are
+  // never read off WeddingDetails at all; they come from the separate,
+  // per-guest-token-scoped api/wedding-attendees.js, which re-checks
+  // these same two flags server-side before returning anything.
+  'guestExperienceSettings',
 ];
 
 /**
