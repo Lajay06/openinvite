@@ -206,6 +206,14 @@ export default function RSVPPage() {
   // { [pollId]: optionId } — guest's current poll selections
   const [guestVotes, setGuestVotes] = useState({});
 
+  // Who's coming (round 7 ask #16) — fetched from a separate, server-gated
+  // endpoint once the guest reaches the thank-you step; never derived from
+  // `wedding` or anything else already in the browser, since the gate has
+  // to be re-checked server-side regardless of what the client thinks the
+  // toggle state is.
+  const [attendees, setAttendees] = useState([]);
+  const [circle, setCircle] = useState([]);
+
   // Wedding-level fields — render once, not per event. Dietary restrictions
   // are constant across events per SMART_RSVP_MODEL.md (not per-event, unlike
   // meal_choice which does vary by event's menu).
@@ -321,6 +329,23 @@ export default function RSVPPage() {
     };
     load();
   }, [token]);
+
+  // Fetched once the guest reaches the thank-you step — not before, since
+  // there's no reason to make this call until they've actually responded.
+  // Renders nothing if both arrays come back empty (toggles off, or no
+  // matches), which is exactly what the server returns when the owner has
+  // both settings off — no separate "is this feature even on" check needed
+  // client-side.
+  useEffect(() => {
+    if (step !== 'done' || !token) return;
+    fetch(`/api/wedding-attendees?token=${encodeURIComponent(token)}`)
+      .then(res => res.ok ? res.json() : { attendees: [], circle: [] })
+      .then(data => {
+        setAttendees(data.attendees || []);
+        setCircle(data.circle || []);
+      })
+      .catch(() => {});
+  }, [step, token]);
 
   const updateEvent = (eventId, value) => {
     setEventForm(prev => ({ ...prev, [eventId]: value }));
@@ -487,6 +512,21 @@ export default function RSVPPage() {
                 You'll be missed. Thank you for taking the time to respond.
               </p>
             )}
+            {(attendees.length > 0 || circle.length > 0) && (
+              <div style={{ marginTop: 28, paddingTop: 24, borderTop: `1px solid ${theme.accent}22` }}>
+                {circle.length > 0 && (
+                  <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.7)', lineHeight: 1.6, marginBottom: attendees.length > 0 ? 10 : 0, ...F }}>
+                    From your circle: {circle.join(', ')}
+                  </p>
+                )}
+                {attendees.length > 0 && (
+                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, ...F }}>
+                    Also attending: {attendees.join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
+
             <button
               onClick={() => setStep('rsvp')}
               style={{ marginTop: 24, background: 'none', border: 'none', fontSize: 13, color: 'rgba(10,10,10,0.6)', cursor: 'pointer', ...F, textDecoration: 'underline' }}

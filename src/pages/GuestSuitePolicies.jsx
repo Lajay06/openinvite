@@ -1,12 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { Loader2, Camera, Share2, Baby, Utensils, Gift, Shirt, Clock, FileText, Check, ClipboardList } from 'lucide-react';
+import { Loader2, Camera, Share2, Baby, Utensils, Gift, Shirt, Clock, FileText, Check, ClipboardList, Music, Upload, Users, X } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import DetailsSection from '@/components/event-details/DetailsSection';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+import { validateUploadFile } from '@/lib/uploadValidation';
 import toast from 'react-hot-toast';
+
+// Curated royalty-free background tracks (round 7 ask #15) — deliberately
+// empty until real tracks are sourced and uploaded to OUR Cloudinary
+// account (never hot-linked from a third party). Each entry once populated:
+// { id, name, artist, url } with url pointing at a res.cloudinary.com
+// resource_type "video" (Cloudinary's audio delivery type) asset. The
+// curated tab below hides itself entirely while this is empty — upload
+// stays fully functional either way.
+const CURATED_TRACKS = [];
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -65,6 +75,12 @@ const EMPTY = {
   stylingQuestionnaire: { enabled: false },
 };
 
+const EMPTY_GUEST_EXPERIENCE = {
+  backgroundMusic: { enabled: false, source: '', url: '', trackId: '', trackName: '' },
+  showAttending: false,
+  showCircle: false,
+};
+
 const TABS = [
   { key: 'photography', label: 'Photography' },
   { key: 'socialMedia',  label: 'Social media' },
@@ -75,16 +91,20 @@ const TABS = [
   { key: 'styling',      label: 'Styling quiz' },
   { key: 'lateArrival',  label: 'Late arrival' },
   { key: 'other',        label: 'Other' },
+  { key: 'guestExperience', label: 'Guest experience' },
 ];
 
 export default function GuestSuitePolicies() {
   const [details, setDetails] = useState(null);
   const [policies, setPolicies] = useState(EMPTY);
+  const [guestExperience, setGuestExperience] = useState(EMPTY_GUEST_EXPERIENCE);
   const [detailsId, setDetailsId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [avaOpen, setAvaOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('photography');
+  const [musicUploading, setMusicUploading] = useState(false);
+  const musicInputRef = useRef(null);
 
   useEffect(() => {
     getMyWeddingDetails()
@@ -93,6 +113,13 @@ export default function GuestSuitePolicies() {
         if (d) {
           setDetailsId(d.id);
           if (d.weddingPolicies) setPolicies(prev => ({ ...prev, ...d.weddingPolicies }));
+          if (d.guestExperienceSettings) {
+            setGuestExperience(prev => ({
+              ...prev,
+              ...d.guestExperienceSettings,
+              backgroundMusic: { ...prev.backgroundMusic, ...(d.guestExperienceSettings.backgroundMusic || {}) },
+            }));
+          }
         }
       })
       .catch(e => console.error('GuestSuitePolicies load error', e))
@@ -103,11 +130,49 @@ export default function GuestSuitePolicies() {
     setPolicies(prev => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
   };
 
+  const setGE = (field, value) => setGuestExperience(prev => ({ ...prev, [field]: value }));
+  const setBGMusic = (field, value) =>
+    setGuestExperience(prev => ({ ...prev, backgroundMusic: { ...prev.backgroundMusic, [field]: value } }));
+
+  const handleMusicUpload = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const err = validateUploadFile(file, 'audio');
+    if (err) { toast.error(err); return; }
+    setMusicUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setGuestExperience(prev => ({
+        ...prev,
+        backgroundMusic: { enabled: true, source: 'upload', url: file_url, trackId: '', trackName: file.name },
+      }));
+      toast.success('Track uploaded');
+    } catch {
+      toast.error('Failed to upload track');
+    }
+    setMusicUploading(false);
+  };
+
+  const selectCuratedTrack = (track) => {
+    setGuestExperience(prev => ({
+      ...prev,
+      backgroundMusic: { enabled: true, source: 'curated', url: track.url, trackId: track.id, trackName: track.name },
+    }));
+  };
+
+  const clearTrack = () => {
+    setGuestExperience(prev => ({ ...prev, backgroundMusic: { ...EMPTY_GUEST_EXPERIENCE.backgroundMusic } }));
+  };
+
   const handleSave = async () => {
     if (!detailsId) { toast.error('No wedding details found'); return; }
     setSaveStatus('saving');
     try {
-      await base44.entities.WeddingDetails.update(detailsId, { weddingPolicies: policies });
+      await base44.entities.WeddingDetails.update(detailsId, {
+        weddingPolicies: policies,
+        guestExperienceSettings: guestExperience,
+      });
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch {
@@ -325,6 +390,102 @@ export default function GuestSuitePolicies() {
             </div>
             <DisplayToggle value={policies.other.display} onChange={v => set('other', 'display', v)} />
           </DetailsSection>
+          )}
+
+          {/* Guest experience — round 7 asks #15/#16. Both who's-coming
+              toggles default OFF (privacy-first); server-side enforcement
+              lives in the guest-facing API, not here — this page only
+              controls the setting itself. */}
+          {activeTab === 'guestExperience' && (
+          <>
+            <DetailsSection title="Background music" icon={Music} defaultOpen>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <Toggle value={guestExperience.backgroundMusic.enabled} onChange={v => setBGMusic('enabled', v)} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Play music on your guest invite/website</span>
+              </div>
+
+              {guestExperience.backgroundMusic.enabled && (
+                <>
+                  {guestExperience.backgroundMusic.url ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: '1px solid rgba(10,10,10,0.1)', marginBottom: 16 }}>
+                      <Music size={14} style={{ color: '#E03553', flexShrink: 0 }} />
+                      <span style={{ flex: 1, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {guestExperience.backgroundMusic.trackName || 'Selected track'}
+                      </span>
+                      <button type="button" onClick={clearTrack} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex' }} aria-label="Remove track">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ marginBottom: 16 }}>
+                        <label style={fieldLabel}>Upload your own</label>
+                        <input ref={musicInputRef} type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/mp4,audio/x-m4a" style={{ display: 'none' }} onChange={handleMusicUpload} />
+                        <button
+                          type="button"
+                          onClick={() => musicInputRef.current?.click()}
+                          disabled={musicUploading}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 18px', border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', borderRadius: 999, fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, cursor: musicUploading ? 'default' : 'pointer', opacity: musicUploading ? 0.6 : 1 }}
+                        >
+                          {musicUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                          {musicUploading ? 'Uploading…' : 'Choose an audio file'}
+                        </button>
+                        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '8px 0 0', fontFamily: PJS }}>MP3, WAV, OGG, or M4A — up to 20 MB.</p>
+                      </div>
+
+                      {CURATED_TRACKS.length > 0 && (
+                        <div>
+                          <label style={fieldLabel}>Or pick a curated track</label>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {CURATED_TRACKS.map(track => (
+                              <button
+                                key={track.id}
+                                type="button"
+                                onClick={() => selectCuratedTrack(track)}
+                                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: '1px solid rgba(10,10,10,0.1)', background: 'transparent', textAlign: 'left', cursor: 'pointer', fontFamily: PJS }}
+                              >
+                                <Music size={14} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
+                                <span style={{ flex: 1, fontSize: 13, color: '#0A0A0A' }}>{track.name}</span>
+                                {track.artist && <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>{track.artist}</span>}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: guestExperience.backgroundMusic.enabled ? '16px 0 0' : 0, fontFamily: PJS, lineHeight: 1.6 }}>
+                Browsers block audio from starting automatically with sound, so guests see a small floating play control on your invite rather than music starting on its own.
+              </p>
+            </DetailsSection>
+
+            <div style={{ height: 24 }} />
+
+            <DetailsSection title="Who's coming" icon={Users} defaultOpen>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+                <Toggle value={guestExperience.showAttending} onChange={v => setGE('showAttending', v)} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Show who's attending</span>
+              </div>
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: PJS, lineHeight: 1.6 }}>
+                Guests see attending guests' names (first name + last initial) on the guest site.
+              </p>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4, paddingTop: 16, borderTop: '1px solid rgba(10,10,10,0.06)' }}>
+                <Toggle value={guestExperience.showCircle} onChange={v => setGE('showCircle', v)} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Show people from your circle</span>
+              </div>
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, lineHeight: 1.6 }}>
+                Uses your existing guest tags — a guest viewing their RSVP sees which other attending guests share at least one tag with them (e.g. "From your circle: Sarah M., Tom R."), without exposing the full guest list.
+              </p>
+
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '16px 0 0', fontFamily: PJS, fontStyle: 'italic' }}>
+                Both are off by default. Only names — never emails, phone numbers, or RSVP status of other guests — are ever shown.
+              </p>
+            </DetailsSection>
+          </>
           )}
 
         </div>

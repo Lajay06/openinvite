@@ -43,6 +43,7 @@ import weddingPollCommentHandler from '../../api/wedding-poll-comment.js';
 import rsvpPollVoteHandler from '../../api/rsvp-poll-vote.js';
 import weddingPollResultsHandler from '../../api/wedding-poll-results.js';
 import rsvpSubmitHandler from '../../api/rsvp-submit.js';
+import weddingAttendeesHandler from '../../api/wedding-attendees.js';
 import { aggregateEventTallies, latestEventResponses } from '../../src/lib/rsvpAggregation.js';
 
 // Cloudflare's official "always passes" Turnstile test keypair — documented
@@ -615,6 +616,110 @@ export async function runAnonymousEndpoints() {
       await cleanupEntity(token, 'WeddingDetails', tallyWeddingId);
     }
     await cleanupNewNotifications(token, tallyNotifIdsBefore);
+  }
+
+  // ── wedding-attendees.js — server-side gate, round 7 ask #16 ────────────────
+  // Live-verifies both the negative path (both toggles off — nothing comes
+  // back regardless of what exists) and the positive path (toggles on —
+  // names come back, correctly scoped: showCircle only returns guests
+  // sharing a tag with the requester, never the requester themselves).
+  console.log('\n  wedding-attendees.js — who\'s-coming server-side gate:\n');
+  let waWeddingId = null;
+  let waRequesterId = null;
+  let waCircleGuestId = null;
+  let waOtherGuestId = null;
+  try {
+    const waWedding = await api('POST', `/apps/${APP_ID}/entities/WeddingDetails`, {
+      couple1Name: 'Alex', couple2Name: 'Sam',
+      slug: `test-wa-wedding-${Date.now()}`,
+      guestExperienceSettings: { showAttending: false, showCircle: false },
+    }, token);
+    waWeddingId = waWedding.id;
+
+    // No is_test:true here, deliberately — the endpoint under test filters
+    // out is_test guests (correct production behaviour, matching every
+    // other "real dashboard" query's convention), so a test guest flagged
+    // is_test would be invisible to its own assertions. Cleaned up by id in
+    // the finally block regardless. A per-run unique tag avoids any chance
+    // of collision with this shared test account's other, unrelated guests
+    // (accumulated across every prior run of this suite) matching by tag.
+    const waToken = `test-wa-token-${Date.now()}`;
+    const sharedTag = `test-circle-tag-${Date.now()}`;
+    const requester = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
+      name: 'Zqrequester Test', rsvp_link_id: waToken, tags: [sharedTag],
+      rsvp_status: 'attending',
+    }, token);
+    waRequesterId = requester.id;
+
+    const circleGuest = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
+      name: 'Zqcircle Match', tags: [sharedTag],
+      rsvp_status: 'attending',
+    }, token);
+    waCircleGuestId = circleGuest.id;
+
+    const otherGuest = await api('POST', `/apps/${APP_ID}/entities/Guest`, {
+      name: 'Zqunrelated Attendee', tags: ['test-unrelated-tag'],
+      rsvp_status: 'attending',
+    }, token);
+    waOtherGuestId = otherGuest.id;
+
+    // Names come back as "first name + last initial" (never a full name) —
+    // see api/wedding-attendees.js's firstNameLastInitial().
+    const CIRCLE_NAME = 'Zqcircle M.';
+    const OTHER_NAME = 'Zqunrelated A.';
+    const REQUESTER_NAME = 'Zqrequester T.';
+
+    // ── Negative path: both toggles off ──
+    {
+      const { req, res } = mockReqRes({ query: { token: waToken } });
+      await weddingAttendeesHandler(req, res);
+      results.push(res._status === 200 && (res._json?.attendees?.length ?? -1) === 0 && (res._json?.circle?.length ?? -1) === 0
+        ? pass('wedding-attendees.js — both toggles off returns nothing, regardless of attending guests existing', '{"attendees":[],"circle":[]}')
+        : fail('wedding-attendees.js — both toggles off returns nothing', '{"attendees":[],"circle":[]}', JSON.stringify(res._json)));
+    }
+
+    // ── Positive path: showAttending on ──
+    await api('PUT', `/apps/${APP_ID}/entities/WeddingDetails/${waWeddingId}`, {
+      guestExperienceSettings: { showAttending: true, showCircle: false },
+    }, token);
+    {
+      const { req, res } = mockReqRes({ query: { token: waToken } });
+      await weddingAttendeesHandler(req, res);
+      const names = res._json?.attendees || [];
+      results.push(names.includes(CIRCLE_NAME) && names.includes(OTHER_NAME)
+        ? pass('wedding-attendees.js — showAttending:true lists every attending guest, formatted as first name + last initial', JSON.stringify([CIRCLE_NAME, OTHER_NAME]))
+        : fail('wedding-attendees.js — showAttending:true lists every attending guest', `includes ${CIRCLE_NAME} and ${OTHER_NAME}`, JSON.stringify(names)));
+      results.push((res._json?.circle?.length ?? -1) === 0
+        ? pass('wedding-attendees.js — showCircle:false returns empty circle even with showAttending:true', '[]')
+        : fail('wedding-attendees.js — showCircle:false returns empty circle', '[]', JSON.stringify(res._json?.circle)));
+    }
+
+    // ── Positive path: showCircle on, showAttending off ──
+    await api('PUT', `/apps/${APP_ID}/entities/WeddingDetails/${waWeddingId}`, {
+      guestExperienceSettings: { showAttending: false, showCircle: true },
+    }, token);
+    {
+      const { req, res } = mockReqRes({ query: { token: waToken } });
+      await weddingAttendeesHandler(req, res);
+      const circleNames = res._json?.circle || [];
+      results.push(circleNames.includes(CIRCLE_NAME) && !circleNames.includes(OTHER_NAME) && !circleNames.includes(REQUESTER_NAME)
+        ? pass('wedding-attendees.js — showCircle:true returns only tag-matching guests, never the requester themselves', JSON.stringify(circleNames.filter(n => n === CIRCLE_NAME)))
+        : fail('wedding-attendees.js — showCircle:true returns only tag-matching guests', `includes only ${CIRCLE_NAME}`, JSON.stringify(circleNames)));
+      results.push((res._json?.attendees?.length ?? -1) === 0
+        ? pass('wedding-attendees.js — showAttending:false returns empty attendees even with showCircle:true', '[]')
+        : fail('wedding-attendees.js — showAttending:false returns empty attendees', '[]', JSON.stringify(res._json?.attendees)));
+    }
+  } catch (err) {
+    console.log(`  ❌ FAIL  wedding-attendees.js test — error: ${err.message}`);
+    results.push(false, false, false, false, false);
+  } finally {
+    for (const id of [waRequesterId, waCircleGuestId, waOtherGuestId]) {
+      if (!id) continue;
+      await cleanupEntity(token, 'Guest', id);
+    }
+    if (waWeddingId) {
+      await cleanupEntity(token, 'WeddingDetails', waWeddingId);
+    }
   }
 
   return results;
