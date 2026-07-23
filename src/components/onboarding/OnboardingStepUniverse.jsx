@@ -2,25 +2,32 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LondonUniverseView from '@/components/studio/LondonUniverseView';
 import { interactiveDivProps } from '@/lib/a11y';
+import { getUniverse } from '@/lib/universeCatalog';
 
+// Photos now come straight from each universe's own UNIVERSE_CONFIGS
+// entry (round 7 ask #5) instead of a separate hand-picked Wix URL per
+// card — that second copy had drifted (mismatched/reused photos, one
+// universe missing entirely), exactly the drift universeCatalog.js's own
+// header comment warns a second palette copy invites. Falls back to the
+// local convention path only if a universe is somehow missing imageUrl.
 const UNIVERSES = [
-  { id: 'london', name: 'LONDON', tagline: 'Classical Grandeur', number: '01', photo: '/universes/london.jpg', available: true },
-  { id: 'tulum', name: 'TULUM', tagline: 'Desert Bloom', number: '02', photo: 'https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg', available: true },
-  { id: 'kyoto', name: 'KYOTO', tagline: 'Zen & Ceremony', number: '03', photo: 'https://static.wixstatic.com/media/d2df22_40822e26660c4112aef53ff2526c0345~mv2.jpg', available: true },
-  { id: 'capri', name: 'CAPRI', tagline: 'Italian Coast', number: '04', photo: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg', available: true },
-  { id: 'marrakech', name: 'MARRAKECH', tagline: 'Spice & Gold', number: '05', photo: 'https://static.wixstatic.com/media/d2df22_5ea2e70835a14465be546237fd1dd55a~mv2.jpg', available: true },
-  { id: 'brooklyn', name: 'BROOKLYN', tagline: 'Industrial Edge', number: '06', photo: 'https://static.wixstatic.com/media/d2df22_f0eef5788fdd4876a0a300e43228f919~mv2.jpg', available: true },
-  { id: 'bali', name: 'BALI', tagline: 'Sacred Garden', number: '07', photo: 'https://static.wixstatic.com/media/d2df22_e30eff6d03424dd6baf63143722b2a3d~mv2.jpg', available: true },
-  { id: 'paris', name: 'PARIS', tagline: 'Haussmann Romance', number: '08', photo: 'https://static.wixstatic.com/media/d2df22_6aab4aa83a3b40eabd571d355ed75c7c~mv2.jpg', available: true },
+  { id: 'london', name: 'LONDON', tagline: 'Classical Grandeur', number: '01', available: true },
+  { id: 'tulum', name: 'TULUM', tagline: 'Desert Bloom', number: '02', available: true },
+  { id: 'kyoto', name: 'KYOTO', tagline: 'Zen & Ceremony', number: '03', available: true },
+  { id: 'capri', name: 'CAPRI', tagline: 'Italian Coast', number: '04', available: true },
+  { id: 'marrakech', name: 'MARRAKECH', tagline: 'Spice & Gold', number: '05', available: true },
+  { id: 'brooklyn', name: 'BROOKLYN', tagline: 'Industrial Edge', number: '06', available: true },
+  { id: 'bali', name: 'BALI', tagline: 'Sacred Garden', number: '07', available: true },
+  { id: 'paris', name: 'PARIS', tagline: 'Haussmann Romance', number: '08', available: true },
   // fix/universe-picker-integrity: was 'cape-town' — UNIVERSE_CONFIGS' key
   // is 'capetown' (no hyphen), and normalizeUniverseKey only lowercases/
   // trims, it doesn't strip hyphens — so this never resolved any styling.
-  { id: 'capetown', name: 'CAPE TOWN', tagline: 'Wild & Free', number: '09', photo: 'https://static.wixstatic.com/media/d2df22_2bbfee1f5b034379a76f063c2f97f653~mv2.jpg', available: true },
+  { id: 'capetown', name: 'CAPE TOWN', tagline: 'Wild & Free', number: '09', available: true },
   // fix/universe-picker-integrity: mykonos was missing from this list
   // entirely — one of the 10 canonical UNIVERSE_CONFIGS universes had no
   // way to be chosen at onboarding at all.
-  { id: 'mykonos', name: 'MYKONOS', tagline: 'Aegean Blue', number: '10', photo: 'https://static.wixstatic.com/media/d2df22_9b775b3cf3ad493e9437383894f91e9b~mv2.jpg', available: true },
-];
+  { id: 'mykonos', name: 'MYKONOS', tagline: 'Aegean Blue', number: '10', available: true },
+].map(u => ({ ...u, photo: getUniverse(u.id)?.imageUrl || `/universes/${u.id}.jpg` }));
 
 function ComingSoonOverlay({ universe, onBack }) {
   return (

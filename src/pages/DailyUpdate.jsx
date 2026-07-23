@@ -74,6 +74,54 @@ function getFirstName(name) {
   return name.split(/[\s&]/)[0];
 }
 
+// Deterministic backstop for spelled-out numbers in the AI-generated
+// briefing (round 7 ask #7) — the prompt asks for numerals, but a prompt
+// instruction alone isn't a hard guarantee, so this normalizes anything
+// that slips through. "one" is deliberately excluded from the standalone
+// pass (only converted inside safe compounds like "sixty-one"/"one
+// hundred") since \bone\b also matches inside "no one"/"someone" —
+// converting those would read as a typo, not a fix.
+const NUMBER_ONES = { zero: 0, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+  ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19 };
+const NUMBER_ONES_WITH_ONE = { ...NUMBER_ONES, one: 1 };
+const NUMBER_TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+
+function numeralizeText(str) {
+  if (typeof str !== 'string' || !str) return str;
+  let out = str;
+  const tensAlt = Object.keys(NUMBER_TENS).join('|');
+  const onesWithOneAlt = Object.keys(NUMBER_ONES_WITH_ONE).join('|');
+  const onesAlt = Object.keys(NUMBER_ONES).join('|');
+
+  // "sixty-eight" / "sixty eight" -> 68 (the case from the user's own example)
+  out = out.replace(new RegExp(`\\b(${tensAlt})[\\s-](${onesWithOneAlt})\\b`, 'gi'),
+    (_m, t, o) => String(NUMBER_TENS[t.toLowerCase()] + NUMBER_ONES_WITH_ONE[o.toLowerCase()]));
+
+  // "one hundred" / "three hundred" -> 100 / 300
+  out = out.replace(new RegExp(`\\b(${onesWithOneAlt})\\s+hundred\\b`, 'gi'),
+    (_m, o) => String(NUMBER_ONES_WITH_ONE[o.toLowerCase()] * 100));
+  out = out.replace(/\bhundred\b/gi, '100');
+
+  // Remaining standalone tens (twenty, thirty, …)
+  out = out.replace(new RegExp(`\\b(${tensAlt})\\b`, 'gi'), (_m, t) => String(NUMBER_TENS[t.toLowerCase()]));
+
+  // Remaining standalone ten..nineteen and two..nine — "one" excluded, see above
+  out = out.replace(new RegExp(`\\b(${onesAlt})\\b`, 'gi'), (_m, o) => String(NUMBER_ONES[o.toLowerCase()]));
+
+  return out;
+}
+
+function numeralizeBriefing(value) {
+  if (typeof value === 'string') return numeralizeText(value);
+  if (Array.isArray(value)) return value.map(numeralizeBriefing);
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const k of Object.keys(value)) out[k] = numeralizeBriefing(value[k]);
+    return out;
+  }
+  return value;
+}
+
 export default function DailyUpdate() {
   const [phase, setPhase] = useState('loading');
   const [briefing, setBriefing] = useState(null);
@@ -186,7 +234,7 @@ DATA:
 
 Return JSON only:
 {
-  "headline": "punchy newspaper headline, max 8 words, present tense, specific to their data e.g. 'Ten RSVPs outstanding. Time to act.' or 'Budget on track. Three vendors still needed.'",
+  "headline": "punchy newspaper headline, max 8 words, present tense, specific to their data e.g. '10 RSVPs outstanding. Time to act.' or 'Budget on track. 3 vendors still needed.'",
   "greeting": "warm personalised 2-sentence summary of their wedding status",
   "countdown": { "headline": "days headline", "subtext": "one warm sentence" },
   "thisWeek": [{ "priority": "high|medium|low", "task": "actionable task", "reason": "why now" }],
@@ -199,7 +247,7 @@ Return JSON only:
   "forgottenDetail": "one thing couples often forget at this stage"
 }
 
-Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation marks. headline must be punchy and specific.`;
+Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation marks. headline must be punchy and specific. Always write numbers as numerals (10, 68%, 3), never spelled out (not "ten", "sixty-eight percent", "three") — in every field, including headline and greeting.`;
 
       const raw = await base44.integrations.Core.InvokeLLM({
         prompt: aiPrompt,
@@ -210,13 +258,13 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
         ? raw
         : raw?.content?.[0]?.text || raw?.text || JSON.stringify(raw);
       const clean = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(clean);
+      const parsed = numeralizeBriefing(JSON.parse(clean));
       setBriefing(parsed);
       localStorage.setItem(cacheKey(), JSON.stringify({ briefing: parsed, daysUntil: days, snapStats: snap, coupleName: couple }));
       setPhase('ready');
     } catch (err) {
       console.warn('[DailyUpdate] AI failed:', err);
-      setBriefing(fallback);
+      setBriefing(numeralizeBriefing(fallback));
       setPhase('ready');
     }
   };

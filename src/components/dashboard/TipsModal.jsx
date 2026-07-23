@@ -4,9 +4,9 @@ import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 const tips = [
   {
     number: '01',
-    title: 'Your dashboard is your command centre.',
-    body: 'Everything for your wedding lives here — your guest list, budget, checklist, vendors, and more. Use the sidebar to navigate between sections. Each page is focused so you can plan without overwhelm.',
-    cta: 'Got it',
+    title: 'Pick a universe — your whole look, everywhere.',
+    body: "Design Studio has 20 fully designed style universes to choose from. Your pick sets the fonts, colours, textures, and the entrance moment guests see the instant they open your site — and it carries through your website, invitations, and every asset automatically.",
+    cta: 'Nice',
   },
   {
     number: '02',
@@ -16,20 +16,32 @@ const tips = [
   },
   {
     number: '03',
-    title: 'Pick a universe — your whole look, everywhere.',
-    body: "Design Studio has 10 fully designed style universes to choose from. Your pick sets the fonts, colours, textures, and the entrance moment guests see the instant they open your site — and it carries through your website, invitations, and every asset automatically.",
-    cta: 'Nice',
+    title: 'Bring in the people helping you plan.',
+    body: "\"Collaborate,\" at the bottom of the sidebar, lets you give your partner, a planner, or a family member their own login to your account — no password sharing. Whatever they add or edit is saved to your account and visible to you instantly.",
+    cta: 'Good to know',
   },
   {
     number: '04',
-    title: 'Build your site with blocks, guided one step at a time.',
-    body: "The website builder works in blocks you can add, reorder, and personalise from the component library — no blank page. Prefer more guidance? Click \"✦ Ava's Studio\" inside Design Studio and she'll walk you through it question by question. Guests RSVP through a link unique to your site, and responses land straight back in your dashboard.",
-    cta: 'Sounds good',
+    title: "You'll always know when something needs you.",
+    body: "The bell icon up top tracks new RSVPs, collaborator activity, and anything else worth a look — so you're never stuck manually refreshing to check for updates.",
+    cta: 'Got it',
   },
   {
     number: '05',
-    title: 'Your Guest Suite assets are ready to print.',
-    body: "Save the Dates, invitations, menus, and more — all pre-designed in your universe and ready to download as real, print-ready files. And your wedding date, venue, and couple names are master details: set them once and they flow through your website, your assets, and Ava's suggestions. Change one thing — everything updates.",
+    title: 'A weekly wrap-up, without you asking for one.',
+    body: "Every week, Openinvite emails you a digest of where things stand — RSVPs, budget, tasks — so the whole picture reaches you even on weeks you haven't opened the dashboard.",
+    cta: 'Nice',
+  },
+  {
+    number: '06',
+    title: 'Tag your guests once — seating gets easier everywhere.',
+    body: "Tags you add to a guest (like \"college friends\" or \"bride's side\") show up right on the seating chart, so you can see at a glance who's sitting with who as you build tables.",
+    cta: 'Makes sense',
+  },
+  {
+    number: '07',
+    title: "Polls & games — the one place guests can't see each other's answers.",
+    body: "Send a private \"how well do you know the couple\" quiz, a first-dance song vote, or anything else you like. Responses come straight back to you, grouped by guest — never shown to other guests.",
     cta: "Let's go →",
     isLast: true,
   },
@@ -71,13 +83,18 @@ export default function TipsModal({ onClose }) {
         onClick={handleClose}
         {...interactiveDivProps(handleClose, { label: 'Close tips modal' })}
       >
-        {/* Panel */}
+        {/* Panel — centred (matches the shared Dialog's always-centred
+            positioning) with the 16px radius DESIGN_SPEC.md carves out
+            specifically for this onboarding/tips carousel, plus the same
+            shadow-lg the shared Dialog uses (round 6's modal sweep). */}
         <div
           ref={dialogRef}
           tabIndex={-1}
           style={{
             width: 560, maxWidth: '100%', background: '#FFFFFF',
             maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+            borderRadius: 16,
+            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)',
           }}
           onClick={e => e.stopPropagation()}
         >
