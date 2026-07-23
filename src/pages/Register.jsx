@@ -87,11 +87,11 @@ export default function Register() {
         subtitle={`We sent a code to ${email}`}
       >
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+          <div className="mb-3 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
             {error}
           </div>
         )}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <InputOTP
             maxLength={6}
             value={otpCode}
@@ -110,7 +110,7 @@ export default function Register() {
           </InputOTP>
         </div>
         <Button
-          className="w-full h-12 font-medium"
+          className="w-full h-10 font-medium"
           onClick={handleVerify}
           disabled={loading || otpCode.length < 6}
         >
@@ -123,7 +123,7 @@ export default function Register() {
             "Verify"
           )}
         </Button>
-        <p className="text-center text-sm text-muted-foreground mt-4">
+        <p className="text-center text-sm text-muted-foreground mt-3">
           Didn't receive the code?{" "}
           <button onClick={handleResend} className="text-primary font-medium hover:underline">
             Resend
@@ -147,42 +147,42 @@ export default function Register() {
         </>
       }
     >
-      <div className="space-y-3 mb-6">
+      <div className="space-y-1.5 mb-2">
         <Button
           variant="outline"
-          className="w-full h-12 text-sm font-medium"
+          className="w-full h-9 text-sm font-medium"
           onClick={() => handleProvider("google")}
         >
-          <GoogleIcon className="w-5 h-5 mr-2" />
+          <GoogleIcon className="w-4 h-4 mr-2" />
           Continue with Google
         </Button>
         <Button
           variant="outline"
-          className="w-full h-12 text-sm font-medium"
+          className="w-full h-9 text-sm font-medium"
           onClick={() => handleProvider("microsoft")}
         >
-          <MicrosoftIcon className="w-5 h-5 mr-2" />
+          <MicrosoftIcon className="w-4 h-4 mr-2" />
           Continue with Microsoft
         </Button>
         <Button
           variant="outline"
-          className="w-full h-12 text-sm font-medium"
+          className="w-full h-9 text-sm font-medium"
           onClick={() => handleProvider("facebook")}
         >
-          <FacebookIcon className="w-5 h-5 mr-2" />
+          <FacebookIcon className="w-4 h-4 mr-2" />
           Continue with Facebook
         </Button>
         <Button
           variant="outline"
-          className="w-full h-12 text-sm font-medium"
+          className="w-full h-9 text-sm font-medium"
           onClick={() => handleProvider("apple")}
         >
-          <AppleIcon className="w-5 h-5 mr-2" />
+          <AppleIcon className="w-4 h-4 mr-2" />
           Continue with Apple
         </Button>
       </div>
 
-      <div className="relative mb-6">
+      <div className="relative mb-2">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border" />
         </div>
@@ -192,13 +192,13 @@ export default function Register() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+        <div className="mb-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
+      <form onSubmit={handleSubmit} className="space-y-1.5">
+        <div className="space-y-1">
           <Label htmlFor="email">Email</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
@@ -210,12 +210,12 @@ export default function Register() {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 h-12"
+              className="pl-10 h-10"
               required
             />
           </div>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="password">Password</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
@@ -226,12 +226,12 @@ export default function Register() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12"
+              className="pl-10 h-10"
               required
             />
           </div>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1">
           <Label htmlFor="confirm">Confirm Password</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
@@ -242,12 +242,12 @@ export default function Register() {
               placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="pl-10 h-12"
+              className="pl-10 h-10"
               required
             />
           </div>
         </div>
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+        <Button type="submit" className="w-full h-10 font-medium" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
