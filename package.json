@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "BASE44_LEGACY_SDK_IMPORTS=true vite",
     "build": "BASE44_LEGACY_SDK_IMPORTS=true vite build",
-    "build:prerender": "npm run build && node scripts/prerender.mjs",
+    "build:prerender": "npm run build && node scripts/prerender.mjs && node scripts/apply-prerendered.mjs",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
