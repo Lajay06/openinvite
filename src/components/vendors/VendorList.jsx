@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -94,7 +94,47 @@ function Pill({ value, styleMap, labelMap }) {
   );
 }
 
-export default function VendorList({ vendors, onEdit, onDelete, onManage }) {
+function FavouriteStar({ vendor, onToggle }) {
+  if (!onToggle) {
+    return vendor.is_favourite ? (
+      <Star size={15} style={{ color: '#F59E0B', fill: '#F59E0B' }} />
+    ) : null;
+  }
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onToggle(vendor); }}
+      aria-label={vendor.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
+      title={vendor.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
+      style={{ background: 'none', border: 'none', padding: 4, margin: -4, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+    >
+      <Star
+        size={15}
+        style={{
+          color: vendor.is_favourite ? '#F59E0B' : 'rgba(10,10,10,0.25)',
+          fill: vendor.is_favourite ? '#F59E0B' : 'none',
+          transition: 'color 0.15s, fill 0.15s',
+        }}
+      />
+    </button>
+  );
+}
+
+export default function VendorList({ vendors, onEdit, onDelete, onManage, onToggleFavourite, scrollToVendorId, highlightedVendorId }) {
+  const rowRefs = useRef(new Map());
+  const scrolledForId = useRef(null);
+
+  // Same pattern as GuestList's scrollToGuestId — scrolls a search result's
+  // row into view once it actually exists in `vendors`, fires once per id.
+  useEffect(() => {
+    if (!scrollToVendorId || scrolledForId.current === scrollToVendorId) return;
+    const el = rowRefs.current.get(scrollToVendorId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scrolledForId.current = scrollToVendorId;
+    }
+  }, [scrollToVendorId, vendors]);
+
   if (vendors.length === 0) {
     return (
       <div style={{ padding: '64px 32px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.06)' }}>
@@ -112,6 +152,7 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage }) {
         <Table>
           <TableHeader>
             <TableRow style={{ background: '#FAFAFA' }}>
+              <TableHead style={{ width: 32 }} />
               <TableHead>Vendor</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Status</TableHead>
@@ -123,7 +164,19 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage }) {
           </TableHeader>
           <TableBody>
             {vendors.map((vendor) => (
-              <TableRow key={vendor.id}>
+              <TableRow
+                key={vendor.id}
+                ref={el => { if (el) rowRefs.current.set(vendor.id, el); else rowRefs.current.delete(vendor.id); }}
+                style={{
+                  background: vendor.id === highlightedVendorId ? 'rgba(224,53,83,0.12)' : undefined,
+                  transition: 'background 1.2s ease',
+                }}
+              >
+                {/* Favourite star */}
+                <TableCell className="align-middle">
+                  <FavouriteStar vendor={vendor} onToggle={onToggleFavourite} />
+                </TableCell>
+
                 {/* Vendor — logo + name + contact person, same shape as GuestList's avatar + name cell */}
                 <TableCell className="align-middle">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

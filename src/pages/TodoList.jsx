@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
@@ -30,8 +31,38 @@ export default function TodoList({ embedded = false }) {
   const [newTitle, setNewTitle]     = useState('');
   const [newPriority, setNewPriority] = useState('Medium');
   const [kanbanAdd, setKanbanAdd]   = useState({ col: null, title: '', desc: '' });
+  const [highlightedTaskId, setHighlightedTaskId] = useState(null);
+  const rowRefs = useRef(new Map());
+  const scrolledForId = useRef(null);
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => { loadTasks(); }, []);
+
+  // Arriving from the top-bar search — scroll to and briefly highlight the
+  // row instead of landing at the top of the page. Same pattern as
+  // Guests.jsx/Vendors.jsx. Only applies to the list view (the default);
+  // a to-do found via search that's currently in kanban view just won't
+  // auto-scroll — an acceptable gap given kanban isn't the default.
+  useEffect(() => {
+    const id = location.state?.highlightId;
+    if (!id) return;
+    setHighlightedTaskId(id);
+    navigate(location.pathname, { replace: true, state: {} });
+    const t = setTimeout(() => setHighlightedTaskId(null), 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state?.highlightId]);
+
+  useEffect(() => {
+    if (!highlightedTaskId || scrolledForId.current === highlightedTaskId) return;
+    const el = rowRefs.current.get(highlightedTaskId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scrolledForId.current = highlightedTaskId;
+    }
+  }, [highlightedTaskId, tasks]);
 
   const loadTasks = async () => {
     setLoading(true);
@@ -228,6 +259,8 @@ export default function TodoList({ embedded = false }) {
                     task={task}
                     onToggle={handleToggle}
                     onDelete={handleDelete}
+                    highlighted={task.id === highlightedTaskId}
+                    innerRef={el => { if (el) rowRefs.current.set(task.id, el); else rowRefs.current.delete(task.id); }}
                   />
                 ))
               )}
@@ -336,12 +369,14 @@ export default function TodoList({ embedded = false }) {
 
 /* ── Sub-components ── */
 
-function TaskRow({ task, onToggle, onDelete }) {
+function TaskRow({ task, onToggle, onDelete, highlighted, innerRef }) {
   const p = PRIORITY[task.priority] || PRIORITY.Medium;
   return (
-    <div style={{
+    <div ref={innerRef} style={{
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '12px 0', borderBottom: '1px solid rgba(10,10,10,0.06)',
+      background: highlighted ? 'rgba(224,53,83,0.12)' : undefined,
+      transition: 'background 1.2s ease',
     }}>
       <button
         onClick={() => onToggle(task)}

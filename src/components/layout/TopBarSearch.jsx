@@ -99,7 +99,11 @@ export default function TopBarSearch() {
   const goTo = (result) => {
     if (!result) return;
     preloadPageChunk(result.url);
-    navigate(result.url);
+    // Guest/vendor/to-do results carry a real record id — pass it through
+    // as router state so the destination page can scroll to and briefly
+    // highlight that exact row instead of just landing at the top.
+    const highlightId = result.type !== 'page' ? result.id : undefined;
+    navigate(result.url, highlightId ? { state: { highlightId } } : undefined);
     setOpen(false);
     setQuery('');
     inputRef.current?.blur();

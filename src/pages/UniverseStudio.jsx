@@ -168,15 +168,19 @@ export default function UniverseStudio() {
         <>
           <DashboardPageHeader title="Design studio" subtitle="Choose the aesthetic for your entire wedding suite" />
 
-          {/* Header — neutral chrome, current universe as a declaration */}
-          <div style={{ padding: '28px 32px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 10px' }}>
+          {/* Header — neutral chrome, current universe as a declaration.
+              Padding normalised to the same 16px 32px every other page's
+              Ava/actions bar uses (round 7 ask #8) — was 28px/24px, making
+              this the one page whose combined header stack read taller
+              than the rest of the app. */}
+          <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 8px' }}>
               Design Studio
             </p>
-            <h1 style={{ fontSize: 'clamp(1.9rem, 3.4vw, 2.8rem)', fontWeight: 800, color: '#0A0A0A', margin: 0, letterSpacing: '-0.01em' }}>
+            <h1 style={{ fontSize: 'clamp(1.6rem, 2.6vw, 2.2rem)', fontWeight: 800, color: '#0A0A0A', margin: 0, letterSpacing: '-0.01em' }}>
               You're in {active.name} — {active.tagline}
             </h1>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '10px 0 0', maxWidth: 620 }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', margin: '8px 0 0', maxWidth: 620 }}>
               Every universe restyles your invitations, website, RSVP and print pieces at once. Press a world below to step inside it — switching is never destructive.
             </p>
 
@@ -184,7 +188,7 @@ export default function UniverseStudio() {
                 chore/consolidate-overview) — venue/date/photo had no other
                 home in the app; couple name + countdown stay out since
                 Layout.jsx's top bar already shows those on every page. */}
-            <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+            <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
               {hasEventDetails ? (
                 (weddingDateStr || venueName) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>

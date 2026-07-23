@@ -117,6 +117,11 @@
       "type": "string",
       "format": "uri",
       "description": "Main image URL"
+    },
+    "is_favourite": {
+      "type": "boolean",
+      "default": false,
+      "description": "Owner has starred this vendor as a favourite"
     }
   },
   "required": [

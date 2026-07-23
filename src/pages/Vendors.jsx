@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search } from "lucide-react";
+import { Search, Star } from "lucide-react";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import toast from 'react-hot-toast';
 
@@ -82,6 +83,24 @@ export default function VendorsPage() {
   const [avaOpen, setAvaOpen] = useState(false);
   const [managingVendor, setManagingVendor] = useState(null);
   const [activeTab, setActiveTab] = useState("vendors");
+  const [scrollToVendorId, setScrollToVendorId] = useState(null);
+  const [highlightedVendorId, setHighlightedVendorId] = useState(null);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Arriving from the top-bar search — scroll to and briefly highlight the
+  // row instead of landing at the top of the page. Same pattern as Guests.jsx.
+  useEffect(() => {
+    const id = location.state?.highlightId;
+    if (!id) return;
+    setScrollToVendorId(id);
+    setHighlightedVendorId(id);
+    navigate(location.pathname, { replace: true, state: {} });
+    const t = setTimeout(() => setHighlightedVendorId(null), 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state?.highlightId]);
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
@@ -138,6 +157,19 @@ export default function VendorsPage() {
     } catch { toast.error('Failed to delete', { id: tid }); }
   };
 
+  // Optimistic — the star should flip instantly, not wait on a round trip.
+  // Reverts (with a toast) if the update actually fails.
+  const handleToggleFavourite = async (vendor) => {
+    const next = !vendor.is_favourite;
+    setVendors(prev => prev.map(v => v.id === vendor.id ? { ...v, is_favourite: next } : v));
+    try {
+      await Vendor.update(vendor.id, { is_favourite: next });
+    } catch {
+      setVendors(prev => prev.map(v => v.id === vendor.id ? { ...v, is_favourite: !next } : v));
+      toast.error('Failed to update favourite');
+    }
+  };
+
   const filteredVendors = vendors.filter(v => {
     const matchesSearch =
       v.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -146,6 +178,8 @@ export default function VendorsPage() {
     const matchesCategory = categoryFilter === "all" || v.category === categoryFilter;
     return matchesSearch && matchesStatus && matchesCategory;
   });
+
+  const favouriteVendors = vendors.filter(v => v.is_favourite);
 
   const stats = React.useMemo(() => ({
     total:       vendors.length,
@@ -200,6 +234,7 @@ export default function VendorsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full justify-start">
             <TabsTrigger value="vendors">Vendors</TabsTrigger>
+            <TabsTrigger value="favourites">Favourites{favouriteVendors.length > 0 ? ` (${favouriteVendors.length})` : ''}</TabsTrigger>
             <TabsTrigger value="considerations">Considerations</TabsTrigger>
           </TabsList>
 
@@ -263,6 +298,29 @@ export default function VendorsPage() {
                 onEdit={readOnly ? undefined : handleEdit}
                 onDelete={readOnly ? undefined : handleDelete}
                 onManage={readOnly ? undefined : setManagingVendor}
+                onToggleFavourite={readOnly ? undefined : handleToggleFavourite}
+                scrollToVendorId={scrollToVendorId}
+                highlightedVendorId={highlightedVendorId}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="favourites" className="mt-6">
+            {loading ? null : favouriteVendors.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px solid rgba(10,10,10,0.06)' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <Star size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                </div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>No favourites yet</p>
+                <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Star a vendor from the Vendors tab to pin it here</p>
+              </div>
+            ) : (
+              <VendorList
+                vendors={favouriteVendors}
+                onEdit={readOnly ? undefined : handleEdit}
+                onDelete={readOnly ? undefined : handleDelete}
+                onManage={readOnly ? undefined : setManagingVendor}
+                onToggleFavourite={readOnly ? undefined : handleToggleFavourite}
               />
             )}
           </TabsContent>

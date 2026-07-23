@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
 import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
@@ -106,6 +107,25 @@ export default function Guests() {
   const [autoSendAfterSetEvents, setAutoSendAfterSetEvents] = useState(null); // guestId
   const [editingEventsGuestId, setEditingEventsGuestId] = useState(null); // guestId, for the "edit events" (not auto-send) flow
   const [scrollToGuestId, setScrollToGuestId] = useState(null); // set right after a guest is added, so its row scrolls into view once it lands at the bottom
+  const [highlightedGuestId, setHighlightedGuestId] = useState(null); // brief flash on the row a search result linked to
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Arriving from the top-bar search ("has Isla RSVP'd?" → click the guest
+  // result) — scroll to and briefly highlight that row instead of landing
+  // at the top of the page. Cleared from history state immediately so a
+  // refresh/back-nav doesn't keep re-triggering it.
+  useEffect(() => {
+    const id = location.state?.highlightId;
+    if (!id) return;
+    setScrollToGuestId(id);
+    setHighlightedGuestId(id);
+    navigate(location.pathname, { replace: true, state: {} });
+    const t = setTimeout(() => setHighlightedGuestId(null), 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state?.highlightId]);
 
   useEffect(() => { loadGuests(); }, [isCollaborating]);
   useEffect(() => {
@@ -685,6 +705,7 @@ export default function Guests() {
               onSetEventsAndSend={readOnly ? undefined : handleSetEventsAndSend}
               onEditEvents={readOnly ? undefined : handleEditEvents}
               scrollToGuestId={scrollToGuestId}
+              highlightedGuestId={highlightedGuestId}
               readOnly={readOnly}
             />
           </TabsContent>

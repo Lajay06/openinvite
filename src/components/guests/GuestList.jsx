@@ -607,6 +607,7 @@ function AddGuestRow({ onQuickAdd, columnCount }) {
 export default function GuestList({
   guests, onEdit, onDelete, onUpdate, onQuickAdd, guestRoles = {}, loading, weddingEvents = [],
   selectedIds, onToggleSelect, onToggleSelectAll, onSetEventsAndSend, onEditEvents, scrollToGuestId,
+  highlightedGuestId,
   readOnly = false,
 }) {
   const [editCell, setEditCell] = useState(null); // { id, field }
@@ -836,6 +837,10 @@ export default function GuestList({
                 <TableRow
                   key={guest.id}
                   ref={el => { if (el) rowRefs.current.set(guest.id, el); else rowRefs.current.delete(guest.id); }}
+                  style={{
+                    background: guest.id === highlightedGuestId ? 'rgba(224,53,83,0.12)' : undefined,
+                    transition: 'background 1.2s ease',
+                  }}
                 >
                   {/* ── Checkbox ── */}
                   <TableCell className="align-middle">

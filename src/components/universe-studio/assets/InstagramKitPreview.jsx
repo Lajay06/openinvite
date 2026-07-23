@@ -22,12 +22,23 @@ function StoryFrame({ type, weddingDetails }) {
   };
 
   if (type === 'save-date') return (
-    <div style={{ ...shared, background: '#0A0A0A' }}>
-      <div style={{ position: 'absolute', top: 10, left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.2)' }} />
-      <p style={{ color: '#FFFFFF', fontSize: 11, fontWeight: 300, letterSpacing: '0.15em', textTransform: 'uppercase', textAlign: 'center' }}>{names}</p>
-      <div style={{ width: 20, height: '1px', background: 'rgba(255,255,255,0.3)', margin: '5px 0' }} />
-      <p style={{ fontSize: 7, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.3em' }}>SAVE THE DATE</p>
-      <div style={{ position: 'absolute', bottom: 10, left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.2)' }} />
+    <div style={{ ...shared, background: '#0A0A0A', padding: 0, overflow: 'hidden' }}>
+      {/* Placeholder couple photo (Launch folder, "Bandits" shoot) — real
+          save-the-date / day-of story templates are almost always
+          photo-backed; replaced once the couple picks their own. */}
+      <img
+        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg"
+        alt=""
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
+      />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 100%)' }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '10px 8px' }}>
+        <div style={{ position: 'absolute', top: 10, left: 8, right: 8, height: '1px', background: 'rgba(255,255,255,0.2)' }} />
+        <p style={{ color: '#FFFFFF', fontSize: 11, fontWeight: 300, letterSpacing: '0.15em', textTransform: 'uppercase', textAlign: 'center' }}>{names}</p>
+        <div style={{ width: 20, height: '1px', background: 'rgba(255,255,255,0.3)', margin: '5px 0' }} />
+        <p style={{ fontSize: 7, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.3em' }}>SAVE THE DATE</p>
+        <div style={{ position: 'absolute', bottom: 10, left: 8, right: 8, height: '1px', background: 'rgba(255,255,255,0.2)' }} />
+      </div>
     </div>
   );
 
@@ -50,11 +61,19 @@ function StoryFrame({ type, weddingDetails }) {
   );
 
   if (type === 'day-of') return (
-    <div style={{ ...shared, background: '#0A0A0A' }}>
-      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 5, letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: 4 }}>TODAY IS THE DAY</p>
-      <p style={{ color: '#FFFFFF', fontSize: 13, fontWeight: 300, letterSpacing: '0.15em', textTransform: 'uppercase', textAlign: 'center' }}>{names}</p>
-      <div style={{ width: 20, height: '1px', background: 'rgba(255,255,255,0.3)', margin: '5px 0' }} />
-      <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 6, letterSpacing: '0.2em' }}>{venue}</p>
+    <div style={{ ...shared, background: '#0A0A0A', padding: 0, overflow: 'hidden' }}>
+      <img
+        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14276_n3xobb.jpg"
+        alt=""
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
+      />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 100%)' }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '10px 8px' }}>
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 5, letterSpacing: '0.4em', textTransform: 'uppercase', marginBottom: 4 }}>TODAY IS THE DAY</p>
+        <p style={{ color: '#FFFFFF', fontSize: 13, fontWeight: 300, letterSpacing: '0.15em', textTransform: 'uppercase', textAlign: 'center' }}>{names}</p>
+        <div style={{ width: 20, height: '1px', background: 'rgba(255,255,255,0.3)', margin: '5px 0' }} />
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 6, letterSpacing: '0.2em' }}>{venue}</p>
+      </div>
     </div>
   );
 

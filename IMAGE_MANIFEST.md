@@ -274,3 +274,33 @@ the form; the right info panel's background/card treatment was replaced
 by the full-height photo, with email + social overlaid at its base on a
 scrim so that contact info isn't lost. Page is now nav + one two-panel
 section, no banner-then-panels stack — everything fits above the fold.
+
+## Round 10 (round 7 PR2 — universe build-mode placeholders)
+
+| public_id | Folder | Used on |
+|---|---|---|
+| `DTS_BANDITS_PALI_MENDEZ_Photos_ID14262_nd4v2e` | Launch | SaveTheDatePreview.jsx (Design Studio asset preview) — background photo behind the animated names |
+| `DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz` | Launch | InstagramKitPreview.jsx — "Save the Date" story frame |
+| `DTS_BANDITS_PALI_MENDEZ_Photos_ID14276_n3xobb` | Launch | InstagramKitPreview.jsx — "Day of" story frame |
+| `DTS_BANDITS_PALI_MENDEZ_Photos_ID14274_nhniqk` | Launch | WelcomeSignagePreview.jsx — faint (16% opacity) backdrop behind the lettering |
+
+All four are fresh IDs from the same 37-photo Launch folder ("Bandits"
+shoot by Pali Mendez) already partly in use (`ID14260` on
+UniverseMiniHero.jsx, Round 7). Deliberately reused as a *set* here —
+these are generic placeholder-couple mockup photos, the same across
+every universe's Design Studio asset previews, replaced automatically
+once a couple picks their own photo for each asset. Not added to:
+SeatingChartPreview, PlaceCardsPreview, MotionGraphicPreview,
+MenuCardPreview, ThankYouPreview — none of those realistically feature
+a couple photo in the finished product (charts, place-card text, menu
+listings), so a forced photo would look wrong rather than realistic.
+
+Also fixed (no new Cloudinary assets — round 7 ask #5, other half):
+`OnboardingStepUniverse.jsx`'s 10-card picker previously hand-picked a
+separate, inconsistently-sourced `static.wixstatic.com` photo per
+universe (drifted — Capri and Mykonos pointed at the same photo, one
+was a mismatched desert shot pre-dating the Aman→London rename). Now
+derives `photo` from each universe's own `UNIVERSE_CONFIGS.imageUrl` via
+`getUniverse()`, the same single source of truth `UniverseBanner.jsx`
+and `Universes.jsx` already read — this picker can no longer drift out
+of sync with the rest of the product.

@@ -14,10 +14,21 @@ export default function WelcomeSignagePreview({ universe, weddingDetails }) {
       alignItems: 'center', justifyContent: 'center',
       padding: '16px 20px',
       fontFamily: 'Cormorant Garamond, Georgia, serif',
-      position: 'relative'
+      position: 'relative', overflow: 'hidden'
     }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&display=swap');`}</style>
 
+      {/* Placeholder couple photo (Launch folder, "Bandits" shoot — same
+          consistent set as the other assets) — many welcome signs use a
+          photo backdrop behind the lettering; replaced once the couple
+          picks their own photo for this asset. */}
+      <img
+        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14274_nhniqk.jpg"
+        alt=""
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.16 }}
+      />
+
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {/* Top rule */}
       <div style={{ width: '100%', height: '1px', background: '#CCCCCC', marginBottom: 12 }} />
 
@@ -50,6 +61,7 @@ export default function WelcomeSignagePreview({ universe, weddingDetails }) {
       <p style={{ fontSize: 6, fontWeight: 300, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#888888', textAlign: 'center' }}>
         PLEASE FIND YOUR SEAT INSIDE
       </p>
+      </div>
     </div>
   );
 }
