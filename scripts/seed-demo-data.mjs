@@ -90,6 +90,14 @@ if (!EMAIL || !PASSWORD) {
 }
 let TOKEN = null;
 
+// Round 8 ask #13a: re-running the fixed RSVP/event_responses logic below
+// (section 1) doesn't need Table/Note/Budget/etc — those already exist from
+// this script's first run and are correctly guarded against duplication.
+// --guests-only skips straight to section 1 (and the WeddingDetails/
+// Recovery-brunch setup it now includes) and the verification block,
+// leaving every already-seeded section (2-7) untouched.
+const GUESTS_ONLY = process.argv.includes('--guests-only');
+
 const WEDDING_ID = '6a1f90fa5b4e0702b5a051aa';
 const OWNER_ID = '6a1c32fa7d681c950e26d2cd';
 // This guest already has real (non-test) pending RsvpResponse rows from
@@ -183,14 +191,18 @@ async function main() {
 
   // ── Safety check: abort if any target entity already has data for this
   // owner, so rerunning after a successful run never silently duplicates. ──
-  const guardEntities = ['Table', 'Note', 'Budget', 'Schedule', 'MoodboardItem', 'Vendor', 'VendorBooking'];
-  for (const entity of guardEntities) {
-    const existing = await adminFetch(`/apps/${APP_ID}/entities/${entity}?q=${ownerQuery()}&limit=1`);
-    if (existing.length > 0) {
-      console.error(`✗ ${entity} already has records for this owner — aborting to avoid duplicating data.`);
-      console.error(`  If you intend to reseed, delete the existing ${entity} records first.`);
-      process.exit(1);
+  if (!GUESTS_ONLY) {
+    const guardEntities = ['Table', 'Note', 'Budget', 'Schedule', 'MoodboardItem', 'Vendor', 'VendorBooking'];
+    for (const entity of guardEntities) {
+      const existing = await adminFetch(`/apps/${APP_ID}/entities/${entity}?q=${ownerQuery()}&limit=1`);
+      if (existing.length > 0) {
+        console.error(`✗ ${entity} already has records for this owner — aborting to avoid duplicating data.`);
+        console.error(`  If you intend to reseed, delete the existing ${entity} records first.`);
+        process.exit(1);
+      }
     }
+  } else {
+    console.log('→ --guests-only: skipping the Table/Note/Budget/etc duplication guard and sections 2-7 entirely.\n');
   }
 
   const guests = (await adminFetch(`/apps/${APP_ID}/entities/Guest?q=${ownerQuery()}&limit=500`)).filter(g => !g.is_test);
@@ -227,6 +239,44 @@ async function main() {
   const PLUS_ONE_LAST = ['Bennett', 'Carter', 'Foster', 'Gray', 'Hayes', 'Reid', 'Sloane', 'Wells', 'Ashford', 'Blake', 'Ellison', 'Marsh', 'Pierce', 'Whitfield'];
 
   const plusOneEligible = new Set(shuffle(guests).slice(0, Math.round(guests.length * 0.20)).map(g => g.id));
+
+  // Round 8 ask #14: a second, smaller event with its own guest subset —
+  // "200 to the ceremony, 50 to recovery brunch" is the exact scenario the
+  // per-event RSVP filter needs to be demoable against. Ceremony/reception
+  // stay "everyone" (the existing behaviour); Recovery brunch is invited-only
+  // for ~25% of the list, so the filter has a real, visibly different count
+  // to show. Idempotent + case-insensitive: this wedding already had a real
+  // "Recovery Brunch" post-wedding event from earlier manual product
+  // testing (confirmed live) — an exact-case match would have missed it and
+  // created a duplicate (which is exactly what happened on the first run of
+  // this code; that duplicate was removed by hand before this fix landed).
+  // Match on name loosely and reuse whatever's there; only create a new one
+  // if genuinely nothing recovery/brunch-shaped exists yet.
+  const weddingRes = await fetch(`${BASE44_API}/apps/${APP_ID}/entities/WeddingDetails/${WEDDING_ID}`, { headers: { Authorization: `Bearer ${TOKEN}` } });
+  if (!weddingRes.ok) throw new Error(`GET WeddingDetails/${WEDDING_ID} failed (${weddingRes.status}): ${(await weddingRes.text()).slice(0, 300)}`);
+  const weddingBefore = await weddingRes.json();
+  const existingPost = weddingBefore?.postWeddingEvents || [];
+  let brunchEvent = existingPost.find(e => /recovery/i.test(e.name || '') && /brunch/i.test(e.name || ''));
+  if (!brunchEvent) {
+    brunchEvent = {
+      id: 'recovery-brunch-seed',
+      event_id: 'recovery-brunch-seed',
+      name: 'Recovery brunch',
+      date: '2027-01-01',
+      startTime: '10:30',
+      endTime: '12:30',
+      venueName: 'Capella Sydney — Garden Terrace',
+      kind: 'post',
+    };
+    await adminUpdate('WeddingDetails', WEDDING_ID, {
+      postWeddingEvents: [...existingPost, brunchEvent],
+    });
+    console.log('✓ Added "Recovery brunch" post-wedding event (invited-only subset, for the per-event RSVP filter)');
+  } else {
+    console.log(`✓ Found existing "${brunchEvent.name}" post-wedding event (event_id ${brunchEvent.event_id}) — reusing it, no duplicate created`);
+  }
+  const BRUNCH_EVENT_ID = brunchEvent.event_id || brunchEvent.id;
+  const brunchInvitedIds = new Set(shuffle(guests).slice(0, Math.round(guests.length * 0.25)).map(g => g.id));
 
   let counts = { attending: 0, declined: 0, pending: 0, mealSet: 0, mealMissing: 0, dietarySet: 0, plusOne: 0, plusOneWithEmail: 0 };
   // Guests.jsx's tallyGuestRsvp({ includePlusOnes: true }) — the one call
@@ -276,18 +326,20 @@ async function main() {
       }
     }
 
+    let poName = null;
+    let poStatus = 'pending';
+    let hasEmail = false;
     if (plusOneEligible.has(g.id)) {
       update.plus_one = true;
-      const poName = `${pick(PLUS_ONE_FIRST)} ${pick(PLUS_ONE_LAST)}`;
+      poName = `${pick(PLUS_ONE_FIRST)} ${pick(PLUS_ONE_LAST)}`;
       update.plus_one_name = poName;
       counts.plusOne++;
-      const hasEmail = chance(0.60);
+      hasEmail = chance(0.60);
       if (hasEmail) {
         update.plus_one_email = `${poName.toLowerCase().replace(/\s+/g, '.')}@example.com`;
         counts.plusOneWithEmail++;
       }
       // Correlate plus-one RSVP with the primary's own status.
-      let poStatus = 'pending';
       if (status === 'attending') poStatus = chance(0.85) ? 'attending' : 'pending';
       else if (status === 'declined') poStatus = 'declined';
       update.plus_one_rsvp = poStatus;
@@ -301,17 +353,51 @@ async function main() {
       }
 
       if (hasEmail) {
-        // main-ceremony/reception are the two fixed built-in event ids
-        // every guest is invited to (confirmed against real RsvpResponse
-        // rows already in this wedding's data) — the two smaller optional
-        // pre/post events aren't part of this consistency pass.
-        update.event_responses = [
-          { event_id: 'main-ceremony', invited: true, status: status === 'attending' ? 'yes' : status === 'declined' ? 'no' : 'pending', meal_choice: update.meal_choice || null, plus_ones: poStatus !== 'declined' ? 1 : 0, plus_one_names: poStatus !== 'declined' ? [poName] : [], responded_at: update.rsvp_date || null },
-          { event_id: 'reception', invited: true, status: status === 'attending' ? 'yes' : status === 'declined' ? 'no' : 'pending', meal_choice: update.meal_choice || null, plus_ones: poStatus !== 'declined' ? 1 : 0, plus_one_names: poStatus !== 'declined' ? [poName] : [], responded_at: update.rsvp_date || null },
-        ];
         plusOneRsvpRowsNeeded.push({ guestId: g.id, status: poStatus === 'attending' ? 'yes' : poStatus === 'declined' ? 'no' : 'pending', mealChoice: poMeal });
       }
     }
+
+    // Round 8 ask #13a: event_responses now populated for EVERY invited
+    // guest, not just the plus-one-with-email subset — this is the actual
+    // coherence bug. GuestList.jsx's status column reads event_responses
+    // exclusively (guest.event_responses.length === 0 -> "Not yet invited"
+    // chip, regardless of invitation_sent/rsvp_status/invite_sent_at), while
+    // the "Last sent" column and the header stat cards read invite_sent_at/
+    // rsvp_status directly. With event_responses only set for ~12% of
+    // guests, ~88% of rows showed a real "Last sent" date AND "Not yet
+    // invited" at the same time — exactly the contradiction reported.
+    // main-ceremony/reception: everyone invited, same status as the guest's
+    // own rsvp_status (never "invited" to an event before their own
+    // invite_sent_at, since these three fields are set together, right
+    // here, from the same `status`/`update.rsvp_date` computed above).
+    const mainStatus = status === 'attending' ? 'yes' : status === 'declined' ? 'no' : 'pending';
+    const mainEventResponse = (eventId) => ({
+      event_id: eventId, invited: true, status: mainStatus,
+      meal_choice: update.meal_choice || null,
+      plus_ones: poStatus === 'attending' ? 1 : 0,
+      plus_one_names: poStatus === 'attending' && poName ? [poName] : [],
+      responded_at: update.rsvp_date || null,
+    });
+    // Recovery brunch: invited-only subset (round 8 ask #14's "50 to
+    // recovery brunch" scenario) — guests outside brunchInvitedIds get an
+    // explicit invited:false entry rather than no entry at all, so the
+    // per-event filter's counts are always derived from real data, never
+    // a getGuestEventResponse() fallback guess.
+    const brunchInvited = brunchInvitedIds.has(g.id);
+    const brunchEventResponse = {
+      event_id: BRUNCH_EVENT_ID,
+      invited: brunchInvited,
+      status: brunchInvited ? mainStatus : 'pending',
+      meal_choice: brunchInvited ? (update.meal_choice || null) : null,
+      plus_ones: brunchInvited && poStatus === 'attending' ? 1 : 0,
+      plus_one_names: brunchInvited && poStatus === 'attending' && poName ? [poName] : [],
+      responded_at: brunchInvited ? (update.rsvp_date || null) : null,
+    };
+    update.event_responses = [
+      mainEventResponse('main-ceremony'),
+      mainEventResponse('reception'),
+      brunchEventResponse,
+    ];
 
     await adminUpdate('Guest', g.id, update);
   }
@@ -341,6 +427,7 @@ async function main() {
   console.log(`✓ Plus-ones: ${counts.plusOne} (${counts.plusOneWithEmail} with an email on file)\n`);
   report.rsvp = counts;
 
+  if (!GUESTS_ONLY) {
   // Re-fetch fresh guest state for table assignment + verification below.
   const freshGuests = (await adminFetch(`/apps/${APP_ID}/entities/Guest?q=${ownerQuery()}&limit=500`)).filter(g => !g.is_test);
 
@@ -527,6 +614,7 @@ async function main() {
   }
   console.log(`✓ Vendors: ${VENDORS.length} added (${VENDORS.filter(v => v.status === 'booked').length} booked with a deposit-paid booking record)\n`);
   report.vendors = VENDORS.length;
+  } // !GUESTS_ONLY
 
   // ═══ Verification — same shared tally utility the dashboard itself uses ═
   console.log('───────────────────────────────────────────────────────');
