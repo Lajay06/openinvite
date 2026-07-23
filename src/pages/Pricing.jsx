@@ -319,7 +319,7 @@ export default function Pricing() {
               style={{
                 width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
                 fontFamily: PJS, cursor: loadingPlan === 'ultra' ? "default" : "pointer",
-                background: "linear-gradient(135deg, #FBBF24, #F59E0B)", color: "#FFFFFF", border: "none",
+                background: "#F59E0B", color: "#FFFFFF", border: "none",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 opacity: loadingPlan === 'ultra' ? 0.7 : 1, transition: "opacity 0.15s",
               }}
@@ -491,7 +491,7 @@ export default function Pricing() {
             style={{
               padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
               fontFamily: PJS, cursor: loadingPlan === 'ultra' ? "default" : "pointer", border: "none",
-              background: "linear-gradient(135deg, #FBBF24, #F59E0B)", color: "#FFFFFF", transition: "opacity 0.15s",
+              background: "#F59E0B", color: "#FFFFFF", transition: "opacity 0.15s",
               display: "flex", alignItems: "center", gap: 8,
               opacity: loadingPlan === 'ultra' ? 0.7 : 1,
             }}

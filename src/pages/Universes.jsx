@@ -574,7 +574,7 @@ const Universes = () => {
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button onClick={() => navigate('/login')} style={{
               padding: '16px 40px',
-              background: 'linear-gradient(135deg, #E03553, #803D81)',
+              background: '#E03553',
               color: '#FFFFFF',
               textDecoration: 'none',
               fontSize: 13,

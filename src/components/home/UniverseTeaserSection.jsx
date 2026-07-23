@@ -79,7 +79,7 @@ export default function UniverseTeaserSection() {
           onClick={() => navigate('/universes')}
           style={{
             padding: "16px 40px", borderRadius: 999, border: "none",
-            background: "linear-gradient(135deg, #E03553, #803D81)", color: "#FFFFFF",
+            background: "#E03553", color: "#FFFFFF",
             fontSize: 14, fontWeight: 600, letterSpacing: "0.02em", cursor: "pointer",
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             opacity: visible ? 1 : 0, transition: `opacity 0.6s ${EASE} 0.2s`,
