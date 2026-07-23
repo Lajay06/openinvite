@@ -11,8 +11,13 @@ import UniverseTeaserSection from "@/components/home/UniverseTeaserSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
 import ScrollExpandMedia from "@/components/shared/ScrollExpandMedia";
+import { useMarketingSeo } from "@/hooks/useMarketingSeo";
+import { useOrganizationStructuredData } from "@/hooks/useOrganizationStructuredData";
 
 export default function Home() {
+  useMarketingSeo();
+  useOrganizationStructuredData();
+
   const handleCTA = () => {
     window.location.href = '/signup';
   };

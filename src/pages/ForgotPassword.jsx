@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { ImageSlider } from "@/components/ui/ImageSlider";
+import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 const SLIDER_IMAGES = [
   "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg",
@@ -77,6 +78,7 @@ function PrimaryBtn({ children, disabled, type = "submit", onClick }) {
 }
 
 export default function ForgotPassword() {
+  useMarketingSeo();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
