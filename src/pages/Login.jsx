@@ -10,8 +10,10 @@ import GoogleIcon from "@/components/GoogleIcon";
 import MicrosoftIcon from "@/components/MicrosoftIcon";
 import FacebookIcon from "@/components/FacebookIcon";
 import AppleIcon from "@/components/AppleIcon";
+import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 export default function Login() {
+  useMarketingSeo();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

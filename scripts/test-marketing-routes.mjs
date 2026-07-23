@@ -27,25 +27,7 @@
  */
 import { chromium } from 'playwright';
 import { BASE_URL } from './capture/config.mjs';
-
-// Every public marketing page + the auth entry points. Deliberately no
-// authenticated/dashboard routes here — those are covered by
-// test:persistence; this suite's job is the public-facing surface anyone
-// (including Google, including a first-time visitor) can hit unauthenticated.
-const ROUTES = [
-  '/',
-  '/features',
-  '/ava',
-  '/universes',
-  '/pricing',
-  '/contact',
-  '/about',
-  '/privacy-policy',
-  '/terms-of-service',
-  '/login',
-  '/register',
-  '/forgot-password',
-];
+import { MARKETING_ROUTES as ROUTES } from './marketingRoutes.mjs';
 
 const ERROR_BOUNDARY_TEXT = 'Something went wrong.';
 const VIEWPORT = { width: 1440, height: 900 };

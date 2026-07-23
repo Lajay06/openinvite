@@ -1,0 +1,24 @@
+# Openinvite
+
+> Openinvite is a wedding planning app and wedding website builder with a one-time payment. Plan your wedding, build your wedding website and send digital wedding invitations, all in one place.
+
+## Product
+
+Openinvite helps couples plan their wedding in one app: guest list and RSVP management, budget tracking, a wedding website builder with 20 design themes, digital wedding invitations, a schedule and vendor management, and Ava, an AI wedding planning assistant. A partner, planner or family member can be invited as a collaborator to help plan.
+
+## Pricing
+
+Openinvite uses one-time pricing, not a subscription.
+
+- Pro: USD 59, AUD 79
+- Ultra: USD 109, AUD 149
+
+## Key pages
+
+- Home: https://www.openinvite.com.au/
+- Features: https://www.openinvite.com.au/features
+- Pricing: https://www.openinvite.com.au/pricing
+- Ava, the AI wedding assistant: https://www.openinvite.com.au/ava
+- Universes, the wedding website design themes: https://www.openinvite.com.au/universes
+- About: https://www.openinvite.com.au/about
+- Contact: https://www.openinvite.com.au/contact

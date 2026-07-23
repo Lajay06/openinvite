@@ -3,12 +3,14 @@ import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import { Instagram, Facebook, ChevronDown } from "lucide-react";
 import ApplePillButton from "@/components/motion/ApplePillButton";
+import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export default function Contact() {
+  useMarketingSeo();
   const [formData, setFormData] = useState({
     name: "",
     email: "",

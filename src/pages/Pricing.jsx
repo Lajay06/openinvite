@@ -5,6 +5,7 @@ import PublicFooter from "@/components/public/PublicFooter";
 import { base44 } from "@/api/base44Client";
 import { Loader2 } from "lucide-react";
 import { track } from "@/lib/analytics";
+import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -171,6 +172,7 @@ async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
 }
 
 export default function Pricing() {
+  useMarketingSeo();
   const navigate = useNavigate();
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [checkoutError, setCheckoutError] = useState(null);

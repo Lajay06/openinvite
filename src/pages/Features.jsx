@@ -8,6 +8,7 @@ import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import AnimDivider from "@/components/motion/AnimDivider";
 import ApplePillButton from "@/components/motion/ApplePillButton";
+import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import FeatureTimeline from "@/components/home/FeatureTimeline";
 import FeatureGuests from "@/components/home/FeatureGuests";
 import FeatureBudget from "@/components/home/FeatureBudget";
@@ -55,6 +56,7 @@ const ALL_FEATURES = [
 const DOTS = ["#E03553", "#803D81", "#DDF762", "#6B2CAE", "#C2E5F3", "#0A1930"];
 
 export default function Features() {
+  useMarketingSeo();
   const [openFeature, setOpenFeature] = useState(null);
 
   const handleCTA = () => {

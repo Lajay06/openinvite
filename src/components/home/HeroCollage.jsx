@@ -70,9 +70,19 @@ export default function HeroCollage({ onCTA }) {
           transition: `opacity 0.9s ${EASE}, filter 0.9s ${EASE}`,
         }}
       >
-        <h1 style={{ ...HEADLINE_STYLE, marginBottom: "2rem", fontWeight: 700 }}>
+        <h1 style={{ ...HEADLINE_STYLE, marginBottom: "1.25rem", fontWeight: 700 }}>
           Because planning your wedding should feel exciting.
         </h1>
+
+        {/* AEO/SEO batch, item 6 — the first factual sentence a crawler
+            with no JS encounters (captured by scripts/prerender.mjs), also
+            a genuinely useful one-line summary for a real visitor. */}
+        <p style={{
+          fontSize: "clamp(15px, 1.6vw, 18px)", lineHeight: 1.6, color: "rgba(255,255,255,0.82)",
+          maxWidth: 640, margin: "0 auto 2rem", fontFamily: "'Plus Jakarta Sans', sans-serif",
+        }}>
+          Openinvite is a wedding planning app with a one-time payment: planning tools, guest management, digital invitations, a wedding website and an AI assistant.
+        </p>
 
         <button onClick={onCTA} className="btn-primary" style={{ padding: '14px 40px', fontSize: 13 }}>
           Start planning

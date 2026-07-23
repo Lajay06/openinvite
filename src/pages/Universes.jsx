@@ -4,6 +4,7 @@ import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
 import ScrollCue from '@/components/motion/ScrollCue';
 import { UNIVERSE_CATALOG } from '@/lib/universeCatalog';
+import { useMarketingSeo } from '@/hooks/useMarketingSeo';
 
 // Every universe now has its own dedicated /universes/*.jpg photography
 // (UNIVERSE_CONFIGS' imageUrl). Kept as a safety net for any future
@@ -211,6 +212,7 @@ function UniverseCrossfadeShowcase({ universes, onExplore }) {
 }
 
 const Universes = () => {
+  useMarketingSeo();
   const navigate = useNavigate();
   const [scrollAnimations, setScrollAnimations] = useState({});
   const observerRef = useRef(null);

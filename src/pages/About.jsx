@@ -6,6 +6,7 @@ import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import ApplePillButton from "@/components/motion/ApplePillButton";
+import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -90,6 +91,7 @@ function CountUp({ target, display }) {
 }
 
 export default function About() {
+  useMarketingSeo();
   const handleCTA = () => {
     base44.auth.redirectToLogin(window.location.origin + createPageUrl("Dashboard"));
   };

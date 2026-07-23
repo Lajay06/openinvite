@@ -12,8 +12,10 @@ import MicrosoftIcon from "@/components/MicrosoftIcon";
 import FacebookIcon from "@/components/FacebookIcon";
 import AppleIcon from "@/components/AppleIcon";
 import { toast } from "@/components/ui/use-toast";
+import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 export default function Register() {
+  useMarketingSeo();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
+import { useMarketingSeo } from '@/hooks/useMarketingSeo';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const H1  = { fontSize: 40, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.02em', lineHeight: 1.15, marginBottom: 16 };
@@ -38,6 +39,7 @@ function ProcessorTable({ rows }) {
 }
 
 export default function PrivacyPolicy() {
+  useMarketingSeo();
   return (
     <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
       <PublicNav />

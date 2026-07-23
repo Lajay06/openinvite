@@ -3,6 +3,7 @@ import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ProductVideo from "@/components/shared/ProductVideo";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
+import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 // ── Scroll animation hook ─────────────────────────────────────
 function useInView(threshold = 0.15, once = true) {
@@ -199,6 +200,7 @@ function FeatureSplit({ bg, label, labelColor, headline, body, bullets, photo, r
 
 // ── Main page ─────────────────────────────────────────────────
 export default function AvaPage() {
+  useMarketingSeo();
   const [statsRef, statsInView] = useInView(0.2);
   const [howRef, howInView] = useInView(0.1);
   const [tableRef, tableInView] = useInView(0.1);
