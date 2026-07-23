@@ -7,6 +7,7 @@ import { tallyGuestRsvp, isAttending, isDeclined, isAwaitingPrimary } from "@/li
 const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Send, Copy, CalendarCheck } from "lucide-react";
 import toast from 'react-hot-toast';
 import { useAuth } from "@/lib/AuthContext";
@@ -655,14 +656,19 @@ export default function Guests() {
               </div>
             )}
 
-            {showForm && (
-              <GuestForm
-                guest={editingGuest}
-                onSubmit={handleSubmit}
-                onCancel={() => { setShowForm(false); setEditingGuest(null); }}
-                saving={saving}
-              />
-            )}
+            <Dialog open={showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingGuest(null); } }}>
+              <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>{editingGuest ? 'Edit guest' : 'Add new guest'}</DialogTitle>
+                </DialogHeader>
+                <GuestForm
+                  guest={editingGuest}
+                  onSubmit={handleSubmit}
+                  onCancel={() => { setShowForm(false); setEditingGuest(null); }}
+                  saving={saving}
+                />
+              </DialogContent>
+            </Dialog>
 
             <GuestList
               guests={filteredGuests}

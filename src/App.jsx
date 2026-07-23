@@ -40,19 +40,12 @@ const RSVPPage = lazy(() => import('./components/rsvp/RSVPPage'));
 const GamesPage = lazy(() => import('./components/games/GamesPage'));
 const CollaboratorAccept = lazy(() => import('./pages/CollaboratorAccept'));
 const CollaboratorGuests = lazy(() => import('./pages/CollaboratorGuests'));
-// Dev-only shared vendor-template mocks — not linked from any nav, not
-// reachable without the URL. Does NOT touch Beauty.jsx/FoodBeverage.jsx or
-// any real page; own new files only (src/components/mocks/VendorTemplateMock.jsx,
-// src/pages/MockVendorTemplateBeauty.jsx, src/pages/MockVendorTemplateFoodBeverage.jsx).
-const MockVendorTemplateBeauty = lazy(() => import('./pages/MockVendorTemplateBeauty'));
-const MockVendorTemplateFoodBeverage = lazy(() => import('./pages/MockVendorTemplateFoodBeverage'));
 const GuestRSVPRetired = lazy(() => import('./pages/GuestRSVPRetired'));
 const UniverseStudio = lazy(() => import('./pages/UniverseStudio'));
 const StudioHub = lazy(() => import('./pages/StudioHub'));
 const StudioWebsite = lazy(() => import('./pages/StudioWebsite'));
 const FoodBeverage = lazy(() => import('./pages/FoodBeverage'));
 const PhotographyDetails = lazy(() => import('./pages/PhotographyDetails'));
-const Florals = lazy(() => import('./pages/Florals'));
 const EntertainmentDetails = lazy(() => import('./pages/EntertainmentDetails'));
 const Transport = lazy(() => import('./pages/Transport'));
 const Accommodation = lazy(() => import('./pages/Accommodation'));
@@ -279,18 +272,17 @@ const AuthenticatedApp = () => {
             confirmed via grep — none of these are linked internally at
             all, so the PAGES-map default wins) — redirect the unused
             kebab-case duplicate rather than rendering the page twice.
-            /music and /florals need no redirect route of their own:
-            React Router v6 matches paths case-insensitively by default,
-            so they already resolve to the earlier-declared /Music and
-            /Florals auto-routes directly — confirmed live, a separate
-            redirect route for either is unreachable dead code. */}
+            /music needs no redirect route of its own: React Router v6
+            matches paths case-insensitively by default, so it already
+            resolves to the earlier-declared /Music auto-route directly —
+            confirmed live, a separate redirect route is unreachable dead
+            code. (Florals.jsx — the same case for /florals — was deleted
+            outright in the round-6 vendor-consolidation pass: it was an
+            orphaned, unreachable duplicate of Styling.jsx's Flowers tab,
+            not just a redirect-route question.) */}
         <Route path="/food-beverage" element={<Navigate to="/FoodBeverage" replace />} />
         <Route path="/photography-details" element={<Navigate to="/PhotographyDetails" replace />} />
         <Route path="/entertainment-details" element={<Navigate to="/EntertainmentDetails" replace />} />
-        {/* Dev-only vendor-template mocks (Beauty/Music/Food & beverage/Photography
-            unification) — see import comment above. */}
-        <Route path="/mocks/vendor-template/beauty" element={<LayoutWrapper currentPageName="MockVendorTemplateBeauty"><MockVendorTemplateBeauty /></LayoutWrapper>} />
-        <Route path="/mocks/vendor-template/food" element={<LayoutWrapper currentPageName="MockVendorTemplateFoodBeverage"><MockVendorTemplateFoodBeverage /></LayoutWrapper>} />
         {/* Canonical for these five — confirmed via grep that the sidebar
             hardcodes exactly this kebab-case URL for each. The PascalCase
             auto-route is excluded above (AUTO_ROUTE_EXCLUDE) rather than

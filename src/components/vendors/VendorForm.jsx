@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X } from "lucide-react";
 
 const CATEGORIES = [
   { value: "venue",          label: "Venue" },
@@ -57,18 +56,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {vendor?.id ? 'Edit vendor' : 'Add vendor'}
-        </span>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, borderRadius: 999 }}>
-          <X size={16} />
-        </button>
-      </div>
-
-      <form onSubmit={handleSubmit} style={{ padding: 24 }}>
+      <form onSubmit={handleSubmit}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px 32px' }}>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, gridColumn: '1 / -1' }}>
@@ -170,6 +158,5 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
           <button type="submit" className="btn-primary">{vendor?.id ? 'Update vendor' : 'Add vendor'}</button>
         </div>
       </form>
-    </div>
   );
 }

@@ -192,7 +192,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={onClose}
       {...interactiveDivProps(onClose, { label: 'Close Ava modal' })}
     >

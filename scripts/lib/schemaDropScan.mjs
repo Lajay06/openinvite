@@ -446,7 +446,10 @@ const KNOWN_WRITES = [
   { entity:'WeddingDetails', field:'decorations',       file:'src/pages/Styling.jsx', line:107, note:'sectionKey="decorations"' },
   { entity:'WeddingDetails', field:'beauty',            file:'src/pages/Beauty.jsx', line:126, note:'full = { ...latestRef.current, beauty: nextBeauty }' },
   { entity:'WeddingDetails', field:'entertainmentDetails', file:'src/pages/EntertainmentDetails.jsx', line:169, note:'full = { ...latestRef.current, entertainmentDetails: next }' },
-  { entity:'WeddingDetails', field:'foodAndBeverage',   file:'src/pages/Catering.jsx', line:85, note:'{ foodAndBeverage: details.foodAndBeverage }' },
+  // src/pages/Catering.jsx (wrote WeddingDetails.foodAndBeverage) was
+  // deleted in the round-6 vendor-consolidation pass — an orphaned,
+  // unreachable duplicate of FoodBeverage.jsx's Catering tab, which
+  // writes the (differently-named) foodBeverage field instead.
   { entity:'Guest', field:'song_request',   file:'src/components/rsvp/RSVPPage.jsx', line:160, note:'spread of form object' },
   { entity:'Guest', field:'rsvp_note',      file:'src/components/rsvp/RSVPPage.jsx', line:160, note:'spread of form object' },
   { entity:'Guest', field:'poll_votes',     file:'src/components/rsvp/RSVPPage.jsx', line:203, note:'{ poll_votes: mergedVotes }' },

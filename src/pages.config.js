@@ -61,13 +61,11 @@ const Budget = lazy(() => import('./pages/Budget'));
 const CeremonyDetails = lazy(() => import('./pages/CeremonyDetails'));
 const EmergencyContact = lazy(() => import('./pages/EmergencyContact'));
 const EntertainmentDetails = lazy(() => import('./pages/EntertainmentDetails'));
-const Florals = lazy(() => import('./pages/Florals'));
 const FoodBeverage = lazy(() => import('./pages/FoodBeverage'));
 const Honeymoon = lazy(() => import('./pages/Honeymoon'));
 const PhotographyDetails = lazy(() => import('./pages/PhotographyDetails'));
 const Transport = lazy(() => import('./pages/Transport'));
 const ScheduleHub = lazy(() => import('./pages/ScheduleHub'));
-const Catering = lazy(() => import('./pages/Catering'));
 const TasksHub = lazy(() => import('./pages/TasksHub'));
 const Considerations = lazy(() => import('./pages/Considerations'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -116,13 +114,11 @@ export const PAGES = {
     "CeremonyDetails": CeremonyDetails,
     "EmergencyContact": EmergencyContact,
     "EntertainmentDetails": EntertainmentDetails,
-    "Florals": Florals,
     "FoodBeverage": FoodBeverage,
     "Honeymoon": Honeymoon,
     "PhotographyDetails": PhotographyDetails,
     "Transport": Transport,
     "Calendar": ScheduleHub,
-    "Catering": Catering,
     "Checklist": TasksHub,
     "Considerations": Considerations,
     "Dashboard": Dashboard,

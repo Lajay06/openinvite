@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X, Save, Camera } from "lucide-react";
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { Save, Camera } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -76,26 +76,19 @@ export default function PhotographerForm({ photographer, onSubmit, onCancel }) {
     });
   };
 
-  const dialogRef = useModalFocusTrap(onCancel);
-
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 9000, overflowY: 'auto', padding: '40px 24px' }}
-      onClick={onCancel}
-      {...interactiveDivProps(onCancel, { label: 'Close photographer form' })}>
-      <div ref={dialogRef} tabIndex={-1} onClick={e => e.stopPropagation()}
-        style={{ background: '#FFFFFF', width: '100%', maxWidth: 680, marginBottom: 40 }}>
-
-        {/* Header */}
-        <div style={{ background: '#0A1930', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Camera size={16} style={{ color: '#DDF762' }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              {photographer ? 'Edit professional' : 'Add photographer / videographer'}
-            </span>
-          </div>
-          <button onClick={onCancel} aria-label="Close photographer form" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 4 }}>
-            <X size={16} />
-          </button>
+    <Dialog open onOpenChange={(next) => { if (!next) onCancel(); }}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-0 gap-0 [&>button]:text-white [&>button]:opacity-80 [&>button:hover]:opacity-100">
+        {/* Header — kept as its own dark-navy band (distinct from the plain
+            white headers elsewhere) since this form covers two roles
+            (photographer/videographer) across a long field set; not part
+            of the round-6 modal-consistency sweep's centering/backdrop/
+            radius fixes, which this Dialog migration already covers. */}
+        <div style={{ background: '#0A1930', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Camera size={16} style={{ color: '#DDF762' }} />
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {photographer ? 'Edit professional' : 'Add photographer / videographer'}
+          </span>
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -277,7 +270,7 @@ export default function PhotographerForm({ photographer, onSubmit, onCancel }) {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

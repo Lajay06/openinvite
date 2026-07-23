@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import toast from 'react-hot-toast';
 
-import VendorForm from "../components/vendors/VendorForm";
+import VendorFormModal from "../components/vendors/VendorFormModal";
 import VendorList from "../components/vendors/VendorList";
 import VendorDetailPanel from "../components/vendors/VendorDetailPanel";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
@@ -273,18 +273,12 @@ export default function VendorsPage() {
         </Tabs>
       </div>
 
-      {/* Add / Edit Vendor modal */}
-      {showForm && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF', position: 'relative' }}>
-            <VendorForm
-              vendor={editingVendor}
-              onSubmit={handleSubmit}
-              onCancel={() => { setShowForm(false); setEditingVendor(null); }}
-            />
-          </div>
-        </div>
-      )}
+      <VendorFormModal
+        open={showForm}
+        vendor={editingVendor}
+        onSubmit={handleSubmit}
+        onCancel={() => { setShowForm(false); setEditingVendor(null); }}
+      />
 
       <AvaModal
         isOpen={avaOpen}

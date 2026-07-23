@@ -40,6 +40,13 @@ jobs:
       - name: Route collision guard
         run: npm run test:route-collisions
 
+      # Static source analysis, no credentials — catches the vendor-contact
+      # pattern drifting back into per-page hand-rolled forms (dashboard
+      # round 6, item 5 — the fifth time this exact drift was reported).
+      # See scripts/test-vendor-contact-consistency.mjs.
+      - name: Vendor-contact consistency guard
+        run: npm run test:vendor-contact-consistency
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live

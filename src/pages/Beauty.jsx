@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Plus, Star, X, Check, Loader2 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import toast from 'react-hot-toast';
 
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
-import VendorForm from '../components/vendors/VendorForm';
+import VendorFormModal from '../components/vendors/VendorFormModal';
+import VendorContactSection from '../components/vendors/VendorContactSection';
 import VendorList from '../components/vendors/VendorList';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
-import { interactiveDivProps, useModalFocusTrap } from "@/lib/a11y";
 const WeddingDetails = base44.entities.WeddingDetails;
 const Vendor = base44.entities.Vendor;
 
@@ -82,26 +81,6 @@ const TABS = [
   { key: 'considerations',label: 'Considerations' },
 ];
 
-function VendorFormModal({ vendor, onSubmit, onClose }) {
-  const dialogRef = useModalFocusTrap(onClose);
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9100, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-      onClick={onClose}
-      {...interactiveDivProps(onClose, { label: 'Close' })}>
-      <div ref={dialogRef} tabIndex={-1} style={{ background: '#FFFFFF', width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
-        onClick={e => e.stopPropagation()}>
-        <VendorForm
-          vendor={vendor}
-          defaultCategory="beauty"
-          onSubmit={onSubmit}
-          onCancel={onClose}
-        />
-      </div>
-    </div>
-  );
-}
-
 export default function BeautyPage() {
   const [vendors, setVendors] = useState([]);
   const [beautyData, setBeautyData] = useState({});
@@ -118,6 +97,16 @@ export default function BeautyPage() {
   const latestRef = useRef(null);
 
   useEffect(() => { loadData(); }, []);
+
+  // The "Beauty team" tab's own vendor list can go stale after a vendor is
+  // added via a VendorContactSection elsewhere on this page (hair/makeup
+  // artist) — each owns its own fetch. Refresh on tab switch rather than
+  // prop-drilling a shared list/refresh callback into every consumer.
+  useEffect(() => {
+    if (activeTab === 'beauty-team') {
+      getMyRecords('Vendor').then(v => setVendors(v.filter(x => x.category === 'beauty'))).catch(() => {});
+    }
+  }, [activeTab]);
 
   const loadData = async () => {
     try {
@@ -328,91 +317,21 @@ export default function BeautyPage() {
                 {/* Hair artist */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <label style={labelStyle}>Hair artist</label>
-                  {beautyVendors.length > 0 ? (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <div style={{ flex: 1 }}>
-                        <Select value={beautyData.hairArtistVendorId || ''} onValueChange={v => update({ hairArtistVendorId: v })}>
-                          <SelectTrigger><SelectValue placeholder="Select from your beauty vendors" /></SelectTrigger>
-                          <SelectContent>
-                            {beautyVendors.map(v => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} aria-label="Add hair artist vendor"
-                        style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Plus size={13} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <input style={{ ...inputStyle, flex: 1 }} placeholder="Hair artist name" value={beautyData.hairArtist || ''} onChange={e => update({ hairArtist: e.target.value })} />
-                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} aria-label="Add hair artist vendor"
-                        style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Plus size={13} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Hair artist — Contact person / Phone / Email, same field set as Photography/FoodBeverage's vendor-contact blocks */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <label style={labelStyle}>Contact person</label>
-                    <input style={inputStyle} placeholder="Contact name" value={beautyData.hairArtistContact || ''} onChange={e => update({ hairArtistContact: e.target.value })} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <label style={labelStyle}>Phone</label>
-                    <input style={inputStyle} placeholder="Phone number" value={beautyData.hairArtistPhone || ''} onChange={e => update({ hairArtistPhone: e.target.value })} />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label style={labelStyle}>Email</label>
-                  <input type="email" style={inputStyle} placeholder="Email address" value={beautyData.hairArtistEmail || ''} onChange={e => update({ hairArtistEmail: e.target.value })} />
+                  <VendorContactSection
+                    category="beauty"
+                    vendorId={beautyData.hairArtistVendorId}
+                    onVendorIdChange={id => update({ hairArtistVendorId: id })}
+                  />
                 </div>
 
                 {/* Makeup artist */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <label style={labelStyle}>Makeup artist</label>
-                  {beautyVendors.length > 0 ? (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <div style={{ flex: 1 }}>
-                        <Select value={beautyData.makeupArtistVendorId || ''} onValueChange={v => update({ makeupArtistVendorId: v })}>
-                          <SelectTrigger><SelectValue placeholder="Select from your beauty vendors" /></SelectTrigger>
-                          <SelectContent>
-                            {beautyVendors.map(v => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} aria-label="Add makeup artist vendor"
-                        style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Plus size={13} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <input style={{ ...inputStyle, flex: 1 }} placeholder="Makeup artist name" value={beautyData.makeupArtist || ''} onChange={e => update({ makeupArtist: e.target.value })} />
-                      <button type="button" onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} aria-label="Add makeup artist vendor"
-                        style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Plus size={13} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Makeup artist — Contact person / Phone / Email, same field set as Photography/FoodBeverage's vendor-contact blocks */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <label style={labelStyle}>Contact person</label>
-                    <input style={inputStyle} placeholder="Contact name" value={beautyData.makeupArtistContact || ''} onChange={e => update({ makeupArtistContact: e.target.value })} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <label style={labelStyle}>Phone</label>
-                    <input style={inputStyle} placeholder="Phone number" value={beautyData.makeupArtistPhone || ''} onChange={e => update({ makeupArtistPhone: e.target.value })} />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label style={labelStyle}>Email</label>
-                  <input type="email" style={inputStyle} placeholder="Email address" value={beautyData.makeupArtistEmail || ''} onChange={e => update({ makeupArtistEmail: e.target.value })} />
+                  <VendorContactSection
+                    category="beauty"
+                    vendorId={beautyData.makeupArtistVendorId}
+                    onVendorIdChange={id => update({ makeupArtistVendorId: id })}
+                  />
                 </div>
 
                 {/* Style notes */}
@@ -670,14 +589,13 @@ export default function BeautyPage() {
         )}
       </div>
 
-      {/* Vendor form modal */}
-      {showVendorForm && (
-        <VendorFormModal
-          vendor={editingVendor}
-          onSubmit={handleVendorSubmit}
-          onClose={() => { setShowVendorForm(false); setEditingVendor(null); }}
-        />
-      )}
+      <VendorFormModal
+        open={showVendorForm}
+        vendor={editingVendor}
+        defaultCategory="beauty"
+        onSubmit={handleVendorSubmit}
+        onCancel={() => { setShowVendorForm(false); setEditingVendor(null); }}
+      />
 
       <AvaModal
         isOpen={avaOpen}

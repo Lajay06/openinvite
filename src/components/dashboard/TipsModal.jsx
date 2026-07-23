@@ -64,7 +64,7 @@ export default function TipsModal({ onClose }) {
       <div
         style={{
           position: 'fixed', inset: 0, zIndex: 9000,
-          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+          background: 'rgba(0,0,0,0.55)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 24,
         }}
@@ -76,9 +76,8 @@ export default function TipsModal({ onClose }) {
           ref={dialogRef}
           tabIndex={-1}
           style={{
-            width: 560, maxWidth: '100%', background: '#FFFFFF', borderRadius: 16,
+            width: 560, maxWidth: '100%', background: '#FFFFFF',
             maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
-            boxShadow: '0 24px 80px rgba(0,0,0,0.2)',
           }}
           onClick={e => e.stopPropagation()}
         >
