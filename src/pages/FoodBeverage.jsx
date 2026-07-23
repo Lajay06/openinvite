@@ -236,7 +236,7 @@ export default function FoodBeveragePage() {
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Catering advisor"
-        systemPrompt="You are Ava, a wedding catering advisor. Help plan menus, drinks and dietary requirements."
+        systemPrompt="You are Ava, a wedding catering advisor. Help plan menus, drinks and dietary requirements. If the couple has selected cultures and traditions, suggest culturally-relevant dishes/menu elements and any ceremonial food customs (e.g. a tea ceremony's tea selection for Chinese heritage) where relevant."
         quickActions={["Suggest a wedding menu", "How much food per person?", "Signature cocktail ideas", "Handle dietary restrictions"]}
       />
     </div>

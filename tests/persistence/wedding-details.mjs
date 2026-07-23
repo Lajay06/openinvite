@@ -134,7 +134,11 @@ const TEST_FIELDS = {
     aesthetic:      ['Classic', 'Romantic'],
     faith:          'Interfaith',
     faithSecondary: 'Catholic and Hindu',
-    culture:        ['Indian', 'Italian'],
+    // Round 7 ask #11 — one region entry, one of the newly-added entries
+    // (Armenian wasn't in the old 12-item list), and one cross-cutting
+    // option, so the expanded cultures-and-traditions value set is proven
+    // to round-trip, not just the original short list.
+    culture:        ['Indian (Hindu, Sikh, Muslim, Christian)', 'Armenian', 'Interfaith/fusion'],
     cultureOther:   'Filipino-Australian',
     atmosphere:     ['Intimate & relaxed', 'Formal & elegant'],
     season:         'Autumn',

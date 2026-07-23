@@ -47,6 +47,24 @@ export async function buildWeddingContext() {
   const spent         = budget.reduce((s, b) => s + (b.spent_amount  || 0), 0);
   const bookedVendors = vendors.map(v => v.category).join(', ');
 
+  // Round 7 ask #13: Ava previously only saw aggregate guest counts, so she
+  // couldn't answer "has Isla King RSVP'd?" — the owner's own dashboard
+  // chat, authenticated as themselves via the normal RLS-scoped client
+  // (getMyGuestsWithRsvp already fetches this; it just wasn't being put in
+  // the prompt). Capped at 400 names to keep the prompt bounded for very
+  // large guest lists — plenty for real weddings, and the aggregate counts
+  // above still cover anything past the cap.
+  const GUEST_LIST_CAP = 400;
+  const guestListLines = guests.slice(0, GUEST_LIST_CAP).map(g => {
+    const parts = [g.rsvp_status || 'pending'];
+    if (g.table_assignment) parts.push(`table ${g.table_assignment}`);
+    if (g.meal_choice) parts.push(g.meal_choice.replace(/_/g, ' '));
+    return `${g.name} — ${parts.join(', ')}`;
+  });
+  const guestListBlock = guestListLines.length
+    ? `\n\nGUEST LIST — individual RSVPs, for answering questions about a specific guest by name (this is the owner's own data, in their own dashboard):\n${guestListLines.join('\n')}${guests.length > GUEST_LIST_CAP ? `\n…and ${guests.length - GUEST_LIST_CAP} more (use the aggregate counts above for anything beyond named lookups)` : ''}`
+    : '';
+
   // Build theme block — only include non-empty fields
   const faithLine = theme.faith === 'Interfaith' && theme.faithSecondary
     ? `Interfaith: ${theme.faithSecondary}`
@@ -79,7 +97,7 @@ Location: ${city || 'Not set'}
 Style universe: ${universe || 'Not set'}${venueLines ? `\n${venueLines}` : ''}${themeBlock}
 
 ${expectedGuestLine ? expectedGuestLine + '\n' : ''}GUESTS (actual RSVPs):
-Total: ${guests.length} | Confirmed: ${confirmed} | Pending: ${pending}
+Total: ${guests.length} | Confirmed: ${confirmed} | Pending: ${pending}${guestListBlock}
 
 BUDGET:
 Total: $${totalBudget.toLocaleString()} | Spent: $${spent.toLocaleString()} (${totalBudget ? Math.round(spent / totalBudget * 100) : 0}%)

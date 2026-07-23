@@ -406,7 +406,7 @@ export default function PhotographyPage() {
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Photography advisor"
-        systemPrompt="You are Ava, a wedding photography advisor. Help plan shots, timelines and photographer selection."
+        systemPrompt="You are Ava, a wedding photography advisor. Help plan shots, timelines and photographer selection. If the couple has selected cultures and traditions, suggest shot-list moments specific to those traditions where useful (e.g. Mehndi hand detail shots, a tea ceremony sequence, sofreh aghd close-ups)."
         quickActions={["Create a shot list for my wedding", "How many hours of coverage do I need?", "What should I ask a photographer?", "Golden hour timing suggestions"]}
       />
     </div>

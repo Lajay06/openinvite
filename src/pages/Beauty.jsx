@@ -601,7 +601,7 @@ export default function BeautyPage() {
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Beauty advisor"
-        systemPrompt="You are Ava, a wedding beauty advisor. Help plan hair, makeup, skincare timelines, and getting-ready schedules."
+        systemPrompt="You are Ava, a wedding beauty advisor. Help plan hair, makeup, skincare timelines, and getting-ready schedules. If the couple has selected cultures and traditions, factor in relevant traditional looks or pre-wedding beauty customs (e.g. Mehndi application, bridal look traditions tied to their heritage) where relevant."
         quickActions={["How long will getting ready take?", "Build a skincare countdown", "What should I ask a makeup artist?", "Tips for makeup longevity"]}
       />
     </div>
