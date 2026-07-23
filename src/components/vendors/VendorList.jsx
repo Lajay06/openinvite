@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit2, Trash2, Briefcase, Phone, Mail, Star, DollarSign, ExternalLink, FolderOpen } from "lucide-react";
@@ -55,7 +56,7 @@ function VendorLogo({ vendor }) {
   if (!domain || failed) {
     return (
       <div style={{
-        width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+        width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
         background: 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(10,10,10,0.5)', fontFamily: PJS }}>
@@ -70,7 +71,7 @@ function VendorLogo({ vendor }) {
       src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`}
       alt=""
       onError={() => setFailed(true)}
-      style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, objectFit: 'contain', background: 'rgba(10,10,10,0.03)' }}
+      style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, objectFit: 'contain', background: 'rgba(10,10,10,0.03)' }}
     />
   );
 }
@@ -106,121 +107,135 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage }) {
   }
 
   return (
-    <div>
-      {vendors.map((vendor, idx) => (
-        <div
-          key={vendor.id}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 16,
-            padding: '14px 0',
-            borderTop: idx === 0 ? '1px solid rgba(10,10,10,0.06)' : 'none',
-            borderBottom: '1px solid rgba(10,10,10,0.05)',
-          }}
-        >
-          {/* Logo + name + contact */}
-          <div style={{ flex: '0 0 200px', minWidth: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <VendorLogo vendor={vendor} />
-            <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {vendor.name}
-              </p>
-              {vendor.contact_person && (
-                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0', fontFamily: PJS }}>
-                  {vendor.contact_person}
-                </p>
-              )}
-            </div>
-          </div>
+    <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
+      <div style={{ overflowX: 'auto' }}>
+        <Table>
+          <TableHeader>
+            <TableRow style={{ background: '#FAFAFA' }}>
+              <TableHead>Vendor</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Contact</TableHead>
+              <TableHead>Website</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead style={{ width: 48 }} />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {vendors.map((vendor) => (
+              <TableRow key={vendor.id}>
+                {/* Vendor — logo + name + contact person, same shape as GuestList's avatar + name cell */}
+                <TableCell className="align-middle">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <VendorLogo vendor={vendor} />
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                        {vendor.name}
+                      </p>
+                      {vendor.contact_person && (
+                        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                          {vendor.contact_person}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
 
-          {/* Category + Status + Rating */}
-          <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            {vendor.category && (
-              <Pill value={vendor.category} styleMap={CATEGORY_STYLES} labelMap={CATEGORY_LABELS} />
-            )}
-            {vendor.status && (
-              <Pill value={vendor.status} styleMap={STATUS_STYLES} labelMap={null} />
-            )}
-            {(vendor.rating || vendor.google_rating) && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#0A0A0A', fontFamily: PJS }}>
-                <Star size={11} style={{ color: '#6b7700', fill: '#DDF762', flexShrink: 0 }} />
-                {vendor.rating || vendor.google_rating}
-              </span>
-            )}
-          </div>
+                <TableCell className="align-middle">
+                  {vendor.category ? <Pill value={vendor.category} styleMap={CATEGORY_STYLES} labelMap={CATEGORY_LABELS} /> : <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>}
+                </TableCell>
 
-          {/* Contact info */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
-            {vendor.phone && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Phone size={11} style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>{vendor.phone}</span>
-              </div>
-            )}
-            {vendor.email && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <Mail size={11} style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>{vendor.email}</span>
-              </div>
-            )}
-          </div>
+                <TableCell className="align-middle">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {vendor.status ? <Pill value={vendor.status} styleMap={STATUS_STYLES} labelMap={null} /> : <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>}
+                    {(vendor.rating || vendor.google_rating) && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                        <Star size={11} style={{ color: '#6b7700', fill: '#DDF762', flexShrink: 0 }} />
+                        {vendor.rating || vendor.google_rating}
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
 
-          {/* Quoted price */}
-          <div style={{ flex: '0 0 100px', textAlign: 'right' }}>
-            {vendor.quoted_price ? (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                <DollarSign size={11} style={{ color: 'rgba(10,10,10,0.35)' }} />
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS }}>
-                  {Number(vendor.quoted_price).toLocaleString()}
-                </span>
-              </div>
-            ) : (
-              <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
-            )}
-          </div>
-
-          {/* Website */}
-          <div style={{ flex: '0 0 60px', textAlign: 'center' }}>
-            {vendor.website ? (
-              <a href={vendor.website} target="_blank" rel="noopener noreferrer"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#E03553', fontFamily: PJS, textDecoration: 'none', fontWeight: 600 }}>
-                Visit <ExternalLink size={10} />
-              </a>
-            ) : (
-              <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.2)', fontFamily: PJS }}>—</span>
-            )}
-          </div>
-
-          {/* Actions — hidden entirely (not disabled-looking) when nothing is passed, e.g. a read-only collaborator */}
-          <div style={{ flex: '0 0 auto' }}>
-            {(onManage || onEdit || onDelete) && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" style={{ width: 28, height: 28 }}>
-                    <MoreHorizontal size={14} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {onManage && (
-                    <DropdownMenuItem onClick={() => onManage(vendor)}>
-                      <FolderOpen size={13} style={{ marginRight: 8 }} />Manage
-                    </DropdownMenuItem>
+                <TableCell className="align-middle">
+                  {vendor.phone || vendor.email ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {vendor.phone && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <Phone size={11} style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0 }} />
+                          <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap' }}>{vendor.phone}</span>
+                        </div>
+                      )}
+                      {vendor.email && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <Mail size={11} style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0 }} />
+                          <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap' }}>{vendor.email}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
                   )}
-                  {onEdit && (
-                    <DropdownMenuItem onClick={() => onEdit(vendor)}>
-                      <Edit2 size={13} style={{ marginRight: 8 }} />Edit
-                    </DropdownMenuItem>
+                </TableCell>
+
+                <TableCell className="align-middle">
+                  {vendor.website ? (
+                    <a href={vendor.website} target="_blank" rel="noopener noreferrer"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#E03553', fontFamily: PJS, textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      Visit <ExternalLink size={10} />
+                    </a>
+                  ) : (
+                    <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
                   )}
-                  {onDelete && (
-                    <DropdownMenuItem onClick={() => onDelete(vendor.id)} style={{ color: '#E03553' }}>
-                      <Trash2 size={13} style={{ marginRight: 8 }} />Delete
-                    </DropdownMenuItem>
+                </TableCell>
+
+                <TableCell className="align-middle">
+                  {vendor.quoted_price ? (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                      <DollarSign size={11} style={{ color: 'rgba(10,10,10,0.35)' }} />
+                      <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                        {Number(vendor.quoted_price).toLocaleString()}
+                      </span>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
                   )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        </div>
-      ))}
+                </TableCell>
+
+                {/* Actions — hidden entirely (not disabled-looking) when nothing is passed, e.g. a read-only collaborator */}
+                <TableCell className="align-middle">
+                  {(onManage || onEdit || onDelete) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" style={{ width: 28, height: 28 }}>
+                          <MoreHorizontal size={14} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {onManage && (
+                          <DropdownMenuItem onClick={() => onManage(vendor)}>
+                            <FolderOpen size={13} style={{ marginRight: 8 }} />Manage
+                          </DropdownMenuItem>
+                        )}
+                        {onEdit && (
+                          <DropdownMenuItem onClick={() => onEdit(vendor)}>
+                            <Edit2 size={13} style={{ marginRight: 8 }} />Edit
+                          </DropdownMenuItem>
+                        )}
+                        {onDelete && (
+                          <DropdownMenuItem onClick={() => onDelete(vendor.id)} style={{ color: '#E03553' }}>
+                            <Trash2 size={13} style={{ marginRight: 8 }} />Delete
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

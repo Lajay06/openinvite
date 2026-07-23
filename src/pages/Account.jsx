@@ -690,10 +690,18 @@ function DeleteAccountModal({ user, deleteConfirmText, setDeleteConfirmText, del
   );
 }
 
+const VALID_TAB_IDS = new Set(TABS.map(t => t.id));
+
 export default function AccountPage() {
   const navigate = useNavigate();
   const { user, checkAppState } = useAuth();
-  const [tab, setTab] = useState('settings');
+  // ?tab= lets the avatar dropdown deep-link straight to a section
+  // (e.g. /account?tab=notifications) instead of always landing on Settings.
+  const initialTab = (() => {
+    const requested = new URLSearchParams(window.location.search).get('tab');
+    return requested && VALID_TAB_IDS.has(requested) ? requested : 'settings';
+  })();
+  const [tab, setTab] = useState(initialTab);
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>

@@ -272,7 +272,7 @@ export default function Dashboard() {
         </div>
 
         {/* Right: grey panel */}
-        <div className="flex flex-col gap-8 min-w-0 border-t border-[rgba(10,10,10,0.08)] lg:border-t-0 lg:border-l lg:flex-[1_1_0]" style={{ background: '#F7F7F7', padding: '32px 24px 48px' }}>
+        <div className="flex flex-col gap-6 min-w-0 border-t border-[rgba(10,10,10,0.08)] lg:border-t-0 lg:border-l lg:flex-[1_1_0]" style={{ background: '#F7F7F7', padding: '24px 20px 32px' }}>
           <UpcomingTasks schedule={schedule} />
           <RecentActivity guests={guests} budget={budget} tasks={tasks} notes={notes} questionnaireResponses={questionnaireResponses} />
         </div>
