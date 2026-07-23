@@ -77,6 +77,7 @@ const MockUniverseB = lazy(() => import('./pages/MockUniverseB'));
 const MockUniverseC = lazy(() => import('./pages/MockUniverseC'));
 const Features = lazy(() => import('./pages/Features'));
 const Home = lazy(() => import('./pages/Home'));
+const FAQ = lazy(() => import('./pages/FAQ'));
 
 // ── Public paths — bypass auth check entirely ─────────────────────────────────
 const PUBLIC_PATH_SET = new Set([
@@ -86,6 +87,7 @@ const PUBLIC_PATH_SET = new Set([
   '/Pricing', '/pricing',
   '/Features', '/features',
   '/ava',
+  '/faq',
   '/scroll-morph',
   '/universes',
   '/forgot-password',
@@ -164,6 +166,7 @@ const AuthenticatedApp = () => {
         <Route path="/Features" element={<Features />} />
         <Route path="/features" element={<Features />} />
         <Route path="/ava" element={<Ava />} />
+        <Route path="/faq" element={<FAQ />} />
         <Route path="/scroll-morph" element={<ScrollMorph />} />
         <Route path="/universes" element={<Universes />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -217,6 +220,7 @@ const AuthenticatedApp = () => {
         })}
         <Route path="/About" element={<About />} />
         <Route path="/ava" element={<Ava />} />
+        <Route path="/faq" element={<FAQ />} />
         <Route path="/collaborate/guests" element={<CollaboratorGuests />} />
         {/* No explicit /Pricing route here — "Pricing" is also a
             pages.config.js PAGES key, so the auto-loop above already

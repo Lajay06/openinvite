@@ -25,6 +25,7 @@ export default function PublicFooter() {
               <li><Link to="/" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Home</Link></li>
               <li><Link to="/About" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">About</Link></li>
               <li><Link to="/universes" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Universes</Link></li>
+              <li><Link to="/faq" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">FAQ</Link></li>
             </ul>
           </div>
 

@@ -77,6 +77,10 @@ export const MARKETING_PAGE_SEO = {
     title: 'Reset your Openinvite password',
     description: 'Reset your Openinvite account password.',
   },
+  '/faq': {
+    title: 'Frequently asked questions about Openinvite',
+    description: 'Answers to common questions about Openinvite: pricing, what is included in Pro and Ultra, design universes, Ava, collaborators, guest RSVPs and currencies.',
+  },
 };
 
 export function getMarketingSeo(pathname) {
