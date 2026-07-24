@@ -148,7 +148,7 @@ export default function TipsModal({ onClose }) {
               )}
               <button
                 onClick={currentTip < tips.length - 1 ? () => goToTip(currentTip + 1) : handleClose}
-                style={{ padding: '10px 24px', borderRadius: 999, background: currentTip === tips.length - 1 ? 'linear-gradient(135deg, #E03553, #803D81)' : '#0A0A0A', color: '#FFFFFF', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans' }}
+                style={{ padding: '10px 24px', borderRadius: 999, background: currentTip === tips.length - 1 ? '#E03553' : '#0A0A0A', color: '#FFFFFF', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans' }}
               >
                 {tips[currentTip].cta}
               </button>

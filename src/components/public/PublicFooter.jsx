@@ -38,7 +38,6 @@ export default function PublicFooter() {
               <li><Link to="/cookie-policy" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Cookie policy</Link></li>
               <li><Link to="/refund-policy" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Refund policy</Link></li>
               <li><Link to="/data-deletion" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Data deletion</Link></li>
-              <li><Link to="/Contact" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Contact</Link></li>
             </ul>
           </div>
 

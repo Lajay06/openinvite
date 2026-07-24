@@ -74,7 +74,19 @@ function NotYetInvitedChip() {
 }
 
 /* ── Per-guest status chips + "Set events & send" for uninvited guests ──── */
-function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend, onEditEvents, readOnly }) {
+function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend, onEditEvents, readOnly, filterEvent }) {
+  // Round 8 ask #14: filtered to one event, this column shows THAT event's
+  // response only — not every event this guest is invited to — so it
+  // reads as "their answer to the thing you're looking at" rather than a
+  // truncated version of the normal all-events view. Every row reaching
+  // here is already guaranteed invited:true for filterEvent (Guests.jsx's
+  // filteredGuests excludes anyone who isn't), so this never falls into
+  // the "not yet invited" branch below.
+  if (filterEvent) {
+    const response = getGuestEventResponse(guest, filterEvent);
+    return <EventChip event={filterEvent} response={response} />;
+  }
+
   const hasResponses = Array.isArray(guest.event_responses) && guest.event_responses.length > 0;
 
   if (!hasResponses) {
@@ -609,6 +621,7 @@ export default function GuestList({
   selectedIds, onToggleSelect, onToggleSelectAll, onSetEventsAndSend, onEditEvents, scrollToGuestId,
   highlightedGuestId,
   readOnly = false,
+  filterEvent = null,
 }) {
   const [editCell, setEditCell] = useState(null); // { id, field }
   const [editValue, setEditValue] = useState('');
@@ -928,7 +941,7 @@ export default function GuestList({
 
                   {/* ── Status — per-event chips (replaces RSVP + Invited to) ── */}
                   <TableCell className="align-middle">
-                    <GuestStatusCell guest={guest} weddingEvents={weddingEvents} onSetEventsAndSend={onSetEventsAndSend} onEditEvents={onEditEvents} readOnly={readOnly} />
+                    <GuestStatusCell guest={guest} weddingEvents={weddingEvents} onSetEventsAndSend={onSetEventsAndSend} onEditEvents={onEditEvents} readOnly={readOnly} filterEvent={filterEvent} />
                   </TableCell>
 
                   {/* ── Last sent ── */}

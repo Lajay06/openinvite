@@ -38,6 +38,60 @@ const CATEGORY_LABELS = {
   decorations: "Decorations", entertainment: "Entertainment", other: "Other",
 };
 
+// Round 8 ask #12: sortable columns, same interaction as GuestList.jsx's
+// SortableHead (click cycles asc -> desc -> unsorted/default order) — kept
+// as a near-identical copy rather than a shared import since the two
+// tables' column sets and value shapes differ enough that a shared
+// abstraction would need its own indirection layer for little benefit.
+function naturalCompare(a, b) {
+  return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
+}
+
+const VENDOR_STATUS_SORT_RANK = { booked: 0, quoted: 1, contacted: 2, researching: 3, rejected: 4 };
+
+const SORTABLE_COLUMNS = {
+  name:     { getValue: v => v.name || '', compare: naturalCompare },
+  category: { getValue: v => CATEGORY_LABELS[v.category] || v.category || '', compare: naturalCompare },
+  status:   { getValue: v => v.status, compare: (a, b) => (VENDOR_STATUS_SORT_RANK[a] ?? 5) - (VENDOR_STATUS_SORT_RANK[b] ?? 5) },
+  cost:     { getValue: v => v.quoted_price ?? null, compare: (a, b) => a - b },
+};
+
+function sortVendors(vendors, sortState) {
+  if (!sortState?.field) return vendors;
+  const { getValue, compare } = SORTABLE_COLUMNS[sortState.field];
+  const dir = sortState.direction === 'desc' ? -1 : 1;
+  return [...vendors].sort((a, b) => {
+    const va = getValue(a);
+    const vb = getValue(b);
+    const aBlank = va === '' || va == null;
+    const bBlank = vb === '' || vb == null;
+    if (aBlank && bBlank) return 0;
+    if (aBlank) return 1; // blanks always last, regardless of direction
+    if (bBlank) return -1;
+    return compare(va, vb) * dir;
+  });
+}
+
+/** Clickable column header — cycles asc → desc → unsorted (back to default order). */
+function SortableHead({ field, label, sortState, onSort, style }) {
+  const active = sortState?.field === field;
+  const direction = active ? sortState.direction : null;
+  return (
+    <TableHead
+      onClick={() => onSort(field)}
+      style={{ cursor: 'pointer', userSelect: 'none', ...style }}
+      title={`Sort by ${label.toLowerCase()}`}
+    >
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        {label}
+        <span style={{ fontSize: 10, color: active ? '#E03553' : 'rgba(10,10,10,0.25)', lineHeight: 1 }}>
+          {active ? (direction === 'desc' ? '▼' : '▲') : '⇅'}
+        </span>
+      </span>
+    </TableHead>
+  );
+}
+
 function domainFromWebsite(website) {
   if (!website) return null;
   try {
@@ -123,6 +177,17 @@ function FavouriteStar({ vendor, onToggle }) {
 export default function VendorList({ vendors, onEdit, onDelete, onManage, onToggleFavourite, scrollToVendorId, highlightedVendorId }) {
   const rowRefs = useRef(new Map());
   const scrolledForId = useRef(null);
+  const [sortState, setSortState] = useState({ field: null, direction: 'asc' });
+
+  // Cycles a column through asc → desc → unsorted (back to the default,
+  // caller-provided order) — clicking a different column always starts at asc.
+  const handleSort = (field) => {
+    setSortState(prev => {
+      if (prev.field !== field) return { field, direction: 'asc' };
+      if (prev.direction === 'asc') return { field, direction: 'desc' };
+      return { field: null, direction: 'asc' };
+    });
+  };
 
   // Same pattern as GuestList's scrollToGuestId — scrolls a search result's
   // row into view once it actually exists in `vendors`, fires once per id.
@@ -153,17 +218,17 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage, onTogg
           <TableHeader>
             <TableRow style={{ background: '#FAFAFA' }}>
               <TableHead style={{ width: 32 }} />
-              <TableHead>Vendor</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Status</TableHead>
+              <SortableHead field="name" label="Vendor" sortState={sortState} onSort={handleSort} />
+              <SortableHead field="category" label="Category" sortState={sortState} onSort={handleSort} />
+              <SortableHead field="status" label="Status" sortState={sortState} onSort={handleSort} />
               <TableHead>Contact</TableHead>
               <TableHead>Website</TableHead>
-              <TableHead>Price</TableHead>
+              <SortableHead field="cost" label="Price" sortState={sortState} onSort={handleSort} />
               <TableHead style={{ width: 48 }} />
             </TableRow>
           </TableHeader>
           <TableBody>
-            {vendors.map((vendor) => (
+            {sortVendors(vendors, sortState).map((vendor) => (
               <TableRow
                 key={vendor.id}
                 ref={el => { if (el) rowRefs.current.set(vendor.id, el); else rowRefs.current.delete(vendor.id); }}
