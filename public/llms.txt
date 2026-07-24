@@ -20,5 +20,6 @@ Openinvite uses one-time pricing, not a subscription.
 - Pricing: https://www.openinvite.com.au/pricing
 - Ava, the AI wedding assistant: https://www.openinvite.com.au/ava
 - Universes, the wedding website design themes: https://www.openinvite.com.au/universes
+- FAQ: https://www.openinvite.com.au/faq
 - About: https://www.openinvite.com.au/about
 - Contact: https://www.openinvite.com.au/contact

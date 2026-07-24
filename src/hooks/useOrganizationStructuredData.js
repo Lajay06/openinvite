@@ -1,16 +1,6 @@
 import { useEffect } from 'react';
 import { SITE_URL, ORGANIZATION_LOGO, DEFAULT_OG_IMAGE } from '@/lib/marketingSeo';
-
-function upsertJsonLd(id, data) {
-  let el = document.getElementById(id);
-  if (!el) {
-    el = document.createElement('script');
-    el.id = id;
-    el.type = 'application/ld+json';
-    document.head.appendChild(el);
-  }
-  el.textContent = JSON.stringify(data);
-}
+import { upsertJsonLd } from '@/lib/structuredData';
 
 /**
  * useOrganizationStructuredData (AEO/SEO batch, item 3) — Organization and
