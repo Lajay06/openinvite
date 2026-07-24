@@ -54,6 +54,7 @@ import { runCollaboratorInvite } from '../tests/persistence/collaborator-invite.
 import { runCollaboratorPageMap } from '../tests/persistence/collaborator-page-map.mjs';
 import { runCheckoutErrorHandling } from '../tests/persistence/checkout-error-handling.mjs';
 import { runGuestRsvpTally } from '../tests/persistence/guest-rsvp-tally.mjs';
+import { runPrerenderAssetRewrite } from '../tests/persistence/prerender-asset-rewrite.mjs';
 import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
 import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 import { runNotifications } from '../tests/persistence/notifications.mjs';
@@ -141,6 +142,7 @@ async function run() {
     await runModule('runCollaboratorPageMap', () => runCollaboratorPageMap());
     await runModule('runCheckoutErrorHandling', () => runCheckoutErrorHandling());
     await runModule('runGuestRsvpTally', () => runGuestRsvpTally());
+    await runModule('runPrerenderAssetRewrite', () => runPrerenderAssetRewrite());
     await runModule('runTodoListSchema', () => runTodoListSchema(token));
     await runModule('runNotifications', () => runNotifications(token));
     await runModule('runOnboardingCronWindow', () => runOnboardingCronWindow());

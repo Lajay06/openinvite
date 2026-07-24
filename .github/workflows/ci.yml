@@ -30,6 +30,26 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Production incident, 2026-07-24: the committed prerendered/
+      # snapshots reference /assets/*.js|css filenames from whatever build
+      # generated them locally. SENTRY_AUTH_TOKEN is set on Vercel, so
+      # @sentry/vite-plugin gives every `vite build` a fresh debug id,
+      # changing built chunks' content hashes even from identical source —
+      # confirmed against the actual failing deployment's build log, which
+      # never produced the filename the live site's HTML referenced. This
+      # step runs the exact same apply step Vercel's buildCommand runs,
+      # against THIS PR's own fresh build (this workflow doesn't set
+      # SENTRY_AUTH_TOKEN, so the hash mismatch this guards against won't
+      # even reproduce here — but the assert-every-asset-exists check inside
+      # apply-prerendered.mjs is unconditional, so it still fails loudly if
+      # a committed snapshot references anything genuinely absent from
+      # dist/assets, for any reason, not just this one). See
+      # scripts/lib/rewritePrerenderedAssets.mjs and
+      # tests/persistence/prerender-asset-rewrite.mjs (covered by
+      # npm run test:ci above) for the unit-level coverage of the same logic.
+      - name: Prerendered asset references guard
+        run: node scripts/apply-prerendered.mjs
+
       - name: Lint
         run: npm run lint
 

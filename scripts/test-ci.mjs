@@ -40,6 +40,7 @@ import { runConsolidateOverview } from '../tests/persistence/consolidate-overvie
 import { runCollaboratorPageMap } from '../tests/persistence/collaborator-page-map.mjs';
 import { runCheckoutErrorHandling } from '../tests/persistence/checkout-error-handling.mjs';
 import { runGuestRsvpTally } from '../tests/persistence/guest-rsvp-tally.mjs';
+import { runPrerenderAssetRewrite } from '../tests/persistence/prerender-asset-rewrite.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
 import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
 
@@ -80,6 +81,7 @@ async function run() {
   await runModule('runCollaboratorPageMap', () => runCollaboratorPageMap());
   await runModule('runCheckoutErrorHandling', () => runCheckoutErrorHandling());
   await runModule('runGuestRsvpTally', () => runGuestRsvpTally());
+  await runModule('runPrerenderAssetRewrite', () => runPrerenderAssetRewrite());
   await runModule('runOnboardingCronWindow', () => runOnboardingCronWindow());
   await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
 
