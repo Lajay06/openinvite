@@ -7,6 +7,7 @@ import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import { tallyGuestRsvp, isAttending, isDeclined, isAwaitingPrimary } from "@/lib/guestRsvpTally";
 const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Send, Copy, CalendarCheck } from "lucide-react";
@@ -24,7 +25,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import EmailTemplates from "../components/guests/EmailTemplates";
 import PageConsiderations from '../components/shared/PageConsiderations';
-import { getWeddingEvents, defaultEventResponses } from '@/lib/weddingEvents';
+import { getWeddingEvents, defaultEventResponses, getGuestEventResponse } from '@/lib/weddingEvents';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
@@ -93,6 +94,11 @@ export default function Guests() {
   const [editingGuest, setEditingGuest] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  // Round 8 ask #14: couples invite different sets to different events
+  // (e.g. everyone to the ceremony, a smaller list to a recovery brunch) —
+  // this is a separate axis from the status pills above, so it's its own
+  // dropdown rather than another entry in FILTERS/activeFilter.
+  const [eventFilter, setEventFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("guests");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -366,8 +372,24 @@ export default function Guests() {
     // has no separate status to count (current behaviour: the primary
     // answers for both), so they're intentionally left out of these
     // counts, same as before this feature.
-    const { attending, declined, awaiting } = tallyGuestRsvp(guests, { includePlusOnes: true });
-    return { total, invited, attending, declined, awaiting, plusOnes };
+    //
+    // Round 8 ask #13b: "134 attending" with no indication it's folding in
+    // plus-ones read as wrong next to a 121/201-guest list. Computing the
+    // guests-only tally alongside the combined one gives each card a real
+    // breakdown (same "X · Y" pattern "Total guests" already used) instead
+    // of a bare number a couple has to guess the composition of.
+    const guestOnly = tallyGuestRsvp(guests, { includePlusOnes: false });
+    const combined = tallyGuestRsvp(guests, { includePlusOnes: true });
+    return {
+      total, invited, plusOnes,
+      attending: combined.attending,
+      declined: combined.declined,
+      awaiting: combined.awaiting,
+      attendingGuestsOnly: guestOnly.attending,
+      attendingPlusOnes: combined.attending - guestOnly.attending,
+      awaitingGuestsOnly: guestOnly.awaiting,
+      awaitingPlusOnes: combined.awaiting - guestOnly.awaiting,
+    };
   }, [guests]);
 
   const FILTERS = [
@@ -378,17 +400,41 @@ export default function Guests() {
     { val: 'declined',    label: 'Declined' },
   ];
 
-  const STAT_CARDS = [
+  // Round 8 ask #14: per-event counts, computed from the same
+  // getGuestEventResponse() the status chips already use — invited/yes/
+  // no/pending FOR THIS EVENT, not the wedding-wide totals above.
+  const activeEvent = eventFilter === 'all' ? null : weddingEvents.find(e => e.event_id === eventFilter) || null;
+  const eventStats = React.useMemo(() => {
+    if (!activeEvent) return null;
+    let invited = 0, yes = 0, no = 0, pending = 0;
+    for (const guest of guests) {
+      const r = getGuestEventResponse(guest, activeEvent);
+      if (!r.invited) continue;
+      invited++;
+      if (r.status === 'yes') yes++;
+      else if (r.status === 'no') no++;
+      else pending++;
+    }
+    return { invited, yes, no, pending };
+  }, [guests, activeEvent]);
+
+  const STAT_CARDS = activeEvent ? [
+    { label: `Invited to ${activeEvent.name}`, value: eventStats.invited },
+    { label: 'Yes',     value: eventStats.yes },
+    { label: 'No',      value: eventStats.no },
+    { label: 'Pending', value: eventStats.pending },
+  ] : [
     { label: 'Total guests',   value: stats.total + stats.plusOnes, sub: stats.plusOnes > 0 ? `${stats.total} guest${stats.total !== 1 ? 's' : ''} · ${stats.plusOnes} plus one${stats.plusOnes !== 1 ? 's' : ''}` : null },
     { label: 'Invited',        value: stats.invited },
-    { label: 'Attending',      value: stats.attending },
-    { label: 'Awaiting reply', value: stats.awaiting },
+    { label: 'Attending',      value: stats.attending, sub: stats.attendingPlusOnes > 0 ? `${stats.attendingGuestsOnly} guest${stats.attendingGuestsOnly !== 1 ? 's' : ''} · ${stats.attendingPlusOnes} plus one${stats.attendingPlusOnes !== 1 ? 's' : ''}` : null },
+    { label: 'Awaiting reply', value: stats.awaiting, sub: stats.awaitingPlusOnes > 0 ? `${stats.awaitingGuestsOnly} guest${stats.awaitingGuestsOnly !== 1 ? 's' : ''} · ${stats.awaitingPlusOnes} plus one${stats.awaitingPlusOnes !== 1 ? 's' : ''}` : null },
   ];
 
   const filteredGuests = guests.filter(guest => {
     const matchesSearch = guest.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           guest.email?.toLowerCase().includes(searchTerm.toLowerCase());
     if (!matchesSearch) return false;
+    if (activeEvent && !getGuestEventResponse(guest, activeEvent).invited) return false;
     if (activeFilter === 'all') return true;
     if (activeFilter === 'not_invited') return !guest.invite_sent_at;
     if (activeFilter === 'awaiting') return isAwaitingPrimary(guest);
@@ -624,6 +670,19 @@ export default function Guests() {
                   <FilterPill key={f.val} label={f.label} active={activeFilter === f.val} onClick={() => setActiveFilter(f.val)} />
                 ))}
               </div>
+              {weddingEvents.length > 1 && (
+                <Select value={eventFilter} onValueChange={setEventFilter}>
+                  <SelectTrigger style={{ width: 200, flexShrink: 0 }}>
+                    <SelectValue placeholder="All events" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All events</SelectItem>
+                    {weddingEvents.map(event => (
+                      <SelectItem key={event.event_id} value={event.event_id}>{event.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             {/* Selection bar */}
@@ -699,6 +758,7 @@ export default function Guests() {
               guestRoles={guestRoles}
               loading={loading}
               weddingEvents={weddingEvents}
+              filterEvent={activeEvent}
               selectedIds={selectedIds}
               onToggleSelect={readOnly ? undefined : toggleSelect}
               onToggleSelectAll={readOnly ? undefined : toggleSelectAll}
