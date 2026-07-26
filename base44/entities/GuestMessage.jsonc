@@ -56,6 +56,11 @@
       "type": "string",
       "format": "date-time",
       "description": "When the guest was last contacted via WhatsApp"
+    },
+    "reply_sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the couple's reply was actually emailed to the guest via Resend (api/send-guest-reply.js) — distinct from 'replied', which just means the reply text was saved"
     }
   },
   "required": [

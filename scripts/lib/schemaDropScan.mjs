@@ -250,6 +250,8 @@ export const SCHEMAS = {
   GuestMessage: {
     guest_name:1, guest_email:1, guest_id:1, guest_phone:1, message:1, reply:1,
     replied:1, read:1, channel:1, whatsapp_contacted:1, whatsapp_contact_date:1,
+    // Registered PR4b — the reply-delivery timestamp (api/send-guest-reply.js).
+    reply_sent_at:1,
     _nested: {},
   },
 
