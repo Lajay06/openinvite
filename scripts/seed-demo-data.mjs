@@ -448,6 +448,11 @@ async function main() {
       y: 150 + Math.floor(i / cols) * 220,
       rotation: 0,
       assigned_guests: [],
+      // PR6 (multi-event seating) — this is explicitly the Reception chart.
+      // Literal string, not an import from src/weddingEvents.js's
+      // RECEPTION_EVENT_ID constant: this script runs standalone via node,
+      // outside the app's module graph. Must match that constant exactly.
+      event_id: 'reception',
     });
     tables.push(table);
   }
@@ -466,6 +471,51 @@ async function main() {
   }
   console.log(`✓ Seating: ${tables.length} tables created, ${seatedCount}/${attendingGuests.length} attending guests seated (${attendingGuests.length - seatedCount} left for the couple to finish)\n`);
   report.seating = { tables: tables.length, seated: seatedCount, attending: attendingGuests.length };
+
+  // ═══ 2b. Recovery brunch seating (PR6 demo) ══════════════════════════
+  // A second, smaller event's own chart — deliberately PARTIALLY seated
+  // (not full, not empty) so the account visibly demonstrates: >1 event
+  // tab, an independent unassigned count for Recovery brunch, and a real
+  // "copy layout from Reception" starting point still worth using. Reuses
+  // BRUNCH_EVENT_ID from section 1's RSVP seeding above (same event
+  // section 1 already wrote invited:true/false event_responses for).
+  const brunchAttending = freshGuests.filter(g =>
+    (g.event_responses || []).some(r => r.event_id === BRUNCH_EVENT_ID && r.invited && r.status === 'yes')
+  );
+  const brunchToSeat = shuffle(brunchAttending).slice(0, Math.round(brunchAttending.length * 0.6));
+  const BRUNCH_TABLE_CAPACITY = 8;
+  const brunchTableCount = Math.min(3, Math.max(1, Math.ceil(brunchToSeat.length / BRUNCH_TABLE_CAPACITY)));
+  const brunchTables = [];
+  for (let i = 0; i < brunchTableCount; i++) {
+    const table = await adminCreate('Table', {
+      created_by_id: OWNER_ID,
+      name: `Brunch table ${i + 1}`,
+      capacity: BRUNCH_TABLE_CAPACITY,
+      shape: 'round',
+      x: 150 + (i % cols) * 220,
+      y: 150 + Math.floor(i / cols) * 220,
+      rotation: 0,
+      assigned_guests: [],
+      event_id: BRUNCH_EVENT_ID,
+    });
+    brunchTables.push(table);
+  }
+  let brunchSeated = 0;
+  for (let i = 0; i < brunchToSeat.length && i < brunchTableCount * BRUNCH_TABLE_CAPACITY; i++) {
+    const table = brunchTables[Math.floor(i / BRUNCH_TABLE_CAPACITY)];
+    const seatIndex = i % BRUNCH_TABLE_CAPACITY;
+    table.assigned_guests.push({ seat_index: seatIndex, guest_id: brunchToSeat[i].id });
+    // Guest.table_assignment is NOT written here — decision #2 (PR6) keeps
+    // that field scoped to the Reception/main event only.
+    brunchSeated++;
+  }
+  for (const table of brunchTables) {
+    if (table.assigned_guests.length > 0) {
+      await adminUpdate('Table', table.id, { assigned_guests: table.assigned_guests });
+    }
+  }
+  console.log(`✓ Recovery brunch seating: ${brunchTables.length} tables created, ${brunchSeated}/${brunchAttending.length} attending guests seated (${brunchAttending.length - brunchSeated} left for the couple to finish) — demonstrates PR6's multi-event tabs\n`);
+  report.brunchSeating = { tables: brunchTables.length, seated: brunchSeated, attending: brunchAttending.length };
 
   // ═══ 3. To-do list (Note, view_type: 'todo') ═════════════════════════
   const TODO_ITEMS = [

@@ -48,7 +48,9 @@ const CHIP_BASE = {
   padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap',
 };
 
-function EventChip({ event, response }) {
+// Exported for Seating.jsx (PR6) — its per-event guest pool reuses the
+// exact same chip so "match the guest list presentation" isn't a re-skin.
+export function EventChip({ event, response }) {
   if (!response.invited) {
     return (
       <span style={{ ...CHIP_BASE, background: 'transparent', border: '1px solid rgba(10,10,10,0.15)', color: 'rgba(10,10,10,0.35)' }}>
@@ -198,7 +200,8 @@ function parseDietaryList(str) {
   }).filter(t => t && t !== 'None');
 }
 
-function DietaryCell({ value }) {
+// Exported for Seating.jsx (PR6) — same reasoning as EventChip above.
+export function DietaryCell({ value }) {
   const items = parseDietaryList(value);
   if (items.length === 0) return <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>;
   const first = items[0];

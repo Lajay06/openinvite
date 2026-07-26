@@ -34,6 +34,10 @@
     "rotation": {
       "type": "number",
       "default": 0
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Stable id of the WeddingDetails event (see src/lib/weddingEvents.js's getWeddingEvents()) this venue-layout marker belongs to. Existing rows backfilled to RECEPTION_EVENT_ID ('reception') by scripts/migrate-seating-events.mjs."
     }
   },
   "required": [

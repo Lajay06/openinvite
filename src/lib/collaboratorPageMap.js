@@ -73,7 +73,11 @@ export const COLLABORATOR_PAGE_MAP = {
   },
   'Seating': {
     pageName: 'Seating', route: '/Seating', navLabel: 'Seating', navSection: 'Guests', icon: 'LayoutGrid',
-    entities: ['Guest', 'Table', 'VenueAsset'],
+    entities: ['Guest', 'Table', 'VenueAsset', 'WeddingDetails'],
+    // PR6 (multi-event seating) — the event tab bar reads these via
+    // src/lib/weddingEvents.js's getWeddingEvents(), same fields Guests.jsx
+    // already allowlists for its own per-event RSVP filter.
+    weddingDetailsFields: ['mainCeremony', 'reception', 'preWeddingEvents', 'postWeddingEvents'],
   },
   'Registry': {
     pageName: 'Registry', route: '/Registry', navLabel: 'Registry', navSection: 'Finances', icon: 'Gift',
