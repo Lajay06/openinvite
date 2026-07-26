@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search } from "lucide-react";
@@ -234,6 +235,25 @@ export default function BudgetPage() {
   const [avaOpen, setAvaOpen] = useState(false);
   const [weddingDetailsId, setWeddingDetailsId] = useState(null);
   const [savedBudget, setSavedBudget] = useState(null);
+  const [scrollToItemId, setScrollToItemId] = useState(null);
+  const [highlightedItemId, setHighlightedItemId] = useState(null);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Arriving from Recent activity (or top-bar search) with a specific line
+  // item to land on — same pattern as Vendors.jsx/Guests.jsx.
+  useEffect(() => {
+    const id = location.state?.highlightId;
+    if (!id) return;
+    if (location.state?.activityTab) setActiveTab(location.state.activityTab);
+    setScrollToItemId(id);
+    setHighlightedItemId(id);
+    navigate(location.pathname, { replace: true, state: {} });
+    const t = setTimeout(() => setHighlightedItemId(null), 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state?.highlightId]);
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
@@ -455,7 +475,7 @@ export default function BudgetPage() {
               </div>
             </div>
 
-            <BudgetList items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} loading={loading} />
+            <BudgetList items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} loading={loading} scrollToItemId={scrollToItemId} highlightedItemId={highlightedItemId} />
           </TabsContent>
         </Tabs>
       </div>

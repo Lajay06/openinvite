@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import { UploadFile } from '@/integrations/Core';
@@ -62,8 +63,45 @@ export default function MoodboardPage() {
   const [loading, setLoading] = useState(true);
   const [uploadQueue, setUploadQueue] = useState([]); // [{ id, file, status: 'uploading'|'error', error }]
   const [avaOpen, setAvaOpen] = useState(false);
+  const [pendingHighlightId, setPendingHighlightId] = useState(null);
+  const [scrollToItemId, setScrollToItemId] = useState(null);
+  const [highlightedItemId, setHighlightedItemId] = useState(null);
   const uploading = uploadQueue.some(q => q.status === 'uploading');
   const fileInputRef = useRef(null);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Capture the incoming highlight id once, then clear router state right
+  // away (so a refresh/back doesn't replay it) — resolved below once items
+  // have actually loaded, since `items` is empty on first render.
+  useEffect(() => {
+    const id = location.state?.highlightId;
+    if (!id) return;
+    setPendingHighlightId(id);
+    navigate(location.pathname, { replace: true, state: {} });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state?.highlightId]);
+
+  // Arriving from Recent activity with a specific moodboard item to land
+  // on — same pattern as Vendors.jsx/Guests.jsx. The item may live on a
+  // board other than the currently active one, so switch boards first or
+  // it won't be in the filtered/rendered grid to scroll to. Waits for
+  // `items` to actually be loaded (not just the effect above, which fires
+  // before the async fetch resolves).
+  useEffect(() => {
+    if (!pendingHighlightId || items.length === 0) return;
+    const target = items.find(i => i.id === pendingHighlightId);
+    if (target?.board_name) {
+      setBoards(prev => prev.includes(target.board_name) ? prev : [...prev, target.board_name]);
+      setActiveBoard(target.board_name);
+    }
+    setScrollToItemId(pendingHighlightId);
+    setHighlightedItemId(pendingHighlightId);
+    setPendingHighlightId(null);
+    const t = setTimeout(() => setHighlightedItemId(null), 2000);
+    return () => clearTimeout(t);
+  }, [pendingHighlightId, items]);
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
@@ -279,7 +317,7 @@ export default function MoodboardPage() {
             <span style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Loading…</span>
           </div>
         ) : (
-          <MoodboardGrid items={filteredItems} onDeleteItem={readOnly ? undefined : handleDeleteItem} onUpdateItem={readOnly ? undefined : handleUpdateItem} readOnly={readOnly} />
+          <MoodboardGrid items={filteredItems} onDeleteItem={readOnly ? undefined : handleDeleteItem} onUpdateItem={readOnly ? undefined : handleUpdateItem} readOnly={readOnly} scrollToItemId={scrollToItemId} highlightedItemId={highlightedItemId} />
         )}
       </div>
 

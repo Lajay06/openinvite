@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search } from "lucide-react";
@@ -76,8 +77,28 @@ export default function SchedulePage({
   const [activeTab, setActiveTab] = useState("visual");
   const [loading, setLoading] = useState(true);
   const [avaOpen, setAvaOpen] = useState(false);
+  const [scrollToItemId, setScrollToItemId] = useState(null);
+  const [highlightedItemId, setHighlightedItemId] = useState(null);
   // When the hub drives the view externally, use that; otherwise use internal state
   const effectiveTab = activeView ?? activeTab;
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Arriving from Recent activity with a specific run sheet event to land
+  // on — same pattern as Vendors.jsx/Guests.jsx. Always land on the list
+  // tab (the default "visual" timeline builder has no row to scroll to).
+  useEffect(() => {
+    const id = location.state?.highlightId;
+    if (!id) return;
+    setActiveTab('list');
+    setScrollToItemId(id);
+    setHighlightedItemId(id);
+    navigate(location.pathname, { replace: true, state: {} });
+    const t = setTimeout(() => setHighlightedItemId(null), 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state?.highlightId]);
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
@@ -356,7 +377,7 @@ export default function SchedulePage({
                   ))}
                 </div>
               </div>
-              <ScheduleList items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} loading={loading} />
+              <ScheduleList items={filteredItems} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} readOnly={readOnly} loading={loading} scrollToItemId={scrollToItemId} highlightedItemId={highlightedItemId} />
             </div>
           </TabsContent>
         </Tabs>

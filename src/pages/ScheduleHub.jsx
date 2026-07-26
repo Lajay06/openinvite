@@ -85,6 +85,17 @@ export default function ScheduleHub() {
   // reasoning as Guests/Budget; see BASE44_PLATFORM_NOTES.md).
   const readOnly = isCollaborating;
 
+  // Arriving from Recent activity with a run sheet event to land on — the
+  // Hub drives the tab externally via activeView, so SchedulePage's own
+  // "switch to list tab" effect has no effect here (its internal activeTab
+  // state is shadowed). Flip to the Run sheet tab; SchedulePage's own
+  // location.state.highlightId effect (unaffected by this) does the actual
+  // scroll/highlight/clear once it mounts under that tab.
+  useEffect(() => {
+    if (location.state?.highlightId) setRunsheetView('list');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state?.highlightId]);
+
   // ── Load schedule items ───────────────────────────────────────────────────
   useEffect(() => { loadItems(); }, [isCollaborating]);
 

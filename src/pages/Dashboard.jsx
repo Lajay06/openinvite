@@ -106,6 +106,8 @@ export default function Dashboard() {
   const [schedule, setSchedule] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [notes, setNotes] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [moodboardItems, setMoodboardItems] = useState([]);
   const [questionnaireResponses, setQuestionnaireResponses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
@@ -177,12 +179,14 @@ export default function Dashboard() {
       if (currentUser && !currentUser.onboardingCompleted) setShowWelcomeBanner(true);
       const tipsShown = localStorage.getItem('openinvite_tips_shown');
       if (!tipsShown) setShowTipsModal(true);
-      const [guestData, budgetData, scheduleData, taskData, noteData, questionnaireData] = await Promise.all([
+      const [guestData, budgetData, scheduleData, taskData, noteData, vendorData, moodboardData, questionnaireData] = await Promise.all([
         getMyGuestsWithRsvp(), getMyRecords('Budget'), getMyRecords('Schedule'),
-        getMyRecords('Task'), getMyRecords('Note'), fetchQuestionnaireResponses(),
+        getMyRecords('Task'), getMyRecords('Note'), getMyRecords('Vendor'),
+        getMyRecords('MoodboardItem'), fetchQuestionnaireResponses(),
       ]);
       setGuests(guestData); setBudget(budgetData); setSchedule(scheduleData);
-      setTasks(taskData); setNotes(noteData); setQuestionnaireResponses(questionnaireData);
+      setTasks(taskData); setNotes(noteData); setVendors(vendorData);
+      setMoodboardItems(moodboardData); setQuestionnaireResponses(questionnaireData);
     } catch {
       toast.error("Failed to load your dashboard data");
     }
@@ -274,7 +278,7 @@ export default function Dashboard() {
         {/* Right: grey panel */}
         <div className="flex flex-col gap-6 min-w-0 border-t border-[rgba(10,10,10,0.08)] lg:border-t-0 lg:border-l lg:flex-[1_1_0]" style={{ background: '#F7F7F7', padding: '24px 20px 32px' }}>
           <UpcomingTasks schedule={schedule} />
-          <RecentActivity guests={guests} budget={budget} tasks={tasks} notes={notes} questionnaireResponses={questionnaireResponses} />
+          <RecentActivity guests={guests} budget={budget} schedule={schedule} vendors={vendors} moodboardItems={moodboardItems} tasks={tasks} notes={notes} questionnaireResponses={questionnaireResponses} />
         </div>
 
       </div>

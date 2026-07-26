@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -101,7 +101,7 @@ function FullViewModal({ item, onClose }) {
   );
 }
 
-function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
+function MoodboardCard({ item, size, onDelete, onUpdate, readOnly, cardRef, highlighted }) {
   const [hovered, setHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showFull, setShowFull] = useState(false);
@@ -119,7 +119,12 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
   return (
     <>
       <div
-        style={{ gridRow: `span ${rowSpan}`, position: 'relative', overflow: 'hidden', background: '#F5F5F5' }}
+        ref={cardRef}
+        style={{
+          gridRow: `span ${rowSpan}`, position: 'relative', overflow: 'hidden', background: '#F5F5F5',
+          outline: '3px solid', outlineColor: highlighted ? '#E03553' : 'transparent', outlineOffset: -3,
+          transition: 'outline-color 1.2s ease',
+        }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
@@ -180,7 +185,21 @@ function MoodboardCard({ item, size, onDelete, onUpdate, readOnly }) {
   );
 }
 
-export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem, readOnly = false }) {
+export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem, readOnly = false, scrollToItemId, highlightedItemId }) {
+  const cardRefs = useRef(new Map());
+  const scrolledForId = useRef(null);
+
+  // Same pattern as VendorList's scrollToVendorId — scrolls a Recent
+  // activity/search result's card into view once it exists in `items`.
+  useEffect(() => {
+    if (!scrollToItemId || scrolledForId.current === scrollToItemId) return;
+    const el = cardRefs.current.get(scrollToItemId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scrolledForId.current = scrollToItemId;
+    }
+  }, [scrollToItemId, items]);
+
   if (items.length === 0) {
     return (
       <div style={{ padding: '80px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.08)' }}>
@@ -199,7 +218,16 @@ export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem, readO
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gridAutoRows: 200, gap: 4 }}>
       {itemsWithSizes.map(item => (
-        <MoodboardCard key={item.id} item={item} size={item.size} onDelete={onDeleteItem} onUpdate={onUpdateItem} readOnly={readOnly} />
+        <MoodboardCard
+          key={item.id}
+          item={item}
+          size={item.size}
+          onDelete={onDeleteItem}
+          onUpdate={onUpdateItem}
+          readOnly={readOnly}
+          highlighted={item.id === highlightedItemId}
+          cardRef={el => { if (el) cardRefs.current.set(item.id, el); else cardRefs.current.delete(item.id); }}
+        />
       ))}
     </div>
   );
