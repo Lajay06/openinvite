@@ -43,6 +43,7 @@ import { runGuestRsvpTally } from '../tests/persistence/guest-rsvp-tally.mjs';
 import { runPrerenderAssetRewrite } from '../tests/persistence/prerender-asset-rewrite.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
 import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
+import { runIcsExport } from '../tests/persistence/ics-export.mjs';
 
 async function run() {
   console.log('\n═══════════════════════════════════════════════════════');
@@ -84,6 +85,7 @@ async function run() {
   await runModule('runPrerenderAssetRewrite', () => runPrerenderAssetRewrite());
   await runModule('runOnboardingCronWindow', () => runOnboardingCronWindow());
   await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
+  await runModule('runIcsExport', () => runIcsExport());
 
   const passed = results.filter(Boolean).length;
   const total = results.length;

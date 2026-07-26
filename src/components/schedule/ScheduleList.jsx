@@ -2,8 +2,9 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit2, Trash2, Calendar, Clock, MapPin, User } from "lucide-react";
+import { MoreHorizontal, Edit2, Trash2, Calendar, CalendarPlus, Clock, MapPin, User } from "lucide-react";
 import { format } from "date-fns";
+import { buildIcsCalendar, downloadIcs, slugifyForFilename } from "@/lib/ics";
 
 const CATEGORY_CONFIG = {
   ceremony:       { color: '#E03553', border: '1px solid #E03553',              bg: 'transparent' },
@@ -41,6 +42,12 @@ const fmtTime = (t) => {
   try { return format(new Date(`2024-01-01T${t}`), 'h:mm a'); } catch { return t; }
 };
 
+function downloadEventIcs(item) {
+  if (!item.event_date || !item.start_time) return;
+  const ics = buildIcsCalendar([item], item.event_name);
+  downloadIcs(`${slugifyForFilename(item.event_name)}.ics`, ics);
+}
+
 export default function ScheduleList({ items, onEdit, onDelete, readOnly = false, loading = false }) {
   if (loading) return null;
   if (items.length === 0) {
@@ -65,7 +72,7 @@ export default function ScheduleList({ items, onEdit, onDelete, readOnly = false
               <TableHead>Time</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Responsible</TableHead>
-              <TableHead style={{ width: 48 }} />
+              <TableHead style={{ width: 80 }} />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -116,21 +123,31 @@ export default function ScheduleList({ items, onEdit, onDelete, readOnly = false
                   )}
                 </TableCell>
                 <TableCell>
-                  {!readOnly && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon"><MoreHorizontal size={15} /></Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(item)}>
-                          <Edit2 size={13} style={{ marginRight: 8 }} />Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onDelete(item.id)} style={{ color: '#E03553' }}>
-                          <Trash2 size={13} style={{ marginRight: 8 }} />Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
+                    <Button
+                      variant="ghost" size="icon"
+                      title="Add to calendar (.ics)"
+                      onClick={() => downloadEventIcs(item)}
+                      disabled={!item.event_date || !item.start_time}
+                    >
+                      <CalendarPlus size={14} />
+                    </Button>
+                    {!readOnly && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon"><MoreHorizontal size={15} /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => onEdit(item)}>
+                            <Edit2 size={13} style={{ marginRight: 8 }} />Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onDelete(item.id)} style={{ color: '#E03553' }}>
+                            <Trash2 size={13} style={{ marginRight: 8 }} />Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

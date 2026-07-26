@@ -173,6 +173,27 @@ export default function SchedulePage({
     return matchesSearch && item.category === activeCategory;
   });
 
+  const exportRunSheetCsv = () => {
+    const csvContent = [
+      ['Event', 'Category', 'Time', 'Location', 'Responsible'].join(','),
+      ...filteredItems.map(item => {
+        const time = item.start_time
+          ? `${item.start_time}${item.end_time ? `–${item.end_time}` : ''}`
+          : '';
+        return [
+          item.event_name, (item.category || '').replace(/_/g, ' '), time,
+          item.location || '', item.responsible_person || '',
+        ].map(f => `"${f}"`).join(',');
+      })
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = 'run-sheet.csv'; link.click();
+    URL.revokeObjectURL(url);
+    toast.success('Run sheet exported');
+  };
+
   const exportSchedule = () => {
     const csvContent = [
       ['Event Name', 'Date', 'Start Time', 'End Time', 'Location', 'Category', 'Responsible Person', 'Description', 'Notes'].join(','),
@@ -305,14 +326,24 @@ export default function SchedulePage({
           <TabsContent value="list" className="mt-8">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ position: 'relative', maxWidth: 400 }}>
-                  <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
-                  <Input
-                    placeholder="Search events…"
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    style={{ paddingLeft: 20 }}
-                  />
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                  <div style={{ position: 'relative', maxWidth: 400, flex: 1, minWidth: 240 }}>
+                    <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                    <Input
+                      placeholder="Search events…"
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      style={{ paddingLeft: 20 }}
+                    />
+                  </div>
+                  <button
+                    onClick={exportRunSheetCsv}
+                    disabled={filteredItems.length === 0}
+                    className="btn-editorial-secondary"
+                    style={{ opacity: filteredItems.length === 0 ? 0.4 : 1, flexShrink: 0 }}
+                  >
+                    Export CSV
+                  </button>
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {CATEGORIES.map(cat => (
