@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Save, Image as ImageIcon } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -26,8 +27,8 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 680, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Add inspiration" className="max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0">
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -93,7 +94,7 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
             <Save size={13} />Add to moodboard
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

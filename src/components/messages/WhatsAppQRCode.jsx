@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { Download, X } from "lucide-react";
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const WHATSAPP_GREEN = "#25D366";
 
 function WhatsAppQRModal({ phoneNumber, onClose }) {
-  const dialogRef = useModalFocusTrap(onClose);
-
   const qrValue = `https://wa.me/${phoneNumber}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrValue)}`;
 
@@ -18,11 +16,8 @@ function WhatsAppQRModal({ phoneNumber, onClose }) {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000, padding: 24 }}
-      onClick={onClose}
-      {...interactiveDivProps(onClose, { label: 'Close WhatsApp QR code modal' })}>
-      <div ref={dialogRef} tabIndex={-1} onClick={e => e.stopPropagation()}
-        style={{ background: '#FFFFFF', padding: 32, maxWidth: 400, width: '100%', textAlign: 'center' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="WhatsApp QR code" className="max-w-[400px] p-8" style={{ textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>WhatsApp QR code</span>
           <button onClick={onClose}
@@ -47,8 +42,8 @@ function WhatsAppQRModal({ phoneNumber, onClose }) {
             <Download size={14} />Download
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

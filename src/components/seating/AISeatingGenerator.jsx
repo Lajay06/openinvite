@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, CheckCircle, X } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 import toast from 'react-hot-toast';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const labelStyle = {
   color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -95,8 +96,8 @@ Return assignments[], unassigned[], and summary.`,
   const getGuestName = (id) => guests.find(g => g.id === id)?.name || 'Unknown';
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 680, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Ask Ava — allocate seats" className="max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0">
 
         {/* Header */}
         <div style={{ background: '#0A1930', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0 }}>
@@ -241,7 +242,7 @@ Return assignments[], unassigned[], and summary.`,
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -7,7 +7,7 @@ import CurrencyModal from '@/components/layout/CurrencyModal';
 import { useAuth } from '@/lib/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { base44 } from '@/api/base44Client';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { getNotificationPrefs } from '@/lib/notificationPrefs';
 import toast from 'react-hot-toast';
@@ -634,20 +634,9 @@ function SecurityTab({ user }) {
 }
 
 function DeleteAccountModal({ user, deleteConfirmText, setDeleteConfirmText, deleting, onClose, onSubmit }) {
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <div
-      className="fixed inset-0 bg-black/[0.55] flex items-center justify-center z-[9999] p-6"
-      onClick={onClose}
-      {...interactiveDivProps(onClose, { label: 'Close account deletion modal' })}
-    >
-      <div
-        ref={dialogRef}
-        tabIndex={-1}
-        style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', width: '100%', maxWidth: 440 }}
-        onClick={e => e.stopPropagation()}
-      >
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent title="Request account deletion" aria-label="Request account deletion" className="max-w-[440px] p-0 gap-0">
         <div style={{ padding: '28px 28px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
             <AlertTriangle size={18} style={{ color: '#E03553' }} />
@@ -685,8 +674,8 @@ function DeleteAccountModal({ user, deleteConfirmText, setDeleteConfirmText, del
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -528,7 +528,7 @@ function LayoutShell({ children, currentPageName }) {
 
       {/* ── Mobile: nav sheet ──────────────────────────────── */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="w-72 p-0" style={{ borderRight: '1px solid #E4E4E4' }}>
+        <SheetContent side="left" title="Navigation menu" className="w-72 p-0" style={{ borderRight: '1px solid #E4E4E4' }}>
           <MobileSidebarContent
             weddingName={weddingName}
             onClose={() => setMobileMenuOpen(false)}

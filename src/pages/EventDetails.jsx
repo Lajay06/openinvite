@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
 import { interactiveDivProps } from "@/lib/a11y";
 import { Loader2, X, MapPin, Trash2, Edit2, Calendar } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -270,8 +271,8 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
     : (event?.id ? 'Edit event' : 'Add event');
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF', position: 'relative' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <DialogContent hideClose title={modalTitle} className="max-w-[640px] max-h-[90vh] overflow-y-auto p-0 gap-0">
 
         {/* Header — mirrors VendorForm */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', position: 'sticky', top: 0, background: '#FFFFFF', zIndex: 10 }}>
@@ -377,8 +378,8 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
             {!isFixed && !event?.id ? 'Add event' : 'Save'}
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

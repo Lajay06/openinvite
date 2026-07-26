@@ -7,7 +7,7 @@ import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
@@ -83,13 +83,9 @@ function AvaModal({ onClose }) {
     setLoading(false);
   };
 
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-      onClick={onClose}
-      {...interactiveDivProps(onClose, { label: 'Close' })}>
-      <div ref={dialogRef} tabIndex={-1} onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', width: '100%', maxWidth: 520, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Ask Ava — wedding favours" aria-label="Ask Ava — wedding favours" className="max-w-[520px] max-h-[80vh] p-0 gap-0 flex flex-col">
         <div style={{ background: '#0A1930', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Lightbulb size={16} style={{ color: '#DDF762' }} />
@@ -123,8 +119,8 @@ function AvaModal({ onClose }) {
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

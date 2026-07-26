@@ -18,7 +18,8 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { interactiveDivProps } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -68,11 +69,9 @@ function ToggleRow({ label, value, onChange }) {
 }
 
 function SettingsModal({ isSpotifyConnected, spotifyConnection, handleDisconnectSpotify, details, updateMusic, onClose }) {
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div ref={dialogRef} tabIndex={-1} style={{ width: '100%', maxWidth: 440, background: '#FFFFFF' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Song request settings" className="max-w-[440px] p-0 gap-0">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Song request settings</span>
           <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
@@ -101,8 +100,8 @@ function SettingsModal({ isSpotifyConnected, spotifyConnection, handleDisconnect
         <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end' }}>
           <button onClick={onClose} className="btn-primary" style={{ fontSize: 13 }}>Done</button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

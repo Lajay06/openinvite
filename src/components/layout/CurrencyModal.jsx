@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Search, Check } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -23,21 +23,9 @@ export default function CurrencyModal({ onClose }) {
     onClose();
   };
 
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center z-[9999]"
-      style={{ background: 'rgba(0,0,0,0.55)', padding: 24 }}
-      onClick={onClose}
-      {...interactiveDivProps(onClose, { label: 'Close currency modal' })}
-    >
-      <div
-        ref={dialogRef}
-        tabIndex={-1}
-        onClick={e => e.stopPropagation()}
-        style={{ background: '#FFFFFF', border: '1px solid #E5E5E5', width: '100%', maxWidth: 400, padding: 32 }}
-      >
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Currency" className="max-w-[400px] p-8">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>Currency</h2>
           <button onClick={onClose} aria-label="Close currency modal" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4 }}>
@@ -93,7 +81,7 @@ export default function CurrencyModal({ onClose }) {
             {saving ? 'Saving…' : 'Save'}
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

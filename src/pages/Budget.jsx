@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search } from "lucide-react";
 import toast from 'react-hot-toast';
@@ -481,17 +482,15 @@ export default function BudgetPage() {
       </div>
 
       {/* Add / Edit Expense modal */}
-      {showForm && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF', position: 'relative' }}>
-            <BudgetForm
-              item={editingItem}
-              onSubmit={handleSubmit}
-              onCancel={() => { setShowForm(false); setEditingItem(null); }}
-            />
-          </div>
-        </div>
-      )}
+      <Dialog open={showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingItem(null); } }}>
+        <DialogContent hideClose title={editingItem ? 'Edit expense' : 'Add expense'} className="max-w-[600px] max-h-[90vh] overflow-y-auto p-0 gap-0">
+          <BudgetForm
+            item={editingItem}
+            onSubmit={handleSubmit}
+            onCancel={() => { setShowForm(false); setEditingItem(null); }}
+          />
+        </DialogContent>
+      </Dialog>
 
       <AvaModal
         isOpen={avaOpen}

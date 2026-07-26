@@ -28,6 +28,7 @@ import { normalizeUniverseKey } from '@/lib/websiteThemes';
 import { getEntranceConfig, MAX_HOLD_MS } from '@/lib/entranceConfig';
 import HairlineRule from './layouts/HairlineRule';
 import { interactiveDivProps } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const SKIP_REVEAL_MS = 300;
 const CUE_VISIBLE_MS = 1800;
@@ -176,9 +177,9 @@ export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typ
   const { tabIndex: skipTabIndex, onKeyDown: skipOnKeyDown } = interactiveDivProps(skip);
 
   return (
+    <Dialog open onOpenChange={(next) => { if (!next) skip(); }}>
+      <DialogContent fullBleed hideClose title="Wedding website entrance" className="p-0 bg-transparent border-none" onClick={skip} onTouchStart={skip}>
     <div
-      onClick={skip}
-      onTouchStart={skip}
       role="button"
       aria-label="Skip entrance animation"
       tabIndex={skipTabIndex}
@@ -290,5 +291,7 @@ export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typ
         }}
       />
     </div>
+      </DialogContent>
+    </Dialog>
   );
 }

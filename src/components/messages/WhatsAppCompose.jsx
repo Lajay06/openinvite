@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { getMyInvitation } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 const WHATSAPP_GREEN = "#25D366";
 
@@ -89,8 +90,8 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: 480, background: '#FFFFFF', boxShadow: '-4px 0 24px rgba(0,0,0,0.12)', zIndex: 9200, display: 'flex', flexDirection: 'column', animation: 'slideInRight 0.28s cubic-bezier(0.16,1,0.3,1)' }}>
-      <style>{`@keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
+    <Sheet open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <SheetContent side="right" hideClose title="Open in WhatsApp" className="max-w-[480px] p-0 gap-0 flex flex-col">
 
       {/* Header */}
       <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
@@ -156,6 +157,7 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
           Open in WhatsApp
         </button>
       </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Music, Heart, Loader2 } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -161,8 +162,8 @@ export default function MusicSuggestionsModal({ isOpen, onClose, onAddSuggestion
   if (!isOpen) return null;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 720, maxHeight: '90vh', display: 'flex', flexDirection: 'column', background: '#FFFFFF' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Song suggestions" className="max-w-[720px] max-h-[90vh] p-0 gap-0" style={{ display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
           <div>
@@ -191,7 +192,7 @@ export default function MusicSuggestionsModal({ isOpen, onClose, onAddSuggestion
         <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
           <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Close</button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

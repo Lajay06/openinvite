@@ -191,7 +191,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
 
   return (
     <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
-      <DialogContent className="p-0 gap-0 max-w-[560px] w-full max-h-[80vh] flex flex-col overflow-hidden [&>button]:hidden">
+      <DialogContent title={`Ask Ava — ${pageTitle}`} className="p-0 gap-0 max-w-[560px] w-full max-h-[80vh] flex flex-col overflow-hidden [&>button]:hidden">
         {/* Header */}
         <div style={{ background: 'linear-gradient(135deg, #ec4899, #9333ea)', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>

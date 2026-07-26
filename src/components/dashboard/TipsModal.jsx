@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const tips = [
   {
@@ -61,8 +61,6 @@ export default function TipsModal({ onClose }) {
     setKey(k => k + 1);
   };
 
-  const dialogRef = useModalFocusTrap(handleClose);
-
   return (
     <>
       <style>{`
@@ -71,33 +69,10 @@ export default function TipsModal({ onClose }) {
           to { opacity: 1; transform: translateX(0); }
         }
       `}</style>
-
-      {/* Overlay */}
-      <div
-        style={{
-          position: 'fixed', inset: 0, zIndex: 9000,
-          background: 'rgba(0,0,0,0.55)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: 24,
-        }}
-        onClick={handleClose}
-        {...interactiveDivProps(handleClose, { label: 'Close tips modal' })}
-      >
-        {/* Panel — centred (matches the shared Dialog's always-centred
-            positioning) with the 16px radius DESIGN_SPEC.md carves out
-            specifically for this onboarding/tips carousel, plus the same
-            shadow-lg the shared Dialog uses (round 6's modal sweep). */}
-        <div
-          ref={dialogRef}
-          tabIndex={-1}
-          style={{
-            width: 560, maxWidth: '100%', background: '#FFFFFF',
-            maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
-            borderRadius: 16,
-            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)',
-          }}
-          onClick={e => e.stopPropagation()}
-        >
+      <Dialog open onOpenChange={(open) => { if (!open) handleClose(); }}>
+        {/* 16px radius/shadow now come from the shared DialogContent wrapper
+            — this used to hand-roll the exact same values, per DESIGN_SPEC.md. */}
+        <DialogContent hideClose title="Here's how to get started" className="max-w-[560px] max-h-[90vh] overflow-hidden p-0 gap-0 flex flex-col">
           {/* Header */}
           <div style={{ padding: '32px 32px 24px', borderBottom: '1px solid #EEEEEE' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -151,8 +126,8 @@ export default function TipsModal({ onClose }) {
               </button>
             </div>
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -7,6 +7,7 @@ import { ASSET_PREVIEW_MAP, GuestTag, DEFAULT_THEME, DEFAULT_TYPOGRAPHY } from '
 import { ASSET_EDITOR_MAP } from '@/components/website-builder/AssetEditors';
 import { exportAsset, exportMultiPagePdf, ASSET_EXPORT_SPECS } from '@/lib/assetExport';
 import { buildGuestTagList } from '@/lib/seatingChart';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const ICON_MAP = { Calendar, Mail, CheckSquare, UtensilsCrossed, Grid3X3, Play, Smartphone, MapPin, Tag, Heart };
 
@@ -121,7 +122,8 @@ function AssetEditorOverlay({ asset, details, theme, typography, tables, guests,
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: '#FFFFFF', display: 'flex', flexDirection: 'column', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent fullBleed hideClose title={asset.name} className="flex flex-col" style={{ background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {/* Top bar */}
       <div style={{ height: 56, borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', padding: '0 20px', flexShrink: 0 }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
@@ -185,7 +187,8 @@ function AssetEditorOverlay({ asset, details, theme, typography, tables, guests,
           pageRefs={guestTagPageRefs}
         />
       )}
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

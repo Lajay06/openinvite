@@ -44,15 +44,25 @@ const sheetVariants = cva(
   }
 )
 
-const SheetContent = React.forwardRef(({ side = "right", className, children, ...props }, ref) => (
+// hideClose: for consumers that render their own close affordance as part
+// of their content (a custom top bar with its own X, wired to the same
+// close callback) — avoids a duplicate close button. Same reasoning as
+// dialog.jsx's DialogContent hideClose.
+// title: same reasoning as DialogContent's title prop — a visually-hidden
+// SheetTitle for screen readers, using the same text the panel already
+// shows sighted users in its own styled header.
+const SheetContent = React.forwardRef(({ side = "right", className, children, hideClose = false, title, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
     <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
-      <SheetPrimitive.Close
-        className="absolute right-4 top-4 rounded-none opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </SheetPrimitive.Close>
+      {title && <SheetPrimitive.Title className="sr-only">{title}</SheetPrimitive.Title>}
+      {!hideClose && (
+        <SheetPrimitive.Close
+          className="absolute right-4 top-4 rounded-none opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </SheetPrimitive.Close>
+      )}
       {children}
     </SheetPrimitive.Content>
   </SheetPortal>

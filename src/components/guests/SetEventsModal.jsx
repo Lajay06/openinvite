@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { X, CalendarCheck } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { getGuestEventResponse, toggleEventInvite } from '@/lib/weddingEvents';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
 const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 
@@ -90,16 +90,9 @@ export default function SetEventsModal({ guests, weddingEvents, onUpdate, onClos
     }
   };
 
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <>
-      <div onClick={onClose} {...interactiveDivProps(onClose, { label: 'Close set events modal' })} style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(10,10,10,0.55)' }} />
-      <div ref={dialogRef} tabIndex={-1} style={{
-        position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-        zIndex: 1000, width: 'min(90vw, 420px)', background: '#FFFFFF',
-        border: '1px solid rgba(10,10,10,0.08)', ...F,
-      }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Set events" className="p-0 gap-0" style={{ width: 'min(90vw, 420px)', maxWidth: 'min(90vw, 420px)', ...F }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 20px 0' }}>
           <div>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', letterSpacing: '-0.01em' }}>
@@ -152,7 +145,7 @@ export default function SetEventsModal({ guests, weddingEvents, onUpdate, onClos
             {saving ? 'Saving…' : 'Save'}
           </button>
         </div>
-      </div>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Copy, CheckCircle, Share2, Users, Music } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -30,8 +31,8 @@ export default function SharePlaylist({ onClose, playlistStats }) {
   const handleSMS = () => window.open(`sms:?body=${encodeURIComponent(shareMessage)}`, '_blank');
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 520, background: '#FFFFFF' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Share playlist" className="max-w-[520px] p-0 gap-0">
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -124,7 +125,7 @@ export default function SharePlaylist({ onClose, playlistStats }) {
             <Copy size={12} />Copy link
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

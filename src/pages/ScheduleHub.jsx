@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
@@ -290,17 +291,15 @@ export default function ScheduleHub() {
       )}
 
       {/* Add / Edit form modal */}
-      {!readOnly && showForm && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <div style={{ width: "100%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto", background: "#FFFFFF", position: "relative" }}>
-            <ScheduleForm
-              item={editingItem}
-              onSubmit={handleFormSubmit}
-              onCancel={() => { setShowForm(false); setEditingItem(null); }}
-            />
-          </div>
-        </div>
-      )}
+      <Dialog open={!readOnly && showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingItem(null); } }}>
+        <DialogContent hideClose title={editingItem ? 'Edit event' : 'Add event'} className="max-w-[600px] max-h-[90vh] overflow-y-auto p-0 gap-0">
+          <ScheduleForm
+            item={editingItem}
+            onSubmit={handleFormSubmit}
+            onCancel={() => { setShowForm(false); setEditingItem(null); }}
+          />
+        </DialogContent>
+      </Dialog>
 
       <AvaModal
         isOpen={avaOpen}

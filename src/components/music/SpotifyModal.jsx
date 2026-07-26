@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { X, Search, Loader2, Plus, Music2 } from 'lucide-react';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -98,21 +98,9 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
     setAddedIds(prev => new Set([...prev, track.id]));
   };
 
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center z-[9999]"
-      style={{ background: 'rgba(0,0,0,0.55)', padding: 24 }}
-      onClick={onClose}
-      {...interactiveDivProps(onClose, { label: 'Close Spotify search modal' })}
-    >
-      <div
-        ref={dialogRef}
-        tabIndex={-1}
-        onClick={e => e.stopPropagation()}
-        style={{ background: '#FFFFFF', border: '1px solid #E5E5E5', width: '100%', maxWidth: 560, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
-      >
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Search Spotify" className="max-w-[560px] max-h-[80vh] p-0 gap-0 flex flex-col">
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -199,7 +187,7 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
             );
           })}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

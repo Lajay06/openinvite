@@ -10,7 +10,8 @@ import { X, Mail, MessageCircle, Check, Loader2, Search, ArrowLeft, ArrowRight, 
 import toast from 'react-hot-toast';
 import GuestAvatar from '@/components/shared/GuestAvatar';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { interactiveDivProps } from '@/lib/a11y';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
@@ -284,8 +285,6 @@ export default function SendInvitesModal({
     setTimeout(onClose, 280);
   };
 
-  const dialogRef = useModalFocusTrap(handleClose);
-
   // Live preview — subject/body with merge tags resolved for the first
   // selected guest (or a placeholder if none selected yet).
   const previewSubject = replaceMergeTags(subject, selectedGuests[0]?.name, coupleName, dateStr);
@@ -504,34 +503,25 @@ export default function SendInvitesModal({
   );
 
   // ── Render ─────────────────────────────────────────────────────────────────
+  // Radix Sheet — same slide-in-from-right drawer, now with a real focus
+  // trap and Escape-to-close from the shared primitive instead of the
+  // hand-rolled useModalFocusTrap. `mounted` still drives open/close so the
+  // parent's onClose only fires after the exit transition finishes, exactly
+  // as before.
   return (
     <>
-      {/* Overlay */}
-      <div
-        onClick={handleClose}
-        {...interactiveDivProps(handleClose, { label: 'Close send invites modal' })}
-        style={{
-          position: 'fixed', inset: 0, zIndex: 999,
-          background: 'rgba(10,10,10,0.55)',
-          opacity: mounted ? 1 : 0,
-          transition: 'opacity 0.28s ease',
-        }}
-      />
-
-      {/* Drawer — split pane: step content (left) + permanent preview (right) */}
-      <div
-        ref={dialogRef}
-        tabIndex={-1}
-        style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 1000,
-        width: 'min(94vw, 1240px)',
-        background: '#FFFFFF',
-        display: 'flex', flexDirection: 'column',
-        transform: mounted ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
-        overflowX: 'hidden',
-        ...F,
-      }}>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
+      <Sheet open={mounted} onOpenChange={(open) => { if (!open) handleClose(); }}>
+        <SheetContent
+          side="right"
+          hideClose
+          title={`Send ${TYPE_LABELS[type].toLowerCase()}`}
+          aria-label="Send invites"
+          className="p-0 gap-0 flex flex-col"
+          style={{ width: 'min(94vw, 1240px)', maxWidth: 'min(94vw, 1240px)', ...F }}
+        >
 
         {/* Top bar */}
         <div style={{
@@ -975,11 +965,8 @@ export default function SendInvitesModal({
             )}
           </div>
         </div>
-      </div>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
