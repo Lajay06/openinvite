@@ -12,6 +12,7 @@ import UploadStatus from '@/components/shared/UploadStatus';
 import { Accordion } from '@/components/ui/accordion';
 import DetailsSection from '@/components/event-details/DetailsSection';
 import SectionInput from '@/components/event-details/SectionInput';
+import VendorContactSection from '@/components/vendors/VendorContactSection';
 
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -460,14 +461,11 @@ export default function AttirePanel() {
 
         {/* ── B. Tailor & fittings ─────────────────────────────────────────── */}
         <DetailsSection title="Tailor & fittings" icon={User}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <SectionInput label="Tailor / studio name" value={tailor.name} onChange={e => setTailorField('name', e.target.value)} placeholder="Studio or tailor name" />
-            <SectionInput label="Contact person" value={tailor.contact} onChange={e => setTailorField('contact', e.target.value)} placeholder="Contact name" />
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <SectionInput label="Phone" value={tailor.phone} onChange={e => setTailorField('phone', e.target.value)} placeholder="Phone number" />
-            <SectionInput label="Email" type="email" value={tailor.email} onChange={e => setTailorField('email', e.target.value)} placeholder="Email address" />
-          </div>
+          <VendorContactSection
+            category="attire"
+            vendorId={attire.tailorVendorId}
+            onVendorIdChange={id => setTopField('tailorVendorId', id)}
+          />
           <SectionInput label="Notes" isTextarea value={tailor.notes} onChange={e => setTailorField('notes', e.target.value)} placeholder="Deposit, deadlines, special instructions" />
 
           <div style={{ paddingTop: 8 }}>

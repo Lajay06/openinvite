@@ -102,8 +102,10 @@ for (const relPath of PAGES_REQUIRING_VENDOR_CONTACT_SECTION) {
 // ── Check 2: multi-vendor-roster pages render VendorRosterSection ─────────
 console.log('\nPages that must render VendorRosterSection (multi-vendor roster for one category):');
 const PAGES_REQUIRING_VENDOR_ROSTER_SECTION = [
-  'src/pages/Beauty.jsx',   // "Beauty team" tab
-  'src/pages/Music.jsx',    // "Vendor" tab
+  'src/pages/Beauty.jsx',       // "Beauty team" tab
+  'src/pages/Music.jsx',        // "Vendor" tab
+  'src/pages/Photography.jsx',  // "Photographers"/"Videographers" tabs (PR3b)
+  'src/pages/Transport.jsx',    // "Transport vendors" block, Shuttles tab (PR3c)
 ];
 for (const relPath of PAGES_REQUIRING_VENDOR_ROSTER_SECTION) {
   const src = readSrc(relPath);
