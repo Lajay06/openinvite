@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MapPin, Bus, Car, Truck, FileText, Loader2, X, Plus, Check, Search } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
+import VendorRosterSection from "../components/vendors/VendorRosterSection";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
@@ -299,6 +300,10 @@ export default function TransportPage() {
         {/* Shuttles tab */}
         {activeTab === 'shuttles' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ marginBottom: 24 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 12px' }}>Transport vendors</p>
+              <VendorRosterSection category="transportation" categoryLabel="transportation" />
+            </div>
             <DetailsSection title="Couple-arranged transport" icon={Truck} defaultOpen>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {shuttles.map((shuttle, i) => (
