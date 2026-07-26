@@ -45,7 +45,6 @@ const UniverseStudio = lazy(() => import('./pages/UniverseStudio'));
 const StudioHub = lazy(() => import('./pages/StudioHub'));
 const StudioWebsite = lazy(() => import('./pages/StudioWebsite'));
 const FoodBeverage = lazy(() => import('./pages/FoodBeverage'));
-const PhotographyDetails = lazy(() => import('./pages/PhotographyDetails'));
 const EntertainmentDetails = lazy(() => import('./pages/EntertainmentDetails'));
 const Transport = lazy(() => import('./pages/Transport'));
 const Accommodation = lazy(() => import('./pages/Accommodation'));
@@ -285,7 +284,6 @@ const AuthenticatedApp = () => {
             orphaned, unreachable duplicate of Styling.jsx's Flowers tab,
             not just a redirect-route question.) */}
         <Route path="/food-beverage" element={<Navigate to="/FoodBeverage" replace />} />
-        <Route path="/photography-details" element={<Navigate to="/PhotographyDetails" replace />} />
         <Route path="/entertainment-details" element={<Navigate to="/EntertainmentDetails" replace />} />
         {/* Canonical for these five — confirmed via grep that the sidebar
             hardcodes exactly this kebab-case URL for each. The PascalCase

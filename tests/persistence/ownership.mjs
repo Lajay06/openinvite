@@ -119,7 +119,7 @@ export async function runOwnership(token, weddingDetailsRecordId) {
   // ~63 unscoped dashboard/builder queries (Guest, Budget, Vendor, Schedule,
   // Photo, Note, Task, StoryMilestone, SongRequest, ReceivedGift, Hotel,
   // Restaurant, RegistryItem, RegistryProduct, CustomGift, CustomEventPage,
-  // WebsiteTheme, Table, VenueAsset, Photographer, WeddingDetails) were
+  // WebsiteTheme, Table, VenueAsset, WeddingDetails) were
   // migrated to the new getMyRecords(entityName, sort, limit) helper in
   // src/lib/resolveMyWedding.js — every one of them resolves through the same
   // base44.entities[entityName].filter({ created_by_id: me.id }) call, so

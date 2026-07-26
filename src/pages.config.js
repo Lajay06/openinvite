@@ -63,7 +63,6 @@ const EmergencyContact = lazy(() => import('./pages/EmergencyContact'));
 const EntertainmentDetails = lazy(() => import('./pages/EntertainmentDetails'));
 const FoodBeverage = lazy(() => import('./pages/FoodBeverage'));
 const Honeymoon = lazy(() => import('./pages/Honeymoon'));
-const PhotographyDetails = lazy(() => import('./pages/PhotographyDetails'));
 const Transport = lazy(() => import('./pages/Transport'));
 const ScheduleHub = lazy(() => import('./pages/ScheduleHub'));
 const TasksHub = lazy(() => import('./pages/TasksHub'));
@@ -116,7 +115,6 @@ export const PAGES = {
     "EntertainmentDetails": EntertainmentDetails,
     "FoodBeverage": FoodBeverage,
     "Honeymoon": Honeymoon,
-    "PhotographyDetails": PhotographyDetails,
     "Transport": Transport,
     "Calendar": ScheduleHub,
     "Checklist": TasksHub,

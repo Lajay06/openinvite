@@ -49,10 +49,10 @@
  *      Vendor.jsonc — structurally fingerprinted (contact_person + status
  *      + quoted_price, the three fields unique to a vendor-tracking
  *      entity in this schema set), not by name, so a rename can't dodge
- *      it. Photographer.jsonc is a documented, tracked exception — a full
- *      parallel implementation predating this guard, scheduled for
- *      retirement in PR3b. If ALLOWED_VENDOR_LIKE_ENTITIES ever needs a
- *      second name added, that's a real regression, not upkeep.
+ *      it. Photographer.jsonc was exactly this — a full parallel
+ *      implementation, retired in PR3b (migrated into Vendor). If
+ *      ALLOWED_VENDOR_LIKE_ENTITIES ever needs a second name added,
+ *      that's a real regression, not upkeep.
  *
  * Usage: node scripts/test-vendor-contact-consistency.mjs
  */
@@ -177,10 +177,10 @@ checkImporters('VendorList.jsx', {
 
 // ── Check 5: no second vendor-like entity schema ───────────────────────────
 console.log('\nEntity schema check — no second vendor-like entity:');
-// Photographer.jsonc is a documented, tracked exception (see file header) —
-// scheduled for retirement in PR3b. Adding a second name here would mean a
-// NEW vendor-like entity regressed in, which this check exists to catch.
-const ALLOWED_VENDOR_LIKE_ENTITIES = new Set(['Vendor', 'Photographer']);
+// Photographer.jsonc (the prior tracked exception, see file header) was
+// retired in PR3b. Adding a name here would mean a NEW vendor-like entity
+// regressed in, which this check exists to catch.
+const ALLOWED_VENDOR_LIKE_ENTITIES = new Set(['Vendor']);
 const VENDOR_FINGERPRINT_FIELDS = ['contact_person', 'status', 'quoted_price'];
 const entitiesDir = resolve(repoRoot, 'base44/entities');
 let vendorLikeFound = [];
