@@ -180,5 +180,69 @@ export async function runTableGuestSync(token) {
     if (renameTableId) { try { await api('DELETE', `/apps/${APP_ID}/entities/Table/${renameTableId}`, undefined, token); } catch (e) { console.error(`  ⚠️  CLEANUP FAILED — Table ${renameTableId}: ${e.message}`); } }
   }
 
+  // ── PR6: Table.event_id / VenueAsset.event_id round-trip, and
+  //    Guest.table_assignment stays scoped to the Reception event only ──
+  console.log('\n  Table/Guest sync — PR6 event_id round-trip + Reception-only table_assignment scoping:\n');
+  let eventTableId = null, eventAssetId = null, receptionTableId = null, scopeGuestId = null;
+  try {
+    const CUSTOM_EVENT_ID = '__PERSISTENCE_TEST_WELCOME_DRINKS__';
+
+    const table = await api('POST', `/apps/${APP_ID}/entities/Table`, {
+      name: '__PERSISTENCE_TEST_EVENT_TABLE__', shape: 'round', capacity: 8, x: 100, y: 100,
+      assigned_guests: [], event_id: CUSTOM_EVENT_ID,
+    }, token);
+    eventTableId = table.id;
+    const tableBack = await api('GET', `/apps/${APP_ID}/entities/Table/${eventTableId}`, undefined, token);
+    results.push(tableBack.event_id === CUSTOM_EVENT_ID
+      ? pass('Table.event_id round-trips (write → fresh read)', tableBack.event_id)
+      : fail('Table.event_id round-trips', CUSTOM_EVENT_ID, tableBack.event_id));
+
+    const asset = await api('POST', `/apps/${APP_ID}/entities/VenueAsset`, {
+      name: '__PERSISTENCE_TEST_EVENT_ASSET__', type: 'bar', x: 100, y: 100, width: 60, height: 40,
+      event_id: CUSTOM_EVENT_ID,
+    }, token);
+    eventAssetId = asset.id;
+    const assetBack = await api('GET', `/apps/${APP_ID}/entities/VenueAsset/${eventAssetId}`, undefined, token);
+    results.push(assetBack.event_id === CUSTOM_EVENT_ID
+      ? pass('VenueAsset.event_id round-trips (write → fresh read)', assetBack.event_id)
+      : fail('VenueAsset.event_id round-trips', CUSTOM_EVENT_ID, assetBack.event_id));
+
+    // Mirrors assignGuestToTableByName/handleAssignGuest's eventId gate
+    // (src/lib/tableAssignment.js, src/pages/Seating.jsx): a non-Reception
+    // event's table assignment must NOT write Guest.table_assignment.
+    const guest = await api('POST', `/apps/${APP_ID}/entities/Guest`,
+      { name: '__PERSISTENCE_TEST_TABLESYNC_SCOPE__', is_test: true }, token);
+    scopeGuestId = guest.id;
+    await api('PUT', `/apps/${APP_ID}/entities/Table/${eventTableId}`,
+      { assigned_guests: [{ guest_id: scopeGuestId, seat_index: 0 }] }, token);
+    // Deliberately NOT writing Guest.table_assignment here — this event_id
+    // ('__PERSISTENCE_TEST_WELCOME_DRINKS__') isn't 'reception'.
+    const guestAfterNonReception = await api('GET', `/apps/${APP_ID}/entities/Guest/${scopeGuestId}`, undefined, token);
+    results.push(!guestAfterNonReception.table_assignment
+      ? pass('Guest.table_assignment stays unset after a non-Reception event assignment (decision #2 scoping)', JSON.stringify(guestAfterNonReception.table_assignment))
+      : fail('Guest.table_assignment stays unset after a non-Reception event assignment', '(unset)', guestAfterNonReception.table_assignment));
+
+    // Now the same guest gets assigned at a Reception-tagged table — this
+    // IS expected to write the cache (existing, unchanged behaviour).
+    const receptionTable = await api('POST', `/apps/${APP_ID}/entities/Table`, {
+      name: '__PERSISTENCE_TEST_RECEPTION_TABLE__', shape: 'round', capacity: 8, x: 100, y: 100,
+      assigned_guests: [{ guest_id: scopeGuestId, seat_index: 0 }], event_id: 'reception',
+    }, token);
+    receptionTableId = receptionTable.id;
+    await api('PUT', `/apps/${APP_ID}/entities/Guest/${scopeGuestId}`, { table_assignment: receptionTable.name }, token);
+    const guestAfterReception = await api('GET', `/apps/${APP_ID}/entities/Guest/${scopeGuestId}`, undefined, token);
+    results.push(guestAfterReception.table_assignment === receptionTable.name
+      ? pass('Guest.table_assignment IS written for a Reception-event assignment (unchanged behaviour)', guestAfterReception.table_assignment)
+      : fail('Guest.table_assignment IS written for a Reception-event assignment', receptionTable.name, guestAfterReception.table_assignment));
+  } catch (err) {
+    console.log(`  ❌ FAIL  PR6 event_id scoping — error: ${err.message}`);
+    results.push(false, false, false, false);
+  } finally {
+    if (scopeGuestId) { try { await api('DELETE', `/apps/${APP_ID}/entities/Guest/${scopeGuestId}`, undefined, token); } catch (e) { console.error(`  ⚠️  CLEANUP FAILED — Guest ${scopeGuestId}: ${e.message}`); } }
+    if (eventTableId) { try { await api('DELETE', `/apps/${APP_ID}/entities/Table/${eventTableId}`, undefined, token); } catch (e) { console.error(`  ⚠️  CLEANUP FAILED — Table ${eventTableId}: ${e.message}`); } }
+    if (receptionTableId) { try { await api('DELETE', `/apps/${APP_ID}/entities/Table/${receptionTableId}`, undefined, token); } catch (e) { console.error(`  ⚠️  CLEANUP FAILED — Table ${receptionTableId}: ${e.message}`); } }
+    if (eventAssetId) { try { await api('DELETE', `/apps/${APP_ID}/entities/VenueAsset/${eventAssetId}`, undefined, token); } catch (e) { console.error(`  ⚠️  CLEANUP FAILED — VenueAsset ${eventAssetId}: ${e.message}`); } }
+  }
+
   return results;
 }

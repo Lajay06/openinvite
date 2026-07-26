@@ -36,12 +36,36 @@
  * User.tempUnit, User.deletionRequestedAt) are still under investigation —
  * see BASE44_PLATFORM_NOTES.md for why the built-in User entity needs a
  * different approach before anything is registered for it.
+ *
+ * PR6 completeness pass (2026-07): audited every entity the app actually
+ * writes to (`base44.entities.*`, both the inline and the destructured
+ * `const X = base44.entities.X` forms) against this list and against
+ * schemaDropScan.mjs's own scan coverage. Found and fixed two real gaps
+ * beyond the Table/VenueAsset this PR needed anyway:
+ *   - Notification was already in this list but missing from
+ *     schemaDropScan.mjs's fixed-name regex, so it was NEVER actually
+ *     scanned — a dead guard entry that would have passed regardless of
+ *     what Notification wrote. Added to the regex; now real.
+ *   - Hotel wrote via the same destructured bare-call form and had no
+ *     schema entry or regex coverage at all — invisible even to
+ *     `npm run audit:schema`, not just this guard. Added both.
+ *   - Questionnaire was already scanned (inline call-site form) but had no
+ *     schema entry, so its fields showed as "unknown" instead of a real
+ *     pass/fail. Added a schema entry; added here too.
+ * Re-ran `npm run audit:schema` after each addition — no new drops
+ * surfaced for any of them (only the pre-existing, unrelated
+ * User.notification_prefs finding, out of scope for this pass).
+ *
+ * Left out deliberately: RsvpResponse, PollVote, PollComment are written
+ * only from api/*.js (server-side, admin-key) — this scanner only walks
+ * src/, so they're a structural blind spot, not a one-line fix. Flagging
+ * for a future pass rather than silently expanding scope here.
  */
 
 import { runSchemaDropScan } from '../../scripts/lib/schemaDropScan.mjs';
 import { pass, fail } from './_shared.mjs';
 
-const GUARDED_ENTITIES = ['WeddingDetails', 'Guest', 'Note', 'Music', 'Notification', 'Vendor'];
+const GUARDED_ENTITIES = ['WeddingDetails', 'Guest', 'Note', 'Music', 'Notification', 'Vendor', 'Table', 'VenueAsset', 'Hotel', 'Questionnaire'];
 
 export async function runSchemaDriftGuard() {
   const results = [];

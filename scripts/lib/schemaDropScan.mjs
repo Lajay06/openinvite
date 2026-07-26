@@ -192,11 +192,15 @@ export const SCHEMAS = {
   },
 
   Table: {
-    name:1, capacity:1, shape:1, x:1, y:1, rotation:1, assigned_guests:1, _nested: {},
+    // event_id added PR6 (multi-event seating) — stable id from
+    // src/lib/weddingEvents.js's getWeddingEvents(), backfilled to
+    // RECEPTION_EVENT_ID on every pre-existing row.
+    name:1, capacity:1, shape:1, x:1, y:1, rotation:1, assigned_guests:1, event_id:1, _nested: {},
   },
 
   VenueAsset: {
-    name:1, type:1, x:1, y:1, width:1, height:1, rotation:1, _nested: {},
+    // event_id added PR6 — same scoping as Table, same backfill.
+    name:1, type:1, x:1, y:1, width:1, height:1, rotation:1, event_id:1, _nested: {},
   },
 
   VowSpeech: {
@@ -308,6 +312,26 @@ export const SCHEMAS = {
   Notification: {
     recipient_user_id:1, type:1, title:1, body:1, link:1, read:1, is_test:1,
     _nested: {},
+  },
+
+  // Added PR6 completeness pass (schema-drift-guard audit) — Hotel was
+  // completely invisible to this scanner before: its writes use the
+  // `const Hotel = base44.entities.Hotel;` then bare `Hotel.create(...)`
+  // form, which only ENTITY_PATTERNS' fixed-name regex catches, and
+  // "Hotel" wasn't in that list. Confirmed 2026-07 against Hotel.jsonc.
+  Hotel: {
+    name:1, address:1, phone:1, website:1, rating:1, priceRange:1, distance:1,
+    description:1, amenities:1, whyGood:1, imageUrl:1, reviewCount:1, isRecommended:1,
+    _nested: {},
+  },
+
+  // Added PR6 completeness pass — Questionnaire writes (GamesManager.jsx)
+  // were already caught by the generic base44.entities.X pattern, but had
+  // no schema entry, so every field showed as "entity schema unknown"
+  // instead of a real pass/fail. Confirmed 2026-07 against Questionnaire.jsonc.
+  Questionnaire: {
+    title:1, intro:1, questions:1, recipient_mode:1, recipient_tags:1,
+    recipient_guest_ids:1, is_active:1, is_test:1, _nested: {},
   },
 };
 
@@ -470,7 +494,13 @@ const KNOWN_WRITES = [
 
 const ENTITY_PATTERNS = [
   /base44\.entities\.(\w+)\.(?:create|update)\s*\(/g,
-  /\b(WeddingDetails|Guest|Budget|Schedule|Vendor|Note|Task|Table|VenueAsset|VowSpeech|RegistryItem|RegistryProduct|CustomGift|ReceivedGift|VendorLog|VendorTask|Collaborator|Music|GuestMessage|SongRequest|StoryMilestone|Photo|LiveStream|StreamChat|WebsiteTheme|CustomEventPage|MoodboardItem|Invitation|ThemeDetails)\.(?:create|update)\s*\(/g,
+  // Notification and Hotel added PR6 completeness pass — both write via the
+  // `const X = base44.entities.X;` then bare `X.create/update(...)` form,
+  // which only this fixed-name list catches (the generic
+  // base44.entities.(\w+) pattern above only matches non-destructured call
+  // sites). Notification was already in GUARDED_ENTITIES but silently
+  // never scanned since it was missing here — a dead guard entry.
+  /\b(WeddingDetails|Guest|Budget|Schedule|Vendor|Note|Task|Table|VenueAsset|VowSpeech|RegistryItem|RegistryProduct|CustomGift|ReceivedGift|VendorLog|VendorTask|Collaborator|Music|GuestMessage|SongRequest|StoryMilestone|Photo|LiveStream|StreamChat|WebsiteTheme|CustomEventPage|MoodboardItem|Invitation|ThemeDetails|Notification|Hotel)\.(?:create|update)\s*\(/g,
   /base44\.auth\.updateMe\s*\(/g,
 ];
 
