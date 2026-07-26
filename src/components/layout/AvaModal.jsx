@@ -5,7 +5,7 @@ import { InvokeLLM } from '@/integrations/Core';
 import { base44 } from '@/api/base44Client';
 import { buildWeddingContext } from '@/lib/avaContext';
 import toast from 'react-hot-toast';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -114,7 +114,6 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
   const [loading, setLoading] = useState(false);
   const [weddingContext, setWeddingContext] = useState('');
   const bottomRef = useRef(null);
-  const dialogRef = useModalFocusTrap(onClose);
 
   useEffect(() => {
     setMessages([]);
@@ -191,17 +190,8 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
   };
 
   return (
-    <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-      onClick={onClose}
-      {...interactiveDivProps(onClose, { label: 'Close Ava modal' })}
-    >
-      <div
-        ref={dialogRef}
-        tabIndex={-1}
-        onClick={e => e.stopPropagation()}
-        style={{ background: '#FFFFFF', width: '100%', maxWidth: 560, maxHeight: '80vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-      >
+    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent className="p-0 gap-0 max-w-[560px] w-full max-h-[80vh] flex flex-col overflow-hidden [&>button]:hidden">
         {/* Header */}
         <div style={{ background: 'linear-gradient(135deg, #ec4899, #9333ea)', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
@@ -308,7 +298,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
             <Send size={13} style={{ color: loading || !input.trim() ? 'rgba(10,10,10,0.3)' : '#fff' }} />
           </button>
         </div>
-      </div>
+      </DialogContent>
 
       <style>{`
         @keyframes ava-pulse {
@@ -316,6 +306,6 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
           50%       { opacity: 1;   transform: scale(1);   }
         }
       `}</style>
-    </div>
+    </Dialog>
   );
 }

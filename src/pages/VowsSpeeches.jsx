@@ -168,10 +168,10 @@ export default function VowsSpeechesPage() {
                 <div style={{ padding: '48px 24px', textAlign: 'center' }}>
                   {activeTab === 'vows' ? <Heart size={32} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px' }} /> : <Mic size={32} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px' }} />}
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>No {activeTab} yet</p>
-                  <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 16 }}>Start writing or use AI to help</p>
+                  <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 16 }}>Start writing or ask Ava for help</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <button onClick={() => { setAiType(activeTab === 'vows' ? 'vow' : 'speech'); setShowAI(true); }} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                      <Sparkles size={11} />Generate with AI
+                      <Sparkles size={11} />Ask Ava to write it
                     </button>
                     <button onClick={() => { setSelectedItem(null); setIsEditing(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                       <Plus size={11} />Write manually

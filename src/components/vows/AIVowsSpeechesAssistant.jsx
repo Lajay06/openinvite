@@ -96,7 +96,7 @@ Return the improved version as plain text only — no markdown.`;
   if (!isOpen) return null;
 
   const TABS = [
-    { value: 'generate', label: 'Generate new', icon: Wand2 },
+    { value: 'generate', label: 'Ask Ava', icon: Wand2 },
     { value: 'improve', label: 'Improve existing', icon: RefreshCw },
     { value: 'preview', label: 'Preview', icon: Mic, disabled: !generated },
   ];
@@ -207,7 +207,7 @@ Return the improved version as plain text only — no markdown.`;
 
               <button onClick={handleGenerate} disabled={loading} className="btn-primary"
                 style={{ width: '100%', padding: '13px 0', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: loading ? 0.7 : 1 }}>
-                {loading ? <><Loader2 size={14} className="animate-spin" />Generating…</> : <><Sparkles size={14} />Generate {gf.type === 'vow' ? 'vows' : 'speech'}</>}
+                {loading ? <><Loader2 size={14} className="animate-spin" />Asking Ava…</> : <><Sparkles size={14} />Ask Ava for {gf.type === 'vow' ? 'vows' : 'a speech'}</>}
               </button>
             </div>
           )}
@@ -255,7 +255,7 @@ Return the improved version as plain text only — no markdown.`;
                   <Copy size={13} />Copy to clipboard
                 </button>
                 <button onClick={() => setTab('generate')} className="btn-editorial-secondary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }}>
-                  <RefreshCw size={13} />Generate again
+                  <RefreshCw size={13} />Ask Ava again
                 </button>
                 <button onClick={handleUse} className="btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }}>
                   <Send size={13} />Use this text

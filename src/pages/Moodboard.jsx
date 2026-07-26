@@ -6,7 +6,7 @@ import { validateUploadFile } from '@/lib/uploadValidation';
 import { Plus, Search, Upload, Loader2 } from 'lucide-react';
 import MoodboardGrid from '../components/moodboard/MoodboardGrid';
 import AddItemModal from '../components/moodboard/AddItemModal';
-import PinterestConnect from '../components/moodboard/PinterestConnect';
+import InspirationSearch from '../components/moodboard/InspirationSearch';
 import BoardSelector from '../components/moodboard/BoardSelector';
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -284,7 +284,7 @@ export default function MoodboardPage() {
       </div>
 
       {showAddModal && <AddItemModal onClose={() => setShowAddModal(false)} onAddItem={handleAddItem} categories={CATEGORIES.filter(c => c !== 'all')} />}
-      {showSearch && <PinterestConnect onClose={() => setShowSearch(false)} onAddItems={loadItems} activeBoard={activeBoard} />}
+      {showSearch && <InspirationSearch onClose={() => setShowSearch(false)} onAddItems={loadItems} activeBoard={activeBoard} />}
 
       <AvaModal
         isOpen={avaOpen}

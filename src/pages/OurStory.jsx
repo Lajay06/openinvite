@@ -229,7 +229,7 @@ export default function OurStoryPage() {
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 mr-2" />
-                        Generate with AI
+                        Ask Ava to write it
                       </>
                     )}
                   </Button>

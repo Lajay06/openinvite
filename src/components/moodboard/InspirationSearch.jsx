@@ -40,7 +40,7 @@ const getResults = (term) => {
   ];
 };
 
-export default function PinterestConnect({ onClose, onAddItems, activeBoard }) {
+export default function InspirationSearch({ onClose, onAddItems, activeBoard }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
