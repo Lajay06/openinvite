@@ -67,9 +67,23 @@ export default function StudioHub() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      {/* Fixed top bar */}
+      {/* Sticky sub-header. Previously `position: fixed; top: 0; left: 220`,
+          which put it at the very top of the viewport — directly underneath
+          Layout.jsx's real top nav bar (also `position: fixed; top: 0`, but
+          z-index 50 vs this bar's 30), so it was painted over and never
+          actually visible; its `left: 220` was also stale against
+          SIDEBAR_WIDTH (200), a second drift on top of the first.
+          `position: sticky` alone isn't enough either — sticky's `top`
+          still means "stick at this many px from the viewport edge," so a
+          bare `top: 0` reproduces the exact same overlap via a different
+          mechanism. The real fix: stick at `--page-content-top`, the CSS
+          custom property Layout.jsx sets on `.page-content` to the actual
+          combined height of the top bar plus whichever trial/collaborator
+          banners are currently showing — so this tracks the real boundary
+          at runtime instead of a hardcoded pixel value that can drift out
+          of sync again. */}
       <div className="studio-hub-topbar" style={{
-        position: 'fixed', top: 0, left: 220, right: 0, height: 56, zIndex: 30,
+        position: 'sticky', top: 'var(--page-content-top, 48px)', zIndex: 20, height: 56,
         background: '#FFFFFF', borderBottom: '1px solid #EEEEEE',
         display: 'flex', alignItems: 'center', padding: '0 24px',
       }}>
@@ -84,8 +98,9 @@ export default function StudioHub() {
         </p>
       </div>
 
-      {/* Scrollable content */}
-      <div style={{ paddingTop: 56 }}>
+      {/* Scrollable content — no manual paddingTop needed: the sticky bar
+          above already occupies its own space in normal flow. */}
+      <div>
         <DashboardPageHeader title="Design studio" subtitle="Everything to design, build and share your wedding" />
         <div style={{ maxWidth: 800, margin: '0 auto', padding: '48px 24px' }}>
 
@@ -149,11 +164,6 @@ export default function StudioHub() {
         </div>
       </div>
 
-      <style>{`
-        @media (max-width: 768px) {
-          .studio-hub-topbar { left: 0 !important; padding-top: 56px; }
-        }
-      `}</style>
     </div>
   );
 }

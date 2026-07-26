@@ -59,6 +59,10 @@ export const SCHEMAS = {
     weddingPolicies:1, emergencyContacts:1,
     // Registered round 7 (asks #15/#16 — background music + who's-coming toggles)
     guestExperienceSettings:1,
+    // Registered — dashboard round: Budget page's "Save plan" overall
+    // target + per-category allocation, was localStorage-only before, never
+    // in the schema at all.
+    budget:1,
     // Nested objects with registered sub-fields
     _nested: {
       mainCeremony: ['venueName','address','placeId','mapsUrl','photoUrl','phone','website',
@@ -88,6 +92,7 @@ export const SCHEMAS = {
         'lateArrival','other'],
       emergencyContacts: ['primary','backup','venue','otherNotes'],
       guestExperienceSettings: ['backgroundMusic','showAttending','showCircle'],
+      budget: ['total','categories'],
     },
   },
 
