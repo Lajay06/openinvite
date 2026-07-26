@@ -161,7 +161,20 @@ export const SCHEMAS = {
     name:1, category:1, contact_person:1, phone:1, email:1, website:1, address:1,
     latitude:1, longitude:1, rating:1, price_range:1, status:1, quoted_price:1,
     contract_date:1, payment_schedule:1, notes:1, google_place_id:1, google_rating:1,
-    google_reviews_count:1, image_url:1, _nested: {},
+    google_reviews_count:1, image_url:1,
+    // Present in the live schema but missing from this embedded snapshot
+    // until now (pre-existing gap, unrelated to the PR3b registration below).
+    is_favourite:1,
+    // Registered PR3b (Photographer -> Vendor consolidation) — every field
+    // Photographer.jsonc had that Vendor didn't, so a photography/
+    // videography vendor loses nothing after the migration.
+    instagram:1, reviews_count:1, starting_price:1, package_selected:1,
+    hours_booked:1, booking_date:1, start_time:1, end_time:1, meeting_date:1,
+    contract_signed:1, deposit_paid:1, deposit_amount:1, style:1, portfolio_url:1,
+    sample_work:1, services_offered:1, equipment:1, backup_equipment:1,
+    second_shooter:1, delivery_timeline:1, image_count:1, video_length:1,
+    editing_style:1, travel_fee:1, cancellation_policy:1, special_requests:1,
+    _nested: {},
   },
 
   Note: {
@@ -221,18 +234,6 @@ export const SCHEMAS = {
 
   Collaborator: {
     name:1, email:1, permissions:1, _nested: {},
-  },
-
-  Photographer: {
-    name:1, type:1, contact_person:1, phone:1, email:1, website:1, instagram:1,
-    address:1, latitude:1, longitude:1, rating:1, reviews_count:1, price_range:1,
-    starting_price:1, status:1, quoted_price:1, package_selected:1, hours_booked:1,
-    booking_date:1, start_time:1, end_time:1, meeting_date:1, contract_signed:1,
-    deposit_paid:1, deposit_amount:1, style:1, portfolio_url:1, sample_work:1,
-    services_offered:1, equipment:1, backup_equipment:1, second_shooter:1,
-    delivery_timeline:1, image_count:1, video_length:1, editing_style:1, travel_fee:1,
-    cancellation_policy:1, notes:1, special_requests:1, google_place_id:1, image_url:1,
-    _nested: {},
   },
 
   Music: {
@@ -467,7 +468,7 @@ const KNOWN_WRITES = [
 
 const ENTITY_PATTERNS = [
   /base44\.entities\.(\w+)\.(?:create|update)\s*\(/g,
-  /\b(WeddingDetails|Guest|Budget|Schedule|Vendor|Note|Task|Table|VenueAsset|VowSpeech|RegistryItem|RegistryProduct|CustomGift|ReceivedGift|VendorLog|VendorTask|Collaborator|Photographer|Music|GuestMessage|SongRequest|StoryMilestone|Photo|LiveStream|StreamChat|WebsiteTheme|CustomEventPage|MoodboardItem|Invitation|ThemeDetails)\.(?:create|update)\s*\(/g,
+  /\b(WeddingDetails|Guest|Budget|Schedule|Vendor|Note|Task|Table|VenueAsset|VowSpeech|RegistryItem|RegistryProduct|CustomGift|ReceivedGift|VendorLog|VendorTask|Collaborator|Music|GuestMessage|SongRequest|StoryMilestone|Photo|LiveStream|StreamChat|WebsiteTheme|CustomEventPage|MoodboardItem|Invitation|ThemeDetails)\.(?:create|update)\s*\(/g,
   /base44\.auth\.updateMe\s*\(/g,
 ];
 

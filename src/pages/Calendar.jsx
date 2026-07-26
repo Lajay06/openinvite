@@ -65,25 +65,23 @@ export default function CalendarPage({ embedded = false }) {
     setLoading(true);
     try {
       // Collaborating: only ever show what the 'Schedule' permission
-      // actually covers. Vendor/Photographer/Invitation aren't part of
-      // that permission's entities (Vendor has its OWN separate
-      // permission key; Photographer has none at all) — aggregating them
-      // in here regardless of what was granted would leak data across
+      // actually covers. Vendor/Invitation aren't part of that permission's
+      // entities (Vendor has its OWN separate permission key) — aggregating
+      // them in here regardless of what was granted would leak data across
       // permission boundaries. See collaboratorPageMap.js.
-      const [vendors, scheduleItems, invitation, photographers] = isCollaborating
+      const [vendors, scheduleItems, invitation] = isCollaborating
         ? await (async () => {
             const res = await fetch(`/api/collaborator-data?ownerUserId=${encodeURIComponent(collab.ownerUserId)}&page=Schedule`, {
               headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
             });
             if (!res.ok) throw new Error('Failed to load schedule');
             const { data } = await res.json();
-            return [[], data.Schedule || [], null, []];
+            return [[], data.Schedule || [], null];
           })()
         : await Promise.all([
             getMyRecords('Vendor').catch(() => []),
             getMyRecords('Schedule').catch(() => []),
             getMyInvitation().catch(() => null),
-            getMyRecords('Photographer').catch(() => [])
           ]);
 
       const allEvents = [];
@@ -122,21 +120,22 @@ export default function CalendarPage({ embedded = false }) {
             description: `${vendor.category} vendor contract signed`, type: 'vendor'
           });
         }
-      });
-
-      photographers.forEach(photographer => {
-        if (photographer.booking_date) {
+        // booking_date/meeting_date were Photographer-only fields before
+        // the PR3b consolidation — now on Vendor, so this loop (already
+        // iterating every vendor for contract_date) picks them up for any
+        // category that sets them, not just photography/videography.
+        if (vendor.booking_date) {
           allEvents.push({
-            id: `photographer-${photographer.id}`, title: `${photographer.name} booking`,
-            date: photographer.booking_date, time: photographer.start_time || '',
-            description: 'Photography session', type: 'photography'
+            id: `vendor-booking-${vendor.id}`, title: `${vendor.name} booking`,
+            date: vendor.booking_date, time: vendor.start_time || '',
+            description: `${vendor.category} session`, type: 'photography'
           });
         }
-        if (photographer.meeting_date) {
+        if (vendor.meeting_date) {
           allEvents.push({
-            id: `photographer-meeting-${photographer.id}`, title: `Meeting: ${photographer.name}`,
-            date: photographer.meeting_date.split('T')[0],
-            time: photographer.meeting_date.split('T')[1]?.substring(0, 5) || '',
+            id: `vendor-meeting-${vendor.id}`, title: `Meeting: ${vendor.name}`,
+            date: vendor.meeting_date.split('T')[0],
+            time: vendor.meeting_date.split('T')[1]?.substring(0, 5) || '',
             description: 'Consultation meeting', type: 'photography'
           });
         }

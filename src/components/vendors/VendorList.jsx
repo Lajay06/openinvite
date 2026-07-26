@@ -7,12 +7,15 @@ import { MoreHorizontal, Edit2, Trash2, Briefcase, Phone, Mail, Star, DollarSign
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const STATUS_STYLES = {
-  booked:      { background: '#DDF762',              color: '#0A1930' },
-  quoted:      { background: '#803D81',              color: '#FFFFFF' },
-  contacted:   { background: '#0A1930',              color: '#FFFFFF' },
-  researching: { background: 'rgba(10,10,10,0.07)', color: 'rgba(10,10,10,0.6)', border: '1px solid rgba(10,10,10,0.15)' },
-  rejected:    { background: 'rgba(224,53,83,0.08)', color: '#E03553', border: '1px solid rgba(224,53,83,0.2)' },
+  booked:            { background: '#DDF762',              color: '#0A1930' },
+  quoted:            { background: '#803D81',              color: '#FFFFFF' },
+  meeting_scheduled: { background: 'rgba(128,61,129,0.1)', color: '#803D81', border: '1px solid rgba(128,61,129,0.3)' },
+  contacted:         { background: '#0A1930',              color: '#FFFFFF' },
+  researching:       { background: 'rgba(10,10,10,0.07)', color: 'rgba(10,10,10,0.6)', border: '1px solid rgba(10,10,10,0.15)' },
+  rejected:          { background: 'rgba(224,53,83,0.08)', color: '#E03553', border: '1px solid rgba(224,53,83,0.2)' },
 };
+
+const STATUS_LABELS = { meeting_scheduled: 'Meeting scheduled' };
 
 const CATEGORY_STYLES = {
   venue:         { color: '#E03553', border: '1px solid rgba(224,53,83,0.35)' },
@@ -47,7 +50,7 @@ function naturalCompare(a, b) {
   return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
 }
 
-const VENDOR_STATUS_SORT_RANK = { booked: 0, quoted: 1, contacted: 2, researching: 3, rejected: 4 };
+const VENDOR_STATUS_SORT_RANK = { booked: 0, quoted: 1, meeting_scheduled: 2, contacted: 3, researching: 4, rejected: 5 };
 
 const SORTABLE_COLUMNS = {
   name:     { getValue: v => v.name || '', compare: naturalCompare },
@@ -265,7 +268,7 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage, onTogg
 
                 <TableCell className="align-middle">
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {vendor.status ? <Pill value={vendor.status} styleMap={STATUS_STYLES} labelMap={null} /> : <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>}
+                    {vendor.status ? <Pill value={vendor.status} styleMap={STATUS_STYLES} labelMap={STATUS_LABELS} /> : <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>}
                     {(vendor.rating || vendor.google_rating) && (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
                         <Star size={11} style={{ color: '#6b7700', fill: '#DDF762', flexShrink: 0 }} />

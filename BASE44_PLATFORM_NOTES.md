@@ -280,3 +280,16 @@ a real user-facing path. If picking this up again: the next step would be
 comparing exactly what the `@base44/sdk` browser client sends beyond the
 `Authorization` header (cookies, additional headers) against a bare
 `fetch`-based script, since that's the one variable not yet isolated.
+
+## There is no MCP tool to delete an entity schema
+
+`create_entity_schema` and `update_entity_schema` exist; there is no
+`delete_entity_schema`. "Retiring" an entity (PR3b, `Photographer` →
+`Vendor`) means: delete all its records (via a real logged-in session,
+per the RLS behavior above), delete the local `base44/entities/*.jsonc`
+file, and remove every code reference — but the empty entity/table
+itself is left behind live on Base44's backend, unreachable from the app
+but not actually gone. This is harmless (zero records, nothing reads or
+writes it) but is not the same thing as deletion. If Base44 ever exposes
+a real delete-entity operation, revisit fully retired entities
+(currently just `Photographer`) to remove them properly.

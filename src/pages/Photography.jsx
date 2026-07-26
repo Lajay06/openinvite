@@ -1,32 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, Plus, Video, Image, Clock, Loader2 } from "lucide-react";
+import { Camera, Video, Image, Clock, Loader2 } from "lucide-react";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import AvaButton from '../components/shared/AvaButton';
 import AvaModal from '../components/layout/AvaModal';
 
-import PhotographerList from "../components/photography/PhotographerList";
-import PhotographerForm from "../components/photography/PhotographerForm";
+import VendorContactSection from "../components/vendors/VendorContactSection";
+import VendorRosterSection from "../components/vendors/VendorRosterSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DetailsSection from "../components/event-details/DetailsSection";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
-const Photographer = base44.entities.Photographer;
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
-};
-
-const inputStyle = {
-  width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)',
-  background: 'none', fontSize: 14, color: '#0A0A0A',
-  fontFamily: "'Plus Jakarta Sans', sans-serif", outline: 'none', padding: '6px 0',
-  boxSizing: 'border-box',
 };
 
 function CountUp({ to, duration = 1200 }) {
@@ -50,9 +41,7 @@ function CountUp({ to, duration = 1200 }) {
 }
 
 export default function PhotographyPage() {
-  const [photographers, setPhotographers] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [editingPhotographer, setEditingPhotographer] = useState(null);
+  const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("photographers");
   const [avaOpen, setAvaOpen] = useState(false);
@@ -63,14 +52,18 @@ export default function PhotographyPage() {
 
   useEffect(() => { loadData(); }, []);
 
+  // `vendors` here is only for the stat strip below — the "Photographers"/
+  // "Videographers" tabs and the "Photo & video details" pickers each own
+  // their own fetch (VendorRosterSection/VendorContactSection), same
+  // pattern as Beauty.jsx's page-level vendor fetch for its stat cards.
   const loadData = async () => {
     setLoading(true);
     try {
-      const [photographersData, detailsData] = await Promise.all([
-        getMyRecords('Photographer', '-created_date'),
+      const [vendorData, detailsData] = await Promise.all([
+        getMyRecords('Vendor'),
         getMyWeddingDetails().catch(() => null),
       ]);
-      setPhotographers(photographersData);
+      setVendors(vendorData.filter(v => v.category === 'photography' || v.category === 'videography'));
       if (detailsData) {
         setDetails(detailsData);
         setDetailsId(detailsData.id);
@@ -84,24 +77,6 @@ export default function PhotographyPage() {
 
   const handleDetailsUpdate = (field, value) => {
     setDetails(prev => ({ ...prev, photography: { ...prev.photography, [field]: value } }));
-  };
-
-  const handleVendorSelect = (vendorId, type) => {
-    const vendor = photographers.find(v => v.id === vendorId);
-    if (!vendor) return;
-    if (type === 'photographer') {
-      handleDetailsUpdate('photographerVendorId', vendorId);
-      handleDetailsUpdate('photographer', vendor.name);
-      handleDetailsUpdate('photographerContact', vendor.contact_person);
-      handleDetailsUpdate('photographerPhone', vendor.phone);
-      handleDetailsUpdate('photographerEmail', vendor.email);
-    } else {
-      handleDetailsUpdate('videographerVendorId', vendorId);
-      handleDetailsUpdate('videographer', vendor.name);
-      handleDetailsUpdate('videographerContact', vendor.contact_person);
-      handleDetailsUpdate('videographerPhone', vendor.phone);
-      handleDetailsUpdate('videographerEmail', vendor.email);
-    }
   };
 
   const handleDetailsSave = async () => {
@@ -122,52 +97,12 @@ export default function PhotographyPage() {
     setIsSavingDetails(false);
   };
 
-  const handleSubmit = async (photographerData) => {
-    const toastId = toast.loading(editingPhotographer ? 'Updating...' : 'Adding...');
-    try {
-      if (editingPhotographer) {
-        await Photographer.update(editingPhotographer.id, photographerData);
-        toast.success('Photographer updated!', { id: toastId });
-      } else {
-        await Photographer.create(photographerData);
-        toast.success('Photographer added!', { id: toastId });
-      }
-      setShowForm(false);
-      setEditingPhotographer(null);
-      loadData();
-    } catch (error) {
-      console.error("Error saving:", error);
-      toast.error('Failed to save photographer', { id: toastId });
-    }
-  };
-
-  const handleEdit = (photographer) => {
-    setEditingPhotographer(photographer);
-    setShowForm(true);
-  };
-
-  const handleDelete = async (photographerId) => {
-    if (!window.confirm("Are you sure you want to delete this photographer?")) return;
-    const toastId = toast.loading('Deleting...');
-    try {
-      await Photographer.delete(photographerId);
-      toast.success('Photographer deleted', { id: toastId });
-      loadData();
-    } catch (error) {
-      console.error("Error deleting:", error);
-      toast.error('Failed to delete photographer', { id: toastId });
-    }
-  };
-
-  const photographersList = photographers.filter(p => p.type === 'photographer' || p.type === 'both');
-  const videographersList = photographers.filter(p => p.type === 'videographer' || p.type === 'both');
-
   const stats = React.useMemo(() => ({
-    total: photographers.length,
-    photographersCount: photographers.filter(p => p.type === 'photographer' || p.type === 'both').length,
-    videographersCount: photographers.filter(p => p.type === 'videographer' || p.type === 'both').length,
-    bookedCount: photographers.filter(p => p.status === 'booked').length,
-  }), [photographers]);
+    total: vendors.length,
+    photographersCount: vendors.filter(v => v.category === 'photography').length,
+    videographersCount: vendors.filter(v => v.category === 'videography').length,
+    bookedCount: vendors.filter(v => v.status === 'booked').length,
+  }), [vendors]);
 
   if (loading) {
     return (
@@ -228,74 +163,23 @@ export default function PhotographyPage() {
 
         {/* Photographers tab */}
         {activeTab === 'photographers' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setEditingPhotographer(null); setShowForm(true); }} className="btn-primary"
-                style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Plus size={13} />Add photographer
-              </button>
-            </div>
-            <PhotographerList photographers={photographersList} onEdit={handleEdit} onDelete={handleDelete} />
-            {photographersList.length === 0 && (
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '40px 0' }}>
-                No photographers added yet. Click "Add photographer" to get started.
-              </p>
-            )}
-          </div>
+          <VendorRosterSection category="photography" categoryLabel="photography" />
         )}
 
         {/* Videographers tab */}
         {activeTab === 'videographers' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setEditingPhotographer(null); setShowForm(true); }} className="btn-primary"
-                style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Plus size={13} />Add videographer
-              </button>
-            </div>
-            <PhotographerList photographers={videographersList} onEdit={handleEdit} onDelete={handleDelete} />
-            {videographersList.length === 0 && (
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '40px 0' }}>
-                No videographers added yet. Click "Add videographer" to get started.
-              </p>
-            )}
-          </div>
+          <VendorRosterSection category="videography" categoryLabel="videography" />
         )}
 
         {/* Photo & video details tab */}
         {activeTab === 'details' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <DetailsSection title="Photographer details" icon={Camera} sectionKey="photographer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={labelStyle}>Select photographer</label>
-                {photographersList.length > 0 ? (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <div style={{ flex: 1 }}>
-                      <Select value={details.photography?.photographerVendorId || ''} onValueChange={v => handleVendorSelect(v, 'photographer')}>
-                        <SelectTrigger><SelectValue placeholder="Select from your photographers" /></SelectTrigger>
-                        <SelectContent>
-                          {photographersList.map(v => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <button type="button" onClick={() => { setEditingPhotographer(null); setShowForm(true); }} style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
-                      <Plus size={13} />
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <input style={{ ...inputStyle, flex: 1 }} placeholder="Photographer name" value={details.photography?.photographer || ''} onChange={e => handleDetailsUpdate('photographer', e.target.value)} />
-                    <button type="button" onClick={() => { setEditingPhotographer(null); setShowForm(true); }} style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
-                      <Plus size={13} />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <SectionInput label="Contact person" value={details.photography?.photographerContact} onChange={e => handleDetailsUpdate('photographerContact', e.target.value)} placeholder="Contact name" />
-                <SectionInput label="Phone" value={details.photography?.photographerPhone} onChange={e => handleDetailsUpdate('photographerPhone', e.target.value)} placeholder="Phone number" />
-              </div>
-              <SectionInput label="Email" type="email" value={details.photography?.photographerEmail} onChange={e => handleDetailsUpdate('photographerEmail', e.target.value)} placeholder="Email address" />
+              <VendorContactSection
+                category="photography"
+                vendorId={details.photography?.photographerVendorId}
+                onVendorIdChange={id => handleDetailsUpdate('photographerVendorId', id)}
+              />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <SectionInput label="Package selected" value={details.photography?.photographyPackage} onChange={e => handleDetailsUpdate('photographyPackage', e.target.value)} placeholder="Package name" />
                 <SectionInput label="Hours booked" type="number" value={details.photography?.photographyHours} onChange={e => handleDetailsUpdate('photographyHours', e.target.value)} placeholder="Hours" />
@@ -304,36 +188,11 @@ export default function PhotographyPage() {
             </DetailsSection>
 
             <DetailsSection title="Videographer details" icon={Video} sectionKey="videographer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={labelStyle}>Select videographer</label>
-                {videographersList.length > 0 ? (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <div style={{ flex: 1 }}>
-                      <Select value={details.photography?.videographerVendorId || ''} onValueChange={v => handleVendorSelect(v, 'videographer')}>
-                        <SelectTrigger><SelectValue placeholder="Select from your videographers" /></SelectTrigger>
-                        <SelectContent>
-                          {videographersList.map(v => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <button type="button" onClick={() => { setEditingPhotographer(null); setShowForm(true); }} style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
-                      <Plus size={13} />
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <input style={{ ...inputStyle, flex: 1 }} placeholder="Videographer name" value={details.photography?.videographer || ''} onChange={e => handleDetailsUpdate('videographer', e.target.value)} />
-                    <button type="button" onClick={() => { setEditingPhotographer(null); setShowForm(true); }} style={{ width: 32, height: 32, borderRadius: 999, border: '1px solid rgba(10,10,10,0.18)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0A' }}>
-                      <Plus size={13} />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <SectionInput label="Contact person" value={details.photography?.videographerContact} onChange={e => handleDetailsUpdate('videographerContact', e.target.value)} placeholder="Contact name" />
-                <SectionInput label="Phone" value={details.photography?.videographerPhone} onChange={e => handleDetailsUpdate('videographerPhone', e.target.value)} placeholder="Phone number" />
-              </div>
-              <SectionInput label="Email" type="email" value={details.photography?.videographerEmail} onChange={e => handleDetailsUpdate('videographerEmail', e.target.value)} placeholder="Email address" />
+              <VendorContactSection
+                category="videography"
+                vendorId={details.photography?.videographerVendorId}
+                onVendorIdChange={id => handleDetailsUpdate('videographerVendorId', id)}
+              />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <SectionInput label="Package selected" value={details.photography?.videographyPackage} onChange={e => handleDetailsUpdate('videographyPackage', e.target.value)} placeholder="Package name" />
                 <SectionInput label="Video length" value={details.photography?.videoLength} onChange={e => handleDetailsUpdate('videoLength', e.target.value)} placeholder="e.g., 3-5 minute highlight reel" />
@@ -373,34 +232,13 @@ export default function PhotographyPage() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <SectionInput label="Video delivery timeline" value={details.photography?.videoDeliveryTimeline} onChange={e => handleDetailsUpdate('videoDeliveryTimeline', e.target.value)} placeholder="e.g., 8-12 weeks" />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label style={labelStyle}>Editing style</label>
-                  <Select value={details.photography?.editingStyle || ''} onValueChange={v => handleDetailsUpdate('editingStyle', v)}>
-                    <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bright_airy">Bright & airy</SelectItem>
-                      <SelectItem value="dark_moody">Dark & moody</SelectItem>
-                      <SelectItem value="natural">Natural</SelectItem>
-                      <SelectItem value="vintage">Vintage</SelectItem>
-                      <SelectItem value="black_white">Black & white</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <SectionInput label="Editing style" value={details.photography?.editingStyle} onChange={e => handleDetailsUpdate('editingStyle', e.target.value)} placeholder="Bright & airy, dark & moody, natural, vintage, black & white" />
               </div>
               <SectionInput label="Delivery format" isTextarea value={details.photography?.deliveryFormat} onChange={e => handleDetailsUpdate('deliveryFormat', e.target.value)} placeholder="Online gallery, USB drive, prints, albums, etc." />
             </DetailsSection>
           </div>
         )}
       </div>
-
-      {/* Form overlay */}
-      {showForm && (
-        <PhotographerForm
-          photographer={editingPhotographer}
-          onSubmit={handleSubmit}
-          onCancel={() => { setShowForm(false); setEditingPhotographer(null); }}
-        />
-      )}
 
       <AvaModal
         isOpen={avaOpen}

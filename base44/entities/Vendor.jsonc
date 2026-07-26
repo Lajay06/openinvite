@@ -77,6 +77,7 @@
       "enum": [
         "researching",
         "contacted",
+        "meeting_scheduled",
         "quoted",
         "booked",
         "rejected"
@@ -122,6 +123,137 @@
       "type": "boolean",
       "default": false,
       "description": "Owner has starred this vendor as a favourite"
+    },
+    "instagram": {
+      "type": "string",
+      "description": "Instagram handle"
+    },
+    "reviews_count": {
+      "type": "number",
+      "description": "Number of reviews (not necessarily Google-sourced — see google_reviews_count for that)"
+    },
+    "starting_price": {
+      "type": "number",
+      "description": "Starting package price"
+    },
+    "package_selected": {
+      "type": "string",
+      "description": "Selected package name"
+    },
+    "hours_booked": {
+      "type": "number",
+      "description": "Number of hours booked"
+    },
+    "booking_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of service (distinct from contract_date, when the contract was signed)"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "Start time (e.g., 14:00)"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "End time (e.g., 22:00)"
+    },
+    "meeting_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date/time of meeting or consultation"
+    },
+    "contract_signed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether contract has been signed"
+    },
+    "deposit_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether deposit has been paid"
+    },
+    "deposit_amount": {
+      "type": "number",
+      "description": "Deposit amount"
+    },
+    "style": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "candid",
+          "traditional",
+          "artistic",
+          "documentary",
+          "cinematic",
+          "vintage",
+          "modern",
+          "natural"
+        ]
+      },
+      "description": "Photography/videography style (photography/videography category only)"
+    },
+    "portfolio_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Portfolio website URL"
+    },
+    "sample_work": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "description": "Sample image URLs"
+    },
+    "services_offered": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of services (e.g., engagement shoot, albums, prints). Also used to record a secondary service a single vendor covers that doesn't fit the single-value category field — e.g. a photographer who also shoots video gets category:'photography' with 'videography' added here, rather than a second Vendor record."
+    },
+    "equipment": {
+      "type": "string",
+      "description": "Camera equipment and gear used (photography/videography category only)"
+    },
+    "backup_equipment": {
+      "type": "boolean",
+      "default": false,
+      "description": "Has backup equipment (photography/videography category only)"
+    },
+    "second_shooter": {
+      "type": "boolean",
+      "default": false,
+      "description": "Includes second shooter (photography/videography category only)"
+    },
+    "delivery_timeline": {
+      "type": "string",
+      "description": "Photo/video delivery timeline (e.g., 4-6 weeks)"
+    },
+    "image_count": {
+      "type": "number",
+      "description": "Number of edited images included (photography category only)"
+    },
+    "video_length": {
+      "type": "string",
+      "description": "Video length (e.g., 3-5 minutes highlight reel) (videography category only)"
+    },
+    "editing_style": {
+      "type": "string",
+      "description": "Editing style description (photography/videography category only)"
+    },
+    "travel_fee": {
+      "type": "number",
+      "description": "Travel fee if applicable"
+    },
+    "cancellation_policy": {
+      "type": "string",
+      "description": "Cancellation policy details"
+    },
+    "special_requests": {
+      "type": "string",
+      "description": "Special requests or must-have shots (distinct from the general-purpose notes field)"
     }
   },
   "required": [

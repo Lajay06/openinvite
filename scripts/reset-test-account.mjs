@@ -86,7 +86,6 @@ const SEPARATE_ENTITIES = [
   'VendorLog',
   'VendorTask',
   'Collaborator',
-  'Photographer',
   'Music',
   'ThemeDetails',
 ];
