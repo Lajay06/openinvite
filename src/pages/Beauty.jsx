@@ -5,14 +5,12 @@ import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
-import VendorFormModal from '../components/vendors/VendorFormModal';
 import VendorContactSection from '../components/vendors/VendorContactSection';
-import VendorList from '../components/vendors/VendorList';
+import VendorRosterSection from '../components/vendors/VendorRosterSection';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
 const WeddingDetails = base44.entities.WeddingDetails;
-const Vendor = base44.entities.Vendor;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -88,8 +86,6 @@ export default function BeautyPage() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [activeTab, setActiveTab] = useState('hair-makeup');
-  const [showVendorForm, setShowVendorForm] = useState(false);
-  const [editingVendor, setEditingVendor] = useState(null);
   const [showTrialForm, setShowTrialForm] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
 
@@ -97,16 +93,6 @@ export default function BeautyPage() {
   const latestRef = useRef(null);
 
   useEffect(() => { loadData(); }, []);
-
-  // The "Beauty team" tab's own vendor list can go stale after a vendor is
-  // added via a VendorContactSection elsewhere on this page (hair/makeup
-  // artist) — each owns its own fetch. Refresh on tab switch rather than
-  // prop-drilling a shared list/refresh callback into every consumer.
-  useEffect(() => {
-    if (activeTab === 'beauty-team') {
-      getMyRecords('Vendor').then(v => setVendors(v.filter(x => x.category === 'beauty'))).catch(() => {});
-    }
-  }, [activeTab]);
 
   const loadData = async () => {
     try {
@@ -215,36 +201,6 @@ export default function BeautyPage() {
     const next = { ...beautyData, trials: trials.filter(t => t.id !== id) };
     setBeautyData(next);
     persist(next);
-  };
-
-  const handleVendorSubmit = async (vendorData) => {
-    const tid = toast.loading(editingVendor ? 'Updating…' : 'Adding vendor…');
-    try {
-      let created;
-      if (editingVendor) {
-        await Vendor.update(editingVendor.id, vendorData);
-        toast.success('Vendor updated', { id: tid });
-      } else {
-        created = await Vendor.create({ ...vendorData, category: 'beauty' });
-        toast.success('Vendor added', { id: tid });
-      }
-      setShowVendorForm(false);
-      setEditingVendor(null);
-      const refreshed = await getMyRecords('Vendor');
-      setVendors(refreshed.filter(v => v.category === 'beauty'));
-    } catch { toast.error('Failed to save vendor', { id: tid }); }
-  };
-
-  const handleVendorEdit = (vendor) => { setEditingVendor(vendor); setShowVendorForm(true); };
-
-  const handleVendorDelete = async (id) => {
-    if (!window.confirm('Delete this vendor?')) return;
-    const tid = toast.loading('Deleting…');
-    try {
-      await Vendor.delete(id);
-      toast.success('Vendor deleted', { id: tid });
-      setVendors(prev => prev.filter(v => v.id !== id));
-    } catch { toast.error('Failed to delete', { id: tid }); }
   };
 
   if (loading) return (
@@ -502,21 +458,7 @@ export default function BeautyPage() {
 
         {/* ── BEAUTY TEAM ───────────────────────────────────────────────── */}
         {activeTab === 'beauty-team' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} className="btn-primary"
-                style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Plus size={13} />Add beauty vendor
-              </button>
-            </div>
-            {beautyVendors.length === 0 ? (
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textAlign: 'center', padding: '40px 0' }}>
-                No beauty vendors added yet. Click "Add beauty vendor" to get started.
-              </p>
-            ) : (
-              <VendorList vendors={beautyVendors} onEdit={handleVendorEdit} onDelete={handleVendorDelete} />
-            )}
-          </div>
+          <VendorRosterSection category="beauty" categoryLabel="beauty" />
         )}
 
         {/* ── TRIAL PLANNING ────────────────────────────────────────────── */}
@@ -588,14 +530,6 @@ export default function BeautyPage() {
           </div>
         )}
       </div>
-
-      <VendorFormModal
-        open={showVendorForm}
-        vendor={editingVendor}
-        defaultCategory="beauty"
-        onSubmit={handleVendorSubmit}
-        onCancel={() => { setShowVendorForm(false); setEditingVendor(null); }}
-      />
 
       <AvaModal
         isOpen={avaOpen}
