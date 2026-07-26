@@ -95,7 +95,7 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
       {/* Header */}
       <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
-          <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Send WhatsApp message</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Open in WhatsApp</span>
           <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>{guest?.name || 'Guest'}</p>
         </div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
@@ -153,7 +153,7 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
         <button onClick={onClose} className="btn-editorial-secondary" style={{ flex: 1, fontSize: 13 }}>Cancel</button>
         <button onClick={handleSend} disabled={loading || !message.trim() || !phone.trim()}
           style={{ flex: 1, padding: '9px 16px', background: WHATSAPP_GREEN, color: '#FFFFFF', border: 'none', borderRadius: 999, cursor: loading || !message.trim() || !phone.trim() ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", opacity: loading || !message.trim() || !phone.trim() ? 0.5 : 1, transition: 'opacity 0.15s' }}>
-          Send via WhatsApp
+          Open in WhatsApp
         </button>
       </div>
     </div>

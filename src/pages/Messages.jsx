@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { base44 } from '@/api/base44Client';
-import { getMyRecords } from '@/lib/resolveMyWedding';
+import { getMyRecords, getMyInvitation } from '@/lib/resolveMyWedding';
 import { LAYOUT_QUERY_KEY } from '@/Layout';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, Reply, Search, CheckCheck, Send, Heart, Mail, User, EyeOff, Eye, MessageSquare, Loader2 } from 'lucide-react';
@@ -61,10 +62,13 @@ export default function MessagesPage() {
   const [whatsappConnected, setWhatsappConnected] = useState(false);
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [composingGuest, setComposingGuest] = useState(null);
+  const [coupleNames, setCoupleNames] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
 
   useEffect(() => {
     loadMessages();
     loadWhatsAppSettings();
+    getMyInvitation().then(inv => setCoupleNames(inv?.couple_names || '')).catch(() => {});
   }, []);
 
   const loadMessages = async () => {
@@ -113,15 +117,40 @@ export default function MessagesPage() {
 
   const handleReply = async (messageId) => {
     if (!replyText.trim()) return;
+    const message = messages.find(msg => msg.id === messageId);
+    setSendingReply(true);
+    const tid = toast.loading('Sending reply…');
     try {
-      const message = messages.find(msg => msg.id === messageId);
-      await GuestMessage.update(messageId, { ...message, reply: replyText, replied: true });
+      const res = await fetch('/api/send-guest-reply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+        },
+        body: JSON.stringify({
+          guestEmail: message.guest_email,
+          guestName: message.guest_name,
+          originalMessage: message.message,
+          replyText,
+          coupleNames,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || 'Failed to send reply email');
+      }
+      await GuestMessage.update(messageId, {
+        ...message, reply: replyText, replied: true, reply_sent_at: new Date().toISOString(),
+      });
       setReplyingTo(null);
       setReplyText('');
+      toast.success('Reply sent', { id: tid });
       loadMessages();
     } catch (error) {
       console.error('Error sending reply:', error);
+      toast.error(error.message || 'Failed to send reply', { id: tid });
     }
+    setSendingReply(false);
   };
 
   const toggleRead = async (messageId) => {
@@ -263,7 +292,7 @@ export default function MessagesPage() {
                 {whatsappConnected && message.guest_phone && (
                   <button onClick={() => setComposingGuest(message)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 6 }}
-                    title="Send WhatsApp message"
+                    title="Open in WhatsApp"
                     onMouseEnter={e => e.currentTarget.style.color = '#25D366'}
                     onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
                     <MessageSquare size={14} />
@@ -292,6 +321,11 @@ export default function MessagesPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   <Heart size={11} style={{ color: '#E03553' }} />
                   <span style={{ ...labelStyle, color: '#E03553' }}>Your reply</span>
+                  {message.reply_sent_at && (
+                    <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      · emailed {format(new Date(message.reply_sent_at), 'MMM d, h:mm a')}
+                    </span>
+                  )}
                 </div>
                 <p style={{ fontSize: 13, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, lineHeight: 1.6 }}>
                   {message.reply}
@@ -311,9 +345,9 @@ export default function MessagesPage() {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => { setReplyingTo(null); setReplyText(''); }}
                     className="btn-editorial-secondary" style={{ fontSize: 12 }}>Cancel</button>
-                  <button onClick={() => handleReply(message.id)} disabled={!replyText.trim()}
-                    className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: !replyText.trim() ? 0.5 : 1 }}>
-                    <Send size={12} />Send reply
+                  <button onClick={() => handleReply(message.id)} disabled={!replyText.trim() || sendingReply}
+                    className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: (!replyText.trim() || sendingReply) ? 0.5 : 1 }}>
+                    <Send size={12} />{sendingReply ? 'Sending…' : 'Send reply'}
                   </button>
                 </div>
               </div>
