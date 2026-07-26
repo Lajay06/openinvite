@@ -153,7 +153,7 @@ Return assignments[], unassigned[], and summary.`,
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', fontSize: 14, opacity: loading || guests.length === 0 || tables.length === 0 ? 0.6 : 1 }}
               >
                 {loading ? <Spinner /> : <Sparkles size={14} />}
-                {loading ? 'Generating seating plan…' : 'Generate seating plan'}
+                {loading ? 'Asking Ava…' : 'Ask Ava for a seating plan'}
               </button>
             </div>
           )}
@@ -228,7 +228,7 @@ Return assignments[], unassigned[], and summary.`,
 
               <div style={{ display: 'flex', gap: 10, paddingTop: 8 }}>
                 <button className="btn-editorial-secondary" style={{ flex: 1 }} onClick={() => setStep('generate')}>
-                  Generate new plan
+                  Ask Ava for a new plan
                 </button>
                 <button
                   className="btn-primary"

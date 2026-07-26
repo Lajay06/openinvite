@@ -1124,7 +1124,7 @@ function PublishTab({ details, guide, destination, onSaveField, onGenerateIntro,
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <label style={{ ...sectionLabel, marginBottom: 0 }}>Editorial intro</label>
             <button onClick={onGenerateIntro} className="btn-editorial-secondary" style={{ fontSize: 11, padding: '4px 10px' }}>
-              ✦ Generate with AI
+              ✦ Ask Ava to write it
             </button>
           </div>
           <textarea

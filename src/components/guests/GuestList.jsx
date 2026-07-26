@@ -229,16 +229,52 @@ const tagPillStyle = {
   border: '1px solid rgba(128,61,129,0.25)',
 };
 
-function TagsDisplay({ tags }) {
+function TagsDisplay({ tags, hovered }) {
   const items = Array.isArray(tags) ? tags.filter(Boolean) : [];
-  if (items.length === 0) return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>Add tags…</span>;
+  if (items.length === 0) {
+    return (
+      <span style={{ fontSize: 12, color: hovered ? 'rgba(10,10,10,0.45)' : 'rgba(10,10,10,0.25)', fontFamily: PJS, transition: 'color 0.1s' }}>
+        Add tags…
+      </span>
+    );
+  }
   const first2 = items.slice(0, 2);
   const rest = items.length - first2.length;
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }} title={items.join(', ')}>
-      {first2.map(t => <span key={t} style={tagPillStyle}>{t}</span>)}
+      {first2.map(t => (
+        <span key={t} style={{
+          ...tagPillStyle,
+          background: hovered ? 'rgba(128,61,129,0.16)' : tagPillStyle.background,
+          borderColor: hovered ? 'rgba(128,61,129,0.4)' : undefined,
+          transition: 'background 0.1s, border-color 0.1s',
+        }}>{t}</span>
+      ))}
       {rest > 0 && <span style={{ ...tagPillStyle, background: 'rgba(10,10,10,0.06)', color: '#444444', border: 'none' }}>+{rest}</span>}
     </span>
+  );
+}
+
+/* Tags cell's own hover wrapper — no background box behind it (that read as
+   a stray grey box against the pills' own rounded/tinted styling); hover
+   feedback instead comes from the pills themselves via TagsDisplay's
+   `hovered` prop. */
+function TagsCellHover({ tags, onClick, readOnly }) {
+  const [hovered, setHovered] = useState(false);
+  if (readOnly) {
+    return <div style={{ padding: '2px 4px', margin: '-2px -4px' }}><TagsDisplay tags={tags} /></div>;
+  }
+  return (
+    <div
+      onClick={onClick}
+      title="Click to edit tags (comma-separated)"
+      {...interactiveDivProps(onClick)}
+      style={{ cursor: 'pointer', padding: '2px 4px', margin: '-2px -4px' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <TagsDisplay tags={tags} hovered={hovered} />
+    </div>
   );
 }
 
@@ -770,7 +806,7 @@ export default function GuestList({
   };
 
   const tagsCell = (guest) => {
-    if (readOnly) return <div style={{ padding: '2px 4px', margin: '-2px -4px' }}><TagsDisplay tags={guest.tags} /></div>;
+    if (readOnly) return <TagsCellHover tags={guest.tags} readOnly />;
     if (isEditing(guest.id, 'tags')) {
       return (
         <input
@@ -788,13 +824,10 @@ export default function GuestList({
       );
     }
     return (
-      <HoverDiv
+      <TagsCellHover
+        tags={guest.tags}
         onClick={() => startEdit(guest.id, 'tags', Array.isArray(guest.tags) ? guest.tags.join(', ') : '')}
-        pointer
-        title="Click to edit tags (comma-separated)"
-      >
-        <TagsDisplay tags={guest.tags} />
-      </HoverDiv>
+      />
     );
   };
 

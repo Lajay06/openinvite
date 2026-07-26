@@ -316,7 +316,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                      AI Website Builder
+                      Ava website builder
                     </h3>
                     <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                       Generate a complete wedding website using your event details, including real hotel recommendations.
@@ -334,7 +334,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4 mr-2" />
-                          Generate Website
+                          Ask Ava to build it
                         </>
                       )}
                     </Button>

@@ -101,17 +101,14 @@ export default function TipsModal({ onClose }) {
           {/* Header */}
           <div style={{ padding: '32px 32px 24px', borderBottom: '1px solid #EEEEEE' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #E03553, #803D81)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#FFF', flexShrink: 0 }}>✦</div>
-              <div>
-                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Here's how to get started</h2>
-              </div>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#0A0A0A', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Here's how to get started</h2>
               <button onClick={handleClose} aria-label="Close tips modal" style={{ marginLeft: 'auto', background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'rgba(10,10,10,0.45)', lineHeight: 1 }}>×</button>
             </div>
 
             {/* Step dots */}
             <div style={{ display: 'flex', gap: 6 }}>
               {tips.map((_, i) => (
-                <div key={i} style={{ height: 3, flex: 1, borderRadius: 999, background: i <= currentTip ? 'linear-gradient(90deg, #E03553, #803D81)' : 'rgba(10,10,10,0.08)', transition: 'background 0.3s ease' }} />
+                <div key={i} style={{ height: 3, flex: 1, borderRadius: 999, background: i <= currentTip ? '#E03553' : 'rgba(10,10,10,0.08)', transition: 'background 0.3s ease' }} />
               ))}
             </div>
           </div>

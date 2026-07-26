@@ -672,7 +672,10 @@ export default function Guests() {
               </div>
               {weddingEvents.length > 1 && (
                 <Select value={eventFilter} onValueChange={setEventFilter}>
-                  <SelectTrigger style={{ width: 200, flexShrink: 0 }}>
+                  <SelectTrigger
+                    style={{ flexShrink: 0 }}
+                    className="w-auto flex-none gap-1 rounded-full border border-[rgba(10,10,10,0.15)] px-2 py-[3px] text-[11px] font-semibold text-[rgba(10,10,10,0.6)] data-[placeholder]:text-[rgba(10,10,10,0.6)] data-[placeholder]:font-semibold hover:border-[rgba(10,10,10,0.45)] hover:text-[#0A0A0A] focus:border focus:border-[rgba(10,10,10,0.15)] focus:outline-none"
+                  >
                     <SelectValue placeholder="All events" />
                   </SelectTrigger>
                   <SelectContent>

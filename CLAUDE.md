@@ -14,7 +14,11 @@ var sourcing). Update it when you learn something new the same way.
 - Sentence case everywhere — no ALL CAPS, no Uppercase Every Word
 - No text-transform: uppercase anywhere in CSS or JSX
 - No box-shadow on cards
-- No rounded corners except buttons and pills (border-radius: 999px)
+- No rounded corners except buttons, pills (border-radius: 999px), and
+  modals/popups — all dialogs inherit their 16px rounding from the one
+  shared modal wrapper (src/components/ui/dialog.jsx's DialogContent).
+  Never set border-radius on an individual modal; if a modal needs its own
+  radius override, that's drift — fix it at the wrapper instead.
 - Every dashboard page must use DashboardPageHeader component
 - All data via base44.entities.* authenticated client only
 - No imports from @/entities/* — use base44.entities.* instead
