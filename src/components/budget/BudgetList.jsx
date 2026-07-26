@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -44,7 +44,21 @@ const BadgePill = ({ style, children }) => (
   <span style={{ ...pillBase, background: 'transparent', ...style }}>{children}</span>
 );
 
-export default function BudgetList({ items, onEdit, onDelete, readOnly = false, loading = false }) {
+export default function BudgetList({ items, onEdit, onDelete, readOnly = false, loading = false, scrollToItemId, highlightedItemId }) {
+  const rowRefs = useRef(new Map());
+  const scrolledForId = useRef(null);
+
+  // Same pattern as VendorList's scrollToVendorId — scrolls a Recent
+  // activity/search result's row into view once it exists in `items`.
+  useEffect(() => {
+    if (!scrollToItemId || scrolledForId.current === scrollToItemId) return;
+    const el = rowRefs.current.get(scrollToItemId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scrolledForId.current = scrollToItemId;
+    }
+  }, [scrollToItemId, items]);
+
   if (loading) return null;
   if (items.length === 0) {
     return (
@@ -79,7 +93,14 @@ export default function BudgetList({ items, onEdit, onDelete, readOnly = false, 
                 : 0;
               const over = pct > 100;
               return (
-                <TableRow key={item.id}>
+                <TableRow
+                  key={item.id}
+                  ref={el => { if (el) rowRefs.current.set(item.id, el); else rowRefs.current.delete(item.id); }}
+                  style={{
+                    background: item.id === highlightedItemId ? 'rgba(224,53,83,0.12)' : undefined,
+                    transition: 'background 1.2s ease',
+                  }}
+                >
                   <TableCell>
                     <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {item.item_name}
