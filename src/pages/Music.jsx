@@ -11,8 +11,7 @@ import SharePlaylist from '../components/music/SharePlaylist';
 import MusicList from '../components/music/MusicList';
 import MusicForm from '../components/music/MusicForm';
 import AddFromLink from '../components/music/AddFromLink';
-import VendorFormModal from '../components/vendors/VendorFormModal';
-import VendorList from '../components/vendors/VendorList';
+import VendorRosterSection from '../components/vendors/VendorRosterSection';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { Textarea } from '@/components/ui/textarea';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -125,8 +124,6 @@ export default function MusicPage() {
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [pendingSpotifyData, setPendingSpotifyData] = useState(null);
   const [spotifyDropdownOpen, setSpotifyDropdownOpen] = useState(false);
-  const [showVendorForm, setShowVendorForm] = useState(false);
-  const [editingVendor, setEditingVendor] = useState(null);
   const spotifyPillRef = useRef(null);
 
   const collab = useCollaboratorContext();
@@ -181,13 +178,6 @@ export default function MusicPage() {
     queryFn: async () => { try { return await getMyRecords('Music'); } catch { return []; } },
   });
   const playlistTracks = (isCollaborating ? collabDataQuery.data?.Music : ownTracksData) || [];
-
-  const { data: vendorsData } = useQuery({
-    queryKey: ['musicVendors'],
-    enabled: !isCollaborating,
-    queryFn: async () => { try { return await getMyRecords('Vendor'); } catch { return []; } },
-  });
-  const musicVendors = (vendorsData || []).filter(v => v.category === 'music');
 
   const updateMutation = useMutation({
     mutationFn: async (updates) => {
@@ -374,36 +364,6 @@ export default function MusicPage() {
     setActivePlaylist(newPl);
   };
 
-  // ── Vendor tab — same mechanic as Beauty's "Beauty team" tab: a plain
-  // Vendor entity list filtered by category, add/edit via the shared
-  // VendorForm/VendorList components. ─────────────────────────────────────
-  const handleVendorSubmit = async (vendorData) => {
-    const tid = toast.loading(editingVendor ? 'Updating…' : 'Adding vendor…');
-    try {
-      if (editingVendor) {
-        await base44.entities.Vendor.update(editingVendor.id, vendorData);
-        toast.success('Vendor updated', { id: tid });
-      } else {
-        await base44.entities.Vendor.create({ ...vendorData, category: 'music' });
-        toast.success('Vendor added', { id: tid });
-      }
-      setShowVendorForm(false);
-      setEditingVendor(null);
-      queryClient.invalidateQueries(['musicVendors']);
-    } catch { toast.error('Failed to save vendor', { id: tid }); }
-  };
-
-  const handleVendorEdit = (vendor) => { setEditingVendor(vendor); setShowVendorForm(true); };
-
-  const handleVendorDelete = async (id) => {
-    if (!window.confirm('Delete this vendor?')) return;
-    const tid = toast.loading('Deleting…');
-    try {
-      await base44.entities.Vendor.delete(id);
-      toast.success('Vendor deleted', { id: tid });
-      queryClient.invalidateQueries(['musicVendors']);
-    } catch { toast.error('Failed to delete', { id: tid }); }
-  };
 
   const filteredRequests = (songRequests || []).filter(r => r.status === requestFilter);
 
@@ -688,21 +648,7 @@ export default function MusicPage() {
       {/* ── VENDOR ─────────────────────────────────────────────────────────── */}
       {!isCollaborating && activeTab === 'vendor' && (
         <div style={{ padding: '32px 32px 48px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setEditingVendor(null); setShowVendorForm(true); }} className="btn-primary"
-                style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Plus size={13} />Add music vendor
-              </button>
-            </div>
-            {musicVendors.length === 0 ? (
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textAlign: 'center', padding: '40px 0' }}>
-                No music vendors added yet. Click "Add music vendor" to get started.
-              </p>
-            ) : (
-              <VendorList vendors={musicVendors} onEdit={handleVendorEdit} onDelete={handleVendorDelete} />
-            )}
-          </div>
+          <VendorRosterSection category="music" categoryLabel="music" />
         </div>
       )}
 
@@ -745,14 +691,6 @@ export default function MusicPage() {
           onClose={() => setShowSpotifyModal(false)}
         />
       )}
-
-      <VendorFormModal
-        open={showVendorForm}
-        vendor={editingVendor}
-        defaultCategory="music"
-        onSubmit={handleVendorSubmit}
-        onCancel={() => { setShowVendorForm(false); setEditingVendor(null); }}
-      />
 
       {/* Settings modal */}
       {showSettings && (
