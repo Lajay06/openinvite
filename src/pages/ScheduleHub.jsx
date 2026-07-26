@@ -14,6 +14,7 @@ import SchedulePage from "./Schedule";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
+import { buildIcsCalendar, downloadIcs } from "@/lib/ics";
 import toast from "react-hot-toast";
 
 const Schedule = base44.entities.Schedule;
@@ -142,6 +143,13 @@ export default function ScheduleHub() {
     toast.success("Schedule exported");
   };
 
+  // ── Add to calendar (.ics) — full schedule ────────────────────────────────
+  const exportScheduleIcs = () => {
+    const ics = buildIcsCalendar(scheduleItems, "Wedding schedule");
+    downloadIcs("wedding-schedule.ics", ics);
+    toast.success("Calendar file downloaded");
+  };
+
   // ── Add / Edit handlers ───────────────────────────────────────────────────
   const handleAddEvent  = () => { setEditingItem(null); setShowForm(true); };
 
@@ -223,6 +231,14 @@ export default function ScheduleHub() {
             style={{ opacity: scheduleItems.length === 0 ? 0.4 : 1 }}
           >
             Export CSV
+          </button>
+          <button
+            onClick={exportScheduleIcs}
+            disabled={scheduleItems.length === 0}
+            className="btn-editorial-secondary"
+            style={{ opacity: scheduleItems.length === 0 ? 0.4 : 1 }}
+          >
+            Add to calendar (.ics)
           </button>
           {!readOnly && (
             <button onClick={handleAddEvent} className="btn-primary">
