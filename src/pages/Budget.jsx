@@ -14,15 +14,31 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { getMyRecords } from "@/lib/resolveMyWedding";
+import { getMyRecords, getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
 const Budget = base44.entities.Budget;
+const WeddingDetails = base44.entities.WeddingDetails;
 
 function CountUp({ to, duration = 1200, format }) {
   const [value, setValue] = useState(0);
   const startRef = useRef(null);
+  const lastToRef = useRef(null);
   useEffect(() => {
-    if (to === 0) { setValue(0); return; }
+    if (to === 0) { setValue(0); lastToRef.current = 0; return; }
+    // The surrounding page (Budget.jsx's two duplicate desktop/mobile
+    // trees, each with its own load effect) can re-render this component
+    // several times in quick succession even when `to` hasn't actually
+    // changed — confirmed live via instrumentation: the same 4 stat values
+    // re-fired this effect repeatedly within ~1s of each other. Restarting
+    // the animation from scratch on every one of those re-fires (the old
+    // behaviour) meant it kept getting reset before a full `duration`
+    // window could ever elapse, so it never reached its target — that,
+    // not the target value itself, is why "Total budget" sometimes settled
+    // on a wrong, stable-looking number that never changed again. Skipping
+    // the restart when `to` is unchanged from what's already in flight (or
+    // already reached) lets one animation run to completion.
+    if (lastToRef.current === to) return;
+    lastToRef.current = to;
     startRef.current = null;
     let raf;
     const tick = (ts) => {
@@ -33,7 +49,13 @@ function CountUp({ to, duration = 1200, format }) {
       if (progress < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    // Extra safety net: requestAnimationFrame is tied to the paint cycle,
+    // so a backgrounded/throttled tab can still stall the loop indefinitely
+    // partway through even with the guard above. setTimeout keeps firing
+    // in that case, so this guarantees the value snaps to the true target
+    // once the animation's nominal duration has passed either way.
+    const settle = setTimeout(() => setValue(to), duration + 50);
+    return () => { cancelAnimationFrame(raf); clearTimeout(settle); };
   }, [to, duration]);
   return <>{format ? format(value) : value}</>;
 }
@@ -74,24 +96,57 @@ const BUDGET_CATEGORIES = [
   { key: 'honeymoon', label: 'Honeymoon' },
 ];
 
-function loadBudgetPlan() {
-  try {
-    const s = localStorage.getItem('oi_budget_plan');
-    if (s) return JSON.parse(s);
-  } catch {}
-  return { total: '', categories: {} };
-}
-
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-function BudgetPlanner({ symbol = '$' }) {
-  const [plan, setPlan] = useState(() => loadBudgetPlan());
+// Previously read/wrote localStorage('oi_budget_plan') — per-device only,
+// never touched the backend, so it was always blank on a fresh session
+// regardless of what real budget data existed for the wedding (dashboard
+// round: "Budget page incoherence" repeat #3). Now backed by
+// WeddingDetails.budget: an explicitly-saved plan takes precedence: falling
+// that (never saved), defaults from the real itemized Budget records
+// (`defaultTotal`/`defaultCategories`, computed by the parent from the same
+// `budgetItems` the stat cards use) so the form shows real numbers instead
+// of empty inputs on first view.
+function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategories, weddingDetailsId, onSaved }) {
+  const initialPlan = () => savedBudget
+    ? { total: savedBudget.total ?? '', categories: { ...savedBudget.categories } }
+    : { total: defaultTotal || '', categories: { ...defaultCategories } };
+  const [plan, setPlan] = useState(initialPlan);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const save = () => {
-    localStorage.setItem('oi_budget_plan', JSON.stringify(plan));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1800);
+  // savedBudget/defaultTotal/defaultCategories arrive async (after the
+  // parent's own WeddingDetails/Budget fetch resolves) — this component can
+  // mount before that data exists, so re-sync once it lands rather than
+  // being stuck on the empty initial render.
+  useEffect(() => {
+    setPlan(initialPlan());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedBudget, defaultTotal, defaultCategories]);
+
+  const save = async () => {
+    setSaving(true);
+    const payload = {
+      total: plan.total === '' ? null : parseFloat(plan.total) || 0,
+      categories: BUDGET_CATEGORIES.reduce((acc, c) => {
+        const v = plan.categories[c.key];
+        acc[c.key] = v === '' || v == null ? null : (parseFloat(v) || 0);
+        return acc;
+      }, {}),
+    };
+    try {
+      if (weddingDetailsId) {
+        await WeddingDetails.update(weddingDetailsId, { budget: payload });
+      } else {
+        const created = await WeddingDetails.create({ budget: payload });
+        onSaved?.(created.id);
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1800);
+    } catch {
+      toast.error('Failed to save budget plan');
+    }
+    setSaving(false);
   };
 
   const setTotal = (v) => setPlan(p => ({ ...p, total: v }));
@@ -111,8 +166,8 @@ function BudgetPlanner({ symbol = '$' }) {
   return (
     <div style={{ marginBottom: 32, border: '1px solid rgba(10,10,10,0.08)', padding: '24px 32px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
-        <button onClick={save} className="btn-primary" style={{ padding: '7px 20px', fontSize: 13 }}>
-          {saved ? 'Saved ✓' : 'Save plan'}
+        <button onClick={save} disabled={saving} className="btn-primary" style={{ padding: '7px 20px', fontSize: 13, opacity: saving ? 0.7 : 1 }}>
+          {saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save plan'}
         </button>
       </div>
 
@@ -177,6 +232,8 @@ export default function BudgetPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [avaOpen, setAvaOpen] = useState(false);
+  const [weddingDetailsId, setWeddingDetailsId] = useState(null);
+  const [savedBudget, setSavedBudget] = useState(null);
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
@@ -198,8 +255,15 @@ export default function BudgetPage() {
         const data = await res.json();
         setBudgetItems(data.budget || []);
       } else {
-        const data = await getMyRecords('Budget', '-created_date');
+        const [data, wd] = await Promise.all([
+          getMyRecords('Budget', '-created_date'),
+          getMyWeddingDetails().catch(() => null),
+        ]);
         setBudgetItems(data);
+        if (wd) {
+          setWeddingDetailsId(wd.id);
+          setSavedBudget(wd.budget || null);
+        }
       }
     } catch {
       toast.error("Failed to load budget");
@@ -247,6 +311,19 @@ export default function BudgetPage() {
     const totalPaid = budgetItems.filter(i => i.paid).reduce((s, i) => s + (i.actual_amount || 0), 0);
     const unpaidAmount = budgetItems.filter(i => !i.paid).reduce((s, i) => s + (i.actual_amount || 0), 0);
     return { totalBudgeted, totalSpent, remaining, percentageUsed, totalPaid, unpaidAmount };
+  }, [budgetItems]);
+
+  // Defaults for the "Save plan" section when no plan has been explicitly
+  // saved yet — the same itemized Budget records the stat cards above sum,
+  // grouped by the plan's (smaller) category set, so the form shows real
+  // numbers instead of blank inputs on first view.
+  const defaultCategories = React.useMemo(() => {
+    const sums = {};
+    for (const c of BUDGET_CATEGORIES) sums[c.key] = 0;
+    for (const item of budgetItems) {
+      if (item.category in sums) sums[item.category] += item.budgeted_amount || 0;
+    }
+    return sums;
   }, [budgetItems]);
 
   const filteredItems = budgetItems.filter(item => {
@@ -333,7 +410,16 @@ export default function BudgetPage() {
           </TabsList>
 
           <TabsContent value="overview" className="mt-8">
-            <BudgetPlanner symbol={symbol} />
+            {!readOnly && (
+              <BudgetPlanner
+                symbol={symbol}
+                savedBudget={savedBudget}
+                defaultTotal={stats.totalBudgeted || ''}
+                defaultCategories={defaultCategories}
+                weddingDetailsId={weddingDetailsId}
+                onSaved={setWeddingDetailsId}
+              />
+            )}
             <BudgetChart budgetItems={budgetItems} />
           </TabsContent>
 

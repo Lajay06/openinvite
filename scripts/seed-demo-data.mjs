@@ -568,6 +568,24 @@ async function main() {
   console.log(`✓ Budget: ${BUDGET_ITEMS.length} categories, AUD $${totalBudgeted.toLocaleString()} budgeted, ${BUDGET_ITEMS.filter(i => i.paid).length} paid (AUD $${totalPaid.toLocaleString()})\n`);
   report.budget = { categories: BUDGET_ITEMS.length, totalBudgeted, totalPaid };
 
+  // Budget page's "Save plan" section (WeddingDetails.budget) — was
+  // localStorage-only before (dashboard round: "Budget page incoherence"
+  // repeat #3), always blank regardless of the itemized Budget records
+  // above. Now a real saved plan, matching those same records' total and
+  // per-category sums (only the subset BudgetPlanner's smaller category set
+  // covers — decorations/rings/stationery/beauty/miscellaneous have no
+  // plan-level slot) so the plan form and the itemized data agree from the
+  // first seed instead of drifting apart.
+  const PLAN_CATEGORY_KEYS = ['venue', 'catering', 'photography', 'flowers', 'music', 'attire', 'transportation', 'honeymoon'];
+  const planCategories = {};
+  for (const key of PLAN_CATEGORY_KEYS) {
+    planCategories[key] = BUDGET_ITEMS.find(i => i.category === key)?.budgeted_amount ?? 0;
+  }
+  await adminUpdate('WeddingDetails', WEDDING_ID, {
+    budget: { total: totalBudgeted, categories: planCategories },
+  });
+  console.log(`✓ Budget plan: saved AUD $${totalBudgeted.toLocaleString()} total across ${PLAN_CATEGORY_KEYS.length} plan categories\n`);
+
   // ═══ 6. Schedule — around the New Year's Eve wedding ═════════════════
   const SCHEDULE_ITEMS = [
     { event_name: 'Rehearsal', event_date: '2026-12-30', start_time: '17:00', end_time: '18:00', location: 'Crown Sydney', category: 'rehearsal' },

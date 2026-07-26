@@ -718,6 +718,29 @@
         }
       }
     },
+    "budget": {
+      "type": "object",
+      "description": "The couple's overall budget plan (Budget page 'Save plan' section) — a single target total plus a rough per-category allocation, distinct from the itemized Budget entity records (individual line items) the rest of the Budget page tracks.",
+      "properties": {
+        "total": {
+          "type": "number",
+          "description": "Overall wedding budget target"
+        },
+        "categories": {
+          "type": "object",
+          "properties": {
+            "venue": { "type": "number" },
+            "catering": { "type": "number" },
+            "photography": { "type": "number" },
+            "flowers": { "type": "number" },
+            "music": { "type": "number" },
+            "attire": { "type": "number" },
+            "transportation": { "type": "number" },
+            "honeymoon": { "type": "number" }
+          }
+        }
+      }
+    },
     "transport": {
       "type": "object",
       "properties": {

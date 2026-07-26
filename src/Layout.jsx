@@ -567,7 +567,7 @@ function LayoutShell({ children, currentPageName }) {
       {/* Desktop: right of sidebar, below top bar (+ trial/collaborator banner if active) */}
       <div
         className="hidden lg:block page-content"
-        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: contentTopOffset }}
+        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: contentTopOffset, '--page-content-top': `${contentTopOffset}px` }}
       >
         <Suspense fallback={<ContentAreaFallback />}>
           {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
@@ -577,7 +577,7 @@ function LayoutShell({ children, currentPageName }) {
       {/* Mobile: full width, below mobile top bar */}
       <div
         className="lg:hidden page-content"
-        style={{ paddingTop: 64 }}
+        style={{ paddingTop: 64, '--page-content-top': '64px' }}
       >
         <Suspense fallback={<ContentAreaFallback />}>
           {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
