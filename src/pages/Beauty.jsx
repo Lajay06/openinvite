@@ -10,6 +10,7 @@ import VendorRosterSection from '../components/vendors/VendorRosterSection';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
+import CountUp from "@/components/shared/CountUp";
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -29,25 +30,6 @@ const textareaStyle = {
 };
 
 
-function CountUp({ to, duration = 1200, format }) {
-  const [value, setValue] = useState(0);
-  const startRef = useRef(null);
-  useEffect(() => {
-    if (to === 0) { setValue(0); return; }
-    startRef.current = null;
-    let raf;
-    const tick = (ts) => {
-      if (!startRef.current) startRef.current = ts;
-      const progress = Math.min((ts - startRef.current) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(eased * to));
-      if (progress < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [to, duration]);
-  return <>{format ? format(value) : value}</>;
-}
 
 function StarRating({ value, onChange }) {
   return (

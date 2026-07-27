@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import { Plus, Share2, Loader2 } from 'lucide-react';
@@ -18,6 +18,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
+import CountUp from "@/components/shared/CountUp";
 
 const RegistryItem = base44.entities.RegistryItem;
 const CustomGift = base44.entities.CustomGift;
@@ -30,25 +31,6 @@ const labelStyle = {
   margin: 0, marginBottom: 10,
 };
 
-function CountUp({ to, duration = 1200, prefix = '', suffix = '' }) {
-  const [value, setValue] = useState(0);
-  const startRef = useRef(null);
-  useEffect(() => {
-    if (to === 0) { setValue(0); return; }
-    startRef.current = null;
-    let raf;
-    const tick = (ts) => {
-      if (!startRef.current) startRef.current = ts;
-      const progress = Math.min((ts - startRef.current) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(eased * to));
-      if (progress < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [to, duration]);
-  return <>{prefix}{value}{suffix}</>;
-}
 
 export default function RegistryPage() {
   const [storeItems, setStoreItems] = useState([]);

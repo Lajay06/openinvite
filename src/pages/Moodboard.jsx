@@ -15,6 +15,7 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import UploadStatus from '@/components/shared/UploadStatus';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
+import CountUp from "@/components/shared/CountUp";
 
 let moodboardQueueId = 0;
 
@@ -27,25 +28,6 @@ const labelStyle = {
   margin: 0, marginBottom: 10,
 };
 
-function CountUp({ to, duration = 1200 }) {
-  const [value, setValue] = useState(0);
-  const ref = useRef(null);
-  useEffect(() => {
-    if (to === 0) { setValue(0); return; }
-    ref.current = null;
-    let raf;
-    const tick = (ts) => {
-      if (!ref.current) ref.current = ts;
-      const p = Math.min((ts - ref.current) / duration, 1);
-      const e = 1 - Math.pow(1 - p, 3);
-      setValue(Math.round(e * to));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [to, duration]);
-  return <>{value}</>;
-}
 
 const CATEGORIES = [
   'all', 'venue', 'decor', 'flowers', 'dress', 'cake', 'colors',

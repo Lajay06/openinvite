@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
@@ -26,28 +26,10 @@ import AvaModal from "@/components/layout/AvaModal";
 import EmailTemplates from "../components/guests/EmailTemplates";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { getWeddingEvents, defaultEventResponses, getGuestEventResponse } from '@/lib/weddingEvents';
+import CountUp from "@/components/shared/CountUp";
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
-function CountUp({ to, duration = 1200, suffix = '' }) {
-  const [value, setValue] = useState(0);
-  const startRef = useRef(null);
-  useEffect(() => {
-    if (to === 0) { setValue(0); return; }
-    startRef.current = null;
-    let raf;
-    const tick = (ts) => {
-      if (!startRef.current) startRef.current = ts;
-      const progress = Math.min((ts - startRef.current) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(eased * to));
-      if (progress < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [to, duration]);
-  return <>{value}{suffix}</>;
-}
 
 function FilterPill({ label, active, onClick }) {
   return (
