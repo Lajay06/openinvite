@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, MapPin, Globe, Phone, Star, ExternalLink, Bookmark, Loader2, Map as MapIcon } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -166,8 +167,8 @@ export default function VendorProfileModal({ vendor, onClose, onSave, isSaved })
   const photoRef = details?.photo_reference || vendor.photoReference;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 24, overflowY: 'auto' }}>
-      <div style={{ background: '#FFFFFF', width: '100%', maxWidth: 680, maxHeight: '90vh', overflowY: 'auto', fontFamily: PJS }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title={vendor.name} className="max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0" style={{ fontFamily: PJS }}>
         {/* Cover */}
         <div style={{ height: 140, position: 'relative', background: photoRef && !photoFailed ? undefined : 'linear-gradient(135deg, rgba(224,53,83,0.15), rgba(147,51,234,0.12))' }}>
           {photoRef && !photoFailed && (
@@ -229,7 +230,7 @@ export default function VendorProfileModal({ vendor, onClose, onSave, isSaved })
           {tab === 'Reviews' && <ReviewsTab vendor={vendor} details={details} />}
           {tab === 'Contact' && <ContactTab vendor={vendor} details={details} onSave={onSave} isSaved={isSaved} />}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

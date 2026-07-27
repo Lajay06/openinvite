@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Monitor, Tablet, Smartphone, X, ExternalLink } from 'lucide-react';
 import RealWebsitePreview from './RealWebsitePreview';
 import { WEDDING_PAGES } from '@/lib/websiteThemes';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export default function FullScreenPreview({ details, onClose, initialPage = 'home' }) {
   const [device, setDevice] = useState('desktop');
   const [currentPage, setCurrentPage] = useState(initialPage);
-
-  useEffect(() => {
-    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [onClose]);
+  // Escape-to-close now comes from Dialog's own onOpenChange (Radix handles
+  // the keydown listener) — no need for a manual window listener any more.
 
   const DEVICES = [
     { id: 'desktop', icon: Monitor, label: 'Desktop' },
@@ -29,11 +26,8 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
   const previewUrl = details.slug ? `/w/${details.slug}?preview=true` : null;
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      display: 'flex', flexDirection: 'column',
-      background: '#1A1A1A',
-    }}>
+    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent fullBleed hideClose title="Website preview" className="p-0 flex flex-col" style={{ background: '#1A1A1A' }}>
       {/* Toolbar */}
       <div style={{
         height: 48, background: '#0A0A0A', display: 'flex',
@@ -127,6 +121,7 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
           <RealWebsitePreview details={details} currentPage={currentPage} onNavigate={setCurrentPage} />
         </div>
       </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

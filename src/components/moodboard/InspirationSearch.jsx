@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { InvokeLLM } from '@/integrations/Core';
 import { X, Search, Plus, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const MoodboardItem = base44.entities.MoodboardItem;
 
@@ -76,8 +77,8 @@ export default function InspirationSearch({ onClose, onAddItems, activeBoard }) 
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 860, maxHeight: '90vh', display: 'flex', flexDirection: 'column', background: '#FFFFFF' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Find inspiration" className="max-w-[860px] max-h-[90vh] p-0 gap-0 flex flex-col">
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
           <div>
@@ -146,7 +147,7 @@ export default function InspirationSearch({ onClose, onAddItems, activeBoard }) 
         <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
           <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Close</button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

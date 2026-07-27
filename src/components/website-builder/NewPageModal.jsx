@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { interactiveDivProps } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const PAGE_TEMPLATES = [
   { id: 'blank', name: 'Blank Page', description: 'Start from scratch' },
@@ -36,18 +37,9 @@ export default function NewPageModal({ onClose, onCreate, weddingSlug }) {
     onClose();
   };
 
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(0,0,0,0.55)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }} onClick={e => e.target === e.currentTarget && onClose()} {...interactiveDivProps(onClose, { label: 'Close' })}>
-      <div ref={dialogRef} tabIndex={-1} style={{
-        width: 420, background: '#fff',
-        overflow: 'hidden',
-      }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Create a New Page" className="w-[420px] max-w-[420px] p-0 gap-0 overflow-hidden">
         {/* Header */}
         <div style={{ padding: '24px 24px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>Create a New Page</h2>
@@ -135,7 +127,7 @@ export default function NewPageModal({ onClose, onCreate, weddingSlug }) {
             }}>Create Page</button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

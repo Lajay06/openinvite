@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { MessageCircle, X } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const WHATSAPP_GREEN = "#25D366";
 
@@ -41,20 +42,18 @@ export default function WhatsAppConnect({ onConnect, isConnected, connectedPhone
           </button>
         </div>
 
-        {showDisconnect && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000, padding: 24 }}>
-            <div style={{ background: '#FFFFFF', padding: 28, maxWidth: 400, width: '100%' }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>Remove saved WhatsApp number?</h3>
-              <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 20, lineHeight: 1.6 }}>
-                You'll need to enter it again to generate a QR code or pre-fill it when messaging guests.
-              </p>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setShowDisconnect(false)} className="btn-editorial-secondary" style={{ flex: 1, fontSize: 13 }}>Cancel</button>
-                <button onClick={handleDisconnect} className="btn-primary" style={{ flex: 1, fontSize: 13 }}>Remove</button>
-              </div>
+        <Dialog open={showDisconnect} onOpenChange={(open) => { if (!open) setShowDisconnect(false); }}>
+          <DialogContent title="Remove saved WhatsApp number?" className="max-w-[400px] p-7">
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>Remove saved WhatsApp number?</h3>
+            <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 20, lineHeight: 1.6 }}>
+              You'll need to enter it again to generate a QR code or pre-fill it when messaging guests.
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setShowDisconnect(false)} className="btn-editorial-secondary" style={{ flex: 1, fontSize: 13 }}>Cancel</button>
+              <button onClick={handleDisconnect} className="btn-primary" style={{ flex: 1, fontSize: 13 }}>Remove</button>
             </div>
-          </div>
-        )}
+          </DialogContent>
+        </Dialog>
       </>
     );
   }

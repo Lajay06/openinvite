@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { LayoutDashboard, Sparkles, Globe, Mail, Users, Wallet } from 'lucide-react';
 import { interactiveDivProps } from '@/lib/a11y';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 const ICON_MAP = { LayoutDashboard, Sparkles, Globe, Mail, Users, Wallet };
 
@@ -796,25 +797,25 @@ const helpCategories = [
 function ArticlePanel({ article, onClose }) {
   const content = ARTICLES[article.title];
   return (
-    <div style={{
-      position: 'fixed', right: 0, top: 0, bottom: 0, width: 520, maxWidth: '100vw',
-      background: '#FFFFFF', boxShadow: '-8px 0 40px rgba(0,0,0,0.1)',
-      zIndex: 1000, padding: '32px 36px', overflowY: 'auto', boxSizing: 'border-box',
-    }}>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.6)', marginBottom: 24, fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'block', padding: 0 }}>← Back to Help Centre</button>
-      <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 4, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>{article.title}</h2>
-      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginBottom: 32, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 4 }}>{article.time}</p>
-      <div style={{ fontSize: 15, color: '#333', lineHeight: 1.8, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-        {content || (
-          <p style={S.p}>Content for this article is coming soon.</p>
-        )}
-      </div>
-      <div style={{ borderTop: '1px solid #EEEEEE', marginTop: 40, paddingTop: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Was this helpful?</p>
-        <button style={{ padding: '6px 16px', border: '1px solid #EEEEEE', background: 'transparent', color: '#444', fontSize: 13, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Yes</button>
-        <button style={{ padding: '6px 16px', border: '1px solid #EEEEEE', background: 'transparent', color: '#444', fontSize: 13, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>No</button>
-      </div>
-    </div>
+    <Sheet open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <SheetContent side="right" title={article.title} aria-label={article.title} className="p-0" style={{ width: 520, maxWidth: '100vw' }}>
+        <div style={{ padding: '32px 36px', overflowY: 'auto', boxSizing: 'border-box', height: '100%' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.6)', marginBottom: 24, fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'block', padding: 0 }}>← Back to Help Centre</button>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 4, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>{article.title}</h2>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginBottom: 32, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 4 }}>{article.time}</p>
+          <div style={{ fontSize: 15, color: '#333', lineHeight: 1.8, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+            {content || (
+              <p style={S.p}>Content for this article is coming soon.</p>
+            )}
+          </div>
+          <div style={{ borderTop: '1px solid #EEEEEE', marginTop: 40, paddingTop: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Was this helpful?</p>
+            <button style={{ padding: '6px 16px', border: '1px solid #EEEEEE', background: 'transparent', color: '#444', fontSize: 13, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Yes</button>
+            <button style={{ padding: '6px 16px', border: '1px solid #EEEEEE', background: 'transparent', color: '#444', fontSize: 13, cursor: 'pointer', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>No</button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 

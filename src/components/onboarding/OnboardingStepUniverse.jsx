@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import LondonUniverseView from '@/components/studio/LondonUniverseView';
 import { interactiveDivProps } from '@/lib/a11y';
 import { getUniverse } from '@/lib/universeCatalog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 // Photos now come straight from each universe's own UNIVERSE_CONFIGS
 // entry (round 7 ask #5) instead of a separate hand-picked Wix URL per
@@ -215,23 +216,20 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
         </motion.div>
       </div>
 
-      {/* Overlays */}
-      <AnimatePresence>
-        {previewUniverse && previewUniverse.id === 'london' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, zIndex: 9999, overflowY: 'auto' }}
-          >
+      {/* Overlays — Dialog's own data-state animate classes replace the
+          former AnimatePresence/motion.div fade, Radix already delays
+          unmount until the exit animation finishes. */}
+      <Dialog open={!!previewUniverse && previewUniverse.id === 'london'} onOpenChange={(next) => { if (!next) setPreviewUniverse(null); }}>
+        <DialogContent fullBleed hideClose title="Universe preview" className="overflow-y-auto">
+          {previewUniverse && (
             <LondonUniverseView
               isOnboarding={true}
               onBack={() => setPreviewUniverse(null)}
               onSelect={handleSelectFromOverlay}
             />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <style>{`div::-webkit-scrollbar { display: none; }`}</style>
     </>

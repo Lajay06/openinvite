@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { interactiveDivProps } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export default function UniverseSelectedChoice({ universe, coupleName, onClose }) {
   const navigate = useNavigate();
@@ -12,11 +13,9 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 10000,
+    <Dialog open onOpenChange={(next) => { if (!next) onClose?.(); }}>
+      <DialogContent fullBleed hideClose title={`${universe.name} universe selected`} className="flex flex-col items-center justify-center" style={{
       background: '#0A0A0A',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
       padding: 40,
       animation: 'fadeIn 0.4s ease',
       fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -79,6 +78,7 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
       </button>
 
       <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

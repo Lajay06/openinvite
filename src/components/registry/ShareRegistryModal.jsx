@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Copy, CheckCircle, Share2 } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import toast from 'react-hot-toast';
 
 const labelStyle = {
@@ -33,8 +34,8 @@ export default function ShareRegistryModal({ onClose, registryData }) {
   const shareViaWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(shareMessage)}`, '_blank');
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Share your registry" className="max-w-[520px] max-h-[90vh] overflow-y-auto p-0 gap-0">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Share2 size={14} style={{ color: 'rgba(10,10,10,0.6)' }} />
@@ -113,7 +114,7 @@ export default function ShareRegistryModal({ onClose, registryData }) {
             Share this link with guests so they can view and purchase from your registry.
           </p>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 function ToggleSwitch({ value, onChange, label }) {
   return (
@@ -78,15 +78,9 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     { id: 'qr', label: '⬛ QR Code' },
   ];
 
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      onClick={e => e.target === e.currentTarget && onClose()}
-      {...interactiveDivProps(onClose, { label: 'Close' })}
-    >
-      <div ref={dialogRef} tabIndex={-1} style={{ background: '#FFFFFF', width: 620, maxHeight: '88vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Share Your Wedding" className="w-[620px] max-w-[620px] max-h-[88vh] p-0 gap-0 flex flex-col overflow-hidden">
 
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #EEE', display: 'flex', alignItems: 'center' }}>
@@ -281,7 +275,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

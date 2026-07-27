@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
 import { validateUploadFile } from '@/lib/uploadValidation';
 import UploadStatus from '@/components/shared/UploadStatus';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { interactiveDivProps } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 let queueItemId = 0;
 
@@ -162,15 +163,9 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
     { id: 'stock', label: 'Stock photos' },
   ];
 
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      {...interactiveDivProps(onClose, { label: 'Close' })}
-    >
-      <div ref={dialogRef} tabIndex={-1} style={{ background: '#1A1A1A', width: '90vw', maxWidth: 1000, height: '82vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Media library" className="w-[90vw] max-w-[1000px] h-[82vh] p-0 gap-0 flex flex-col overflow-hidden" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.08)' }}>
 
         {/* Header */}
         <div style={{ padding: '14px 20px', background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
@@ -480,8 +475,8 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
             </button>
           </div>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

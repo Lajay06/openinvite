@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { X, Sparkles, Mic, Wand2, Copy, RefreshCw, Send, Loader2 } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 import toast from 'react-hot-toast';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -102,8 +103,8 @@ Return the improved version as plain text only — no markdown.`;
   ];
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 760, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: '#FFFFFF' }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="AI vows & speech writer" className="max-w-[760px] max-h-[92vh] p-0 gap-0 flex flex-col">
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0, background: '#0A1930' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -264,7 +265,7 @@ Return the improved version as plain text only — no markdown.`;
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

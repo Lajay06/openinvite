@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"; // Added this import
 import { X, Users, Send, Edit, Trash2, Eye, PenSquare, RotateCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { color } from '@/styles/tokens';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const Collaborator = base44.entities.Collaborator;
 
@@ -153,8 +154,9 @@ export default function CollaborateModal({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <Card className="bg-white rounded-2xl p-2 w-full max-w-4xl max-h-[90vh] flex flex-col">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Manage collaborators" className="max-w-4xl p-0 gap-0">
+      <Card className="bg-white rounded-2xl p-2 w-full max-h-[90vh] flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-pink-100 rounded-lg">
@@ -288,6 +290,7 @@ export default function CollaborateModal({ onClose }) {
           </div>
         </div>
       </Card>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShoppingCart, Edit, Trash2, ExternalLink, CheckCircle, Package, X } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -116,47 +117,49 @@ export default function RegistryProductList({ items, onEdit, onDelete, onPurchas
         })}
       </div>
 
-      {purchaseProduct && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ width: '100%', maxWidth: 400, background: '#FFFFFF' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-              <div>
-                <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Mark as purchased</span>
-                <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>{purchaseProduct.name}</p>
+      <Dialog open={!!purchaseProduct} onOpenChange={(open) => { if (!open) setPurchaseProduct(null); }}>
+        <DialogContent hideClose title="Mark as purchased" className="max-w-[400px] p-0 gap-0">
+          {purchaseProduct && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                <div>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Mark as purchased</span>
+                  <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>{purchaseProduct.name}</p>
+                </div>
+                <button onClick={() => setPurchaseProduct(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
               </div>
-              <button onClick={() => setPurchaseProduct(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
-            </div>
-            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Label>Your name</Label>
-                <Input value={purchaseData.guest_name} onChange={e => setPurchaseData({ ...purchaseData, guest_name: e.target.value })} placeholder="Enter your name" />
+              <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Label>Your name</Label>
+                  <Input value={purchaseData.guest_name} onChange={e => setPurchaseData({ ...purchaseData, guest_name: e.target.value })} placeholder="Enter your name" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Label>Email</Label>
+                  <Input type="email" value={purchaseData.guest_email} onChange={e => setPurchaseData({ ...purchaseData, guest_email: e.target.value })} placeholder="your@email.com" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Label>Quantity</Label>
+                  <Input type="number" min="1" max={(purchaseProduct.quantity_requested || 1) - (purchaseProduct.quantity_purchased || 0)} value={purchaseData.quantity} onChange={e => setPurchaseData({ ...purchaseData, quantity: e.target.value })} />
+                  <span style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {(purchaseProduct.quantity_requested || 1) - (purchaseProduct.quantity_purchased || 0)} remaining
+                  </span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Label>Message (optional)</Label>
+                  <Textarea value={purchaseData.message} onChange={e => setPurchaseData({ ...purchaseData, message: e.target.value })} placeholder="Add a personal message…" />
+                </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Label>Email</Label>
-                <Input type="email" value={purchaseData.guest_email} onChange={e => setPurchaseData({ ...purchaseData, guest_email: e.target.value })} placeholder="your@email.com" />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+                <button onClick={() => setPurchaseProduct(null)} className="btn-editorial-secondary">Cancel</button>
+                <button onClick={handlePurchaseSubmit} disabled={!purchaseData.guest_name || !purchaseData.guest_email} className="btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: !purchaseData.guest_name || !purchaseData.guest_email ? 0.5 : 1 }}>
+                  <CheckCircle size={13} />Confirm purchase
+                </button>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Label>Quantity</Label>
-                <Input type="number" min="1" max={(purchaseProduct.quantity_requested || 1) - (purchaseProduct.quantity_purchased || 0)} value={purchaseData.quantity} onChange={e => setPurchaseData({ ...purchaseData, quantity: e.target.value })} />
-                <span style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  {(purchaseProduct.quantity_requested || 1) - (purchaseProduct.quantity_purchased || 0)} remaining
-                </span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <Label>Message (optional)</Label>
-                <Textarea value={purchaseData.message} onChange={e => setPurchaseData({ ...purchaseData, message: e.target.value })} placeholder="Add a personal message…" />
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
-              <button onClick={() => setPurchaseProduct(null)} className="btn-editorial-secondary">Cancel</button>
-              <button onClick={handlePurchaseSubmit} disabled={!purchaseData.guest_name || !purchaseData.guest_email} className="btn-primary"
-                style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: !purchaseData.guest_name || !purchaseData.guest_email ? 0.5 : 1 }}>
-                <CheckCircle size={13} />Confirm purchase
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

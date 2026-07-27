@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Edit3, Trash2, Heart, ExternalLink, Eye, X, Save, Image as ImageIcon } from 'lucide-react';
-import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -28,11 +28,9 @@ const CATEGORY_COLORS = {
 };
 
 function EditItemModal({ item, editData, setEditData, onSave, onClose }) {
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={onClose} {...interactiveDivProps(onClose, { label: 'Close' })}>
-      <div ref={dialogRef} tabIndex={-1} style={{ width: '100%', maxWidth: 440, background: '#FFFFFF' }} onClick={e => e.stopPropagation()}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title={`Edit item — ${item.title}`} className="max-w-[440px] p-0 gap-0">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Edit item</span>
           <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={14} /></button>
@@ -57,17 +55,15 @@ function EditItemModal({ item, editData, setEditData, onSave, onClose }) {
             <Save size={13} />Save
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 function FullViewModal({ item, onClose }) {
-  const dialogRef = useModalFocusTrap(onClose);
-
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={onClose} {...interactiveDivProps(onClose, { label: 'Close' })}>
-      <div ref={dialogRef} tabIndex={-1} style={{ display: 'flex', maxWidth: 1100, width: '100%', maxHeight: '90vh', overflow: 'hidden', background: '#FFFFFF' }} onClick={e => e.stopPropagation()}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title={item.title} className="max-w-[1100px] max-h-[90vh] overflow-hidden p-0 gap-0" style={{ display: 'flex' }}>
         <div style={{ flex: 1, background: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <img src={item.image_url} alt={item.title} style={{ maxWidth: '100%', maxHeight: '90vh', objectFit: 'contain' }} />
         </div>
@@ -96,8 +92,8 @@ function FullViewModal({ item, onClose }) {
             </a>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

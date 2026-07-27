@@ -3,6 +3,7 @@ import { X, Upload, Download, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const Guest = base44.entities.Guest;
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -163,8 +164,8 @@ export default function ImportGuestModal({ onClose, onImported }) {
   const validCount = rows ? rows.filter(r => !r._error).length : 0;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.55)', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 660, maxHeight: '90vh', overflowY: 'auto', background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: 0, padding: 32 }}>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title="Import guest list" className="max-w-[660px] max-h-[90vh] overflow-y-auto p-8">
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -302,7 +303,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
           )}
         </div>
 
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
