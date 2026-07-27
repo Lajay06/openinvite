@@ -31,7 +31,11 @@ export const ORGANIZATION_LOGO = 'https://static.wixstatic.com/media/d2df22_ed80
 export const MARKETING_PAGE_SEO = {
   '/': {
     title: 'Openinvite: the wedding planning app with one-time pricing',
-    description: 'Openinvite is a wedding planning app and wedding website builder with digital wedding invitations, guest management and an AI assistant. Pay once and plan everything, no subscription.',
+    // Verbatim AEO answer capsule — previously also rendered as visible hero
+    // subtext on Home (src/components/home/HeroCollage.jsx); now lives only
+    // here and in public/llms.txt so the exact wording stays crawler-facing
+    // without duplicating on the visible page.
+    description: 'Openinvite is a wedding planning app with a one-time payment: planning tools, guest management, digital invitations, a wedding website and an AI assistant.',
   },
   '/features': {
     title: 'Features: everything you need to plan your wedding',

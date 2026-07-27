@@ -5,6 +5,7 @@
  */
 import React, { useRef, useEffect, useState } from "react";
 import { useAppleReveal } from "@/hooks/useAppleReveal";
+import FeatureSectionHeading from "@/components/home/FeatureSectionHeading";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -119,25 +120,13 @@ export default function FeatureTimeline() {
       >
 
         <div style={{ maxWidth: 480 }}>
-          <h2
-             ref={h2Ref}
-             style={{
-               fontSize: "clamp(28px, 4vw, 48px)",
-               fontWeight: 700,
-               letterSpacing: "-0.02em",
-               lineHeight: 1.1,
-               color: "#0A0A0A",
-               marginBottom: 24,
-               overflow: "visible",
-               whiteSpace: "normal",
-               wordBreak: "normal",
-               hyphens: "none",
-               overflowWrap: "break-word",
-               fontFamily: "'Plus Jakarta Sans',sans-serif",
-             }}
-           >
-             Timeline & Schedule Planning
-           </h2>
+          <FeatureSectionHeading
+            ref={h2Ref}
+            color="#0A0A0A"
+            style={{ fontSize: "clamp(28px, 4vw, 48px)", overflowWrap: "break-word" }}
+          >
+            Timeline & Schedule Planning
+          </FeatureSectionHeading>
           <p
             ref={bodyRef}
             className="feature-body-text"

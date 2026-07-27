@@ -392,14 +392,14 @@ export default function Pricing() {
           </h2>
 
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: PJS }}>
+            <table style={{ width: "auto", margin: "0 auto", borderCollapse: "collapse", fontFamily: PJS }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: "rgba(10,10,10,0.6)", padding: "0 0 20px", width: "40%" }} />
+                  <th style={{ textAlign: "left", fontSize: 12, fontWeight: 600, color: "rgba(10,10,10,0.6)", padding: "0 24px 20px 0" }} />
                   {["Free trial", "Pro", "Ultra"].map(label => (
                     <th key={label} style={{
                       textAlign: "center", fontSize: 13, fontWeight: 700,
-                      color: "#0A0A0A", padding: "0 16px 20px",
+                      color: "#0A0A0A", padding: "0 16px 20px", width: 120,
                     }}>
                       {label}
                     </th>
@@ -409,7 +409,7 @@ export default function Pricing() {
               <tbody>
                 {TABLE_ROWS.map((row, i) => (
                   <tr key={i} style={{ borderTop: "1px solid rgba(10,10,10,0.05)" }}>
-                    <td style={{ padding: "14px 0", fontSize: 13, color: "rgba(10,10,10,0.7)", fontFamily: PJS, textAlign: "center" }}>
+                    <td style={{ padding: "14px 24px 14px 0", fontSize: 13, color: "rgba(10,10,10,0.7)", fontFamily: PJS, textAlign: "left", whiteSpace: "nowrap" }}>
                       {row.feature}
                     </td>
                     {[row.trial, row.pro, row.ultra].map((val, j) => (

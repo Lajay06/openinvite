@@ -12,6 +12,7 @@ import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import FeatureTimeline from "@/components/home/FeatureTimeline";
 import FeatureGuests from "@/components/home/FeatureGuests";
 import FeatureBudget from "@/components/home/FeatureBudget";
+import FeatureSectionHeading from "@/components/home/FeatureSectionHeading";
 import ScrollCue from "@/components/motion/ScrollCue";
 import ProductVideo from "@/components/shared/ProductVideo";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
@@ -207,8 +208,7 @@ function QuickStartSection() {
       </div>
       <div className="w-full lg:w-1/2 order-2 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: `opacity 0.9s ${EASE} 0.2s, transform 0.9s ${EASE} 0.2s` }}>
         <div style={{ maxWidth: 480 }}>
-          <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#E03553,#803D81)", marginBottom: 24 }} />
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Quick start wizard</h2>
+          <FeatureSectionHeading color="#FFFFFF">Quick start wizard</FeatureSectionHeading>
           <p style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.7, fontSize: 16 }}>Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
         </div>
       </div>
@@ -238,8 +238,7 @@ function DashboardSection() {
     <section ref={ref} style={{ background: "#F5F5F3", minHeight: "100vh", display: "flex", flexDirection: "row", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 480 }}>
-          <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#E03553,#803D81)", marginBottom: 24 }} />
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 56px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#0A0A0A", marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Customisable Dashboard</h2>
+          <FeatureSectionHeading color="#0A0A0A">Customisable Dashboard</FeatureSectionHeading>
           <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16, marginBottom: 32 }}>Invite your partner, planner, or mum. Set who sees what, and assign tasks like a pro.</p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {BULLETS.map((b, i) =>
@@ -295,10 +294,9 @@ function SeatingSection() {
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
           transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
         }}>
-          <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#E03553,#803D81)", marginBottom: 24 }} />
-          <h2 style={{ fontSize: "clamp(32px, 4.2vw, 56px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.08, marginBottom: 28 }}>
+          <FeatureSectionHeading color="#0A0A0A" style={{ fontSize: "clamp(32px, 4.2vw, 56px)", lineHeight: 1.08, marginBottom: 28 }}>
             A real canvas for a real guest list.
-          </h2>
+          </FeatureSectionHeading>
           <p style={{ color: "#444444", lineHeight: 1.75, fontSize: 18, maxWidth: 420 }}>
             Drag tables into place, assign guests one at a time or let Ava suggest a starting layout. This is an actual recording of the seating tool, not a mockup.
           </p>
@@ -331,10 +329,9 @@ function BudgetSection() {
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
           transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
         }}>
-          <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#E03553,#803D81)", marginBottom: 24 }} />
-          <h2 style={{ fontSize: "clamp(32px, 4.2vw, 56px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: 1.08, marginBottom: 28 }}>
+          <FeatureSectionHeading color="#0A0A0A" style={{ fontSize: "clamp(32px, 4.2vw, 56px)", lineHeight: 1.08, marginBottom: 28 }}>
             Every dollar, in real time.
-          </h2>
+          </FeatureSectionHeading>
           <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16 }}>
             Budget versus actual spend, category by category. This is the real tracker with a real 201-guest wedding's numbers in it.
           </p>
