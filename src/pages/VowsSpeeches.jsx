@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import { interactiveDivProps } from '@/lib/a11y';
@@ -11,6 +11,7 @@ import AIVowsSpeechesAssistant from '../components/vows/AIVowsSpeechesAssistant'
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
+import CountUp from "@/components/shared/CountUp";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -19,25 +20,6 @@ const labelStyle = {
   margin: 0, marginBottom: 10,
 };
 
-function CountUp({ to, duration = 1200 }) {
-  const [value, setValue] = useState(0);
-  const ref = useRef(null);
-  useEffect(() => {
-    if (to === 0) { setValue(0); return; }
-    ref.current = null;
-    let raf;
-    const tick = (ts) => {
-      if (!ref.current) ref.current = ts;
-      const p = Math.min((ts - ref.current) / duration, 1);
-      const e = 1 - Math.pow(1 - p, 3);
-      setValue(Math.round(e * to));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [to, duration]);
-  return <>{value}</>;
-}
 
 export default function VowsSpeechesPage() {
   const [items, setItems] = useState([]);

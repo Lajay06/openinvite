@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
@@ -16,6 +16,7 @@ import TipsModal from "../components/dashboard/TipsModal";
 import { getMyRecords, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
 import { tallyGuestRsvp } from "@/lib/guestRsvpTally";
 import { useCollaboratorContext, hasPagePermission } from "@/lib/collaboratorContext";
+import CountUp from "@/components/shared/CountUp";
 
 const QUICK_LINKS = [
   { label: "Guest list", url: "Guests" },
@@ -26,28 +27,6 @@ const QUICK_LINKS = [
   { label: "Seating", url: "Seating" },
 ];
 
-function CountUp({ to, duration = 1200, suffix = '' }) {
-  const [value, setValue] = useState(0);
-  const startRef = useRef(null);
-
-  useEffect(() => {
-    if (to === 0) { setValue(0); return; }
-    startRef.current = null;
-    let raf;
-    const tick = (ts) => {
-      if (!startRef.current) startRef.current = ts;
-      const elapsed = ts - startRef.current;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(eased * to));
-      if (progress < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [to, duration]);
-
-  return <>{value}{suffix}</>;
-}
 
 function QuickLink({ label, url, isLast, collabSuffix }) {
   const [hovered, setHovered] = useState(false);

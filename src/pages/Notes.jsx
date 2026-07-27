@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Trash2, Edit3, Clock, X, Lightbulb, ListTodo, Loader2, CheckCircle2, Circle } from "lucide-react";
@@ -9,6 +9,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
+import CountUp from "@/components/shared/CountUp";
 const Task = base44.entities.Task;
 
 const labelStyle = {
@@ -17,25 +18,6 @@ const labelStyle = {
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
-function CountUp({ to, duration = 1200 }) {
-  const [value, setValue] = useState(0);
-  const ref = useRef(null);
-  useEffect(() => {
-    if (to === 0) { setValue(0); return; }
-    ref.current = null;
-    let raf;
-    const tick = (ts) => {
-      if (!ref.current) ref.current = ts;
-      const p = Math.min((ts - ref.current) / duration, 1);
-      const e = 1 - Math.pow(1 - p, 3);
-      setValue(Math.round(e * to));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [to, duration]);
-  return <>{value}</>;
-}
 
 const PRIORITY_STYLES = {
   urgent: { background: "#E03553", color: "#FFFFFF" },

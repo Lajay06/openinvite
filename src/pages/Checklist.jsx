@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle2, Circle, XCircle, ArrowRight } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { useNavigate } from 'react-router-dom';
 import { getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
+import CountUp from "@/components/shared/CountUp";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -41,24 +42,6 @@ function loadChecklist() {
   return { essentials: [], niceToHave: [] };
 }
 
-function CountUp({ to, suffix = '' }) {
-  const [value, setValue] = useState(0);
-  const ref = useRef(null);
-  useEffect(() => {
-    if (to === 0) { setValue(0); return; }
-    ref.current = null;
-    let raf;
-    const tick = (ts) => {
-      if (!ref.current) ref.current = ts;
-      const p = Math.min((ts - ref.current) / 1200, 1);
-      setValue(Math.round((1 - Math.pow(1 - p, 3)) * to));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [to]);
-  return <>{value}{suffix}</>;
-}
 
 function ProgressBar({ value }) {
   return (

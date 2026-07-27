@@ -20,6 +20,7 @@ import AvaModal from '@/components/layout/AvaModal';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import { interactiveDivProps } from '@/lib/a11y';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import CountUp from "@/components/shared/CountUp";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -37,25 +38,6 @@ const TABS = [
   { key: 'considerations', label: 'Considerations' },
 ];
 
-function CountUp({ to, duration = 1200, suffix = '' }) {
-  const [value, setValue] = useState(0);
-  const ref = useRef(null);
-  useEffect(() => {
-    if (to === 0) { setValue(0); return; }
-    ref.current = null;
-    let raf;
-    const tick = (ts) => {
-      if (!ref.current) ref.current = ts;
-      const p = Math.min((ts - ref.current) / duration, 1);
-      const e = 1 - Math.pow(1 - p, 3);
-      setValue(Math.round(e * to));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [to, duration]);
-  return <>{value}{suffix}</>;
-}
 
 function ToggleRow({ label, value, onChange }) {
   return (
