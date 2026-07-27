@@ -82,7 +82,6 @@ export default function HorizontalScrollSection() {
   const sectionRef = useRef(null);
   const trackRef = useRef(null);
   const progressRef = useRef(null);
-  const indicatorRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -98,7 +97,6 @@ export default function HorizontalScrollSection() {
     const section = sectionRef.current;
     const track = trackRef.current;
     const progressBar = progressRef.current;
-    const indicator = indicatorRef.current;
 
     const updateScroll = () => {
       const sectionTop = section.offsetTop;
@@ -114,10 +112,6 @@ export default function HorizontalScrollSection() {
 
       if (progressBar) {
         progressBar.style.width = `${progress * 100}%`;
-      }
-
-      if (indicator) {
-        indicator.style.opacity = progress < 0.1 ? 1 : 0;
       }
     };
 
@@ -308,25 +302,6 @@ export default function HorizontalScrollSection() {
               Explore all features
             </ApplePillButton>
           </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div
-          ref={indicatorRef}
-          style={{
-            position: "absolute",
-            bottom: 40,
-            left: "50%",
-            transform: "translateX(-50%)",
-            textAlign: "center",
-            zIndex: 20,
-            transition: "opacity 0.3s ease",
-            opacity: 1
-          }}>
-          
-          <p style={{ fontSize: 11, letterSpacing: "0.2em", color: "#fff" }}>
-            Scroll to explore &rarr;
-          </p>
         </div>
       </div>
     </div>);
