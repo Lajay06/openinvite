@@ -310,63 +310,28 @@ const Universes = () => {
             color: '#FFFFFF',
             letterSpacing: '-0.02em',
             lineHeight: 1.05,
-            margin: '0 0 24px',
+            margin: 0,
           }}>
-            Your universe
+            One aesthetic vision for every piece of your wedding.
           </h1>
-          <p style={{
-            fontSize: 'clamp(16px,2vw,22px)',
-            fontWeight: 400,
-            color: 'rgba(255,255,255,0.75)',
-            maxWidth: 560,
-            margin: '0 auto',
-            lineHeight: 1.6,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Every invitation, menu, seating chart and digital asset, designed around a single aesthetic vision. Choose your universe and everything follows.
-          </p>
         </div>
         <ScrollCue />
       </section>
 
-      {/* SECTION 2: THE CONCEPT */}
-      <section style={{
-        background: '#F5F5F3',
-        padding: '128px clamp(24px, 8vw, 120px)',
-      }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <h2 style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontWeight: 800,
-            fontSize: 'clamp(36px, 6vw, 60px)',
-            color: '#0A0A0A',
+      {/* SECTION 2: STATEMENT BANNER */}
+      <section style={{ background: '#FFFFFF', padding: '80px clamp(24px, 6vw, 80px)', textAlign: 'center' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <p style={{
+            fontSize: 'clamp(28px, 4vw, 52px)',
+            fontWeight: 700,
             letterSpacing: '-0.02em',
-            lineHeight: 1.05,
-            marginBottom: 32,
+            lineHeight: 1.2,
+            color: '#0A0A0A',
+            fontFamily: 'Plus Jakarta Sans, sans-serif',
+            margin: 0,
           }}>
-            One aesthetic. Every piece.
-          </h2>
-          <div style={{ maxWidth: 672 }}>
-            <p style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 18,
-              color: '#555555',
-              lineHeight: 1.7,
-              marginBottom: 20,
-            }}>
-              A universe is a complete visual system for your wedding. The moment you choose one, it defines the typography, colour palette, layout logic and mood across all 10 pieces in your Guest Suite, from your Save the Date to your Thank You Notes.
-            </p>
-            <p style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 18,
-              color: '#555555',
-              lineHeight: 1.7,
-              marginBottom: 32,
-            }}>
-              Each universe is designed around a place, a feeling, a way of seeing. Not a template. A perspective.
-            </p>
-          </div>
-          <div style={{ width: 48, height: 2, background: '#E03553' }} />
+            A universe is a complete visual system, one typography, colour palette and mood, that carries across all 10 pieces of your wedding suite.
+          </p>
         </div>
       </section>
 

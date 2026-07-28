@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
@@ -60,34 +59,6 @@ function useScrollReveal(threshold = 0.2) {
     return () => obs.disconnect();
   }, []);
   return [ref, visible];
-}
-
-function CountUp({ target, display }) {
-  const [ref, visible] = useScrollReveal(0.3);
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!visible || target === null || prefersReduced()) return;
-    const duration = 1400;
-    const start = Date.now();
-    const tick = () => {
-      const p = Math.min(1, (Date.now() - start) / duration);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setCount(Math.round(eased * target));
-      if (p < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [visible, target]);
-
-  const formatted =
-    target === null
-      ? display
-      : display.startsWith("$")
-      ? `$${count.toLocaleString()}`
-      : display.endsWith("+")
-      ? `${count.toLocaleString()}+`
-      : count.toLocaleString();
-
-  return <span ref={ref}>{visible || prefersReduced() ? formatted : "0"}</span>;
 }
 
 export default function About() {
@@ -160,17 +131,9 @@ export default function About() {
       {/* ── S2: EDITORIAL INTRO ──────────────────────────── */}
       <EditorialIntro />
 
-      {/* ── S3: OFFSET PHOTO PAIR ────────────────────────── */}
+      {/* ── S3: FULL BLEED PHOTO ─────────────────────────── */}
       <section id="story" style={{ width: "100vw", height: "85vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
         <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Young_Latin_Martin_Pisotti_Photos_ID6999_p6ixxt.jpg" alt="A young couple sharing a joyful moment together" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
-        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj.jpg" alt="An elegantly designed wedding venue" style={{
-          position: "absolute", right: "clamp(24px, 6vw, 80px)", bottom: "clamp(24px, 6vw, 80px)",
-          width: "clamp(220px, 28vw, 380px)", height: "clamp(280px, 36vh, 460px)",
-          objectFit: "cover", border: "6px solid #FFFFFF",
-        }} />
-        <p style={{ position: "absolute", bottom: 40, left: 40, fontSize: 12, color: "rgba(255,255,255,0.85)", fontStyle: "italic", maxWidth: 320, textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>
-          Built for every kind of love, every kind of celebration.
-        </p>
       </section>
 
       {/* ── S4: OUR STORY ──────────────────────────────── */}
@@ -189,9 +152,6 @@ export default function About() {
       <section style={{ width: "100vw", height: "90vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
         <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100482/DTS_la_calma_Parole_Dure_Photos_ID5853_haflhv.jpg" alt="An aerial view of a turquoise cove" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </section>
-
-      {/* ── S8: THE NUMBERS ──────────────────────────────── */}
-      <StatsSection />
 
       {/* ── S9: CTA ──────────────────────────────────────── */}
       <CTASection onCTA={handleCTA} />
@@ -265,31 +225,6 @@ function TwoColumnSection({ id, number, title, headline, body, background, belie
   );
 }
 
-function StatsSection() {
-  const [ref, visible] = useScrollReveal(0.2);
-  const stats = [
-    { display: "10,000+", label: "Couples planning", num: 10000 },
-    { display: "40", label: "Planning tools", num: 40 },
-    { display: "$79", label: "One-time forever", num: 79 },
-    { display: "∞", label: "Memories made", num: null },
-  ];
-
-  return (
-    <section ref={ref} style={{ background: "#0A0A0A", padding: "80px clamp(32px, 6vw, 80px)", color: "#FFFFFF", opacity: visible ? 1 : 0, transition: "opacity 0.8s ease" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0, borderTop: "1px solid #222", borderLeft: "1px solid #222" }}>
-        {stats.map((stat, i) => (
-          <div key={i} style={{ padding: "40px", borderRight: "1px solid #222", borderBottom: "1px solid #222" }}>
-            <div style={{ fontSize: 72, fontWeight: 700, lineHeight: 1, marginBottom: 12, letterSpacing: "-0.02em" }}>
-              <CountUp target={stat.num} display={stat.display} />
-            </div>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.5)", letterSpacing: "0.15em" }}>{stat.label}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function CTASection({ onCTA }) {
   const [ref, visible] = useScrollReveal(0.2);
 
@@ -300,10 +235,7 @@ function CTASection({ onCTA }) {
           Ready to start planning?
         </h2>
         <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-          <ApplePillButton onClick={onCTA}>Start for free +</ApplePillButton>
-          <Link to="/Pricing" style={{ textDecoration: "none" }}>
-            <ApplePillButton>See pricing +</ApplePillButton>
-          </Link>
+          <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
         </div>
       </div>
     </section>
