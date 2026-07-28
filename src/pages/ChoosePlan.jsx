@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Loader2, Crown, Check } from 'lucide-react';
+import { Loader2, Crown } from 'lucide-react';
 import { track } from '@/lib/analytics';
 import { startCheckout } from '@/lib/checkoutSession';
 
