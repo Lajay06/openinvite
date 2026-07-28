@@ -231,12 +231,9 @@ export default function AvaPage() {
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 1 }}
         />
         <div style={{ position: "relative", zIndex: 10, textAlign: "center", padding: "0 40px", maxWidth: 900, margin: "0 auto" }}>
-          <h1 style={{ fontSize: "clamp(64px, 10vw, 120px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.0, color: "#FFFFFF", margin: "0 0 24px" }}>
+          <h1 style={{ fontSize: "clamp(64px, 10vw, 120px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.0, color: "#FFFFFF", margin: 0 }}>
             Meet Ava
           </h1>
-          <p style={{ fontSize: "clamp(18px, 2.5vw, 24px)", fontWeight: 400, color: "rgba(255,255,255,0.75)", margin: "0 0 16px", lineHeight: 1.5, fontFamily: "Plus Jakarta Sans, sans-serif", textAlign: "center" }}>
-            Your AI wedding planner. Always thinking one step ahead.
-          </p>
         </div>
         <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 20 }}>
           <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.15em", color: "rgba(255,255,255,0.5)", fontFamily: "Plus Jakarta Sans, sans-serif", margin: 0 }}>Scroll</p>

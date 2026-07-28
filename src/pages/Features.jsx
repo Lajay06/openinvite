@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
 import { PHOTOS } from "@/lib/photos";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
@@ -16,15 +15,6 @@ import FeatureSectionHeading from "@/components/home/FeatureSectionHeading";
 import ScrollCue from "@/components/motion/ScrollCue";
 import ProductVideo from "@/components/shared/ProductVideo";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
-
-const FEATURE_ZOOM_IMAGES = [
-{ src: "https://static.wixstatic.com/media/d2df22_13c4e04a228543a184b586a274ce748a~mv2.jpg", alt: "Wedding planning" },
-{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185610/justin-follis-A7Um4oi-UYU-unsplash_bbjjam.jpg", alt: "Wedding moment" },
-{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185610/jeffrey-clayton-KFtKSReIoRs-unsplash_qhubdf.jpg", alt: "Wedding moment" },
-{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779241859/rio-syhputra-a7vmvXei7fE-unsplash_vojinz.jpg", alt: "Wedding moment" },
-{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779218325/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6784_fveq2c.jpg", alt: "Wedding moment" },
-{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185631/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0.jpg", alt: "Wedding moment" },
-{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185626/DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa.jpg", alt: "Wedding moment" }];
 
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -86,8 +76,14 @@ export default function Features() {
         <ScrollCue />
       </section>
 
-      {/* ── S2: ZOOM PARALLAX ────────────────────────────── */}
-      <ZoomParallax images={FEATURE_ZOOM_IMAGES} />
+      {/* ── S2: STATEMENT BANNER ─────────────────────────── */}
+      <section style={{ background: "#FFFFFF", padding: "80px clamp(24px, 6vw, 80px)", textAlign: "center" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <p style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2, color: "#0A0A0A", fontFamily: "Plus Jakarta Sans, sans-serif", margin: 0 }}>
+            Openinvite brings your guest list, budget, schedule, seating chart and website into one connected platform, so nothing falls through the cracks.
+          </p>
+        </div>
+      </section>
 
       {/* ── S3: QUICK START ──────────────────────────────── */}
       <QuickStartSection />
@@ -115,84 +111,6 @@ export default function Features() {
       <FinalCTASection onCTA={handleCTA} />
 
       <PublicFooter />
-    </div>);
-
-}
-
-function ZoomParallax({ images }) {
-  const container = useRef(null);
-  const { scrollYProgress } = useScroll({ target: container, offset: ['start start', 'end end'] });
-
-  const scale4 = useTransform(scrollYProgress, [0, 1], [1, 4]);
-  const scale5 = useTransform(scrollYProgress, [0, 1], [1, 5]);
-  const scale6 = useTransform(scrollYProgress, [0, 1], [1, 6]);
-  const scale8 = useTransform(scrollYProgress, [0, 1], [1, 8]);
-  const scale9 = useTransform(scrollYProgress, [0, 1], [1, 9]);
-  const scales = [scale4, scale5, scale6, scale5, scale6, scale8, scale9];
-
-  const positions = [
-  { top: '0', left: '0', height: '100%', width: '100%' },
-  { top: '-30vh', left: '5vw', height: '30vh', width: '35vw' },
-  { top: '-10vh', left: '-25vw', height: '45vh', width: '20vw' },
-  { top: '0', left: '27.5vw', height: '25vh', width: '25vw' },
-  { top: '27.5vh', left: '5vw', height: '25vh', width: '20vw' },
-  { top: '27.5vh', left: '-22.5vw', height: '25vh', width: '30vw' },
-  { top: '22.5vh', left: '25vw', height: '15vh', width: '15vw' }];
-
-
-  const textOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-
-  return (
-    <div ref={container} style={{ position: 'relative', height: '300vh' }}>
-      <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', background: '#0A0A0A' }}>
-        {images.map((img, index) => {
-          const scale = scales[index % scales.length];
-          const pos = positions[index] || positions[0];
-          return (
-            <motion.div
-              key={index}
-              style={{
-                scale,
-                position: 'absolute', top: 0, left: 0,
-                width: '100%', height: '100%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-              
-              <div style={{
-                position: 'relative',
-                top: pos.top,
-                left: pos.left,
-                height: index === 0 ? '25vh' : pos.height,
-                width: index === 0 ? '25vw' : pos.width
-              }}>
-                <img
-                  src={img.src}
-                  alt={img.alt || `feature-${index}`}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                
-              </div>
-            </motion.div>);
-
-        })}
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', textAlign: 'center', pointerEvents: 'none', zIndex: 10 }}>
-          <motion.p style={{
-            color: '#DDF762', fontSize: '11px', fontWeight: 500,
-            letterSpacing: '0.25em',
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-            marginBottom: '12px', opacity: textOpacity
-          }}>
-            Scroll to explore
-          </motion.p>
-          <motion.h2 style={{
-            color: '#FFFFFF', fontSize: 'clamp(24px, 3vw, 42px)',
-            fontWeight: 700, letterSpacing: '-0.02em',
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-            opacity: textOpacity
-          }}>
-            Everything you needed<br />and plenty more.
-          </motion.h2>
-        </div>
-      </div>
     </div>);
 
 }
