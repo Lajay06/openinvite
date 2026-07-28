@@ -58,6 +58,10 @@ try {
 
   const landed = await Promise.race([
     page.waitForURL(/\/Dashboard/, { timeout: 15_000 }).then(() => 'dashboard'),
+    // /DailyUpdate is the app's actual default post-login landing route
+    // (see src/pages/Login.jsx's own redirect comment/fallback) — this
+    // suite's original /Dashboard-only expectation predates that route.
+    page.waitForURL(/\/DailyUpdate/, { timeout: 15_000 }).then(() => 'dailyUpdate'),
     page.waitForURL(/\/onboarding/, { timeout: 15_000 }).then(() => 'onboarding'),
     page.waitForSelector('text=/invalid|incorrect|error/i', { timeout: 15_000 }).then(() => 'error'),
   ]).catch(() => 'timeout');
@@ -72,12 +76,14 @@ try {
     throw new Error('preflight-stop');
   }
   if (landed === 'timeout') {
-    fail('Login', `Did not land on /Dashboard or /onboarding within 15s. Current URL: ${page.url()}`);
+    fail('Login', `Did not land on /Dashboard, /DailyUpdate, or /onboarding within 15s. Current URL: ${page.url()}`);
     throw new Error('preflight-stop');
   }
   pass('Email/password login', `landed on ${page.url()}`);
 
-  await page.waitForLoadState('networkidle');
+  // Checks below assert against the actual Dashboard page's content,
+  // regardless of which route login happened to land on.
+  await page.goto(`${BASE_URL}/Dashboard`, { waitUntil: 'networkidle' });
   const bodyText = await page.locator('body').innerText();
 
   if (!/John/i.test(bodyText) || !/Suzanne/i.test(bodyText)) {
