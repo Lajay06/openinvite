@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 export default function Login() {
   useMarketingSeo();
+  const { isAuthenticated, isLoadingAuth } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,8 +23,25 @@ export default function Login() {
 
   // Supports a ?next= redirect target (e.g. back to a collaborator accept
   // page after signing in) — falls back to the normal /DailyUpdate landing
-  // when absent, so every existing login link behaves exactly as before.
-  const next = new URLSearchParams(window.location.search).get('next');
+  // when absent. Every successful login (password or any OAuth provider)
+  // lands on /choose-plan first, not directly here — that page is the
+  // single, account-state-gated check for whether this visitor still needs
+  // to pick a plan (see ChoosePlan.jsx's isPastPlanStep()). An existing,
+  // already-onboarded user signing back in — including via Google, which
+  // this page and Register.jsx both route through the exact same
+  // loginWithProvider call — passes straight through with no extra screen.
+  const next = new URLSearchParams(window.location.search).get('next') || '/DailyUpdate';
+  const choosePlanUrl = `/choose-plan?next=${encodeURIComponent(next)}`;
+
+  // A visitor who already has a valid session and lands on /login directly
+  // (e.g. an old bookmark, or a marketing CTA reached before this session
+  // check existed) shouldn't see the sign-in form again — route them
+  // through the same account-state gate everything else uses.
+  useEffect(() => {
+    if (!isLoadingAuth && isAuthenticated) {
+      window.location.href = choosePlanUrl;
+    }
+  }, [isLoadingAuth, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +49,10 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = next || "/DailyUpdate";
+      // Full reload (not React Router navigate) — AuthContext only
+      // re-checks the session on mount, so /choose-plan needs a fresh
+      // mount to see the session we just created.
+      window.location.href = choosePlanUrl;
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -39,8 +61,14 @@ export default function Login() {
   };
 
   const handleProvider = (provider) => {
-    base44.auth.loginWithProvider(provider, next || "/DailyUpdate");
+    base44.auth.loginWithProvider(provider, choosePlanUrl);
   };
+
+  // Avoid flashing the sign-in form while the auth check above resolves,
+  // or during the moment before the redirect actually navigates away.
+  if (isLoadingAuth || isAuthenticated) {
+    return null;
+  }
 
   return (
     <AuthLayout

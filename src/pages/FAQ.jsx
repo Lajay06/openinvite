@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ApplePillButton from "@/components/motion/ApplePillButton";
-import { base44 } from "@/api/base44Client";
-import { createPageUrl } from "@/utils";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import { useFaqStructuredData } from "@/hooks/useFaqStructuredData";
 
@@ -58,10 +56,6 @@ export default function FAQ() {
   useMarketingSeo();
   useFaqStructuredData(FAQS);
 
-  const handleCTA = () => {
-    base44.auth.redirectToLogin(window.location.origin + createPageUrl("Dashboard"));
-  };
-
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100vh", fontFamily: PJS }}>
       <PublicNav />
@@ -104,7 +98,7 @@ export default function FAQ() {
             Get in touch with the Openinvite team, or start planning for free and see it for yourself.
           </p>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-            <ApplePillButton onClick={handleCTA}>Start for free +</ApplePillButton>
+            <ApplePillButton href="/signup">Start for free +</ApplePillButton>
             <Link to="/Contact" style={{ textDecoration: "none" }}>
               <ApplePillButton>Contact us +</ApplePillButton>
             </Link>

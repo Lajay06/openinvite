@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 export default function Register() {
   useMarketingSeo();
+  const { isAuthenticated, isLoadingAuth } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -43,8 +45,31 @@ export default function Register() {
   };
 
   // Supports a ?next= redirect target (e.g. back to a collaborator accept
-  // page after creating an account) — falls back to /Dashboard when absent.
-  const next = new URLSearchParams(window.location.search).get('next');
+  // page after creating an account) and a ?plan= pre-selection forwarded
+  // from Pricing.jsx's logged-out CTAs — both are threaded through to
+  // /choose-plan, which is the single, account-state-gated landing point
+  // for every successful auth (see ChoosePlan.jsx's isPastPlanStep()).
+  // Every account, new or existing, lands there first rather than going
+  // straight to /Dashboard.
+  const searchParams = new URLSearchParams(window.location.search);
+  const next = searchParams.get('next');
+  const plan = searchParams.get('plan');
+  const choosePlanUrl = () => {
+    const p = new URLSearchParams();
+    if (next) p.set('next', next);
+    if (plan) p.set('plan', plan);
+    const qs = p.toString();
+    return `/choose-plan${qs ? `?${qs}` : ''}`;
+  };
+
+  // A visitor who already has a valid session and lands on /register
+  // directly shouldn't see the signup form again — route them through the
+  // same account-state gate everything else uses.
+  useEffect(() => {
+    if (!isLoadingAuth && isAuthenticated) {
+      window.location.href = choosePlanUrl();
+    }
+  }, [isLoadingAuth, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleVerify = async () => {
     setError("");
@@ -54,7 +79,10 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
-      window.location.href = next || "/Dashboard";
+      // Full reload (not React Router navigate) — AuthContext only
+      // re-checks the session on mount, so /choose-plan needs a fresh
+      // mount to see the token we just set.
+      window.location.href = choosePlanUrl();
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -76,8 +104,14 @@ export default function Register() {
   };
 
   const handleProvider = (provider) => {
-    base44.auth.loginWithProvider(provider, next || "/");
+    base44.auth.loginWithProvider(provider, choosePlanUrl());
   };
+
+  // Avoid flashing the signup form while the auth check above resolves,
+  // or during the moment before the redirect actually navigates away.
+  if (isLoadingAuth || isAuthenticated) {
+    return null;
+  }
 
   if (showOtp) {
     return (

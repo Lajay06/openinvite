@@ -35,6 +35,7 @@ const Universes = lazy(() => import('./pages/Universes'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const ChoosePlan = lazy(() => import('./pages/ChoosePlan'));
 const MultiPageWeddingWebsite = lazy(() => import('./components/guest-website/MultiPageWeddingWebsite'));
 const RSVPPage = lazy(() => import('./components/rsvp/RSVPPage'));
 const GamesPage = lazy(() => import('./components/games/GamesPage'));
@@ -202,6 +203,7 @@ const AuthenticatedApp = () => {
             <MainPage />
           </LayoutWrapper>
         } />
+        <Route path="/choose-plan" element={<ChoosePlan />} />
         <Route path="/Features" element={<Features />} />
         {Object.entries(Pages).map(([path, Page]) => {
           if (AUTO_ROUTE_EXCLUDE.has(path)) return null;

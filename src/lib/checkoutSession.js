@@ -83,8 +83,17 @@ export async function startCheckout(plan, setLoadingPlan, setCheckoutError, deps
     if (data.url) {
       redirect(data.url);
     } else {
-      const msg = data.error || 'Checkout session could not be created.';
-      console.error(`${logPrefix} API returned error:`, msg, '| type:', data.type, '| code:', data.code);
+      const rawMsg = data.error || 'Checkout session could not be created.';
+      console.error(`${logPrefix} API returned error:`, rawMsg, '| type:', data.type, '| code:', data.code);
+      // The backend's "userId is required" is a real, correct guard (see
+      // api/create-checkout-session.js) — no account means no checkout,
+      // full stop. Now that every logged-out entry point routes through
+      // /register first (Pricing.jsx, ChoosePlan.jsx), this should only
+      // ever surface here as a defensive fallback — translate it to
+      // something a visitor can act on instead of the raw backend string.
+      const msg = rawMsg === 'userId is required'
+        ? 'Create an account to check out — head to signup first.'
+        : rawMsg;
       setCheckoutError(msg);
     }
   } catch (err) {

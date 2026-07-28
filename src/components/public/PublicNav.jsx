@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
 
 const NAV_LINKS = [
   { label: "Features", to: "/Features" },
@@ -20,6 +21,7 @@ export default function PublicNav() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
 
   const handleLogin = () => {
     window.location.href = '/login';
@@ -100,28 +102,41 @@ export default function PublicNav() {
           <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.15)" }} />
 
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <button
-              onClick={handleLogin}
-              aria-label="Log in"
-              style={{
-                background: "none", border: "none", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "rgba(255,255,255,0.75)", padding: 0,
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#ffffff"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.75)"; }}
-            >
-              <UserIcon />
-            </button>
-            <a
-              href="/signup"
-              style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none", transition: "opacity 0.2s ease", display: "inline-block" }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-            >
-              Get started
-            </a>
+            {isAuthenticated ? (
+              <a
+                href="/Dashboard"
+                style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none", transition: "opacity 0.2s ease", display: "inline-block" }}
+                onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+              >
+                Go to dashboard
+              </a>
+            ) : (
+              <>
+                <button
+                  onClick={handleLogin}
+                  aria-label="Log in"
+                  style={{
+                    background: "none", border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: "rgba(255,255,255,0.75)", padding: 0,
+                    transition: "color 0.2s ease",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.color = "#ffffff"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.75)"; }}
+                >
+                  <UserIcon />
+                </button>
+                <a
+                  href="/signup"
+                  style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none", transition: "opacity 0.2s ease", display: "inline-block" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+                  onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                >
+                  Get started
+                </a>
+              </>
+            )}
           </div>
         </nav>
 
@@ -141,12 +156,20 @@ export default function PublicNav() {
                 <Link key={link.to} to={link.to} onClick={() => setOpen(false)} className="block text-[rgba(255,255,255,0.4)] hover:text-white text-sm transition-colors">{link.label}</Link>
               ))}
               <div className="flex items-center gap-3 pt-2">
-                <button onClick={handleLogin} className="text-white text-sm font-semibold" style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Log in
-                </button>
-                <a href="/signup" style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "8px 18px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none" }}>
-                  Get started
-                </a>
+                {isAuthenticated ? (
+                  <a href="/Dashboard" style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "8px 18px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none" }}>
+                    Go to dashboard
+                  </a>
+                ) : (
+                  <>
+                    <button onClick={handleLogin} className="text-white text-sm font-semibold" style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      Log in
+                    </button>
+                    <a href="/signup" style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "8px 18px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none" }}>
+                      Get started
+                    </a>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -180,28 +203,41 @@ export default function PublicNav() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <button
-              onClick={handleLogin}
-              aria-label="Log in"
-              style={{
-                background: "none", border: "none", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "rgba(255,255,255,0.75)", padding: 0,
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#ffffff"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.75)"; }}
-            >
-              <UserIcon />
-            </button>
-            <a
-              href="/signup"
-              style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "7px 16px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none", transition: "opacity 0.2s ease", display: "inline-block" }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-            >
-              Get started
-            </a>
+            {isAuthenticated ? (
+              <a
+                href="/Dashboard"
+                style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "7px 16px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none", transition: "opacity 0.2s ease", display: "inline-block" }}
+                onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+              >
+                Go to dashboard
+              </a>
+            ) : (
+              <>
+                <button
+                  onClick={handleLogin}
+                  aria-label="Log in"
+                  style={{
+                    background: "none", border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: "rgba(255,255,255,0.75)", padding: 0,
+                    transition: "color 0.2s ease",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.color = "#ffffff"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.75)"; }}
+                >
+                  <UserIcon />
+                </button>
+                <a
+                  href="/signup"
+                  style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "7px 16px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none", transition: "opacity 0.2s ease", display: "inline-block" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+                  onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                >
+                  Get started
+                </a>
+              </>
+            )}
           </div>
 
           <button className="md:hidden text-white" onClick={() => setOpen(!open)}>
@@ -214,9 +250,15 @@ export default function PublicNav() {
             {NAV_LINKS.map((link) => (
               <Link key={link.to} to={link.to} onClick={() => setOpen(false)} className="block text-[rgba(255,255,255,0.4)] hover:text-white text-sm transition-colors">{link.label}</Link>
             ))}
-            <button onClick={handleLogin} className="flex items-center gap-2 text-white text-sm font-semibold">
-              <UserIcon /> Log in
-            </button>
+            {isAuthenticated ? (
+              <a href="/Dashboard" className="flex items-center gap-2 text-white text-sm font-semibold" style={{ textDecoration: "none" }}>
+                Go to dashboard
+              </a>
+            ) : (
+              <button onClick={handleLogin} className="flex items-center gap-2 text-white text-sm font-semibold">
+                <UserIcon /> Log in
+              </button>
+            )}
           </div>
         )}
       </nav>

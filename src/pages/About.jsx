@@ -1,6 +1,4 @@
 import React, { useRef, useEffect, useState } from "react";
-import { createPageUrl } from "@/utils";
-import { base44 } from "@/api/base44Client";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
@@ -63,9 +61,6 @@ function useScrollReveal(threshold = 0.2) {
 
 export default function About() {
   useMarketingSeo();
-  const handleCTA = () => {
-    base44.auth.redirectToLogin(window.location.origin + createPageUrl("Dashboard"));
-  };
 
   return (
     <div className="min-h-screen bg-white font-sans" style={{ scrollBehavior: "smooth" }}>
@@ -154,7 +149,7 @@ export default function About() {
       </section>
 
       {/* ── S9: CTA ──────────────────────────────────────── */}
-      <CTASection onCTA={handleCTA} />
+      <CTASection />
 
       <PublicFooter />
     </div>
@@ -225,7 +220,7 @@ function TwoColumnSection({ id, number, title, headline, body, background, belie
   );
 }
 
-function CTASection({ onCTA }) {
+function CTASection() {
   const [ref, visible] = useScrollReveal(0.2);
 
   return (
@@ -235,7 +230,7 @@ function CTASection({ onCTA }) {
           Ready to start planning?
         </h2>
         <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-          <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
+          <ApplePillButton href="/signup">Get started</ApplePillButton>
         </div>
       </div>
     </section>
