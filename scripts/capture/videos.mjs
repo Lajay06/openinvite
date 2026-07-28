@@ -158,11 +158,20 @@ async function recordAvaFlow(name, question) {
     await page.waitForTimeout(1000);
     // Dismiss the first-run "Here's how to get started" tips modal if it's
     // showing — shot hygiene, not a data write (a purely local dismissal).
+    // Waits for it to actually detach (not a fixed delay) — a still-mounted
+    // dialog's overlay otherwise ends up stacked (Radix aria-hides it, but
+    // its overlay div stays in the DOM and still intercepts clicks) under
+    // the Ava dialog opened right after, blocking the textarea click below.
     const skipAll = page.getByText('Skip all', { exact: true });
     if (await skipAll.count() > 0) {
       await skipAll.click().catch(() => {});
-      await page.waitForTimeout(500);
+      await skipAll.waitFor({ state: 'detached', timeout: 3000 }).catch(() => {});
     }
+    // Extra safety net regardless of the above: Escape closes any dialog
+    // that's still open (Radix's own native behavior), so Ava's dialog
+    // never opens on top of a stale one.
+    await page.keyboard.press('Escape').catch(() => {});
+    await page.waitForTimeout(300);
     await page.evaluate(() => window.dispatchEvent(new Event('openAva')));
     await page.waitForTimeout(1200);
     const textarea = page.getByPlaceholder('Ask Ava anything...');
