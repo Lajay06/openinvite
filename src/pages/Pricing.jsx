@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
-import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Loader2 } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
+import { startCheckout } from "@/lib/checkoutSession";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -95,91 +96,33 @@ function CellValue({ val }) {
   return <span style={{ fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>{val}</span>;
 }
 
-// Price IDs: prefer env vars (set at build time via VITE_ prefix), fall back to hardcoded
-const PRICE_IDS = {
-  pro:   import.meta.env.VITE_STRIPE_PRO_PRICE_ID   || 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
-  ultra: import.meta.env.VITE_STRIPE_ULTRA_PRICE_ID || 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
-};
-
-async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
-  const priceId = PRICE_IDS[plan];
-  // AUDIT_2026-07.md N8: this used to also log priceId — visible to any
-  // visitor's devtools, unnecessary noise on a payment page.
-  console.log('[Checkout] Button clicked — plan:', plan);
-  setLoadingPlan(plan);
-  setCheckoutError(null);
-
-  try {
-    let userEmail = '';
-    let userId = '';
-    try {
-      const me = await base44.auth.me();
-      userEmail = me?.email || '';
-      userId = me?.id || '';
-      console.log('[Checkout] User resolved:', userEmail || '(no email)');
-    } catch (authErr) {
-      console.warn('[Checkout] Could not resolve user — continuing as guest:', authErr);
-    }
-
-    console.log('[Checkout] POSTing to /api/create-checkout-session');
-
-    let res;
-    try {
-      res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, userEmail, userId }),
-      });
-    } catch (networkErr) {
-      console.error('[Checkout] Network error — is the API reachable?', networkErr);
-      setCheckoutError('Network error: could not reach the checkout server. Please try again.');
-      return;
-    }
-
-    console.log('[Checkout] Response status:', res.status, res.ok);
-
-    // Safely parse — response may be HTML (Vite dev 404) rather than JSON
-    const contentType = res.headers.get('content-type') || '';
-    let data;
-    if (contentType.includes('application/json')) {
-      data = await res.json();
-    } else {
-      const text = await res.text();
-      console.error('[Checkout] Non-JSON response received:', text.slice(0, 300));
-      setCheckoutError(
-        res.status === 404
-          ? 'Checkout API not found. This works on Vercel: run `vercel dev` to test locally.'
-          : `Server error ${res.status}. Please try again.`
-      );
-      return;
-    }
-
-    if (data.url) {
-      // AUDIT_2026-07.md N8: previously logged the full response object
-      // (including this redirect URL) — visible to any visitor's devtools.
-      window.location.href = data.url;
-    } else {
-      const msg = data.error || 'Checkout session could not be created.';
-      console.error('[Checkout] API returned error:', msg, '| type:', data.type, '| code:', data.code);
-      setCheckoutError(msg);
-    }
-  } catch (err) {
-    console.error('[Checkout] Unexpected error:', err);
-    setCheckoutError('Something went wrong. Please try again.');
-  } finally {
-    setLoadingPlan(null);
-  }
-}
-
 export default function Pricing() {
   useMarketingSeo();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [checkoutError, setCheckoutError] = useState(null);
 
-  const goFree  = () => navigate("/onboarding");
-  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: 79  }); startCheckout('pro',   setLoadingPlan, setCheckoutError); };
-  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: 149 }); startCheckout('ultra', setLoadingPlan, setCheckoutError); };
+  // A logged-out visitor never reaches checkout or /onboarding directly —
+  // both require an account. They go through /register?plan=... instead,
+  // which lands on the same account-state-gated /choose-plan every signup
+  // goes through (see ChoosePlan.jsx), carrying the chosen plan forward.
+  // An already-logged-in visitor keeps the exact pre-existing behavior:
+  // straight to onboarding, or straight to Stripe checkout.
+  const goFree  = () => {
+    if (!isAuthenticated) { navigate('/register?plan=free'); return; }
+    navigate("/onboarding");
+  };
+  const goPro   = () => {
+    if (!isAuthenticated) { navigate('/register?plan=pro'); return; }
+    track('checkout_initiated', { plan: 'pro', price: 79 });
+    startCheckout('pro', setLoadingPlan, setCheckoutError);
+  };
+  const goUltra = () => {
+    if (!isAuthenticated) { navigate('/register?plan=ultra'); return; }
+    track('checkout_initiated', { plan: 'ultra', price: 149 });
+    startCheckout('ultra', setLoadingPlan, setCheckoutError);
+  };
 
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100vh", fontFamily: PJS }}>

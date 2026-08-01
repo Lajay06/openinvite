@@ -539,7 +539,7 @@ const Universes = () => {
             Your complete wedding design suite, ready in minutes.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={() => navigate('/login')} style={{
+            <button onClick={() => navigate('/signup')} style={{
               padding: '16px 40px',
               background: '#E03553',
               color: '#FFFFFF',

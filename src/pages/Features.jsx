@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { PHOTOS } from "@/lib/photos";
-import { createPageUrl } from "@/utils";
-import { base44 } from "@/api/base44Client";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
@@ -50,10 +48,6 @@ export default function Features() {
   useMarketingSeo();
   const [openFeature, setOpenFeature] = useState(null);
 
-  const handleCTA = () => {
-    base44.auth.redirectToLogin(window.location.origin + createPageUrl("Dashboard"));
-  };
-
   return (
     <div className="min-h-screen bg-[#0A0A0A] font-sans" style={{ scrollBehavior: "smooth" }}>
       <PublicNav />
@@ -71,7 +65,7 @@ export default function Features() {
           <h1 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif", margin: "0 0 24px" }}>
             Everything you needed. Plus a few things you didn't expect.
           </h1>
-          <ApplePillButton onClick={handleCTA} light={false}>Get started</ApplePillButton>
+          <ApplePillButton href="/signup" light={false}>Get started</ApplePillButton>
         </div>
         <ScrollCue />
       </section>
@@ -108,7 +102,7 @@ export default function Features() {
       </div>
 
       {/* ── S8: FINAL CTA ────────────────────────────────── */}
-      <FinalCTASection onCTA={handleCTA} />
+      <FinalCTASection />
 
       <PublicFooter />
     </div>);
@@ -304,14 +298,14 @@ function AccordionSection({ features, borders, dots, openFeature, setOpenFeature
 
 }
 
-function FinalCTASection({ onCTA }) {
+function FinalCTASection() {
   const [ref, visible] = useScrollReveal(0.2);
   return (
     <section ref={ref} style={{ background: "#0A0A0A", padding: "160px 0" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(32px, 6vw, 80px)", transform: visible ? "scale(1)" : "scale(0.92)", opacity: visible ? 1 : 0, transition: prefersReduced() ? "none" : `transform 0.9s ${EASE}, opacity 0.7s ${EASE}` }}>
         <AnimDivider />
         <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginTop: 32, marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Ready to start planning?</h2>
-        <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
+        <ApplePillButton href="/signup">Get started</ApplePillButton>
       </div>
     </section>);
 
