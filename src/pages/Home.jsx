@@ -103,8 +103,8 @@ const prefersReduced = () =>
 
 // A plain tier label, not a full pricing table or a clickable card — full
 // comparison and the actual CTAs live on /Pricing. Honest about there being
-// two tiers instead of implying $79 unlocks everything (Ultra's website
-// builder, invitations and guest suite are $149, per Pricing.jsx's own
+// two tiers instead of implying $49 unlocks everything (Ultra's website
+// builder, invitations and guest suite are $99, per Pricing.jsx's own
 // PRO_FEATURES/ULTRA_EXTRAS split).
 function TierChip({ name, price, blurb, accent }) {
   return (
@@ -152,7 +152,7 @@ function PricingSection({ onCTA }) {
         opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)",
         transition: reduced ? "none" : `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
       }}>
-        From <span style={{ color: "#DDF762" }}>$79</span>.
+        From <span style={{ color: "#DDF762" }}>US$49</span>.
       </h2>
       <p style={{
         maxWidth: 480, margin: "0 auto 48px", color: "rgba(255,255,255,0.6)", fontSize: 18, lineHeight: 1.6,
@@ -166,8 +166,8 @@ function PricingSection({ onCTA }) {
         opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
         transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.15s, transform 0.7s ${EASE} 0.15s`,
       }}>
-        <TierChip name="Pro" price="$79" blurb="Planning, guests, budget, Ava" accent="#E03553" />
-        <TierChip name="Ultra" price="$149" blurb="Everything, plus universes & digital invitations" accent="#DDF762" />
+        <TierChip name="Pro" price="US$49" blurb="Planning, guests, budget, Ava" accent="#E03553" />
+        <TierChip name="Ultra" price="US$99" blurb="Everything, plus universes & digital invitations" accent="#DDF762" />
       </div>
       <div style={{
         display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", justifyContent: "center",

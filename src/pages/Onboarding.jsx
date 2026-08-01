@@ -82,7 +82,7 @@ export default function Onboarding() {
     priorities: [],
     guestList: [],
     budget: null,
-    currency: 'AUD',
+    currency: 'USD',
     vendors: [],
     culturalNotes: '',
     inspirationPhotos: [],

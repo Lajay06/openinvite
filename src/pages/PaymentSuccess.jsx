@@ -42,8 +42,8 @@ export default function PaymentSuccess() {
             if (cancelled) return;
             track('purchase_completed', {
               plan: me.plan,
-              amount: me.plan === 'ultra' ? 149 : 79,
-              currency: 'AUD',
+              amount: me.plan === 'ultra' ? 99 : 49,
+              currency: 'USD',
             });
             if (me?.id) identify(me.id, { email: me.email, name: me.full_name });
             setStatus('done');

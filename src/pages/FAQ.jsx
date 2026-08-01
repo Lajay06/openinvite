@@ -11,8 +11,8 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // Plain, factual, quotable prose (AEO/SEO batch, item 4) — 2 to 4
 // sentences per answer, the format AI assistants lift directly. Kept in
 // sync with useFaqStructuredData's FAQPage markup below (same array, one
-// source of truth) and with the live pricing shown on /pricing (AUD 79 /
-// 149, approx. US$50 / US$95).
+// source of truth) and with the live pricing shown on /pricing (USD 49 /
+// 99, AUD available at checkout).
 const FAQS = [
   {
     q: "What is Openinvite?",
@@ -20,7 +20,7 @@ const FAQS = [
   },
   {
     q: "How much does it cost? Is it really one payment?",
-    a: "Yes. Openinvite is a one-time payment, not a subscription. Pro is $79 AUD (approximately US$50) and Ultra is $149 AUD (approximately US$95), each covering 24 months of access with no monthly fees.",
+    a: "Yes. Openinvite is a one-time payment, not a subscription. Pro is US$49 and Ultra is US$99, each covering 24 months of access with no monthly fees. AUD pricing is available at checkout.",
   },
   {
     q: "What's included in Pro versus Ultra?",

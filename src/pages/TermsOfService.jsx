@@ -95,7 +95,7 @@ export default function TermsOfService() {
           <div style={DIV} />
           <h2 style={H2}>8. Plans and payment</h2>
           <h3 style={H3}>Plans</h3>
-          <p style={P}>OpenInvite offers a free trial and two paid, <strong>one-time-payment</strong> plans — Pro ($79 AUD) and Ultra ($149 AUD) — each giving 24 months of access from purchase. These are not recurring subscriptions: you are charged once, at checkout, and are not billed again for that plan.</p>
+          <p style={P}>OpenInvite offers a free trial and two paid, <strong>one-time-payment</strong> plans — Pro (US$49) and Ultra (US$99) — each giving 24 months of access from purchase. AUD pricing is available at checkout. These are not recurring subscriptions: you are charged once, at checkout, and are not billed again for that plan.</p>
 
           <h3 style={H3}>Billing</h3>
           <p style={P}>Payments are processed securely by Stripe. We do not store your full card details.</p>

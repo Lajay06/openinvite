@@ -6,7 +6,7 @@
 export function purchaseConfirmationEmail({ plan, email, name }) {
   const firstName = name ? name.split(' ')[0] : 'there';
   const planLabel = plan === 'ultra' ? 'Ultra' : 'Pro';
-  const planPrice = plan === 'ultra' ? '$149' : '$79';
+  const planPrice = plan === 'ultra' ? 'US$99' : 'US$49';
   const planExtras = plan === 'ultra'
     ? 'Full planning suite + invitation design, save the dates, thank you cards, and a complete guest portal with digital invitations.'
     : 'Complete wedding planning — guest management, budget tracking, vendor tools, seating planner, wedding website, Ava AI, and more.';
@@ -56,7 +56,7 @@ export function purchaseConfirmationEmail({ plan, email, name }) {
                 <tr>
                   <td style="padding:16px 20px;border-bottom:1px solid #F0F0F0;">
                     <p style="margin:0;font-size:12px;font-weight:600;color:rgba(10,10,10,0.6);letter-spacing:0.04em;">Amount paid</p>
-                    <p style="margin:4px 0 0;font-size:14px;font-weight:600;color:#0A0A0A;">${planPrice} AUD — one-time</p>
+                    <p style="margin:4px 0 0;font-size:14px;font-weight:600;color:#0A0A0A;">${planPrice} — one-time</p>
                   </td>
                 </tr>
                 <tr>
@@ -92,7 +92,7 @@ export function purchaseConfirmationEmail({ plan, email, name }) {
           <tr>
             <td style="padding:24px 40px 40px;">
               <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(10,10,10,0.35);">
-                This is your payment confirmation for Openinvite ${planLabel} (${planPrice} AUD).<br />
+                This is your payment confirmation for Openinvite ${planLabel} (${planPrice}).<br />
                 Questions about your purchase? Reply to this email or contact us at lajay@openinvite.com.au
               </p>
             </td>

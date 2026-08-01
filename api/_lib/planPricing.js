@@ -5,18 +5,20 @@
  * verified session's actual line items) — so the two can never drift, and
  * neither ever has to trust a client-supplied plan string.
  *
- * Multi-currency pricing: AUD stays $79 Pro / $149 Ultra (VITE_STRIPE_PRO_
- * PRICE_ID / VITE_STRIPE_ULTRA_PRICE_ID, unchanged). USD is $59 Pro / $79
- * Ultra, on separate Stripe Price objects attached to the SAME two products
- * (VITE_STRIPE_PRO_PRICE_ID_USD / VITE_STRIPE_ULTRA_PRICE_ID_USD) — four
- * known price IDs total, each mapping to exactly one tier. The tamper-proof
- * property this whole module exists for still holds with four IDs instead
- * of two: tier comes only from which of these four specific price IDs was
- * actually purchased, never a client-supplied currency or plan string.
+ * Multi-currency pricing: USD is the primary/canonical price, $49 Pro / $99
+ * Ultra (VITE_STRIPE_PRO_PRICE_ID_USD / VITE_STRIPE_ULTRA_PRICE_ID_USD). AUD
+ * stays available at checkout, $79 Pro / $149 Ultra, on separate Stripe
+ * Price objects attached to the SAME two products (VITE_STRIPE_PRO_PRICE_ID
+ * / VITE_STRIPE_ULTRA_PRICE_ID, unchanged) — four known price IDs total,
+ * each mapping to exactly one tier. The tamper-proof property this whole
+ * module exists for still holds with four IDs instead of two: tier comes
+ * only from which of these four specific price IDs was actually purchased,
+ * never a client-supplied currency or plan string.
  *
- * Reads the same env vars the frontend already uses (src/pages/Pricing.jsx,
- * PlanSelection.jsx) — the VITE_ prefix only controls client bundling,
- * Vercel functions can read them same as any other env var.
+ * Reads the same env vars the frontend already uses (src/lib/checkoutSession.js,
+ * src/pages/Pricing.jsx, src/pages/Account.jsx) — the VITE_ prefix only
+ * controls client bundling, Vercel functions can read them same as any
+ * other env var.
  */
 
 /**

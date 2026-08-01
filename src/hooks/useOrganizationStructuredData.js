@@ -8,11 +8,13 @@ import { upsertJsonLd } from '@/lib/structuredData';
  * (standard practice: these are site-wide facts, not per-page ones).
  *
  * Pricing here is the couple's exact, current one-time pricing as given
- * directly (USD 59/109, AUD 79/149) — deliberately not derived from
- * CurrencyContext.jsx's live FX-converted display, since that's a rough
- * "Approx." estimate for browsing, not the fixed price actually charged.
- * Machine-readable pricing here is exactly what an AI assistant will quote
- * back to a user, so it has to be the real number, not an estimate.
+ * directly (USD 49/99, AUD 79/149 — AUD checkout stays fully functional,
+ * so both are real purchasable Offers, not a display-only conversion) —
+ * deliberately not derived from CurrencyContext.jsx's live FX-converted
+ * display, since that's a rough "Approx." estimate for browsing, not a
+ * fixed price actually charged. Machine-readable pricing here is exactly
+ * what an AI assistant will quote back to a user, so it has to be a real
+ * number, not an estimate.
  *
  * No `sameAs` social profile URLs — PublicFooter.jsx's Instagram/Facebook
  * links are still placeholder `href="#"` (no real profile exists yet).
@@ -40,7 +42,7 @@ export function useOrganizationStructuredData() {
         {
           '@type': 'Offer',
           name: 'Pro',
-          price: '59',
+          price: '49',
           priceCurrency: 'USD',
           availability: 'https://schema.org/InStock',
           url: `${SITE_URL}/pricing`,
@@ -48,7 +50,7 @@ export function useOrganizationStructuredData() {
         {
           '@type': 'Offer',
           name: 'Ultra',
-          price: '109',
+          price: '99',
           priceCurrency: 'USD',
           availability: 'https://schema.org/InStock',
           url: `${SITE_URL}/pricing`,

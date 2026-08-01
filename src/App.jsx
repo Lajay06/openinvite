@@ -194,6 +194,15 @@ const AuthenticatedApp = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/signup" element={<Navigate to="/register" replace />} />
+      {/* PlanSelection.jsx (superseded by ChoosePlan.jsx, the account-state-
+          gated plan step every auth path routes through) had zero inbound
+          links anywhere in the app but was still live and auto-routed here
+          via pages.config.js's Pages map, showing stale AUD pricing.
+          Redirect kept (not a bare 404) since it may have been indexed
+          during the AEO/SEO work — explicit route since removing
+          "PlanSelection" from pages.config.js's Pages map also removes its
+          auto-generated route, same pattern as /GuestSuite below. */}
+      <Route path="/PlanSelection" element={<Navigate to="/choose-plan" replace />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
