@@ -13,6 +13,14 @@
  * caught it — the same ReferenceError fires as a `pageerror` event the
  * instant the component tries to render.
  *
+ * Also fails on horizontal page overflow (documentElement.scrollWidth >
+ * clientWidth). Found repeatedly across Home/About/Features/Ava — usually
+ * an off-screen entrance-animation element (translateX(±Npx) at rest,
+ * before its scroll-reveal fires) whose containing section is missing
+ * overflow:hidden, or a stray width:100vw section (wider than the true
+ * viewport whenever a vertical scrollbar is present). A 1px tolerance
+ * absorbs normal subpixel rounding.
+ *
  * Reuses the product-visual capture pipeline's config (scripts/capture/
  * config.mjs) — same BASE_URL env var (CAPTURE_BASE_URL), same
  * no-new-dependency Playwright setup — so this can point at production, a
@@ -49,6 +57,15 @@ async function checkRoute(browser, path) {
     } else if (pageErrors.length > 0) {
       ok = false;
       reason = `uncaught exception: ${pageErrors[0]}`;
+    } else {
+      const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }));
+      if (scrollWidth > clientWidth + 1) {
+        ok = false;
+        reason = `horizontal overflow: scrollWidth ${scrollWidth}px > clientWidth ${clientWidth}px`;
+      }
     }
   } catch (err) {
     ok = false;

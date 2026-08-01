@@ -182,7 +182,7 @@ const TABLE_ROWS = [
 function FeatureSplit({ bg, label, labelColor, headline, body, bullets, photo, reversed, bgColor }) {
   const [ref, inView] = useInView(0.1);
   return (
-    <div ref={ref} style={{ display: "flex", flexDirection: reversed ? "row-reverse" : "row", minHeight: 560, background: bgColor }}>
+    <div ref={ref} style={{ display: "flex", flexDirection: reversed ? "row-reverse" : "row", minHeight: 560, background: bgColor, overflow: "hidden" }}>
       <div style={{ flex: 1, padding: "80px clamp(32px,5vw,80px)", display: "flex", flexDirection: "column", justifyContent: "center", opacity: inView ? 1 : 0, transform: inView ? "none" : `translateX(${reversed ? 40 : -40}px)`, transition: "opacity 0.7s ease, transform 0.7s ease" }}>
         <h2 style={{ fontSize: "clamp(28px,3.5vw,48px)", fontWeight: 700, color: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "#fff" : "#0A0A0A", margin: "0 0 20px", letterSpacing: "-0.02em", lineHeight: 1.1 }}>{headline}</h2>
         <p style={{ fontSize: 16, color: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "#CCCCCC" : "#444444", lineHeight: 1.7, marginBottom: 28, maxWidth: 440 }}>{body}</p>

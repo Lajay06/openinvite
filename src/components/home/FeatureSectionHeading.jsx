@@ -10,6 +10,19 @@
  */
 import React from "react";
 
+// Shared by every feature section's intro paragraph (QuickStartSection,
+// DashboardSection, FeatureTimeline, FeatureGuests, FeatureBudget) — used
+// to hand-roll fontWeight per instance, which is exactly how it drifted:
+// some sections got 600 (semibold), some got no fontWeight at all
+// (regular). Color and marginBottom still vary per section (dark vs light
+// background), so this only owns the properties that must stay identical.
+export const featureBodyTextStyle = {
+  fontWeight: 600,
+  lineHeight: 1.7,
+  fontSize: 16,
+  fontFamily: "'Plus Jakarta Sans',sans-serif",
+};
+
 const FeatureSectionHeading = React.forwardRef(function FeatureSectionHeading(
   { children, color = "#0A0A0A", style, lineStyle },
   ref

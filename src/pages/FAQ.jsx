@@ -48,7 +48,7 @@ const FAQS = [
   },
   {
     q: "Does Openinvite work in the US? What currencies do you support?",
-    a: "Yes, Openinvite works for couples anywhere, including the US. Pricing is charged in Australian dollars with an approximate US dollar price shown for reference, and payment is processed securely through Stripe.",
+    a: "Yes, Openinvite works for couples anywhere, including the US. Pricing is shown in US dollars, with AUD pricing available at checkout, and payment is processed securely through Stripe.",
   },
 ];
 
@@ -98,9 +98,9 @@ export default function FAQ() {
             Get in touch with Openinvite, or start planning for free and see it for yourself.
           </p>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-            <ApplePillButton href="/signup">Start for free +</ApplePillButton>
+            <ApplePillButton href="/signup">Start for free</ApplePillButton>
             <Link to="/Contact" style={{ textDecoration: "none" }}>
-              <ApplePillButton>Contact us +</ApplePillButton>
+              <ApplePillButton>Contact us</ApplePillButton>
             </Link>
           </div>
         </div>

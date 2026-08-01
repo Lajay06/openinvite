@@ -4,7 +4,7 @@
  */
 import React, { useRef, useEffect, useState } from "react";
 import { useAppleReveal } from "@/hooks/useAppleReveal";
-import FeatureSectionHeading from "@/components/home/FeatureSectionHeading";
+import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -71,7 +71,7 @@ export default function FeatureGuests({ children }) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "row",
-        overflow: "visible",
+        overflow: "hidden",
         position: "relative",
         borderBottom: "1px solid #E8E8E8"
       }}
@@ -101,7 +101,7 @@ export default function FeatureGuests({ children }) {
             Advanced Guest Management
           </FeatureSectionHeading>
 
-          <p ref={bodyRef} className="feature-body-text" style={{ color: "#444444", lineHeight: 1.7, marginBottom: 32, fontSize: 16, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+          <p ref={bodyRef} className="feature-body-text" style={{ ...featureBodyTextStyle, color: "#444444", marginBottom: 32 }}>
             From RSVP tracking to seating charts, we handle the guest list chaos so you can stay cool, calm, and perfectly in control.
           </p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>

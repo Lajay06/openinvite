@@ -127,7 +127,7 @@ export default function About() {
       <EditorialIntro />
 
       {/* ── S3: FULL BLEED PHOTO ─────────────────────────── */}
-      <section id="story" style={{ width: "100vw", height: "85vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
+      <section id="story" style={{ width: "100%", height: "85vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
         <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Young_Latin_Martin_Pisotti_Photos_ID6999_p6ixxt.jpg" alt="A young couple sharing a joyful moment together" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
       </section>
 
@@ -144,7 +144,7 @@ export default function About() {
       <TwoColumnSection id="beliefs" number="02" title="What we believe" headline="Simple beliefs. Big impact." background="#F5F5F3" beliefs={BELIEFS} />
 
       {/* ── S7: FULL BLEED PHOTO ─────────────────────────── */}
-      <section style={{ width: "100vw", height: "90vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
+      <section style={{ width: "100%", height: "90vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
         <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100482/DTS_la_calma_Parole_Dure_Photos_ID5853_haflhv.jpg" alt="An aerial view of a turquoise cove" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </section>
 

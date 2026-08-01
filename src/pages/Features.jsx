@@ -9,7 +9,7 @@ import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import FeatureTimeline from "@/components/home/FeatureTimeline";
 import FeatureGuests from "@/components/home/FeatureGuests";
 import FeatureBudget from "@/components/home/FeatureBudget";
-import FeatureSectionHeading from "@/components/home/FeatureSectionHeading";
+import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import ProductVideo from "@/components/shared/ProductVideo";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
@@ -112,7 +112,7 @@ function QuickStartSection() {
       <div className="w-full lg:w-1/2 order-2 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: `opacity 0.9s ${EASE} 0.2s, transform 0.9s ${EASE} 0.2s` }}>
         <div style={{ maxWidth: 480 }}>
           <FeatureSectionHeading color="#FFFFFF">Quick start wizard</FeatureSectionHeading>
-          <p style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.7, fontSize: 16 }}>Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
+          <p style={{ ...featureBodyTextStyle, color: "rgba(255,255,255,0.4)" }}>Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
         </div>
       </div>
     </section>);
@@ -142,7 +142,7 @@ function DashboardSection() {
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 480 }}>
           <FeatureSectionHeading color="#0A0A0A">Customisable Dashboard</FeatureSectionHeading>
-          <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16, marginBottom: 32 }}>Invite your partner, planner, or mum. Set who sees what, and assign tasks like a pro.</p>
+          <p style={{ ...featureBodyTextStyle, color: "#444444", marginBottom: 32 }}>Invite your partner, planner, or mum. Set who sees what, and assign tasks like a pro.</p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {BULLETS.map((b, i) =>
             <li key={i} style={{ padding: "11px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid #E8E8E8" : "none", color: "#444444", fontSize: 14, lineHeight: 1.5 }}>
@@ -200,7 +200,7 @@ function SeatingSection() {
           <FeatureSectionHeading color="#0A0A0A" style={{ fontSize: "clamp(32px, 4.2vw, 56px)", lineHeight: 1.08, marginBottom: 28 }}>
             A real canvas for a real guest list.
           </FeatureSectionHeading>
-          <p style={{ color: "#444444", lineHeight: 1.75, fontSize: 18, maxWidth: 420 }}>
+          <p style={{ ...featureBodyTextStyle, color: "#444444", lineHeight: 1.75, fontSize: 18, maxWidth: 420 }}>
             Drag tables into place, assign guests one at a time or let Ava suggest a starting layout. This is an actual recording of the seating tool, not a mockup.
           </p>
         </div>
@@ -235,7 +235,7 @@ function BudgetSection() {
           <FeatureSectionHeading color="#0A0A0A" style={{ fontSize: "clamp(32px, 4.2vw, 56px)", lineHeight: 1.08, marginBottom: 28 }}>
             Every dollar, in real time.
           </FeatureSectionHeading>
-          <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16 }}>
+          <p style={{ ...featureBodyTextStyle, color: "#444444" }}>
             Budget versus actual spend, category by category. This is the real tracker with a real 201-guest wedding's numbers in it.
           </p>
         </div>
