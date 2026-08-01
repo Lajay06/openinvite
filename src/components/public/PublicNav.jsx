@@ -105,11 +105,17 @@ export default function PublicNav() {
             {isAuthenticated ? (
               <a
                 href="/Dashboard"
-                style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "6px 14px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none", transition: "opacity 0.2s ease", display: "inline-block" }}
-                onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
-                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                aria-label="Go to dashboard"
+                style={{
+                  background: "none", border: "none",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "rgba(255,255,255,0.75)", padding: 0,
+                  transition: "color 0.2s ease",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = "#ffffff"; }}
+                onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.75)"; }}
               >
-                Go to dashboard
+                <UserIcon />
               </a>
             ) : (
               <>
@@ -157,8 +163,8 @@ export default function PublicNav() {
               ))}
               <div className="flex items-center gap-3 pt-2">
                 {isAuthenticated ? (
-                  <a href="/Dashboard" style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "8px 18px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none" }}>
-                    Go to dashboard
+                  <a href="/Dashboard" className="flex items-center gap-2 text-white text-sm font-semibold" style={{ textDecoration: "none" }}>
+                    <UserIcon /> Dashboard
                   </a>
                 ) : (
                   <>
@@ -206,11 +212,17 @@ export default function PublicNav() {
             {isAuthenticated ? (
               <a
                 href="/Dashboard"
-                style={{ background: "#E03553", color: "#ffffff", borderRadius: 999, padding: "7px 16px", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif", textDecoration: "none", transition: "opacity 0.2s ease", display: "inline-block" }}
-                onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
-                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                aria-label="Go to dashboard"
+                style={{
+                  background: "none", border: "none",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "rgba(255,255,255,0.75)", padding: 0,
+                  transition: "color 0.2s ease",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = "#ffffff"; }}
+                onMouseLeave={e => { e.currentTarget.style.color = "rgba(255,255,255,0.75)"; }}
               >
-                Go to dashboard
+                <UserIcon />
               </a>
             ) : (
               <>
@@ -252,7 +264,7 @@ export default function PublicNav() {
             ))}
             {isAuthenticated ? (
               <a href="/Dashboard" className="flex items-center gap-2 text-white text-sm font-semibold" style={{ textDecoration: "none" }}>
-                Go to dashboard
+                <UserIcon /> Dashboard
               </a>
             ) : (
               <button onClick={handleLogin} className="flex items-center gap-2 text-white text-sm font-semibold">

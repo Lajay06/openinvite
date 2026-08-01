@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import { useAuth } from "@/lib/AuthContext";
-import { Loader2 } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
-import { startCheckout } from "@/lib/checkoutSession";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -99,29 +97,39 @@ function CellValue({ val }) {
 export default function Pricing() {
   useMarketingSeo();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const [loadingPlan, setLoadingPlan] = useState(null);
-  const [checkoutError, setCheckoutError] = useState(null);
+  const { isAuthenticated, user } = useAuth();
+
+  // Whether the visitor's existing plan already covers a given tier — Ultra
+  // covers both tiers, Pro covers only itself. Drives the "Your plan"
+  // disabled-button state on the cards below.
+  const userPlan = user?.plan || 'free';
+  const proCovered = isAuthenticated && (userPlan === 'pro' || userPlan === 'ultra');
+  const ultraCovered = isAuthenticated && userPlan === 'ultra';
 
   // A logged-out visitor never reaches checkout or /onboarding directly —
   // both require an account. They go through /register?plan=... instead,
   // which lands on the same account-state-gated /choose-plan every signup
   // goes through (see ChoosePlan.jsx), carrying the chosen plan forward.
-  // An already-logged-in visitor keeps the exact pre-existing behavior:
-  // straight to onboarding, or straight to Stripe checkout.
+  // A logged-in visitor's plan buttons never open Stripe directly from this
+  // page — they route to Account.jsx's Billing tab, the existing verified
+  // in-app upgrade surface (same create-checkout-session endpoint), so the
+  // "already have this plan" and "upgrade from Pro to Ultra" cases are
+  // handled in exactly one place instead of duplicated here.
   const goFree  = () => {
     if (!isAuthenticated) { navigate('/register?plan=free'); return; }
     navigate("/onboarding");
   };
   const goPro   = () => {
+    if (proCovered) return;
     if (!isAuthenticated) { navigate('/register?plan=pro'); return; }
-    track('checkout_initiated', { plan: 'pro', price: 79 });
-    startCheckout('pro', setLoadingPlan, setCheckoutError);
+    track('upgrade_clicked', { plan: 'pro', from: 'pricing_page' });
+    navigate('/account?tab=billing');
   };
   const goUltra = () => {
+    if (ultraCovered) return;
     if (!isAuthenticated) { navigate('/register?plan=ultra'); return; }
-    track('checkout_initiated', { plan: 'ultra', price: 149 });
-    startCheckout('ultra', setLoadingPlan, setCheckoutError);
+    track('upgrade_clicked', { plan: 'ultra', from: 'pricing_page' });
+    navigate('/account?tab=billing');
   };
 
   return (
@@ -209,18 +217,19 @@ export default function Pricing() {
             </ul>
             <button
               onClick={goPro}
-              disabled={loadingPlan === 'pro'}
+              disabled={proCovered}
               style={{
                 width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
-                fontFamily: PJS, cursor: loadingPlan === 'pro' ? "default" : "pointer", border: "none",
-                background: "#E03553", color: "#FFFFFF", transition: "opacity 0.15s",
+                fontFamily: PJS, cursor: proCovered ? "default" : "pointer", border: "none",
+                background: proCovered ? "rgba(10,10,10,0.08)" : "#E03553",
+                color: proCovered ? "rgba(10,10,10,0.3)" : "#FFFFFF",
+                transition: "opacity 0.15s",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                opacity: loadingPlan === 'pro' ? 0.7 : 1,
               }}
-              onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.88"; }}
-              onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
+              onMouseEnter={e => { if (!proCovered) e.currentTarget.style.opacity = "0.88"; }}
+              onMouseLeave={e => { if (!proCovered) e.currentTarget.style.opacity = "1"; }}
             >
-              {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro: $79"}
+              {proCovered ? "Your plan" : "Get Pro: $79"}
             </button>
           </div>
 
@@ -260,18 +269,20 @@ export default function Pricing() {
             </ul>
             <button
               onClick={goUltra}
-              disabled={loadingPlan === 'ultra'}
+              disabled={ultraCovered}
               style={{
                 width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
-                fontFamily: PJS, cursor: loadingPlan === 'ultra' ? "default" : "pointer",
-                background: "#F59E0B", color: "#FFFFFF", border: "none",
+                fontFamily: PJS, cursor: ultraCovered ? "default" : "pointer",
+                background: ultraCovered ? "rgba(10,10,10,0.08)" : "#F59E0B",
+                color: ultraCovered ? "rgba(10,10,10,0.3)" : "#FFFFFF",
+                border: "none",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                opacity: loadingPlan === 'ultra' ? 0.7 : 1, transition: "opacity 0.15s",
+                transition: "opacity 0.15s",
               }}
-              onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "0.88"; }}
-              onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "1"; }}
+              onMouseEnter={e => { if (!ultraCovered) e.currentTarget.style.opacity = "0.88"; }}
+              onMouseLeave={e => { if (!ultraCovered) e.currentTarget.style.opacity = "1"; }}
             >
-              {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra: $149"}
+              {ultraCovered ? "Your plan" : "Get Ultra: $149"}
             </button>
           </div>
 
@@ -285,26 +296,6 @@ export default function Pricing() {
           Prices in AUD · Approx. US$50 / US$95
         </p>
 
-        {/* ── Checkout error banner ── */}
-        {checkoutError && (
-          <div style={{
-            maxWidth: 720, margin: "0 auto", marginTop: 24,
-            background: "#FEF2F2", border: "1px solid #FECACA",
-            padding: "14px 20px",
-            display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16,
-          }}>
-            <p style={{ fontSize: 13, color: "#991B1B", margin: 0, lineHeight: 1.5, fontFamily: PJS, flex: 1 }}>
-              {checkoutError}
-            </p>
-            <button
-              onClick={() => setCheckoutError(null)}
-              style={{ background: "none", border: "none", cursor: "pointer", color: "#991B1B", fontSize: 16, lineHeight: 1, padding: 0, flexShrink: 0 }}
-              aria-label="Dismiss"
-            >
-              ×
-            </button>
-          </div>
-        )}
       </section>
 
       {/* ── AFTER 24 MONTHS ── */}
@@ -417,39 +408,40 @@ export default function Pricing() {
           </button>
           <button
             onClick={goPro}
-            disabled={loadingPlan === 'pro'}
+            disabled={proCovered}
             style={{
               padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
-              fontFamily: PJS, cursor: loadingPlan === 'pro' ? "default" : "pointer", border: "none",
-              background: "#E03553", color: "#FFFFFF", transition: "opacity 0.15s",
+              fontFamily: PJS, cursor: proCovered ? "default" : "pointer", border: "none",
+              background: proCovered ? "rgba(255,255,255,0.1)" : "#E03553",
+              color: proCovered ? "rgba(255,255,255,0.4)" : "#FFFFFF",
+              transition: "opacity 0.15s",
               display: "flex", alignItems: "center", gap: 8,
-              opacity: loadingPlan === 'pro' ? 0.7 : 1,
             }}
-            onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.85"; }}
-            onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
+            onMouseEnter={e => { if (!proCovered) e.currentTarget.style.opacity = "0.85"; }}
+            onMouseLeave={e => { if (!proCovered) e.currentTarget.style.opacity = "1"; }}
           >
-            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro: $79"}
+            {proCovered ? "Your plan" : "Get Pro: $79"}
           </button>
           <button
             onClick={goUltra}
-            disabled={loadingPlan === 'ultra'}
+            disabled={ultraCovered}
             style={{
               padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
-              fontFamily: PJS, cursor: loadingPlan === 'ultra' ? "default" : "pointer", border: "none",
-              background: "#F59E0B", color: "#FFFFFF", transition: "opacity 0.15s",
+              fontFamily: PJS, cursor: ultraCovered ? "default" : "pointer", border: "none",
+              background: ultraCovered ? "rgba(255,255,255,0.1)" : "#F59E0B",
+              color: ultraCovered ? "rgba(255,255,255,0.4)" : "#FFFFFF",
+              transition: "opacity 0.15s",
               display: "flex", alignItems: "center", gap: 8,
-              opacity: loadingPlan === 'ultra' ? 0.7 : 1,
             }}
-            onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "0.85"; }}
-            onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "1"; }}
+            onMouseEnter={e => { if (!ultraCovered) e.currentTarget.style.opacity = "0.85"; }}
+            onMouseLeave={e => { if (!ultraCovered) e.currentTarget.style.opacity = "1"; }}
           >
-            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra: $149"}
+            {ultraCovered ? "Your plan" : "Get Ultra: $149"}
           </button>
         </div>
       </section>
 
       <PublicFooter />
-      <style>{`@keyframes oi-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
