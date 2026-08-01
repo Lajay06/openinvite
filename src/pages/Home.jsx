@@ -10,7 +10,6 @@ import UniverseMiniHero from "@/components/home/UniverseMiniHero";
 import UniverseTeaserSection from "@/components/home/UniverseTeaserSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
-import ScrollExpandMedia from "@/components/shared/ScrollExpandMedia";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import { useOrganizationStructuredData } from "@/hooks/useOrganizationStructuredData";
 
@@ -34,20 +33,6 @@ export default function Home() {
 
       {/* 2. RED SILHOUETTE — full-width natural-height image */}
       <ValuePropSection />
-
-      {/* 2b. SCROLL-EXPAND PRODUCT MOMENT — the one real screen recording
-          that earns the scroll-expansion treatment: choosing a universe,
-          expanding from a small floating frame to full-bleed as the page
-          scrolls. Placed after the red hero, not competing with it. */}
-      <ScrollExpandMedia
-        mediaType="video"
-        mediaSrc="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.mp4"
-        webmSrc="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-01-choosing-a-universe.webm"
-        posterSrc="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-01-choosing-a-universe-poster.jpg"
-        bgImageSrc="/universes/kyoto.jpg"
-        title="Choose your universe"
-        scrollToExpand="Scroll to explore"
-      />
 
       {/* 4. HORIZONTAL SCROLL */}
       <div id="section-features" style={{ background: "#0A0A0A" }}>
@@ -116,24 +101,18 @@ const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// A tier chip, not a full pricing table — full comparison lives on /Pricing.
-// Honest about there being two tiers instead of implying $79 unlocks
-// everything (Ultra's website builder, invitations and guest suite are
-// $149, per Pricing.jsx's own PRO_FEATURES/ULTRA_EXTRAS split).
+// A plain tier label, not a full pricing table or a clickable card — full
+// comparison and the actual CTAs live on /Pricing. Honest about there being
+// two tiers instead of implying $79 unlocks everything (Ultra's website
+// builder, invitations and guest suite are $149, per Pricing.jsx's own
+// PRO_FEATURES/ULTRA_EXTRAS split).
 function TierChip({ name, price, blurb, accent }) {
-  const [hovered, setHovered] = useState(false);
   return (
-    <a
-      href="/Pricing"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <div
       style={{
         display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
         gap: 4, padding: "24px 40px", borderRadius: 999,
-        border: `1px solid ${hovered ? accent : "rgba(255,255,255,0.15)"}`,
-        textDecoration: "none",
-        transition: "border-color 0.2s ease, transform 0.2s ease",
-        transform: hovered ? "translateY(-2px)" : "none",
+        border: "1px solid rgba(255,255,255,0.15)",
         minWidth: 200,
       }}
     >
@@ -146,7 +125,7 @@ function TierChip({ name, price, blurb, accent }) {
       <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         {blurb}
       </span>
-    </a>
+    </div>
   );
 }
 

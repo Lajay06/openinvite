@@ -32,9 +32,10 @@ export default function FullBleedPhotoCTA({ onCTA }) {
         minHeight: 480,
         overflow: "hidden",
         display: "flex",
-        alignItems: "center"
+        alignItems: "center",
+        justifyContent: "center"
       }}>
-      
+
       {/* Background image */}
       <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3.jpg"
 
@@ -47,31 +48,34 @@ export default function FullBleedPhotoCTA({ onCTA }) {
         objectFit: "cover",
         objectPosition: "center"
       }} />
-      
 
-      {/* Overlay */}
+
+      {/* Overlay — uniform scrim so centred text stays legible regardless
+          of what's behind it (the old left-to-right gradient was built for
+          left-aligned text only) */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0) 100%)",
+          background: "rgba(0,0,0,0.45)",
           zIndex: 2,
           pointerEvents: "none"
         }} />
-      
+
 
       {/* Text */}
       <div
         style={{
           position: "relative",
           zIndex: 10,
-          paddingLeft: "clamp(24px, 6vw, 80px)",
-          maxWidth: "55vw",
+          textAlign: "center",
+          padding: "0 clamp(24px, 6vw, 80px)",
+          maxWidth: 700,
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(24px)",
           transition: prefersReduced() ? "none" : `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`
         }}>
-        
+
         <h2
           style={{
             fontSize: "clamp(32px, 4vw, 56px)",
@@ -79,9 +83,8 @@ export default function FullBleedPhotoCTA({ onCTA }) {
             letterSpacing: "-0.03em",
             color: "#FFFFFF",
             hyphens: "none",
-            marginBottom: 36,
-            lineHeight: 1.05,
-            whiteSpace: "nowrap"
+            marginBottom: 0,
+            lineHeight: 1.05
           }}>
           Your wedding deserves this.
         </h2>
