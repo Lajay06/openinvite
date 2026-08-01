@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { track, identify } from '@/lib/analytics';
+import { getMyWeddingDetails, isOnboardingComplete } from '@/lib/resolveMyWedding';
 import { Loader2, Check } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -25,6 +26,12 @@ export default function PaymentSuccess() {
   // waiting to see confirmed") — never treated as the source of truth.
   const expectedPlan = searchParams.get('plan') === 'ultra' ? 'ultra' : 'pro';
   const [status, setStatus] = useState('confirming'); // 'confirming' | 'done' | 'pending'
+  // Where "done" routes to — a brand-new signup still needs the onboarding
+  // wizard, but an existing user upgrading mid-product (Account.jsx's
+  // Billing tab) must NOT be sent back through it. isOnboardingComplete is
+  // the exact same check Onboarding.jsx's own skip-if-already-done guard
+  // uses, so the two can never disagree about what "already onboarded" means.
+  const [nextUrl, setNextUrl] = useState('/Dashboard');
 
   useEffect(() => {
     let cancelled = false;
@@ -46,6 +53,9 @@ export default function PaymentSuccess() {
               currency: 'USD',
             });
             if (me?.id) identify(me.id, { email: me.email, name: me.full_name });
+            const draft = await getMyWeddingDetails().catch(() => null);
+            if (cancelled) return;
+            setNextUrl(isOnboardingComplete(me, draft) ? '/Dashboard' : '/onboarding');
             setStatus('done');
             return;
           }
@@ -63,6 +73,7 @@ export default function PaymentSuccess() {
   }, []);
 
   const planLabel = expectedPlan === 'ultra' ? 'Ultra' : 'Pro';
+  const goingToOnboarding = nextUrl === '/onboarding';
 
   return (
     <div
@@ -149,14 +160,15 @@ export default function PaymentSuccess() {
                 margin: '0 0 48px', fontFamily: PJS,
               }}
             >
-              Welcome to Openinvite {planLabel}. Your account has been upgraded
-              and everything is ready for you.
+              Welcome to Openinvite {planLabel}. {goingToOnboarding
+                ? "Let's set up your wedding."
+                : 'Your account has been upgraded and everything is ready for you.'}
             </p>
 
             <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', marginBottom: 40 }} />
 
             <button
-              onClick={() => navigate('/Dashboard')}
+              onClick={() => navigate(nextUrl)}
               style={{
                 background: '#FFFFFF',
                 color: '#0A0A0A',
@@ -172,7 +184,7 @@ export default function PaymentSuccess() {
               onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; }}
               onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
             >
-              Go to dashboard
+              {goingToOnboarding ? 'Set up your wedding' : 'Go to dashboard'}
             </button>
           </>
         )}

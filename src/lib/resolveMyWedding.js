@@ -52,6 +52,23 @@ export async function getMyWeddingDetails() {
   return mostRecent(rows);
 }
 
+/**
+ * A user counts as already onboarded if they've explicitly completed the
+ * wizard (onboardingCompleted), or already own a real, non-draft
+ * WeddingDetails record — the latter covers every account created before
+ * this flag existed, with no migration needed. Shared by Onboarding.jsx's
+ * own skip-if-already-done guard and PaymentSuccess.jsx's post-payment
+ * routing decision, so the two can never disagree about what "already
+ * onboarded" means.
+ *
+ * @param {object|null} user   result of base44.auth.me()
+ * @param {object|null} draft  result of getMyWeddingDetails()
+ * @returns {boolean}
+ */
+export function isOnboardingComplete(user, draft) {
+  return !!(user?.onboardingCompleted || (draft && !draft.onboardingDraft));
+}
+
 /** @returns {Promise<object|null>} the logged-in user's own Invitation record, or null if they have none yet. */
 export async function getMyInvitation() {
   const me = await base44.auth.me().catch(() => null);

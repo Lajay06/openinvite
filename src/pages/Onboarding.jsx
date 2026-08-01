@@ -130,18 +130,19 @@ export default function Onboarding() {
         // resume-after-refresh rehydration further down) share one fetch.
         const draft = await getMyWeddingDetails().catch(() => null);
 
-        // If already onboarded, skip straight to dashboard. Also guard on
-        // the account already owning a real (non-draft) wedding even when
-        // onboardingCompleted is somehow unset — this is the actual fix
-        // for the "Alex & Sam" incident: an incomplete onboarding run
+        // If already onboarded, skip straight to dashboard — isOnboardingComplete
+        // also guards on the account already owning a real (non-draft) wedding
+        // even when onboardingCompleted is somehow unset. This is the actual
+        // fix for the "Alex & Sam" incident: an incomplete onboarding run
         // (often against a preview deployment, which shares the same
         // production Base44 backend as the live site) landing back on
         // this page for an account that already has a finished wedding
         // used to fall through and silently create a second WeddingDetails
         // record for the same account. Never trust onboardingCompleted
         // alone for this — a real, non-draft record is the stronger
-        // signal a wedding already exists.
-        if (currentUser?.onboardingCompleted || (draft && !draft.onboardingDraft)) {
+        // signal a wedding already exists. Shared with PaymentSuccess.jsx's
+        // post-payment routing decision so the two can never disagree.
+        if (isOnboardingComplete(currentUser, draft)) {
           navigate('/Dashboard', { replace: true });
           return;
         }
