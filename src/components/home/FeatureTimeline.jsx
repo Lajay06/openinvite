@@ -119,7 +119,7 @@ export default function FeatureTimeline() {
         }}
       >
 
-        <div style={{ maxWidth: 480 }}>
+        <div style={{ maxWidth: 552 }}>
           <FeatureSectionHeading
             ref={h2Ref}
             color="#0A0A0A"

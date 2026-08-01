@@ -143,6 +143,7 @@ export default function Pricing() {
         imagePosition="center 30%"
         title={<>Pay once.<br />Plan your entire wedding.</>}
         showScrollCue={false}
+        maxWidth={900}
       />
 
       {/* ── PRICING CARDS ── */}

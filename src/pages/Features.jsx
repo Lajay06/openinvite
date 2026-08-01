@@ -59,11 +59,12 @@ export default function Features() {
         imagePosition="center 30%"
         title="Everything you needed. Plus a few things you didn't expect."
         cta={{ label: "Get started", href: "/signup" }}
+        maxWidth={1000}
       />
 
       {/* ── S2: STATEMENT BANNER ─────────────────────────── */}
       <section style={{ background: "#FFFFFF", padding: "80px clamp(24px, 6vw, 80px)", textAlign: "center" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1300, margin: "0 auto" }}>
           <p style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2, color: "#0A0A0A", fontFamily: "Plus Jakarta Sans, sans-serif", margin: 0 }}>
             Openinvite brings your guest list, budget, schedule, seating chart and website into one connected platform, so nothing falls through the cracks.
           </p>
@@ -110,7 +111,7 @@ function QuickStartSection() {
         <div className="lg:hidden" style={{ paddingBottom: "66.66%", position: "relative" }} />
       </div>
       <div className="w-full lg:w-1/2 order-2 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: `opacity 0.9s ${EASE} 0.2s, transform 0.9s ${EASE} 0.2s` }}>
-        <div style={{ maxWidth: 480 }}>
+        <div style={{ maxWidth: 552 }}>
           <FeatureSectionHeading color="#FFFFFF">Quick start wizard</FeatureSectionHeading>
           <p style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.7, fontSize: 16 }}>Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
         </div>
@@ -140,7 +141,7 @@ function DashboardSection() {
   return (
     <section ref={ref} style={{ background: "#F5F5F3", minHeight: "100vh", display: "flex", flexDirection: "row", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
-        <div style={{ maxWidth: 480 }}>
+        <div style={{ maxWidth: 552 }}>
           <FeatureSectionHeading color="#0A0A0A">Customisable Dashboard</FeatureSectionHeading>
           <p style={{ color: "#444444", lineHeight: 1.7, fontSize: 16, marginBottom: 32 }}>Invite your partner, planner, or mum. Set who sees what, and assign tasks like a pro.</p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>

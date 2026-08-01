@@ -85,7 +85,7 @@ export default function ValuePropSection() {
             top: "50%",
             left: "80px",
             transform: "translateY(-50%)",
-            maxWidth: "55vw",
+            maxWidth: "80vw",
             zIndex: 10,
           }}
         >

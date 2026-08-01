@@ -38,7 +38,7 @@ export default function UniverseTeaserSection() {
       <div style={{ maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
         <h2 style={{
           fontSize: "clamp(32px, 5vw, 60px)", fontWeight: 700, color: "#FFFFFF",
-          letterSpacing: "-0.03em", lineHeight: 1.08, margin: "0 auto 20px", maxWidth: 760,
+          letterSpacing: "-0.03em", lineHeight: 1.08, margin: "0 auto 20px", maxWidth: 1000,
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
           transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
@@ -46,7 +46,7 @@ export default function UniverseTeaserSection() {
           One aesthetic vision, from your invitation to your thank you notes.
         </h2>
         <p style={{
-          fontSize: 17, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 520, margin: "0 auto 56px",
+          fontSize: 17, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 700, margin: "0 auto 56px",
           opacity: visible ? 1 : 0, transition: `opacity 0.7s ${EASE} 0.1s`,
         }}>
           Choose a universe and every piece of your wedding follows it, automatically.

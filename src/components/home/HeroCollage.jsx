@@ -63,7 +63,7 @@ export default function HeroCollage({ onCTA }) {
           top: "50%",
           transform: "translateX(-50%) translateY(-50%)",
           width: "100%",
-          maxWidth: 900,
+          maxWidth: 1050,
           padding: "0 24px",
           opacity: visible ? 1 : 0,
           filter: visible ? "blur(0px)" : "blur(8px)",
