@@ -92,7 +92,6 @@ const Onboarding = lazy(() => import('./pages/Onboarding'));
 const OurStory = lazy(() => import('./pages/OurStory'));
 const PhotoGallery = lazy(() => import('./pages/PhotoGallery'));
 const Photography = lazy(() => import('./pages/Photography'));
-const PlanSelection = lazy(() => import('./pages/PlanSelection'));
 const Policies = lazy(() => import('./pages/Policies'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Registry = lazy(() => import('./pages/Registry'));
@@ -144,7 +143,6 @@ export const PAGES = {
     "OurStory": OurStory,
     "PhotoGallery": PhotoGallery,
     "Photography": Photography,
-    "PlanSelection": PlanSelection,
     "Policies": Policies,
     "Pricing": Pricing,
     "Registry": Registry,

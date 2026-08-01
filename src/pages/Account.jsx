@@ -10,6 +10,7 @@ import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { getNotificationPrefs } from '@/lib/notificationPrefs';
+import { resolveCheckoutPriceId, PLAN_PRICES } from '@/lib/checkoutSession';
 import toast from 'react-hot-toast';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -48,20 +49,12 @@ const PLAN_FEATURES = {
   ],
 };
 
-// Same env vars (+ fallback literals) as src/pages/Pricing.jsx / PlanSelection.jsx —
-// keeping one source per plan avoids a hardcoded price ID silently drifting
-// from whatever VITE_STRIPE_*_PRICE_ID is actually configured (e.g. test vs
-// live mode), which would send a priceId the server-side resolver rejects.
-const PRICE_IDS = {
-  pro: import.meta.env.VITE_STRIPE_PRO_PRICE_ID || 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
-  ultra: import.meta.env.VITE_STRIPE_ULTRA_PRICE_ID || 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
-};
-
-// $79/$149 are the real one-time USD amounts Stripe actually charges (fixed
-// Price objects — Stripe Checkout doesn't support converting a single Price
-// to the viewer's currency on the fly). formatCurrency() below only affects
-// the *displayed* reference figure; the checkout session always charges USD.
-const PLAN_PRICES_USD = { pro: 79, ultra: 149 };
+// Price ID selection and the matching display amount both come from
+// resolveCheckoutPriceId/PLAN_PRICES (src/lib/checkoutSession.js) — the same
+// USD-first-with-AUD-fallback resolution the webhook's own currency
+// derivation mirrors, so this card can never again claim a currency
+// different from what the price ID it's about to send Stripe actually is.
+const CURRENCY_SYMBOLS = { usd: 'US$', aud: 'A$' };
 
 const PLAN_LABELS = { free: 'Free trial', pro: 'Pro', ultra: 'Ultra' };
 const NO_UPSELLS = 'No upsells, ever. Pay once, plan your entire wedding.';
@@ -335,7 +328,6 @@ function NotificationsTab({ user, refreshUser }) {
 }
 
 function BillingTab({ user }) {
-  const { formatCurrency } = useCurrency();
   const [checkoutLoading, setCheckoutLoading] = useState(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
@@ -362,10 +354,11 @@ function BillingTab({ user }) {
   const handleCheckout = async (planKey) => {
     setCheckoutLoading(planKey);
     try {
+      const { priceId } = resolveCheckoutPriceId(planKey);
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: PRICE_IDS[planKey], userId: user?.id || '', userEmail: user?.email || '' }),
+        body: JSON.stringify({ priceId, userId: user?.id || '', userEmail: user?.email || '' }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
@@ -401,8 +394,12 @@ function BillingTab({ user }) {
                   <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>{PLAN_LABELS[pk]}</p>
                 </div>
                 <p style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
-                  {formatCurrency(PLAN_PRICES_USD[pk])}
-                  <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}> one-time (USD {PLAN_PRICES_USD[pk]} charged)</span>
+                  {(() => { const { currency } = resolveCheckoutPriceId(pk); return (
+                    <>
+                      {CURRENCY_SYMBOLS[currency]}{PLAN_PRICES[currency][pk]}
+                      <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}> one-time ({currency.toUpperCase()} {PLAN_PRICES[currency][pk]} charged)</span>
+                    </>
+                  ); })()}
                 </p>
                 <button
                   onClick={() => handleCheckout(pk)}
@@ -437,7 +434,11 @@ function BillingTab({ user }) {
               Add the digital suite: wedding website, invitations, online RSVP, and premium themes.
             </p>
             <p style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
-              {formatCurrency(PLAN_PRICES_USD.ultra)} <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}>one-time (USD {PLAN_PRICES_USD.ultra} charged)</span>
+              {(() => { const { currency } = resolveCheckoutPriceId('ultra'); return (
+                <>
+                  {CURRENCY_SYMBOLS[currency]}{PLAN_PRICES[currency].ultra} <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}>one-time ({currency.toUpperCase()} {PLAN_PRICES[currency].ultra} charged)</span>
+                </>
+              ); })()}
             </p>
             <button
               onClick={() => handleCheckout('ultra')}

@@ -35,7 +35,7 @@ const ULTRA_EXTRAS = [
 const FAQS = [
   {
     q: "Is this really a one-time payment?",
-    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is $79 AUD total. Ultra is $149 AUD total.",
+    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is US$49 total. Ultra is US$99 total. AUD pricing is available at checkout too.",
   },
   {
     q: "What's included in the 14-day free trial?",
@@ -78,7 +78,7 @@ const TABLE_ROWS = [
   { feature: "Premium themes",          trial: true,        pro: false,        ultra: true },
   { feature: "Guest suite",             trial: true,        pro: false,        ultra: true },
   { feature: "Support",                 trial: "Priority",  pro: "Priority",   ultra: "Priority" },
-  { feature: "Price",                   trial: "Free",      pro: "$79",        ultra: "$149" },
+  { feature: "Price",                   trial: "Free",      pro: "US$49",        ultra: "US$99" },
 ];
 
 function CheckIcon({ color = "#0A0A0A" }) {
@@ -188,7 +188,7 @@ export default function Pricing() {
               Pro
             </p>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$79</span>
+              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>US$49</span>
             </div>
             <p style={{ fontSize: 13, color: "rgba(10,10,10,0.6)", marginBottom: 16, fontFamily: PJS }}>
               24-month access · one-time payment
@@ -219,7 +219,7 @@ export default function Pricing() {
               onMouseEnter={e => { if (!proCovered) e.currentTarget.style.opacity = "0.88"; }}
               onMouseLeave={e => { if (!proCovered) e.currentTarget.style.opacity = "1"; }}
             >
-              {proCovered ? "Your plan" : "Get Pro: $79"}
+              {proCovered ? "Your plan" : "Get Pro: US$49"}
             </button>
           </div>
 
@@ -237,7 +237,7 @@ export default function Pricing() {
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(10,10,10,0.6)", margin: 0, fontFamily: PJS }}>Ultra</p>
             </div>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$149</span>
+              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>US$99</span>
             </div>
             <p style={{ fontSize: 13, color: "rgba(10,10,10,0.6)", marginBottom: 16, fontFamily: PJS }}>
               24-month access · one-time payment
@@ -272,18 +272,18 @@ export default function Pricing() {
               onMouseEnter={e => { if (!ultraCovered) e.currentTarget.style.opacity = "0.88"; }}
               onMouseLeave={e => { if (!ultraCovered) e.currentTarget.style.opacity = "1"; }}
             >
-              {ultraCovered ? "Your plan" : "Get Ultra: $149"}
+              {ultraCovered ? "Your plan" : "Get Ultra: US$99"}
             </button>
           </div>
 
         </div>
 
-        {/* No upsells + AUD note */}
+        {/* No upsells + currency note */}
         <p style={{ textAlign: "center", fontSize: 13, color: "rgba(10,10,10,0.6)", marginTop: 28, fontFamily: PJS }}>
           No upsells, ever. Pay once, plan your entire wedding.
         </p>
         <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.6)", marginTop: 6, fontFamily: PJS }}>
-          Prices in AUD · Approx. US$50 / US$95
+          Prices in USD · or pay in AUD at checkout
         </p>
 
       </section>
@@ -410,7 +410,7 @@ export default function Pricing() {
             onMouseEnter={e => { if (!proCovered) e.currentTarget.style.opacity = "0.85"; }}
             onMouseLeave={e => { if (!proCovered) e.currentTarget.style.opacity = "1"; }}
           >
-            {proCovered ? "Your plan" : "Get Pro: $79"}
+            {proCovered ? "Your plan" : "Get Pro: US$49"}
           </button>
           <button
             onClick={goUltra}
@@ -426,7 +426,7 @@ export default function Pricing() {
             onMouseEnter={e => { if (!ultraCovered) e.currentTarget.style.opacity = "0.85"; }}
             onMouseLeave={e => { if (!ultraCovered) e.currentTarget.style.opacity = "1"; }}
           >
-            {ultraCovered ? "Your plan" : "Get Ultra: $149"}
+            {ultraCovered ? "Your plan" : "Get Ultra: US$99"}
           </button>
         </div>
       </section>

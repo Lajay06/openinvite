@@ -8,10 +8,10 @@ Openinvite helps couples plan their wedding in one app: guest list and RSVP mana
 
 ## Pricing
 
-Openinvite uses one-time pricing, not a subscription.
+Openinvite uses one-time pricing, not a subscription. Prices are in USD; AUD pricing is available at checkout.
 
-- Pro: USD 59, AUD 79
-- Ultra: USD 109, AUD 149
+- Pro: USD 49
+- Ultra: USD 99
 
 ## Key pages
 

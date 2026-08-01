@@ -1,11 +1,11 @@
 /**
  * src/lib/checkoutSession.js
  *
- * Shared checkout-session-creation logic for PlanSelection.jsx (in-app
- * upgrade path) — mirrors the error-handling pattern already shipped in
- * Pricing.jsx's own startCheckout, extracted here so it's unit-testable
- * without a JSX/React render pipeline (this file has no JSX, so it can be
- * imported directly by a plain Node test).
+ * Shared checkout-session-creation logic for ChoosePlan.jsx and Account.jsx
+ * (the in-app upgrade path) — mirrors the error-handling pattern already
+ * shipped in Pricing.jsx's own startCheckout, extracted here so it's
+ * unit-testable without a JSX/React render pipeline (this file has no JSX,
+ * so it can be imported directly by a plain Node test).
  *
  * Every failure path sets a distinct, user-visible checkoutError message
  * via the injected setter — network error, a non-JSON response (e.g. a
@@ -17,10 +17,41 @@
 // time in the browser, but plain Node (used by tests/persistence/*.mjs to
 // import this file directly) leaves import.meta.env undefined, so this
 // must degrade to the fallback rather than throw.
-const PRICE_IDS = {
+const AUD_PRICE_IDS = {
   pro:   import.meta.env?.VITE_STRIPE_PRO_PRICE_ID   || 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
   ultra: import.meta.env?.VITE_STRIPE_ULTRA_PRICE_ID || 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
 };
+const USD_PRICE_IDS = {
+  pro:   import.meta.env?.VITE_STRIPE_PRO_PRICE_ID_USD   || '',
+  ultra: import.meta.env?.VITE_STRIPE_ULTRA_PRICE_ID_USD || '',
+};
+
+// Canonical display amounts per currency — kept here (not derived from
+// Stripe, which has no client-safe way to read a Price's amount without an
+// API round trip) so any surface showing "what will this actually charge"
+// can stay in sync with resolveCheckoutPriceId's own choice of price ID
+// below, rather than a separately-hardcoded number that can drift from it.
+export const PLAN_PRICES = {
+  usd: { pro: 49, ultra: 99 },
+  aud: { pro: 79, ultra: 149 },
+};
+
+/**
+ * USD-first: prefers the USD Stripe Price for a plan, falling back to AUD
+ * only if the USD env var isn't configured yet — e.g. before
+ * VITE_STRIPE_PRO_PRICE_ID_USD / VITE_STRIPE_ULTRA_PRICE_ID_USD have been
+ * set in Vercel. This is a defensive "never send Stripe an empty priceId"
+ * guard, not an expected steady-state path — the merge for this PR is
+ * gated on those two env vars actually being set first.
+ *
+ * @param {'pro'|'ultra'} plan
+ * @returns {{ priceId: string, currency: 'usd'|'aud' }}
+ */
+export function resolveCheckoutPriceId(plan) {
+  const usdId = USD_PRICE_IDS[plan];
+  if (usdId) return { priceId: usdId, currency: 'usd' };
+  return { priceId: AUD_PRICE_IDS[plan], currency: 'aud' };
+}
 
 /**
  * @param {'pro'|'ultra'} plan
@@ -33,10 +64,10 @@ export async function startCheckout(plan, setLoadingPlan, setCheckoutError, deps
     resolveUser = async () => (await import('@/api/base44Client')).base44.auth.me(),
     doFetch = (...args) => fetch(...args),
     redirect = (url) => { window.location.href = url; },
-    logPrefix = '[PlanSelection checkout]',
+    logPrefix = '[ChoosePlan checkout]',
   } = deps;
 
-  const priceId = PRICE_IDS[plan];
+  const { priceId } = resolveCheckoutPriceId(plan);
   setLoadingPlan(plan);
   setCheckoutError(null);
 

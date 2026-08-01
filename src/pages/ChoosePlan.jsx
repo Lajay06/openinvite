@@ -158,7 +158,7 @@ export default function ChoosePlan() {
         >
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS }}>Pro</p>
           <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: 40, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$79</span>
+            <span style={{ fontSize: 40, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>US$49</span>
           </div>
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>24-month access, one-time payment</p>
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
@@ -181,7 +181,7 @@ export default function ChoosePlan() {
               transition: 'opacity 0.15s',
             }}
           >
-            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : 'Get Pro — $79'}
+            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : 'Get Pro — US$49'}
           </button>
         </div>
 
@@ -197,7 +197,7 @@ export default function ChoosePlan() {
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>Ultra</p>
           </div>
           <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: 40, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$149</span>
+            <span style={{ fontSize: 40, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>US$99</span>
           </div>
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>24-month access, one-time payment</p>
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
@@ -220,7 +220,7 @@ export default function ChoosePlan() {
               transition: 'opacity 0.15s',
             }}
           >
-            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : 'Get Ultra — $149'}
+            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : 'Get Ultra — US$99'}
           </button>
         </div>
 
@@ -247,7 +247,7 @@ export default function ChoosePlan() {
       )}
 
       <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>
-        Prices in AUD · 14-day money-back guarantee · No recurring fees
+        Prices in USD · or pay in AUD at checkout · 14-day money-back guarantee · No recurring fees
       </p>
     </div>
   );

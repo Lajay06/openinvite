@@ -60,7 +60,7 @@ export function onboardingDay7Email({ name, email }) {
                       <tr>
                         <td>
                           <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:#0A0A0A;">Pro</p>
-                          <p style="margin:0;font-size:22px;font-weight:700;color:#0A0A0A;">$79 <span style="font-size:13px;font-weight:400;color:rgba(10,10,10,0.6);">AUD one-time</span></p>
+                          <p style="margin:0;font-size:22px;font-weight:700;color:#0A0A0A;">US$49 <span style="font-size:13px;font-weight:400;color:rgba(10,10,10,0.6);">one-time</span></p>
                         </td>
                       </tr>
                       <tr>
@@ -90,7 +90,7 @@ export function onboardingDay7Email({ name, email }) {
                       <tr>
                         <td>
                           <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:#0A0A0A;">Ultra</p>
-                          <p style="margin:0;font-size:22px;font-weight:700;color:#0A0A0A;">$149 <span style="font-size:13px;font-weight:400;color:rgba(10,10,10,0.6);">AUD one-time</span></p>
+                          <p style="margin:0;font-size:22px;font-weight:700;color:#0A0A0A;">US$99 <span style="font-size:13px;font-weight:400;color:rgba(10,10,10,0.6);">one-time</span></p>
                         </td>
                       </tr>
                       <tr>

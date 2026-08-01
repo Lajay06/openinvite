@@ -1,12 +1,12 @@
 /**
  * tests/persistence/checkout-error-handling.mjs
  *
- * Covers the AUDIT_2026-07.md fix: PlanSelection.jsx's in-app upgrade path
- * (the checkout flow reachable from Account.jsx/CouplesStudio.jsx) used to
- * swallow every failure into an empty catch — the button just stopped
- * spinning with zero user feedback. startCheckout (src/lib/checkoutSession.js,
- * extracted from PlanSelection.jsx so it's testable without a JSX render
- * pipeline) now mirrors Pricing.jsx's already-shipped error handling.
+ * Covers the AUDIT_2026-07.md fix: the in-app upgrade path (the checkout
+ * flow reachable from ChoosePlan.jsx/Account.jsx, formerly PlanSelection.jsx
+ * — retired, redirects to /choose-plan now) used to swallow every failure
+ * into an empty catch — the button just stopped spinning with zero user
+ * feedback. startCheckout (src/lib/checkoutSession.js) now mirrors
+ * Pricing.jsx's already-shipped error handling.
  *
  * Each assertion forces a real failure mode via injected fakes (doFetch,
  * resolveUser, redirect) and confirms setCheckoutError is called with a

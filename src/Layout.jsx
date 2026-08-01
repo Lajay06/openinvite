@@ -48,7 +48,7 @@ function ContentAreaFallback() {
 export const LAYOUT_QUERY_KEY = 'layoutData';
 
 const noLayoutPages = [
-  "Home", "Features", "Pricing", "PlanSelection",
+  "Home", "Features", "Pricing",
   "Onboarding", "PaymentWall",
 ];
 
