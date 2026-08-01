@@ -91,7 +91,7 @@ export default function FeatureGuests({ children }) {
           zIndex: 2
         }}>
         
-        <div style={{ maxWidth: 480 }}>
+        <div style={{ maxWidth: 552 }}>
 
           <FeatureSectionHeading
             ref={h2Ref}

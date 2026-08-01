@@ -70,7 +70,7 @@ export default function FullBleedPhotoCTA({ onCTA }) {
           zIndex: 10,
           textAlign: "center",
           padding: "0 clamp(24px, 6vw, 80px)",
-          maxWidth: 700,
+          maxWidth: 900,
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(24px)",
           transition: prefersReduced() ? "none" : `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`

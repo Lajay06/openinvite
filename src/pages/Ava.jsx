@@ -227,6 +227,8 @@ export default function AvaPage() {
       <MarketingHero
         image="https://res.cloudinary.com/dsr84xknv/image/upload/v1779217006/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6161_isrtef.jpg"
         title="Meet Ava. Your AI wedding planner."
+        overlay={false}
+        maxWidth={1200}
       />
 
       {/* ── STATEMENT BANNER ─────────────────────────────────── */}

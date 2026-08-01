@@ -273,11 +273,12 @@ const Universes = () => {
       <MarketingHero
         image="https://res.cloudinary.com/dsr84xknv/image/upload/v1779218326/DTS_In_Focus_Daniel_Far%C3%B2_Photos_ID5015_deiknt.jpg"
         title="Your universe. One aesthetic vision for every piece of your wedding."
+        maxWidth={1200}
       />
 
       {/* SECTION 2: STATEMENT BANNER */}
       <section style={{ background: '#FFFFFF', padding: '80px clamp(24px, 6vw, 80px)', textAlign: 'center' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+        <div style={{ maxWidth: 1300, margin: '0 auto' }}>
           <p style={{
             fontSize: 'clamp(28px, 4vw, 52px)',
             fontWeight: 700,
@@ -467,33 +468,41 @@ const Universes = () => {
         </div>
       </section>
 
-      {/* SECTION 8: FINAL CTA */}
+      {/* SECTION 8: FINAL CTA — the photo's top ~25% is a uniformly bright,
+          plain wall (measured: brightness 167-233 across its full width),
+          so the crop is biased toward it and the text sits in dark text
+          on that natural light background instead of a dark overlay. */}
       <section style={{
-        background: '#0A0A0A',
+        position: 'relative',
+        minHeight: 480,
         padding: '160px 80px',
         textAlign: 'center',
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
+        <img
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3620_bctcoz.jpg"
+          alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }}
+        />
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 900, margin: '0 auto' }}>
           <h2 style={{
             fontFamily: 'Plus Jakarta Sans, sans-serif',
             fontWeight: 700,
             fontSize: 'clamp(40px, 7vw, 80px)',
-            color: '#FFFFFF',
+            color: '#0A0A0A',
             letterSpacing: '-0.02em',
             lineHeight: 1,
-            margin: '0 0 24px',
+            margin: '0 0 40px',
+            // A light halo, not a dark overlay — keeps the dark text
+            // readable where it crosses the subject's darker hair, not
+            // just the plain wall either side of it.
+            textShadow: '0 0 24px rgba(255,255,255,0.85), 0 0 48px rgba(255,255,255,0.6)',
           }}>
             Choose your universe.
           </h2>
-          <p style={{
-            fontSize: 16,
-            color: 'rgba(255,255,255,0.5)',
-            marginBottom: 48,
-            lineHeight: 1.6,
-            fontFamily: 'Plus Jakarta Sans',
-          }}>
-            Your complete wedding design suite, ready in minutes.
-          </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button onClick={() => navigate('/signup')} style={{
               padding: '16px 40px',
@@ -512,10 +521,10 @@ const Universes = () => {
             </button>
             <button onClick={() => navigate('/Features')} style={{
               padding: '16px 40px',
-              border: '1px solid rgba(255,255,255,0.25)',
+              border: '1px solid rgba(10,10,10,0.25)',
               borderRadius: 999,
-              background: 'transparent',
-              color: 'rgba(255,255,255,0.7)',
+              background: 'rgba(255,255,255,0.7)',
+              color: 'rgba(10,10,10,0.8)',
               textDecoration: 'none',
               fontSize: 13,
               fontWeight: 600,

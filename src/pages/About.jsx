@@ -80,7 +80,7 @@ export default function About() {
 >
   <div
     style={{
-      maxWidth: 800,
+      maxWidth: 1200,
       width: "100%",
       textAlign: "center",
       display: "flex",
