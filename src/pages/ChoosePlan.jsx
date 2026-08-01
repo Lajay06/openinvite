@@ -226,6 +226,10 @@ export default function ChoosePlan() {
 
       </div>
 
+      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px', fontFamily: PJS }}>
+        Have a gift code? You'll be able to enter it at checkout.
+      </p>
+
       {checkoutError && (
         <div style={{
           maxWidth: 720, width: '100%', margin: '0 auto', marginBottom: 24,

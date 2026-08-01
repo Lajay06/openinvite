@@ -94,6 +94,14 @@ export default async function handler(req, res) {
       // checkout for whichever currency wasn't hardcoded.
       payment_method_types: getPaymentMethodTypes(currency),
       line_items: [{ price: priceId, quantity: 1 }],
+      // Surfaces Stripe's own "Add promotion code" field on the hosted
+      // checkout page — the one mechanism for both marketing discount codes
+      // and gift/comp codes (a Promotion Code tied to a 100%-off Coupon in
+      // the Stripe dashboard). A discount never changes which price ID
+      // Stripe records on the completed session, so plan/currency
+      // resolution above and the webhook's own resolution are both
+      // unaffected regardless of what code (if any) gets applied here.
+      allow_promotion_codes: true,
       metadata: { plan },
       // client_reference_id is how the webhook knows WHOSE User record to
       // credit — Stripe echoes it back untouched on the completed session,
