@@ -7,7 +7,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { useScrollEngine } from "@/hooks/useScrollEngine";
 import { useSpotlight } from "@/hooks/useSpotlight";
 import { useAppleReveal } from "@/hooks/useAppleReveal";
-import FeatureSectionHeading from "@/components/home/FeatureSectionHeading";
+import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -74,7 +74,7 @@ export default function FeatureBudget() {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "row",
-        overflow: "visible",
+        overflow: "hidden",
         background: "#0A0A0A",
         position: "relative",
         borderBottom: "1px solid #333333",
@@ -105,7 +105,7 @@ export default function FeatureBudget() {
           >
             Smart Budget Tracking
           </FeatureSectionHeading>
-          <p ref={bodyRef} className="feature-body-text" style={{ color: "rgba(255,255,255,0.4)", lineHeight: 1.7, marginBottom: 32, fontSize: 16, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+          <p ref={bodyRef} className="feature-body-text" style={{ ...featureBodyTextStyle, color: "rgba(255,255,255,0.4)", marginBottom: 32 }}>
             Plan like a pro. Our budgeting tools give you full visibility, clear control, and a few clever nudges to keep things beautifully on track.
           </p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>

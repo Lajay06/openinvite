@@ -56,7 +56,13 @@ const CARDS = [
   title: "Style & experience",
   desc: "Moodboards, music, photography and styling: every creative decision, kept in one place.",
   bullets: ["Moodboard & styling", "Music & guest song requests", "Photography & vows"],
-  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100465/DTS_Tradition_Chris_Abatzis_Photos_ID9180_eg2nbh.jpg"
+  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100465/DTS_Tradition_Chris_Abatzis_Photos_ID9180_eg2nbh.jpg",
+  // Default "center" crops the man's face in cleanly but pushes the woman's
+  // (already mostly turned into her own hair/arm in the source photo) out
+  // of frame entirely. "center 60%" is the best achievable balance at this
+  // card's aspect ratio — verified against both the mobile (380x300-ish)
+  // and desktop (~900x700) card dimensions.
+  photoPosition: "center 60%"
 },
 {
   num: "06",
@@ -142,7 +148,7 @@ export default function HorizontalScrollSection() {
                 borderRadius: 0,
                 backgroundImage: `url(${card.photo})`,
                 backgroundSize: "cover",
-                backgroundPosition: "center",
+                backgroundPosition: card.photoPosition || "center",
                 opacity: 0,
                 transform: "translateY(20px)",
                 animation: `fadeUp 0.6s ease-out ${i * 0.1}s forwards`
@@ -238,7 +244,7 @@ export default function HorizontalScrollSection() {
               position: "relative",
               backgroundImage: `url(${card.photo})`,
               backgroundSize: "cover",
-              backgroundPosition: "center"
+              backgroundPosition: card.photoPosition || "center"
             }}>
             
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)" }} />

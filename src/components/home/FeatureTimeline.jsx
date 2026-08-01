@@ -5,7 +5,7 @@
  */
 import React, { useRef, useEffect, useState } from "react";
 import { useAppleReveal } from "@/hooks/useAppleReveal";
-import FeatureSectionHeading from "@/components/home/FeatureSectionHeading";
+import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -67,7 +67,7 @@ export default function FeatureTimeline() {
     >
       {/* Photo — slides from LEFT */}
       <div
-        className="w-full lg:w-[55%] order-1 lg:order-1"
+        className="w-full lg:w-1/2 order-1 lg:order-1"
         style={{
           position: "relative",
           minHeight: 320,
@@ -106,7 +106,7 @@ export default function FeatureTimeline() {
 
       {/* Text — content wrapper */}
       <div
-        className="w-full lg:w-[45%] order-2 lg:order-2 feature-content flex items-center"
+        className="w-full lg:w-1/2 order-2 lg:order-2 feature-content flex items-center"
         style={{
           minWidth: 0,
           flexShrink: 1,
@@ -130,7 +130,7 @@ export default function FeatureTimeline() {
           <p
             ref={bodyRef}
             className="feature-body-text"
-            style={{ color: "#444444", lineHeight: 1.7, marginBottom: 32, fontSize: 16, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif" }}
+            style={{ ...featureBodyTextStyle, color: "#444444", marginBottom: 32 }}
           >
             Run the day like a director, with an intuitive, drag-and-drop builder that keeps every moment smooth, stylish, and on time.
           </p>

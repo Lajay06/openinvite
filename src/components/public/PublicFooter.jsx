@@ -10,8 +10,30 @@ export default function PublicFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           {/* Logo col */}
           <div>
-            <Link to="/">
-              <img src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png" alt="openinvite" style={{ height: "48px", width: "auto", display: "block", filter: "brightness(0)" }} />
+            {/* The source asset is one combined icon+wordmark PNG with a
+                white "Openinvite" wordmark baked in, meant for dark
+                backgrounds — filter:brightness(0) (the old approach) makes
+                the text readable on this white footer but flattens the
+                icon's colour gradient along with it. Cropping to just the
+                icon (via background-position, natural aspect ratio) keeps
+                its colour, and the wordmark renders as real black text
+                instead. */}
+            <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+              <div
+                aria-hidden="true"
+                style={{
+                  width: 41,
+                  height: 48,
+                  flexShrink: 0,
+                  backgroundImage: "url(https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png)",
+                  backgroundSize: "208px 48px",
+                  backgroundPosition: "0 0",
+                  backgroundRepeat: "no-repeat",
+                }}
+              />
+              <span style={{ fontSize: 26, fontWeight: 700, color: "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.02em" }}>
+                Openinvite
+              </span>
             </Link>
             <p style={{ color: 'rgba(10,10,10,0.6)', fontSize: 15, fontWeight: 600, lineHeight: 1.7 }}>
               You should enjoy yourself.
