@@ -67,6 +67,14 @@ jobs:
       - name: Vendor-contact consistency guard
         run: npm run test:vendor-contact-consistency
 
+      # Static source analysis, no credentials — catches the marketing hero
+      # drifting back into per-page hand-rolled full-viewport sections
+      # (font size, gradient, scroll cue all independently reinvented across
+      # Features/Ava/Universes/Pricing before this guard existed). See
+      # scripts/test-marketing-hero-consistency.mjs.
+      - name: Marketing hero consistency guard
+        run: npm run test:marketing-hero-consistency
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live

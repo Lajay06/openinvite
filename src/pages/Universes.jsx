@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
-import ScrollCue from '@/components/motion/ScrollCue';
 import { UNIVERSE_CATALOG } from '@/lib/universeCatalog';
 import { useMarketingSeo } from '@/hooks/useMarketingSeo';
+import MarketingHero from '@/components/marketing/MarketingHero';
 
 // Every universe now has its own dedicated /universes/*.jpg photography
 // (UNIVERSE_CONFIGS' imageUrl). Kept as a safety net for any future
@@ -270,27 +270,10 @@ const Universes = () => {
       <PublicNav />
 
       {/* SECTION 1: HERO */}
-      <section style={{ position: 'relative', height: '100vh', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img
-          src="https://res.cloudinary.com/dsr84xknv/image/upload/v1779218326/DTS_In_Focus_Daniel_Far%C3%B2_Photos_ID5015_deiknt.jpg"
-          alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', zIndex: 1 }}
-        />
-        <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: 800, margin: '0 auto', padding: '0 40px' }}>
-          <h1 style={{
-            fontFamily: 'Plus Jakarta Sans, sans-serif',
-            fontWeight: 700,
-            fontSize: 'clamp(48px, 8vw, 96px)',
-            color: '#FFFFFF',
-            letterSpacing: '-0.02em',
-            lineHeight: 1.05,
-            margin: 0,
-          }}>
-            One aesthetic vision for every piece of your wedding.
-          </h1>
-        </div>
-        <ScrollCue />
-      </section>
+      <MarketingHero
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/v1779218326/DTS_In_Focus_Daniel_Far%C3%B2_Photos_ID5015_deiknt.jpg"
+        title="Your universe. One aesthetic vision for every piece of your wedding."
+      />
 
       {/* SECTION 2: STATEMENT BANNER */}
       <section style={{ background: '#FFFFFF', padding: '80px clamp(24px, 6vw, 80px)', textAlign: 'center' }}>
