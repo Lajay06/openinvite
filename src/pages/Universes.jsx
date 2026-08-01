@@ -24,7 +24,7 @@ const SHOWCASE_UNIVERSE_IDS = ['tulum', 'kyoto', 'marrakech', 'capri', 'paris'];
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function UniverseTile({ universe, index, onExplore }) {
+function UniverseTile({ universe, index }) {
   const [hovered, setHovered] = useState(false);
   const image = universe.imageUrl || FALLBACK_IMAGE[universe.id];
   const swatches = [
@@ -75,23 +75,10 @@ function UniverseTile({ universe, index, onExplore }) {
           {universe.worldStory}
         </p>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {swatches.map((s, i) => (
-              <span key={i} title={s.label} style={{ width: 16, height: 16, background: s.color, border: s.color === '#FFFFFF' ? '1px solid rgba(255,255,255,0.3)' : 'none', flexShrink: 0 }} />
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={onExplore}
-            style={{
-              background: 'none', border: 'none', padding: 0, color: '#FFFFFF', fontSize: 12, fontWeight: 600,
-              cursor: 'pointer', fontFamily: PJS, letterSpacing: '0.02em',
-              opacity: hovered ? 1 : 0.7, transition: 'opacity 0.2s ease',
-            }}
-          >
-            Explore &rarr;
-          </button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {swatches.map((s, i) => (
+            <span key={i} title={s.label} style={{ width: 16, height: 16, background: s.color, border: s.color === '#FFFFFF' ? '1px solid rgba(255,255,255,0.3)' : 'none', flexShrink: 0 }} />
+          ))}
         </div>
       </div>
     </article>
@@ -109,7 +96,7 @@ function UniverseTile({ universe, index, onExplore }) {
 // (clickable name list + detail panel) layout to a single bottom-anchored
 // detail block with an index counter, since a permanently-visible list of
 // 20 names doesn't fit the way a list of 5 did.
-function UniverseCrossfadeShowcase({ universes, onExplore }) {
+function UniverseCrossfadeShowcase({ universes }) {
   const containerRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const reduced = prefersReducedMotion();
@@ -185,23 +172,10 @@ function UniverseCrossfadeShowcase({ universes, onExplore }) {
             <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, maxWidth: 480, margin: '0 0 28px', fontFamily: PJS }}>
               {active.worldStory}
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', gap: 16 }}>
-                {swatches.map((s, i) => (
-                  <div key={i} style={{ width: 32, height: 32, background: s.color, border: s.color === '#FFFFFF' ? '1px solid #444' : 'none' }} title={s.label} />
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={onExplore}
-                style={{
-                  padding: '14px 40px', background: 'transparent', color: '#FFFFFF',
-                  border: '1px solid rgba(255,255,255,0.3)', borderRadius: 999,
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: PJS, letterSpacing: '0.02em',
-                }}
-              >
-                Explore {active.name} &rarr;
-              </button>
+            <div style={{ display: 'flex', gap: 16 }}>
+              {swatches.map((s, i) => (
+                <div key={i} style={{ width: 32, height: 32, background: s.color, border: s.color === '#FFFFFF' ? '1px solid #444' : 'none' }} title={s.label} />
+              ))}
             </div>
           </div>
         </div>
@@ -438,14 +412,13 @@ const Universes = () => {
           scroll state regardless. */}
       <UniverseCrossfadeShowcase
         universes={SHOWCASE_UNIVERSE_IDS.map(id => UNIVERSE_CATALOG.find(u => u.id === id)).filter(Boolean)}
-        onExplore={() => navigate('/studio/universe')}
       />
 
       <section style={{ background: '#0A0A0A', padding: '120px clamp(24px, 6vw, 80px) 120px' }}>
         <div style={{ maxWidth: 1400, margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
             {UNIVERSE_CATALOG.map((u, i) => (
-              <UniverseTile key={u.id} universe={u} index={i} onExplore={() => navigate('/studio/universe')} />
+              <UniverseTile key={u.id} universe={u} index={i} />
             ))}
           </div>
         </div>

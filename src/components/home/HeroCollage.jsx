@@ -30,7 +30,7 @@ export default function HeroCollage({ onCTA }) {
     <section
       style={{
         position: "relative",
-        width: "100vw",
+        width: "100%",
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",

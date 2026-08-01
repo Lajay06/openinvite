@@ -95,7 +95,7 @@ export default function FAQ() {
             Still have questions?
           </h2>
           <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", marginBottom: 40, lineHeight: 1.7, fontFamily: PJS }}>
-            Get in touch with the Openinvite team, or start planning for free and see it for yourself.
+            Get in touch with Openinvite, or start planning for free and see it for yourself.
           </p>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
             <ApplePillButton href="/signup">Start for free +</ApplePillButton>

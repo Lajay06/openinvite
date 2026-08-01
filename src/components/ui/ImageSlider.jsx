@@ -45,7 +45,7 @@ const ImageSlider = React.forwardRef(({ images, interval = 5000, className, ...p
         <p className="text-white text-lg font-semibold leading-snug">"Planning a wedding should feel as exciting as the day itself."</p>
         <div className="flex items-center gap-2 mt-3">
           <img src="/logo-white.png" alt="Openinvite" className="h-5" onError={(e) => e.target.style.display='none'} />
-          <span className="text-white/70 text-sm">The Openinvite team</span>
+          <span className="text-white/70 text-sm">Openinvite</span>
         </div>
       </div>
     </div>

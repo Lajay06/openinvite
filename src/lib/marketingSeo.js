@@ -55,7 +55,7 @@ export const MARKETING_PAGE_SEO = {
   },
   '/contact': {
     title: 'Contact Openinvite',
-    description: "Get in touch with the Openinvite team. We're here to help with questions about wedding planning, your wedding website or your account.",
+    description: "Get in touch with Openinvite. We're here to help with questions about wedding planning, your wedding website or your account.",
   },
   '/about': {
     title: 'About Openinvite',
