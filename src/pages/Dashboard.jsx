@@ -101,7 +101,6 @@ export default function Dashboard() {
   const [moodboardItems, setMoodboardItems] = useState([]);
   const [questionnaireResponses, setQuestionnaireResponses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
   const [showTipsModal, setShowTipsModal] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
 
@@ -167,7 +166,6 @@ export default function Dashboard() {
       }
       const currentUser = await base44.auth.me();
       if (currentUser?.id) identify(currentUser.id, { email: currentUser.email, name: currentUser.full_name });
-      if (currentUser && !currentUser.onboardingCompleted) setShowWelcomeBanner(true);
       const tipsShown = localStorage.getItem('openinvite_tips_shown');
       if (!tipsShown && !tipsModalClaimedThisPageLoad) {
         tipsModalClaimedThisPageLoad = true;
@@ -213,11 +211,6 @@ export default function Dashboard() {
   const visibleQuickLinks = isCollaborating
     ? QUICK_LINKS.filter(l => hasPagePermission(collab.permissions, l.url, 'view'))
     : QUICK_LINKS;
-
-  const dismissWelcome = async () => {
-    setShowWelcomeBanner(false);
-    try { await base44.auth.updateMe({ onboardingCompleted: true }); } catch {}
-  };
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
