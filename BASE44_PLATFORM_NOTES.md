@@ -281,6 +281,28 @@ comparing exactly what the `@base44/sdk` browser client sends beyond the
 `Authorization` header (cookies, additional headers) against a bare
 `fetch`-based script, since that's the one variable not yet isolated.
 
+## The Base44 workspace MCP's `query_entities` can filter `User` by email — the runtime admin key can't
+
+Confirmed 2026-08-01 while auditing a stuck test signup
+(`jaygalaxy23+planstepfree@gmail.com`, `is_verified:false`, orphaned mid-OTP).
+`mcp__claude_ai_Base44__query_entities` with `entityName:"User"` and a
+`{"email": "..."}` filter returns the matching record directly — this is a
+different credentialed path from the runtime `BASE44_ADMIN_KEY` documented
+above, and does **not** hit the "bulk-list always empty" limitation. Useful
+for one-off interactive lookups (this session, this tool) but **not
+available to any `api/*.js` endpoint or script** — those still only have
+the `?api_key=` single-record-by-id path documented above.
+
+The sibling `create_entities`/`update_entities` MCP tools explicitly refuse
+the `User` entity ("cannot be created/updated through this tool"), and no
+`delete_entities` tool exists at all. Combined with the `User` schema's own
+`deletionRequestedAt` field description ("actual deletion is manual,
+verified via customercare@openinvite.com.au"), there is currently **no
+programmatic way to delete or modify a `User` record** via any tool
+available in this workflow — deletion/cleanup of a stuck or orphaned `User`
+row is not automatable, by design. An unverified, dataless orphaned account
+(never completed OTP) is harmless to leave in place — it can never log in.
+
 ## There is no MCP tool to delete an entity schema
 
 `create_entity_schema` and `update_entity_schema` exist; there is no
