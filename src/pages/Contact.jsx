@@ -183,6 +183,11 @@ export default function Contact() {
               <p style={{ fontSize: 16, color: "#FFFFFF", fontWeight: 500 }}>hello@openinvite.com.au</p>
             </div>
 
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", letterSpacing: "0.15em", marginBottom: 6 }}>Press &amp; partnerships</p>
+              <p style={{ fontSize: 16, color: "#FFFFFF", fontWeight: 500 }}>collab@openinvite.com.au</p>
+            </div>
+
             {/* Social */}
             <div style={{ display: "flex", gap: 16 }}>
               <a href="#" style={{ color: "rgba(255,255,255,0.75)", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#FFFFFF")} onMouseLeave={(e) => (e.target.style.color = "rgba(255,255,255,0.75)")}>

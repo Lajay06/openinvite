@@ -51,7 +51,7 @@ const FAQS = [
   },
   {
     q: "What if I want a refund?",
-    a: "We offer a 14-day money-back guarantee from your purchase date, no questions asked.",
+    a: "Refunds are provided as required by the Australian Consumer Law. Contact us and we'll assess your request.",
   },
   {
     q: "Do I need a credit card for the trial?",

@@ -303,6 +303,24 @@ available in this workflow — deletion/cleanup of a stuck or orphaned `User`
 row is not automatable, by design. An unverified, dataless orphaned account
 (never completed OTP) is harmless to leave in place — it can never log in.
 
+Update 2026-08-02 (PR A4 email sweep): the app-facing support address
+changed from `customercare@` to `hello@openinvite.com.au` everywhere in
+`src/`. The live `User.deletionRequestedAt` field description on Base44
+still literally reads "verified via customercare@openinvite.com.au" — this
+is a pure human-readable doc string with no functional effect (Base44
+doesn't parse it), so it was deliberately left alone rather than pushed via
+`update_entity_schema` in the same pass as an unrelated content sweep;
+`update_entity_schema` is a full-replace, not a patch, so touching it means
+resending the entire current schema. **Also discovered the local
+`base44/entities/User.jsonc` mirror had drifted from the live schema** — it
+was missing the `notification_prefs` field entirely (present live, added to
+the mirror this same pass, verified via a fresh `list_entity_schemas` call
+first). No push was made; the mirror was corrected to match what's live.
+If the `customercare@` string in the live description is ever updated
+directly, remember to include `notification_prefs` (and the corrected
+`deletionRequestedAt` text) in the same full-replace call, not just the one
+field being touched.
+
 ## There is no MCP tool to delete an entity schema
 
 `create_entity_schema` and `update_entity_schema` exist; there is no

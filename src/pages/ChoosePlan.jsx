@@ -251,7 +251,7 @@ export default function ChoosePlan() {
       )}
 
       <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>
-        Prices in USD · or pay in AUD at checkout · 14-day money-back guarantee · No recurring fees
+        Prices in USD · or pay in AUD at checkout · Refunds as required by law · No recurring fees
       </p>
     </div>
   );

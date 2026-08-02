@@ -551,7 +551,7 @@ function SecurityTab({ user }) {
     setDeleting(true);
     try {
       await base44.integrations.Core.SendEmail({
-        to: 'customercare@openinvite.com.au',
+        to: 'hello@openinvite.com.au',
         subject: 'Account deletion request',
         body: `Account deletion requested in-app.\n\nEmail: ${user?.email || 'unknown'}\nName: ${user?.full_name || 'unknown'}\nUser ID: ${user?.id || 'unknown'}\n\nPlease verify and process per the data deletion policy (openinvite.com.au/data-deletion).`,
       });
@@ -560,7 +560,7 @@ function SecurityTab({ user }) {
       setDeleteOpen(false);
       toast.success('Deletion request received — we\'ll confirm by email within 7 business days.');
     } catch {
-      toast.error('Something went wrong — please email customercare@openinvite.com.au directly.');
+      toast.error('Something went wrong — please email hello@openinvite.com.au directly.');
     }
     setDeleting(false);
   };
@@ -608,7 +608,7 @@ function SecurityTab({ user }) {
           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, lineHeight: 1.7, maxWidth: 480, marginBottom: 16 }}>
             We can't delete your account instantly from here — deletion is verified by our team first, per our{' '}
             <a href="/data-deletion" target="_blank" rel="noreferrer" style={{ color: '#E03553' }}>data deletion policy</a>.
-            Submitting a request below emails customercare@openinvite.com.au on your behalf; we'll confirm and process it within 7 business days.
+            Submitting a request below emails hello@openinvite.com.au on your behalf; we'll confirm and process it within 7 business days.
           </p>
           <button
             onClick={() => setDeleteOpen(true)}
