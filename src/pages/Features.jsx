@@ -55,7 +55,7 @@ export default function Features() {
 
       {/* ── S1: HERO ─────────────────────────────────────── */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx.jpg"
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx.jpg"
         imagePosition="center 30%"
         title="Everything you needed. Plus a few things you didn't expect."
         cta={{ label: "Get started", href: "/signup" }}
@@ -189,7 +189,7 @@ function SeatingSection() {
             <ProductVideo
               mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-02-seating-exploration.mp4"
               webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-02-seating-exploration.webm"
-              poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-02-seating-exploration-poster.jpg"
+              poster="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/product-shots/flow-02-seating-exploration-poster.jpg"
               alt="Screen recording of the Openinvite seating canvas"
             />
           </ProductMediaFrame>
@@ -224,7 +224,7 @@ function BudgetSection() {
             <ProductVideo
               mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-04-budget-tracker.mp4"
               webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-04-budget-tracker.webm"
-              poster="https://res.cloudinary.com/dsr84xknv/image/upload/product-shots/flow-04-budget-tracker-poster.jpg"
+              poster="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/product-shots/flow-04-budget-tracker-poster.jpg"
               alt="Screen recording of the real Openinvite budget tracker"
             />
           </ProductMediaFrame>

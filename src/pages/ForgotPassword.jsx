@@ -5,11 +5,11 @@ import { ImageSlider } from "@/components/ui/ImageSlider";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 const SLIDER_IMAGES = [
-  "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg",
-  "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185610/justin-follis-A7Um4oi-UYU-unsplash_bbjjam.jpg",
-  "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185631/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0.jpg",
-  "https://res.cloudinary.com/dsr84xknv/image/upload/v1779185626/DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa.jpg",
-  "https://res.cloudinary.com/dsr84xknv/image/upload/v1779241859/rio-syhputra-a7vmvXei7fE-unsplash_vojinz.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185610/justin-follis-A7Um4oi-UYU-unsplash_bbjjam.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185631/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185626/DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779241859/rio-syhputra-a7vmvXei7fE-unsplash_vojinz.jpg",
 ];
 
 const PJS = "'Plus Jakarta Sans', sans-serif";

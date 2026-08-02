@@ -271,7 +271,7 @@ const Universes = () => {
 
       {/* SECTION 1: HERO */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/v1779218326/DTS_In_Focus_Daniel_Far%C3%B2_Photos_ID5015_deiknt.jpg"
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779218326/DTS_In_Focus_Daniel_Far%C3%B2_Photos_ID5015_deiknt.jpg"
         title="Your universe. One aesthetic vision for every piece of your wedding."
         maxWidth={1200}
       />

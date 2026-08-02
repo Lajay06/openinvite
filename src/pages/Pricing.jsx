@@ -139,7 +139,7 @@ export default function Pricing() {
 
       {/* ── HERO ── */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg"
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg"
         imagePosition="center 30%"
         title={<>Pay once.<br />Plan your entire wedding.</>}
         showScrollCue={false}
