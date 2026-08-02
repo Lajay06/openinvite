@@ -6,31 +6,9 @@ import { useAuth } from "@/lib/AuthContext";
 import { track } from "@/lib/analytics";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import MarketingHero from "@/components/marketing/MarketingHero";
+import { PRO_FEATURES, ULTRA_EXTRAS } from "@/lib/planFeatures";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
-
-const PRO_FEATURES = [
-  "Unlimited guests & full RSVP management",
-  "Complete budget suite",
-  "Ava AI: unlimited & context-aware",
-  "Full vendor management & marketplace",
-  "Seating planner",
-  "Schedule & day-of timeline",
-  "Photography, styling & moodboard tools",
-  "Music planner & registry management",
-  "Vows & speeches writer",
-  "Priority support",
-  "24-month access",
-];
-
-const ULTRA_EXTRAS = [
-  "Wedding website builder",
-  "Premium themes (12 universe styles)",
-  "Digital invitations via email & WhatsApp",
-  "Online RSVP pages for guests",
-  "Guest suite: accommodation, transport & experience guide",
-  "Save the dates & thank you cards",
-];
 
 const FAQS = [
   {

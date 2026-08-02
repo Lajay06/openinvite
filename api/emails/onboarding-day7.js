@@ -1,4 +1,5 @@
 import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAIL_MUTED, EMAIL_MUTED_LIGHT, EMAIL_BODY_TEXT } from '../../src/lib/emailBrand.js';
+import { PRO_FEATURES, ULTRA_EXTRAS } from '../../src/lib/planFeatures.js';
 
 /**
  * Onboarding day-7 email — trial ending nudge.
@@ -48,14 +49,7 @@ export function onboardingDay7Email({ name, email }) {
                       </tr>
                       <tr>
                         <td style="padding-top:12px;">
-                          ${[
-                            'Unlimited guests',
-                            'Design studio and wedding website',
-                            'Ava AI assistant (unlimited)',
-                            'Advanced seating planner',
-                            'Budget tracker and vendor tools',
-                            'Document storage and music manager',
-                          ].map(f => `<p style="margin:0 0 6px;font-size:13px;color:${EMAIL_BODY_TEXT};line-height:1.4;">
+                          ${PRO_FEATURES.slice(0, 6).map(f => `<p style="margin:0 0 6px;font-size:13px;color:${EMAIL_BODY_TEXT};line-height:1.4;">
                             <span style="color:${EMAIL_ACCENT};font-weight:700;margin-right:8px;">&bull;</span>${f}
                           </p>`).join('')}
                         </td>
@@ -78,14 +72,10 @@ export function onboardingDay7Email({ name, email }) {
                       </tr>
                       <tr>
                         <td style="padding-top:12px;">
-                          ${[
-                            'Everything in Pro',
-                            'Custom domain for your wedding website',
-                            'White-glove onboarding call',
-                            'Dedicated account manager',
-                            'Multiple weddings and events',
-                            'API access',
-                          ].map(f => `<p style="margin:0 0 6px;font-size:13px;color:${EMAIL_BODY_TEXT};line-height:1.4;">
+                          <p style="margin:0 0 6px;font-size:13px;color:${EMAIL_BODY_TEXT};line-height:1.4;">
+                            <span style="color:#7c3aed;font-weight:700;margin-right:8px;">&bull;</span>Everything in Pro
+                          </p>
+                          ${ULTRA_EXTRAS.map(f => `<p style="margin:0 0 6px;font-size:13px;color:${EMAIL_BODY_TEXT};line-height:1.4;">
                             <span style="color:#7c3aed;font-weight:700;margin-right:8px;">&bull;</span>${f}
                           </p>`).join('')}
                         </td>

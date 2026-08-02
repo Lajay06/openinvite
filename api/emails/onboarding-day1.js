@@ -15,7 +15,7 @@ export function onboardingDay1Email({ name, email }) {
           <tr>
             <td style="padding:40px 40px 8px;">
               <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:${EMAIL_BLACK};letter-spacing:-0.02em;line-height:1.2;">
-                Welcome, ${firstName}. 🎉
+                Welcome, ${firstName}.
               </h1>
               <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:${EMAIL_BODY_TEXT};">
                 You're in. Your 14-day free trial has started, no credit card required.
