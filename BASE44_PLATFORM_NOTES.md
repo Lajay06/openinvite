@@ -221,13 +221,32 @@ usually a better fit anyway, since most "for every user" jobs actually
 mean "for every user who has X" (a wedding, in the digest cron's case),
 not literally every registered account.
 
-`api/cron/send-onboarding-emails.js` still has its original bug (plain
-`Authorization: Bearer` on the User list call, 401 on every run) — flagged
-again here, still not fixed as part of any session that has touched this
-area so far; even fixing it to the `?api_key=` form would only trade one
-silent-failure mode (401) for another (200, but nothing to iterate).
-Fixing it for real means porting it to the same WeddingDetails-first
-pattern `api/cron/send-weekly-digest.js` uses.
+**Fixed 2026-07-20, PR #184** — `api/cron/send-onboarding-emails.js` was
+ported to the same WeddingDetails-first pattern `send-weekly-digest.js`
+uses (resolve owners via `WeddingDetails`, then `getBase44User()` per
+owner). Confirmed live in production runtime logs on multiple dates since
+(2026-07-21, 07-28, 08-01: all `200`, resolving the correct owner count,
+zero errors). The two paragraphs above describing this as unfixed were
+stale by the time a later session (2026-08-02) went looking for this bug
+armed with a prior handoff note — always re-check current code/git log
+before trusting a "known bug" claim, even one written in this file.
+
+Separately confirmed 2026-08-02: **zero real users were ever affected** by
+the ~16-day outage (2026-07-04 to 2026-07-20). Queried `User` for every
+signup in the full window that could have landed in a day-3 or day-7
+match during the outage (2026-06-26 to 2026-07-24) — zero results. This
+app's real (non-test) user base is tiny (5 accounts total as of
+2026-08-02) and every existing account either signed up before the cron
+existed or after the fix. No backfill was needed or performed.
+
+Also discovered while verifying: every single production run of this cron
+checked (spanning 2026-07-21 through 2026-08-01) shows `sent: 0` for both
+day3 and day7 — meaning the actual Resend send path for these two
+templates had *never* been exercised end-to-end in production, fix or no
+fix, simply because no real account has ever fallen in a matching window.
+Verified the send path directly via a temporary preview-only endpoint
+(same pattern as PR #185's `dev-send-test-digest.js`), deleted after use —
+see PR that introduced this note for details.
 
 ## Registration requires real email-OTP verification — no bypass
 

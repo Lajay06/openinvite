@@ -57,10 +57,14 @@ echo ""
 
 # ── 4. Open PR ────────────────────────────────────────────────
 echo "→ Opening PR…"
+# gh pr create's --title must be single-line — use only the first line of
+# MSG for the title (gh errors "Title is too long" otherwise on multi-line
+# commit messages); the full MSG still becomes the commit body above.
+TITLE=$(printf '%s' "${MSG}" | head -n 1)
 PR_URL=$(gh pr create \
   --base main \
   --head "${BRANCH}" \
-  --title "${MSG}" \
+  --title "${TITLE}" \
   --body "## Summary
 
 <!-- What does this change and why? -->
