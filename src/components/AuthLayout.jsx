@@ -1,4 +1,5 @@
 import React from "react";
+import PublicNav from "@/components/public/PublicNav";
 import { ImageSlider } from "@/components/ui/ImageSlider";
 
 // Shared wrapper for both /login and /register — kept deliberately identical
@@ -10,7 +11,14 @@ import { ImageSlider } from "@/components/ui/ImageSlider";
 // ResetPassword.jsx/ForgotPassword.jsx already use, reused here rather than
 // building a second carousel). The four-photo set below is fixed across
 // both pages so a visitor bouncing between /login and /register never sees
-// the carousel jump or reset.
+// the carousel jump or reset. showOverlay={false} drops ImageSlider's
+// built-in quote+attribution caption (Reset/Forgot Password keep it — this
+// is scoped to Login/Register only, per design review).
+//
+// PublicNav is included so these pages read as part of the site rather than
+// stranded (matches Contact.jsx's bar). PublicNav is position:fixed, so it
+// contributes no layout height on its own — paddingTop: 64 below reserves
+// the same 64px (h-16) it occupies, exactly as Contact.jsx does.
 //
 // The old per-page coloured icon square (UserPlus/LogIn/Mail) is gone —
 // the wordmark alone is the mark now, no icon.
@@ -29,37 +37,42 @@ const CAROUSEL_IMAGES = [
 
 export default function AuthLayout({ title, subtitle, footer, children }) {
   return (
-    <div className="h-screen overflow-hidden flex">
-      {/* LEFT — full-bleed crossfade carousel, hidden below md same as the
-          Reset/Forgot password pattern this was reused from. */}
-      <div className="hidden md:block" style={{ width: "50%", flexShrink: 0, height: "100vh" }}>
-        <ImageSlider images={CAROUSEL_IMAGES} />
-      </div>
+    <div className="h-screen overflow-hidden flex flex-col">
+      <PublicNav />
 
-      {/* RIGHT — form panel. overflow-y-auto stays on as a safety net for a
-          genuinely short viewport (Register's 4 OAuth buttons + divider +
-          3 fields is the tallest case), not the default path. */}
-      <div className="w-full md:w-1/2 h-screen overflow-y-auto flex items-center justify-center bg-background px-4 py-3">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-3">
-            <img
-              src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
-              alt="Openinvite"
-              className="h-6 w-auto mx-auto mb-4"
-              style={{ filter: "brightness(0)" }}
-            />
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
-            {subtitle && <p className="text-muted-foreground text-sm mt-1">{subtitle}</p>}
+      <div className="flex-1 flex overflow-hidden" style={{ paddingTop: 64, boxSizing: "border-box" }}>
+        {/* LEFT — full-bleed crossfade carousel, hidden below md same as the
+            Reset/Forgot password pattern this was reused from. No caption
+            overlay here (showOverlay={false}) — clean photos only. */}
+        <div className="hidden md:block h-full" style={{ width: "50%", flexShrink: 0 }}>
+          <ImageSlider images={CAROUSEL_IMAGES} showOverlay={false} />
+        </div>
+
+        {/* RIGHT — form panel. overflow-y-auto stays on as a safety net for a
+            genuinely short viewport (Register's 4 OAuth buttons + divider +
+            3 fields is the tallest case), not the default path. */}
+        <div className="w-full md:w-1/2 h-full overflow-y-auto flex items-center justify-center bg-background px-4 py-3">
+          <div className="w-full max-w-md">
+            <div className="text-center mb-3">
+              <img
+                src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
+                alt="Openinvite"
+                className="h-6 w-auto mx-auto mb-4"
+                style={{ filter: "brightness(0)" }}
+              />
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
+              {subtitle && <p className="text-muted-foreground text-sm mt-1">{subtitle}</p>}
+            </div>
+            {/* Card: 0 border-radius, no box-shadow — DESIGN_SPEC's card rules.
+                The modal 16px-radius rule doesn't apply here — this isn't a
+                modal, and border-radius stays scoped to buttons/pills only. */}
+            <div className="bg-card border border-border p-4">
+              {children}
+            </div>
+            {footer && (
+              <p className="text-center text-sm text-muted-foreground mt-3">{footer}</p>
+            )}
           </div>
-          {/* Card: 0 border-radius, no box-shadow — DESIGN_SPEC's card rules.
-              The modal 16px-radius rule doesn't apply here — this isn't a
-              modal, and border-radius stays scoped to buttons/pills only. */}
-          <div className="bg-card border border-border p-4">
-            {children}
-          </div>
-          {footer && (
-            <p className="text-center text-sm text-muted-foreground mt-3">{footer}</p>
-          )}
         </div>
       </div>
     </div>
