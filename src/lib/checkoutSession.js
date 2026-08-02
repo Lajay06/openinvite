@@ -134,3 +134,73 @@ export async function startCheckout(plan, setLoadingPlan, setCheckoutError, deps
     setLoadingPlan(null);
   }
 }
+
+/**
+ * Gift-mode checkout (PR G4, gifting v2 bridge) — a separate, smaller
+ * function rather than a branch inside startCheckout above: no user
+ * resolution (a gift buyer doesn't need an Openinvite account), no
+ * userId/userEmail sent, and the request carries giftMode: true so
+ * api/create-checkout-session.js takes the gift path (adds Stripe's own
+ * recipient-email/note custom fields to the hosted checkout page, skips
+ * the userId requirement). Kept independent of startCheckout so the real
+ * self-purchase flow's logic is never touched by this addition.
+ *
+ * @param {'pro'|'ultra'} plan
+ * @param {(plan: string|null) => void} setLoadingPlan
+ * @param {(msg: string|null) => void} setCheckoutError
+ * @param {{ doFetch?: typeof fetch, redirect?: (url: string) => void }} [deps] — injectable for tests
+ */
+export async function startGiftCheckout(plan, setLoadingPlan, setCheckoutError, deps = {}) {
+  const {
+    doFetch = (...args) => fetch(...args),
+    redirect = (url) => { window.location.href = url; },
+    logPrefix = '[Gifting checkout]',
+  } = deps;
+
+  const { priceId } = resolveCheckoutPriceId(plan);
+  setLoadingPlan(plan);
+  setCheckoutError(null);
+
+  try {
+    let res;
+    try {
+      res = await doFetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId, giftMode: true }),
+      });
+    } catch (networkErr) {
+      console.error(`${logPrefix} Network error — is the API reachable?`, networkErr);
+      setCheckoutError('Network error: could not reach the checkout server. Please try again.');
+      return;
+    }
+
+    const contentType = res.headers.get('content-type') || '';
+    let data;
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      console.error(`${logPrefix} Non-JSON response received:`, text.slice(0, 300));
+      setCheckoutError(
+        res.status === 404
+          ? 'Checkout API not found. This works on Vercel: run `vercel dev` to test locally.'
+          : `Server error ${res.status}. Please try again.`
+      );
+      return;
+    }
+
+    if (data.url) {
+      redirect(data.url);
+    } else {
+      const rawMsg = data.error || 'Checkout session could not be created.';
+      console.error(`${logPrefix} API returned error:`, rawMsg, '| type:', data.type, '| code:', data.code);
+      setCheckoutError(rawMsg);
+    }
+  } catch (err) {
+    console.error(`${logPrefix} Unexpected error:`, err);
+    setCheckoutError('Something went wrong. Please try again.');
+  } finally {
+    setLoadingPlan(null);
+  }
+}

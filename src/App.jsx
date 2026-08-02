@@ -33,6 +33,7 @@ const RefundPolicy = lazy(() => import('./pages/RefundPolicy'));
 const ScrollMorph = lazy(() => import('./pages/ScrollMorph'));
 const Universes = lazy(() => import('./pages/Universes'));
 const Gifting = lazy(() => import('./pages/Gifting'));
+const GiftPurchaseSuccess = lazy(() => import('./pages/GiftPurchaseSuccess'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
@@ -93,6 +94,7 @@ const PUBLIC_PATH_SET = new Set([
   '/scroll-morph',
   '/universes',
   '/gifting',
+  '/gift/success',
   '/forgot-password',
   '/reset-password',
   '/privacy-policy',
@@ -173,6 +175,7 @@ const AuthenticatedApp = () => {
         <Route path="/scroll-morph" element={<ScrollMorph />} />
         <Route path="/universes" element={<Universes />} />
         <Route path="/gifting" element={<Gifting />} />
+        <Route path="/gift/success" element={<GiftPurchaseSuccess />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -252,6 +255,7 @@ const AuthenticatedApp = () => {
         <Route path="/scroll-morph" element={<ScrollMorph />} />
         <Route path="/universes" element={<Universes />} />
         <Route path="/gifting" element={<Gifting />} />
+        <Route path="/gift/success" element={<GiftPurchaseSuccess />} />
         <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
         <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
         <Route path="/w/:weddingSlug/collect" element={<GuestCollect />} />
