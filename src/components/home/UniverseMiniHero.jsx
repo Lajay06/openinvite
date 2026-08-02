@@ -30,7 +30,7 @@ export default function UniverseMiniHero() {
       }}
     >
       <img
-        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_ISOLA_Daniel_Far%C3%B2_Photos_ID13172_kymmkd.jpg"
+        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Caldo_Daniel_Far%C3%B2_Photos_ID3960_av5mnb.jpg"
         alt=""
         loading="lazy"
         style={{

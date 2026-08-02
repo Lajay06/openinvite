@@ -468,10 +468,7 @@ const Universes = () => {
         </div>
       </section>
 
-      {/* SECTION 8: FINAL CTA — the photo's top ~25% is a uniformly bright,
-          plain wall (measured: brightness 167-233 across its full width),
-          so the crop is biased toward it and the text sits in dark text
-          on that natural light background instead of a dark overlay. */}
+      {/* SECTION 8: FINAL CTA — solid black background, white text (PR G1). */}
       <section style={{
         position: 'relative',
         minHeight: 480,
@@ -481,25 +478,17 @@ const Universes = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        background: '#0A0A0A',
       }}>
-        <img
-          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3620_bctcoz.jpg"
-          alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }}
-        />
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 900, margin: '0 auto' }}>
           <h2 style={{
             fontFamily: 'Plus Jakarta Sans, sans-serif',
             fontWeight: 700,
             fontSize: 'clamp(40px, 7vw, 80px)',
-            color: '#0A0A0A',
+            color: '#FFFFFF',
             letterSpacing: '-0.02em',
             lineHeight: 1,
             margin: '0 0 40px',
-            // A light halo, not a dark overlay — keeps the dark text
-            // readable where it crosses the subject's darker hair, not
-            // just the plain wall either side of it.
-            textShadow: '0 0 24px rgba(255,255,255,0.85), 0 0 48px rgba(255,255,255,0.6)',
           }}>
             Choose your universe.
           </h2>
@@ -521,10 +510,10 @@ const Universes = () => {
             </button>
             <button onClick={() => navigate('/Features')} style={{
               padding: '16px 40px',
-              border: '1px solid rgba(10,10,10,0.25)',
+              border: '1px solid rgba(255,255,255,0.25)',
               borderRadius: 999,
-              background: 'rgba(255,255,255,0.7)',
-              color: 'rgba(10,10,10,0.8)',
+              background: 'rgba(255,255,255,0.08)',
+              color: '#FFFFFF',
               textDecoration: 'none',
               fontSize: 13,
               fontWeight: 600,

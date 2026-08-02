@@ -28,7 +28,7 @@ const CARDS = [
   title: "Guest management",
   desc: "RSVP tracking, seating charts and the wedding party, all in one list that never gets out of sync.",
   bullets: ["Guest list & RSVP tracking", "Seating chart planner", "Wedding party coordination"],
-  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100501/DTS_Natural_Beauty_Rob_Christain_Crosby_Photos_ID2677_e2cw9w.jpg"
+  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8875_cwnpxl.jpg"
 },
 {
   num: "02",
@@ -56,20 +56,14 @@ const CARDS = [
   title: "Style & experience",
   desc: "Moodboards, music, photography and styling: every creative decision, kept in one place.",
   bullets: ["Moodboard & styling", "Music & guest song requests", "Photography & vows"],
-  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100465/DTS_Tradition_Chris_Abatzis_Photos_ID9180_eg2nbh.jpg",
-  // Default "center" crops the man's face in cleanly but pushes the woman's
-  // (already mostly turned into her own hair/arm in the source photo) out
-  // of frame entirely. "center 60%" is the best achievable balance at this
-  // card's aspect ratio — verified against both the mobile (380x300-ish)
-  // and desktop (~900x700) card dimensions.
-  photoPosition: "center 60%"
+  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_DECADENT_Debora_Spanhol_Photos_ID12475_viqbsz.jpg"
 },
 {
   num: "06",
   title: "Plus 1",
   desc: "Bring someone into the planning. Invite your partner, a parent or a friend, with their own login and their own access.",
   bullets: ["Invite a partner, parent or friend", "Their own login and their own access", "Everyone stays in sync automatically"],
-  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779218329/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID3470_knfncz.jpg"
+  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj.jpg"
 },
 {
   num: "07",

@@ -59,7 +59,8 @@ export default function Features() {
         imagePosition="center 30%"
         title="Everything you needed. Plus a few things you didn't expect."
         cta={{ label: "Get started", href: "/signup" }}
-        maxWidth={1000}
+        align="left"
+        maxWidth={640}
       />
 
       {/* ── S2: STATEMENT BANNER ─────────────────────────── */}

@@ -21,9 +21,14 @@ export default function MarketingHero({
   showScrollCue = true,
   maxWidth = 800,
   overlay = true,
+  // "left" pins the headline to the left edge instead of centring it —
+  // for a hero photo whose subject sits on the right, so a wide centred
+  // headline never crosses their face (PR G1).
+  align = "center",
 }) {
+  const isLeft = align === "left";
   return (
-    <section style={{ position: "relative", height: "100vh", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <section style={{ position: "relative", height: "100vh", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: isLeft ? "flex-start" : "center" }}>
       <img
         src={image}
         alt=""
@@ -32,7 +37,10 @@ export default function MarketingHero({
       {overlay && (
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%)", zIndex: 2 }} />
       )}
-      <div style={{ position: "relative", zIndex: 10, textAlign: "center", maxWidth, margin: "0 auto", padding: "0 40px" }}>
+      <div style={{
+        position: "relative", zIndex: 10, textAlign: isLeft ? "left" : "center", maxWidth,
+        margin: isLeft ? "0" : "0 auto", padding: isLeft ? "0 clamp(24px, 6vw, 80px)" : "0 40px",
+      }}>
         <h1 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", fontFamily: PJS, margin: cta ? "0 0 24px" : 0 }}>
           {title}
         </h1>
