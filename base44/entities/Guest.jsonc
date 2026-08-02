@@ -15,6 +15,10 @@
       "type": "string",
       "description": "Guest's phone number"
     },
+    "mailing_address": {
+      "type": "string",
+      "description": "Guest's mailing address, free-text (same convention as venue addresses elsewhere in the app — not broken into street/city/zip fields). Populated manually or via an approved Contact Collector submission (PR B3)."
+    },
     "profile_picture_url": {
       "type": "string",
       "format": "uri",

@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/AuthContext";
 import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
 import ImportGuestModal from "../components/guests/ImportGuestModal";
+import PendingImportsPanel from "../components/guests/PendingImportsPanel";
 import BulkActionBar from "../components/guests/BulkActionBar";
 import SendInvitesModal from "../components/guests/SendInvitesModal";
 import SetEventsModal from "../components/guests/SetEventsModal";
@@ -29,6 +30,7 @@ import { getWeddingEvents, defaultEventResponses, getGuestEventResponse } from '
 import CountUp from "@/components/shared/CountUp";
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
+const GuestContactSubmission = base44.entities.GuestContactSubmission;
 
 
 function FilterPill({ label, active, onClick }) {
@@ -88,6 +90,10 @@ export default function Guests() {
   const [showImport, setShowImport] = useState(false);
   const [weddingParty, setWeddingParty] = useState({});
   const [weddingEvents, setWeddingEvents] = useState([]);
+  const [weddingId, setWeddingId] = useState(null);
+  const [weddingSlug, setWeddingSlug] = useState(null);
+  const [pendingSubmissions, setPendingSubmissions] = useState([]);
+  const [showPendingImports, setShowPendingImports] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [sendModalConfig, setSendModalConfig] = useState(null); // { initialSelectedIds } | { defaultFilter }
@@ -127,8 +133,21 @@ export default function Guests() {
       const wd = details || {};
       setWeddingParty(wd.weddingParty || {});
       setWeddingEvents(getWeddingEvents(wd));
+      setWeddingId(wd.id || null);
+      setWeddingSlug(wd.slug || null);
     }).catch(() => {});
   }, [isCollaborating]);
+
+  // Contact Collector (PR B3) — pending submissions from the public
+  // /w/:slug/collect form. Collaborators never see this (no WeddingDetails
+  // of their own to scope it to, same reasoning as weddingEvents above).
+  const loadPendingSubmissions = React.useCallback(() => {
+    if (isCollaborating || !weddingId) return;
+    GuestContactSubmission.filter({ wedding_id: weddingId, status: 'pending' })
+      .then(rows => setPendingSubmissions((rows || []).filter(r => !r.is_test)))
+      .catch(() => {});
+  }, [isCollaborating, weddingId]);
+  useEffect(() => { loadPendingSubmissions(); }, [loadPendingSubmissions]);
 
   const loadGuests = async () => {
     try {
@@ -596,6 +615,29 @@ export default function Guests() {
               Import CSV
             </button>
           )}
+          {!isCollaborating && weddingSlug && (
+            <button
+              onClick={async () => {
+                await navigator.clipboard.writeText(`${window.location.origin}/w/${weddingSlug}/collect`);
+                toast.success('Collect link copied');
+              }}
+              className="btn-editorial-secondary"
+            >
+              Copy collect link
+            </button>
+          )}
+          {!isCollaborating && pendingSubmissions.length > 0 && (
+            <button
+              onClick={() => setShowPendingImports(true)}
+              className="btn-editorial-secondary"
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              Pending imports
+              <span style={{ background: '#E03553', color: '#FFFFFF', borderRadius: 999, fontSize: 10, fontWeight: 700, padding: '1px 6px', minWidth: 16, textAlign: 'center' }}>
+                {pendingSubmissions.length}
+              </span>
+            </button>
+          )}
           <button
             onClick={exportGuestList}
             disabled={guests.length === 0}
@@ -779,6 +821,15 @@ export default function Guests() {
         <ImportGuestModal
           onClose={() => setShowImport(false)}
           onImported={loadGuests}
+        />
+      )}
+
+      {showPendingImports && (
+        <PendingImportsPanel
+          submissions={pendingSubmissions}
+          guests={guests}
+          onClose={() => setShowPendingImports(false)}
+          onChanged={() => { loadGuests(); loadPendingSubmissions(); }}
         />
       )}
 
