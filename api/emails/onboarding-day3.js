@@ -19,7 +19,7 @@ export function onboardingDay3Email({ name, email }) {
                 <span style="font-size:20px;line-height:1;">✦</span>
               </div>
               <h1 style="margin:0 0 12px;font-size:26px;font-weight:700;color:${EMAIL_BLACK};letter-spacing:-0.02em;line-height:1.2;">
-                Have you met Ava yet, ${firstName}? 👋
+                Have you met Ava yet, ${firstName}?
               </h1>
               <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:${EMAIL_BODY_TEXT};">
                 Ava is your AI wedding assistant, built into your dashboard and available any time.

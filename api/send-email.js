@@ -23,17 +23,17 @@
  * ─────────────────────────────────────────────────────────────────────────────
  *
  *  Day 0  — onboarding-day1
- *           Subject: "Welcome to Openinvite 🎉 Let's plan your perfect wedding"
+ *           Subject: "Welcome to Openinvite. Let's plan your perfect wedding"
  *           Trigger: immediately on signup / onboarding completion
  *           Endpoint: POST /api/on-signup  (or POST /api/send-email with template: 'onboarding-day1')
  *
  *  Day 3  — onboarding-day3
- *           Subject: "Have you tried Ava yet? 👋"
+ *           Subject: "Have you tried Ava yet?"
  *           Trigger: scheduled 3 days after signup (manual send or cron)
  *           Endpoint: POST /api/send-email with template: 'onboarding-day3'
  *
  *  Day 7  — onboarding-day7
- *           Subject: "Your free trial has 7 days left ⏰"
+ *           Subject: "Your free trial has 7 days left"
  *           Trigger: scheduled 7 days after signup (trial has 7 days left)
  *           Endpoint: POST /api/send-email with template: 'onboarding-day7'
  *
@@ -66,7 +66,7 @@ const TEMPLATES = {
   // audit). Removed the duplicate file; kept the key so any existing
   // caller passing type: 'welcome' still works.
   welcome: {
-    subject: () => 'Welcome to Openinvite 🎉 Let\'s plan your perfect wedding',
+    subject: () => 'Welcome to Openinvite. Let\'s plan your perfect wedding',
     html: ({ to, data }) => onboardingDay1Email({ email: to, name: data?.name }),
   },
   'purchase-confirmation': {
@@ -78,15 +78,15 @@ const TEMPLATES = {
 
   // ── Onboarding sequence ──────────────────────────────────────────────────
   'onboarding-day1': {
-    subject: () => 'Welcome to Openinvite 🎉 Let\'s plan your perfect wedding',
+    subject: () => 'Welcome to Openinvite. Let\'s plan your perfect wedding',
     html: ({ to, data }) => onboardingDay1Email({ email: to, name: data?.name }),
   },
   'onboarding-day3': {
-    subject: () => 'Have you tried Ava yet? 👋',
+    subject: () => 'Have you tried Ava yet?',
     html: ({ to, data }) => onboardingDay3Email({ email: to, name: data?.name }),
   },
   'onboarding-day7': {
-    subject: () => 'Your free trial has 7 days left ⏰',
+    subject: () => 'Your free trial has 7 days left',
     html: ({ to, data }) => onboardingDay7Email({ email: to, name: data?.name }),
   },
 };

@@ -35,3 +35,4 @@ dist-ssr
 .claude/settings.local.json
 base44/.app.jsonc
 scripts/capture/output/
+.env*.local

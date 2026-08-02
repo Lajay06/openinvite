@@ -35,6 +35,15 @@ export const EMAIL_MUTED_LIGHT = 'rgba(10,10,10,0.35)';
 export const EMAIL_BODY_TEXT = 'rgba(10,10,10,0.65)';
 export const EMAIL_SUPPORT_ADDRESS = 'hello@openinvite.com.au';
 
+// The real brand mark (same gradient arch icon used in PublicNav.jsx,
+// AnimatedSidebar.jsx, AuthLayout.jsx), cropped to icon-only and re-hosted
+// on Cloudinary (PR G3 email overhaul) — the original hosted PNG's
+// "Openinvite" wordmark is rendered near-white, meant for the dark
+// PublicNav background, and would be invisible on this shell's white card.
+// The icon alone is colour, not background-dependent, so it's paired here
+// with the shell's own black text wordmark instead.
+export const EMAIL_LOGO_MARK_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1785659181/email-assets/openinvite-icon-mark.png';
+
 export function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
@@ -44,7 +53,16 @@ export function emailHeaderRow() {
   return `
           <tr>
             <td style="padding:40px 40px 32px;border-bottom:1px solid ${EMAIL_DIVIDER};">
-              <p style="margin:0;font-size:15px;font-weight:800;color:${EMAIL_BLACK};letter-spacing:-0.02em;font-family:${EMAIL_FONT};">openinvite</p>
+              <table cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                  <td style="padding:0 8px 0 0;vertical-align:middle;">
+                    <img src="${EMAIL_LOGO_MARK_URL}" width="20" height="20" alt="" style="display:block;width:20px;height:20px;" />
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <p style="margin:0;font-size:15px;font-weight:800;color:${EMAIL_BLACK};letter-spacing:-0.02em;font-family:${EMAIL_FONT};">openinvite</p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>`;
 }

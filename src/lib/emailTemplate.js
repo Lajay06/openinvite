@@ -24,6 +24,7 @@
  */
 
 import { getUniverseEmailStyle } from './universeEmailStyles.js';
+import { EMAIL_LOGO_MARK_URL } from './emailBrand.js';
 
 const SANS_FALLBACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
@@ -90,7 +91,7 @@ export function getEmailTypeConfig(type) {
  */
 const TYPE_COMPOSE_DEFAULTS = {
   invite: {
-    subject: "You're invited to [Couple names]'s wedding 💍",
+    subject: "You're invited to [Couple names]'s wedding",
     body: "Hi [Guest name],\n\nWe'd love for you to celebrate with us on [Wedding date]. Click below to view your invitation and RSVP.\n\nWe can't wait to see you!\n\n[Couple names]",
   },
   reminder: {
@@ -262,7 +263,16 @@ ${bannerHtml}
           <!-- Header -->
           <tr>
             <td style="padding:36px 40px 24px;border-bottom:1px solid rgba(0,0,0,0.06);">
-              <p style="margin:0;font-size:13px;font-weight:700;color:${textColor};letter-spacing:0.02em;font-family:${fontBody};">openinvite</p>
+              <table cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                  <td style="padding:0 7px 0 0;vertical-align:middle;">
+                    <img src="${EMAIL_LOGO_MARK_URL}" width="16" height="16" alt="" style="display:block;width:16px;height:16px;" />
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <p style="margin:0;font-size:13px;font-weight:700;color:${textColor};letter-spacing:0.02em;font-family:${fontBody};">openinvite</p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
