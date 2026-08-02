@@ -101,7 +101,7 @@ export default function TermsOfService() {
           <p style={P}>Payments are processed securely by Stripe. We do not store your full card details.</p>
 
           <h3 style={H3}>Refunds</h3>
-          <p style={P}>We offer a 14-day money-back guarantee from your purchase date. See our <Link to="/refund-policy" style={LK}>Refund policy</Link> for full detail.</p>
+          <p style={P}>Refunds are provided as required by law. See our <Link to="/refund-policy" style={LK}>Refund policy</Link> for full detail.</p>
 
           <h3 style={H3}>Price changes</h3>
           <p style={P}>We may change plan prices at any time; a price change never affects a plan you've already purchased.</p>

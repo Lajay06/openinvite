@@ -158,7 +158,7 @@ export default function PrivacyPolicy() {
             <li><strong>Delete</strong>: delete an account and its associated data, or a specific guest's data on request to the couple who added it</li>
             <li><strong>Ask questions</strong>: about how your information is being handled</li>
           </ul>
-          <p style={P}>To exercise any of these rights, contact us at <a href="mailto:customercare@openinvite.com.au" style={LK}>customercare@openinvite.com.au</a>, or see our <Link to="/data-deletion" style={LK}>data deletion</Link> page for account and data removal requests. If you are unsatisfied with our response, Australian residents may lodge a complaint with the <a href="https://www.oaic.gov.au/" target="_blank" rel="noopener noreferrer" style={LK}>Office of the Australian Information Commissioner (OAIC)</a>.</p>
+          <p style={P}>To exercise any of these rights, contact us at <a href="mailto:hello@openinvite.com.au" style={LK}>hello@openinvite.com.au</a>, or see our <Link to="/data-deletion" style={LK}>data deletion</Link> page for account and data removal requests. If you are unsatisfied with our response, Australian residents may lodge a complaint with the <a href="https://www.oaic.gov.au/" target="_blank" rel="noopener noreferrer" style={LK}>Office of the Australian Information Commissioner (OAIC)</a>.</p>
 
           <div style={DIV} />
           <h2 style={H2}>11. Changes to this policy</h2>
@@ -168,7 +168,7 @@ export default function PrivacyPolicy() {
           <h2 style={H2}>12. Contact us</h2>
           <p style={P}>
             <strong>Email:</strong> <a href="mailto:hello@openinvite.com.au" style={LK}>hello@openinvite.com.au</a><br />
-            <strong>Support:</strong> <a href="mailto:customercare@openinvite.com.au" style={LK}>customercare@openinvite.com.au</a><br />
+            <strong>Support:</strong> <a href="mailto:hello@openinvite.com.au" style={LK}>hello@openinvite.com.au</a><br />
             <strong>Website:</strong> <Link to="/Contact" style={LK}>openinvite.com.au/contact</Link>
           </p>
 

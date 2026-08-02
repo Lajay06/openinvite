@@ -25,7 +25,17 @@
     },
     "deletionRequestedAt": {
       "type": "string",
-      "description": "ISO timestamp set when the user submits an in-app account deletion request (see DataDeletion.jsx policy) — actual deletion is manual, verified via customercare@openinvite.com.au"
+      "description": "ISO timestamp set when the user submits an in-app account deletion request (see DataDeletion.jsx policy) — actual deletion is manual, verified via hello@openinvite.com.au"
+    },
+    "notification_prefs": {
+      "type": "object",
+      "description": "Per-user notification channel preferences, read by the bell UI and the event-wiring/digest cron. Defaults applied client-side when absent (pre-existing accounts): instant_email_rsvp=true, instant_email_collaborator=true, weekly_digest=true, in_app_only=false. In-app notifications themselves are never fully disableable — in_app_only=true suppresses instant emails and the digest, keeping only the bell.",
+      "properties": {
+        "instant_email_rsvp": { "type": "boolean", "default": true },
+        "instant_email_collaborator": { "type": "boolean", "default": true },
+        "weekly_digest": { "type": "boolean", "default": true },
+        "in_app_only": { "type": "boolean", "default": false }
+      }
     }
   },
   "required": []
