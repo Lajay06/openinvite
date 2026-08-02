@@ -204,10 +204,9 @@ export async function handleGiftCheckoutSessionCompleted(verifiedSession, {
   try {
     // Scopes the 100%-off discount to the gifted tier's own Stripe Product
     // only — without this, a Pro-gift code could be pasted against an
-    // Ultra checkout for a free upgrade. This is the one part of this
-    // branch built from memory of Stripe's Coupon API rather than a
-    // verified call in this codebase — the live test-mode evidence run
-    // (required before merge) must confirm applies_to behaves as expected.
+    // Ultra checkout for a free upgrade. Confirmed working against a real
+    // Stripe test-mode call (live evidence run, PR G4) — applies_to on
+    // Coupon.create is accepted as written here.
     const price = sessionPriceId ? await stripeImpl.prices.retrieve(sessionPriceId) : null;
     const productId = typeof price?.product === 'string' ? price.product : price?.product?.id;
 
@@ -219,8 +218,13 @@ export async function handleGiftCheckoutSessionCompleted(verifiedSession, {
     });
 
     code = generateGiftCode();
+    // promotionCodes.create's real (current API version) shape nests the
+    // coupon reference under `promotion: { type: 'coupon', coupon }` — a
+    // flat top-level `coupon` field (what the API looked like from memory)
+    // is rejected with "Received unknown parameter: coupon". Caught and
+    // fixed via the required live test-mode evidence run before merge.
     promotionCode = await stripeImpl.promotionCodes.create({
-      coupon: coupon.id,
+      promotion: { type: 'coupon', coupon: coupon.id },
       code,
       max_redemptions: 1,
       metadata: { plan_gift_session: verifiedSession.id, plan },

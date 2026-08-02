@@ -50,7 +50,12 @@ export function buildCheckoutSessionParams({ priceId, plan, currency, userId, cu
           key: 'recipient_note',
           label: { type: 'custom', custom: 'A personal note (optional)' },
           type: 'text',
-          text: { maximum_length: 500 },
+          // 255 is Stripe's own hard cap for a custom field's
+          // maximum_length (confirmed via a live test-mode 400: "This
+          // value must be less than or equal to 255" — the originally-
+          // written 500 was wrong, caught by the required live evidence
+          // run before merge, PR G4).
+          text: { maximum_length: 255 },
           optional: true,
         },
       ],

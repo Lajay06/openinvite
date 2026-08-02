@@ -268,6 +268,29 @@ export async function runGiftCheckout() {
     promotionCodes: { create: async () => ({ id: 'promo_test_123' }) },
   };
 
+  // 0. promotionCodes.create is called with the coupon nested under
+  // promotion: { type: 'coupon', coupon }, NOT a flat top-level `coupon`
+  // field — a real Stripe API 400 ("Received unknown parameter: coupon")
+  // caught by the required live test-mode evidence run before merge.
+  // Locked in here so it can't silently regress back to the wrong shape.
+  {
+    let capturedArgs = null;
+    const trackedStripeImpl = {
+      prices: { retrieve: async () => ({ id: 'price_TEST_PRO_GIFT', product: 'prod_pro_test' }) },
+      coupons: { create: async () => ({ id: 'coupon_shape_test' }) },
+      promotionCodes: { create: async (args) => { capturedArgs = args; return { id: 'promo_shape_test' }; } },
+    };
+    const fetchImpl = async (url, init) => {
+      if (!init || init.method === undefined) return { ok: true, json: async () => [] };
+      if (init.method === 'POST') return { ok: true, json: async () => ({ id: 'plangift_shape_test' }) };
+      return { ok: true };
+    };
+    await handleGiftCheckoutSessionCompleted(makeGiftSession(), { adminKey: 'test_admin_key', fetchImpl, stripeImpl: trackedStripeImpl, sendEmail: async () => ({ data: {} }) });
+    results.push(capturedArgs?.promotion?.coupon === 'coupon_shape_test' && capturedArgs?.promotion?.type === 'coupon' && !('coupon' in capturedArgs)
+      ? pass('handleGiftCheckoutSessionCompleted — promotionCodes.create nests the coupon under promotion:{type,coupon}, matching the real Stripe API shape', JSON.stringify(capturedArgs?.promotion))
+      : fail('handleGiftCheckoutSessionCompleted — promotionCodes.create nests the coupon under promotion:{type,coupon}, matching the real Stripe API shape', "{promotion:{type:'coupon',coupon:'coupon_shape_test'}}", JSON.stringify(capturedArgs)));
+  }
+
   // 1. Missing admin key → 5xx.
   {
     const { status } = await handleGiftCheckoutSessionCompleted(makeGiftSession(), { adminKey: '', stripeImpl: fakeStripeImpl });
