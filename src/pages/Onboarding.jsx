@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, isOnboardingComplete } from '@/lib/resolveMyWedding';
 import { buildWeddingDetailsPayload, verifyOnboardingSave } from '@/lib/onboardingSave';
+import { captureException } from '@/lib/sentry';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // TASK 1: entity references via authenticated client (no @/entities/* imports)
@@ -70,6 +71,10 @@ export default function Onboarding() {
   // TASK 2: theme state
   const [theme, setTheme] = useState('dark');
   const [hydrating, setHydrating] = useState(true);
+  // Distinct from saveError (which guards the final-save step) — this
+  // guards the initial auth/draft-resolution fetch that must succeed
+  // before the wizard can render at all. See checkAuth below.
+  const [authCheckError, setAuthCheckError] = useState(false);
 
   const [onboardingData, setOnboardingData] = useState({
     couple1Name: '',
@@ -122,61 +127,73 @@ export default function Onboarding() {
   const stepNum = coreIndex + 1;
   const showBack = currentStepIndex > 0 && currentStep !== 'completion';
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        // Resolved once, up front, so both guard checks below (and the
-        // resume-after-refresh rehydration further down) share one fetch.
-        const draft = await getMyWeddingDetails().catch(() => null);
+  // useCallback (not a plain effect-local function) so the error-state
+  // "Try again" button below can re-invoke the exact same check, not just
+  // a copy — one code path for both the initial mount and manual retry.
+  const checkAuth = useCallback(async () => {
+    setAuthCheckError(false);
+    setHydrating(true);
+    try {
+      const currentUser = await base44.auth.me();
+      // Resolved once, up front, so both guard checks below (and the
+      // resume-after-refresh rehydration further down) share one fetch.
+      const draft = await getMyWeddingDetails().catch(() => null);
 
-        // If already onboarded, skip straight to dashboard — isOnboardingComplete
-        // also guards on the account already owning a real (non-draft) wedding
-        // even when onboardingCompleted is somehow unset. This is the actual
-        // fix for the "Alex & Sam" incident: an incomplete onboarding run
-        // (often against a preview deployment, which shares the same
-        // production Base44 backend as the live site) landing back on
-        // this page for an account that already has a finished wedding
-        // used to fall through and silently create a second WeddingDetails
-        // record for the same account. Never trust onboardingCompleted
-        // alone for this — a real, non-draft record is the stronger
-        // signal a wedding already exists. Shared with PaymentSuccess.jsx's
-        // post-payment routing decision so the two can never disagree.
-        if (isOnboardingComplete(currentUser, draft)) {
-          navigate('/Dashboard', { replace: true });
-          return;
-        }
-        setUser(currentUser);
-
-        // Resume-after-refresh: if an unfinished draft exists for this user,
-        // rehydrate onboardingData and jump back to where they left off
-        // instead of restarting from welcome.
-        if (draft?.onboardingDraft) {
-          setDraftWeddingId(draft.id);
-          setOnboardingData(prev => ({
-            ...prev,
-            couple1Name: draft.couple1Name || prev.couple1Name,
-            couple2Name: draft.couple2Name || prev.couple2Name,
-            weddingDate: draft.weddingDate || prev.weddingDate,
-            venue: draft.mainCeremony?.venueName || prev.venue,
-            location: draft.mainCeremony?.address || prev.location,
-            guestCount: draft.guestCount != null ? draft.guestCount : prev.guestCount,
-            guestType: draft.guestType || prev.guestType,
-            activeUniverse: draft.activeUniverse || prev.activeUniverse,
-            websiteMode: draft.websiteMode || prev.websiteMode,
-          }));
-          const resumeIndex = typeof draft.onboardingStepIndex === 'number'
-            ? Math.min(Math.max(draft.onboardingStepIndex, 0), STEPS.length - 1)
-            : 0;
-          setCurrentStepIndex(resumeIndex);
-        }
-      } catch (err) {
-        navigate('/');
+      // If already onboarded, skip straight to dashboard — isOnboardingComplete
+      // also guards on the account already owning a real (non-draft) wedding
+      // even when onboardingCompleted is somehow unset. This is the actual
+      // fix for the "Alex & Sam" incident: an incomplete onboarding run
+      // (often against a preview deployment, which shares the same
+      // production Base44 backend as the live site) landing back on
+      // this page for an account that already has a finished wedding
+      // used to fall through and silently create a second WeddingDetails
+      // record for the same account. Never trust onboardingCompleted
+      // alone for this — a real, non-draft record is the stronger
+      // signal a wedding already exists. Shared with PaymentSuccess.jsx's
+      // post-payment routing decision so the two can never disagree.
+      if (isOnboardingComplete(currentUser, draft)) {
+        navigate('/Dashboard', { replace: true });
+        return;
       }
-      setHydrating(false);
-    };
-    checkAuth();
+      setUser(currentUser);
+
+      // Resume-after-refresh: if an unfinished draft exists for this user,
+      // rehydrate onboardingData and jump back to where they left off
+      // instead of restarting from welcome.
+      if (draft?.onboardingDraft) {
+        setDraftWeddingId(draft.id);
+        setOnboardingData(prev => ({
+          ...prev,
+          couple1Name: draft.couple1Name || prev.couple1Name,
+          couple2Name: draft.couple2Name || prev.couple2Name,
+          weddingDate: draft.weddingDate || prev.weddingDate,
+          venue: draft.mainCeremony?.venueName || prev.venue,
+          location: draft.mainCeremony?.address || prev.location,
+          guestCount: draft.guestCount != null ? draft.guestCount : prev.guestCount,
+          guestType: draft.guestType || prev.guestType,
+          activeUniverse: draft.activeUniverse || prev.activeUniverse,
+          websiteMode: draft.websiteMode || prev.websiteMode,
+        }));
+        const resumeIndex = typeof draft.onboardingStepIndex === 'number'
+          ? Math.min(Math.max(draft.onboardingStepIndex, 0), STEPS.length - 1)
+          : 0;
+        setCurrentStepIndex(resumeIndex);
+      }
+    } catch (err) {
+      // Previously: navigate('/') here silently dumped the user to the
+      // marketing homepage on ANY failure (network blip, a bad deploy,
+      // anything) with zero visibility — the exact bug this replaces
+      // (a missing isOnboardingComplete import threw here, unnoticed,
+      // for every account until caught manually). Surface it instead:
+      // report to Sentry and show a real error state with retry, same
+      // pattern as the final-save error banner (saveError) below.
+      captureException(err, { context: 'Onboarding.checkAuth' });
+      setAuthCheckError(true);
+    }
+    setHydrating(false);
   }, [navigate]);
+
+  useEffect(() => { checkAuth(); }, [checkAuth]);
 
   // Write-as-you-go: best-effort, non-blocking persistence of WeddingDetails
   // fields on every step advance, so a refresh mid-onboarding resumes rather
@@ -374,6 +391,36 @@ export default function Onboarding() {
   const isForkStep = currentStep === 'fork';
   const pageBg = isForkStep ? '#F5F4F0' : (isDark ? '#0A0A0A' : '#FAFAFA');
   const pageIsLight = isForkStep || !isDark;
+
+  if (authCheckError) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh', background: '#0A0A0A',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 24, fontFamily: PJS, textAlign: 'center',
+        }}
+      >
+        <div style={{ width: '100%', maxWidth: 420 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', margin: '0 0 12px', fontFamily: PJS }}>
+            Something went wrong.
+          </h1>
+          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(255,255,255,0.5)', margin: '0 0 32px', fontFamily: PJS }}>
+            We couldn't load your wedding setup. This is usually temporary — try again, or contact us if it keeps happening.
+          </p>
+          <button
+            onClick={checkAuth}
+            style={{
+              background: '#FFFFFF', color: '#0A0A0A', border: 'none', borderRadius: 999,
+              padding: '14px 40px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: PJS,
+            }}
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (hydrating) {
     return <div style={{ minHeight: '100vh', background: '#0A0A0A' }} />;
