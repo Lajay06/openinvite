@@ -12,7 +12,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // sentences per answer, the format AI assistants lift directly. Kept in
 // sync with useFaqStructuredData's FAQPage markup below (same array, one
 // source of truth) and with the live pricing shown on /pricing (USD 49 /
-// 99, AUD available at checkout).
+// 99).
 const FAQS = [
   {
     q: "What is Openinvite?",
@@ -20,7 +20,7 @@ const FAQS = [
   },
   {
     q: "How much does it cost? Is it really one payment?",
-    a: "Yes. Openinvite is a one-time payment, not a subscription. Pro is US$49 and Ultra is US$99, each covering 24 months of access with no monthly fees. AUD pricing is available at checkout.",
+    a: "Yes. Openinvite is a one-time payment, not a subscription. Pro is US$49 and Ultra is US$99, each covering 24 months of access with no monthly fees.",
   },
   {
     q: "What's included in Pro versus Ultra?",
@@ -48,7 +48,7 @@ const FAQS = [
   },
   {
     q: "Does Openinvite work in the US? What currencies do you support?",
-    a: "Yes, Openinvite works for couples anywhere, including the US. Pricing is shown in US dollars, with AUD pricing available at checkout, and payment is processed securely through Stripe.",
+    a: "Yes, Openinvite works for couples anywhere, including the US. Pricing is shown in US dollars, and payment is processed securely through Stripe.",
   },
 ];
 

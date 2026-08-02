@@ -35,7 +35,7 @@ const ULTRA_EXTRAS = [
 const FAQS = [
   {
     q: "Is this really a one-time payment?",
-    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is US$49 total. Ultra is US$99 total. AUD pricing is available at checkout too.",
+    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is US$49 total. Ultra is US$99 total.",
   },
   {
     q: "What's included in the 14-day free trial?",
@@ -297,7 +297,7 @@ export default function Pricing() {
           No upsells, ever. Pay once, plan your entire wedding.
         </p>
         <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.6)", marginTop: 6, fontFamily: PJS }}>
-          Prices in USD · or pay in AUD at checkout
+          Prices in USD
         </p>
         <p style={{ textAlign: "center", fontSize: 13, marginTop: 20, fontFamily: PJS }}>
           <Link to="/gifting" style={{ color: "#E03553", fontWeight: 600, textDecoration: "none" }}>

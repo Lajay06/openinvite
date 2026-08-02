@@ -8,13 +8,13 @@ import { upsertJsonLd } from '@/lib/structuredData';
  * (standard practice: these are site-wide facts, not per-page ones).
  *
  * Pricing here is the couple's exact, current one-time pricing as given
- * directly (USD 49/99, AUD 79/149 — AUD checkout stays fully functional,
- * so both are real purchasable Offers, not a display-only conversion) —
- * deliberately not derived from CurrencyContext.jsx's live FX-converted
- * display, since that's a rough "Approx." estimate for browsing, not a
- * fixed price actually charged. Machine-readable pricing here is exactly
- * what an AI assistant will quote back to a user, so it has to be a real
- * number, not an estimate.
+ * directly (USD 49/99) — deliberately not derived from CurrencyContext.jsx's
+ * live FX-converted display, since that's a rough "Approx." estimate for
+ * browsing, not a fixed price actually charged. Machine-readable pricing
+ * here is exactly what an AI assistant will quote back to a user, so it
+ * has to be a real number, not an estimate. USD only (PR G2 currency
+ * sweep) — the AUD Stripe checkout path stays functional, it's just no
+ * longer named in any customer-facing copy.
  *
  * No `sameAs` social profile URLs — PublicFooter.jsx's Instagram/Facebook
  * links are still placeholder `href="#"` (no real profile exists yet).
@@ -52,22 +52,6 @@ export function useOrganizationStructuredData() {
           name: 'Ultra',
           price: '99',
           priceCurrency: 'USD',
-          availability: 'https://schema.org/InStock',
-          url: `${SITE_URL}/pricing`,
-        },
-        {
-          '@type': 'Offer',
-          name: 'Pro',
-          price: '79',
-          priceCurrency: 'AUD',
-          availability: 'https://schema.org/InStock',
-          url: `${SITE_URL}/pricing`,
-        },
-        {
-          '@type': 'Offer',
-          name: 'Ultra',
-          price: '149',
-          priceCurrency: 'AUD',
           availability: 'https://schema.org/InStock',
           url: `${SITE_URL}/pricing`,
         },
