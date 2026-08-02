@@ -44,6 +44,7 @@ import { runPrerenderAssetRewrite } from '../tests/persistence/prerender-asset-r
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
 import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
 import { runIcsExport } from '../tests/persistence/ics-export.mjs';
+import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
 
 async function run() {
   console.log('\n═══════════════════════════════════════════════════════');
@@ -86,6 +87,7 @@ async function run() {
   await runModule('runOnboardingCronWindow', () => runOnboardingCronWindow());
   await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
   await runModule('runIcsExport', () => runIcsExport());
+  await runModule('runGiftCheckout', () => runGiftCheckout());
 
   const passed = results.filter(Boolean).length;
   const total = results.length;

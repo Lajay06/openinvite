@@ -1,0 +1,96 @@
+{
+  "name": "PlanGift",
+  "type": "object",
+  "properties": {
+    "stripe_session_id": {
+      "type": "string",
+      "description": "Buyer's original checkout session id. Plaintext (not sensitive) — idempotency key and support lookup."
+    },
+    "plan": {
+      "type": "string",
+      "enum": ["pro", "ultra"],
+      "description": "The gifted plan tier, resolved server-side from the purchased Stripe price ID, never client-supplied."
+    },
+    "currency": {
+      "type": "string",
+      "description": "Plaintext currency code the buyer paid in (e.g. 'usd', 'aud'). Reporting only."
+    },
+    "amount_cents": {
+      "type": "number",
+      "description": "Plaintext amount paid, in the smallest currency unit. Reporting only."
+    },
+    "buyer_user_id_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, buyer.id) — null when the buyer wasn't logged in (gifting doesn't require a buyer account). read:null means this entity is listable unscoped by anyone with any API token, so the raw user id never lives here."
+    },
+    "buyer_email_enc": {
+      "type": "string",
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the buyer's email, from Stripe's own customer_details.email. Key derived from BASE44_ADMIN_KEY."
+    },
+    "buyer_name_enc": {
+      "type": "string",
+      "description": "AES-256-GCM ciphertext of the buyer's name when Stripe's customer_details.name is present. Optional."
+    },
+    "recipient_email_enc": {
+      "type": "string",
+      "description": "AES-256-GCM ciphertext of the recipient's email, collected via a Stripe Checkout custom field on the buyer's own session."
+    },
+    "recipient_note_enc": {
+      "type": "string",
+      "description": "AES-256-GCM ciphertext of the buyer's optional personal note to the recipient, from a Stripe Checkout custom field. Optional."
+    },
+    "promotion_code_id": {
+      "type": "string",
+      "description": "Plaintext Stripe Promotion Code id (promo_...) minted for this gift. Not sensitive — needed to correlate a later redemption back to this row."
+    },
+    "promotion_code_display": {
+      "type": "string",
+      "description": "The human-readable redemption code shown in both emails (e.g. GIFT-AB12CD34) and used for support lookup/resend."
+    },
+    "coupon_id": {
+      "type": "string",
+      "description": "Plaintext Stripe Coupon id backing the promotion code. For cleanup/debugging."
+    },
+    "recipient_email_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "True once the reveal email to the recipient is confirmed sent via Resend."
+    },
+    "recipient_email_error": {
+      "type": "string",
+      "description": "Sanitized failure reason for support triage when the recipient email could not be sent. Must never contain the raw recipient address."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["purchased", "redeemed"],
+      "default": "purchased",
+      "description": "purchased: gift bought, code minted and delivered (or fallback-only if recipient delivery failed). redeemed: the promotion code was used at a real (existing, unmodified) checkout."
+    },
+    "redeemed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Set by a best-effort, non-blocking check appended to the existing (non-gift) webhook branch when it sees a completed session using this gift's promotion code."
+    },
+    "redeemed_user_id_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, redeemer.id) — the user who redeemed the code, set at the same time as redeemed_at."
+    },
+    "purchased_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the buyer's payment completed."
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by the live-evidence run and any future test harness. Product queries must exclude is_test records."
+    }
+  },
+  "required": ["stripe_session_id", "plan", "recipient_email_enc", "promotion_code_id", "promotion_code_display", "coupon_id"],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": null,
+    "delete": null
+  }
+}
