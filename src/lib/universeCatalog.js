@@ -66,6 +66,7 @@ export const UNIVERSE_CATALOG = ORDER.map(id => {
     colors: cfg.colors || {},
     typography: cfg.typography || {},
     motion: cfg.motion || {},
+    transitionStyle: cfg.transitionStyle || 'aperture-iris',
     texture: cfg.texture || null,
     layout: cfg.layout || null,
     copy: cfg.copy || {},
