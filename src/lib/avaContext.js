@@ -71,8 +71,20 @@ export async function buildWeddingContext() {
     : theme.faith ? `Faith/religion: ${theme.faith}` : '';
   const cultureItems = [...(theme.culture || []), theme.cultureOther].filter(Boolean);
   const cultureLine = cultureItems.length ? `Culture/heritage: ${cultureItems.join(', ')}` : '';
+  // wd.weddingStyle is the raw onboarding style/ceremony/vibe tag array
+  // (OnboardingStep5WeddingType). theme.aesthetic/theme.faith/
+  // theme.atmosphere are a derived, richer version of the same data, but
+  // that derivation (EventDetails.jsx's migrateThemeFields) only runs when
+  // the couple actually visits Event details — a couple who never does
+  // still answered the question at onboarding, so fall back to the raw
+  // tags whenever the derived fields are empty, rather than losing the
+  // signal entirely until a page visit that may never happen.
+  const styleTagsLine = !theme.aesthetic?.length && wd.weddingStyle?.length
+    ? `Style/ceremony/vibe tags: ${wd.weddingStyle.join(', ')}`
+    : '';
   const themeLines = [
     theme.aesthetic?.length  ? `Aesthetic: ${theme.aesthetic.join(', ')}` : '',
+    styleTagsLine,
     faithLine,
     cultureLine,
     theme.atmosphere?.length ? `Atmosphere: ${theme.atmosphere.join(', ')}` : '',
