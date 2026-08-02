@@ -53,6 +53,10 @@ export const MARKETING_PAGE_SEO = {
     title: 'Pricing: pay once, plan your whole wedding',
     description: "Openinvite pricing is a one-time payment, not a subscription. See what's included in the Pro and Ultra plans for your wedding planning app and wedding website.",
   },
+  '/gifting': {
+    title: 'Give Openinvite as a gift',
+    description: 'Give a couple the gift of Openinvite, a wedding planning app with a one-time payment. Request a gift code and they redeem it at checkout, no subscription required.',
+  },
   '/contact': {
     title: 'Contact Openinvite',
     description: "Get in touch with Openinvite. We're here to help with questions about wedding planning, your wedding website or your account.",
