@@ -1,27 +1,12 @@
 /**
  * src/lib/weeklyDigestEmailTemplate.js
  *
- * Weekly wrap-up email — same on-brand internal-product-email style as
- * src/lib/collaboratorEmailTemplate.js/notificationEmailTemplate.js.
- * Isomorphic: imported server-side by api/cron/send-weekly-digest.js.
+ * Weekly wrap-up email, built on the shared shell (src/lib/emailBrand.js,
+ * PR B4 email audit). Isomorphic: imported server-side by
+ * api/cron/send-weekly-digest.js.
  */
 
-const FONT = "'Plus Jakarta Sans', Helvetica, Arial, sans-serif";
-const ACCENT = '#E03553';
-const BLACK = '#0A0A0A';
-
-// Native asset is 1434x331 (dark wordmark on a transparent background — see
-// src/Layout.jsx's brightness(0)/invert(1) filter needed to show it on a
-// dark bar). Email clients need an absolute, hosted URL, so this reuses the
-// same wordmark AnimatedSidebar.jsx renders unfiltered on white. The header
-// <td> below is given an explicit white background for the same reason —
-// so the dark logo stays legible even in a mail client's dark mode, which
-// can otherwise flip an implicit/inherited white to black.
-const LOGO_URL = 'https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png';
-
-function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
+import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
 
 function statRow(label, value) {
   return `
@@ -48,7 +33,7 @@ export function renderWeeklyDigestEmail({
   totals, pollActivity, questionnaireActivity, recommendedActions, accountUrl,
 }) {
   const subject = daysUntil != null
-    ? `Your week in review — ${daysUntil} day${daysUntil === 1 ? '' : 's'} to go`
+    ? `Your week in review: ${daysUntil} day${daysUntil === 1 ? '' : 's'} to go`
     : 'Your week in review';
 
   const countdownLine = daysUntil == null
@@ -60,7 +45,7 @@ export function renderWeeklyDigestEmail({
         : `Congratulations on your wedding!`;
 
   const newRsvpLine = newRsvpCount > 0
-    ? `${newRsvpCount} new RSVP${newRsvpCount === 1 ? '' : 's'} this week — ${newAttending} attending, ${newDeclined} declined.`
+    ? `${newRsvpCount} new RSVP${newRsvpCount === 1 ? '' : 's'} this week: ${newAttending} attending, ${newDeclined} declined.`
     : 'No new RSVPs this week.';
 
   const activityHtml = (pollActivity > 0 || questionnaireActivity > 0) ? `
@@ -89,27 +74,7 @@ export function renderWeeklyDigestEmail({
             </td>
           </tr>` : '';
 
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(subject)}</title>
-</head>
-<body style="margin:0;padding:0;background:#FAFAFA;font-family:${FONT};">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(subject)}</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAFAFA;padding:40px 16px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);">
-
-          <!-- Header -->
-          <tr>
-            <td bgcolor="#FFFFFF" style="background:#FFFFFF;padding:28px 40px;border-bottom:1px solid rgba(0,0,0,0.06);">
-              <img src="${LOGO_URL}" width="140" height="32" alt="Openinvite" style="display:block;width:140px;height:32px;border:0;outline:none;" />
-            </td>
-          </tr>
-
+  const bodyRowsHtml = `
           <!-- Headline -->
           <tr>
             <td style="padding:32px 40px 0;">
@@ -146,7 +111,7 @@ ${activityHtml}
 
           <!-- CTA -->
           <tr>
-            <td style="padding:32px 40px 0;">
+            <td style="padding:32px 40px 40px;">
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:${ACCENT};border-radius:999px;">
@@ -158,23 +123,7 @@ ${activityHtml}
               </table>
             </td>
           </tr>
+${emailFooterRow(`You're receiving this because weekly digest emails are on for your Openinvite account. <a href="${escapeHtml(accountUrl)}" style="color:rgba(0,0,0,0.5);">Manage this in Account &rarr; Notifications</a>.`)}`;
 
-          <!-- Footer -->
-          <tr>
-            <td style="padding:36px 40px 32px;">
-              <div style="height:1px;background:rgba(0,0,0,0.06);margin-bottom:24px;"></div>
-              <p style="margin:0;font-size:12px;color:rgba(0,0,0,0.35);font-family:${FONT};">
-                You're receiving this because weekly digest emails are on for your Openinvite account. <a href="${escapeHtml(accountUrl)}" style="color:rgba(0,0,0,0.5);">Manage this in Account &rarr; Notifications</a>.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-
-  return { subject, html };
+  return { subject, html: emailShell({ title: subject, bodyRowsHtml }) };
 }

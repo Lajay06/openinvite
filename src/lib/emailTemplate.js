@@ -44,7 +44,7 @@ const TYPE_CONFIG = {
     ctaLabel: 'RSVP now',
     footerNoun: 'reminder',
     defaultMessage: (firstName, coupleNames) =>
-      `Hi ${firstName},\n\nJust a friendly nudge — ${coupleNames || 'the couple'} would love to hear from you. It only takes a minute to RSVP.`,
+      `Hi ${firstName},\n\nJust a friendly nudge, ${coupleNames || 'the couple'} would love to hear from you. It only takes a minute to RSVP.`,
   },
   update: {
     kicker: 'Event update',
@@ -91,23 +91,23 @@ export function getEmailTypeConfig(type) {
 const TYPE_COMPOSE_DEFAULTS = {
   invite: {
     subject: "You're invited to [Couple names]'s wedding 💍",
-    body: "Hi [Guest name],\n\nWe'd love for you to celebrate with us on [Wedding date]. Click below to view your invitation and RSVP.\n\nWe can't wait to see you!\n\n— [Couple names]",
+    body: "Hi [Guest name],\n\nWe'd love for you to celebrate with us on [Wedding date]. Click below to view your invitation and RSVP.\n\nWe can't wait to see you!\n\n[Couple names]",
   },
   reminder: {
     subject: 'Reminder: RSVP to [Couple names]\'s wedding',
-    body: "Hi [Guest name],\n\nJust a friendly nudge — [Couple names] would love to hear from you. It only takes a minute to RSVP.\n\n— [Couple names]",
+    body: "Hi [Guest name],\n\nJust a friendly nudge, [Couple names] would love to hear from you. It only takes a minute to RSVP.\n\n[Couple names]",
   },
   update: {
     subject: "An update about [Couple names]'s wedding",
-    body: "Hi [Guest name],\n\nWe wanted to share an important update regarding our upcoming celebration on [Wedding date]. Please review the details below and let us know if you have any questions.\n\n— [Couple names]",
+    body: "Hi [Guest name],\n\nWe wanted to share an important update regarding our upcoming celebration on [Wedding date]. Please review the details below and let us know if you have any questions.\n\n[Couple names]",
   },
   thank_you_attending: {
     subject: 'Thank you for celebrating with [Couple names]!',
-    body: "Dear [Guest name],\n\nThank you so much for confirming you'll be celebrating with us! Your presence means the world to us and we can't wait to make beautiful memories together.\n\n— [Couple names]",
+    body: "Dear [Guest name],\n\nThank you so much for confirming you'll be celebrating with us! Your presence means the world to us and we can't wait to make beautiful memories together.\n\n[Couple names]",
   },
   thank_you_declined: {
-    subject: "We'll miss you — from [Couple names]",
-    body: "Dear [Guest name],\n\nThank you for letting us know. We completely understand, and while we'll miss celebrating with you on the day, we hope to see you again soon.\n\n— [Couple names]",
+    subject: "[Couple names] will miss you",
+    body: "Dear [Guest name],\n\nThank you for letting us know. We completely understand, and while we'll miss celebrating with you on the day, we hope to see you again soon.\n\n[Couple names]",
   },
 };
 
@@ -195,7 +195,7 @@ export function renderInvitationEmail({
   const firstName = guestName ? guestName.split(' ')[0] : 'there';
   const message = personalMessage || cfg.defaultMessage(firstName, coupleNames);
 
-  const preheader = `${cfg.kicker}${coupleNames ? ` — ${coupleNames}` : ''}.`;
+  const preheader = `${cfg.kicker}${coupleNames ? `: ${coupleNames}` : ''}.`;
 
   const eventBlocksHtml = cfg.showEvents ? events.map(ev => {
     const dateStr = formatEventDate(ev.date);
@@ -307,7 +307,7 @@ ${ctaHtml}
 </html>`;
 
   const textLines = [
-    `${cfg.kicker.toUpperCase()} — ${coupleNames || 'The Wedding'}`,
+    `${cfg.kicker.toUpperCase()}: ${coupleNames || 'The Wedding'}`,
     '',
     ...(cfg.showEvents ? events.flatMap(ev => {
       const dateStr = formatEventDate(ev.date);

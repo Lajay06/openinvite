@@ -1,19 +1,12 @@
 /**
  * src/lib/notificationEmailTemplate.js
  *
- * Instant-notification email — same on-brand internal-product-email style
- * as src/lib/collaboratorEmailTemplate.js (not the couple's chosen
- * wedding-website universe). Isomorphic: imported server-side by
- * api/_lib/notify.js to actually send.
+ * Instant-notification email, built on the shared shell
+ * (src/lib/emailBrand.js, PR B4 email audit). Isomorphic: imported
+ * server-side by api/_lib/notify.js to actually send.
  */
 
-const FONT = "'Plus Jakarta Sans', Helvetica, Arial, sans-serif";
-const ACCENT = '#E03553';
-const BLACK = '#0A0A0A';
-
-function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
+import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
 
 /**
  * @param {{ title: string, body?: string, link: string, ctaLabel?: string }} params
@@ -22,27 +15,7 @@ function escapeHtml(str) {
 export function renderNotificationEmail({ title, body, link, ctaLabel = 'View in Openinvite' }) {
   const subject = title;
 
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(subject)}</title>
-</head>
-<body style="margin:0;padding:0;background:#FAFAFA;font-family:${FONT};">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(subject)}</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAFAFA;padding:40px 16px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);">
-
-          <!-- Header -->
-          <tr>
-            <td style="padding:36px 40px 24px;border-bottom:1px solid rgba(0,0,0,0.06);">
-              <p style="margin:0;font-size:13px;font-weight:700;color:${BLACK};letter-spacing:0.02em;font-family:${FONT};">openinvite</p>
-            </td>
-          </tr>
-
+  const bodyRowsHtml = `
           <!-- Headline -->
           <tr>
             <td style="padding:32px 40px 0;">
@@ -63,7 +36,7 @@ export function renderNotificationEmail({ title, body, link, ctaLabel = 'View in
 
           <!-- CTA -->
           <tr>
-            <td style="padding:32px 40px 0;">
+            <td style="padding:32px 40px 40px;">
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:${ACCENT};border-radius:999px;">
@@ -75,23 +48,7 @@ export function renderNotificationEmail({ title, body, link, ctaLabel = 'View in
               </table>
             </td>
           </tr>
+${emailFooterRow('You\'re receiving this because instant email notifications are on for your Openinvite account. Manage this in Account &rarr; Notifications.')}`;
 
-          <!-- Footer -->
-          <tr>
-            <td style="padding:36px 40px 32px;">
-              <div style="height:1px;background:rgba(0,0,0,0.06);margin-bottom:24px;"></div>
-              <p style="margin:0;font-size:12px;color:rgba(0,0,0,0.35);font-family:${FONT};">
-                You're receiving this because instant email notifications are on for your Openinvite account. Manage this in Account &rarr; Notifications.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-
-  return { subject, html };
+  return { subject, html: emailShell({ title: subject, bodyRowsHtml }) };
 }

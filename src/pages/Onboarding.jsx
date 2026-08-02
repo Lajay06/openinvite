@@ -339,8 +339,24 @@ export default function Onboarding() {
       }
       completed.moodboard = true;
 
+      // /api/on-signup existed but was never actually called from anywhere
+      // in the app (PR B4 email audit) — no user has ever received the
+      // welcome email. Guarded by the pre-save onboardingCompleted value
+      // (per the endpoint's own doc comment) so a user who was already
+      // onboarded when this page loaded never gets a second one.
+      const wasAlreadyOnboarded = !!user?.onboardingCompleted;
+
       await base44.auth.updateMe({ onboardingCompleted: true, onboardingPath: path });
       completed.userFlag = true;
+
+      if (!wasAlreadyOnboarded) {
+        const token = localStorage.getItem('base44_access_token') || '';
+        fetch('/api/on-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user?.email, name: user?.full_name || '', token }),
+        }).catch(() => {}); // never blocks onboarding completion on an email failure
+      }
 
       // Verify — re-fetch fresh rather than trusting the write call's own
       // response, and confirm the couple names we just sent actually match

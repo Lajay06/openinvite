@@ -23,7 +23,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  *
  *  Day 0  — onboarding-day1
- *           Subject: "Welcome to Openinvite 🎉 — let's plan your perfect wedding"
+ *           Subject: "Welcome to Openinvite 🎉 Let's plan your perfect wedding"
  *           Trigger: immediately on signup / onboarding completion
  *           Endpoint: POST /api/on-signup  (or POST /api/send-email with template: 'onboarding-day1')
  *
@@ -49,7 +49,6 @@ import {
   sanitizeString,
 } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
-import { welcomeEmail } from './emails/welcome.js';
 import { purchaseConfirmationEmail } from './emails/purchase-confirmation.js';
 import { onboardingDay1Email } from './emails/onboarding-day1.js';
 import { onboardingDay3Email } from './emails/onboarding-day3.js';
@@ -60,21 +59,26 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = 'Openinvite <hello@openinvite.com.au>';
 
 const TEMPLATES = {
-  // ── Legacy / general ────────────────────────────────────────────────────
+  // ── Legacy alias ────────────────────────────────────────────────────────
+  // 'welcome' used to point at its own separate template (api/emails/
+  // welcome.js) — content-identical to onboarding-day1 in practice and
+  // never sent from anywhere except this now-legacy alias (PR B4 email
+  // audit). Removed the duplicate file; kept the key so any existing
+  // caller passing type: 'welcome' still works.
   welcome: {
-    subject: () => 'Welcome to Openinvite — your free trial has started',
-    html: ({ to, data }) => welcomeEmail({ email: to, name: data?.name }),
+    subject: () => 'Welcome to Openinvite 🎉 Let\'s plan your perfect wedding',
+    html: ({ to, data }) => onboardingDay1Email({ email: to, name: data?.name }),
   },
   'purchase-confirmation': {
     subject: ({ data }) =>
-      `You're on Openinvite ${data?.plan === 'ultra' ? 'Ultra' : 'Pro'} — payment confirmed`,
+      `You're on Openinvite ${data?.plan === 'ultra' ? 'Ultra' : 'Pro'}: payment confirmed`,
     html: ({ to, data }) =>
       purchaseConfirmationEmail({ email: to, plan: data?.plan || 'pro', name: data?.name }),
   },
 
   // ── Onboarding sequence ──────────────────────────────────────────────────
   'onboarding-day1': {
-    subject: () => 'Welcome to Openinvite 🎉 — let\'s plan your perfect wedding',
+    subject: () => 'Welcome to Openinvite 🎉 Let\'s plan your perfect wedding',
     html: ({ to, data }) => onboardingDay1Email({ email: to, name: data?.name }),
   },
   'onboarding-day3': {
