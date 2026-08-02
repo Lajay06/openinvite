@@ -1,0 +1,52 @@
+{
+  "name": "GuestContactSubmission",
+  "type": "object",
+  "properties": {
+    "wedding_id": {
+      "type": "string",
+      "description": "WeddingDetails id this submission belongs to — resolved server-side from the URL slug, never client-supplied."
+    },
+    "name": {
+      "type": "string",
+      "description": "Name the guest entered on the public Contact Collector form (/w/:weddingSlug/collect)"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email the guest entered, used for per-wedding dedupe on resubmission"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number the guest entered"
+    },
+    "mailing_address": {
+      "type": "string",
+      "description": "Mailing address the guest entered, free-text"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "dismissed"
+      ],
+      "default": "pending",
+      "description": "Review state. pending = awaiting the couple's review on the Guests page; approved = promoted into a real Guest record (or merged into an existing one); dismissed = the couple declined it."
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
+    }
+  },
+  "required": [
+    "wedding_id",
+    "name"
+  ],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": null,
+    "delete": null
+  }
+}
