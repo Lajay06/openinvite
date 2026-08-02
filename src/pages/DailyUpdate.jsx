@@ -7,8 +7,25 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-// v2 key busts any old cache that lacks the headline field
-const cacheKey = () => `oi_briefing_v2_${new Date().toISOString().slice(0, 10)}`;
+// v2 key busts any old cache that lacks the headline field. Scoped by user
+// id (not just date) — the unscoped key let one account's cached briefing
+// (guest counts, budget, couple names) leak onto another account's
+// dashboard on a shared browser, since any two logged-in users on the same
+// device would collide on the exact same key for the same day. See
+// purgeUnscopedBriefingCache below for cleaning up already-written
+// unscoped entries from before this fix.
+const cacheKey = (userId) => `oi_briefing_v2_${userId}_${new Date().toISOString().slice(0, 10)}`;
+
+// One-time cleanup of the pre-fix unscoped cache entries (oi_briefing_v2_
+// followed directly by a date, no user id segment) so leaked cross-account
+// data doesn't linger in localStorage indefinitely on shared browsers.
+function purgeUnscopedBriefingCache() {
+  const unscopedPattern = /^oi_briefing_v2_\d{4}-\d{2}-\d{2}$/;
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (key && unscopedPattern.test(key)) localStorage.removeItem(key);
+  }
+}
 
 const BRIEFING_SCHEMA = {
   type: 'object',
@@ -136,10 +153,17 @@ export default function DailyUpdate() {
 
   const load = async (force = false) => {
     setPhase('loading');
+    purgeUnscopedBriefingCache();
 
-    if (!force) {
+    // Resolved once, up front, so the cache read below and the cache write
+    // at the end of this function always agree on the same key.
+    let cacheUserId = null;
+    try { cacheUserId = JSON.parse(localStorage.getItem('oi_user') || '{}')?.id || null; } catch {}
+    const key = cacheUserId ? cacheKey(cacheUserId) : null;
+
+    if (!force && key) {
       try {
-        const hit = localStorage.getItem(cacheKey());
+        const hit = localStorage.getItem(key);
         if (hit) {
           const cached = JSON.parse(hit);
           // round 8 ask #7 (repeat): the safety net only ran at generation
@@ -269,7 +293,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
       const clean = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
       const parsed = numeralizeBriefing(JSON.parse(clean));
       setBriefing(parsed);
-      localStorage.setItem(cacheKey(), JSON.stringify({ briefing: parsed, daysUntil: days, snapStats: snap, coupleName: couple }));
+      if (key) localStorage.setItem(key, JSON.stringify({ briefing: parsed, daysUntil: days, snapStats: snap, coupleName: couple }));
       setPhase('ready');
     } catch (err) {
       console.warn('[DailyUpdate] AI failed:', err);
