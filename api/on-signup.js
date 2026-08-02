@@ -39,7 +39,7 @@
  * FULL ONBOARDING EMAIL SEQUENCE
  * ─────────────────────────────────────────────────────────────────────────────
  *
- *  Day 0  — onboarding-day1  "Welcome to Openinvite 🎉"
+ *  Day 0  — onboarding-day1  "Welcome to Openinvite"
  *           Triggered automatically via this endpoint on signup.
  *
  *  Day 3  — onboarding-day3  "Have you tried Ava yet? 👋"
@@ -119,7 +119,7 @@ export default async function handler(req, res) {
     const result = await resend.emails.send({
       from: FROM,
       to: verifiedEmail,
-      subject: 'Welcome to Openinvite 🎉 — let\'s plan your perfect wedding',
+      subject: 'Welcome to Openinvite 🎉 Let\'s plan your perfect wedding',
       html: onboardingDay1Email({ email: verifiedEmail, name: verifiedName }),
     });
 

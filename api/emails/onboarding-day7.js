@@ -1,3 +1,5 @@
+import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAIL_MUTED, EMAIL_MUTED_LIGHT, EMAIL_BODY_TEXT } from '../../src/lib/emailBrand.js';
+
 /**
  * Onboarding day-7 email — trial ending nudge.
  * Sent ~7 days after signup (trial has 7 days remaining).
@@ -8,38 +10,19 @@
 export function onboardingDay7Email({ name, email }) {
   const firstName = name ? name.split(' ')[0] : 'there';
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your free trial has 7 days left</title>
-</head>
-<body style="margin:0;padding:0;background:#F7F7F7;font-family:'Plus Jakarta Sans',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F7F7F7;padding:40px 16px;">
-    <tr>
-      <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border:1px solid #E8E8E8;">
-
-          <!-- Header -->
-          <tr>
-            <td style="padding:40px 40px 32px;border-bottom:1px solid #F0F0F0;">
-              <p style="margin:0;font-size:15px;font-weight:800;color:#0A0A0A;letter-spacing:-0.02em;">openinvite</p>
-            </td>
-          </tr>
-
+  const bodyRowsHtml = `
           <!-- Hero -->
           <tr>
             <td style="padding:40px 40px 8px;">
-              <p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:0.06em;color:#E03553;">
+              <p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:0.06em;color:${EMAIL_ACCENT};">
                 7 days left on your trial
               </p>
-              <h1 style="margin:0 0 16px;font-size:26px;font-weight:700;color:#0A0A0A;letter-spacing:-0.02em;line-height:1.2;">
+              <h1 style="margin:0 0 16px;font-size:26px;font-weight:700;color:${EMAIL_BLACK};letter-spacing:-0.02em;line-height:1.2;">
                 Don't lose your progress, ${firstName}.
               </h1>
-              <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:rgba(10,10,10,0.65);">
-                Your 14-day free trial ends in 7 days. If you're loving Openinvite —
-                or you know you'll need it to plan your wedding — now is a great time to upgrade.
+              <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:${EMAIL_BODY_TEXT};">
+                Your 14-day free trial ends in 7 days. If you're loving Openinvite,
+                or you know you'll need it to plan your wedding, now is a great time to upgrade.
                 No pressure, just a heads-up.
               </p>
             </td>
@@ -48,7 +31,7 @@ export function onboardingDay7Email({ name, email }) {
           <!-- Plan comparison -->
           <tr>
             <td style="padding:0 40px 32px;">
-              <p style="margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:0.06em;color:rgba(10,10,10,0.6);">
+              <p style="margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:0.06em;color:${EMAIL_MUTED};">
                 Choose the plan that fits you
               </p>
 
@@ -59,8 +42,8 @@ export function onboardingDay7Email({ name, email }) {
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td>
-                          <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:#0A0A0A;">Pro</p>
-                          <p style="margin:0;font-size:22px;font-weight:700;color:#0A0A0A;">US$49 <span style="font-size:13px;font-weight:400;color:rgba(10,10,10,0.6);">one-time</span></p>
+                          <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:${EMAIL_BLACK};">Pro</p>
+                          <p style="margin:0;font-size:22px;font-weight:700;color:${EMAIL_BLACK};">US$49 <span style="font-size:13px;font-weight:400;color:${EMAIL_MUTED};">one-time</span></p>
                         </td>
                       </tr>
                       <tr>
@@ -72,8 +55,8 @@ export function onboardingDay7Email({ name, email }) {
                             'Advanced seating planner',
                             'Budget tracker and vendor tools',
                             'Document storage and music manager',
-                          ].map(f => `<p style="margin:0 0 6px;font-size:13px;color:rgba(10,10,10,0.65);line-height:1.4;">
-                            <span style="color:#E03553;font-weight:700;margin-right:8px;">—</span>${f}
+                          ].map(f => `<p style="margin:0 0 6px;font-size:13px;color:${EMAIL_BODY_TEXT};line-height:1.4;">
+                            <span style="color:${EMAIL_ACCENT};font-weight:700;margin-right:8px;">&bull;</span>${f}
                           </p>`).join('')}
                         </td>
                       </tr>
@@ -89,8 +72,8 @@ export function onboardingDay7Email({ name, email }) {
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td>
-                          <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:#0A0A0A;">Ultra</p>
-                          <p style="margin:0;font-size:22px;font-weight:700;color:#0A0A0A;">US$99 <span style="font-size:13px;font-weight:400;color:rgba(10,10,10,0.6);">one-time</span></p>
+                          <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:${EMAIL_BLACK};">Ultra</p>
+                          <p style="margin:0;font-size:22px;font-weight:700;color:${EMAIL_BLACK};">US$99 <span style="font-size:13px;font-weight:400;color:${EMAIL_MUTED};">one-time</span></p>
                         </td>
                       </tr>
                       <tr>
@@ -102,8 +85,8 @@ export function onboardingDay7Email({ name, email }) {
                             'Dedicated account manager',
                             'Multiple weddings and events',
                             'API access',
-                          ].map(f => `<p style="margin:0 0 6px;font-size:13px;color:rgba(10,10,10,0.65);line-height:1.4;">
-                            <span style="color:#7c3aed;font-weight:700;margin-right:8px;">—</span>${f}
+                          ].map(f => `<p style="margin:0 0 6px;font-size:13px;color:${EMAIL_BODY_TEXT};line-height:1.4;">
+                            <span style="color:#7c3aed;font-weight:700;margin-right:8px;">&bull;</span>${f}
                           </p>`).join('')}
                         </td>
                       </tr>
@@ -119,9 +102,9 @@ export function onboardingDay7Email({ name, email }) {
             <td style="padding:0 40px 16px;">
               <table cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="background:#E03553;border-radius:999px;">
+                  <td style="background:${EMAIL_ACCENT};border-radius:999px;">
                     <a href="https://openinvite.com.au/pricing"
-                       style="display:inline-block;padding:13px 28px;font-size:14px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:'Plus Jakarta Sans',Helvetica,Arial,sans-serif;">
+                       style="display:inline-block;padding:13px 28px;font-size:14px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${EMAIL_FONT};">
                       Upgrade now →
                     </a>
                   </td>
@@ -132,34 +115,16 @@ export function onboardingDay7Email({ name, email }) {
 
           <tr>
             <td style="padding:0 40px 40px;">
-              <p style="margin:0;font-size:13px;color:rgba(10,10,10,0.45);line-height:1.6;">
-                Both plans are a one-time payment — no monthly fees, no surprises.
+              <p style="margin:0;font-size:13px;color:${EMAIL_MUTED_LIGHT};line-height:1.6;">
+                Both plans are a one-time payment, no monthly fees, no surprises.
                 If you have questions before upgrading, just reply to this email.
               </p>
             </td>
           </tr>
-
-          <!-- Divider -->
-          <tr>
-            <td style="padding:0 40px;">
-              <div style="height:1px;background:#F0F0F0;"></div>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="padding:24px 40px 40px;">
-              <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(10,10,10,0.35);">
+${emailFooterRow(`
                 You're receiving this because your Openinvite free trial is ending.<br />
-                If you decide not to upgrade, your account stays read-only after the trial — your data is safe.
-              </p>
-            </td>
-          </tr>
+                If you decide not to upgrade, your account stays read-only after the trial. Your data is safe.
+              `)}`;
 
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+  return emailShell({ title: 'Your free trial has 7 days left', bodyRowsHtml });
 }

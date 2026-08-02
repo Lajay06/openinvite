@@ -3,22 +3,14 @@
  *
  * On-brand (Openinvite, not the couple's chosen wedding-website universe —
  * this is an internal product email) HTML for the "you've been invited to
- * help plan a wedding" email. Isomorphic: imported server-side by
+ * help plan a wedding" email, built on the shared shell (src/lib/emailBrand.js,
+ * PR B4 email audit). Isomorphic: imported server-side by
  * api/send-collaborator-invite.js to actually send, and by the Design
  * Studio-adjacent preview tooling / this task's sign-off artifact to render
  * the exact same markup for review.
- *
- * Font stack degrades safely in email clients that don't load @font-face —
- * same convention as src/lib/emailTemplate.js's per-universe styles.
  */
 
-const FONT = "'Plus Jakarta Sans', Helvetica, Arial, sans-serif";
-const ACCENT = '#E03553';
-const BLACK = '#0A0A0A';
-
-function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
+import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
 
 /**
  * @param {{ collaboratorName: string, coupleNames: string, acceptUrl: string, permissions: object }} params
@@ -49,27 +41,7 @@ export function renderCollaboratorInviteEmail({ collaboratorName, coupleNames, a
             </td>
           </tr>` : '';
 
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(subject)}</title>
-</head>
-<body style="margin:0;padding:0;background:#FAFAFA;font-family:${FONT};">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(subject)}</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAFAFA;padding:40px 16px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);">
-
-          <!-- Header -->
-          <tr>
-            <td style="padding:36px 40px 24px;border-bottom:1px solid rgba(0,0,0,0.06);">
-              <p style="margin:0;font-size:13px;font-weight:700;color:${BLACK};letter-spacing:0.02em;font-family:${FONT};">openinvite</p>
-            </td>
-          </tr>
-
+  const bodyRowsHtml = `
           <!-- Kicker + headline -->
           <tr>
             <td style="padding:32px 40px 0;">
@@ -92,7 +64,7 @@ ${permissionsHtml}
 
           <!-- CTA -->
           <tr>
-            <td style="padding:32px 40px 0;">
+            <td style="padding:32px 40px 40px;">
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:${ACCENT};border-radius:999px;">
@@ -107,23 +79,7 @@ ${permissionsHtml}
               </p>
             </td>
           </tr>
+${emailFooterRow(`Sent by Openinvite on behalf of ${escapeHtml(coupleNames || 'a couple')}. If you weren't expecting this, you can safely ignore it.`)}`;
 
-          <!-- Footer -->
-          <tr>
-            <td style="padding:36px 40px 32px;">
-              <div style="height:1px;background:rgba(0,0,0,0.06);margin-bottom:24px;"></div>
-              <p style="margin:0;font-size:12px;color:rgba(0,0,0,0.35);font-family:${FONT};">
-                Sent by Openinvite on behalf of ${escapeHtml(coupleNames || 'a couple')}. If you weren't expecting this, you can safely ignore it.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-
-  return { subject, html };
+  return { subject, html: emailShell({ title: subject, bodyRowsHtml }) };
 }

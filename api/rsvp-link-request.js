@@ -167,7 +167,7 @@ export default async function handler(req, res) {
       await resend.emails.send({
         from: FROM,
         to: guest.email,
-        subject: `Your RSVP link — ${coupleName || 'the wedding'}`,
+        subject: `Your RSVP link for ${coupleName || 'the wedding'}`,
         html,
         text,
       });

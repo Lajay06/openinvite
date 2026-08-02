@@ -191,7 +191,7 @@ export async function handleCheckoutSessionCompleted(verifiedSession, {
       const result = await sendEmail({
         from: FROM,
         to: email,
-        subject: `You're on Openinvite ${planLabel} — payment confirmed`,
+        subject: `You're on Openinvite ${planLabel}: payment confirmed`,
         html: purchaseConfirmationEmail({ plan, email }),
       });
       console.log('[stripe-webhook] Purchase email sent to:', email, '| id:', result?.data?.id);

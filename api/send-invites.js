@@ -115,7 +115,7 @@ export default async function handler(req, res) {
     }
 
     const typeConfig = getEmailTypeConfig(type);
-    const defaultSubject = `${typeConfig.kicker} — ${coupleName || 'a wedding'}`;
+    const defaultSubject = `${typeConfig.kicker}: ${coupleName || 'a wedding'}`;
     const bannerImageUrl = getBannerImageUrl(
       { coverPhoto: wedding.coverPhoto, venuePhotoUrl: wedding.venuePhotoUrl },
       bannerChoice,
