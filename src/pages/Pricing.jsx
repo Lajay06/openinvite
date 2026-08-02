@@ -83,7 +83,7 @@ const TABLE_ROWS = [
 
 function CheckIcon({ color = "#0A0A0A" }) {
   return (
-    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ display: "block", margin: "0 auto" }}>
       <path d="M2.5 7L5.5 10L11.5 4" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -100,12 +100,23 @@ export default function Pricing() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
 
-  // Whether the visitor's existing plan already covers a given tier — Ultra
-  // covers both tiers, Pro covers only itself. Drives the "Your plan"
-  // disabled-button state on the cards below.
+  // The user's actual plan drives each button's own label/state — never
+  // both buttons reading "Your plan" at once (PR G1 fix). isPro/isUltra are
+  // each true only for that exact plan; isPaidUser gates the free-trial CTA
+  // off for anyone who's already paid.
   const userPlan = user?.plan || 'free';
-  const proCovered = isAuthenticated && (userPlan === 'pro' || userPlan === 'ultra');
-  const ultraCovered = isAuthenticated && userPlan === 'ultra';
+  const isPro = isAuthenticated && userPlan === 'pro';
+  const isUltra = isAuthenticated && userPlan === 'ultra';
+  const isPaidUser = isPro || isUltra;
+  // Pro button is only a live purchase action for a free/logged-out visitor
+  // — an Ultra user already has everything Pro offers, so it's disabled
+  // (not a downgrade CTA) rather than "Your plan".
+  const proDisabled = isPro || isUltra;
+  const proLabel = isPro ? "Your plan" : isUltra ? "Included in Ultra" : "Get Pro: US$49";
+  // Ultra button is a real upgrade CTA for a Pro user — the one case where
+  // the "higher plan" language in the brief actually applies.
+  const ultraDisabled = isUltra;
+  const ultraLabel = isUltra ? "Your plan" : isPro ? "Upgrade to Ultra" : "Get Ultra: US$99";
 
   // A logged-out visitor never reaches checkout or /onboarding directly —
   // both require an account. They go through /register?plan=... instead,
@@ -121,13 +132,13 @@ export default function Pricing() {
     navigate("/onboarding");
   };
   const goPro   = () => {
-    if (proCovered) return;
+    if (proDisabled) return;
     if (!isAuthenticated) { navigate('/register?plan=pro'); return; }
     track('upgrade_clicked', { plan: 'pro', from: 'pricing_page' });
     navigate('/account?tab=billing');
   };
   const goUltra = () => {
-    if (ultraCovered) return;
+    if (ultraDisabled) return;
     if (!isAuthenticated) { navigate('/register?plan=ultra'); return; }
     track('upgrade_clicked', { plan: 'ultra', from: 'pricing_page' });
     navigate('/account?tab=billing');
@@ -149,28 +160,30 @@ export default function Pricing() {
       {/* ── PRICING CARDS ── */}
       <section style={{ background: "#FFFFFF", padding: "80px 24px" }}>
 
-        {/* Free trial banner */}
-        <div style={{ maxWidth: 700, margin: "0 auto 56px", textAlign: "center", padding: "36px 40px", background: "#F7F7F5", border: "1px solid rgba(10,10,10,0.08)" }}>
-          <h3 style={{ fontSize: 22, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.01em", lineHeight: 1.2, margin: "0 0 8px", fontFamily: PJS }}>
-            Try everything free for 14 days
-          </h3>
-          <p style={{ fontSize: 14, color: "rgba(10,10,10,0.5)", margin: "0 0 24px", fontFamily: PJS }}>
-            Full Ultra access. No credit card required.
-          </p>
-          <button
-            onClick={goFree}
-            style={{
-              padding: "12px 36px", borderRadius: 999, fontSize: 13, fontWeight: 700,
-              fontFamily: PJS, cursor: "pointer", border: "none",
-              background: "#0A0A0A", color: "#FFFFFF", transition: "opacity 0.15s",
-              display: "inline-flex", alignItems: "center",
-            }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-          >
-            Start free, no card needed
-          </button>
-        </div>
+        {/* Free trial banner — never shown to an already-paying account (PR G1). */}
+        {!isPaidUser && (
+          <div style={{ maxWidth: 700, margin: "0 auto 56px", textAlign: "center", padding: "36px 40px", background: "#F7F7F5", border: "1px solid rgba(10,10,10,0.08)" }}>
+            <h3 style={{ fontSize: 22, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.01em", lineHeight: 1.2, margin: "0 0 8px", fontFamily: PJS }}>
+              Try everything free for 14 days
+            </h3>
+            <p style={{ fontSize: 14, color: "rgba(10,10,10,0.5)", margin: "0 0 24px", fontFamily: PJS }}>
+              Full Ultra access. No credit card required.
+            </p>
+            <button
+              onClick={goFree}
+              style={{
+                padding: "12px 36px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+                fontFamily: PJS, cursor: "pointer", border: "none",
+                background: "#0A0A0A", color: "#FFFFFF", transition: "opacity 0.15s",
+                display: "inline-flex", alignItems: "center",
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              Start free, no card needed
+            </button>
+          </div>
+        )}
 
         <div style={{
           maxWidth: 860, margin: "0 auto",
@@ -208,19 +221,19 @@ export default function Pricing() {
             </ul>
             <button
               onClick={goPro}
-              disabled={proCovered}
+              disabled={proDisabled}
               style={{
                 width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
-                fontFamily: PJS, cursor: proCovered ? "default" : "pointer", border: "none",
-                background: proCovered ? "rgba(10,10,10,0.08)" : "#E03553",
-                color: proCovered ? "rgba(10,10,10,0.3)" : "#FFFFFF",
+                fontFamily: PJS, cursor: proDisabled ? "default" : "pointer", border: "none",
+                background: proDisabled ? "rgba(10,10,10,0.08)" : "#E03553",
+                color: proDisabled ? "rgba(10,10,10,0.3)" : "#FFFFFF",
                 transition: "opacity 0.15s",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               }}
-              onMouseEnter={e => { if (!proCovered) e.currentTarget.style.opacity = "0.88"; }}
-              onMouseLeave={e => { if (!proCovered) e.currentTarget.style.opacity = "1"; }}
+              onMouseEnter={e => { if (!proDisabled) e.currentTarget.style.opacity = "0.88"; }}
+              onMouseLeave={e => { if (!proDisabled) e.currentTarget.style.opacity = "1"; }}
             >
-              {proCovered ? "Your plan" : "Get Pro: US$49"}
+              {proLabel}
             </button>
           </div>
 
@@ -260,20 +273,20 @@ export default function Pricing() {
             </ul>
             <button
               onClick={goUltra}
-              disabled={ultraCovered}
+              disabled={ultraDisabled}
               style={{
                 width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
-                fontFamily: PJS, cursor: ultraCovered ? "default" : "pointer",
-                background: ultraCovered ? "rgba(10,10,10,0.08)" : "#F59E0B",
-                color: ultraCovered ? "rgba(10,10,10,0.3)" : "#FFFFFF",
+                fontFamily: PJS, cursor: ultraDisabled ? "default" : "pointer",
+                background: ultraDisabled ? "rgba(10,10,10,0.08)" : "#F59E0B",
+                color: ultraDisabled ? "rgba(10,10,10,0.3)" : "#FFFFFF",
                 border: "none",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 transition: "opacity 0.15s",
               }}
-              onMouseEnter={e => { if (!ultraCovered) e.currentTarget.style.opacity = "0.88"; }}
-              onMouseLeave={e => { if (!ultraCovered) e.currentTarget.style.opacity = "1"; }}
+              onMouseEnter={e => { if (!ultraDisabled) e.currentTarget.style.opacity = "0.88"; }}
+              onMouseLeave={e => { if (!ultraDisabled) e.currentTarget.style.opacity = "1"; }}
             >
-              {ultraCovered ? "Your plan" : "Get Ultra: US$99"}
+              {ultraLabel}
             </button>
           </div>
 
@@ -322,7 +335,7 @@ export default function Pricing() {
           </h2>
 
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "auto", margin: "0 auto", borderCollapse: "collapse", fontFamily: PJS }}>
+            <table style={{ width: "auto", margin: "0 auto", borderCollapse: "collapse", tableLayout: "fixed", fontFamily: PJS }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: "left", fontSize: 12, fontWeight: 600, color: "rgba(10,10,10,0.6)", padding: "0 24px 20px 0" }} />
@@ -343,7 +356,7 @@ export default function Pricing() {
                       {row.feature}
                     </td>
                     {[row.trial, row.pro, row.ultra].map((val, j) => (
-                      <td key={j} style={{ padding: "14px 16px", textAlign: "center" }}>
+                      <td key={j} style={{ padding: "14px 16px", width: 120, textAlign: "center" }}>
                         <CellValue val={val} />
                       </td>
                     ))}
@@ -381,58 +394,56 @@ export default function Pricing() {
       <section style={{ background: "#0A0A0A", padding: "100px 24px", textAlign: "center" }}>
         <h2 style={{
           fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, letterSpacing: "-0.02em",
-          color: "#FFFFFF", marginBottom: 16, lineHeight: 1.15, fontFamily: PJS,
+          color: "#FFFFFF", marginBottom: 40, lineHeight: 1.15, fontFamily: PJS,
         }}>
           Your wedding deserves this.
         </h2>
-        <p style={{ fontSize: 16, lineHeight: 1.6, color: "rgba(255,255,255,0.6)", marginBottom: 40, fontFamily: PJS }}>
-          Join thousands of couples planning with confidence,<br />
-          clarity, and a little Ava magic.
-        </p>
         <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-          <button
-            onClick={goFree}
-            style={{
-              padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
-              fontFamily: PJS, cursor: "pointer", border: "1px solid rgba(255,255,255,0.3)",
-              background: "rgba(255,255,255,0.1)", color: "#FFFFFF", transition: "opacity 0.15s",
-            }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-          >
-            Start free trial
-          </button>
+          {!isPaidUser && (
+            <button
+              onClick={goFree}
+              style={{
+                padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
+                fontFamily: PJS, cursor: "pointer", border: "1px solid rgba(255,255,255,0.3)",
+                background: "rgba(255,255,255,0.1)", color: "#FFFFFF", transition: "opacity 0.15s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+            >
+              Start free trial
+            </button>
+          )}
           <button
             onClick={goPro}
-            disabled={proCovered}
+            disabled={proDisabled}
             style={{
               padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
-              fontFamily: PJS, cursor: proCovered ? "default" : "pointer", border: "none",
-              background: proCovered ? "rgba(255,255,255,0.1)" : "#E03553",
-              color: proCovered ? "rgba(255,255,255,0.4)" : "#FFFFFF",
+              fontFamily: PJS, cursor: proDisabled ? "default" : "pointer", border: "none",
+              background: proDisabled ? "rgba(255,255,255,0.1)" : "#E03553",
+              color: proDisabled ? "rgba(255,255,255,0.4)" : "#FFFFFF",
               transition: "opacity 0.15s",
               display: "flex", alignItems: "center", gap: 8,
             }}
-            onMouseEnter={e => { if (!proCovered) e.currentTarget.style.opacity = "0.85"; }}
-            onMouseLeave={e => { if (!proCovered) e.currentTarget.style.opacity = "1"; }}
+            onMouseEnter={e => { if (!proDisabled) e.currentTarget.style.opacity = "0.85"; }}
+            onMouseLeave={e => { if (!proDisabled) e.currentTarget.style.opacity = "1"; }}
           >
-            {proCovered ? "Your plan" : "Get Pro: US$49"}
+            {proLabel}
           </button>
           <button
             onClick={goUltra}
-            disabled={ultraCovered}
+            disabled={ultraDisabled}
             style={{
               padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
-              fontFamily: PJS, cursor: ultraCovered ? "default" : "pointer", border: "none",
-              background: ultraCovered ? "rgba(255,255,255,0.1)" : "#F59E0B",
-              color: ultraCovered ? "rgba(255,255,255,0.4)" : "#FFFFFF",
+              fontFamily: PJS, cursor: ultraDisabled ? "default" : "pointer", border: "none",
+              background: ultraDisabled ? "rgba(255,255,255,0.1)" : "#F59E0B",
+              color: ultraDisabled ? "rgba(255,255,255,0.4)" : "#FFFFFF",
               transition: "opacity 0.15s",
               display: "flex", alignItems: "center", gap: 8,
             }}
-            onMouseEnter={e => { if (!ultraCovered) e.currentTarget.style.opacity = "0.85"; }}
-            onMouseLeave={e => { if (!ultraCovered) e.currentTarget.style.opacity = "1"; }}
+            onMouseEnter={e => { if (!ultraDisabled) e.currentTarget.style.opacity = "0.85"; }}
+            onMouseLeave={e => { if (!ultraDisabled) e.currentTarget.style.opacity = "1"; }}
           >
-            {ultraCovered ? "Your plan" : "Get Ultra: US$99"}
+            {ultraLabel}
           </button>
         </div>
       </section>
