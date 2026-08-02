@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import { useAuth } from "@/lib/AuthContext";
@@ -285,6 +285,11 @@ export default function Pricing() {
         </p>
         <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.6)", marginTop: 6, fontFamily: PJS }}>
           Prices in USD · or pay in AUD at checkout
+        </p>
+        <p style={{ textAlign: "center", fontSize: 13, marginTop: 20, fontFamily: PJS }}>
+          <Link to="/gifting" style={{ color: "#E03553", fontWeight: 600, textDecoration: "none" }}>
+            Gifting Openinvite to someone? →
+          </Link>
         </p>
 
       </section>
