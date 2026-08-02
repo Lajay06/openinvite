@@ -112,6 +112,10 @@ export const SCHEMAS = {
     // but missing from this embedded snapshot until now — was producing a
     // false-positive DROPPED finding for Guests.jsx:269.
     event_responses:1, is_test:1,
+    // Registered 2026-08 (PR B3, guest contact collector) — declared on the
+    // live Guest entity and in base44/entities/Guest.jsonc at the same time,
+    // but missed in this separate embedded snapshot.
+    mailing_address:1,
     _nested: {},
   },
 

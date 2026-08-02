@@ -359,9 +359,16 @@ export async function runDesignStudioEntrance() {
   results.push(/display: 'grid', placeItems: 'center'/.test(overlaySource)
     ? pass('UniverseEntranceOverlay.jsx centres via CSS grid placeItems, not margin guesses', 'found')
     : fail('UniverseEntranceOverlay.jsx centres via CSS grid placeItems, not margin guesses', 'found', 'not found'));
-  results.push((overlaySource.match(/textAlign: 'center', maxWidth: '90vw'/g) || []).length >= 2
-    ? pass('Both the animated and reduced-motion name variants are text-centred with a maxWidth safety for long names', 'found on both')
-    : fail('Both the animated and reduced-motion name variants are text-centred with a maxWidth safety for long names', 'found on both', 'missing on at least one variant'));
+  // PR B1 (universe transitions) refactored both variants to share a single
+  // nameStyle(universe) helper (textAlign:'center', maxWidth:'90vw' declared
+  // once) instead of duplicating the literal style object per variant — so
+  // this now checks the helper is defined once and called from both the
+  // reduced-motion <p> and the animated <motion.p>, not a literal string count.
+  const nameStyleDefined = /textAlign: 'center', maxWidth: '90vw'/.test(overlaySource);
+  const nameStyleCallCount = (overlaySource.match(/nameStyle\(universe\)/g) || []).length;
+  results.push(nameStyleDefined && nameStyleCallCount >= 2
+    ? pass('Both the animated and reduced-motion name variants are text-centred with a maxWidth safety for long names', 'shared nameStyle() used by both variants')
+    : fail('Both the animated and reduced-motion name variants are text-centred with a maxWidth safety for long names', 'shared nameStyle() used by both variants', 'missing on at least one variant'));
 
   console.log('\n  Design Studio — world page has a persistent, keyboard-accessible way back:\n');
 
