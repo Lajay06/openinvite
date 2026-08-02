@@ -70,7 +70,7 @@ export default async function handler(req, res) {
         coupleNames: 'Jamie & Alex',
         events: [{ name: 'Ceremony', date: '2026-11-14', startTime: '4:00 PM', venue: 'Le Marais Garden' }],
         rsvpUrl: 'https://openinvite.com.au/rsvp/test',
-      }),
+      }).html,
     },
   ];
 
