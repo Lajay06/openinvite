@@ -8,11 +8,10 @@
  *   - Places API (Legacy): ref = raw photo_reference string
  */
 
-import { checkRateLimit, getClientIp } from './_lib/security.js';
+import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (applyCors(req, res)) return;
 
   // ── Rate limiting: 60 requests/min per IP — a single results page can
   // request many photos at once (one per venue card), so this needs the

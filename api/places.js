@@ -20,7 +20,7 @@
  * a failure worth alerting on).
  */
 
-import { checkRateLimit, getClientIp } from './_lib/security.js';
+import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 
 const MOCK_PLACES = [
   { place_id: 'mock_1', name: 'Golden Hour Photography Studio', address: '12 Clarence St, Sydney NSW 2000', rating: 4.9, user_ratings_total: 312, price_level: 3, photo_reference: null, maps_url: 'https://maps.google.com/?q=Golden+Hour+Photography+Sydney', types: ['photographer'] },
@@ -44,10 +44,7 @@ const PRICE_LEVEL_MAP = {
 };
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (applyCors(req, res)) return;
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   // ── Rate limiting: 20 requests/min per IP — text search, tighter than

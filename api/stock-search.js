@@ -18,11 +18,10 @@
  * Required env var: PEXELS_API_KEY — server-side only.
  */
 
-import { checkRateLimit, getClientIp } from './_lib/security.js';
+import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (applyCors(req, res)) return;
 
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
