@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { getWeddingEvents, getGuestEventResponse } from '@/lib/weddingEvents';
 import { resolveColors, resolveTypography, resolveUniverseConfig, googleFontsHref, isMotionEnabled } from '@/lib/universeStyling';
 import SectionReveal from '@/components/guest-website/SectionReveal';
+
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 const MEAL_OPTIONS = [
   { value: 'chicken', label: 'Chicken' },
@@ -201,6 +204,8 @@ export default function RSVPPage() {
   const [notFound, setNotFound] = useState(false);
   // steps: 'rsvp' | 'polls' | 'done'
   const [step, setStep] = useState('rsvp');
+  const turnstileRef = useRef(null);
+  const tsTokenRef = useRef('');
   const [submitting, setSubmitting] = useState(false);
   const [pollSubmitting, setPollSubmitting] = useState(false);
   // { [pollId]: optionId } — guest's current poll selections
@@ -424,13 +429,15 @@ export default function RSVPPage() {
       );
 
       if (hasNewVotes) {
+        const turnstileToken = tsTokenRef.current;
+        if (!turnstileToken) throw new Error('Security check still loading');
         // Server re-fetches the wedding/guest fresh and computes the vote-count
         // deltas itself — never trusts a client-cached polls array, which
         // could be stale relative to other guests voting concurrently.
         const res = await fetch('/api/rsvp-poll-vote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, votes: guestVotes }),
+          body: JSON.stringify({ token, votes: guestVotes, turnstileToken }),
         });
         if (!res.ok) throw new Error('Poll vote failed');
         setGuest(prev => ({ ...prev, poll_votes: mergedVotes }));
@@ -593,6 +600,16 @@ export default function RSVPPage() {
             Skip
           </button>
         </div>
+
+        {/* Invisible Turnstile — execution="render" auto-generates a token on
+            mount, same pattern as WeddingPollsPage.jsx/GuestCollect.jsx. */}
+        <Turnstile
+          ref={turnstileRef}
+          siteKey={TURNSTILE_SITE_KEY}
+          onSuccess={(t) => { tsTokenRef.current = t; }}
+          onExpire={() => { tsTokenRef.current = ''; }}
+          options={{ appearance: 'execute', execution: 'render' }}
+        />
       </PageShell>
     );
   }

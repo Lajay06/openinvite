@@ -11,7 +11,12 @@
  * on the Guests page before it becomes a real Guest record. Same
  * slug-resolution + admin-key-write pattern as song-request-submit.js.
  *
- * Abuse resistance (no captcha, per instruction — this is the whole stack):
+ * Abuse resistance:
+ *   - Turnstile: required, same api/_lib/security.js verifyTurnstileToken
+ *     used by every sibling anonymous-write endpoint (song-request-submit.js,
+ *     rsvp-link-request.js, wedding-poll-vote.js, wedding-poll-comment.js).
+ *     This was previously the one anonymous-write form in the app without
+ *     it — fixed in fix/turnstile-anonymous-writes.
  *   - honeypot: a hidden form field real guests never see or fill. Any
  *     non-empty value is treated as a bot and silently no-ops with a 200
  *     (never reveals to the bot that it was caught).
@@ -51,7 +56,7 @@
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
 
-import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail } from './_lib/security.js';
+import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail, verifyTurnstileToken } from './_lib/security.js';
 import { hashId, encryptPayload } from './_lib/questionnaireCrypto.js';
 
 const BASE44_API = 'https://base44.app/api';
@@ -111,14 +116,31 @@ export default async function handler(req, res) {
   const email = emailRaw && isValidEmail(emailRaw) ? emailRaw.toLowerCase() : '';
   const phone = sanitizeString(req.body?.phone || '').slice(0, MAX_TEXT_LENGTH);
   const mailingAddress = sanitizeString(req.body?.mailingAddress || '').slice(0, MAX_ADDRESS_LENGTH);
+  const turnstileToken = req.body?.turnstileToken;
 
   if (!weddingSlug || !name) {
     return res.status(400).json({ error: 'Wedding and your name are required.' });
   }
 
+  if (!turnstileToken) {
+    return res.status(400).json({ error: 'Security verification token is missing.' });
+  }
+
   if (!BASE44_ADMIN_KEY) {
     console.error('[collect-guest-contact] BASE44_ADMIN_KEY env var is not set');
     return res.status(500).json({ error: 'Server not configured' });
+  }
+
+  let turnstileResult;
+  try {
+    turnstileResult = await verifyTurnstileToken(turnstileToken, ip, '[collect-guest-contact]');
+  } catch (err) {
+    console.error('[collect-guest-contact] Turnstile network error:', err.message);
+    return res.status(500).json({ error: 'Security check unavailable. Please try again.' });
+  }
+  if (!turnstileResult.success) {
+    console.warn('[collect-guest-contact] Turnstile failed — codes:', turnstileResult['error-codes'], '| IP:', ip);
+    return res.status(400).json({ error: 'Security verification failed. Please refresh the page and try again.' });
   }
 
   try {

@@ -358,9 +358,9 @@ export async function runAnonymousEndpoints() {
 
     const { req, res } = mockReqRes({
       method: 'POST',
-      body: { token: rsvpToken, votes: { 'poll-1': 'opt-a' } },
+      body: { token: rsvpToken, votes: { 'poll-1': 'opt-a' }, turnstileToken: TURNSTILE_TEST_TOKEN },
     });
-    await rsvpPollVoteHandler(req, res);
+    await withTurnstileFailOpen(() => rsvpPollVoteHandler(req, res));
 
     results.push(res._status === 200
       ? pass('rsvp-poll-vote.js — accepts a valid vote', `200 ${JSON.stringify(res._json)}`)

@@ -18,14 +18,22 @@
  * each voter's latest row per poll, so there's no need to look up or
  * compare against a guest's previous answer before writing.
  *
- * Body: { token: string, votes: { [pollId]: optionId } }
+ * fix/turnstile-anonymous-writes: Turnstile added — this is token-gated
+ * (a valid rsvp_link_id is required), but a leaked/guessed token plus
+ * scripting could still spam votes past the IP rate limit from multiple
+ * IPs. Matches the same api/_lib/security.js verifyTurnstileToken every
+ * other anonymous-write endpoint in this app already uses, including its
+ * non-token-gated sibling wedding-poll-vote.js, which had it already —
+ * this was the one inconsistently-protected poll-voting path.
+ *
+ * Body: { token: string, votes: { [pollId]: optionId }, turnstileToken: string }
  * Response: 200 { ok: true }
  *        or 404 { error: 'This link has expired or is invalid.' }
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
 
-import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
+import { applyCors, checkRateLimit, getClientIp, sanitizeString, verifyTurnstileToken } from './_lib/security.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 import { hashGuestIdentifier } from './_lib/pollAuth.js';
 
@@ -50,14 +58,31 @@ export default async function handler(req, res) {
 
   const token = sanitizeString(req.body?.token || '');
   const votes = req.body?.votes && typeof req.body.votes === 'object' ? req.body.votes : {};
+  const turnstileToken = req.body?.turnstileToken;
 
   if (!token) {
     return res.status(400).json({ error: 'token is required' });
   }
 
+  if (!turnstileToken) {
+    return res.status(400).json({ error: 'Security verification token is missing.' });
+  }
+
   if (!BASE44_ADMIN_KEY) {
     console.error('[rsvp-poll-vote] BASE44_ADMIN_KEY env var is not set');
     return res.status(500).json({ error: 'Server not configured' });
+  }
+
+  let turnstileResult;
+  try {
+    turnstileResult = await verifyTurnstileToken(turnstileToken, ip, '[rsvp-poll-vote]');
+  } catch (err) {
+    console.error('[rsvp-poll-vote] Turnstile network error:', err.message);
+    return res.status(500).json({ error: 'Security check unavailable. Please try again.' });
+  }
+  if (!turnstileResult.success) {
+    console.warn('[rsvp-poll-vote] Turnstile failed — codes:', turnstileResult['error-codes'], '| IP:', ip);
+    return res.status(400).json({ error: 'Security verification failed. Please refresh the page and try again.' });
   }
 
   try {
