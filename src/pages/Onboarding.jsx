@@ -357,10 +357,28 @@ export default function Onboarding() {
 
       // Verify — re-fetch fresh rather than trusting the write call's own
       // response, and confirm the couple names we just sent actually match
-      // what comes back before telling the couple they're done.
-      const verified = await getMyWeddingDetails();
+      // what comes back before telling the couple they're done. Retried a
+      // few times with a short backoff first: a fresh write not yet visible
+      // to a subsequent read is a transient replication-lag race, not a
+      // real failure, and re-fetching immediately after write is exactly
+      // the shape of request that race shows up in. Only report failure
+      // (surfacing the manual "Retry" UI) once every attempt has come back
+      // still mismatched.
       const expectedNames = `${onboardingData.couple1Name || ''} & ${onboardingData.couple2Name || ''}`;
-      if (!verifyOnboardingSave({ weddingId, expectedNames, verified })) {
+      const VERIFY_ATTEMPTS = 3;
+      const VERIFY_BACKOFF_MS = 500;
+      let verifiedOk = false;
+      for (let attempt = 1; attempt <= VERIFY_ATTEMPTS; attempt++) {
+        const verified = await getMyWeddingDetails();
+        if (verifyOnboardingSave({ weddingId, expectedNames, verified })) {
+          verifiedOk = true;
+          break;
+        }
+        if (attempt < VERIFY_ATTEMPTS) {
+          await new Promise(resolve => setTimeout(resolve, VERIFY_BACKOFF_MS * attempt));
+        }
+      }
+      if (!verifiedOk) {
         return { success: false, error: "We couldn't confirm your details saved correctly. Please try again." };
       }
 
@@ -375,14 +393,14 @@ export default function Onboarding() {
 
   const handleCompletion = async () => {
     if (onboardingData.path !== 'detailed') {
-      navigate('/Dashboard');
+      navigate('/DailyUpdate');
       return;
     }
     setLastAttemptedPath('detailed');
     const result = await saveOnboarding('detailed');
     if (result.success) {
       setSaveError(null);
-      navigate('/Dashboard');
+      navigate('/DailyUpdate');
     } else {
       setSaveError(result.error || 'Something went wrong saving your details.');
     }
