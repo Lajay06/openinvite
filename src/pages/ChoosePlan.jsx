@@ -2,29 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Loader2, Crown } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { track } from '@/lib/analytics';
 import { startCheckout } from '@/lib/checkoutSession';
+import { PRO_FEATURES, ULTRA_EXTRAS } from '@/lib/planFeatures';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const PRO_FEATURES = [
-  'Unlimited guests & full RSVP management',
-  'Complete budget suite',
-  'Ava AI: unlimited & context-aware',
-  'Seating planner, schedule & vendor management',
-];
-
-const ULTRA_EXTRAS = [
-  'Wedding website builder',
-  'Digital invitations & online RSVP',
-  'Premium themes & guest suite',
-];
-
-function CheckIcon() {
+function CheckIcon({ color = '#E03553' }) {
   return (
     <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
-      <path d="M2.5 7L5.5 10L11.5 4" stroke="#E03553" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2.5 7L5.5 10L11.5 4" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CrownIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M7 1L9 5.5L14 6.5L10.5 9.5L11.5 14L7 11.5L2.5 14L3.5 9.5L0 6.5L5 5.5Z" fill="#F59E0B" />
     </svg>
   );
 }
@@ -72,6 +68,18 @@ export default function ChoosePlan() {
     setChecking(false);
   }, [isLoadingAuth, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Defensive parity with Pricing.jsx's own plan-aware buttons — normally
+  // unreachable (isPastPlanStep above already redirects a pro/ultra user
+  // away before this renders), but if user state resolves a beat late this
+  // keeps a paid account from ever being shown a live "charge me again"
+  // button for the plan it's already on.
+  const isPro = user?.plan === 'pro';
+  const isUltra = user?.plan === 'ultra';
+  const proDisabled = !!loadingPlan || isPro || isUltra;
+  const proLabel = isPro ? 'Your plan' : isUltra ? 'Included in Ultra' : 'Get Pro — US$49';
+  const ultraDisabled = !!loadingPlan || isUltra;
+  const ultraLabel = isUltra ? 'Your plan' : 'Get Ultra — US$99';
+
   const markPlanStepDone = () => base44.auth.updateMe({ plan_step_completed: true }).catch(() => {});
 
   const goFree = async () => {
@@ -82,12 +90,14 @@ export default function ChoosePlan() {
   };
 
   const goPro = async () => {
+    if (proDisabled) return;
     track('checkout_initiated', { plan: 'pro', price: 79 });
     await markPlanStepDone();
     startCheckout('pro', setLoadingPlan, setCheckoutError, { logPrefix: '[ChoosePlan checkout]' });
   };
 
   const goUltra = async () => {
+    if (ultraDisabled) return;
     track('checkout_initiated', { plan: 'ultra', price: 149 });
     await markPlanStepDone();
     startCheckout('ultra', setLoadingPlan, setCheckoutError, { logPrefix: '[ChoosePlan checkout]' });
@@ -103,10 +113,10 @@ export default function ChoosePlan() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 24px' }}>
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
 
       {/* Header */}
-      <div style={{ textAlign: 'center', maxWidth: 560, marginBottom: 48 }}>
+      <div style={{ textAlign: 'center', maxWidth: 560, marginBottom: 56 }}>
         <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', lineHeight: 1.15, margin: '0 0 14px', fontFamily: PJS }}>
           Choose your plan
         </h1>
@@ -116,23 +126,25 @@ export default function ChoosePlan() {
       </div>
 
       {/* Plan cards */}
-      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center', width: '100%', maxWidth: 1000, marginBottom: 24 }}>
+      <div style={{ display: 'flex', gap: 20, alignItems: 'stretch', flexWrap: 'wrap', justifyContent: 'center', width: '100%', maxWidth: 1100, marginBottom: 24 }}>
 
         {/* Free */}
         <div style={{
-          flex: '0 1 280px', minWidth: 260, border: selected === 'free' ? '1px solid #0A0A0A' : '1px solid #E5E5E5',
-          background: '#FAFAF9', padding: 28, display: 'flex', flexDirection: 'column',
+          flex: '0 1 320px', minWidth: 280, border: selected === 'free' ? '1px solid #0A0A0A' : '1px solid #E5E5E5',
+          background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column', cursor: 'pointer',
         }}
           onClick={() => setSelected('free')}
         >
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS }}>Free trial</p>
           <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: 40, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$0</span>
+            <span style={{ fontSize: 48, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$0</span>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>14 days, no card needed</p>
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: '0 0 20px', fontFamily: PJS, flex: 1 }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: PJS }}>14 days · no card needed</p>
+          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>
             Full Ultra access for 14 days. Choose Pro or Ultra anytime to keep your data.
           </p>
+          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 20 }} />
+          <div style={{ flex: 1, marginBottom: 20 }} />
           <button
             onClick={goFree}
             disabled={!!loadingPlan}
@@ -151,19 +163,23 @@ export default function ChoosePlan() {
 
         {/* Pro */}
         <div style={{
-          flex: '0 1 280px', minWidth: 260, border: selected === 'pro' ? '1px solid #E03553' : '1px solid #E5E5E5',
-          background: '#FAFAF9', padding: 28, display: 'flex', flexDirection: 'column',
+          flex: '0 1 320px', minWidth: 280, border: selected === 'pro' ? '1px solid #E03553' : '1px solid #E5E5E5',
+          background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column', cursor: 'pointer',
         }}
           onClick={() => setSelected('pro')}
         >
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS }}>Pro</p>
           <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: 40, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>US$49</span>
+            <span style={{ fontSize: 48, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>US$49</span>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>24-month access, one-time payment</p>
-          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: PJS }}>24-month access · one-time payment</p>
+          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>
+            Your complete wedding planning command centre. Everything from first plan to final dance.
+          </p>
+          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 20 }} />
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
             {PRO_FEATURES.map((f, i) => (
-              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#0A0A0A', fontFamily: PJS }}>
+              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
                 <CheckIcon />
                 {f}
               </li>
@@ -171,38 +187,47 @@ export default function ChoosePlan() {
           </ul>
           <button
             onClick={goPro}
-            disabled={!!loadingPlan}
+            disabled={proDisabled}
             style={{
               width: '100%', padding: '13px 0', borderRadius: 999, fontSize: 13, fontWeight: 700,
-              fontFamily: PJS, background: '#E03553', color: '#FFFFFF', border: 'none',
-              cursor: loadingPlan ? 'default' : 'pointer',
+              fontFamily: PJS, border: 'none',
+              background: proDisabled ? 'rgba(10,10,10,0.08)' : '#E03553',
+              color: proDisabled ? 'rgba(10,10,10,0.3)' : '#FFFFFF',
+              cursor: proDisabled ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               opacity: loadingPlan && loadingPlan !== 'pro' ? 0.5 : 1,
               transition: 'opacity 0.15s',
             }}
           >
-            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : 'Get Pro — US$49'}
+            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : proLabel}
           </button>
         </div>
 
         {/* Ultra */}
         <div style={{
-          flex: '0 1 280px', minWidth: 260, border: selected === 'ultra' ? '1px solid #F59E0B' : '1px solid #E5E5E5',
-          background: '#FAFAF9', padding: 28, display: 'flex', flexDirection: 'column',
+          flex: '0 1 320px', minWidth: 280, border: selected === 'ultra' ? '1px solid #F59E0B' : '1px solid #E5E5E5',
+          background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column', cursor: 'pointer',
         }}
           onClick={() => setSelected('ultra')}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <Crown size={13} style={{ color: '#F59E0B', flexShrink: 0 }} />
+            <CrownIcon />
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>Ultra</p>
           </div>
           <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: 40, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>US$99</span>
+            <span style={{ fontSize: 48, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>US$99</span>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>24-month access, one-time payment</p>
-          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: PJS }}>24-month access · one-time payment</p>
+          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>
+            Everything in Pro, plus the full digital wedding suite: website, invitations, and RSVP.
+          </p>
+          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 14 }} />
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', letterSpacing: '0.04em', fontFamily: PJS }}>
+            Everything in Pro, plus:
+          </p>
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
             {ULTRA_EXTRAS.map((f, i) => (
-              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#0A0A0A', fontFamily: PJS }}>
+              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
                 <CheckIcon />
                 {f}
               </li>
@@ -210,23 +235,25 @@ export default function ChoosePlan() {
           </ul>
           <button
             onClick={goUltra}
-            disabled={!!loadingPlan}
+            disabled={ultraDisabled}
             style={{
               width: '100%', padding: '13px 0', borderRadius: 999, fontSize: 13, fontWeight: 700,
-              fontFamily: PJS, background: 'linear-gradient(135deg, #FBBF24, #F59E0B)', color: '#FFFFFF', border: 'none',
-              cursor: loadingPlan ? 'default' : 'pointer',
+              fontFamily: PJS, border: 'none',
+              background: ultraDisabled ? 'rgba(10,10,10,0.08)' : '#F59E0B',
+              color: ultraDisabled ? 'rgba(10,10,10,0.3)' : '#FFFFFF',
+              cursor: ultraDisabled ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               opacity: loadingPlan && loadingPlan !== 'ultra' ? 0.5 : 1,
               transition: 'opacity 0.15s',
             }}
           >
-            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : 'Get Ultra — US$99'}
+            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : ultraLabel}
           </button>
         </div>
 
       </div>
 
-      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px', fontFamily: PJS }}>
+      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px', fontFamily: PJS }}>
         Have a gift code? You'll be able to enter it at checkout.
       </p>
 
@@ -250,7 +277,7 @@ export default function ChoosePlan() {
         </div>
       )}
 
-      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>
+      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>
         Prices in USD · Refunds as required by law · No recurring fees
       </p>
     </div>
