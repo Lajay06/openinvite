@@ -30,7 +30,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="font-bold text-white mb-3"
+        className="font-bold text-[#0A0A0A] mb-3"
         style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
       >
         Any vendors already booked?
@@ -40,7 +40,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="text-[#666666] text-sm mb-12"
+        className="text-[rgba(10,10,10,0.6)] text-sm mb-12"
       >
         Add what you know — you can fill in details later.
       </motion.p>
@@ -61,7 +61,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
             className={`p-4 rounded-none border-2 transition-colors duration-150 text-sm font-medium ${
               selected.includes(type)
                 ? 'bg-black border-black text-white'
-                : 'bg-transparent border-[#333] text-[rgba(255,255,255,0.4)] hover:bg-black hover:border-black hover:text-white active:bg-neutral-900'
+                : 'bg-transparent border-[rgba(10,10,10,0.18)] text-[rgba(10,10,10,0.6)] hover:bg-black hover:border-black hover:text-white active:bg-neutral-900'
             }`}
           >
             <input
@@ -82,7 +82,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
           className="space-y-4 mb-12"
         >
           {selected.map((type, i) => (
-            <div key={type} className="bg-[#111111] border border-[#333] rounded-none p-4">
+            <div key={type} className="bg-[#FFFFFF] border border-[rgba(10,10,10,0.18)] rounded-none p-4">
               <input
                 type="text"
                 placeholder="Vendor name"
@@ -91,7 +91,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
                   ...prev,
                   [type]: { ...prev[type], name: e.target.value }
                 }))}
-                className="w-full bg-transparent border-b border-[#333] px-0 py-2 text-white placeholder-[#444444] focus:outline-none focus:border-[#E03553] transition-colors text-sm mb-3"
+                className="w-full bg-transparent border-b border-[rgba(10,10,10,0.18)] px-0 py-2 text-[#0A0A0A] placeholder-[rgba(10,10,10,0.58)] focus:outline-none focus:border-[#E03553] transition-colors text-sm mb-3"
               />
               <input
                 type="text"
@@ -101,7 +101,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
                   ...prev,
                   [type]: { ...prev[type], contact: e.target.value }
                 }))}
-                className="w-full bg-transparent border-b border-[#333] px-0 py-2 text-white placeholder-[#444444] focus:outline-none focus:border-[#E03553] transition-colors text-sm"
+                className="w-full bg-transparent border-b border-[rgba(10,10,10,0.18)] px-0 py-2 text-[#0A0A0A] placeholder-[rgba(10,10,10,0.58)] focus:outline-none focus:border-[#E03553] transition-colors text-sm"
               />
             </div>
           ))}
@@ -123,7 +123,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
 
         <button
           onClick={() => onNext({ vendors: [] })}
-          className="block mx-auto text-[#666666] hover:text-white text-sm transition-colors"
+          className="block mx-auto text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
         >
           Skip for now →
         </button>

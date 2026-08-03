@@ -67,7 +67,7 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="font-bold text-white mb-3"
+        className="font-bold text-[#0A0A0A] mb-3"
         style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
       >
         Any inspiration to share?
@@ -77,7 +77,7 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="text-[#666666] text-sm mb-12"
+        className="text-[rgba(10,10,10,0.6)] text-sm mb-12"
       >
         Ava learns your style from images.
       </motion.p>
@@ -90,10 +90,10 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
       >
         {images.length + queue.length < 6 && (
           <label className="block mb-6">
-            <div className="border-2 border-dashed border-[#333] rounded-2xl p-12 cursor-pointer hover:border-[#E03553] transition-colors">
-              <Upload className="w-8 h-8 text-[rgba(255,255,255,0.4)] mx-auto mb-3" />
-              <p className="text-white font-medium">Upload images</p>
-              <p className="text-[#666666] text-sm mt-1">
+            <div className="border-2 border-dashed border-[rgba(10,10,10,0.18)] rounded-none p-12 cursor-pointer hover:border-[#E03553] transition-colors">
+              <Upload className="w-8 h-8 text-[rgba(10,10,10,0.45)] mx-auto mb-3" />
+              <p className="text-[#0A0A0A] font-medium">Upload images</p>
+              <p className="text-[rgba(10,10,10,0.6)] text-sm mt-1">
                 {images.length + queue.length}/6 images
               </p>
             </div>
@@ -142,7 +142,6 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
                   status={item.status}
                   error={item.error}
                   onRetry={() => retryUpload(item.id)}
-                  dark
                   height="100%"
                   style={{ height: '100%', minHeight: 0, borderRadius: 8 }}
                 />
@@ -168,7 +167,7 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
 
         <button
           onClick={() => onNext({ inspirationPhotos: [] })}
-          className="block mx-auto text-[#666666] hover:text-white text-sm transition-colors"
+          className="block mx-auto text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
         >
           Skip for now →
         </button>

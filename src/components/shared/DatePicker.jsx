@@ -10,7 +10,7 @@ export function formatDateDisplay(dateStr) {
   return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-export default function DatePicker({ value, onChange, label, placeholder = 'Select date', dark = false, disabled = false }) {
+export default function DatePicker({ value, onChange, label, placeholder = 'Select date', disabled = false }) {
   const [open, setOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState(() => value ? new Date(value + 'T00:00:00') : new Date());
   const ref = useRef(null);
@@ -46,7 +46,14 @@ export default function DatePicker({ value, onChange, label, placeholder = 'Sele
     setOpen(false);
   };
 
-  const labelStyle = dark
+  const labelStyle = {
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    color: 'rgba(10,10,10,0.6)',
+    fontFamily: 'Plus Jakarta Sans, sans-serif',
+    margin: '0 0 6px',
+  };
 
   return (
     <div ref={ref} style={{ position: 'relative', marginBottom: 16 }}>
@@ -58,7 +65,7 @@ export default function DatePicker({ value, onChange, label, placeholder = 'Sele
         {...interactiveDivProps(() => { if (!disabled) setOpen(o => !o); }, { disabled })}
         style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        borderBottom: `1px solid ${open ? '#E03553' : dark ? '#333' : '#DDDDDD'}`,
+        borderBottom: `1px solid ${open ? '#E03553' : '#DDDDDD'}`,
         padding: '8px 0', cursor: disabled ? 'default' : 'pointer', transition: 'border-color 0.2s',
         opacity: disabled ? 0.7 : 1,
       }}>
@@ -66,7 +73,7 @@ export default function DatePicker({ value, onChange, label, placeholder = 'Sele
           <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>
           <line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
         </svg>
-        <span style={{ flex: 1, fontSize: 14, color: value ? (dark ? '#fff' : '#0A0A0A') : 'rgba(10,10,10,0.58)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+        <span style={{ flex: 1, fontSize: 14, color: value ? '#0A0A0A' : 'rgba(10,10,10,0.58)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
           {value ? formatDateDisplay(value) : placeholder}
         </span>
         {value && !disabled && (

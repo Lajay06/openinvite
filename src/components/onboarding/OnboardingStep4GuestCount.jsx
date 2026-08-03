@@ -9,16 +9,15 @@ const CARDS = [
   { id: 'grand',        label: 'Grand',        range: '150+' },
 ];
 
-export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
+export default function OnboardingStep4GuestCount({ onNext, data }) {
   const [selected, setSelected] = useState('');
   const [hoveredCard, setHoveredCard] = useState('');
   const [customCount, setCustomCount] = useState('');
-  const isDark = theme !== 'light';
-  const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
-  const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
-  const inputBorder = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
-  const cardBg = isDark ? '#111111' : '#FFFFFF';
-  const cardBorder = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)';
+  const textPrimary = '#0A0A0A';
+  const textMuted = 'rgba(10,10,10,0.6)';
+  const inputBorder = 'rgba(10,10,10,0.18)';
+  const cardBg = '#FFFFFF';
+  const cardBorder = 'rgba(10,10,10,0.12)';
 
   const handleSubmit = () => {
     const count = customCount ? parseInt(customCount) : (
@@ -34,7 +33,7 @@ export default function OnboardingStep4GuestCount({ onNext, data, theme }) {
 
   return (
     <div className="w-full max-w-3xl text-center">
-      <style>{`.s4-input::placeholder { color: ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}; }`}</style>
+      <style>{`.s4-input::placeholder { color: rgba(10,10,10,0.58); }`}</style>
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

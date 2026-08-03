@@ -4,7 +4,7 @@ import VenueSearchPanel from '@/components/shared/VenueSearchPanel';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-export default function OnboardingStep3Location({ onNext, data, theme }) {
+export default function OnboardingStep3Location({ onNext, data }) {
   // venue: null | { name, address, placeId, mapsUrl, photoUrl }
   // Normalise from legacy string or object saved by a previous session
   const initialVenue = (() => {
@@ -18,11 +18,10 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
 
   const [venue, setVenue] = useState(initialVenue);
   const [location, setLocation] = useState(data?.location || '');
-  const isDark = theme !== 'light';
-  const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
-  const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
-  const skipColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
-  const inputBorder = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
+  const textPrimary = '#0A0A0A';
+  const textMuted = 'rgba(10,10,10,0.6)';
+  const skipColor = 'rgba(10,10,10,0.6)';
+  const inputBorder = 'rgba(10,10,10,0.18)';
 
   const handleSubmit = () => {
     onNext({ venue, location });
@@ -35,7 +34,7 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
     fontSize: 11,
     fontWeight: 700,
     letterSpacing: '0.06em',
-    color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+    color: 'rgba(10,10,10,0.6)',
     fontFamily: PJS,
     display: 'block',
     marginBottom: 8,
@@ -44,7 +43,7 @@ export default function OnboardingStep3Location({ onNext, data, theme }) {
   return (
     <div className="w-full max-w-2xl text-center">
       <style>{`
-        .s3-input::placeholder { color: ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}; }
+        .s3-input::placeholder { color: rgba(10,10,10,0.58); }
         .s3-input:focus { border-bottom-color: #E03553 !important; border-bottom-width: 2px !important; }
       `}</style>
 

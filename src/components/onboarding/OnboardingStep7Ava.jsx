@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-export default function OnboardingStep7Ava({ onNext, data, theme }) {
+export default function OnboardingStep7Ava({ onNext, data }) {
   const weddingTypeStr = data.weddingStyle?.length > 0 ? data.weddingStyle[0] : 'beautiful';
   const guestCountStr = data.guestCount ? `${data.guestCount} guests` : 'your guests';
   const venueStr = typeof data.venue === 'object' ? data.venue?.name || '' : data.venue || '';
@@ -15,9 +15,8 @@ export default function OnboardingStep7Ava({ onNext, data, theme }) {
       : cityStr
         ? `in ${cityStr}`
         : 'in your chosen location';
-  const isDark = theme !== 'light';
-  const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
-  const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
+  const textPrimary = '#0A0A0A';
+  const textMuted = 'rgba(10,10,10,0.6)';
 
   return (
     <div className="w-full max-w-3xl text-center">

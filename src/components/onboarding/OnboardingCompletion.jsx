@@ -11,14 +11,13 @@ const CHECKLIST_ITEMS = [
   { id: 3, label: 'Ava is ready' },
 ];
 
-export default function OnboardingCompletion({ onDone, data, theme }) {
+export default function OnboardingCompletion({ onDone, data }) {
   const [completedItems, setCompletedItems] = useState([]);
   const [showButton, setShowButton] = useState(false);
-  const isDark = theme !== 'light';
-  const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
-  const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
-  const itemBg = isDark ? '#111111' : '#FFFFFF';
-  const itemBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+  const textPrimary = '#0A0A0A';
+  const textMuted = 'rgba(10,10,10,0.6)';
+  const itemBg = '#FFFFFF';
+  const itemBorder = 'rgba(10,10,10,0.18)';
 
   useEffect(() => {
     // AUDIT_2026-07.md N4: none of these were captured/cleared before — if

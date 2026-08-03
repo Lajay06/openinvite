@@ -26,7 +26,7 @@ export default function OnboardingPathABudget({ onNext, data }) {
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="font-bold text-white mb-3"
+        className="font-bold text-[#0A0A0A] mb-3"
         style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
       >
         What's your total wedding budget?
@@ -42,10 +42,10 @@ export default function OnboardingPathABudget({ onNext, data }) {
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            className="bg-transparent border border-[#333] rounded px-4 py-3 text-white font-semibold appearance-none cursor-pointer"
+            className="bg-transparent border border-[rgba(10,10,10,0.18)] rounded px-4 py-3 text-[#0A0A0A] font-semibold appearance-none cursor-pointer"
           >
             {CURRENCIES.map(c => (
-              <option key={c.code} value={c.code} className="bg-[#0A0A0A] text-white">
+              <option key={c.code} value={c.code} className="bg-[#FFFFFF] text-[#0A0A0A]">
                 {c.symbol} {c.code}
               </option>
             ))}
@@ -56,7 +56,7 @@ export default function OnboardingPathABudget({ onNext, data }) {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Enter amount"
-            className="bg-transparent border border-[#333] rounded px-4 py-3 text-white text-2xl font-semibold placeholder-[#444444] focus:outline-none focus:border-[#E03553] transition-colors flex-1"
+            className="bg-transparent border border-[rgba(10,10,10,0.18)] rounded px-4 py-3 text-[#0A0A0A] text-2xl font-semibold placeholder-[rgba(10,10,10,0.58)] focus:outline-none focus:border-[#E03553] transition-colors flex-1"
           />
         </div>
 
@@ -64,9 +64,9 @@ export default function OnboardingPathABudget({ onNext, data }) {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#111111] border border-[#333] rounded-none p-6"
+            className="bg-[#FFFFFF] border border-[rgba(10,10,10,0.18)] rounded-none p-6"
           >
-            <p className="text-white text-3xl font-bold">
+            <p className="text-[#0A0A0A] text-3xl font-bold">
               {CURRENCIES.find(c => c.code === currency)?.symbol}{parseFloat(amount).toLocaleString()}
             </p>
           </motion.div>
@@ -88,7 +88,7 @@ export default function OnboardingPathABudget({ onNext, data }) {
 
         <button
           onClick={() => onNext({ budget: null })}
-          className="block mx-auto text-[#666666] hover:text-white text-sm transition-colors"
+          className="block mx-auto text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
         >
           Not sure yet →
         </button>

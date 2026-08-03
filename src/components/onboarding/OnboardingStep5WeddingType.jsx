@@ -25,15 +25,14 @@ const GROUPS = [
   },
 ];
 
-export default function OnboardingStep5WeddingType({ onNext, data, theme }) {
+export default function OnboardingStep5WeddingType({ onNext, data }) {
   const [selected, setSelected] = useState([]);
   const [otherText, setOtherText] = useState({ style: '', ceremony: '', vibe: '' });
-  const isDark = theme !== 'light';
-  const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
-  const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
-  const headerColor = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)';
-  const pillBorder = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.15)';
-  const otherInputBorder = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
+  const textPrimary = '#0A0A0A';
+  const textMuted = 'rgba(10,10,10,0.6)';
+  const headerColor = 'rgba(10,10,10,0.6)';
+  const pillBorder = 'rgba(10,10,10,0.18)';
+  const otherInputBorder = 'rgba(10,10,10,0.18)';
 
   const otherKey = key => `__other_${key}`;
 
@@ -52,7 +51,7 @@ export default function OnboardingStep5WeddingType({ onNext, data, theme }) {
   return (
     <div className="w-full max-w-4xl text-center">
       <style>{`
-        .s5-other::placeholder { color: ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'}; }
+        .s5-other::placeholder { color: rgba(10,10,10,0.58); }
         .s5-pill:not(.s5-active):hover {
           background: #0A0A0A !important;
           color: #FFFFFF !important;
