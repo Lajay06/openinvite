@@ -457,6 +457,63 @@ delete of orphaned `RsvpResponse` records where `created_by_id ==
 cannot delete ourselves because our own owner-scoped delete RLS can never
 match Base44's own auto-assigned `'anonymous'` owner value."*
 
+## Single-record `GET .../Entity/:id` does NOT bypass owner-scoped read RLS for custom entities — the `User` entity's behavior is a special case, not a general capability
+
+Tested directly, 2026-08-03 (PR 1c experiment), not assumed. Created a
+throwaway custom entity (`RlsExperimentThrowaway`, `read: {created_by_id:
+"{{user.id}}"}`, everything else `null`) specifically to test whether the
+built-in `User` entity's documented quirk — single-record `GET
+.../entities/User/:id?api_key=...` works even though bulk-list/filter is
+blocked — generalizes to custom entities with owner-scoped read RLS. It
+does not:
+
+- Created one record via a REAL logged-in test account's own session
+  token (correctly stamped `created_by_id` to that real user — confirming
+  ordinary ownership stamping works fine for non-admin-key writes).
+- Admin key, filter query (`?q={marker:...}`) → `200 []` (matches
+  already-documented owner-scoped-read behavior).
+- Admin key, bulk list, no filter at all → `200 []` (same).
+- Admin key, **single-record `GET .../RlsExperimentThrowaway/<id>`** (the
+  actual hypothesis) → **`404`**, both via `Authorization: Bearer` and via
+  `?api_key=` (the exact variant that works for `User`).
+
+**Conclusion: there is no way for the admin key to read a specific,
+individually-known custom-entity record it doesn't own, under any request
+shape tried.** The `User` entity's single-record-GET success is unique to
+that built-in entity, not a general REST capability. This closes off the
+"hash-shell + id-based lookup" redesign that was the leading candidate
+for fixing `Guest.read`'s PII exposure without breaking the anonymous
+RSVP-token flow — see the `Guest` scope note further down for what's left.
+
+Cleanup: the one test record was deleted (its RLS made delete open, so
+this was a normal, uneventful admin-key `DELETE`, unlike the
+`RsvpResponse`/`GuestContactSubmission` "anonymous"-owner wall). The
+`RlsExperimentThrowaway` *schema* itself can't be deleted (no
+`delete_entity_schema` tool exists — same as the retired `Photographer`
+entity) — it sits empty and unreachable permanently, which is harmless.
+
+## `Guest`'s PII exposure is real, but the fix is a much larger project than `RsvpResponse`/`GuestContactSubmission` were — flagging the actual scope
+
+With the bypass path closed (above), the only remaining fix pattern is the
+one already proven twice: encrypt the sensitive fields at rest
+(`name`/`email`/`phone`/`mailing_address`/`dietary_restrictions`/
+`notes`/`special_requests`/plus-one equivalents), leave `read: null` as
+today. But `Guest`, unlike `RsvpResponse`/`GuestContactSubmission`, is
+**not** append-only or narrowly touched — it's read and written directly
+by the couple's own browser session across dozens of dashboard call
+sites (`Guests.jsx`, `GuestList.jsx`, `ImportGuestModal.jsx`,
+`SendInvitesModal.jsx`, `Seating.jsx`, `WeddingParty.jsx`, `EmailTemplates.jsx`,
+`BulkActionBar.jsx`, the AI assistants, and more). Every one of those
+calls `base44.entities.Guest.filter()/.create()/.update()` directly from
+the client, which would break the moment any of the fields it reads or
+writes are encrypted — decrypting/encrypting needs `BASE44_ADMIN_KEY`, a
+server-only secret the browser can never hold. Fixing this properly means
+moving every one of those call sites behind new authenticated server
+endpoints (the `api/my-guests-rsvp.js`/`api/guest-contact-review.js`
+pattern, at roughly 15-20x the surface area) — a multi-PR project, not a
+single scoped fix. Flagged for an explicit priority/scope decision before
+starting, not something to fold into a "PR 1c"-sized effort.
+
 ## Right-to-erasure gap: anonymous-guest writes create rows nobody can ever delete through the product
 
 **New finding, 2026-08-03, graded post-launch (on record, not a launch
