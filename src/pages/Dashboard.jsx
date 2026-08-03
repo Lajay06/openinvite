@@ -12,7 +12,6 @@ import RSVPChart from "../components/dashboard/RSVPChart";
 import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
-import TipsModal from "../components/dashboard/TipsModal";
 import { getMyRecords, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
 import { tallyGuestRsvp } from "@/lib/guestRsvpTally";
 import { useCollaboratorContext, hasPagePermission } from "@/lib/collaboratorContext";
@@ -79,18 +78,6 @@ const statValueStyle = {
   margin: 0,
 };
 
-// Layout.jsx mounts this page's whole tree TWICE at once — one copy for
-// desktop, one for mobile, switched purely by CSS (see Layout.jsx's
-// "page-content" divs). Without this guard, both copies independently see
-// the tips-not-shown localStorage flag on first visit and each open their
-// own TipsModal, producing two simultaneous full-screen dialog overlays;
-// dismissing the visible one just reveals the untouched second instance
-// underneath, whose overlay then blocks every click on the page (including
-// opening Ava) behind it. Module-scope state is shared between both
-// instances since they come from the same JS module, so only the first
-// one to check ever claims the modal.
-let tipsModalClaimedThisPageLoad = false;
-
 export default function Dashboard() {
   const [guests, setGuests] = useState([]);
   const [budget, setBudget] = useState([]);
@@ -101,7 +88,6 @@ export default function Dashboard() {
   const [moodboardItems, setMoodboardItems] = useState([]);
   const [questionnaireResponses, setQuestionnaireResponses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showTipsModal, setShowTipsModal] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
 
   const collab = useCollaboratorContext();
@@ -166,11 +152,6 @@ export default function Dashboard() {
       }
       const currentUser = await base44.auth.me();
       if (currentUser?.id) identify(currentUser.id, { email: currentUser.email, name: currentUser.full_name });
-      const tipsShown = localStorage.getItem('openinvite_tips_shown');
-      if (!tipsShown && !tipsModalClaimedThisPageLoad) {
-        tipsModalClaimedThisPageLoad = true;
-        setShowTipsModal(true);
-      }
       const [guestData, budgetData, scheduleData, taskData, noteData, vendorData, moodboardData, questionnaireData] = await Promise.all([
         getMyGuestsWithRsvp(), getMyRecords('Budget'), getMyRecords('Schedule'),
         getMyRecords('Task'), getMyRecords('Note'), getMyRecords('Vendor'),
@@ -270,13 +251,6 @@ export default function Dashboard() {
 
       </div>
 
-
-      {showTipsModal && (
-        <TipsModal onClose={() => {
-          setShowTipsModal(false);
-          localStorage.setItem('openinvite_tips_shown', 'true');
-        }} />
-      )}
 
       <AvaModal
         isOpen={avaOpen}

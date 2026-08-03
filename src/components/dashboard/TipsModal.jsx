@@ -51,8 +51,11 @@ export default function TipsModal({ onClose }) {
   const [currentTip, setCurrentTip] = useState(0);
   const [key, setKey] = useState(0);
 
+  // Persisting "seen" is the caller's responsibility, not this component's
+  // — DailyUpdate.jsx's first-time auto-trigger marks the account-scoped
+  // flag on close, while Layout.jsx's manual "quick tips" re-open has
+  // nothing to persist (it's a deliberate replay, not a first-time gate).
   const handleClose = () => {
-    localStorage.setItem('openinvite_tips_shown', 'true');
     onClose();
   };
 

@@ -4,6 +4,7 @@ import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/re
 import { tallyGuestRsvp, isAttending } from '@/lib/guestRsvpTally';
 import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import TipsModal from '@/components/dashboard/TipsModal';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -139,6 +140,16 @@ function numeralizeBriefing(value) {
   return value;
 }
 
+// Layout.jsx mounts this page's whole tree TWICE at once — one copy for
+// desktop, one for mobile, switched purely by CSS. Without this guard, both
+// copies would independently see "onboarding just completed, tips not shown
+// yet" on the same load and each open their own TipsModal — the exact
+// double-dialog bug fixed for Dashboard.jsx's old auto-trigger (see
+// project memory / AUDIT history). Module-scope state is shared between
+// both instances since they come from the same JS module, so only the
+// first one to check ever claims the modal.
+let tipsModalClaimedThisPageLoad = false;
+
 export default function DailyUpdate() {
   const [phase, setPhase] = useState('loading');
   const [briefing, setBriefing] = useState(null);
@@ -148,8 +159,30 @@ export default function DailyUpdate() {
     confirmedGuests: 0, pendingGuests: 0,
     budgetPercent: 0, bookedVendors: 0, totalVendors: 0,
   });
+  const [showTipsModal, setShowTipsModal] = useState(false);
 
   useEffect(() => { load(); }, []);
+
+  // Account-scoped, not localStorage — fires once per account on the
+  // first arrival at /DailyUpdate after onboarding completes, then never
+  // again (even on a different browser/device), by persisting the flag on
+  // the User record via base44.auth.updateMe rather than this browser's
+  // localStorage.
+  useEffect(() => {
+    if (tipsModalClaimedThisPageLoad) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const user = await base44.auth.me();
+        if (cancelled) return;
+        if (user?.onboardingCompleted && !user?.tipsModalShown && !tipsModalClaimedThisPageLoad) {
+          tipsModalClaimedThisPageLoad = true;
+          setShowTipsModal(true);
+        }
+      } catch { /* best-effort — never block the page on this */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const load = async (force = false) => {
     setPhase('loading');
@@ -533,6 +566,13 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
             </div>
           </div>
         </div>
+      )}
+
+      {showTipsModal && (
+        <TipsModal onClose={() => {
+          setShowTipsModal(false);
+          base44.auth.updateMe({ tipsModalShown: true }).catch(() => {});
+        }} />
       )}
 
     </div>
