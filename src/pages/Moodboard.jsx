@@ -104,6 +104,8 @@ export default function MoodboardPage() {
         if (res.ok) {
           const { data } = await res.json();
           setItems(data.MoodboardItem || []);
+        } else {
+          toast.error('Failed to load — please refresh and try again.');
         }
         setLoading(false);
         return;
@@ -112,6 +114,7 @@ export default function MoodboardPage() {
       setItems(data);
     } catch (e) {
       console.error(e);
+      toast.error('Failed to load — please refresh and try again.');
     }
     setLoading(false);
   };
@@ -170,6 +173,7 @@ export default function MoodboardPage() {
       loadItems();
     } catch (e) {
       console.error(e);
+      toast.error('Failed to delete — please try again.');
     }
   };
 
@@ -179,6 +183,7 @@ export default function MoodboardPage() {
       loadItems();
     } catch (e) {
       console.error(e);
+      toast.error('Failed to save changes — please try again.');
     }
   };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import toast from 'react-hot-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UtensilsCrossed, Wine, Loader2, Plus, X, FileText, BookOpen, Check } from "lucide-react";
 import PageConsiderations from '../components/shared/PageConsiderations';
@@ -55,7 +56,7 @@ export default function FoodBeveragePage() {
       setMenuItems(r.menuItems || []);
       setRecordId(r.id || null);
       latestRef.current = r;
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); toast.error('Failed to load — please refresh and try again.'); }
     setLoading(false);
   };
 
@@ -73,7 +74,7 @@ export default function FoodBeveragePage() {
         }
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch { setSaveStatus('idle'); }
+      } catch { setSaveStatus('idle'); toast.error('Save failed. Please try again.'); }
     }, 1200);
   };
 

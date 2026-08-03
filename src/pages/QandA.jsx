@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import toast from 'react-hot-toast';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Loader2, Trash2, ChevronDown, ChevronUp } from "lucide-react";
@@ -110,7 +111,10 @@ export default function QandA() {
       setRecord(r);
       setRecordId(r.id || null);
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch(() => {
+      setLoading(false);
+      toast.error('Failed to load — please refresh and try again.');
+    });
   }, []);
 
   const qna = record?.qna || [];
@@ -124,7 +128,9 @@ export default function QandA() {
         const created = await base44.entities.WeddingDetails.create({ qna: newQna });
         setRecordId(created.id);
       }
-    } catch {}
+    } catch {
+      toast.error('Save failed. Please try again.');
+    }
     setSaving(false);
   };
 

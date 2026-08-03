@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { Globe, Sparkles, Eye, ChevronRight } from 'lucide-react';
 import { getMyWeddingDetails, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
@@ -21,7 +22,10 @@ export default function StudioHub() {
         ]);
         setWedding(details || null);
         setRsvpCount(tallyGuestRsvp(guests).attending);
-      } catch (e) {}
+      } catch (e) {
+        console.error(e);
+        toast.error('Failed to load — please refresh and try again.');
+      }
       setLoading(false);
     };
     load();

@@ -526,7 +526,10 @@ export default function EventDetailsPage() {
           latestRef.current = r;
           setLoading(false);
         })
-        .catch(() => setLoading(false));
+        .catch(() => {
+          setLoading(false);
+          toast.error('Failed to load — please refresh and try again.');
+        });
       return;
     }
     Promise.all([
@@ -592,7 +595,10 @@ export default function EventDetailsPage() {
           }
         }
       }
-    }).catch(() => setLoading(false));
+    }).catch(() => {
+      setLoading(false);
+      toast.error('Failed to load — please refresh and try again.');
+    });
   }, [isCollaborating]);
 
   const update = (patch) => {

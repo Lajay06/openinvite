@@ -324,7 +324,9 @@ export default function SeatingPage() {
         try {
           if (type === 'table') await Table.update(id, { x: item.x, y: item.y });
           else await VenueAsset.update(id, { x: item.x, y: item.y });
-        } catch {}
+        } catch {
+          toast.error('Failed to save position. Please try again.');
+        }
       }
     } else if (type === 'table') {
       // A table-body click (not a seat click) — no specific seat was

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import toast from 'react-hot-toast';
 import { InvokeLLM } from "@/integrations/Core";
 import { differenceInDays, parseISO } from "date-fns";
 import { Lightbulb, Loader2, X, Search, FileText, Check, Plane, Hotel, Map } from "lucide-react";
@@ -150,7 +151,7 @@ export default function HoneymoonPage() {
       setData(r.honeymoonDetails || {});
       setRecordId(r.id || null);
       latestRef.current = r;
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); toast.error('Failed to load — please refresh and try again.'); }
     setLoading(false);
   };
 
@@ -168,7 +169,7 @@ export default function HoneymoonPage() {
         }
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch { setSaveStatus('idle'); }
+      } catch { setSaveStatus('idle'); toast.error('Save failed. Please try again.'); }
     }, 1200);
   };
 

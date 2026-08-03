@@ -43,6 +43,21 @@ export default [
       "unused-imports": pluginUnusedImports,
     },
     rules: {
+      // fix/silent-catch-family: bans a literally-empty catch block
+      // (catch {} / catch (e) {}) anywhere in src/components or src/pages —
+      // the exact shape of two of the bugs this PR fixed (Polls.jsx's
+      // persist(), StudioHub.jsx's load()). Discovered while adding this
+      // that eslint:recommended's own no-empty (and everything else in
+      // ...pluginJs.configs.recommended/...pluginReact.configs.flat.recommended
+      // spread above) was silently inert this whole time — object spread
+      // doesn't merge a nested `rules` key, so this file's own explicit
+      // `rules: {}` block below was overwriting the entire recommended
+      // ruleset, not layering on top of it. Not fixed wholesale here
+      // (unknown how many other now-dormant recommended-rule violations
+      // exist across the whole src/ tree — that's its own audit), just
+      // flagging the mechanism and turning this one specific rule back on
+      // explicitly, since it's exactly what this PR needs enforced.
+      "no-empty": ["error", { allowEmptyCatch: false }],
       "no-unused-vars": "off",
       "react/jsx-uses-vars": "error",
       "react/jsx-uses-react": "error",

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import toast from 'react-hot-toast';
 import { base44 } from "@/api/base44Client";
 import { getMyLiveStream } from '@/lib/resolveMyWedding';
 import { Loader2, Check, Radio, ExternalLink } from "lucide-react";
@@ -97,7 +98,10 @@ export default function LiveStreamingPage() {
           notes:            s.notes            || '',
         });
       }
-    } catch (e) { console.error('LiveStreaming load error', e); }
+    } catch (e) {
+      console.error('LiveStreaming load error', e);
+      toast.error('Failed to load — please refresh and try again.');
+    }
     setLoading(false);
   };
 
@@ -123,6 +127,7 @@ export default function LiveStreamingPage() {
     } catch (e) {
       console.error('LiveStreaming save error', e);
       setSaveStatus('idle');
+      toast.error('Save failed. Please try again.');
     }
   };
 
@@ -133,7 +138,10 @@ export default function LiveStreamingPage() {
       const next = !isLive;
       await base44.entities.LiveStream.update(streamId, { is_live: next });
       setIsLive(next);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      toast.error('Could not update live status. Please try again.');
+    }
     setTogglingLive(false);
   };
 

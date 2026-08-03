@@ -336,6 +336,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
       if (top) {
         place = { ...place, place_id: top.place_id, address: top.address, photo_url: top.photo_reference ? photoProxy(top.photo_reference) : null, maps_url: top.maps_url };
       }
+      // eslint-disable-next-line no-empty -- best-effort places-search enrichment; the entry is still added below without it
     } catch {}
     const next = [...places, place];
     setPlaces(next);

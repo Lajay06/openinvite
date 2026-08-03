@@ -191,6 +191,7 @@ export default function DailyUpdate() {
     // Resolved once, up front, so the cache read below and the cache write
     // at the end of this function always agree on the same key.
     let cacheUserId = null;
+    // eslint-disable-next-line no-empty -- best-effort cache-key resolution; falls through to no-cache path below
     try { cacheUserId = JSON.parse(localStorage.getItem('oi_user') || '{}')?.id || null; } catch {}
     const key = cacheUserId ? cacheKey(cacheUserId) : null;
 
@@ -213,6 +214,7 @@ export default function DailyUpdate() {
           setPhase('ready');
           return;
         }
+        // eslint-disable-next-line no-empty -- best-effort cache read; falls through to a fresh fetch below
       } catch {}
     }
 
@@ -226,6 +228,7 @@ export default function DailyUpdate() {
         getMyRecords('Note').catch(() => []),
         getMyWeddingDetails().then(d => d ? [d] : []).catch(() => []),
       ]);
+      // eslint-disable-next-line no-empty -- belt-and-braces: every entry above already has its own .catch(() => []), this only guards Promise.all itself
     } catch {}
 
     const wd = weddingRows[0] || {};
@@ -239,8 +242,10 @@ export default function DailyUpdate() {
     const city = wd.mainCeremony?.address || localStorage.getItem('oi_wedding_city') || null;
 
     let user = null;
+    // eslint-disable-next-line no-empty -- best-effort cache read; degrades to the fallback briefing already reviewed as acceptable
     try { user = JSON.parse(localStorage.getItem('oi_user')); } catch {}
     let weather = null;
+    // eslint-disable-next-line no-empty -- best-effort cache read; per this file's own weather.js contract, absent weather just renders nothing
     try { weather = JSON.parse(localStorage.getItem('oi_weather')); } catch {}
 
     const firstName = getFirstName(user?.full_name || couple);
