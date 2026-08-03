@@ -30,7 +30,6 @@ import { getWeddingEvents, defaultEventResponses, getGuestEventResponse } from '
 import CountUp from "@/components/shared/CountUp";
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
-const GuestContactSubmission = base44.entities.GuestContactSubmission;
 
 
 function FilterPill({ label, active, onClick }) {
@@ -141,10 +140,16 @@ export default function Guests() {
   // Contact Collector (PR B3) — pending submissions from the public
   // /w/:slug/collect form. Collaborators never see this (no WeddingDetails
   // of their own to scope it to, same reasoning as weddingEvents above).
+  // fix/guest-contact-submission-rls (PR 1b): fetched via the server
+  // endpoint, not read directly off the entity — the content is now
+  // encrypted at rest and only api/guest-contact-review.js can decrypt it.
   const loadPendingSubmissions = React.useCallback(() => {
     if (isCollaborating || !weddingId) return;
-    GuestContactSubmission.filter({ wedding_id: weddingId, status: 'pending' })
-      .then(rows => setPendingSubmissions((rows || []).filter(r => !r.is_test)))
+    fetch('/api/guest-contact-review', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+    })
+      .then(res => (res.ok ? res.json() : { submissions: [] }))
+      .then(data => setPendingSubmissions(data.submissions || []))
       .catch(() => {});
   }, [isCollaborating, weddingId]);
   useEffect(() => { loadPendingSubmissions(); }, [loadPendingSubmissions]);

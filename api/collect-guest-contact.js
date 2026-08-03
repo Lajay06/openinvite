@@ -31,10 +31,28 @@
  *        or 409 { error: "This guest list isn't accepting new details right now." }
  *        or 429 { error: 'Too many requests — please wait a moment.' }
  *
+ * fix/guest-contact-submission-rls (PR 1b): GuestContactSubmission has
+ * create:null/read:null/update:null/delete:null — every operation is fully
+ * unrestricted, so an unauthenticated request could list every couple's
+ * submissions in plaintext. name/email/phone/mailing_address now live in
+ * one encrypted_contact_details blob (AES-256-GCM, api/_lib/
+ * questionnaireCrypto.js encryptPayload — same construction as
+ * RsvpResponse.encrypted_guest_level), and email is additionally hashed
+ * (email_hash) so the per-wedding dedupe check below can still work
+ * without storing the plaintext address as its own field. Review/approve/
+ * merge/dismiss now happens via api/guest-contact-review.js, which
+ * decrypts server-side and verifies wedding ownership in application
+ * code — update/delete RLS stays null deliberately, since every row is
+ * stamped created_by_id: "anonymous" by Base44 itself (confirmed
+ * empirically: it never honors a client-supplied created_by_id), so an
+ * owner-scoped RLS rule would lock out the real owner too, not just
+ * attackers.
+ *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail } from './_lib/security.js';
+import { hashId, encryptPayload } from './_lib/questionnaireCrypto.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -119,7 +137,8 @@ export default async function handler(req, res) {
       return res.status(409).json({ error: "This guest list isn't accepting new details right now." });
     }
 
-    if (email && nonTest.some(s => (s.email || '').toLowerCase() === email)) {
+    const emailHash = email ? hashId(email) : null;
+    if (emailHash && nonTest.some(s => s.email_hash === emailHash)) {
       // Already submitted — no-op success, not an error. The guest doesn't
       // need to know their earlier submission exists or what state it's in.
       return res.status(200).json({ ok: true });
@@ -130,10 +149,8 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
       body: JSON.stringify({
         wedding_id: wedding.id,
-        name,
-        email: email || undefined,
-        phone: phone || undefined,
-        mailing_address: mailingAddress || undefined,
+        email_hash: emailHash,
+        encrypted_contact_details: encryptPayload({ name, email, phone, mailing_address: mailingAddress }),
         status: 'pending',
       }),
     });

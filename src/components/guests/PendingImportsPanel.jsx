@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { X, UserPlus, Merge } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import toast from 'react-hot-toast';
 
-const GuestContactSubmission = base44.entities.GuestContactSubmission;
-const Guest = base44.entities.Guest;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 /**
@@ -17,7 +14,26 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
  * Merge only ever fills blanks on the existing guest, never overwrites a
  * field that already has a value — same convention rsvp-submit.js already
  * uses for Guest.email.
+ *
+ * fix/guest-contact-submission-rls (PR 1b): every action below now goes
+ * through api/guest-contact-review.js instead of calling
+ * base44.entities.GuestContactSubmission/.Guest directly — the entity's
+ * contact fields are encrypted at rest, and its update RLS is open (see
+ * that file's header for why), so ownership is verified server-side
+ * before anything is written.
  */
+async function reviewAction(body) {
+  const res = await fetch('/api/guest-contact-review', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`guest-contact-review failed (${res.status})`);
+}
+
 export default function PendingImportsPanel({ submissions, guests, onClose, onChanged }) {
   const [busyId, setBusyId] = useState(null);
   const [mergeTargets, setMergeTargets] = useState({}); // submissionId -> guestId
@@ -25,13 +41,7 @@ export default function PendingImportsPanel({ submissions, guests, onClose, onCh
   const approveAsNew = async (submission) => {
     setBusyId(submission.id);
     try {
-      await Guest.create({
-        name: submission.name,
-        email: submission.email || undefined,
-        phone: submission.phone || undefined,
-        mailing_address: submission.mailing_address || undefined,
-      });
-      await GuestContactSubmission.update(submission.id, { status: 'approved' });
+      await reviewAction({ submissionId: submission.id, action: 'approve' });
       toast.success(`${submission.name} added to your guest list`);
       onChanged();
     } catch {
@@ -48,12 +58,7 @@ export default function PendingImportsPanel({ submissions, guests, onClose, onCh
     if (!target) return;
     setBusyId(submission.id);
     try {
-      const fill = {};
-      if (!target.email && submission.email) fill.email = submission.email;
-      if (!target.phone && submission.phone) fill.phone = submission.phone;
-      if (!target.mailing_address && submission.mailing_address) fill.mailing_address = submission.mailing_address;
-      if (Object.keys(fill).length > 0) await Guest.update(targetId, fill);
-      await GuestContactSubmission.update(submission.id, { status: 'approved' });
+      await reviewAction({ submissionId: submission.id, action: 'merge', mergeGuestId: targetId });
       toast.success(`Merged into ${target.name}`);
       onChanged();
     } catch {
@@ -66,7 +71,7 @@ export default function PendingImportsPanel({ submissions, guests, onClose, onCh
   const dismiss = async (submission) => {
     setBusyId(submission.id);
     try {
-      await GuestContactSubmission.update(submission.id, { status: 'dismissed' });
+      await reviewAction({ submissionId: submission.id, action: 'dismiss' });
       onChanged();
     } catch {
       toast.error('Could not dismiss — please try again.');
