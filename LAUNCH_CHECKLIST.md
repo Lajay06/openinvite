@@ -30,3 +30,32 @@ exactly (`www.openinvite.com.au`, not the bare apex) with no redirect hop in
 between. Then run a real live-mode $0 (or minimal) checkout end to end and
 confirm the plan actually activates in both the UI and the database —
 config that "looks right" in the dashboard is not itself proof of delivery.
+
+## CSP must stay Report-Only until violation logs are clean
+
+**Trigger**: any time `vercel.json`'s `Content-Security-Policy-Report-Only`
+header is touched, a new external script/iframe/embed is added anywhere in
+the app, or the follow-up PR to promote it to an enforced
+`Content-Security-Policy` is considered.
+
+**Why**: added 2026-08-03 (security sweep PR 5). CSP is the app's primary
+XSS containment layer — Base44 stores the auth token in `localStorage` (no
+HttpOnly cookie option), an accepted platform limitation alongside no-2FA
+(see `BASE44_PLATFORM_NOTES.md`), so a successful script injection can steal
+the session directly. That makes a wrong CSP entry two-sided: too loose and
+it does nothing to contain XSS; too strict and it silently breaks checkout,
+Turnstile, embeds, or analytics — with no error a user would ever report,
+since the broken thing usually just fails quiet (a blocked iframe, a
+swallowed fetch). Report-Only mode ships the full allowlist without
+enforcing it, so violations surface in Vercel logs (grep `[csp-report]`,
+served by `api/csp-report.js`) against real production traffic first.
+
+**Check**: before ever promoting the header to enforced
+`Content-Security-Policy`, grep production logs for `[csp-report]` over a
+representative window (a normal week, covering at least one guest RSVP
+submission, one checkout, one guest-website music/embed view) and confirm
+zero unexpected violations. Any violation from a legitimate first-party
+flow means the allowlist is missing an entry — fix the policy, not the
+feature. Only once that's clean should the report-only header be renamed to
+`Content-Security-Policy` (and the old, narrower enforced header it
+replaces removed).
