@@ -21,7 +21,6 @@
  */
 
 import { base44 } from '@/api/base44Client';
-import { latestEventResponses, latestGuestLevel, deriveRsvpStatus, toEventResponsesShape, mergePlusOneEventResponses } from '@/lib/rsvpAggregation';
 
 function mostRecent(records) {
   const real = (records || []).filter(r => !r.is_test);
@@ -133,55 +132,41 @@ export async function getMyRecords(entityName, sort, limit) {
  * is_plus_one:true RsvpResponse rows (mergePlusOneEventResponses), never
  * the primary guest's. Computed independently of whether the primary has
  * answered yet, since the plus-one may respond first via their own link.
+ *
+ * fix/rsvp-response-encryption (PR 1a): this used to read
+ * base44.entities.RsvpResponse directly, client-side. That's no longer
+ * possible — RsvpResponse.guest_id is now guest_id_hash (an HMAC keyed by
+ * BASE44_ADMIN_KEY, a server-only secret) and the guest-level text fields
+ * live in an AES-256-GCM encrypted_guest_level blob, so the browser has no
+ * way to compute a matching hash or decrypt the blob itself. The overlay is
+ * now computed server-side by api/my-guests-rsvp.js (same admin key, same
+ * aggregation helpers) and fetched here instead — the merge logic below is
+ * unchanged, it just merges a fetched overlay map instead of one computed
+ * inline. On any fetch failure this fails soft (returns the unenriched
+ * guest list) rather than breaking the whole dashboard.
  */
 export async function getMyGuestsWithRsvp(sort, limit) {
   const guests = await getMyRecords('Guest', sort, limit);
   if (guests.length === 0) return guests;
 
-  const wedding = await getMyWeddingDetails();
-  if (!wedding?.id) return guests;
-
-  const rows = (await base44.entities.RsvpResponse.filter({ wedding_id: wedding.id }))
-    .filter(r => !r.is_test);
-  if (rows.length === 0) return guests;
-
-  const eventsByGuest = new Map();
-  for (const r of latestEventResponses(rows)) {
-    if (!eventsByGuest.has(r.guest_id)) eventsByGuest.set(r.guest_id, []);
-    eventsByGuest.get(r.guest_id).push(r);
-  }
-  const guestLevelByGuest = new Map(latestGuestLevel(rows).map(r => [r.guest_id, r]));
-
-  // Every row (both is_plus_one values) for a guest_id, grouped once —
-  // mergePlusOneEventResponses does its own is_plus_one filtering internally.
-  const rowsByGuestId = new Map();
-  for (const r of rows) {
-    if (!rowsByGuestId.has(r.guest_id)) rowsByGuestId.set(r.guest_id, []);
-    rowsByGuestId.get(r.guest_id).push(r);
+  let overlayByGuestId = {};
+  try {
+    const token = localStorage.getItem('base44_access_token');
+    const res = await fetch('/api/my-guests-rsvp', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      overlayByGuestId = data?.byGuestId || {};
+    } else {
+      console.error(`[getMyGuestsWithRsvp] /api/my-guests-rsvp failed (${res.status})`);
+    }
+  } catch (err) {
+    console.error('[getMyGuestsWithRsvp] /api/my-guests-rsvp fetch error:', err.message);
   }
 
   return guests.map(g => {
-    const eventRows = eventsByGuest.get(g.id);
-    const guestLevel = guestLevelByGuest.get(g.id);
-    const eventResponses = eventRows ? toEventResponsesShape(eventRows) : (g.event_responses || []);
-
-    let plusOneRsvpStatus = null;
-    if (g.plus_one_email) {
-      const plusOneEventResponses = mergePlusOneEventResponses(eventResponses, rowsByGuestId.get(g.id) || []);
-      plusOneRsvpStatus = deriveRsvpStatus(plusOneEventResponses);
-    }
-
-    if (!eventRows && !guestLevel && plusOneRsvpStatus === null) return g;
-
-    return {
-      ...g,
-      event_responses: eventResponses,
-      rsvp_status: eventRows ? deriveRsvpStatus(eventResponses) : g.rsvp_status,
-      song_request: guestLevel?.song_request ?? g.song_request,
-      rsvp_note: guestLevel?.note ?? g.rsvp_note,
-      dietary_restrictions: guestLevel?.dietary_restrictions ?? g.dietary_restrictions,
-      email: g.email || guestLevel?.email || null,
-      plus_one_rsvp_status: plusOneRsvpStatus,
-    };
+    const overlay = overlayByGuestId[g.id];
+    return overlay ? { ...g, ...overlay } : g;
   });
 }

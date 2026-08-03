@@ -27,10 +27,10 @@
  * email is optional and never blocks submission — an invalid or missing
  * value is just dropped from the guest-level row, same tolerant handling
  * as the other free-text fields. "Don't overwrite an existing Guest.email"
- * is enforced at READ time (src/lib/resolveMyWedding.js's
- * getMyGuestsWithRsvp overlay prefers the real Guest.email whenever it's
- * set), not here — Guest.email itself is never touched by this endpoint,
- * so there is nothing here that could overwrite it even by mistake.
+ * is enforced at READ time (api/my-guests-rsvp.js's overlay prefers the
+ * real Guest.email whenever it's set), not here — Guest.email itself is
+ * never touched by this endpoint, so there is nothing here that could
+ * overwrite it even by mistake.
  *
  * feat/plus-one-identity: resolveGuestByToken's `role` says whether this
  * submission is the primary guest's own or their plus-one's (same
@@ -38,6 +38,18 @@
  * plus-one). Rows are stamped is_plus_one accordingly, which is what keeps
  * the two sets of answers from colliding under latest-wins aggregation
  * (src/lib/rsvpAggregation.js).
+ *
+ * fix/rsvp-response-encryption (PR 1a): RsvpResponse has create:null/
+ * read:null (see BASE44_PLATFORM_NOTES.md — the admin key can never satisfy
+ * an owner-scoped RLS rule on this write path), and a direct unauthenticated
+ * request confirmed it was listable in full — 2010+ rows across 472
+ * weddings, real emails/dietary/notes/song requests in plaintext. guest_id
+ * is now stored as guest_id_hash (HMAC, api/_lib/questionnaireCrypto.js
+ * hashId — same construction as QuestionnaireResponse), and the four
+ * guest-level text fields are bundled into one encrypted_guest_level blob
+ * (AES-256-GCM, encryptPayload) instead of four plaintext columns. An
+ * unscoped list of this entity now yields only hashes and ciphertext.
+ *
  * Response: 200 { ok: true }
  *        or 404 { error: 'This link has expired or is invalid.' }
  *
@@ -47,6 +59,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail } from './_lib/security.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 import { notify } from './_lib/notify.js';
+import { hashId, encryptPayload } from './_lib/questionnaireCrypto.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -129,6 +142,7 @@ export default async function handler(req, res) {
     }
     const { guest, wedding, role } = resolved;
     const isPlusOne = role === 'plus_one';
+    const guestIdHash = hashId(guest.id);
 
     // One row per submitted event (append-only — an event this submission
     // didn't touch simply gets no new row, and its previous latest row still
@@ -139,7 +153,7 @@ export default async function handler(req, res) {
     await Promise.all([
       ...eventResponses.map(r => createRsvpResponse({
         wedding_id: wedding.id,
-        guest_id: guest.id,
+        guest_id_hash: guestIdHash,
         is_plus_one: isPlusOne,
         event_id: r.event_id,
         status: r.status,
@@ -149,13 +163,15 @@ export default async function handler(req, res) {
       })),
       createRsvpResponse({
         wedding_id: wedding.id,
-        guest_id: guest.id,
+        guest_id_hash: guestIdHash,
         is_plus_one: isPlusOne,
         event_id: null,
-        song_request: songRequest,
-        note: rsvpNote,
-        dietary_restrictions: dietaryRestrictions,
-        email,
+        encrypted_guest_level: encryptPayload({
+          song_request: songRequest,
+          note: rsvpNote,
+          dietary_restrictions: dietaryRestrictions,
+          email,
+        }),
       }),
     ]);
 

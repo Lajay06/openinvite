@@ -15,6 +15,7 @@ import { APP_ID, api, pass, fail, cleanupEntity, snapshotNotificationIds, cleanu
 import rsvpLookupHandler from '../../api/rsvp-lookup.js';
 import rsvpSubmitHandler from '../../api/rsvp-submit.js';
 import { latestEventResponses, latestGuestLevel, mergePlusOneEventResponses, deriveRsvpStatus } from '../../src/lib/rsvpAggregation.js';
+import { hashId, decryptPayload } from '../../api/_lib/questionnaireCrypto.js';
 
 function mockReqRes({ method = 'GET', query = {}, body = {} } = {}) {
   const req = { method, query, body, headers: { 'x-forwarded-for': '203.0.113.9' } };
@@ -88,8 +89,8 @@ export async function runPlusOneIdentity(token) {
       ? pass('rsvp-submit.js — plus-one submission (own token) accepted', `200 ${JSON.stringify(poRes._json)}`)
       : fail('rsvp-submit.js — plus-one submission (own token) accepted', 200, `${poRes._status} ${JSON.stringify(poRes._json)}`));
 
-    // ── Fetch all RsvpResponse rows for this guest_id, confirm both sets exist distinctly ──
-    const rowsQuery = encodeURIComponent(JSON.stringify({ wedding_id: weddingId, guest_id: guestId }));
+    // ── Fetch all RsvpResponse rows for this guest_id_hash, confirm both sets exist distinctly ──
+    const rowsQuery = encodeURIComponent(JSON.stringify({ wedding_id: weddingId, guest_id_hash: hashId(guestId) }));
     const rows = await api('GET', `/apps/${APP_ID}/entities/RsvpResponse?q=${rowsQuery}`, undefined, token);
     const rowList = Array.isArray(rows) ? rows : (rows?.data || rows?.results || []);
     rsvpResponseIds.push(...rowList.map(r => r.id));
@@ -98,6 +99,8 @@ export async function runPlusOneIdentity(token) {
     const plusOneEventRows = latestEventResponses(rowList, { plusOne: true });
     const primaryGuestLevel = latestGuestLevel(rowList, { plusOne: false })[0];
     const plusOneGuestLevel = latestGuestLevel(rowList, { plusOne: true })[0];
+    const primaryDecrypted = primaryGuestLevel?.encrypted_guest_level ? decryptPayload(primaryGuestLevel.encrypted_guest_level) : null;
+    const plusOneDecrypted = plusOneGuestLevel?.encrypted_guest_level ? decryptPayload(plusOneGuestLevel.encrypted_guest_level) : null;
 
     results.push(primaryEventRows.find(r => r.event_id === 'po-test-event')?.status === 'yes'
       ? pass('Primary guest\'s own event row: status "yes" survives, unaffected by the plus-one\'s submission', 'yes')
@@ -105,9 +108,9 @@ export async function runPlusOneIdentity(token) {
     results.push(plusOneEventRows.find(r => r.event_id === 'po-test-event')?.status === 'no'
       ? pass('Plus-one\'s own event row: status "no" recorded distinctly, never colliding with the primary\'s row', 'no')
       : fail('Plus-one\'s own event row: status "no" recorded distinctly', 'no', plusOneEventRows.find(r => r.event_id === 'po-test-event')?.status));
-    results.push(primaryGuestLevel?.song_request === 'Primary song' && plusOneGuestLevel?.song_request === 'Plus-one song'
-      ? pass('Guest-level rows (song_request) stay distinct per is_plus_one', `primary="${primaryGuestLevel?.song_request}", plus-one="${plusOneGuestLevel?.song_request}"`)
-      : fail('Guest-level rows (song_request) stay distinct per is_plus_one', 'Primary song / Plus-one song', `${primaryGuestLevel?.song_request} / ${plusOneGuestLevel?.song_request}`));
+    results.push(primaryDecrypted?.song_request === 'Primary song' && plusOneDecrypted?.song_request === 'Plus-one song'
+      ? pass('Guest-level rows (song_request, encrypted) stay distinct per is_plus_one', `primary="${primaryDecrypted?.song_request}", plus-one="${plusOneDecrypted?.song_request}"`)
+      : fail('Guest-level rows (song_request) stay distinct per is_plus_one', 'Primary song / Plus-one song', `${primaryDecrypted?.song_request} / ${plusOneDecrypted?.song_request}`));
 
     // ── rsvp-lookup.js resolves each token to the correct, distinct perspective ──
     const { req: lookupPrimaryReq, res: lookupPrimaryRes } = mockReqRes({ query: { token: primaryToken } });
@@ -160,10 +163,10 @@ export async function runPlusOneIdentity(token) {
       { event_id: 'ev-c', invited: false, status: 'pending' }, // not invited — must not appear for the plus-one either
     ];
     const plusOneRows = [
-      { guest_id: 'g1', event_id: 'ev-a', status: 'no', is_plus_one: true, created_date: new Date().toISOString(), id: 'r1' },
+      { guest_id_hash: 'g1', event_id: 'ev-a', status: 'no', is_plus_one: true, created_date: new Date().toISOString(), id: 'r1' },
       // ev-b: plus-one hasn't answered yet
       // a PRIMARY row for ev-b (is_plus_one unset) must be ignored, not leak into the plus-one's merge
-      { guest_id: 'g1', event_id: 'ev-b', status: 'yes', created_date: new Date().toISOString(), id: 'r2' },
+      { guest_id_hash: 'g1', event_id: 'ev-b', status: 'yes', created_date: new Date().toISOString(), id: 'r2' },
     ];
     const merged = mergePlusOneEventResponses(primaryEventResponses, plusOneRows);
     const evA = merged.find(r => r.event_id === 'ev-a');

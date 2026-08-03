@@ -176,8 +176,8 @@ export async function buildDigestForWedding(wedding, allQuestionnaireResponses, 
   // group-then-reshape order client-side.
   const rawRowsByGuest = new Map();
   for (const r of latestEventResponses(rsvpRows)) {
-    if (!rawRowsByGuest.has(r.guest_id)) rawRowsByGuest.set(r.guest_id, []);
-    rawRowsByGuest.get(r.guest_id).push(r);
+    if (!rawRowsByGuest.has(r.guest_id_hash)) rawRowsByGuest.set(r.guest_id_hash, []);
+    rawRowsByGuest.get(r.guest_id_hash).push(r);
   }
   const eventsByGuest = new Map();
   for (const [guestId, rows] of rawRowsByGuest) {
@@ -186,12 +186,12 @@ export async function buildDigestForWedding(wedding, allQuestionnaireResponses, 
 
   const guestsForTally = guests.map(g => ({
     id: g.id,
-    rsvp_status: deriveRsvpStatus(eventsByGuest.get(g.id) || []),
+    rsvp_status: deriveRsvpStatus(eventsByGuest.get(hashId(g.id)) || []),
     invite_sent_at: g.invite_sent_at,
   }));
   const totals = tallyGuestRsvp(guestsForTally);
 
-  const newGuestIds = new Set(rsvpRows.filter(r => new Date(r.created_date) >= weekAgo).map(r => r.guest_id));
+  const newGuestIds = new Set(rsvpRows.filter(r => new Date(r.created_date) >= weekAgo).map(r => r.guest_id_hash));
   let newAttending = 0, newDeclined = 0;
   for (const guestId of newGuestIds) {
     const status = deriveRsvpStatus(eventsByGuest.get(guestId) || []);

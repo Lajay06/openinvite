@@ -20,10 +20,16 @@
  * (which never passes the new param) behaves identically to before —
  * existing rows never have is_plus_one set, so !!row.is_plus_one is always
  * false for them regardless.
+ *
+ * fix/rsvp-response-encryption (PR 1a): keyed on guest_id_hash (HMAC of
+ * guest.id), not the plaintext guest_id this entity used to carry — every
+ * caller already passes rows fetched straight from Base44, which now only
+ * ever have guest_id_hash, so this is a transparent rename, not a
+ * behavior change.
  */
 
 function dedupKey(row) {
-  return `${row.guest_id}::${row.is_plus_one ? 'plus_one' : 'primary'}::${row.event_id ?? '__guest_level__'}`;
+  return `${row.guest_id_hash}::${row.is_plus_one ? 'plus_one' : 'primary'}::${row.event_id ?? '__guest_level__'}`;
 }
 
 function isLater(a, b) {

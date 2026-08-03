@@ -20,12 +20,22 @@
  *
  * Usage:  node scripts/migrate-rsvp-entities.mjs [--dry-run]
  *
+ * fix/rsvp-response-encryption (PR 1a): RsvpResponse.guest_id is now
+ * guest_id_hash (HMAC of guest.id) and the guest-level text fields are one
+ * AES-256-GCM encrypted_guest_level blob — this script writes both, using
+ * the same api/_lib/questionnaireCrypto.js helpers every other write path
+ * uses. This is very likely already-run/moot in production (2010+
+ * RsvpResponse rows already exist across 472 weddings as of 2026-08-03),
+ * kept correct only so a future re-run against a fresh environment doesn't
+ * write the old plaintext shape.
+ *
  * Requires .env.local (gitignored): BASE44_ADMIN_KEY, VITE_BASE44_APP_ID
  */
 
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { hashId, encryptPayload } from '../api/_lib/questionnaireCrypto.js';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const envPath = resolve(__dir, '..', '.env.local');
@@ -117,7 +127,8 @@ async function run() {
       continue;
     }
 
-    const existingQuery = encodeURIComponent(JSON.stringify({ guest_id: guest.id }));
+    const guestIdHash = hashId(guest.id);
+    const existingQuery = encodeURIComponent(JSON.stringify({ guest_id_hash: guestIdHash }));
     const existing = unwrapList(await adminFetch('GET', `/apps/${APP_ID}/entities/RsvpResponse?q=${existingQuery}`));
     if (existing.length > 0) {
       console.log(`⏭  ${guest.name || guest.id} — already has RsvpResponse rows, skipping`);
@@ -133,7 +144,7 @@ async function run() {
       if (!DRY_RUN) {
         await adminFetch('POST', `/apps/${APP_ID}/entities/RsvpResponse`, {
           wedding_id,
-          guest_id: guest.id,
+          guest_id_hash: guestIdHash,
           event_id: er.event_id,
           status: er.status || 'pending',
           meal_choice: er.meal_choice || null,
@@ -148,11 +159,14 @@ async function run() {
       if (!DRY_RUN) {
         await adminFetch('POST', `/apps/${APP_ID}/entities/RsvpResponse`, {
           wedding_id,
-          guest_id: guest.id,
+          guest_id_hash: guestIdHash,
           event_id: null,
-          song_request: guest.song_request || '',
-          note: guest.rsvp_note || '',
-          dietary_restrictions: guest.dietary_restrictions || '',
+          encrypted_guest_level: encryptPayload({
+            song_request: guest.song_request || '',
+            note: guest.rsvp_note || '',
+            dietary_restrictions: guest.dietary_restrictions || '',
+            email: '',
+          }),
         });
       }
       rowsForGuest++;
