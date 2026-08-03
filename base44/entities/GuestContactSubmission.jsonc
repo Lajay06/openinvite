@@ -4,24 +4,15 @@
   "properties": {
     "wedding_id": {
       "type": "string",
-      "description": "WeddingDetails id this submission belongs to — resolved server-side from the URL slug, never client-supplied."
+      "description": "WeddingDetails id this submission belongs to — resolved server-side from the URL slug, never client-supplied. Kept plaintext deliberately: not PII on its own, and api/guest-contact-review.js needs it in the clear to verify the caller owns this submission's wedding before acting on it."
     },
-    "name": {
+    "email_hash": {
       "type": "string",
-      "description": "Name the guest entered on the public Contact Collector form (/w/:weddingSlug/collect)"
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, email.toLowerCase()) — read:null means this entity is listable unscoped by anyone with any API token, so the plaintext email never lives here as its own field. Used only for the per-wedding dedupe check on resubmission (api/collect-guest-contact.js), computed the same way api/_lib/questionnaireCrypto.js's hashId is used elsewhere. Null when no email was given."
     },
-    "email": {
+    "encrypted_contact_details": {
       "type": "string",
-      "format": "email",
-      "description": "Email the guest entered, used for per-wedding dedupe on resubmission"
-    },
-    "phone": {
-      "type": "string",
-      "description": "Phone number the guest entered"
-    },
-    "mailing_address": {
-      "type": "string",
-      "description": "Mailing address the guest entered, free-text"
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of {name, email, phone, mailing_address} — key derived from BASE44_ADMIN_KEY, same api/_lib/questionnaireCrypto.js encryptPayload()/decryptPayload() construction used by QuestionnaireResponse.encrypted_answers and RsvpResponse.encrypted_guest_level. Decryptable only server-side (api/guest-contact-review.js); an unscoped list of this entity yields opaque blobs, never plaintext name/email/phone/address. Replaces the plaintext name/email/phone/mailing_address fields this entity used to carry (fix/guest-contact-submission-rls, PR 1b)."
     },
     "status": {
       "type": "string",
@@ -31,7 +22,7 @@
         "dismissed"
       ],
       "default": "pending",
-      "description": "Review state. pending = awaiting the couple's review on the Guests page; approved = promoted into a real Guest record (or merged into an existing one); dismissed = the couple declined it."
+      "description": "Review state. pending = awaiting the couple's review on the Guests page; approved = promoted into a real Guest record (or merged into an existing one); dismissed = the couple declined it. Mutated only via api/guest-contact-review.js, which verifies wedding ownership in application code — update RLS is null (open) because every row is stamped created_by_id: \"anonymous\" by Base44 itself (confirmed empirically: an explicitly-supplied created_by_id in the create call is never honored), so an owner-scoped RLS rule would lock out the real owner too, not just attackers."
     },
     "is_test": {
       "type": "boolean",
@@ -40,8 +31,7 @@
     }
   },
   "required": [
-    "wedding_id",
-    "name"
+    "wedding_id"
   ],
   "rls": {
     "create": null,

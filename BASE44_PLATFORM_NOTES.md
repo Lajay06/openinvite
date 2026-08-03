@@ -379,3 +379,131 @@ but not actually gone. This is harmless (zero records, nothing reads or
 writes it) but is not the same thing as deletion. If Base44 ever exposes
 a real delete-entity operation, revisit fully retired entities
 (currently just `Photographer`) to remove them properly.
+
+## `DELETE` on a `created_by_id: "anonymous"` row is masked as `404`, not `403`, and doesn't work — confirmed empirically, not assumed
+
+Confirmed 2026-08-03 (Session C, PR 1a's orphaned-residue audit) — sharpens
+this file's own earlier "(not directly tested)" caveat on delete behavior
+for the admin-key/owner-scoped-RLS combination. `RsvpResponse` rows written
+by `rsvp-submit.js` via the admin key are stamped `created_by_id:
+"anonymous"` (a literal string, not any real user's id) by Base44 itself —
+this app never chose that value. `RsvpResponse.delete` RLS is
+`{created_by_id: "{{user.id}}"}`. Direct test: `GET
+.../entities/RsvpResponse/<id>` with the admin key → `200`, full record.
+`DELETE` on the exact same URL, same auth → **`404`**, `{"message":"Entity
+RsvpResponse with ID <id> not found", ...}`. Immediate follow-up `GET` on
+the same id → `200` again, record unchanged. **The delete was silently
+denied and disguised as "not found," not a `403`** — worth knowing if
+debugging a similar delete that "isn't working": check whether the record
+actually still exists via `GET` before assuming it's really gone. No real
+caller identity (not the admin key, not even the wedding owner's own real
+session token) can ever satisfy `{{user.id}} === "anonymous"`, so this
+isn't fixable by using a different credential — only by the row never
+being stamped `created_by_id: "anonymous"` in the first place (see the
+right-to-erasure item below), or a privileged platform-level delete
+outside the API/MCP surface entirely (Base44 support).
+
+## Known accepted residue: ~2010 orphaned, pre-encryption `RsvpResponse` test rows — confirmed synthetic, confirmed undeletable
+
+As of 2026-08-03 (before PR 1a, fix/rsvp-response-encryption): **2,010**
+`RsvpResponse` rows across **470** distinct `wedding_id`s still carry the
+old plaintext shape (raw `guest_id`, plaintext `song_request`/`note`/
+`dietary_restrictions`/`email`) rather than the new
+`guest_id_hash`/`encrypted_guest_level` shape — read:null means these are
+still listable by anyone, zero auth, same as before the fix. Investigated
+before deciding whether to backfill or delete-and-reseed:
+
+- **469 of 470** referenced weddings are **orphaned** — their
+  `WeddingDetails` record no longer exists at all (confirmed via direct
+  `GET .../WeddingDetails/<id>` → `404` for each, and by pulling the full
+  live `WeddingDetails` table — only 15 records exist app-wide right now).
+  Only `john-suzanne` (id `6a1f90fa5b4e0702b5a051aa`) is still live.
+- Row ownership: `created_by_id` is either `"anonymous"` (1,874 rows,
+  written by real calls into `rsvp-submit.js` during test runs) or the
+  known dev/test account `jaygalaxy23@gmail.com` (id
+  `6a1c32fa7d681c950e26d2cd`, 136 rows). No unrecognized owner anywhere.
+- **Content is confirmed synthetic**, not real people's data: every
+  populated row sampled carries literal test-suite sentinel strings —
+  `"Sentinel song request"`/`"Sentinel RSVP note"`/`"Sentinel dietary
+  note"` (from `tests/persistence/anonymous-endpoints.mjs`) and `"Primary
+  song"`/`"Primary note"`/`"Primary dietary"` +
+  `"Plus-one song"`/`"Plus-one note"`/`"Plus-one dietary"` (from
+  `tests/persistence/plus-one-identity.mjs`). This is accumulated
+  `npm run test:persistence` residue from the ~3-week dev period
+  (2026-07-10 to 2026-07-26), not demo content ever shown to anyone, and
+  not any real human's information — `test-persistence.mjs`'s own cleanup
+  step already tries to delete these after each run and has always
+  silently failed for exactly the reason in the section above (visible as
+  "⚠️ CLEANUP FAILED" in test output going back to whenever
+  `rsvp-submit.js` first shipped).
+- **Undeletable via any tool available to this session** — see the
+  `DELETE` finding directly above. No `delete_entities` Base44 MCP tool
+  exists either (re-checked live, 2026-08-03; matches this file's
+  standing note).
+
+**Decision (2026-08-03, account owner): do not attempt an in-place
+encrypt-in-place migration on these rows — accept as a documented,
+permanent, low-severity residue** (real exposure surface, zero real
+privacy harm since content is synthetic), and pursue removal via a Base44
+support ticket requesting a platform-level purge, since no API/MCP path
+can do it. **Ticket details**: entity name `RsvpResponse`, filter
+`created_by_id = "anonymous"` (this correctly targets only the
+admin-key-written legacy rows, not the 136 rows still owned by the real
+test account, which are separately cleanable once a working delete path
+exists) — approximately 1,874 rows as of 2026-08-03, all pre-dating
+2026-07-27. One-line description for the ticket: *"Requesting a bulk
+delete of orphaned `RsvpResponse` records where `created_by_id ==
+'anonymous'` — these are pre-encryption automated-test artifacts we
+cannot delete ourselves because our own owner-scoped delete RLS can never
+match Base44's own auto-assigned `'anonymous'` owner value."*
+
+## Right-to-erasure gap: anonymous-guest writes create rows nobody can ever delete through the product
+
+**New finding, 2026-08-03, graded post-launch (on record, not a launch
+blocker) per explicit account-owner instruction.** Any entity written via
+the admin key on behalf of an anonymous guest (`RsvpResponse` today;
+the same `create:null` + hashed-identifier pattern used by `PollVote`,
+`PollComment`, `SongRequest`, `QuestionnaireResponse`, `CollaboratorGrant`
+would have the identical problem) gets `created_by_id: "anonymous"`,
+stamped by Base44 itself, not chosen by this app. Since
+`update`/`delete` RLS on all of these is owner-scoped
+(`{created_by_id: "{{user.id}}"}`), **no one — not the wedding owner's own
+real login session, not the admin key, not any real user — can ever
+delete or edit an individual guest's row**, because no real `{{user.id}}`
+is ever literally the string `"anonymous"`. Today this only affects
+synthetic test residue (see above), but once real guests exist
+post-launch, a real guest asking "delete my RSVP/song request/poll vote"
+(a right-to-erasure / GDPR-style request) **cannot be honored through the
+product at all** — there is no UI path and no server endpoint that could
+satisfy it, because the underlying entity write itself is unowned by
+anyone real.
+
+**Update, 2026-08-03 (PR 1b): the "supply `created_by_id` explicitly"
+hypothesis below is confirmed FALSE, tested directly, not assumed.**
+Creating a `GuestContactSubmission` via the admin key with an explicit
+`created_by_id` set to a real user's id in the request body still got
+auto-stamped `"anonymous"` — identical to `RsvpResponse`. Confirmed twice
+now, on two different entities: **Base44 always overrides `created_by_id`
+to its own value for admin-key-authenticated creates; it never honors a
+client-supplied one.** This closes off the simplest fix direction
+entirely — there is no way to make these rows "really" owned by the
+wedding owner at write time.
+
+**Actual fix direction, given the above — the only one left**: don't try
+to fix ownership via RLS at all. Route the mutation itself through a
+server-mediated endpoint that does the ownership check in application
+code before calling the admin key, exactly the pattern PR 1b implemented
+for `GuestContactSubmission` (`api/guest-contact-review.js`: verify the
+caller via `verifyBase44User`, resolve their own `WeddingDetails`, then
+confirm the target row's `wedding_id` matches before allowing the
+admin-key write — leaving the entity's own RLS at `null` throughout,
+since it can't distinguish "the real owner, mediated through a trusted
+endpoint" from "anyone" any other way). For a real per-guest erasure
+endpoint on `RsvpResponse` specifically: `verifyBase44User` + resolve the
+caller's own wedding + compute `hashId()` for the target guest (from a
+guest id or rsvp token the couple's own dashboard already has) + admin-key
+`DELETE` every row matching `{wedding_id: caller's own, guest_id_hash}`.
+No RLS change needed at all — the safety property comes entirely from the
+endpoint verifying `wedding_id` ownership before deleting, same as PR 1b.
+Needs its own scoped PR when real guests exist post-launch; not urgent
+before then.
