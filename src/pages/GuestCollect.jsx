@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { ChevronLeft } from 'lucide-react';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { getUniverse } from '@/lib/universeCatalog';
 import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 // Honeypot: a decoy field real guests never see (positioned off-screen, not
 // display:none/visibility:hidden — some bots specifically skip those two
@@ -41,6 +43,8 @@ export default function GuestCollect() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const turnstileRef = useRef(null);
+  const tsTokenRef = useRef('');
 
   useEffect(() => {
     fetchWeddingBySlug(weddingSlug).then(w => {
@@ -63,6 +67,11 @@ export default function GuestCollect() {
 
   const submit = async () => {
     if (!name.trim()) return;
+    const turnstileToken = tsTokenRef.current;
+    if (!turnstileToken) {
+      setSubmitError('Security check still loading — please wait a moment and try again.');
+      return;
+    }
     setSubmitError('');
     setSubmitting(true);
     try {
@@ -76,6 +85,7 @@ export default function GuestCollect() {
           phone,
           mailingAddress,
           honeypot,
+          turnstileToken,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -172,6 +182,18 @@ export default function GuestCollect() {
           </div>
         )}
       </div>
+
+      {/* Invisible Turnstile — execution="render" auto-generates a token on
+          mount, matching the pattern already used by WeddingPollsPage.jsx. */}
+      {!submitted && (
+        <Turnstile
+          ref={turnstileRef}
+          siteKey={TURNSTILE_SITE_KEY}
+          onSuccess={(token) => { tsTokenRef.current = token; }}
+          onExpire={() => { tsTokenRef.current = ''; }}
+          options={{ appearance: 'execute', execution: 'render' }}
+        />
+      )}
     </div>
   );
 }
