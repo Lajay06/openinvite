@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, ExternalLink, Phone, Loader2, Clock, Star, Car } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
@@ -22,17 +21,16 @@ const linkStyle = {
   cursor: 'pointer', padding: 0,
 };
 
-// Shared with LocationPicker — only one script tag is ever injected (checked by ID)
-function loadGoogleMapsScript() {
-  if (window.google?.maps?.places) return;
-  if (document.getElementById('gm-script')) return;
-  const script = document.createElement('script');
-  script.id = 'gm-script';
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=__gmInit`;
-  script.async = true;
-  script.defer = true;
-  window.__gmInit = () => {};
-  document.head.appendChild(script);
+// fix/account-checkout-and-maps-key: server-side proxy only, matching
+// VendorMarketplace.jsx/VenueSearchPanel.jsx's already-correct pattern —
+// GOOGLE_PLACES_API_KEY never leaves api/places-search.js, api/
+// place-details.js, api/places-photo.js. This used to load the Google
+// Maps JS SDK directly with a hardcoded, then VITE_-env-exposed key
+// (CLAUDE.md forbids client-side Google keys) — that script tag and every
+// window.google.maps.places.* call are gone.
+function photoProxy(ref, maxwidth = 800) {
+  if (!ref) return '';
+  return `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=${maxwidth}`;
 }
 
 // Extract today's opening hours string from the Places weekday_text array.
@@ -43,22 +41,6 @@ function getTodayHours(openingHours) {
   const dow = new Date().getDay(); // 0=Sun
   const idx = dow === 0 ? 6 : dow - 1; // convert to Mon-based
   return (texts[idx] || '').replace(/^[^:]+:\s*/, ''); // strip "Monday: " prefix
-}
-
-// Get the best available photo URL from a PlacePhoto array.
-// Tries accessing the underlying photo_reference first, then falls back to getUrl().
-function getPhotoUrl(photos) {
-  if (!photos?.length) return '';
-  const photo = photos[0];
-  try {
-    const ref = photo['photo_reference'] || photo.photo_reference;
-    if (ref) {
-      return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${encodeURIComponent(ref)}&key=${GOOGLE_MAPS_API_KEY}`;
-    }
-    return photo.getUrl({ maxWidth: 800 }) || '';
-  } catch {
-    return '';
-  }
 }
 
 export default function VenueSearch({
@@ -78,10 +60,7 @@ export default function VenueSearch({
   const [searchError, setSearchError]         = useState('');
 
   const containerRef = useRef(null);
-  const sessionToken = useRef(null);
   const debounceRef  = useRef(null);
-
-  useEffect(() => { loadGoogleMapsScript(); }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -150,52 +129,28 @@ export default function VenueSearch({
     }
   };
 
-  // ── Google Places autocomplete (enhancement, with timeout guard) ──────────
-  const runGoogleSearch = (query) => {
-    return new Promise((resolve) => {
-      let settled = false;
-
-      // Safety net: if callback never fires within 4 s, resolve with empty
-      const timer = setTimeout(() => {
-        if (!settled) {
-          settled = true;
-          console.warn('[VenueSearch] Google Places timed out for query:', query);
-          resolve([]);
-        }
-      }, 4000);
-
-      try {
-        if (!sessionToken.current) {
-          sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
-        }
-        const svc = new window.google.maps.places.AutocompleteService();
-        svc.getPlacePredictions(
-          { input: query, sessionToken: sessionToken.current, types: ['establishment'] },
-          (predictions, status) => {
-            if (settled) return;
-            settled = true;
-            clearTimeout(timer);
-
-            const OK = window.google.maps.places.PlacesServiceStatus.OK;
-            console.log('[VenueSearch] Google Places status:', status, '| count:', predictions?.length ?? 0);
-
-            if (status === OK && predictions?.length) {
-              resolve(predictions.map(p => ({
-                placeId: p.place_id,
-                name:    p.structured_formatting?.main_text      || p.description,
-                address: p.structured_formatting?.secondary_text || '',
-              })));
-            } else {
-              resolve([]);
-            }
-          }
-        );
-      } catch (err) {
-        console.error('[VenueSearch] Google Places error:', err);
-        clearTimeout(timer);
-        if (!settled) { settled = true; resolve([]); }
+  // ── Places search via the server-side proxy (enhancement, LLM is the fallback) ──
+  const runPlacesSearch = async (query) => {
+    try {
+      const res = await fetch('/api/places-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: query }),
+      });
+      if (!res.ok) {
+        console.warn('[VenueSearch] places-search failed:', res.status);
+        return [];
       }
-    });
+      const data = await res.json();
+      return (data.places || []).map(p => ({
+        placeId: p.place_id,
+        name:    p.name,
+        address: p.address || '',
+      }));
+    } catch (err) {
+      console.error('[VenueSearch] places-search error:', err);
+      return [];
+    }
   };
 
   // ── Main search orchestrator ──────────────────────────────────────────────
@@ -205,13 +160,9 @@ export default function VenueSearch({
     setSearchError('');
 
     try {
-      // Prefer Google Places (has placeId for rich details); fall back to LLM
-      let venues = [];
-
-      if (window.google?.maps?.places) {
-        venues = await runGoogleSearch(query);
-        console.log('[VenueSearch] Using Google results:', venues.length);
-      }
+      // Prefer real Places results (has placeId for rich details); fall back to LLM
+      let venues = await runPlacesSearch(query);
+      console.log('[VenueSearch] Using Places results:', venues.length);
 
       if (!venues.length) {
         venues = await runLLMSearch(query);
@@ -234,89 +185,43 @@ export default function VenueSearch({
     }
   };
 
-  // ── Resolve full place details via Google Places API ──────────────────────
-  // Has a 5 s timeout guard so fetchingDetails never gets permanently stuck.
-  const resolveGoogleDetails = (placeId, fallbackName, fallbackAddress) => {
+  // ── Resolve full place details via the server-side proxy ──────────────────
+  const resolvePlaceDetails = async (placeId, fallbackName, fallbackAddress) => {
     setFetchingDetails(true);
-    let settled = false;
+    try {
+      const res = await fetch(`/api/place-details?place_id=${encodeURIComponent(placeId)}`);
+      if (!res.ok) throw new Error(`place-details failed (${res.status})`);
+      const { place } = await res.json();
 
-    const fallbackAndFinish = () => {
+      onVenueSelect({
+        venueName:         place.name    || fallbackName,
+        address:           place.address || fallbackAddress,
+        phone:             place.phone   || '',
+        website:           place.website || '',
+        mapsUrl:           place.maps_url || '',
+        photoUrl:          photoProxy(place.photo_reference),
+        rating:            place.rating ?? null,
+        openingHoursToday: getTodayHours(place.opening_hours),
+        parkingInfo:       place.types?.some(t => t.includes('parking')) ? 'Parking available on site' : '',
+      });
+    } catch (err) {
+      console.error('[VenueSearch] place-details error:', err);
       onVenueSelect({
         venueName: fallbackName, address: fallbackAddress,
         phone: '', website: '', mapsUrl: '',
         photoUrl: '', rating: null,
         openingHoursToday: '', parkingInfo: '',
       });
+    } finally {
       setSearchTerm('');
       setShowResults(false);
       setFetchingDetails(false);
-    };
-
-    // 5-second timeout guard
-    const timer = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        console.warn('[VenueSearch] getDetails timed out for placeId:', placeId);
-        fallbackAndFinish();
-      }
-    }, 5000);
-
-    try {
-      const dummyDiv = document.createElement('div');
-      const svc = new window.google.maps.places.PlacesService(dummyDiv);
-      svc.getDetails(
-        {
-          placeId,
-          fields: [
-            'name', 'formatted_address', 'formatted_phone_number',
-            'website', 'photos', 'rating', 'url', 'place_id',
-            'opening_hours', 'types',
-          ],
-          sessionToken: sessionToken.current,
-        },
-        (place, status) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          sessionToken.current = null;
-          setFetchingDetails(false);
-          setSearchTerm('');
-          setShowResults(false);
-
-          const OK = window.google.maps.places.PlacesServiceStatus.OK;
-          console.log('[VenueSearch] getDetails status:', status, '| name:', place?.name);
-
-          if (status === OK && place) {
-            const photoUrl        = getPhotoUrl(place.photos);
-            const todayHours      = getTodayHours(place.opening_hours);
-            const hasParking      = place.types?.some(t => t.includes('parking')) ?? false;
-
-            onVenueSelect({
-              venueName:         place.name                   || fallbackName,
-              address:           place.formatted_address      || fallbackAddress,
-              phone:             place.formatted_phone_number || '',
-              website:           place.website                || '',
-              mapsUrl:           place.url                    || '',
-              photoUrl,
-              rating:            place.rating ?? null,
-              openingHoursToday: todayHours,
-              parkingInfo:       hasParking ? 'Parking available on site' : '',
-            });
-          } else {
-            fallbackAndFinish();
-          }
-        }
-      );
-    } catch (err) {
-      console.error('[VenueSearch] getDetails error:', err);
-      clearTimeout(timer);
-      if (!settled) { settled = true; fallbackAndFinish(); }
     }
   };
 
   const handleSelect = (venue) => {
-    if (venue.placeId && window.google?.maps?.places) {
-      resolveGoogleDetails(venue.placeId, venue.name, venue.address);
+    if (venue.placeId) {
+      resolvePlaceDetails(venue.placeId, venue.name, venue.address);
     } else {
       // LLM result — use data directly, no photo
       onVenueSelect({
