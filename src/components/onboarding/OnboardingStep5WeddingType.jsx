@@ -17,7 +17,11 @@ const GROUPS = [
   {
     key: 'vibe',
     label: 'Vibe',
-    pills: ['Intimate & romantic', 'Party & dancing', 'Outdoor & nature', 'Destination', 'Multi-day event', 'Elopement'],
+    // 'Multi-day' (not 'Multi-day event') — must match the exact string
+    // Considerations.jsx's buildProfile() and EventDetails.jsx's
+    // _STYLE_TO_ATMOSPHERE map already check for; those shipped first and
+    // have more surface area, so this label conforms to them.
+    pills: ['Intimate & romantic', 'Party & dancing', 'Outdoor & nature', 'Destination', 'Multi-day', 'Elopement'],
   },
 ];
 

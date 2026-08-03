@@ -268,6 +268,12 @@ function HeroChapter({ universe, isCurrent, prefersReducedMotion }) {
 export default function UniverseWorldView({
   universe, weddingDetails, guests, isCurrent, canAccessUltra,
   onBack, onSwitchUniverse, onUpgrade, motifNote,
+  // backButtonStyle: overrides the fixed "← All universes" button's
+  // position. Defaults to the Design Studio placement (clears its
+  // 200px sidebar + 48px top bar + trial banner). Onboarding renders this
+  // view with none of that chrome present, so it passes its own offset —
+  // see OnboardingStepUniverse.jsx.
+  backButtonStyle,
 }) {
   const prefersReducedMotion = useReducedMotion();
   const coupleNames = weddingDetails?.coupleNames || 'Your names';
@@ -343,6 +349,7 @@ export default function UniverseWorldView({
             background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(8px)',
             border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px',
             cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+            ...backButtonStyle,
           }}
         >
           ← All universes

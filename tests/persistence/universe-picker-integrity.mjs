@@ -26,6 +26,19 @@
  * parse) — this is exactly the failure mode being tested (a stale/
  * mismatched id string), so reading the literal source is the right
  * level for this check.
+ *
+ * Updated by feat/onboarding-content-refresh: OnboardingStepUniverse.jsx
+ * itself no longer hardcodes any `id: '...'` entries — it now derives its
+ * card list from UNIVERSE_CATALOG.map(...), the same single source of
+ * truth the Design Studio picker already used (this file's own header
+ * above already describes exactly this pattern for universeCatalog.js).
+ * That means the literal-source-text extraction below correctly finds
+ * zero ids in this file now, by design — a hardcoded/stale/incomplete id
+ * list in OnboardingStepUniverse.jsx (the 'cape-town' bug, the missing
+ * mykonos) is structurally impossible as long as it imports
+ * UNIVERSE_CATALOG rather than declaring its own array, so that import is
+ * what's checked for this picker instead of re-parsing ids that no longer
+ * exist in its source.
  */
 
 import { readFileSync } from 'node:fs';
@@ -46,6 +59,17 @@ function extractIds(relativePath) {
   return ids;
 }
 
+// True when a picker derives its list from UNIVERSE_CATALOG (imported)
+// rather than declaring its own id array — see this file's header. A
+// picker in this state can never contain a stale/mismatched/incomplete id
+// on its own; it inherits UNIVERSE_CONFIGS' full, current id set
+// automatically.
+function importsUniverseCatalog(relativePath) {
+  const src = readFileSync(resolve(repoRoot, relativePath), 'utf8');
+  return /from\s+['"]@\/lib\/universeCatalog(\.js)?['"]/.test(src)
+    && /\bUNIVERSE_CATALOG\b/.test(src);
+}
+
 export async function runUniversePickerIntegrity() {
   const results = [];
 
@@ -56,6 +80,12 @@ export async function runUniversePickerIntegrity() {
   ];
 
   for (const picker of pickers) {
+    if (importsUniverseCatalog(picker.path)) {
+      results.push(pass(`${picker.name} — derives its list from UNIVERSE_CATALOG (no separate hardcoded id array to drift)`, 'imports UNIVERSE_CATALOG'));
+      results.push(pass(`${picker.name} — every id resolves a real UNIVERSE_CONFIGS entry`, 'guaranteed — same source as UNIVERSE_CONFIGS'));
+      continue;
+    }
+
     const ids = extractIds(picker.path);
     results.push(ids.length > 0
       ? pass(`${picker.name} — declares at least one universe id`, ids.join(', '))
@@ -87,13 +117,25 @@ export async function runUniversePickerIntegrity() {
   }
 
   {
-    // OnboardingStepUniverse.jsx previously missed mykonos entirely.
-    const ids = extractIds('src/components/onboarding/OnboardingStepUniverse.jsx');
-    results.push(ids.includes('mykonos')
-      ? pass('OnboardingStepUniverse.jsx — includes mykonos (was missing entirely)', ids.join(', '))
+    // OnboardingStepUniverse.jsx previously missed mykonos entirely, and
+    // separately used the hyphenated 'cape-town' id that never resolved
+    // real styling (fix/universe-picker-integrity). Both were instances of
+    // the same root cause — a hand-maintained id list independent of
+    // UNIVERSE_CONFIGS — which feat/onboarding-content-refresh removed
+    // structurally rather than patching the two known symptoms: if this
+    // picker imports UNIVERSE_CATALOG, it offers every canonical id
+    // (mykonos included) under its real, correctly-normalized key
+    // (capetown, not cape-town) by construction, with no separate list for
+    // either bug to reappear in.
+    const derivesFromCatalog = importsUniverseCatalog('src/components/onboarding/OnboardingStepUniverse.jsx');
+    const ids = derivesFromCatalog ? [] : extractIds('src/components/onboarding/OnboardingStepUniverse.jsx');
+    const hasMykonos = derivesFromCatalog || ids.includes('mykonos');
+    results.push(hasMykonos
+      ? pass('OnboardingStepUniverse.jsx — includes mykonos (was missing entirely)', derivesFromCatalog ? 'guaranteed via UNIVERSE_CATALOG' : ids.join(', '))
       : fail('OnboardingStepUniverse.jsx — includes mykonos (was missing entirely)', 'mykonos present', ids.join(', ')));
-    results.push(!ids.includes('cape-town')
-      ? pass('OnboardingStepUniverse.jsx — no longer uses the hyphenated \'cape-town\' id', 'capetown')
+    const noHyphenatedCapeTown = derivesFromCatalog || !ids.includes('cape-town');
+    results.push(noHyphenatedCapeTown
+      ? pass('OnboardingStepUniverse.jsx — no longer uses the hyphenated \'cape-town\' id', derivesFromCatalog ? 'guaranteed via UNIVERSE_CATALOG (capetown)' : 'capetown')
       : fail('OnboardingStepUniverse.jsx — no longer uses the hyphenated \'cape-town\' id', 'capetown', 'cape-town'));
   }
 

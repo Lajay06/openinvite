@@ -1,65 +1,30 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import LondonUniverseView from '@/components/studio/LondonUniverseView';
+import UniverseWorldView from '@/components/universe-studio/UniverseWorldView';
 import { interactiveDivProps } from '@/lib/a11y';
-import { getUniverse } from '@/lib/universeCatalog';
+import { UNIVERSE_CATALOG } from '@/lib/universeCatalog';
+import { buildWeddingDetailsPayload } from '@/lib/onboardingSave';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
-// Photos now come straight from each universe's own UNIVERSE_CONFIGS
-// entry (round 7 ask #5) instead of a separate hand-picked Wix URL per
-// card — that second copy had drifted (mismatched/reused photos, one
-// universe missing entirely), exactly the drift universeCatalog.js's own
-// header comment warns a second palette copy invites. Falls back to the
-// local convention path only if a universe is somehow missing imageUrl.
-const UNIVERSES = [
-  { id: 'london', name: 'LONDON', tagline: 'Classical Grandeur', number: '01', available: true },
-  { id: 'tulum', name: 'TULUM', tagline: 'Desert Bloom', number: '02', available: true },
-  { id: 'kyoto', name: 'KYOTO', tagline: 'Zen & Ceremony', number: '03', available: true },
-  { id: 'capri', name: 'CAPRI', tagline: 'Italian Coast', number: '04', available: true },
-  { id: 'marrakech', name: 'MARRAKECH', tagline: 'Spice & Gold', number: '05', available: true },
-  { id: 'brooklyn', name: 'BROOKLYN', tagline: 'Industrial Edge', number: '06', available: true },
-  { id: 'bali', name: 'BALI', tagline: 'Sacred Garden', number: '07', available: true },
-  { id: 'paris', name: 'PARIS', tagline: 'Haussmann Romance', number: '08', available: true },
-  // fix/universe-picker-integrity: was 'cape-town' — UNIVERSE_CONFIGS' key
-  // is 'capetown' (no hyphen), and normalizeUniverseKey only lowercases/
-  // trims, it doesn't strip hyphens — so this never resolved any styling.
-  { id: 'capetown', name: 'CAPE TOWN', tagline: 'Wild & Free', number: '09', available: true },
-  // fix/universe-picker-integrity: mykonos was missing from this list
-  // entirely — one of the 10 canonical UNIVERSE_CONFIGS universes had no
-  // way to be chosen at onboarding at all.
-  { id: 'mykonos', name: 'MYKONOS', tagline: 'Aegean Blue', number: '10', available: true },
-].map(u => ({ ...u, photo: getUniverse(u.id)?.imageUrl || `/universes/${u.id}.jpg` }));
-
-function ComingSoonOverlay({ universe, onBack }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: '#0A0A0A', display: 'flex', flexDirection: 'column',
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
-      }}
-    >
-      <div style={{
-        height: 56, display: 'flex', alignItems: 'center',
-        padding: '0 24px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}>
-        <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>
-          ← Back
-        </button>
-      </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 48, textAlign: 'center' }}>
-        <img src={universe.photo} alt={universe.name} style={{ width: '100%', maxWidth: 400, height: 260, objectFit: 'cover', opacity: 0.2, marginBottom: 48 }} />
-        <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 300, fontSize: 'clamp(60px, 10vw, 100px)', color: '#FFFFFF', letterSpacing: '0.2em', margin: '0 0 16px', lineHeight: 1 }}>{universe.name}</h1>
-        <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', fontSize: 20, color: 'rgba(255,255,255,0.4)', margin: '0 0 32px' }}>{universe.tagline}</p>
-        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', margin: '0 0 8px' }}>Coming Soon</p>
-        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', maxWidth: 360, lineHeight: 1.7 }}>We're working on this universe. Stay tuned.</p>
-      </div>
-    </motion.div>
-  );
-}
+// Cards are built straight from UNIVERSE_CATALOG (src/lib/universeCatalog.js
+// — itself sourced from UNIVERSE_CONFIGS in websiteThemes.js) instead of a
+// second, independently-maintained array. The old array here had its own
+// display names ("CAPRI") and taglines ("Italian Coast") that had drifted
+// from the catalog's own name ("Capri") and tagline ("Mediterranean
+// summer") — confirmed live: tapping the old "Classical Grandeur" card
+// opened a preview titled "LONDON — Quiet Luxury", and picking "Italian
+// Coast" made Ava's own intro copy call it "Capri". It also only listed
+// the original 10 universes — the 10 "Ultra" universes added later
+// (feat/universes-expansion-10) never appeared here at all. Deriving from
+// the catalog means both problems are structurally impossible going
+// forward: this list can never show a name/tagline the rest of the app
+// doesn't also show, and a new universe appears here the moment it's
+// added to UNIVERSE_CONFIGS, with no second place to remember to update.
+const UNIVERSES = UNIVERSE_CATALOG.map((u, i) => ({
+  ...u,
+  number: String(i + 1).padStart(2, '0'),
+  photo: u.imageUrl || `/universes/${u.id}.jpg`,
+}));
 
 export default function OnboardingStepUniverse({ onNext, data, theme }) {
   const [selectedUniverse, setSelectedUniverse] = useState(data.activeUniverse || null);
@@ -75,8 +40,15 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
     onNext({ activeUniverse: selectedUniverse || 'london', websiteMode });
   };
 
-  const handleSelectFromOverlay = () => {
-    setSelectedUniverse(previewUniverse.id);
+  // Draft-shaped weddingDetails for the preview only — no WeddingDetails
+  // record exists yet at this point in onboarding (it's created in
+  // saveOnboarding once the whole wizard completes). Reuses the exact same
+  // mapping the real save uses, so the preview shows the couple's actual
+  // names/date instead of the generic "Your names" placeholder.
+  const previewWeddingDetails = buildWeddingDetailsPayload(data);
+
+  const handleSelectFromPreview = (universeId) => {
+    setSelectedUniverse(universeId);
     setPreviewUniverse(null);
   };
 
@@ -118,8 +90,8 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
             return (
               <div
                 key={u.id}
-                onClick={() => u.id === 'london' ? setPreviewUniverse(u) : setSelectedUniverse(u.id)}
-                {...interactiveDivProps(() => u.id === 'london' ? setPreviewUniverse(u) : setSelectedUniverse(u.id))}
+                onClick={() => setPreviewUniverse(u)}
+                {...interactiveDivProps(() => setPreviewUniverse(u))}
                 style={{
                   width: 220, flexShrink: 0, height: 280,
                   position: 'relative', overflow: 'hidden',
@@ -137,16 +109,10 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
                 />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0A0A0A 0%, rgba(10,10,10,0.6) 50%, transparent 100%)' }} />
 
-                {/* Selected badge */}
-                {isSelected && (
-                  <div style={{ position: 'absolute', top: 12, right: 12, padding: '3px 0' }}>
-                  </div>
-                )}
-
                 {/* Bottom info */}
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 16px 18px' }}>
                   <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 300, fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em', margin: '0 0 4px' }}>{u.number}</p>
-                  <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: 0, letterSpacing: '0.05em' }}>{u.tagline}</p>
+                  <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: 0, letterSpacing: '0.05em' }}>{u.tagline || u.name}</p>
                 </div>
               </div>
             );
@@ -158,10 +124,19 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          style={{ marginTop: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}
+          style={{ marginTop: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}
         >
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: textMuted, fontFamily: 'Plus Jakarta Sans, sans-serif', margin: 0 }}>
-            Website appearance
+            Wedding website appearance
+          </p>
+          {/* Relabelled — round of onboarding-content-refresh feedback found
+              this read as a live preview toggle for the wizard itself
+              (it visibly does nothing when tapped), when it actually only
+              sets the theme of the couple's own published wedding website,
+              set later. Caption makes that explicit instead of building a
+              live wizard-theme preview, which is out of scope here. */}
+          <p style={{ fontSize: 11, color: textFaint, fontFamily: 'Plus Jakarta Sans, sans-serif', margin: '0 0 4px', maxWidth: 320, textAlign: 'center' }}>
+            Applies to your wedding website once it's published — not this setup.
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
             {['Dark', 'Light'].map(mode => (
@@ -216,16 +191,30 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
         </motion.div>
       </div>
 
-      {/* Overlays — Dialog's own data-state animate classes replace the
-          former AnimatePresence/motion.div fade, Radix already delays
-          unmount until the exit animation finishes. */}
-      <Dialog open={!!previewUniverse && previewUniverse.id === 'london'} onOpenChange={(next) => { if (!next) setPreviewUniverse(null); }}>
+      {/* Universe preview — every card opens the same full UniverseWorldView
+          experience Design Studio itself uses (src/pages/UniverseStudio.jsx),
+          not just London. canAccessUltra is hardcoded true here: every
+          account is on some form of full access during onboarding itself
+          (the free trial's own copy promises "Full Ultra access for 14
+          days"), so gating Ultra universes in the picker before a plan is
+          even chosen would add friction with no real entitlement behind
+          it. onSwitchUniverse only updates local wizard state — no
+          WeddingDetails record exists yet to write to; the real write
+          happens once in saveOnboarding when the whole wizard completes. */}
+      <Dialog open={!!previewUniverse} onOpenChange={(next) => { if (!next) setPreviewUniverse(null); }}>
         <DialogContent fullBleed hideClose title="Universe preview" className="overflow-y-auto">
           {previewUniverse && (
-            <LondonUniverseView
-              isOnboarding={true}
+            <UniverseWorldView
+              universe={previewUniverse}
+              weddingDetails={previewWeddingDetails}
+              guests={[]}
+              isCurrent={selectedUniverse === previewUniverse.id}
+              canAccessUltra={true}
               onBack={() => setPreviewUniverse(null)}
-              onSelect={handleSelectFromOverlay}
+              onSwitchUniverse={handleSelectFromPreview}
+              onUpgrade={() => {}}
+              motifNote={previewUniverse.motifNote}
+              backButtonStyle={{ top: 20, left: 'auto', right: 24 }}
             />
           )}
         </DialogContent>

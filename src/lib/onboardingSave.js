@@ -29,6 +29,16 @@ export function buildWeddingDetailsPayload(data) {
     // guestType uses lowercase tile ids matching the enum: 'intimate' | 'celebration' | 'grand'
     guestCount: data.guestCount != null ? String(data.guestCount) : undefined,
     guestType:  data.guestType  || undefined,
+    // weddingStyle (OnboardingStep5WeddingType's style+ceremony+vibe pills,
+    // merged into one flat tag array) is an existing WeddingDetails schema
+    // field with real downstream consumers — Considerations.jsx's
+    // buildProfile(), EventDetails.jsx's ThemeSection migration
+    // (_STYLE_TO_AESTHETIC/_STYLE_TO_FAITH/_STYLE_TO_ATMOSPHERE), the guest
+    // website's WeddingStylePage.jsx, and AvaStudioWebsite.jsx's love-story
+    // prompt — but the field was never included in this payload, so every
+    // onboarding answer to "tell us about your celebration" was collected
+    // and then silently discarded on save.
+    weddingStyle: data.weddingStyle || [],
     activeUniverse: data.activeUniverse || 'london',
     websiteMode: data.websiteMode || 'dark',
     activeTheme: (data.websiteMode || 'dark') === 'light' ? 'ivory' : 'still',
