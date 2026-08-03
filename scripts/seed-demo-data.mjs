@@ -63,6 +63,7 @@ import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tallyGuestRsvp } from '../src/lib/guestRsvpTally.js';
+import { hashId } from '../api/_lib/questionnaireCrypto.js';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 try {
@@ -407,10 +408,11 @@ async function main() {
   // so this is what makes Guests.jsx's includePlusOnes tally genuinely
   // correct rather than just correct in a raw record dump.
   for (const row of plusOneRsvpRowsNeeded) {
+    const guestIdHash = hashId(row.guestId);
     for (const eventId of ['main-ceremony', 'reception']) {
       await adminCreate('RsvpResponse', {
         wedding_id: WEDDING_ID,
-        guest_id: row.guestId,
+        guest_id_hash: guestIdHash,
         event_id: eventId,
         status: row.status,
         meal_choice: row.mealChoice || null,

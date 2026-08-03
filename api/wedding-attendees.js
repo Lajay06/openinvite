@@ -23,12 +23,19 @@
  * Response: 200 { attendees: string[], circle: string[] }
  *        or 404 { error: 'This link has expired or is invalid.' }
  *
+ * fix/rsvp-response-encryption (PR 1a): RsvpResponse rows are grouped by
+ * guest_id_hash (HMAC of guest.id) rather than the plaintext guest_id this
+ * entity used to carry — this endpoint never reads email/song_request/
+ * dietary_restrictions/note, so only the grouping key changes here, no
+ * decryption needed.
+ *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 import { latestEventResponses, toEventResponsesShape, deriveRsvpStatus } from '../src/lib/rsvpAggregation.js';
+import { hashId } from './_lib/questionnaireCrypto.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -50,7 +57,7 @@ function firstNameLastInitial(name) {
 }
 
 function isGuestAttending(guest, rsvpRowsByGuest) {
-  const rows = rsvpRowsByGuest.get(guest.id) || [];
+  const rows = rsvpRowsByGuest.get(hashId(guest.id)) || [];
   if (rows.length > 0) {
     const eventResponses = toEventResponsesShape(latestEventResponses(rows, { plusOne: false }));
     return deriveRsvpStatus(eventResponses) === 'attending';
@@ -116,8 +123,8 @@ export default async function handler(req, res) {
 
     const rsvpRowsByGuest = new Map();
     for (const row of allRsvpRows) {
-      if (!rsvpRowsByGuest.has(row.guest_id)) rsvpRowsByGuest.set(row.guest_id, []);
-      rsvpRowsByGuest.get(row.guest_id).push(row);
+      if (!rsvpRowsByGuest.has(row.guest_id_hash)) rsvpRowsByGuest.set(row.guest_id_hash, []);
+      rsvpRowsByGuest.get(row.guest_id_hash).push(row);
     }
 
     const attendingGuests = allGuests.filter(g => isGuestAttending(g, rsvpRowsByGuest));

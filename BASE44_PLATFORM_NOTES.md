@@ -340,6 +340,33 @@ directly, remember to include `notification_prefs` (and the corrected
 `deletionRequestedAt` text) in the same full-replace call, not just the one
 field being touched.
 
+## Google OAuth login correctly dedupes against an existing password account by email
+
+Confirmed empirically 2026-08-03 (Session C security audit, item 1: "can the
+same email hold two accounts via Google OAuth + email/password?"), live
+against production with the account owner at the keyboard. Two-part test on
+`la.jay06@gmail.com`, an account that already existed (created
+2025-07-13T02:42:32.950Z, `plan: ultra`, `onboarding_completed: true`):
+
+1. `POST /apps/:id/auth/register` with that same email + a fresh password →
+   rejected outright, `"A user with this email already exists"`. The
+   password-registration path has its own dedupe check and fails closed.
+2. Clicking "Continue with Google" on the same email (real Google consent,
+   not scripted) → landed on `/DailyUpdate` already authenticated. Fetched
+   that session's own `GET /entities/User/me` and confirmed `id` and
+   `created_date` matched the pre-existing account exactly — Base44 resolved
+   the OAuth login to the *same* User record by email match, not a new one.
+
+**No account-duplication vector exists via this path.** The empty-looking
+dashboard on landing was not a fresh account — it's this account being the
+app-owner/admin account (`role: "admin"`), which was never populated with
+guest-list/budget test data, as distinct from a normal working account.
+Also confirmed as a side effect: `ChoosePlan.jsx`'s `isPastPlanStep()` gate
+correctly fast-forwarded past `/choose-plan` because `plan_step_completed`
+was already `true` on the existing record — not a gate bypass, working as
+designed for any already-onboarded account regardless of which auth method
+that particular login used.
+
 ## There is no MCP tool to delete an entity schema
 
 `create_entity_schema` and `update_entity_schema` exist; there is no

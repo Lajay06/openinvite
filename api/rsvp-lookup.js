@@ -30,6 +30,15 @@
  * Response: 200 { guest: {...}, wedding: {...} }
  *        or 404 { error: 'This link has expired or is invalid.' }
  *
+ * fix/rsvp-response-encryption (PR 1a): RsvpResponse rows are now matched
+ * by guest_id_hash (HMAC of guest.id, api/_lib/questionnaireCrypto.js
+ * hashId) rather than the plaintext guest_id this entity used to carry, and
+ * the guest-level row's song_request/note/dietary_restrictions/email live
+ * in one encrypted_guest_level ciphertext blob (decryptPayload) instead of
+ * four plaintext columns — see that file's header and
+ * BASE44_PLATFORM_NOTES.md for why (read:null + a real confidentiality
+ * promise means the row itself must not carry anything plaintext-readable).
+ *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
 
@@ -37,6 +46,7 @@ import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/s
 import { pickGuestSafeFields } from './_lib/guestSafeWedding.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 import { latestEventResponses, latestGuestLevel, toEventResponsesShape, mergePlusOneEventResponses } from '../src/lib/rsvpAggregation.js';
+import { hashId, decryptPayload } from './_lib/questionnaireCrypto.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -47,6 +57,17 @@ function unwrapList(payload) {
   if (Array.isArray(payload?.data)) return payload.data;
   if (Array.isArray(payload?.results)) return payload.results;
   return [];
+}
+
+/** decryptPayload throws on a truncated/tampered blob — treat that as "no data" rather than 500ing the whole lookup. */
+function safeDecrypt(blob) {
+  if (!blob) return null;
+  try {
+    return decryptPayload(blob);
+  } catch (err) {
+    console.error('[rsvp-lookup] Failed to decrypt encrypted_guest_level:', err.message);
+    return null;
+  }
 }
 
 /**
@@ -66,16 +87,17 @@ function pickGuestSafeGuestFields(guest, rsvpRows, role) {
   const isPlusOne = role === 'plus_one';
   const guestLevelRows = latestGuestLevel(rsvpRows, { plusOne: isPlusOne });
   const guestLevel = guestLevelRows[0] || null;
+  const decrypted = safeDecrypt(guestLevel?.encrypted_guest_level);
 
   if (isPlusOne) {
     return {
       name: guest.plus_one_name || 'Guest',
       plus_one: false, // a plus-one doesn't get their own plus-one
       poll_votes: {},
-      song_request: guestLevel?.song_request ?? '',
-      rsvp_note: guestLevel?.note ?? '',
-      dietary_restrictions: guestLevel?.dietary_restrictions ?? (guest.plus_one_dietary_restrictions || ''),
-      email: guest.plus_one_email || guestLevel?.email || '',
+      song_request: decrypted?.song_request ?? '',
+      rsvp_note: decrypted?.note ?? '',
+      dietary_restrictions: decrypted?.dietary_restrictions ?? (guest.plus_one_dietary_restrictions || ''),
+      email: guest.plus_one_email || decrypted?.email || '',
       event_responses: mergePlusOneEventResponses(guest.event_responses || [], rsvpRows),
     };
   }
@@ -85,14 +107,14 @@ function pickGuestSafeGuestFields(guest, rsvpRows, role) {
     name: guest.name,
     plus_one: !!guest.plus_one,
     poll_votes: guest.poll_votes || {},
-    song_request: guestLevel?.song_request ?? (guest.song_request || ''),
-    rsvp_note: guestLevel?.note ?? (guest.rsvp_note || ''),
-    dietary_restrictions: guestLevel?.dietary_restrictions ?? (guest.dietary_restrictions || ''),
+    song_request: decrypted?.song_request ?? (guest.song_request || ''),
+    rsvp_note: decrypted?.note ?? (guest.rsvp_note || ''),
+    dietary_restrictions: decrypted?.dietary_restrictions ?? (guest.dietary_restrictions || ''),
     // Opposite precedence from the fields above: a real Guest.email always
     // wins over a previously RSVP-submitted one, matching the same "don't
-    // overwrite an existing email" rule getMyGuestsWithRsvp() enforces on
+    // overwrite an existing email" rule api/my-guests-rsvp.js enforces on
     // the couple's own dashboard read.
-    email: guest.email || guestLevel?.email || '',
+    email: guest.email || decrypted?.email || '',
     event_responses: eventRows.length > 0 ? toEventResponsesShape(eventRows) : (guest.event_responses || []),
   };
 }
@@ -131,7 +153,7 @@ export default async function handler(req, res) {
 
     let rsvpRows = [];
     if (wedding?.id) {
-      const rsvpQuery = encodeURIComponent(JSON.stringify({ wedding_id: wedding.id, guest_id: guest.id }));
+      const rsvpQuery = encodeURIComponent(JSON.stringify({ wedding_id: wedding.id, guest_id_hash: hashId(guest.id) }));
       const rsvpRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/RsvpResponse?q=${rsvpQuery}`, {
         headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
       });

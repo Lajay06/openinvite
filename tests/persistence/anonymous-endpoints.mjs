@@ -45,6 +45,7 @@ import weddingPollResultsHandler from '../../api/wedding-poll-results.js';
 import rsvpSubmitHandler from '../../api/rsvp-submit.js';
 import weddingAttendeesHandler from '../../api/wedding-attendees.js';
 import { aggregateEventTallies, latestEventResponses } from '../../src/lib/rsvpAggregation.js';
+import { hashId, decryptPayload } from '../../api/_lib/questionnaireCrypto.js';
 
 // Cloudflare's official "always passes" Turnstile test keypair — documented
 // for exactly this purpose (automated tests with no real browser widget).
@@ -506,7 +507,7 @@ export async function runAnonymousEndpoints() {
       ? pass('rsvp-submit.js — accepts a valid submission (previously 403)', `200 ${JSON.stringify(res._json)}`)
       : fail('rsvp-submit.js — accepts a valid submission (previously 403)', 200, `${res._status} ${JSON.stringify(res._json)}`));
 
-    const rowsQuery = encodeURIComponent(JSON.stringify({ wedding_id: rsvpWeddingId, guest_id: rsvpGuestId }));
+    const rowsQuery = encodeURIComponent(JSON.stringify({ wedding_id: rsvpWeddingId, guest_id_hash: hashId(rsvpGuestId) }));
     const rows = await api('GET', `/apps/${APP_ID}/entities/RsvpResponse?q=${rowsQuery}`, undefined, token);
     const rowList = Array.isArray(rows) ? rows : (rows?.data || rows?.results || []);
     rsvpResponseIdsToClean.push(...rowList.map(r => r.id));
@@ -520,8 +521,12 @@ export async function runAnonymousEndpoints() {
       : fail('rsvp-submit.js — ignores a forged wedding_id in the body, stamps the token-resolved wedding', rsvpWeddingId, eventRow?.wedding_id));
 
     const guestLevelRow = rowList.find(r => r.event_id === null || r.event_id === undefined);
-    results.push(guestLevelRow?.song_request === 'Sentinel song request' && guestLevelRow?.note === 'Sentinel RSVP note' && guestLevelRow?.dietary_restrictions === 'Sentinel dietary note'
-      ? pass('rsvp-submit.js — guest-level row (event_id: null) persists song_request/note/dietary_restrictions', JSON.stringify(guestLevelRow))
+    const decryptedGuestLevel = guestLevelRow?.encrypted_guest_level ? decryptPayload(guestLevelRow.encrypted_guest_level) : null;
+    results.push(guestLevelRow && !('song_request' in guestLevelRow) && !('note' in guestLevelRow) && !('dietary_restrictions' in guestLevelRow)
+      ? pass('rsvp-submit.js — guest-level row carries no plaintext PII fields (fix/rsvp-response-encryption)', 'no plaintext song_request/note/dietary_restrictions keys')
+      : fail('rsvp-submit.js — guest-level row carries no plaintext PII fields', 'no plaintext keys', JSON.stringify(guestLevelRow)));
+    results.push(decryptedGuestLevel?.song_request === 'Sentinel song request' && decryptedGuestLevel?.note === 'Sentinel RSVP note' && decryptedGuestLevel?.dietary_restrictions === 'Sentinel dietary note'
+      ? pass('rsvp-submit.js — guest-level row (event_id: null) persists song_request/note/dietary_restrictions (encrypted)', JSON.stringify(decryptedGuestLevel))
       : fail('rsvp-submit.js — guest-level row (event_id: null) persists song_request/note/dietary_restrictions', 'all three sentinel values', JSON.stringify(guestLevelRow)));
 
     // ── A guest changing their RSVP: resubmit the same event with a
@@ -553,7 +558,7 @@ export async function runAnonymousEndpoints() {
       : fail('rsvp-submit.js — a guest changing their RSVP counts only the latest status', 'no', latestEvent1?.status));
   } catch (err) {
     console.log(`  ❌ FAIL  rsvp-submit.js test — error: ${err.message}`);
-    results.push(false, false, false, false, false, false);
+    results.push(false, false, false, false, false, false, false);
   } finally {
     for (const id of rsvpResponseIdsToClean) {
       await cleanupEntity(token, 'RsvpResponse', id);
