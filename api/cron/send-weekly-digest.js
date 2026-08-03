@@ -247,6 +247,13 @@ export default async function handler(req, res) {
       console.warn('[cron/send-weekly-digest] Rejected — invalid or missing Authorization header');
       return res.status(401).json({ error: 'Unauthorized' });
     }
+  } else if (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production') {
+    // Fail closed in production — same rule webhooks/stripe.js already
+    // applies. Vercel injects CRON_SECRET automatically for its own
+    // scheduled invocations; a production deployment missing it is a
+    // config error, not a reason to proceed.
+    console.error('[cron/send-weekly-digest] Refusing to run in production — CRON_SECRET is not set');
+    return res.status(401).json({ error: 'CRON_SECRET is required in production' });
   } else {
     console.warn('[cron/send-weekly-digest] CRON_SECRET not set — skipping auth check (dev/preview only)');
   }
