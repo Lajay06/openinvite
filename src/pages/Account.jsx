@@ -10,7 +10,7 @@ import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { getNotificationPrefs } from '@/lib/notificationPrefs';
-import { resolveCheckoutPriceId, PLAN_PRICES } from '@/lib/checkoutSession';
+import { startCheckout, resolveCheckoutPriceId, PLAN_PRICES } from '@/lib/checkoutSession';
 import toast from 'react-hot-toast';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -345,25 +345,32 @@ function BillingTab({ user }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {}
+      const contentType = res.headers.get('content-type') || '';
+      const data = contentType.includes('application/json') ? await res.json() : null;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        console.error('[Account handlePortal] Unexpected response:', res.status, data);
+        toast.error(data?.error || 'Could not open billing portal — please try again.');
+      }
+    } catch (err) {
+      console.error('[Account handlePortal] Network error:', err);
+      toast.error('Network error — could not reach the billing server. Please try again.');
+    }
     setPortalLoading(false);
   };
 
+  // fix/account-checkout-and-maps-key: reuses the same startCheckout used by
+  // ChoosePlan.jsx/Pricing.jsx instead of a separate inline fetch with an
+  // empty catch — same error-handling coverage (network error, non-JSON
+  // response, API-returned error), surfaced here via toast since this tab
+  // has no dedicated error banner. Error-handling only — priceId resolution
+  // and the request body sent to create-checkout-session are unchanged.
   const handleCheckout = async (planKey) => {
-    setCheckoutLoading(planKey);
-    try {
-      const { priceId } = resolveCheckoutPriceId(planKey);
-      const res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, userId: user?.id || '', userEmail: user?.email || '' }),
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {}
-    setCheckoutLoading(null);
+    await startCheckout(planKey, setCheckoutLoading, (msg) => { if (msg) toast.error(msg); }, {
+      resolveUser: async () => user,
+      logPrefix: '[Account checkout]',
+    });
   };
 
   return (

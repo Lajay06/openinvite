@@ -58,6 +58,7 @@ export default async function handler(req, res) {
         photo_reference:    p.photos?.[0]?.photo_reference || null,
         maps_url:           `https://www.google.com/maps/place/?q=place_id:${p.place_id}`,
         types:              p.types || [],
+        opening_hours:      p.opening_hours || null,
         reviews: (p.reviews || []).slice(0, 5).map(r => ({
           author_name: r.author_name || 'Anonymous',
           rating: r.rating || null,
