@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-export default function OnboardingStep8Fork({ onPathA, onPathB, data, theme }) {
+export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
   const [hoveredCard, setHoveredCard] = useState(null); // 'a' | 'b' | null
 
   const cardStyle = (cardKey) => ({

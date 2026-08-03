@@ -4,12 +4,11 @@ import DatePicker, { formatDateDisplay } from '@/components/shared/DatePicker';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-export default function OnboardingStep2Date({ onNext, data, theme }) {
+export default function OnboardingStep2Date({ onNext, data }) {
   const [date, setDate] = useState(data?.weddingDate || '');
-  const isDark = theme !== 'light';
-  const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
-  const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
-  const skipColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+  const textPrimary = '#0A0A0A';
+  const textMuted = 'rgba(10,10,10,0.6)';
+  const skipColor = 'rgba(10,10,10,0.6)';
 
   const handleSubmit = () => {
     if (date) onNext({ weddingDate: date });
@@ -44,7 +43,6 @@ export default function OnboardingStep2Date({ onNext, data, theme }) {
           value={date}
           onChange={setDate}
           placeholder="Select your wedding date"
-          dark={isDark}
         />
         {date && (
           <p style={{ color: textMuted, fontSize: 13, marginTop: 8, textAlign: 'center', fontFamily: PJS }}>

@@ -3,16 +3,15 @@ import { motion } from 'framer-motion';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-export default function OnboardingStep1Names({ onNext, theme }) {
+export default function OnboardingStep1Names({ onNext }) {
   const [name1, setName1] = useState('');
   const [name2, setName2] = useState('');
   const [focus1, setFocus1] = useState(false);
   const [focus2, setFocus2] = useState(false);
-  const isDark = theme !== 'light';
 
-  const labelColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
-  const inputColor = isDark ? '#FFFFFF' : '#0A0A0A';
-  const inputBorderDefault = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
+  const labelColor = 'rgba(10,10,10,0.6)';
+  const inputColor = '#0A0A0A';
+  const inputBorderDefault = 'rgba(10,10,10,0.18)';
 
   const handleSubmit = () => {
     if (name1.trim() && name2.trim()) {
@@ -48,7 +47,7 @@ export default function OnboardingStep1Names({ onNext, theme }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, width: '100%', maxWidth: 700, margin: '0 auto' }}>
       <style>{`
-        .s1-input::placeholder { color: ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'}; }
+        .s1-input::placeholder { color: rgba(10,10,10,0.58); }
       `}</style>
 
       {/* Line 1 */}

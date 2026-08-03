@@ -151,6 +151,31 @@ Every dashboard page must follow this exact top-to-bottom order — no exception
 4. **Tabs row** (if the page has tabs) — `display: flex, borderBottom: '1px solid rgba(10,10,10,0.08)', padding: '0 32px'`
 5. **Content area** — all data/lists/grids inside `div` with `padding: '32px 32px 48px'`
 
+## Onboarding wizard
+
+Reference implementation: `src/pages/Onboarding.jsx` + `src/components/onboarding/*`.
+
+- The whole wizard is light — one page background (`#FFFFFF`) across every
+  step, `welcome` through `completion`, including the `pathA-*` detail
+  steps. There is no dark mode for the wizard chrome; the old per-step
+  `theme`/`isDark` prop was removed, not just left at `'light'`.
+- Text colours follow the same tokens as the dashboard: `#0A0A0A` primary,
+  `rgba(10,10,10,0.6)` muted, `rgba(10,10,10,0.58)` placeholders,
+  `rgba(10,10,10,0.18)` default borders.
+- Exception — universe picker tiles (`OnboardingStepUniverse.jsx`): each
+  tile is a photo with a dark gradient overlay and white caption text.
+  This is a fixed property of the image-card treatment, not tied to page
+  theme, and must stay white-on-photo regardless of the page background.
+  The same applies to any other card whose background is a photo rather
+  than a flat colour (e.g. `OnboardingStep8Fork.jsx`'s hover-to-black
+  card state, which is a hover accent, not page theme).
+- The "wedding website appearance" Dark/Light toggle on the universe step
+  sets the couple's *published wedding website* theme (`websiteMode`) —
+  a completely different concept from the wizard's own (now fixed-light)
+  chrome. Never conflate the two: the toggle's pill buttons are styled
+  like the rest of the wizard (light, black-selected) precisely so it
+  doesn't read as a live preview of the wizard itself.
+
 ## Rules
 - No text-transform: uppercase anywhere
 - No box-shadow on cards

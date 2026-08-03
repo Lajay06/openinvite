@@ -13,7 +13,7 @@ export default function OnboardingPathACultural({ onNext, data }) {
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="font-bold text-white mb-3"
+        className="font-bold text-[#0A0A0A] mb-3"
         style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
       >
         Any cultural or religious traditions?
@@ -29,7 +29,7 @@ export default function OnboardingPathACultural({ onNext, data }) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Tell us what's important to you..."
-          className="w-full bg-[#111111] border border-[#333] rounded-none px-6 py-4 text-white placeholder-[#444444] focus:outline-none focus:border-[#E03553] transition-colors text-sm h-32 resize-none"
+          className="w-full bg-[#FFFFFF] border border-[rgba(10,10,10,0.18)] rounded-none px-6 py-4 text-[#0A0A0A] placeholder-[rgba(10,10,10,0.58)] focus:outline-none focus:border-[#E03553] transition-colors text-sm h-32 resize-none"
         />
       </motion.div>
 
@@ -48,7 +48,7 @@ export default function OnboardingPathACultural({ onNext, data }) {
 
         <button
           onClick={() => onNext({ culturalNotes: '' })}
-          className="block mx-auto text-[#666666] hover:text-white text-sm transition-colors"
+          className="block mx-auto text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
         >
           Skip for now →
         </button>

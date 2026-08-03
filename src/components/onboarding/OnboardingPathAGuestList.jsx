@@ -12,7 +12,7 @@ export default function OnboardingPathAGuestList({ onNext, data }) {
     if (!uploadedFile) return;
 
     setFile(uploadedFile);
-    
+
     // Simple CSV parsing (in production, use Papa Parse)
     const text = await uploadedFile.text();
     const lines = text.split('\n').slice(0, 4);
@@ -33,7 +33,7 @@ export default function OnboardingPathAGuestList({ onNext, data }) {
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="font-bold text-white mb-3"
+        className="font-bold text-[#0A0A0A] mb-3"
         style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
       >
         Let's add your guests.
@@ -48,10 +48,10 @@ export default function OnboardingPathAGuestList({ onNext, data }) {
         {!manualMode && (
           <div>
             <label className="block mb-4">
-              <div className="border-2 border-dashed border-[#333] rounded-none p-12 cursor-pointer hover:border-[#E03553] transition-colors">
-                <Upload className="w-8 h-8 text-[rgba(255,255,255,0.4)] mx-auto mb-3" />
-                <p className="text-white font-medium">Upload CSV or Excel file</p>
-                <p className="text-[#666666] text-sm mt-1">Expected columns: Name, Email, Phone, Group</p>
+              <div className="border-2 border-dashed border-[rgba(10,10,10,0.18)] rounded-none p-12 cursor-pointer hover:border-[#E03553] transition-colors">
+                <Upload className="w-8 h-8 text-[rgba(10,10,10,0.45)] mx-auto mb-3" />
+                <p className="text-[#0A0A0A] font-medium">Upload CSV or Excel file</p>
+                <p className="text-[rgba(10,10,10,0.6)] text-sm mt-1">Expected columns: Name, Email, Phone, Group</p>
               </div>
               <input
                 type="file"
@@ -62,9 +62,9 @@ export default function OnboardingPathAGuestList({ onNext, data }) {
             </label>
 
             {preview.length > 0 && (
-              <div className="bg-[#111111] border border-[#333] rounded-none p-4 text-left">
+              <div className="bg-[#FFFFFF] border border-[rgba(10,10,10,0.18)] rounded-none p-4 text-left">
                 {preview.map((line, i) => (
-                  <p key={i} className="text-white text-sm py-1 border-b border-[#222] last:border-0">
+                  <p key={i} className="text-[#0A0A0A] text-sm py-1 border-b border-[rgba(10,10,10,0.1)] last:border-0">
                     {line.substring(0, 50)}...
                   </p>
                 ))}
@@ -73,7 +73,7 @@ export default function OnboardingPathAGuestList({ onNext, data }) {
 
             <button
               onClick={() => setManualMode(true)}
-              className="text-[#666666] hover:text-white text-sm transition-colors mt-6"
+              className="text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors mt-6"
             >
               I'll add them manually →
             </button>
@@ -96,7 +96,7 @@ export default function OnboardingPathAGuestList({ onNext, data }) {
 
         <button
           onClick={() => onNext({ guestList: [] })}
-          className="block mx-auto text-[#666666] hover:text-white text-sm transition-colors"
+          className="block mx-auto text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
         >
           Skip for now →
         </button>

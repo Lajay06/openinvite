@@ -26,15 +26,13 @@ const UNIVERSES = UNIVERSE_CATALOG.map((u, i) => ({
   photo: u.imageUrl || `/universes/${u.id}.jpg`,
 }));
 
-export default function OnboardingStepUniverse({ onNext, data, theme }) {
+export default function OnboardingStepUniverse({ onNext, data }) {
   const [selectedUniverse, setSelectedUniverse] = useState(data.activeUniverse || null);
   const [websiteMode, setWebsiteMode] = useState(data.websiteMode || 'dark');
   const [previewUniverse, setPreviewUniverse] = useState(null);
   const [continueHovered, setContinueHovered] = useState(false);
-  const isDark = theme !== 'light';
-  const textPrimary = isDark ? '#FFFFFF' : '#0A0A0A';
-  const textMuted = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)';
-  const textFaint = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+  const textPrimary = '#0A0A0A';
+  const textMuted = 'rgba(10,10,10,0.6)';
 
   const handleContinue = () => {
     onNext({ activeUniverse: selectedUniverse || 'london', websiteMode });
@@ -73,7 +71,7 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
-          style={{ fontSize: 13, color: textFaint, marginBottom: 28, paddingLeft: 42 }}
+          style={{ fontSize: 13, color: textMuted, marginBottom: 28, paddingLeft: 42 }}
         >
           Tap any universe to preview it. You can change this at any time from your Design Studio.
         </motion.p>
@@ -135,7 +133,7 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
               sets the theme of the couple's own published wedding website,
               set later. Caption makes that explicit instead of building a
               live wizard-theme preview, which is out of scope here. */}
-          <p style={{ fontSize: 11, color: textFaint, fontFamily: 'Plus Jakarta Sans, sans-serif', margin: '0 0 4px', maxWidth: 320, textAlign: 'center' }}>
+          <p style={{ fontSize: 11, color: textMuted, fontFamily: 'Plus Jakarta Sans, sans-serif', margin: '0 0 4px', maxWidth: 320, textAlign: 'center' }}>
             Applies to your wedding website once it's published — not this setup.
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -145,9 +143,10 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
                 onClick={() => setWebsiteMode(mode.toLowerCase())}
                 style={{
                   padding: '8px 24px',
-                  border: `1px solid ${websiteMode === mode.toLowerCase() ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.12)'}`,
-                  background: websiteMode === mode.toLowerCase() ? 'rgba(255,255,255,0.08)' : 'transparent',
-                  color: websiteMode === mode.toLowerCase() ? '#FFFFFF' : 'rgba(255,255,255,0.35)',
+                  borderRadius: 999,
+                  border: `1px solid ${websiteMode === mode.toLowerCase() ? '#0A0A0A' : 'rgba(10,10,10,0.18)'}`,
+                  background: websiteMode === mode.toLowerCase() ? '#0A0A0A' : 'transparent',
+                  color: websiteMode === mode.toLowerCase() ? '#FFFFFF' : textMuted,
                   fontSize: 13, fontWeight: 600, cursor: 'pointer',
                   fontFamily: 'Plus Jakarta Sans, sans-serif',
                   transition: 'all 0.2s ease',
@@ -179,8 +178,8 @@ export default function OnboardingStepUniverse({ onNext, data, theme }) {
                 : continueHovered
                   ? '#0A0A0A'
                   : '#E03553',
-              border: selectedUniverse ? 'none' : '1px solid rgba(255,255,255,0.25)',
-              color: selectedUniverse ? '#FFFFFF' : 'rgba(255,255,255,0.35)',
+              border: selectedUniverse ? 'none' : '1px solid rgba(10,10,10,0.18)',
+              color: selectedUniverse ? '#FFFFFF' : 'rgba(10,10,10,0.3)',
               cursor: selectedUniverse ? 'pointer' : 'default',
               fontFamily: 'Plus Jakarta Sans, sans-serif',
               transition: 'background 0.15s ease',

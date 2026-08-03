@@ -68,8 +68,6 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [user, setUser] = useState(null);
-  // TASK 2: theme state
-  const [theme, setTheme] = useState('dark');
   const [hydrating, setHydrating] = useState(true);
   // Distinct from saveError (which guards the final-save step) — this
   // guards the initial auth/draft-resolution fetch that must succeed
@@ -113,7 +111,6 @@ export default function Onboarding() {
   useEffect(() => { draftWeddingIdRef.current = draftWeddingId; }, [draftWeddingId]);
 
   const currentStep = STEPS[currentStepIndex];
-  const isDark = theme !== 'light';
 
   // Progress: 0 on welcome, fills across the 8 core steps, 100 on completion
   const coreIndex = CORE_STEPS.indexOf(currentStep); // -1 if not a core step
@@ -401,33 +398,26 @@ export default function Onboarding() {
     }
   };
 
-  const stepProps = { theme };
-
-  // Fork step always renders on a light background
-  const isForkStep = currentStep === 'fork';
-  const pageBg = isForkStep ? '#F5F4F0' : (isDark ? '#0A0A0A' : '#FAFAFA');
-  const pageIsLight = isForkStep || !isDark;
-
   if (authCheckError) {
     return (
       <div
         style={{
-          minHeight: '100vh', background: '#0A0A0A',
+          minHeight: '100vh', background: '#FFFFFF',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 24, fontFamily: PJS, textAlign: 'center',
         }}
       >
         <div style={{ width: '100%', maxWidth: 420 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', margin: '0 0 12px', fontFamily: PJS }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', margin: '0 0 12px', fontFamily: PJS }}>
             Something went wrong.
           </h1>
-          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(255,255,255,0.5)', margin: '0 0 32px', fontFamily: PJS }}>
+          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(10,10,10,0.6)', margin: '0 0 32px', fontFamily: PJS }}>
             We couldn't load your wedding setup. This is usually temporary — try again, or contact us if it keeps happening.
           </p>
           <button
             onClick={checkAuth}
             style={{
-              background: '#FFFFFF', color: '#0A0A0A', border: 'none', borderRadius: 999,
+              background: '#0A0A0A', color: '#FFFFFF', border: 'none', borderRadius: 999,
               padding: '14px 40px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: PJS,
             }}
           >
@@ -439,22 +429,21 @@ export default function Onboarding() {
   }
 
   if (hydrating) {
-    return <div style={{ minHeight: '100vh', background: '#0A0A0A' }} />;
+    return <div style={{ minHeight: '100vh', background: '#FFFFFF' }} />;
   }
 
   return (
     <div style={{
       minHeight: '100vh',
-      background: pageBg,
+      background: '#FFFFFF',
       overflow: 'hidden',
-      transition: 'background 0.3s ease',
     }}>
 
       {/* TASK 4: Progress bar — fixed top, 2px */}
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         height: 2, zIndex: 100,
-        background: pageIsLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)',
+        background: 'rgba(10,10,10,0.08)',
       }}>
         <motion.div
           style={{
@@ -503,7 +492,7 @@ export default function Onboarding() {
           alt="openinvite"
           style={{
             height: 20, width: 'auto', display: 'block',
-            filter: pageIsLight ? 'brightness(0)' : 'brightness(0) invert(1)',
+            filter: 'brightness(0)',
           }}
         />
 
@@ -511,7 +500,7 @@ export default function Onboarding() {
         {showStepCounter && (
           <span style={{
             fontSize: 11, fontFamily: PJS,
-            color: pageIsLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)',
+            color: 'rgba(10,10,10,0.4)',
           }}>
             Step {stepNum} of {DISPLAY_STEP_COUNT}
           </span>
@@ -521,9 +510,7 @@ export default function Onboarding() {
         {showBack && (
           <button
             onClick={goBack}
-            className={`border-none cursor-pointer text-[13px] text-left bg-transparent rounded-full px-2 py-1 transition-colors duration-150 hover:bg-black hover:text-white active:bg-neutral-900 ${
-              pageIsLight ? 'text-[rgba(0,0,0,0.4)]' : 'text-[rgba(255,255,255,0.4)]'
-            }`}
+            className="border-none cursor-pointer text-[13px] text-left bg-transparent rounded-full px-2 py-1 transition-colors duration-150 hover:bg-black hover:text-white active:bg-neutral-900 text-[rgba(10,10,10,0.4)]"
             style={{ fontFamily: PJS }}
           >
             ← Back
@@ -546,54 +533,53 @@ export default function Onboarding() {
           }}
         >
           {currentStep === 'welcome' && (
-            <OnboardingWelcome onNext={goNext} {...stepProps} />
+            <OnboardingWelcome onNext={goNext} />
           )}
           {currentStep === 'names' && (
-            <OnboardingStep1Names onNext={goNext} {...stepProps} />
+            <OnboardingStep1Names onNext={goNext} />
           )}
           {currentStep === 'date' && (
-            <OnboardingStep2Date onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingStep2Date onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'location' && (
-            <OnboardingStep3Location onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingStep3Location onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'guestCount' && (
-            <OnboardingStep4GuestCount onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingStep4GuestCount onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'weddingType' && (
-            <OnboardingStep5WeddingType onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingStep5WeddingType onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'ava' && (
-            <OnboardingStep7Ava onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingStep7Ava onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'universe' && (
-            <OnboardingStepUniverse onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingStepUniverse onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'fork' && (
             <OnboardingStep8Fork
               onPathA={handlePathA}
               onPathB={handlePathB}
               data={onboardingData}
-              {...stepProps}
             />
           )}
           {currentStep === 'pathA-guestList' && (
-            <OnboardingPathAGuestList onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingPathAGuestList onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'pathA-budget' && (
-            <OnboardingPathABudget onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingPathABudget onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'pathA-vendors' && (
-            <OnboardingPathAVendors onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingPathAVendors onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'pathA-cultural' && (
-            <OnboardingPathACultural onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingPathACultural onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'pathA-inspiration' && (
-            <OnboardingPathAInspiration onNext={goNext} data={onboardingData} {...stepProps} />
+            <OnboardingPathAInspiration onNext={goNext} data={onboardingData} />
           )}
           {currentStep === 'completion' && (
-            <OnboardingCompletion onDone={handleCompletion} data={onboardingData} {...stepProps} />
+            <OnboardingCompletion onDone={handleCompletion} data={onboardingData} />
           )}
         </motion.div>
       </AnimatePresence>
