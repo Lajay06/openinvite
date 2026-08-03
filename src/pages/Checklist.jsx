@@ -38,6 +38,7 @@ function loadChecklist() {
   try {
     const saved = localStorage.getItem('oi_checklist');
     if (saved) return JSON.parse(saved);
+    // eslint-disable-next-line no-empty -- best-effort cache read; falls through to a sane empty default below
   } catch {}
   return { essentials: [], niceToHave: [] };
 }

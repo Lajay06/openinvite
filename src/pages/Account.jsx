@@ -121,6 +121,7 @@ function SettingsTab({ user, refreshUser }) {
       try {
         const stored = JSON.parse(localStorage.getItem('oi_user') || '{}');
         localStorage.setItem('oi_user', JSON.stringify({ ...stored, full_name: name.trim() }));
+        // eslint-disable-next-line no-empty -- best-effort local cache mirror; the real save already succeeded via the API above
       } catch {}
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
@@ -140,6 +141,7 @@ function SettingsTab({ user, refreshUser }) {
       try {
         const stored = JSON.parse(localStorage.getItem('oi_user') || '{}');
         localStorage.setItem('oi_user', JSON.stringify({ ...stored, tempUnit: unit }));
+        // eslint-disable-next-line no-empty -- best-effort local cache mirror; the real save already succeeded via the API above
       } catch {}
       toast.success(`Temperature now shown in °${unit}`);
       refreshUser?.();
@@ -286,6 +288,7 @@ function NotificationsTab({ user, refreshUser }) {
       try {
         const stored = JSON.parse(localStorage.getItem('oi_user') || '{}');
         localStorage.setItem('oi_user', JSON.stringify({ ...stored, notification_prefs: next }));
+        // eslint-disable-next-line no-empty -- best-effort local cache mirror; the real save already succeeded via the API above
       } catch {}
       refreshUser?.();
     } catch {

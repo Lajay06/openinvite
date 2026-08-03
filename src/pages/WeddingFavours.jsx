@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import toast from 'react-hot-toast';
 import { InvokeLLM } from "@/integrations/Core";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, Loader2, X, Search, FileText, Check, Plus, Gift, Package, Trash2, Lightbulb } from "lucide-react";
@@ -151,7 +152,7 @@ export default function WeddingFavoursPage() {
       setFavourItems(r.favourItems || []);
       setRecordId(r.id || null);
       latestRef.current = r;
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); toast.error('Failed to load — please refresh and try again.'); }
     setLoading(false);
   };
 
@@ -171,7 +172,7 @@ export default function WeddingFavoursPage() {
         }
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch { setSaveStatus('idle'); }
+      } catch { setSaveStatus('idle'); toast.error('Save failed. Please try again.'); }
     }, 1200);
   };
 

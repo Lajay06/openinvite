@@ -27,6 +27,7 @@ export default function BackgroundMusicPlayer({ weddingSlug, musicSettings, acce
   useEffect(() => {
     if (!enabled) return;
     let wantsToPlay = false;
+    // eslint-disable-next-line no-empty -- best-effort play/pause memory; a blocked/quota'd localStorage just means it doesn't persist, no guest-facing harm
     try { wantsToPlay = localStorage.getItem(storageKey) === 'playing'; } catch {}
     if (wantsToPlay && audioRef.current) {
       audioRef.current.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
@@ -41,10 +42,12 @@ export default function BackgroundMusicPlayer({ weddingSlug, musicSettings, acce
     if (playing) {
       audioRef.current.pause();
       setPlaying(false);
+      // eslint-disable-next-line no-empty -- best-effort play/pause memory; a blocked/quota'd localStorage just means it doesn't persist, no guest-facing harm
       try { localStorage.setItem(storageKey, 'paused'); } catch {}
     } else {
       audioRef.current.play().then(() => {
         setPlaying(true);
+        // eslint-disable-next-line no-empty -- best-effort play/pause memory; a blocked/quota'd localStorage just means it doesn't persist, no guest-facing harm
         try { localStorage.setItem(storageKey, 'playing'); } catch {}
       }).catch(() => {});
     }

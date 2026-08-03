@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import toast from 'react-hot-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MapPin, Bus, Car, Truck, FileText, Loader2, X, Plus, Check, Search } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
@@ -99,7 +100,7 @@ export default function TransportPage() {
       setTransport(r.transport || {});
       setRecordId(r.id || null);
       latestRef.current = r;
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); toast.error('Failed to load — please refresh and try again.'); }
     setLoading(false);
   };
 
@@ -117,7 +118,7 @@ export default function TransportPage() {
         }
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch { setSaveStatus('idle'); }
+      } catch { setSaveStatus('idle'); toast.error('Save failed. Please try again.'); }
     }, 1200);
   };
 

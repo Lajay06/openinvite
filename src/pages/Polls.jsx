@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import toast from 'react-hot-toast';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { aggregateVotes } from "@/lib/pollAggregation";
@@ -323,7 +324,9 @@ export default function Polls() {
         insightRunRef.current = true;
         generateInsights(merged, r.id, loadedPolls);
       }
-    } catch {}
+    } catch {
+      toast.error('Failed to load — please refresh and try again.');
+    }
     setLoading(false);
   };
 
@@ -335,7 +338,9 @@ export default function Polls() {
         const created = await base44.entities.WeddingDetails.create({ polls: newPolls });
         setRecordId(created.id);
       }
-    } catch {}
+    } catch {
+      toast.error('Save failed. Please try again.');
+    }
   };
 
   // pollList carries live (merged) vote counts, used to decide which polls
@@ -367,6 +372,7 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
           updated = updated.map(p => p.id === poll.id ? { ...p, avaInsight: insightText } : p);
           updatedRaw = updatedRaw.map(p => p.id === poll.id ? { ...p, avaInsight: insightText } : p);
         }
+        // eslint-disable-next-line no-empty -- best-effort AI insight annotation; the poll itself already works without it
       } catch {}
     }
     if (updated !== pollList) {

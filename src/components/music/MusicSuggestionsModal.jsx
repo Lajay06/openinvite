@@ -103,6 +103,7 @@ export default function MusicSuggestionsModal({ isOpen, onClose, onAddSuggestion
     try {
       const details = await getMyWeddingDetails();
       if (details?.theme) setWeddingTheme(details.theme);
+      // eslint-disable-next-line no-empty -- optional theme-lookup enrichment; the core suggestion feature works fine without it
     } catch {}
   };
 

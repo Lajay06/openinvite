@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import toast from 'react-hot-toast';
 import { Hotel, MapPin, FileText, Loader2, X, Plus, Check, Search, Edit, Trash2 } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
@@ -178,7 +179,7 @@ export default function AccommodationPage() {
       setAccom(r.accommodation || {});
       setRecordId(r.id || null);
       latestRef.current = r;
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); toast.error('Failed to load — please refresh and try again.'); }
     setLoading(false);
   };
 
@@ -196,7 +197,7 @@ export default function AccommodationPage() {
         }
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch { setSaveStatus('idle'); }
+      } catch { setSaveStatus('idle'); toast.error('Save failed. Please try again.'); }
     }, 1200);
   };
 

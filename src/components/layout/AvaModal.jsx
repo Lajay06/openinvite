@@ -41,6 +41,7 @@ function parseActions(rawText) {
         actions.push({ id: Math.random().toString(36).slice(2), type: parsed.type, data: parsed.data || {}, status: 'pending' });
         return '';
       }
+      // eslint-disable-next-line no-empty -- best-effort text-cleanup parsing; falls through to the raw text below, never blocks the response
     } catch {}
     return _;
   }).replace(/\n{3,}/g, '\n\n').trim();

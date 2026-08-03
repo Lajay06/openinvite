@@ -81,16 +81,24 @@ export default function StudioShareTab({ details: propDetails }) {
     setSending(true);
     const recipientGuests = guests.filter(g => selectedGuests.includes(g.id));
     let successCount = 0;
+    let failCount = 0;
     for (const guest of recipientGuests) {
       if (!guest.email) continue;
       const personalised = emailMessage.replace(/{guestName}/g, guest.name || 'Guest');
       try {
         await base44.integrations.Core.SendEmail({ to: guest.email, subject: emailSubject, body: `${personalised}\n\n${window.location.origin}/w/${details?.slug}` });
         successCount++;
-      } catch {}
+      } catch (err) {
+        console.error('[StudioShareTab] SendEmail failed for', guest.email, err);
+        failCount++;
+      }
     }
     setSentHistory(prev => [{ type: emailType, count: successCount, date: new Date().toLocaleDateString() }, ...prev]);
-    toast.success(`Sent to ${successCount} guest${successCount !== 1 ? 's' : ''}!`);
+    if (failCount > 0) {
+      toast.error(`Sent to ${successCount} guest${successCount !== 1 ? 's' : ''} — ${failCount} failed, please try again for ${failCount === 1 ? 'that guest' : 'those guests'}.`);
+    } else {
+      toast.success(`Sent to ${successCount} guest${successCount !== 1 ? 's' : ''}!`);
+    }
     setSelectedGuests([]);
     setSending(false);
   };

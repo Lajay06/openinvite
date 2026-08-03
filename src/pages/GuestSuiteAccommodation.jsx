@@ -453,6 +453,7 @@ export default function GuestSuiteAccommodation() {
           maps_url: top.maps_url,
         };
       }
+      // eslint-disable-next-line no-empty -- best-effort places-search enrichment; the entry is still added below without it
     } catch {}
     const next = [...places, enriched];
     setPlaces(next);
