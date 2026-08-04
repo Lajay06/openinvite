@@ -20,6 +20,7 @@
     "test:route-collisions": "node scripts/test-route-collisions.mjs",
     "test:vendor-contact-consistency": "node scripts/test-vendor-contact-consistency.mjs",
     "test:marketing-hero-consistency": "node scripts/test-marketing-hero-consistency.mjs",
+    "test:prerendered-freshness": "node scripts/test-prerendered-freshness.mjs",
     "capture": "node scripts/capture/run-all.mjs",
     "capture:preflight": "node scripts/capture/preflight.mjs",
     "capture:stills": "node scripts/capture/stills.mjs",

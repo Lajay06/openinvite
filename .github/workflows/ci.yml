@@ -17,6 +17,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Prerendered freshness guard below needs real git history to
+          # diff against — the default shallow (depth-1) clone only has
+          # this one commit, nowhere near enough to compare against the
+          # PR's base branch.
+          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -49,6 +55,20 @@ jobs:
       # npm run test:ci above) for the unit-level coverage of the same logic.
       - name: Prerendered asset references guard
         run: node scripts/apply-prerendered.mjs
+
+      # Structural guard, not a reminder: fails if a marketing-page source
+      # file changed without prerendered/ also changing in the same diff.
+      # Added 2026-08-04 after four consecutive marketing PRs merged in a
+      # row without anyone running `npm run build:prerender` — production
+      # kept serving pre-batch, stale static HTML to crawlers/no-JS clients
+      # at every touched route while a real browser (client-side React
+      # re-render over the stale snapshot) looked completely correct. See
+      # scripts/test-prerendered-freshness.mjs for the full incident note
+      # and exactly what this checks.
+      - name: Prerendered freshness guard
+        env:
+          GH_EVENT_BEFORE: ${{ github.event.before }}
+        run: npm run test:prerendered-freshness
 
       - name: Lint
         run: npm run lint

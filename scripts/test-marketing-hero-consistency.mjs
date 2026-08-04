@@ -53,6 +53,7 @@ const PAGES_REQUIRING_MARKETING_HERO = [
   'src/pages/Universes.jsx',
   'src/pages/Pricing.jsx',
   'src/pages/Gifting.jsx',
+  'src/pages/About.jsx',
 ];
 for (const relPath of PAGES_REQUIRING_MARKETING_HERO) {
   const src = readSrc(relPath);
