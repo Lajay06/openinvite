@@ -306,7 +306,7 @@ DATA:
 Return JSON only:
 {
   "headline": "punchy newspaper headline, max 8 words, present tense, specific to their data e.g. '10 RSVPs outstanding. Time to act.' or 'Budget on track. 3 vendors still needed.'",
-  "greeting": "warm personalised 2-sentence summary of their wedding status",
+  "greeting": "warm personalized 2-sentence summary of their wedding status",
   "countdown": { "headline": "days headline", "subtext": "one warm sentence" },
   "thisWeek": [{ "priority": "high|medium|low", "task": "actionable task", "reason": "why now" }],
   "smartSuggestions": [{ "insight": "specific insight referencing their data", "action": "what to do" }],

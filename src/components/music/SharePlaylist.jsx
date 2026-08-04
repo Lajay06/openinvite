@@ -26,7 +26,7 @@ export default function SharePlaylist({ onClose, playlistStats }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const shareMessage = `Help us create the perfect wedding playlist! Add your favourite songs: ${shareUrl}`;
+  const shareMessage = `Help us create the perfect wedding playlist! Add your favorite songs: ${shareUrl}`;
   const handleEmail = () => window.open(`mailto:?subject=${encodeURIComponent('Help create our wedding playlist!')}&body=${encodeURIComponent(`Hi!\n\nWe're creating a collaborative playlist and would love your song suggestions!\n\n${shareUrl}\n\nThanks!`)}`, '_blank');
   const handleSMS = () => window.open(`sms:?body=${encodeURIComponent(shareMessage)}`, '_blank');
 

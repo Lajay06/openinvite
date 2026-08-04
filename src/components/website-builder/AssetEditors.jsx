@@ -118,7 +118,7 @@ export function DigitalInvitationEditor({ content, onChange }) {
         <MediaPickerBtn label="Photo" value={c.photoUrl} onChange={v => onChange('photoUrl', v)} />
       </Section>
       <Section title="Message">
-        <UInput label="Personal Message" value={c.personalMessage} onChange={v => onChange('personalMessage', v)} placeholder="We would be honoured..." />
+        <UInput label="Personal Message" value={c.personalMessage} onChange={v => onChange('personalMessage', v)} placeholder="We would be honored..." />
       </Section>
     </div>
   );

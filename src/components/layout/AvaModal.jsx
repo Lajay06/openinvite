@@ -72,7 +72,7 @@ function ActionCard({ action, onConfirm, onCancel }) {
     done:      'Done!',
     error:     'Failed to execute',
     executing: 'Executing…',
-    cancelled: 'Cancelled',
+    cancelled: 'Canceled',
   };
 
   return (

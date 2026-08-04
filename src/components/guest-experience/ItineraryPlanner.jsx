@@ -64,7 +64,7 @@ export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
         { time: '9:00 AM', name: 'St. John Bread & Wine', type: 'Café', description: 'Nose-to-tail breakfast near Spitalfields', duration: '1 hour', cost: '$$' },
         { time: '11:00 AM', name: 'Tower Bridge', type: 'Attraction', description: 'Walk across London\'s iconic bridge', duration: '1.5 hours', cost: '$' },
         { time: '1:00 PM', name: 'Padella', type: 'Restaurant', description: 'Fresh pasta in Borough Market', duration: '1 hour', cost: '$$' },
-        { time: '3:00 PM', name: 'Shakespeare\'s Globe', type: 'Attraction', description: 'Tour the historic theatre', duration: '2 hours', cost: '$$' },
+        { time: '3:00 PM', name: 'Shakespeare\'s Globe', type: 'Attraction', description: 'Tour the historic theater', duration: '2 hours', cost: '$$' },
         { time: '6:00 PM', name: 'River Café', type: 'Restaurant', description: 'Italian fine dining by the Thames', duration: '2 hours', cost: '$$$$' },
         { time: '8:30 PM', name: 'Nightjar', type: 'Bar', description: 'Speakeasy with live jazz', duration: '2 hours', cost: '$$$' }
       ]},

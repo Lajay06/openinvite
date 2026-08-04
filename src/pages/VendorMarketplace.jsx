@@ -39,7 +39,7 @@ const CATEGORY_QUERIES = {
   'Hair & makeup': 'bridal hair makeup artist',
   'Music & DJ':    'wedding DJ band music',
   'Entertainment': 'wedding entertainment performer',
-  'Venues':        'wedding venue function centre',
+  'Venues':        'wedding venue function center',
   'Transport':     'wedding car hire chauffeur',
   'Celebrant':     'wedding celebrant officiant',
   'Stationery':    'wedding stationery invitations',

@@ -723,7 +723,7 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
     <div>
       {supportsTextColor && (
         <>
-          <FLabel>Text colour</FLabel>
+          <FLabel>Text color</FLabel>
           {colorSwatchGrid(TEXT_COLOR_OPTIONS, style.textColor, 'textColor')}
 
           <FLabel>Background</FLabel>

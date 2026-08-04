@@ -246,8 +246,8 @@ export default function CeremonyDetailsPage() {
           {activeTab === 'legal' && (
           <DetailsSection title="Legal" icon={Scale} defaultOpen>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <SectionInput label="Marriage licence issuing office" value={lic.issuingOffice} onChange={e => updateNested('license', { issuingOffice: e.target.value })} placeholder="Registry office name" />
-              <SectionInput label="Licence number" value={lic.licenseNumber} onChange={e => updateNested('license', { licenseNumber: e.target.value })} />
+              <SectionInput label="Marriage license issuing office" value={lic.issuingOffice} onChange={e => updateNested('license', { issuingOffice: e.target.value })} placeholder="Registry office name" />
+              <SectionInput label="License number" value={lic.licenseNumber} onChange={e => updateNested('license', { licenseNumber: e.target.value })} />
             </div>
             <SectionInput label="Witnesses required" value={lic.witnessesRequired} onChange={e => updateNested('license', { witnessesRequired: e.target.value })} placeholder="e.g. 2" />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
@@ -267,7 +267,7 @@ export default function CeremonyDetailsPage() {
                   style={inputStyle} />
               </div>
             </div>
-            <SectionInput label="Legal notes" isTextarea value={lic.notes} onChange={e => updateNested('license', { notes: e.target.value })} placeholder="Anything else about licences, witnesses, legal requirements…" />
+            <SectionInput label="Legal notes" isTextarea value={lic.notes} onChange={e => updateNested('license', { notes: e.target.value })} placeholder="Anything else about licenses, witnesses, legal requirements…" />
           </DetailsSection>
           )}
 

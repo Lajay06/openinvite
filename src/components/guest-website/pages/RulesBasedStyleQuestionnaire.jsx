@@ -219,7 +219,7 @@ export default function RulesBasedStyleQuestionnaire({ weddingDetails, theme, ty
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
             <div>
               <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: `${theme.darkText}50`, margin: '0 0 10px' }}>
-                Colour palette
+                Color palette
               </p>
               <p style={{ fontSize: 13, color: `${theme.darkText}CC`, margin: 0, lineHeight: 1.6 }}>
                 {guidance.colorPalette.join(', ')}

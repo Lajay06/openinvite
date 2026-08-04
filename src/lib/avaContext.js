@@ -47,7 +47,7 @@ export async function buildWeddingContext() {
   const spent         = budget.reduce((s, b) => s + (b.spent_amount  || 0), 0);
   const bookedVendors = vendors.map(v => v.category).join(', ');
 
-  // Round 7 ask #13: Ava previously only saw aggregate guest counts, so she
+  // Round 7 ask #13: Ava previously only saw aggregate guest counts, so Ava
   // couldn't answer "has Isla King RSVP'd?" — the owner's own dashboard
   // chat, authenticated as themselves via the normal RLS-scoped client
   // (getMyGuestsWithRsvp already fetches this; it just wasn't being put in

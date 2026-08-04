@@ -232,7 +232,7 @@ export default function AccommodationPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Accommodation" subtitle="Plan and organise accommodation options for your wedding weekend" />
+      <DashboardPageHeader title="Accommodation" subtitle="Plan and organize accommodation options for your wedding weekend" />
 
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -333,7 +333,7 @@ export default function AccommodationPage() {
         onClose={() => setAvaOpen(false)}
         pageTitle="Accommodation advisor"
         systemPrompt="You are Ava, a wedding accommodation advisor. Help recommend places to stay and plan guest accommodation."
-        quickActions={["What should I consider when recommending accommodation?", "How do I negotiate a group rate at a hotel?", "What information should I include in an accommodation guide?", "Tips for guests travelling from interstate or overseas"]}
+        quickActions={["What should I consider when recommending accommodation?", "How do I negotiate a group rate at a hotel?", "What information should I include in an accommodation guide?", "Tips for guests traveling from interstate or overseas"]}
       />
       {showModal && <PropertyModal property={editingProperty} onSave={saveProperty} onClose={() => { setShowModal(false); setEditingProperty(null); }} />}
     </div>

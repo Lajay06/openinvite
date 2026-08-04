@@ -161,8 +161,8 @@ function FavouriteStar({ vendor, onToggle }) {
     <button
       type="button"
       onClick={(e) => { e.stopPropagation(); onToggle(vendor); }}
-      aria-label={vendor.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
-      title={vendor.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
+      aria-label={vendor.is_favourite ? 'Remove from favorites' : 'Add to favorites'}
+      title={vendor.is_favourite ? 'Remove from favorites' : 'Add to favorites'}
       style={{ background: 'none', border: 'none', padding: 4, margin: -4, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
     >
       <Star

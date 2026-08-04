@@ -913,7 +913,7 @@ Rules:
       {allSavedPlaces.length === 0 && (
         <div style={{ padding: '12px 16px', background: 'rgba(10,10,10,0.03)', borderRadius: 6, marginBottom: 24, border: '1px solid rgba(10,10,10,0.06)' }}>
           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: 0 }}>
-            Tip: Add places in the Places tab first — Ava will use them to build a personalised itinerary.
+            Tip: Add places in the Places tab first — Ava will use them to build a personalized itinerary.
           </p>
         </div>
       )}

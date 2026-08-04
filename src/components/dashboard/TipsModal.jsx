@@ -5,13 +5,13 @@ const tips = [
   {
     number: '01',
     title: 'Pick a universe — your whole look, everywhere.',
-    body: "Design Studio has 20 fully designed style universes to choose from. Your pick sets the fonts, colours, textures, and the entrance moment guests see the instant they open your site — and it carries through your website, invitations, and every asset automatically.",
+    body: "Design Studio has 20 fully designed style universes to choose from. Your pick sets the fonts, colors, textures, and the entrance moment guests see the instant they open your site — and it carries through your website, invitations, and every asset automatically.",
     cta: 'Nice',
   },
   {
     number: '02',
     title: 'Meet Ava — your AI wedding specialist.',
-    body: 'Ava is built into every part of Openinvite. She can write your love story, generate your checklist, suggest budget adjustments, and help you find the right words for your vows. Look for the ✦ Ava button wherever you need a hand.',
+    body: 'Ava is built into every part of Openinvite. Ava can write your love story, generate your checklist, suggest budget adjustments, and help you find the right words for your vows. Look for the ✦ Ava button wherever you need a hand.',
     cta: 'Tell me more',
   },
   {

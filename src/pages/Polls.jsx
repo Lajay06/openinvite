@@ -543,7 +543,7 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
                   Start from a template
                 </p>
                 <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
-                  Pick a category to pre-fill your poll, then customise before publishing.
+                  Pick a category to pre-fill your poll, then customize before publishing.
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 32 }}>
                   {POLL_TEMPLATES.map((tpl, i) => (

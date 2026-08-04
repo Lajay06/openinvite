@@ -676,7 +676,7 @@ export default function SendInvitesModal({
                   Compose your message
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '0 0 24px' }}>
-                  Personalise the message — the preview on the right updates as you type.
+                  Personalize the message — the preview on the right updates as you type.
                 </p>
 
                 {/* Merge tag hints */}

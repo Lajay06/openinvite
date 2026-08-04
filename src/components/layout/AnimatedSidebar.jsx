@@ -379,7 +379,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
         {/* Help Centre */}
         <div
           onClick={() => navigate("/help")}
-          aria-label="Help centre"
+          aria-label="Help center"
           {...interactiveRowProps(() => navigate("/help"))}
           style={{
             display: "flex", alignItems: "center", gap: 8,
@@ -393,7 +393,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
         >
           <HelpCircle size={14} strokeWidth={1.8} style={{ color: isActive("/help") ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
           <span style={{ fontSize: 12, fontWeight: 600, color: isActive("/help") ? "#E03553" : "#0A0A0A", fontFamily: PJS }}>
-            Help centre
+            Help center
           </span>
         </div>
 

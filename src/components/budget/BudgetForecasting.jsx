@@ -99,9 +99,9 @@ export default function BudgetForecasting({ budgetItems, stats }) {
           venue:         'Consider off-peak dates (Fridays, Sundays) for 20–30% venue discounts.',
           attire:        'Sample sales, consignment boutiques, or trunk shows can cut costs by 30–50%.',
           music:         'A curated Spotify playlist with a good sound system can replace a live band.',
-          decorations:   'DIY centrepieces and candles significantly reduce decoration costs.',
+          decorations:   'DIY centerpieces and candles significantly reduce decoration costs.',
           transportation:'Shuttle buses shared among guests are far cheaper than individual cars.',
-          honeymoon:     'Travelling in shoulder season (May, September) cuts flights and hotels by ~30%.',
+          honeymoon:     'Traveling in shoulder season (May, September) cuts flights and hotels by ~30%.',
         };
         suggestions.push({
           cat, label: benchmark.label, potentialSavings: savings,
@@ -191,7 +191,7 @@ Be concise, specific, and use dollar figures.`,
             AI budget analysis
           </p>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0, ...bodyFont }}>
-            Personalised risk flags, savings opportunities and financial health score
+            Personalized risk flags, savings opportunities and financial health score
           </p>
         </div>
         <button
@@ -210,7 +210,7 @@ Be concise, specific, and use dollar figures.`,
           onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
         >
           {loadingAI
-            ? <><Loader2 size={14} className="animate-spin" />Analysing…</>
+            ? <><Loader2 size={14} className="animate-spin" />Analyzing…</>
             : <><Sparkles size={14} />{aiInsights ? 'Refresh analysis' : 'Ask Ava'}</>
           }
         </button>

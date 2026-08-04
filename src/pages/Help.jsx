@@ -21,13 +21,13 @@ const ARTICLES = {
       <p style={S.p}>Onboarding is a step-by-step conversational flow that collects your key wedding details and sets up your account. It takes about 3–5 minutes.</p>
       <h3 style={S.h3}>The steps</h3>
       <ol style={S.ol}>
-        <li style={S.li}><strong>Enter your names</strong> — Partner 1 and Partner 2 first names. These appear across your website, Guest Suite assets, and all personalised content.</li>
+        <li style={S.li}><strong>Enter your names</strong> — Partner 1 and Partner 2 first names. These appear across your website, Guest Suite assets, and all personalized content.</li>
         <li style={S.li}><strong>Set your wedding date</strong> — Use the date picker to select your date. This drives your countdown timer, checklist deadlines, and Ava's timeline suggestions.</li>
         <li style={S.li}><strong>Add your venue</strong> — Search using Google Places to find your ceremony venue. Start typing and select from the dropdown. The address auto-fills.</li>
         <li style={S.li}><strong>Guest count</strong> — Choose Intimate (under 50), Celebration (50–150), or Grand (150+), then enter your specific number. This helps Ava calibrate your budget and checklist.</li>
         <li style={S.li}><strong>Wedding style</strong> — Select as many style tags as apply: Traditional, Modern, Bohemian, Luxury, and so on. These inform Ava's suggestions throughout.</li>
         <li style={S.li}><strong>What matters most</strong> — Choose the features most important to you: Guest Management, Budget, Invitations, Music, Vendors, or All of it. Openinvite prioritises these in your dashboard.</li>
-        <li style={S.li}><strong>Meet Ava</strong> — Your AI wedding specialist is introduced. Ava uses everything you've shared to personalise your experience from this point on.</li>
+        <li style={S.li}><strong>Meet Ava</strong> — Your AI wedding specialist is introduced. Ava uses everything you've shared to personalize your experience from this point on.</li>
         <li style={S.li}><strong>Choose your universe</strong> — Select the aesthetic for your entire Guest Suite from 10 fully designed universes. Tap any card to preview the full experience before selecting.</li>
         <li style={S.li}><strong>Path A or B</strong> — Choose "Tell us more" to add guests, budget, vendors, and inspiration now, or "Get started" to go straight to your dashboard.</li>
       </ol>
@@ -39,7 +39,7 @@ const ARTICLES = {
       <p style={S.p}>Event Details is the master source of truth for your wedding. Any detail you enter here flows automatically to your website, Guest Suite assets, checklist, and Ava's responses.</p>
       <h3 style={S.h3}>What lives in Event Details</h3>
       <ul style={S.ul}>
-        <li style={S.li}>Partner names (drives all personalised content)</li>
+        <li style={S.li}>Partner names (drives all personalized content)</li>
         <li style={S.li}>Wedding date (drives countdown, checklist deadlines, Ava suggestions)</li>
         <li style={S.li}>Ceremony venue — search with Google Places, auto-fills address</li>
         <li style={S.li}>Ceremony time and dress code</li>
@@ -79,7 +79,7 @@ const ARTICLES = {
         <li style={S.li}><strong>Left:</strong> your RSVP chart and budget summary</li>
         <li style={S.li}><strong>Right:</strong> upcoming tasks and recent activity</li>
       </ul>
-      <h3 style={S.h3}>The sidebar organises everything into groups</h3>
+      <h3 style={S.h3}>The sidebar organizes everything into groups</h3>
       <ul style={S.ul}>
         <li style={S.li}><strong>Design studio</strong> — a standalone link at the top: your website, Guest Suite, and Ava's Studio</li>
         <li style={S.li}><strong>Planning:</strong> Daily update, Overall, Schedule, To do</li>
@@ -91,7 +91,7 @@ const ARTICLES = {
         <li style={S.li}><strong>Guest Suite:</strong> Schedule, Q&A, Registry, Accommodation, Transport, Live stream, Experience guide, Policies, Guest polls</li>
         <li style={S.li}><strong>Extras:</strong> Honeymoon, Considerations</li>
       </ul>
-      <p style={S.p}>At the bottom of the sidebar: Account settings, Collaborate, Quick tips, Help centre, Leave dashboard.</p>
+      <p style={S.p}>At the bottom of the sidebar: Account settings, Collaborate, Quick tips, Help center, Leave dashboard.</p>
     </div>
   ),
   'Inviting a collaborator': (
@@ -119,9 +119,9 @@ const ARTICLES = {
       <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> If you're working with a professional wedding planner, give them Full Access so they can manage vendors, guests, and the checklist on your behalf.</p></div>
     </div>
   ),
-  'What is Ava and what can she do?': (
+  'What is Ava and what can Ava do?': (
     <div>
-      <p style={S.p}>Ava is the AI wedding specialist built into every part of Openinvite. She's powered by Claude, one of the world's most advanced AI models.</p>
+      <p style={S.p}>Ava is the AI wedding specialist built into every part of Openinvite. Ava's powered by Claude, one of the world's most advanced AI models.</p>
       <h3 style={S.h3}>Website building</h3>
       <ul style={S.ul}>
         <li style={S.li}>Auto-fill your entire wedding website from your planning details in one click</li>
@@ -130,7 +130,7 @@ const ARTICLES = {
       </ul>
       <h3 style={S.h3}>Planning</h3>
       <ul style={S.ul}>
-        <li style={S.li}>Generate a personalised wedding checklist based on your date, style, and priorities</li>
+        <li style={S.li}>Generate a personalized wedding checklist based on your date, style, and priorities</li>
         <li style={S.li}>Answer planning questions ("When should I book my florist?")</li>
         <li style={S.li}>Review your budget and flag potential issues</li>
         <li style={S.li}>Suggest vendor questions to ask</li>
@@ -154,7 +154,7 @@ const ARTICLES = {
         <li style={S.li}><strong>Use Ava's suggestion:</strong> in Ava's Studio — fills each step with smart suggestions</li>
         <li style={S.li}><strong>Let Ava decide what's next:</strong> on the Ava's Studio home screen</li>
       </ul>
-      <div style={S.tip}><p style={S.tipText}>Ava learns from your Event Details, guest list, budget, and checklist. The more you add, the more personalised her suggestions become.</p></div>
+      <div style={S.tip}><p style={S.tipText}>Ava learns from your Event Details, guest list, budget, and checklist. The more you add, the more personalized Ava's suggestions become.</p></div>
     </div>
   ),
   "Using Ava's Studio step-by-step": (
@@ -169,7 +169,7 @@ const ARTICLES = {
       <ul style={S.ul}>
         <li style={S.li}>Your progress: Website Pages (X of 9) and Assets (X of 10)</li>
         <li style={S.li}>Two paths: Build Website or Create Assets</li>
-        <li style={S.li}>"Let Ava decide what's next" — Ava analyses your progress and recommends the next action</li>
+        <li style={S.li}>"Let Ava decide what's next" — Ava analyzes your progress and recommends the next action</li>
       </ul>
       <h3 style={S.h3}>Building your website with Ava</h3>
       <p style={S.p}>The guided flow has 10 steps, one at a time: cover photo, welcome message, love story, ceremony details (auto-filled from Event Details), reception details (auto-filled), RSVP settings, travel and accommodation, registry, music, and FAQ.</p>
@@ -230,7 +230,7 @@ const ARTICLES = {
   ),
   'Adding sections to your website': (
     <div>
-      <p style={S.p}>Your wedding website is built from blocks — individual content pieces you add, reorder, and customise for each page. There are 24 block types across 5 categories.</p>
+      <p style={S.p}>Your wedding website is built from blocks — individual content pieces you add, reorder, and customize for each page. There are 24 block types across 5 categories.</p>
       <h3 style={S.h3}>How to add a block</h3>
       <ol style={S.ol}>
         <li style={S.li}>Open Design Studio → Guest Suite → Website tab</li>
@@ -254,7 +254,7 @@ const ARTICLES = {
       <h3 style={S.h3}>The right panel tabs</h3>
       <ul style={S.ul}>
         <li style={S.li}><strong>Content:</strong> all text, photo, and data fields for that block</li>
-        <li style={S.li}><strong>Style:</strong> background (dark/light/custom colour), padding size, text alignment, content width</li>
+        <li style={S.li}><strong>Style:</strong> background (dark/light/custom color), padding size, text alignment, content width</li>
       </ul>
     </div>
   ),
@@ -262,7 +262,7 @@ const ARTICLES = {
     <div>
       <p style={S.p}>Your theme and typography define the visual identity of your wedding website. Changes apply instantly across all pages in the preview.</p>
       <h3 style={S.h3}>Themes (21 available)</h3>
-      <p style={S.p}>Themes control your colour palette — dark background, light background, and accent colour. Notable themes include: LONDON, STILL (Obsidian dark, Linen light — LONDON's default), DUSK (Deep brown, Warm cream, Gold), SAGE (Dark green, Sage, Forest), BLUSH (Dark plum, Blush, Rose), NOIR (Black, Pure white, Red), plus SLATE, IVORY, MIDNIGHT, TERRA, FOREST, CORAL, LAVENDER, BRONZE, ARCTIC, DESERT, PLUM, JADE, CHARCOAL, CHAMPAGNE, and OBSIDIAN.</p>
+      <p style={S.p}>Themes control your color palette — dark background, light background, and accent color. Notable themes include: LONDON, STILL (Obsidian dark, Linen light — LONDON's default), DUSK (Deep brown, Warm cream, Gold), SAGE (Dark green, Sage, Forest), BLUSH (Dark plum, Blush, Rose), NOIR (Black, Pure white, Red), plus SLATE, IVORY, MIDNIGHT, TERRA, FOREST, CORAL, LAVENDER, BRONZE, ARCTIC, DESERT, PLUM, JADE, CHARCOAL, CHAMPAGNE, and OBSIDIAN.</p>
       <h3 style={S.h3}>How to change theme</h3>
       <ol style={S.ol}>
         <li style={S.li}>In the Guest Suite → Website tab, click the Design tab in the right panel (when nothing is selected)</li>
@@ -325,7 +325,7 @@ const ARTICLES = {
         <li style={S.li}>Your site is immediately live</li>
       </ol>
       <h3 style={S.h3}>Your website URL</h3>
-      <p style={S.p}>Your default URL is openinvite.com.au/w/[your-name-slug]. To customise it: in the Publish modal → Website tab → edit the slug field (e.g. "john-and-sarah-2026") → Save. Changing your slug after you've already sent invitations breaks those links — you'll see a warning before it's applied.</p>
+      <p style={S.p}>Your default URL is openinvite.com.au/w/[your-name-slug]. To customize it: in the Publish modal → Website tab → edit the slug field (e.g. "john-and-sarah-2026") → Save. Changing your slug after you've already sent invitations breaks those links — you'll see a warning before it's applied.</p>
       <h3 style={S.h3}>The Publish modal's tabs</h3>
       <ul style={S.ul}>
         <li style={S.li}><strong>Website:</strong> publish toggle, URL/slug, password protection</li>
@@ -340,7 +340,7 @@ const ARTICLES = {
   ),
   'What is the Guest Suite?': (
     <div>
-      <p style={S.p}>The Guest Suite is your complete wedding invitation and design collection — 10 pieces, all designed around your chosen universe aesthetic and personalised with your wedding details.</p>
+      <p style={S.p}>The Guest Suite is your complete wedding invitation and design collection — 10 pieces, all designed around your chosen universe aesthetic and personalized with your wedding details.</p>
       <h3 style={S.h3}>The 10 pieces</h3>
       <ol style={S.ol}>
         <li style={S.li}><strong>Save the Date</strong> — your first announcement to guests, with a photo of you both</li>
@@ -352,9 +352,9 @@ const ARTICLES = {
         <li style={S.li}><strong>Instagram Story Kit</strong> — 5 story designs sized for Instagram/Facebook stories</li>
         <li style={S.li}><strong>Welcome Signage</strong> — large format A1 print-ready signage for your venue entrance</li>
         <li style={S.li}><strong>Guest Tags</strong> — business card sized name tags, 6 per A4 sheet, print-ready</li>
-        <li style={S.li}><strong>Thank You Notes</strong> — personalised post-wedding thank you cards</li>
+        <li style={S.li}><strong>Thank You Notes</strong> — personalized post-wedding thank you cards</li>
       </ol>
-      <h3 style={S.h3}>How all 10 pieces are personalised</h3>
+      <h3 style={S.h3}>How all 10 pieces are personalized</h3>
       <p style={S.p}>Every piece reads from your Event Details: your names, wedding date, venue name, and address. Change your date in Event Details — all 10 assets update automatically.</p>
       <h3 style={S.h3}>How to access the Guest Suite</h3>
       <ol style={S.ol}>
@@ -367,7 +367,7 @@ const ARTICLES = {
   ),
   'Choosing and switching universes': (
     <div>
-      <p style={S.p}>Your universe defines the complete aesthetic of all 10 Guest Suite pieces — colours, typography, layout style, and mood. You choose one universe that applies across everything.</p>
+      <p style={S.p}>Your universe defines the complete aesthetic of all 10 Guest Suite pieces — colors, typography, layout style, and mood. You choose one universe that applies across everything.</p>
       <h3 style={S.h3}>Available universes (all 10 are live)</h3>
       <ul style={S.ul}>
         <li style={S.li}><strong>LONDON</strong> — Classical Grandeur. Deep black, warm linen, Cormorant Garamond typography. Inspired by London's grand hotels and Georgian townhouses.</li>
@@ -392,7 +392,7 @@ const ARTICLES = {
         <li style={S.li}>Your active universe updates — all 10 assets switch to the new aesthetic instantly</li>
         <li style={S.li}>Any content you've entered (text, photos) is preserved — only the visual design changes</li>
       </ol>
-      <div style={S.tip}><p style={S.tipText}><strong>What changes when you switch:</strong> Typography, colour palette, layout styles, section backgrounds across all assets. <strong>What doesn't change:</strong> Your couple names, wedding date, venue, photos, and any custom text you've written.</p></div>
+      <div style={S.tip}><p style={S.tipText}><strong>What changes when you switch:</strong> Typography, color palette, layout styles, section backgrounds across all assets. <strong>What doesn't change:</strong> Your couple names, wedding date, venue, photos, and any custom text you've written.</p></div>
     </div>
   ),
   'Editing your Save the Date': (
@@ -475,7 +475,7 @@ const ARTICLES = {
       <ul style={S.ul}>
         <li style={S.li}>One row per guest (not per couple — add each person as a separate row)</li>
         <li style={S.li}>If a cell is empty, leave it blank — don't type "N/A"</li>
-        <li style={S.li}>Remove any formatting (bold, colour) from your spreadsheet before uploading</li>
+        <li style={S.li}>Remove any formatting (bold, color) from your spreadsheet before uploading</li>
       </ul>
       <h3 style={S.h3}>Adding a single guest instead</h3>
       <p style={S.p}>Click "+ Add guest" in Guest List for a one-off addition — useful for late invites you don't want to re-run the whole import for.</p>
@@ -496,7 +496,7 @@ const ARTICLES = {
       </ol>
       <h3 style={S.h3}>Each guest record shows</h3>
       <ul style={S.ul}>
-        <li style={S.li}>RSVP status (colour-coded: green/red/grey)</li>
+        <li style={S.li}>RSVP status (color-coded: green/red/gray)</li>
         <li style={S.li}>Meal choice (if you have meal options enabled)</li>
         <li style={S.li}>Dietary requirements, plus one status and name</li>
         <li style={S.li}>Song request and personal message to you</li>
@@ -520,7 +520,7 @@ const ARTICLES = {
   ),
   'Setting up your seating chart': (
     <div>
-      <p style={S.p}>The Seating page lets you organise your guests into tables. Your seating chart in the Guest Suite (the printed asset) pulls from this data automatically.</p>
+      <p style={S.p}>The Seating page lets you organize your guests into tables. Your seating chart in the Guest Suite (the printed asset) pulls from this data automatically.</p>
       <h3 style={S.h3}>Setting up tables</h3>
       <ol style={S.ol}>
         <li style={S.li}>Go to Seating in the sidebar</li>
@@ -558,7 +558,7 @@ const ARTICLES = {
   ),
   'Sending emails to your guest list': (
     <div>
-      <p style={S.p}>The Share page lets you send personalised emails to your entire guest list or specific groups — without leaving Openinvite.</p>
+      <p style={S.p}>The Share page lets you send personalized emails to your entire guest list or specific groups — without leaving Openinvite.</p>
       <h3 style={S.h3}>How to send</h3>
       <ol style={S.ol}>
         <li style={S.li}>Guest Suite → Share tab (or click "Share ↗" in the Guest Suite top bar)</li>
@@ -566,7 +566,7 @@ const ARTICLES = {
         <li style={S.li}>Select your recipients: All Guests, Not Yet RSVP'd, Attending, or Declined — or select individually</li>
         <li style={S.li}>Choose your email type: Save the Date, Website Share, RSVP Reminder, or Wedding Update</li>
         <li style={S.li}>Edit the subject line and personal message</li>
-        <li style={S.li}>Use {'{guestName}'} in your message to personalise each email automatically</li>
+        <li style={S.li}>Use {'{guestName}'} in your message to personalize each email automatically</li>
         <li style={S.li}>Click Send — the button shows your recipient count</li>
       </ol>
       <h3 style={S.h3}>Requirements</h3>
@@ -611,7 +611,7 @@ const ARTICLES = {
         <li style={S.li}>Go to Vendors in the sidebar</li>
         <li style={S.li}>Click "+ Add Vendor"</li>
         <li style={S.li}>Fill in: vendor name, category, contact person, phone, email, website</li>
-        <li style={S.li}>Add booking status: Enquiring / Shortlisted / Booked / Confirmed / Cancelled</li>
+        <li style={S.li}>Add booking status: Enquiring / Shortlisted / Booked / Confirmed / Canceled</li>
         <li style={S.li}>Save</li>
       </ol>
       <h3 style={S.h3}>Each vendor record includes</h3>
@@ -663,7 +663,7 @@ const ARTICLES = {
       <ul style={S.ul}>
         <li style={S.li}>A bar or ring chart showing each category as a proportion of your total budget</li>
         <li style={S.li}>Allocated vs spent side-by-side for each category</li>
-        <li style={S.li}>Colour-coded: green (under budget), amber (near limit), red (over budget)</li>
+        <li style={S.li}>Color-coded: green (under budget), amber (near limit), red (over budget)</li>
       </ul>
       <h3 style={S.h3}>Reading the breakdown</h3>
       <ul style={S.ul}>
@@ -695,7 +695,7 @@ const ARTICLES = {
   'Building your run sheet': (
     <div>
       <p style={S.p}>Your run sheet (Schedule → Run sheet) is the minute-by-minute plan for the day — different from your general schedule, which just lists events. The run sheet is what you'd hand to your photographer, MC, or venue coordinator.</p>
-      <p style={S.p}>Add each event with a start and end time, location, and category (ceremony, reception, transportation, and so on) — category shows as a coloured pill so the sheet is scannable at a glance. Build it backwards from your ceremony time: hair and makeup, vendor arrivals, transport, then every reception moment (entrances, speeches, first dance, cake cutting, band/DJ sets).</p>
+      <p style={S.p}>Add each event with a start and end time, location, and category (ceremony, reception, transportation, and so on) — category shows as a colored pill so the sheet is scannable at a glance. Build it backwards from your ceremony time: hair and makeup, vendor arrivals, transport, then every reception moment (entrances, speeches, first dance, cake cutting, band/DJ sets).</p>
       <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> Share the run sheet with anyone helping on the day — your MC and venue coordinator especially. It's the document that keeps everyone on time without needing you.</p></div>
     </div>
   ),
@@ -739,7 +739,7 @@ const helpCategories = [
     title: 'Ava & AI Features',
     description: 'Get the most from your AI specialist',
     articles: [
-      { title: 'What is Ava and what can she do?', time: '3 min read' },
+      { title: 'What is Ava and what can Ava do?', time: '3 min read' },
       { title: "Using Ava's Studio step-by-step", time: '5 min read' },
       { title: 'Auto-filling your website with Ava', time: '2 min read' },
       { title: "Ava's vow writing assistant", time: '3 min read' },
@@ -800,7 +800,7 @@ function ArticlePanel({ article, onClose }) {
     <Sheet open onOpenChange={(open) => { if (!open) onClose(); }}>
       <SheetContent side="right" title={article.title} aria-label={article.title} className="p-0" style={{ width: 520, maxWidth: '100vw' }}>
         <div style={{ padding: '32px 36px', overflowY: 'auto', boxSizing: 'border-box', height: '100%' }}>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.6)', marginBottom: 24, fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'block', padding: 0 }}>← Back to Help Centre</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.6)', marginBottom: 24, fontFamily: 'Plus Jakarta Sans, sans-serif', display: 'block', padding: 0 }}>← Back to Help Center</button>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 4, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 0 }}>{article.title}</h2>
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginBottom: 32, fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: 4 }}>{article.time}</p>
           <div style={{ fontSize: 15, color: '#333', lineHeight: 1.8, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
@@ -840,7 +840,7 @@ export default function Help() {
         paddingLeft: 32, paddingRight: 32, boxSizing: 'border-box', position: 'relative',
       }}>
         <span style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-          Help centre
+          Help center
         </span>
       </div>
       <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -70,6 +70,17 @@ jobs:
           GH_EVENT_BEFORE: ${{ github.event.before }}
         run: npm run test:prerendered-freshness
 
+      # Static source analysis, no credentials — same shape as the
+      # prerendered freshness guard above, for the dashboard + universe
+      # builder US-English spelling sweep (D9, 2026-08-04). Fails if a
+      # changed dashboard/universe-builder file introduces a British/
+      # Australian spelling (colour, favourite, organise, ...) in a
+      # non-comment line. See scripts/test-us-english-spelling.mjs.
+      - name: US-English spelling guard
+        env:
+          GH_EVENT_BEFORE: ${{ github.event.before }}
+        run: npm run test:us-english-spelling
+
       - name: Lint
         run: npm run lint
 

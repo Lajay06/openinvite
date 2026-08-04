@@ -38,7 +38,7 @@ const ROLES = [
 ];
 
 const AVA_PROMPTS = [
-  "What are typical duties of a maid of honour?",
+  "What are typical duties of a maid of honor?",
   "How do I choose my wedding party size?",
   "What should groomsmen wear for a beach wedding?",
   "How do I handle a wedding party member who drops out?",
@@ -430,7 +430,7 @@ export default function WeddingPartyPage() {
         <DetailsSection title="Key roles" icon={Crown} defaultOpen>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <span style={labelStyle}>Maid of honour / best person</span>
+              <span style={labelStyle}>Maid of honor / best person</span>
               <GuestSearch
                 value={toMember(data.maidOfHonour)}
                 guests={guests}

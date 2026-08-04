@@ -48,7 +48,7 @@ Style: ${gf.style}. Length: ${gf.length} (short=1-2min, medium=2-3min, long=3-5m
 ${gf.includeHumor ? 'Include light humor.' : 'Keep it sincere and emotional.'}
 Partner's name: ${gf.partnerName}${gf.relationshipYears ? `. Years together: ${gf.relationshipYears}` : ''}.
 ${gf.personalStory ? `Personal story: ${gf.personalStory}` : ''}
-${gf.favoriteMemory ? `Favourite memory: ${gf.favoriteMemory}` : ''}
+${gf.favoriteMemory ? `Favorite memory: ${gf.favoriteMemory}` : ''}
 ${gf.futureHopes ? `Future hopes: ${gf.futureHopes}` : ''}
 Make it emotional, authentic, and memorable. Return plain text only — no markdown.`;
       const res = await InvokeLLM({ prompt, add_context_from_internet: false });
@@ -192,8 +192,8 @@ Return the improved version as plain text only — no markdown.`;
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Label style={labelStyle}>Favourite memory (optional)</Label>
-                  <Textarea value={gf.favoriteMemory} onChange={e => setG('favoriteMemory', e.target.value)} placeholder="What's your favourite memory together?" style={{ minHeight: 60 }} />
+                  <Label style={labelStyle}>Favorite memory (optional)</Label>
+                  <Textarea value={gf.favoriteMemory} onChange={e => setG('favoriteMemory', e.target.value)} placeholder="What's your favorite memory together?" style={{ minHeight: 60 }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <Label style={labelStyle}>Future hopes (optional)</Label>
