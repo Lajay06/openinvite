@@ -83,7 +83,7 @@ export default function Home() {
 
       {/* 8. PRICING */}
       <div id="section-pricing">
-        <PricingSection onCTA={handleCTA} />
+        <PricingSection />
       </div>
 
       {/* 9. FULL BLEED PHOTO CTA */}
@@ -112,24 +112,24 @@ function TierChip({ name, price, blurb, accent }) {
       style={{
         display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
         gap: 4, padding: "24px 40px", borderRadius: 999,
-        border: "1px solid rgba(255,255,255,0.15)",
+        border: "1px solid rgba(10,10,10,0.12)",
         minWidth: 200,
       }}
     >
       <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: accent, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         {name}
       </span>
-      <span style={{ fontSize: "clamp(28px, 3vw, 36px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <span style={{ fontSize: "clamp(28px, 3vw, 36px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         {price}
       </span>
-      <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <span style={{ fontSize: 13, color: "rgba(10,10,10,0.6)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         {blurb}
       </span>
     </div>
   );
 }
 
-function PricingSection({ onCTA }) {
+function PricingSection() {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
   const reduced = prefersReduced();
@@ -145,17 +145,17 @@ function PricingSection({ onCTA }) {
   }, []);
 
   return (
-    <section ref={ref} style={{ background: "#0A0A0A", padding: "clamp(100px, 12vw, 180px) clamp(24px, 6vw, 80px)", textAlign: "center" }}>
+    <section ref={ref} style={{ background: "#FFFFFF", padding: "clamp(100px, 12vw, 180px) clamp(24px, 6vw, 80px)", textAlign: "center" }}>
       <h2 style={{
         fontSize: "clamp(40px, 6vw, 76px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05,
-        color: "#FFFFFF", margin: "0 0 20px", fontFamily: "'Plus Jakarta Sans', sans-serif",
+        color: "#0A0A0A", margin: "0 0 20px", fontFamily: "'Plus Jakarta Sans', sans-serif",
         opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)",
         transition: reduced ? "none" : `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
       }}>
-        From <span style={{ color: "#DDF762" }}>US$49</span>.
+        From <span style={{ color: "#E03553" }}>US$49</span>.
       </h2>
       <p style={{
-        maxWidth: 480, margin: "0 auto 48px", color: "rgba(255,255,255,0.6)", fontSize: 18, lineHeight: 1.6,
+        maxWidth: 480, margin: "0 auto 48px", color: "rgba(10,10,10,0.6)", fontSize: 18, lineHeight: 1.6,
         opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
         transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
       }}>
@@ -167,14 +167,14 @@ function PricingSection({ onCTA }) {
         transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.15s, transform 0.7s ${EASE} 0.15s`,
       }}>
         <TierChip name="Pro" price="US$49" blurb="Planning, guests, budget, Ava" accent="#E03553" />
-        <TierChip name="Ultra" price="US$99" blurb="Everything, plus universes & digital invitations" accent="#DDF762" />
+        <TierChip name="Ultra" price="US$99" blurb="Everything, plus universes & digital invitations" accent="#F59E0B" />
       </div>
       <div style={{
         display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", justifyContent: "center",
         opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
         transition: reduced ? "none" : `opacity 0.6s ${EASE} 0.2s, transform 0.6s ${EASE} 0.2s`,
       }}>
-        <ApplePillButton onClick={onCTA}>Get started</ApplePillButton>
+        <ApplePillButton href="/pricing">Compare plans</ApplePillButton>
       </div>
     </section>
   );

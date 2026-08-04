@@ -25,7 +25,7 @@ const FAQS = [
   },
   {
     q: "Can I upgrade from Pro to Ultra later?",
-    a: "Yes, you can upgrade at any time and pay only the difference ($70).",
+    a: "Yes, you can upgrade at any time and pay only the difference ($50).",
   },
   {
     q: "What if I want a refund?",
@@ -283,12 +283,42 @@ export default function Pricing() {
         <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.6)", marginTop: 6, fontFamily: PJS }}>
           Prices in USD
         </p>
-        <p style={{ textAlign: "center", fontSize: 13, marginTop: 20, fontFamily: PJS }}>
-          <Link to="/gifting" style={{ color: "#E03553", fontWeight: 600, textDecoration: "none" }}>
-            Gifting Openinvite to someone? →
-          </Link>
-        </p>
 
+      </section>
+
+      {/* ── GIFT MOMENT ── */}
+      <section style={{ position: "relative", padding: "160px 24px", textAlign: "center", overflow: "hidden", background: "#0A0A0A" }}>
+        <img
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SNOWBOUND_Daniel_Far%C3%B2_Photos_ID12431_yunnan.jpg"
+          alt="A couple unwrapping a gift together"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,10,10,0.5) 0%, rgba(10,10,10,0.85) 100%)" }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 640, margin: "0 auto" }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", color: "#DDF762", marginBottom: 16, fontFamily: PJS }}>
+            A gift worth giving
+          </p>
+          <h2 style={{ fontSize: "clamp(32px, 5vw, 56px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 20, fontFamily: PJS }}>
+            Gifting Openinvite to someone?
+          </h2>
+          <p style={{ fontSize: 16, lineHeight: 1.7, color: "rgba(255,255,255,0.7)", marginBottom: 40, fontFamily: PJS }}>
+            Give an engaged couple a calmer way to plan. 1 purchase, delivered as a redeemable code, no claim page required.
+          </p>
+          <Link
+            to="/gifting"
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              padding: "20px 56px", borderRadius: 999,
+              background: "#E03553", color: "#FFFFFF",
+              fontSize: 16, fontWeight: 700, fontFamily: PJS, textDecoration: "none",
+              transition: "opacity 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            Gift Openinvite
+          </Link>
+        </div>
       </section>
 
       {/* ── AFTER 24 MONTHS ── */}

@@ -40,7 +40,7 @@ function AnimatedRow({ row, delay }) {
     <div
       ref={ref}
       style={{
-        borderTop: "1px solid rgba(10,10,10,0.08)",
+        borderTop: "1px solid rgba(255,255,255,0.08)",
         padding: "40px 0",
         display: "grid",
         gridTemplateColumns: "40% 60%",
@@ -54,7 +54,7 @@ function AnimatedRow({ row, delay }) {
       <h3 style={{
         fontSize: "clamp(24px, 3vw, 36px)",
         fontWeight: 700,
-        color: "#0A0A0A",
+        color: "#FFFFFF",
         fontFamily: PJS,
         margin: 0,
         lineHeight: 1.2,
@@ -64,7 +64,7 @@ function AnimatedRow({ row, delay }) {
       </h3>
       <p style={{
         fontSize: 16,
-        color: "#555555",
+        color: "rgba(255,255,255,0.5)",
         lineHeight: 1.8,
         fontFamily: PJS,
         margin: 0,
@@ -77,24 +77,24 @@ function AnimatedRow({ row, delay }) {
 
 export default function AvaSpotlightSection() {
   return (
-    <section style={{ background: "#F5F4F0", padding: "120px clamp(24px, 6vw, 80px)" }}>
+    <section style={{ background: "#0A0A0A", padding: "120px clamp(24px, 6vw, 80px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <p style={{
           textAlign: "center",
           fontSize: 18,
-          color: "#555555",
+          color: "rgba(255,255,255,0.5)",
           maxWidth: 672,
           margin: "0 auto",
           paddingBottom: 48,
           lineHeight: 1.8,
           fontFamily: PJS,
         }}>
-          Ava learns your style, your budget, and your vision, then helps you make smarter decisions at every step. From vendor suggestions to seating optimisation, she's always one step ahead.
+          Ava learns your style, your budget, and your vision, then helps you make smarter decisions at every step. From vendor suggestions to seating optimisation, Ava's always one step ahead.
         </p>
         {ROWS.map((row, i) => (
           <AnimatedRow key={i} row={row} delay={i * 100} />
         ))}
-        <div style={{ borderTop: "1px solid rgba(10,10,10,0.08)" }} />
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
       </div>
     </section>
   );
