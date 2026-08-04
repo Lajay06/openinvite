@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: "What's the difference between Pro and Ultra?",
-    a: "Pro includes everything you need to plan your wedding: guests, budget, vendors, seating, timeline, and more. Ultra adds the digital suite: wedding website, invitations, online RSVP, and premium themes.",
+    a: "Pro includes everything you need to plan your wedding: guests, budget, vendors, seating, timeline, and more. Ultra adds the digital suite: wedding website, invitations, online RSVP, and universes.",
   },
   {
     q: "Can I upgrade from Pro to Ultra later?",
@@ -53,15 +53,21 @@ const TABLE_ROWS = [
   { feature: "Wedding website",         trial: true,        pro: false,        ultra: true },
   { feature: "Digital invitations",     trial: true,        pro: false,        ultra: true },
   { feature: "Online RSVP",            trial: true,        pro: false,        ultra: true },
-  { feature: "Premium themes",          trial: true,        pro: false,        ultra: true },
+  { feature: "Universes",               trial: true,        pro: false,        ultra: true },
   { feature: "Guest suite",             trial: true,        pro: false,        ultra: true },
   { feature: "Support",                 trial: "Priority",  pro: "Priority",   ultra: "Priority" },
   { feature: "Price",                   trial: "Free",      pro: "US$49",        ultra: "US$99" },
 ];
 
-function CheckIcon({ color = "#0A0A0A" }) {
+function CheckIcon({ color = "#0A0A0A", style }) {
+  // margin: 0 auto centers the icon inside the comparison table's cells
+  // (its default, block-level context). Callers that place this inside a
+  // flex row instead (the pricing card feature lists) must override it —
+  // otherwise the auto margins soak up that row's own leftover space and
+  // shove the icon (and its text) sideways by a different amount on every
+  // row, depending on how long that row's text is.
   return (
-    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ display: "block", margin: "0 auto" }}>
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ display: "block", margin: "0 auto", flexShrink: 0, ...style }}>
       <path d="M2.5 7L5.5 10L11.5 4" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -192,7 +198,7 @@ export default function Pricing() {
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
               {PRO_FEATURES.map((f, i) => (
                 <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
-                  <CheckIcon color="#E03553" />
+                  <CheckIcon color="#E03553" style={{ margin: 0 }} />
                   {f}
                 </li>
               ))}
@@ -244,7 +250,7 @@ export default function Pricing() {
             <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
               {ULTRA_EXTRAS.map((f, i) => (
                 <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
-                  <CheckIcon color="#E03553" />
+                  <CheckIcon color="#E03553" style={{ margin: 0 }} />
                   {f}
                 </li>
               ))}
@@ -312,8 +318,12 @@ export default function Pricing() {
             Compare plans
           </h2>
 
+          {/* margin: 0, not "0 auto" — the table is narrower than this
+              860px container, so centering it left it floating well right
+              of the "Compare plans" heading above. Left-aligned, it lines
+              up with the heading instead. */}
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "auto", margin: "0 auto", borderCollapse: "collapse", tableLayout: "fixed", fontFamily: PJS }}>
+            <table style={{ width: "auto", margin: 0, borderCollapse: "collapse", tableLayout: "fixed", fontFamily: PJS }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: "left", fontSize: 12, fontWeight: 600, color: "rgba(10,10,10,0.6)", padding: "0 24px 20px 0" }} />

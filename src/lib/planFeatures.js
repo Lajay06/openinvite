@@ -32,7 +32,7 @@ export const PRO_FEATURES = [
 
 export const ULTRA_EXTRAS = [
   "Wedding website builder",
-  "Premium themes (12 universe styles)",
+  "Universes (20 wedding website styles)",
   "Digital invitations via email & WhatsApp",
   "Online RSVP pages for guests",
   "Guest suite: accommodation, transport & experience guide",

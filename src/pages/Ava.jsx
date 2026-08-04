@@ -294,7 +294,7 @@ export default function AvaPage() {
         body="Ava tracks every dollar, benchmarks against real wedding costs, and proactively alerts you before you overspend, not after. It's like having a financial advisor who only thinks about your wedding."
         bullets={["Real-time spend vs budget alerts", "Category reallocation suggestions", "Vendor quote benchmarking", "Payment reminder automation", "Cost-saving tips tailored to your style"]}
         photo="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185605/DTS_Fall_Dinner_Kristine_Isabedra_Photos_ID2915_pqoldr.jpg"
-        reversed={true} />
+        reversed={false} />
       
       <FeatureSplit
         bgColor="#FFFFFF"
