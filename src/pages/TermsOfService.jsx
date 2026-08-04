@@ -37,7 +37,7 @@ export default function TermsOfService() {
           <div style={DIV} />
           <h2 style={H2}>2. Who these terms apply to</h2>
           <p style={P}><strong>Couples</strong> create an OpenInvite account, purchase a plan, and use the platform to plan their wedding and manage their guest list. <strong>Guests</strong> are the people a couple invites — guests interact with a couple's published wedding website, RSVP form, and related pages without creating their own account, using a private link the couple sends them.</p>
-          <p style={P}>These terms govern both roles. A couple is responsible for their guests' use of the guest-facing pages the couple has published, in the same way a host is responsible for an event they organise.</p>
+          <p style={P}>These terms govern both roles. A couple is responsible for their guests' use of the guest-facing pages the couple has published, in the same way a host is responsible for an event they organize.</p>
 
           <div style={DIV} />
           <h2 style={H2}>3. Description of service</h2>
@@ -56,7 +56,7 @@ export default function TermsOfService() {
             <li>You must be at least 18 years old to create an account</li>
             <li>One account per couple — creating multiple accounts to bypass plan limits is not permitted</li>
             <li>You are responsible for keeping your credentials secure</li>
-            <li>Notify us immediately if you suspect unauthorised access to your account</li>
+            <li>Notify us immediately if you suspect unauthorized access to your account</li>
             <li>You are responsible for all activity that occurs under your account, including content your guests submit through pages you've published</li>
           </ul>
 
@@ -78,7 +78,7 @@ export default function TermsOfService() {
           <div style={DIV} />
           <h2 style={H2}>6. Your content</h2>
           <p style={P}>All content you create in OpenInvite — guest lists, vendor notes, vows, messages, and wedding details — remains yours. You own it.</p>
-          <p style={P}>By using the service, you grant us a limited, non-exclusive licence to store, process, and display your content solely to provide the service to you (and, where relevant, your guests). We will not use your content for any other purpose.</p>
+          <p style={P}>By using the service, you grant us a limited, non-exclusive license to store, process, and display your content solely to provide the service to you (and, where relevant, your guests). We will not use your content for any other purpose.</p>
           <p style={P}>You are responsible for the accuracy of your content and for ensuring you have the right to share any information you upload — including your guests' personal details.</p>
 
           <div style={DIV} />

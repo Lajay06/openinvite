@@ -33,10 +33,10 @@ function useScrollReveal(threshold = 0.2) {
 
 const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3", "#0A1930"];
 const ALL_FEATURES = [
-{ title: "Advanced guest management", bullets: ["Unlimited guest lists", "Real-time RSVP tracking", "Dietary preference tracking", "Smart table assignments", "Guest tagging & categories", "Centralised contact management"] },
+{ title: "Advanced guest management", bullets: ["Unlimited guest lists", "Real-time RSVP tracking", "Dietary preference tracking", "Smart table assignments", "Guest tagging & categories", "Centralized contact management"] },
 { title: "Smart budget tracking", bullets: ["Budget vs. actual spend tracking", "Vendor payment scheduling", "Category-based budgeting", "Visual expense analytics", "Friendly payment reminders", "Subtle cost-saving suggestions"] },
 { title: "Timeline & schedule planning", bullets: ["Visual timeline builder", "Vendor coordination made easy", "Assign tasks to your crew", "Track deadlines without drama", "Share the schedule with key players", "Create your seamless day-of rundown"] },
-{ title: "Collaborative playlists", bullets: ["Spotify integration", "Let guests submit their favourite tracks", "Organise songs by vibe or moment", "Share playlists in a click", "DJ collaboration made effortless", "Create a music timeline"] },
+{ title: "Collaborative playlists", bullets: ["Spotify integration", "Let guests submit their favorite tracks", "Organize songs by vibe or moment", "Share playlists in a click", "DJ collaboration made effortless", "Create a music timeline"] },
 { title: "Registry integration", bullets: ["One-click registry linking", "Sync with major platforms", "Share seamlessly with guests"] },
 { title: "Venue management", bullets: ["Track multiple venues", "Upload contracts & notes", "Capture must-know logistics"] }];
 
@@ -142,7 +142,7 @@ function DashboardSection() {
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 552 }}>
           <FeatureSectionHeading color="#0A0A0A">Customisable Dashboard</FeatureSectionHeading>
-          <p style={{ ...featureBodyTextStyle, color: "#444444", marginBottom: 32 }}>Invite your partner, planner, or mum. Set who sees what, and assign tasks like a pro.</p>
+          <p style={{ ...featureBodyTextStyle, color: "#444444", marginBottom: 32 }}>Invite your partner, planner, or mom. Set who sees what, and assign tasks like a pro.</p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {BULLETS.map((b, i) =>
             <li key={i} style={{ padding: "11px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid #E8E8E8" : "none", color: "#444444", fontSize: 14, lineHeight: 1.5 }}>

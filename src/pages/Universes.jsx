@@ -242,7 +242,7 @@ const Universes = () => {
     { name: 'Instagram Story Kit', description: 'Five story formats sized and ready to share.' },
     { name: 'Welcome Signage', description: 'Large format print-ready signage for your venue entrance.' },
     { name: 'Guest Tags', description: 'Beautifully designed name tags, print-ready in minutes.' },
-    { name: 'Thank You Notes', description: 'Personalised post-wedding cards, ready to send.' },
+    { name: 'Thank You Notes', description: 'Personalized post-wedding cards, ready to send.' },
   ];
 
   const editorFeatures = [
@@ -288,7 +288,7 @@ const Universes = () => {
             fontFamily: 'Plus Jakarta Sans, sans-serif',
             margin: 0,
           }}>
-            A universe is a complete visual system, one typography, colour palette and mood, that carries across all 10 pieces of your wedding suite.
+            A universe is a complete visual system, one typography, color palette and mood, that carries across all 10 pieces of your wedding suite.
           </p>
         </div>
       </section>
@@ -323,7 +323,7 @@ const Universes = () => {
             maxWidth: 600,
             fontFamily: 'Plus Jakarta Sans',
           }}>
-            Every universe includes all 10 pieces, personalised with your names, date and venue. Edit each one in the asset editor or let Ava fill them for you.
+            Every universe includes all 10 pieces, personalized with your names, date and venue. Edit each one in the asset editor or let Ava fill them for you.
           </p>
 
           {/* 2 -> 5 columns only (never 3 or 4) — those don't divide 10

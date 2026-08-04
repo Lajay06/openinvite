@@ -28,11 +28,11 @@ const FAQS = [
   },
   {
     q: "What are design universes?",
-    a: "Design universes are Openinvite's fully designed wedding website themes. There are 20 universes to choose from, each setting the fonts, colours and style for your wedding website, invitations and printed pieces, inspired by destinations like Tulum, Kyoto and Paris.",
+    a: "Design universes are Openinvite's fully designed wedding website themes. There are 20 universes to choose from, each setting the fonts, colors and style for your wedding website, invitations and printed pieces, inspired by destinations like Tulum, Kyoto and Paris.",
   },
   {
     q: "Who is Ava?",
-    a: "Ava is the AI wedding planning assistant built into Openinvite. She helps with your wedding checklist, budget suggestions, vow writing and general planning advice, personalised to your wedding details.",
+    a: "Ava is the AI wedding planning assistant built into Openinvite. Ava helps with your wedding checklist, budget suggestions, vow writing and general planning advice, personalized to your wedding details.",
   },
   {
     q: "Do guests need an account to RSVP?",
