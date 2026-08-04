@@ -16,7 +16,7 @@ export default function CollaboratorGuestsRedirect() {
   useEffect(() => {
     const target = ownerUserId
       ? `${createPageUrl('Guests')}?collabOwner=${encodeURIComponent(ownerUserId)}`
-      : createPageUrl('Dashboard');
+      : createPageUrl('DailyUpdate');
     window.location.replace(target);
   }, [ownerUserId]);
 

@@ -149,7 +149,7 @@ export default function Onboarding() {
       // signal a wedding already exists. Shared with PaymentSuccess.jsx's
       // post-payment routing decision so the two can never disagree.
       if (isOnboardingComplete(currentUser, draft)) {
-        navigate('/Dashboard', { replace: true });
+        navigate('/DailyUpdate', { replace: true });
         return;
       }
       setUser(currentUser);

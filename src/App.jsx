@@ -152,9 +152,9 @@ const AUTO_ROUTE_EXCLUDE = new Set([
 const AuthenticatedApp = () => {
   const location = useLocation();
 
-  // Lowercase /dashboard → canonical /Dashboard
+  // Lowercase /dashboard → canonical dashboard entry point (Daily update)
   if (location.pathname === '/dashboard') {
-    return <Navigate to="/Dashboard" replace />;
+    return <Navigate to="/DailyUpdate" replace />;
   }
 
   // ── Public pages — no auth check, render immediately ─────────────────────────

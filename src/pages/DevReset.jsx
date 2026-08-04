@@ -147,7 +147,7 @@ export default function DevReset() {
                 Go to onboarding
               </button>
               <button
-                onClick={() => navigate('/Dashboard')}
+                onClick={() => navigate('/DailyUpdate')}
                 style={{
                   background: 'transparent',
                   color: '#0A0A0A',
