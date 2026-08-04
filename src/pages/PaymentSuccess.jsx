@@ -31,7 +31,7 @@ export default function PaymentSuccess() {
   // Billing tab) must NOT be sent back through it. isOnboardingComplete is
   // the exact same check Onboarding.jsx's own skip-if-already-done guard
   // uses, so the two can never disagree about what "already onboarded" means.
-  const [nextUrl, setNextUrl] = useState('/Dashboard');
+  const [nextUrl, setNextUrl] = useState('/DailyUpdate');
 
   useEffect(() => {
     let cancelled = false;
@@ -55,7 +55,7 @@ export default function PaymentSuccess() {
             if (me?.id) identify(me.id, { email: me.email, name: me.full_name });
             const draft = await getMyWeddingDetails().catch(() => null);
             if (cancelled) return;
-            setNextUrl(isOnboardingComplete(me, draft) ? '/Dashboard' : '/onboarding');
+            setNextUrl(isOnboardingComplete(me, draft) ? '/DailyUpdate' : '/onboarding');
             setStatus('done');
             return;
           }

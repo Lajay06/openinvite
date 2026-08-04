@@ -135,7 +135,7 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
         <img
           src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
           alt="Openinvite"
-          onClick={() => navigate('/Dashboard')}
+          onClick={() => navigate('/DailyUpdate')}
           style={{ height: 18, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', cursor: 'pointer', flexShrink: 0 }}
         />
         {coupleName && (
@@ -243,7 +243,7 @@ function CollaboratorBanner({ coupleNames, collaboratorEmail, topOffset }) {
         Collaborating on {coupleNames ? `${coupleNames}'s wedding` : 'this wedding'} as {collaboratorEmail}
       </span>
       <a
-        href={createPageUrl('Dashboard')}
+        href={createPageUrl('DailyUpdate')}
         style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#E03553', fontFamily: PJS, textDecoration: 'none' }}
       >
         <LogOut size={12} />
@@ -385,7 +385,7 @@ function LayoutShell({ children, currentPageName }) {
             This collaboration link isn't valid for your account, or the invite hasn't been accepted yet.
           </p>
           <a
-            href={createPageUrl('Dashboard')}
+            href={createPageUrl('DailyUpdate')}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600,
               color: '#fff', background: '#E03553', borderRadius: 999, padding: '8px 18px',

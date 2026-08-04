@@ -87,7 +87,7 @@ export default function NotFound() {
           Go home
         </Link>
         <Link
-          to="/Dashboard"
+          to="/DailyUpdate"
           style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             padding: '10px 24px', borderRadius: 999,

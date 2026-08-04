@@ -104,7 +104,7 @@ export default function PublicNav() {
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             {isAuthenticated ? (
               <a
-                href="/Dashboard"
+                href="/DailyUpdate"
                 aria-label="Go to dashboard"
                 style={{
                   background: "none", border: "none",
@@ -163,7 +163,7 @@ export default function PublicNav() {
               ))}
               <div className="flex items-center gap-3 pt-2">
                 {isAuthenticated ? (
-                  <a href="/Dashboard" className="flex items-center gap-2 text-white text-sm font-semibold" style={{ textDecoration: "none" }}>
+                  <a href="/DailyUpdate" className="flex items-center gap-2 text-white text-sm font-semibold" style={{ textDecoration: "none" }}>
                     <UserIcon /> Dashboard
                   </a>
                 ) : (
@@ -211,7 +211,7 @@ export default function PublicNav() {
           <div className="hidden md:flex items-center gap-4">
             {isAuthenticated ? (
               <a
-                href="/Dashboard"
+                href="/DailyUpdate"
                 aria-label="Go to dashboard"
                 style={{
                   background: "none", border: "none",
@@ -263,7 +263,7 @@ export default function PublicNav() {
               <Link key={link.to} to={link.to} onClick={() => setOpen(false)} className="block text-[rgba(255,255,255,0.4)] hover:text-white text-sm transition-colors">{link.label}</Link>
             ))}
             {isAuthenticated ? (
-              <a href="/Dashboard" className="flex items-center gap-2 text-white text-sm font-semibold" style={{ textDecoration: "none" }}>
+              <a href="/DailyUpdate" className="flex items-center gap-2 text-white text-sm font-semibold" style={{ textDecoration: "none" }}>
                 <UserIcon /> Dashboard
               </a>
             ) : (

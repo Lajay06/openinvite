@@ -72,7 +72,7 @@ export default function Admin() {
   // Admin guard — redirect non-admin users immediately
   useEffect(() => {
     if (user && user.email !== ADMIN_EMAIL) {
-      navigate('/Dashboard', { replace: true });
+      navigate('/DailyUpdate', { replace: true });
     }
   }, [user, navigate]);
 

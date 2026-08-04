@@ -421,9 +421,9 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
 
         {/* Leave Dashboard / Exit collaboration */}
         <div
-          onClick={() => { window.location.href = isCollaborator ? createPageUrl("Dashboard") : createPageUrl("Home"); }}
+          onClick={() => { window.location.href = isCollaborator ? createPageUrl("DailyUpdate") : createPageUrl("Home"); }}
           aria-label={isCollaborator ? "Exit collaboration" : "Leave dashboard"}
-          {...interactiveRowProps(() => { window.location.href = isCollaborator ? createPageUrl("Dashboard") : createPageUrl("Home"); })}
+          {...interactiveRowProps(() => { window.location.href = isCollaborator ? createPageUrl("DailyUpdate") : createPageUrl("Home"); })}
           style={{
             display: "flex", alignItems: "center", gap: 8,
             padding: "7px 12px", cursor: "pointer",

@@ -92,7 +92,7 @@ export default function StudioHub() {
         display: 'flex', alignItems: 'center', padding: '0 24px',
       }}>
         <button
-          onClick={() => navigate('/Dashboard')}
+          onClick={() => navigate('/DailyUpdate')}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', fontSize: 13, padding: 0 }}
         >
           ← Dashboard
