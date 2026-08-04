@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, MapPin, ChevronDown, Loader2, LocateFixed, Building2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
@@ -83,17 +83,34 @@ export default function VendorMarketplace() {
   const [savingIds, setSavingIds] = useState(new Set());
   const [vendors, setVendors] = useState(null);
   const [apiStatus, setApiStatus] = useState(''); // '' | 'searching' | 'done' | 'error'
+  const [isRecommended, setIsRecommended] = useState(false); // last completed search was the auto-fired "near your venue" one, not a manual search
+
+  // Guards the one-time auto-search below against a race with a manual
+  // search: set true the instant ANY search starts (auto or manual), so if
+  // the couple searches before the wedding location finishes loading, the
+  // location resolving afterwards doesn't clobber their results.
+  const searchedRef = useRef(false);
 
   // Load the wedding's ceremony venue once, for "Use event location". Uses
   // the MAIN ceremony specifically when both a ceremony and reception venue
   // exist (per mainCeremony/reception on WeddingDetails, set in Event
   // details) — address is more precise for a Places location bias than the
   // bare venue name, falling back to the name if no address was captured.
+  //
+  // Also pre-populates the marketplace with local recommendations near that
+  // venue on first load, instead of leaving the page blank until the couple
+  // manually searches — same query the "Use event location" button already
+  // runs, just fired automatically once a venue is known.
   useEffect(() => {
     getMyWeddingDetails().then(wd => {
       const mc = wd?.mainCeremony || {};
-      setEventLocation(mc.address || mc.venueName || null);
+      const loc = mc.address || mc.venueName || null;
+      setEventLocation(loc);
+      if (loc && !searchedRef.current) {
+        runSearch({ coordsOverride: null, locationOverride: loc, isAutoRecommend: true });
+      }
     }).catch(() => setEventLocation(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSave = async (vendor) => {
@@ -121,7 +138,9 @@ export default function VendorMarketplace() {
   // own location immediately without waiting on a state update to land
   // (setLocationQ/setGeoCoords are async — reading the state back in the
   // same tick would still see the old value).
-  const runSearch = async ({ coordsOverride, locationOverride } = {}) => {
+  const runSearch = async ({ coordsOverride, locationOverride, isAutoRecommend = false } = {}) => {
+    searchedRef.current = true;
+    setIsRecommended(isAutoRecommend);
     setApiStatus('searching');
 
     const rawSearch = search.trim();
@@ -407,7 +426,9 @@ export default function VendorMarketplace() {
         )}
         {apiStatus === 'done' && vendors !== null && vendors.length > 0 && (
           <div style={{ padding: '10px 14px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', marginBottom: 12, fontSize: 12, color: '#065f46', fontFamily: PJS }}>
-            Live results from Google Places.
+            {isRecommended
+              ? `Recommended vendors near ${eventLocation}, based on your wedding venue.`
+              : 'Live results from Google Places.'}
           </div>
         )}
         {apiStatus === 'done' && resultsOnlineActive && (
@@ -425,7 +446,9 @@ export default function VendorMarketplace() {
         ) : (
           <>
             <div style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: '12px 0', marginBottom: 4 }}>
-              {filtered.length} vendor{filtered.length !== 1 ? 's' : ''} found
+              {isRecommended
+                ? `${filtered.length} recommended vendor${filtered.length !== 1 ? 's' : ''} near you`
+                : `${filtered.length} vendor${filtered.length !== 1 ? 's' : ''} found`}
             </div>
             {filtered.length === 0 ? (
               <div style={{ padding: '64px 0', textAlign: 'center' }}>
