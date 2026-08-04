@@ -212,7 +212,7 @@ export default function EmergencyContactPage() {
               <SectionInput label="Name" value={primary.name} onChange={e => updateNested('primary', { name: e.target.value })} placeholder="Full name" />
               <SectionInput label="Phone" value={primary.phone} onChange={e => updateNested('primary', { phone: e.target.value })} placeholder="+1 555 000 0000" />
             </div>
-            <SectionInput label="Role / relationship" value={primary.role} onChange={e => updateNested('primary', { role: e.target.value })} placeholder="e.g. Maid of honour, wedding planner" />
+            <SectionInput label="Role / relationship" value={primary.role} onChange={e => updateNested('primary', { role: e.target.value })} placeholder="e.g. Maid of honor, wedding planner" />
           </DetailsSection>
 
           <DetailsSection title="Backup contact" icon={Users} defaultOpen>

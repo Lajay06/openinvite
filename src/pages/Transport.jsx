@@ -161,7 +161,7 @@ export default function TransportPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Transport" subtitle="Organise transport for your wedding party on the day" />
+      <DashboardPageHeader title="Transport" subtitle="Organize transport for your wedding party on the day" />
 
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -380,7 +380,7 @@ export default function TransportPage() {
         onClose={() => setAvaOpen(false)}
         pageTitle="Transport advisor"
         systemPrompt="You are Ava, a wedding transport advisor. Help plan wedding party transport, parking, shuttles and logistics for the day."
-        quickActions={["What transport should I arrange for my wedding party?", "How do I coordinate wedding party transport to a remote venue?", "Tips for organising a shuttle bus service", "How much does wedding party transport typically cost?"]}
+        quickActions={["What transport should I arrange for my wedding party?", "How do I coordinate wedding party transport to a remote venue?", "Tips for organizing a shuttle bus service", "How much does wedding party transport typically cost?"]}
       />
     </div>
   );

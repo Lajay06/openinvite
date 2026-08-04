@@ -169,9 +169,9 @@ Return a JSON object with exactly this structure:
     "title": "outfit name/description",
     "description": "2-3 sentence explanation of why this works for this specific wedding",
     "colors": [
-      {"name": "colour name", "hex": "#hexcode"},
-      {"name": "colour name", "hex": "#hexcode"},
-      {"name": "colour name", "hex": "#hexcode"}
+      {"name": "color name", "hex": "#hexcode"},
+      {"name": "color name", "hex": "#hexcode"},
+      {"name": "color name", "hex": "#hexcode"}
     ],
     "fabric": "fabric suggestion",
     "styleNotes": ["tip 1", "tip 2", "tip 3"]
@@ -268,7 +268,7 @@ Return a JSON object with exactly this structure:
             Your style guide
           </h1>
           <p style={{ fontFamily: bfont, fontSize: 14, color: `${theme.lightText}70`, margin: 0, lineHeight: 1.6 }}>
-            Personalised for {coupleNames}'s wedding
+            Personalized for {coupleNames}'s wedding
           </p>
         </div>
 
@@ -287,10 +287,10 @@ Return a JSON object with exactly this structure:
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-              {/* Colour palette */}
+              {/* Color palette */}
               <div>
                 <p style={{ fontFamily: bfont, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: `${theme.darkText}50`, margin: '0 0 12px' }}>
-                  Colour palette
+                  Color palette
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {(mo.colors || []).map((c, i) => (

@@ -237,7 +237,7 @@ export default function StudioShareTab({ details: propDetails }) {
             </div>
             <input value={emailSubject} onChange={e => setEmailSubject(e.target.value)} style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 14, outline: 'none', marginBottom: 16, boxSizing: 'border-box', fontFamily: sans }} />
             <textarea value={emailMessage} onChange={e => setEmailMessage(e.target.value)} rows={5} style={{ width: '100%', border: '1px solid #EEEEEE', padding: '12px', fontSize: 14, outline: 'none', resize: 'vertical', fontFamily: sans, lineHeight: 1.6, marginBottom: 4, boxSizing: 'border-box' }} />
-            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px' }}>Tip: Use {'{guestName}'} to personalise each email automatically.</p>
+            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px' }}>Tip: Use {'{guestName}'} to personalize each email automatically.</p>
             <button disabled={selectedGuests.length === 0 || sending} onClick={handleSend} style={{ width: '100%', padding: '14px', background: selectedGuests.length === 0 ? '#EEEEEE' : 'linear-gradient(135deg, #E03553, #803D81)', color: selectedGuests.length === 0 ? 'rgba(10,10,10,0.3)' : '#FFF', border: 'none', fontSize: 14, fontWeight: 700, cursor: selectedGuests.length === 0 ? 'not-allowed' : 'pointer', fontFamily: sans }}>
               {sending ? 'Sending…' : selectedGuests.length === 0 ? 'Select guests to send' : `Send to ${selectedGuests.length} guest${selectedGuests.length !== 1 ? 's' : ''}`}
             </button>

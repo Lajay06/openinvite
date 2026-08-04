@@ -25,7 +25,7 @@ const assets = [
   { key: 'instagramStory', name: 'Instagram Story Kit', description: '5 story designs for social media', icon: 'Smartphone' },
   { key: 'welcomeSignage', name: 'Welcome Signage', description: 'Large format A1 venue signage', icon: 'MapPin' },
   { key: 'guestTags', name: 'Guest Tags', description: 'Name tags, 6 per A4 sheet, print-ready', icon: 'Tag' },
-  { key: 'thankYouNotes', name: 'Thank You Notes', description: 'Personalised post-wedding thank you cards', icon: 'Heart' },
+  { key: 'thankYouNotes', name: 'Thank You Notes', description: 'Personalized post-wedding thank you cards', icon: 'Heart' },
 ];
 
 function AssetMiniPreview({ assetKey, details, theme, typography, tables, guests }) {
@@ -151,7 +151,7 @@ function AssetEditorOverlay({ asset, details, theme, typography, tables, guests,
 
           <div style={{ background: '#F8F8F8', border: '1px solid #EEEEEE', padding: 16, marginBottom: 24 }}>
             <p style={{ margin: 0, fontSize: 12, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6 }}>
-              This asset is personalised with your couple names, wedding date, venue, and universe styling from Event Details.
+              This asset is personalized with your couple names, wedding date, venue, and universe styling from Event Details.
             </p>
           </div>
 
@@ -227,7 +227,7 @@ export default function StudioAssetsTab({ details, onDetailsChange }) {
     <div style={{ padding: 24 }}>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your 10 Design Pieces</h2>
-        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Every piece is personalised with your wedding details and designed in your chosen universe aesthetic.</p>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Every piece is personalized with your wedding details and designed in your chosen universe aesthetic.</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>

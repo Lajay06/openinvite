@@ -257,10 +257,10 @@ export default function WeddingFavoursPage() {
                 </Select>
               </div>
             </div>
-            <SectionInput label="Favour concept / description" isTextarea value={data.concept} onChange={e => update({ concept: e.target.value })} placeholder="What you're giving guests, the theme, any personalisation…" />
-            <PillToggle label="Personalised / custom" value={data.personalised || false} onChange={v => update({ personalised: v })} />
+            <SectionInput label="Favour concept / description" isTextarea value={data.concept} onChange={e => update({ concept: e.target.value })} placeholder="What you're giving guests, the theme, any personalization…" />
+            <PillToggle label="Personalized / custom" value={data.personalised || false} onChange={v => update({ personalised: v })} />
             {data.personalised && (
-              <SectionInput label="Personalisation details" isTextarea value={data.personalisationDetails} onChange={e => update({ personalisationDetails: e.target.value })} placeholder="Names, monograms, custom message, packaging…" />
+              <SectionInput label="Personalization details" isTextarea value={data.personalisationDetails} onChange={e => update({ personalisationDetails: e.target.value })} placeholder="Names, monograms, custom message, packaging…" />
             )}
           </DetailsSection>
           )}
@@ -281,7 +281,7 @@ export default function WeddingFavoursPage() {
                   <input value={item.name || ''} onChange={e => updateItem(i, 'name', e.target.value)} placeholder="e.g. Candle" style={inputStyle} />
                   <input value={item.quantity || ''} onChange={e => updateItem(i, 'quantity', e.target.value)} placeholder="100" style={inputStyle} />
                   <input value={item.costPerUnit || ''} onChange={e => updateItem(i, 'costPerUnit', e.target.value)} placeholder="£3.50" style={inputStyle} />
-                  <input value={item.notes || ''} onChange={e => updateItem(i, 'notes', e.target.value)} placeholder="Packaging, colour…" style={inputStyle} />
+                  <input value={item.notes || ''} onChange={e => updateItem(i, 'notes', e.target.value)} placeholder="Packaging, color…" style={inputStyle} />
                   <button onClick={() => removeItem(i)} aria-label="Remove favour item" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: '0 0 7px' }}>
                     <Trash2 size={13} />
                   </button>

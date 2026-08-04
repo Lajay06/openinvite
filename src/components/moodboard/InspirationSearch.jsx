@@ -22,7 +22,7 @@ const CURATED = {
   flowers: [
     { id: 'f1', title: 'Bridal bouquet with roses', image_url: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400', source_url: 'https://unsplash.com', description: 'Classic white roses with greenery accents' },
     { id: 'f2', title: 'Wildflower bridal arrangement', image_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400', source_url: 'https://unsplash.com', description: 'Natural wildflower bouquet for rustic weddings' },
-    { id: 'f3', title: 'Peony wedding centrepiece', image_url: 'https://images.unsplash.com/photo-1463320726281-696a485928c7?w=400', source_url: 'https://unsplash.com', description: 'Elegant peony arrangements for table settings' },
+    { id: 'f3', title: 'Peony wedding centerpiece', image_url: 'https://images.unsplash.com/photo-1463320726281-696a485928c7?w=400', source_url: 'https://unsplash.com', description: 'Elegant peony arrangements for table settings' },
   ],
   venue: [
     { id: 'v1', title: 'Garden wedding ceremony', image_url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400', source_url: 'https://unsplash.com', description: 'Beautiful outdoor garden ceremony setup' },

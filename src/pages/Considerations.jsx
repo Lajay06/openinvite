@@ -60,7 +60,7 @@ const ALL_ITEMS = [
     relevance: p => p.isReligious || p.isCulturalFusion ? 'HIGH' : 'MEDIUM',
     body: p => {
       if (p.isHindu) return [
-        'A Hindu wedding is not a single event — it is a sequence of rituals that unfold over hours or even days. The Saptapadi (seven steps around the sacred fire) is the legal and spiritual centrepiece, but rituals like Mehndi, Haldi, Sangeet, and the Baraat procession each carry deep meaning.',
+        'A Hindu wedding is not a single event — it is a sequence of rituals that unfold over hours or even days. The Saptapadi (seven steps around the sacred fire) is the legal and spiritual centerpiece, but rituals like Mehndi, Haldi, Sangeet, and the Baraat procession each carry deep meaning.',
         'Confirm with your pandit which rituals you will include and how long each takes. A full traditional ceremony can run four to six hours. Your venue and catering timelines must account for this.',
       ];
       if (p.isMuslim) return [
@@ -68,7 +68,7 @@ const ALL_ITEMS = [
         'Discuss with your officiant whether the Mahr (gift) will be announced publicly or privately, and who will serve as the Wali (guardian). These decisions affect seating, timing, and your guest communications.',
       ];
       if (p.isSikh) return [
-        'The Anand Karaj consists of four Laavaan (hymns) during which the couple circles the Guru Granth Sahib. The ceremony takes place in a Gurdwara, which has its own protocols around head covering, shoes, and behaviour.',
+        'The Anand Karaj consists of four Laavaan (hymns) during which the couple circles the Guru Granth Sahib. The ceremony takes place in a Gurdwara, which has its own protocols around head covering, shoes, and behavior.',
         'Non-Sikh guests will need guidance. Provide a printed or digital order-of-service explaining each stage, what to wear, and when it is appropriate to enter or exit. Langar (community meal) is traditionally served — coordinate with the Gurdwara kitchen early.',
       ];
       if (p.isJewish) return [
@@ -163,7 +163,7 @@ const ALL_ITEMS = [
       return ['Consider your guests\' relationship with alcohol when planning your beverage service.'];
     },
     tips: () => [
-      'Invest in a skilled mocktail or non-alcoholic drinks programme — it elevates the experience for everyone.',
+      'Invest in a skilled mocktail or non-alcoholic drinks program — it elevates the experience for everyone.',
       'Communicate clearly on invitations whether the event is dry or alcohol is available.',
     ],
     why: () => 'Alcohol decisions affect venue licensing, guest comfort, and family dynamics. Making an informed, intentional choice early prevents awkward surprises on the day.',
@@ -185,7 +185,7 @@ const ALL_ITEMS = [
       'Allocate more time to family conversations than you think necessary — expectations on both sides can differ significantly.',
       'Consider having a cultural liaison or knowledgeable friend who can answer guest questions on the day.',
     ],
-    why: () => 'Intercultural weddings are among the most memorable and meaningful. The investment in getting the details right pays off in a day that genuinely honours both families.',
+    why: () => 'Intercultural weddings are among the most memorable and meaningful. The investment in getting the details right pays off in a day that genuinely honors both families.',
   },
 
   {
@@ -195,7 +195,7 @@ const ALL_ITEMS = [
     tag: 'Legal',
     relevance: p => p.isReligious ? 'HIGH' : 'MEDIUM',
     body: () => [
-      'In many countries, a religious ceremony is not automatically a legally recognised marriage. You may need to also complete a civil ceremony — either before, after, or embedded within your religious one — for your marriage to be recorded with the government.',
+      'In many countries, a religious ceremony is not automatically a legally recognized marriage. You may need to also complete a civil ceremony — either before, after, or embedded within your religious one — for your marriage to be recorded with the government.',
       'Requirements vary by country and by religion. In Australia, your celebrant or minister must be registered with the Attorney-General\'s Department and must give you a Notice of Intended Marriage at least one month before the ceremony. In the UK, the rules differ by venue and faith tradition. Research the rules that apply to your specific situation.',
     ],
     tips: () => [
@@ -216,7 +216,7 @@ const ALL_ITEMS = [
     body: p => {
       if (p.isMultiDay) return [
         'A multi-day wedding requires a separate run sheet for each event — rehearsal dinner, wedding day, and post-wedding brunch or activities. Each sheet should list every vendor\'s arrival time, every transition point, and the name of the person responsible for each decision.',
-        'Designate a day-of coordinator or at minimum a trusted person for each event. Do not attempt to manage logistics yourself while also being the couple. Even a well-organised friend is better than no one.',
+        'Designate a day-of coordinator or at minimum a trusted person for each event. Do not attempt to manage logistics yourself while also being the couple. Even a well-organized friend is better than no one.',
       ];
       return [
         'A run sheet is not the same as a schedule. A schedule tells you when events happen. A run sheet tells you who is responsible, what the contingency is if something runs late, and what the vendor contact number is for every person on site.',
@@ -259,7 +259,7 @@ const ALL_ITEMS = [
       'Include a transport information section on your wedding website with maps, parking details, and shuttle timetables.',
       'Arrange a vehicle for the couple — do not rely on a guest or vendor.',
     ],
-    why: p => p.isDestination ? 'Destination weddings require guests to invest significant time and money. Making the logistics easy is how you honour that commitment.' : 'Transport confusion causes stress for guests and delays your timeline. Clear, proactive communication prevents it.',
+    why: p => p.isDestination ? 'Destination weddings require guests to invest significant time and money. Making the logistics easy is how you honor that commitment.' : 'Transport confusion causes stress for guests and delays your timeline. Clear, proactive communication prevents it.',
   },
 
   {
@@ -338,7 +338,7 @@ const ALL_ITEMS = [
         'Your RSVP form should collect: attendance confirmation, dietary requirements, song requests if you want them, and any accessibility needs. For a destination event, also ask which pre-wedding activities guests plan to attend.',
       ];
       if (p.isIntimate) return [
-        'With a smaller guest list, you have the luxury of a more personal invitation experience. Hand-delivered invitations, personalised notes, or phone calls to confirm attendance are all appropriate and appreciated at an intimate gathering.',
+        'With a smaller guest list, you have the luxury of a more personal invitation experience. Hand-delivered invitations, personalized notes, or phone calls to confirm attendance are all appropriate and appreciated at an intimate gathering.',
         'Your RSVP form should still collect dietary requirements, any accessibility needs, and a reply deadline — even for a small group.',
       ];
       return [
@@ -424,11 +424,11 @@ const ALL_ITEMS = [
     id: 'gx-speeches',
     tab: 'guest',
     title: 'Speeches and their timing',
-    tag: 'Programme',
+    tag: 'Program',
     relevance: () => 'MEDIUM',
     body: () => [
       'Speeches are one of the highest-variance elements of a wedding — a great speech is a highlight of the evening; a poor one can derail the atmosphere for an hour. Three to five speeches is typically enough. More than five and attention flags.',
-      'Common order: welcome from the venue host or MC, father or parent of one partner, best man or maid of honour, couple\'s combined speech. Toast speeches should be no longer than five minutes each; more is rarely better.',
+      'Common order: welcome from the venue host or MC, father or parent of one partner, best man or maid of honor, couple\'s combined speech. Toast speeches should be no longer than five minutes each; more is rarely better.',
       'Talk to speakers in advance about length and content. It is entirely appropriate to ask them not to tell certain stories or to avoid certain topics.',
     ],
     tips: () => [
@@ -466,7 +466,7 @@ const ALL_ITEMS = [
     relevance: () => 'MEDIUM',
     body: () => [
       'If either partner plans to take the other\'s surname, or if you plan to hyphenate or create a blended name, you will need to update a range of official documents after the wedding. The marriage certificate is the trigger document for all of these changes.',
-      'Documents to update typically include: passport, driver\'s licence, bank accounts, superannuation, electoral roll, Medicare, employer payroll, and any professional registrations. The process varies by jurisdiction but usually starts with the state\'s Births Deaths and Marriages office.',
+      'Documents to update typically include: passport, driver\'s license, bank accounts, superannuation, electoral roll, Medicare, employer payroll, and any professional registrations. The process varies by jurisdiction but usually starts with the state\'s Births Deaths and Marriages office.',
     ],
     tips: () => [
       'Do not book your honeymoon flights under a new name until your passport is updated.',
@@ -519,7 +519,7 @@ const ALL_ITEMS = [
     relevance: () => 'HIGH',
     body: p => {
       if (p.isLuxury) return [
-        'A luxury wedding budget requires a different kind of management than a mid-range one. The key challenge is scope creep — premium vendors upsell continuously, and it is easy to approve each individual upgrade without realising how far you have moved from your original number.',
+        'A luxury wedding budget requires a different kind of management than a mid-range one. The key challenge is scope creep — premium vendors upsell continuously, and it is easy to approve each individual upgrade without realizing how far you have moved from your original number.',
         'Assign a fixed contingency buffer (typically 10-15% of total budget) at the beginning and do not allow it to be absorbed by vendor upgrades. It is there for genuine surprises, not incremental indulgences.',
         'Luxury vendors often require larger deposits earlier and have stricter cancellation terms. Read every contract carefully and ensure your event insurance matches your financial exposure.',
       ];
@@ -859,7 +859,7 @@ export default function Considerations() {
       <div style={{ padding: '16px 32px 0', maxWidth: 860, margin: '0 auto' }}>
         {contextPills.length > 0 ? (
           <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Personalised for:</span>
+            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Personalized for:</span>
             {contextPills.map(pill => (
               <span key={pill} style={{
                 padding: '3px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600,
@@ -872,7 +872,7 @@ export default function Considerations() {
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.45)', fontFamily: PJS }}>
-              Add your wedding style in Event details to see personalised guidance.
+              Add your wedding style in Event details to see personalized guidance.
             </span>
           </div>
         )}

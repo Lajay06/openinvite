@@ -148,7 +148,7 @@ export default function VendorsPage() {
       await Vendor.update(vendor.id, { is_favourite: next });
     } catch {
       setVendors(prev => prev.map(v => v.id === vendor.id ? { ...v, is_favourite: !next } : v));
-      toast.error('Failed to update favourite');
+      toast.error('Failed to update favorite');
     }
   };
 
@@ -216,7 +216,7 @@ export default function VendorsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full justify-start">
             <TabsTrigger value="vendors">Vendors</TabsTrigger>
-            <TabsTrigger value="favourites">Favourites{favouriteVendors.length > 0 ? ` (${favouriteVendors.length})` : ''}</TabsTrigger>
+            <TabsTrigger value="favourites">Favorites{favouriteVendors.length > 0 ? ` (${favouriteVendors.length})` : ''}</TabsTrigger>
             <TabsTrigger value="considerations">Considerations</TabsTrigger>
           </TabsList>
 
@@ -293,7 +293,7 @@ export default function VendorsPage() {
                 <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                   <Star size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
                 </div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>No favourites yet</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>No favorites yet</p>
                 <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Star a vendor from the Vendors tab to pin it here</p>
               </div>
             ) : (

@@ -68,7 +68,7 @@ const CONSIDERATIONS = {
       tag: 'Day of',
       body: [
         'Wedding days are long — often 12+ hours from getting ready to the end of the reception. Your makeup needs to last the entire time. Discuss this specifically with your artist: primer, setting spray, and powder are essential.',
-        'In hot or humid weather, sweat-proof formulas and minimal eye makeup reduce the risk of creasing. In cold weather, skin can look more grey — ask your artist about warmth in the foundation and blush. Ask your artist to prepare a touch-up kit: powder, blush, lipstick, and setting spray in a small bag you can keep in your clutch.',
+        'In hot or humid weather, sweat-proof formulas and minimal eye makeup reduce the risk of creasing. In cold weather, skin can look more gray — ask your artist about warmth in the foundation and blush. Ask your artist to prepare a touch-up kit: powder, blush, lipstick, and setting spray in a small bag you can keep in your clutch.',
       ],
       tips: [],
       why: 'You will be photographed, hugged, kissed, and exposed to weather all day. Your makeup should be built to last.',
@@ -377,7 +377,7 @@ const CONSIDERATIONS = {
       tag: 'Finance',
       body: [
         "A budget that is not tracked is not a budget — it is a wish. Review your actual vs budgeted spend at least once a month. When actual costs exceed estimates, the earlier you know, the more options you have.",
-        'Keep receipts and invoices organised from the beginning. Post-wedding, you will need them if disputes arise.',
+        'Keep receipts and invoices organized from the beginning. Post-wedding, you will need them if disputes arise.',
       ],
       tips: [
         'Designate one person to own the budget tracking',
@@ -578,10 +578,10 @@ const CONSIDERATIONS = {
     {
       id: 's3',
       title: 'Speeches — timing and order',
-      tag: 'Programme',
+      tag: 'Program',
       body: [
         'Speeches are one of the highest-variance elements — a great speech is a highlight; a poor one can derail the atmosphere. Three to five speeches is typically enough. Cap total speech time at 20–25 minutes maximum.',
-        'Recommended order: welcome from MC, parent(s) of one partner, best person or maid of honour, couple\'s combined speech. Talk to speakers in advance about length and content.',
+        'Recommended order: welcome from MC, parent(s) of one partner, best person or maid of honor, couple\'s combined speech. Talk to speakers in advance about length and content.',
       ],
       tips: [
         'Speeches before the main course keeps energy high — after dessert often loses the room',
@@ -593,7 +593,7 @@ const CONSIDERATIONS = {
     {
       id: 's4',
       title: 'First dance to dinner transition',
-      tag: 'Programme',
+      tag: 'Program',
       body: [
         'The transition from first dance to being seated for dinner is commonly the most rushed moment in a reception. Allow 15–20 minutes between your first dance finishing and guests being seated for their first course.',
         'This time is used by: caterers plating starters, guests finding seats, and your MC making announcements. Rushing this transition creates a chaotic atmosphere that takes time to recover from.',
@@ -640,13 +640,13 @@ const CULTURE_CONSIDERATIONS = {
       title: 'Planning a Mehndi night',
       tag: 'Cultural touch',
       body: [
-        'Mehndi night is typically held 1–2 days before the wedding — an evening of intricate henna application for the couple and close family, alongside music, dancing, and bright colour. It runs separately from the main ceremony and reception, so it needs its own slot on the overall wedding timeline, not a squeeze-in.',
+        'Mehndi night is typically held 1–2 days before the wedding — an evening of intricate henna application for the couple and close family, alongside music, dancing, and bright color. It runs separately from the main ceremony and reception, so it needs its own slot on the overall wedding timeline, not a squeeze-in.',
         'Book a henna artist (or several, for larger guest counts) well in advance — the same booking-window pressure as any other wedding-day specialist applies. Application can take 30–90 minutes per person for detailed designs, so plan the evening around that pace rather than a fixed end time.',
       ],
       tips: [
         'Confirm how many henna artists you need based on guest count and how detailed the designs are',
         'Give the henna time to dry/set before guests need to use their hands — build that into the evening, not just the application time',
-        'Coordinate Mehndi night colours/decor with the rest of the wedding so it reads as part of the same celebration, not a separate event',
+        'Coordinate Mehndi night colors/decor with the rest of the wedding so it reads as part of the same celebration, not a separate event',
       ],
       why: 'Mehndi night has its own pace and its own vendors — treating it as a full event on the timeline, not an add-on, is what keeps it from crowding the days around it.',
     },
@@ -680,7 +680,7 @@ const CULTURE_CONSIDERATIONS = {
         'Confirm setup and breakdown time with your venue — a full sofreh can take longer to install than a standard ceremony backdrop',
         'Walk your photographer through which items on the sofreh carry personal or family significance, so they know what to capture up close',
       ],
-      why: 'The sofreh aghd is the visual centrepiece of a Persian ceremony — giving its setup enough lead time protects both the moment itself and the photos of it.',
+      why: 'The sofreh aghd is the visual centerpiece of a Persian ceremony — giving its setup enough lead time protects both the moment itself and the photos of it.',
     },
   ],
 };

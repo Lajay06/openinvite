@@ -36,7 +36,7 @@ const CATEGORIES = [
 
 export default function MoodboardPage() {
   const [items, setItems] = useState([]);
-  const [boards, setBoards] = useState(['Main board', 'Venue ideas', 'Dress inspiration', 'Colour palette']);
+  const [boards, setBoards] = useState(['Main board', 'Venue ideas', 'Dress inspiration', 'Color palette']);
   const [activeBoard, setActiveBoard] = useState('Main board');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -214,7 +214,7 @@ export default function MoodboardPage() {
       onDragOver={e => e.preventDefault()}
       onDrop={e => { e.preventDefault(); if (!readOnly && !uploading && e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files); }}>
 
-      <DashboardPageHeader title="Moodboard" subtitle="Collect and organise inspiration images for your wedding vision" />
+      <DashboardPageHeader title="Moodboard" subtitle="Collect and organize inspiration images for your wedding vision" />
 
       {/* Stat strip */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
@@ -315,8 +315,8 @@ export default function MoodboardPage() {
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Inspiration curator"
-        systemPrompt="You are Ava, a wedding inspiration curator. Help find and organise wedding aesthetic ideas."
-        quickActions={["Describe my wedding aesthetic", "Find trending wedding styles", "Colour palette suggestions", "Theme ideas for my venue"]}
+        systemPrompt="You are Ava, a wedding inspiration curator. Help find and organize wedding aesthetic ideas."
+        quickActions={["Describe my wedding aesthetic", "Find trending wedding styles", "Color palette suggestions", "Theme ideas for my venue"]}
       />
     </div>
   );

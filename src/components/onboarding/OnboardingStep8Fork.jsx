@@ -64,7 +64,7 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
         >
           <h3 style={{ color: textDark('a'), fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>Tell us more</h3>
           <p style={{ color: textMid('a'), fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
-            Upload your guest list, add vendors, set your budget, and give Ava everything she needs to hit the ground running.
+            Upload your guest list, add vendors, set your budget, and give Ava everything Ava needs to hit the ground running.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
             {['Upload guest list (CSV or manual)', 'Add cultural/religious details', 'Set your budget', 'Add known vendors', 'Upload inspiration photos'].map(item => (

@@ -100,7 +100,7 @@ const FORMALITY_GUIDANCE = {
     label: 'Semi-formal',
     outfitBase: 'A step up from cocktail — a longer dress or a well-tailored suit in a darker palette.',
     fabricNote: 'Richer fabrics work here — velvet accents, silk, or a fine merino suit.',
-    avoid: ['Casual fabrics like jersey or denim', 'Overly bright, daytime colours'],
+    avoid: ['Casual fabrics like jersey or denim', 'Overly bright, daytime colors'],
   },
   formal: {
     label: 'Formal',
@@ -129,7 +129,7 @@ const STYLE_MODIFIERS = {
   },
   bold: {
     colorPalette: ['Emerald', 'Cobalt', 'Fuchsia', 'Deep plum'],
-    silhouetteNote: 'One statement piece — a bold colour or a striking silhouette — with everything else kept simple around it.',
+    silhouetteNote: 'One statement piece — a bold color or a striking silhouette — with everything else kept simple around it.',
   },
   romantic: {
     colorPalette: ['Blush', 'Lavender', 'Champagne', 'Soft coral'],

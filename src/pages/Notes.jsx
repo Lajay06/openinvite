@@ -184,7 +184,7 @@ export default function ToDoListPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="To do list" subtitle="Stay organised with personal notes and to-do items" />
+      <DashboardPageHeader title="To do list" subtitle="Stay organized with personal notes and to-do items" />
 
       {/* Stat strip */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>

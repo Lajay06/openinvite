@@ -470,7 +470,7 @@ export default function GuestSuiteAccommodation() {
 
 Return ONLY valid JSON, no markdown:
 {"suggestions":[
-  {"name":"Exact hotel name","area":"neighbourhood or distance from venue","priceRange":"$200-300/night","description":"2 sentences: why it's great for wedding guests, any standout feature","badge":"Luxury pick"},
+  {"name":"Exact hotel name","area":"neighborhood or distance from venue","priceRange":"$200-300/night","description":"2 sentences: why it's great for wedding guests, any standout feature","badge":"Luxury pick"},
   ...
 ]}
 

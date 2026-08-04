@@ -20,7 +20,7 @@ export default function ThankYouPreview({ universe, weddingDetails }) {
 
       {/* Recipient placeholder */}
       <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 8, textAlign: 'center' }}>
-        PERSONALISED FOR EACH GUEST
+        PERSONALIZED FOR EACH GUEST
       </p>
 
       {/* Thank you */}

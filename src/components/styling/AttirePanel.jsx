@@ -18,7 +18,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 
 const ROLES = [
   'Bride', 'Groom', 'Partner 1', 'Partner 2',
-  'Bridesmaid', 'Groomsman', 'Maid of honour', 'Best man',
+  'Bridesmaid', 'Groomsman', 'Maid of honor', 'Best man',
   'Flower girl', 'Page boy',
   'Mother of the bride', 'Mother of the groom',
   'Father of the bride', 'Father of the groom',
@@ -145,7 +145,7 @@ function OutfitCard({ outfit, onUpdate, onRemove, uploadState, onPhotoUpload, on
             value={outfit.description || ''}
             onChange={e => onUpdate(outfit.id, 'description', e.target.value)}
             style={textareaStyle}
-            placeholder="Fabric, colour, style, silhouette"
+            placeholder="Fabric, color, style, silhouette"
           />
         </Field>
       </div>

@@ -75,7 +75,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
           </SectionReveal>
         ) : (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 620, margin: '0 auto 48px' }}>
-            We've hand-picked our favourite spots so you can make the most of your time here.
+            We've hand-picked our favorite spots so you can make the most of your time here.
           </SectionReveal>
         )}
 
@@ -83,7 +83,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
         {couplePicks.length > 0 && (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ marginBottom: 56 }}>
             <p style={{ ...label, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Heart size={11} fill={theme.accent} color={theme.accent} /> Our favourites
+              <Heart size={11} fill={theme.accent} color={theme.accent} /> Our favorites
             </p>
             <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 8, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
               {couplePicks.map((place, i) => {

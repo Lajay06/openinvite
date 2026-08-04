@@ -44,7 +44,7 @@ export default function OnboardingStep7Ava({ onNext, data }) {
         transition={{ delay: 0.4 }}
         style={{ color: textMuted, fontSize: 16, lineHeight: 1.7, maxWidth: 480, margin: '0 auto 48px', fontFamily: PJS }}
       >
-        Ava knows you're planning a {weddingTypeStr} wedding for {guestCountStr} {locationPart}. She'll help you stay organised, suggest vendors, and keep everything on track.
+        Ava knows you're planning a {weddingTypeStr} wedding for {guestCountStr} {locationPart}. Ava will help you stay organized, suggest vendors, and keep everything on track.
       </motion.p>
 
       <motion.button

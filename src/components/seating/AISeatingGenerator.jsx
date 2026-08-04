@@ -24,7 +24,7 @@ export default function AISeatingGenerator({ guests, tables, onApplySeating, onC
 
   const handleGenerate = async () => {
     setLoading(true);
-    const tid = toast.loading('Ava is analysing guest relationships…');
+    const tid = toast.loading('Ava is analyzing guest relationships…');
     try {
       const guestData = guests.map(g => ({
         id: g.id, name: g.name, category: g.category, tags: g.tags || [],
@@ -42,7 +42,7 @@ export default function AISeatingGenerator({ guests, tables, onApplySeating, onC
       const response = await InvokeLLM({
         prompt: `You are an expert wedding planner specialising in optimal seating arrangements.
 
-Analyse these ${guestData.length} wedding guests and ${tableData.length} tables to create the perfect seating chart.
+Analyze these ${guestData.length} wedding guests and ${tableData.length} tables to create the perfect seating chart.
 
 GUESTS: ${JSON.stringify(guestData)}
 

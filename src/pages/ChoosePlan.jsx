@@ -174,7 +174,7 @@ export default function ChoosePlan() {
           </div>
           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: PJS }}>24-month access · one-time payment</p>
           <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>
-            Your complete wedding planning command centre. Everything from first plan to final dance.
+            Your complete wedding planning command center. Everything from first plan to final dance.
           </p>
           <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 20 }} />
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>

@@ -667,7 +667,7 @@ export const UNIVERSE_CONFIGS = {
     tags: ['coastal', 'romantic'],
     transitionStyle: 'horizon-wash',
     tagline: 'Mediterranean summer',
-    tileDescription: "Sun on warm stone, citrus at the table, joy that doesn't apologise for itself.",
+    tileDescription: "Sun on warm stone, citrus at the table, joy that doesn't apologize for itself.",
     motifNote: 'A scalloped citrus-pith rule, repeating semicircle bumps, under kickers and names.',
     worldStory: "Capri tastes like citrus and salt, sounds like laughter carrying across water. Warm stone, warm light, a joy loud enough to fill a piazza. This is a wedding that doesn't hold back.",
     imageUrl: '/universes/capri.jpg',

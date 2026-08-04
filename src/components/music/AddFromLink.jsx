@@ -32,7 +32,7 @@ export default function AddFromLink({ onAdd, onClose }) {
     if (!val.trim()) { setParsed(null); return; }
     const result = parseMusicLink(val);
     setParsed(result);
-    if (!result) setError("That link wasn't recognised — paste a Spotify, Apple Music, or YouTube song link.");
+    if (!result) setError("That link wasn't recognized — paste a Spotify, Apple Music, or YouTube song link.");
   };
 
   const handleAdd = () => {

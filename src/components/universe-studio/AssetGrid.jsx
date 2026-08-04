@@ -19,7 +19,7 @@ const ASSET_TYPES = [
   { id: 'instagram-kit', label: 'Instagram Story Kit', description: '5 story frames', category: 'social' },
   { id: 'welcome-signage', label: 'Welcome Signage', description: 'Print-ready A1 sign', category: 'print' },
   { id: 'place-cards', label: 'Guest Place Cards', description: 'Individual name cards', category: 'print' },
-  { id: 'thank-you', label: 'Thank You Notes', description: 'Personalised thank you cards', category: 'digital' },
+  { id: 'thank-you', label: 'Thank You Notes', description: 'Personalized thank you cards', category: 'digital' },
 ];
 
 const CATEGORY_COLORS = {

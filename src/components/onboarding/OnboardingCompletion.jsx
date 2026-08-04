@@ -7,7 +7,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const CHECKLIST_ITEMS = [
   { id: 1, label: 'Wedding details saved' },
-  { id: 2, label: 'Dashboard personalised' },
+  { id: 2, label: 'Dashboard personalized' },
   { id: 3, label: 'Ava is ready' },
 ];
 
