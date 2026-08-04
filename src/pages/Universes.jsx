@@ -235,13 +235,13 @@ const Universes = () => {
   const assets = [
     { name: 'Save the Date', description: 'Your first announcement. Set the tone before anything else.' },
     { name: 'Digital Invitation', description: 'The full invitation suite, linking directly to your wedding website.' },
-    { name: 'RSVP Page', description: 'A styled response experience connected to your guest list.' },
-    { name: 'Menu Card', description: 'Typeset dinner menus for each table or place setting.' },
+    { name: 'RSVP Page', description: 'Every RSVP flows straight into your guest list, styled to match.' },
+    { name: 'Menu Card', description: 'A menu as considered as the meal it describes.' },
     { name: 'Seating Chart', description: 'Live from your guest list. Always accurate.' },
-    { name: 'Motion Graphic', description: 'An animated digital asset for screens and social.' },
+    { name: 'Motion Graphic', description: 'Your universe, brought to life for screens and stories.' },
     { name: 'Instagram Story Kit', description: 'Five story formats sized and ready to share.' },
     { name: 'Welcome Signage', description: 'Large format print-ready signage for your venue entrance.' },
-    { name: 'Guest Tags', description: 'Name tags, six per A4 sheet. Print and cut.' },
+    { name: 'Guest Tags', description: 'Beautifully designed name tags, print-ready in minutes.' },
     { name: 'Thank You Notes', description: 'Personalised post-wedding cards, ready to send.' },
   ];
 
