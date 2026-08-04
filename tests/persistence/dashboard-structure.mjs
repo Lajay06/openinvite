@@ -122,9 +122,9 @@ export async function runDashboardStructure() {
   // TABS-array edit that leaves the content still split.
   const keyRolesBlockMatch = weddingPartySource.match(/\{activeTab === 'keyRoles' && \([\s\S]*?\n {8}\)\}/);
   const keyRolesBlockBody = keyRolesBlockMatch ? keyRolesBlockMatch[0] : '';
-  results.push(/Maid of honour \/ best person/.test(keyRolesBlockBody) && /ROLES\.map\(role =>/.test(keyRolesBlockBody)
+  results.push(/Maid of honor \/ best person/.test(keyRolesBlockBody) && /ROLES\.map\(role =>/.test(keyRolesBlockBody)
     ? pass('WeddingParty.jsx — key-roles pickers AND the full role roster render in the same tab branch', 'both found in the keyRoles block')
-    : fail('WeddingParty.jsx — key-roles pickers AND the full role roster render in the same tab branch', 'both present', `maidOfHonour picker=${/Maid of honour \/ best person/.test(keyRolesBlockBody)} roleRoster=${/ROLES\.map\(role =>/.test(keyRolesBlockBody)}`));
+    : fail('WeddingParty.jsx — key-roles pickers AND the full role roster render in the same tab branch', 'both present', `maidOfHonour picker=${/Maid of honor \/ best person/.test(keyRolesBlockBody)} roleRoster=${/ROLES\.map\(role =>/.test(keyRolesBlockBody)}`));
 
   return results;
 }
