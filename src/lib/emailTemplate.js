@@ -260,25 +260,10 @@ export function renderInvitationEmail({
       <td align="center">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:${cardBg};border:1px solid rgba(0,0,0,0.08);">
 ${bannerHtml}
-          <!-- Header -->
+          <!-- Kicker + headline (no Openinvite branding up top — this email is from
+               the couple, not the platform; the couple's names are the focus) -->
           <tr>
-            <td style="padding:36px 40px 24px;border-bottom:1px solid rgba(0,0,0,0.06);">
-              <table cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="padding:0 7px 0 0;vertical-align:middle;">
-                    <img src="${EMAIL_LOGO_MARK_URL}" width="16" height="16" alt="" style="display:block;width:16px;height:16px;" />
-                  </td>
-                  <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:13px;font-weight:700;color:${textColor};letter-spacing:0.02em;font-family:${fontBody};">openinvite</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Kicker + headline -->
-          <tr>
-            <td style="padding:36px 40px 0;">
+            <td style="padding:${bannerImageUrl ? '36px' : '44px'} 40px 0;">
               <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${accent};letter-spacing:0.14em;text-transform:uppercase;font-family:${fontBody};">${escapeHtml(cfg.kicker)}</p>
               <h1 style="margin:0;font-family:${fontDisplay};font-weight:400;font-size:32px;color:${textColor};line-height:1.15;">${escapeHtml(coupleNames || 'The Wedding')}</h1>
             </td>
@@ -302,10 +287,20 @@ ${ctaHtml}
           </tr>
           <tr>
             <td style="padding:20px 40px 36px;">
-              <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(0,0,0,0.35);font-family:${fontBody};">
+              <p style="margin:0 0 14px;font-size:12px;line-height:1.6;color:rgba(0,0,0,0.35);font-family:${fontBody};">
                 You received this ${cfg.footerNoun} because someone added you to their guest list on openinvite.com.au.<br />
                 If you think this was sent in error, you can ignore this email.
               </p>
+              <table cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                  <td style="padding:0 5px 0 0;vertical-align:middle;">
+                    <img src="${EMAIL_LOGO_MARK_URL}" width="11" height="11" alt="" style="display:block;width:11px;height:11px;opacity:0.5;" />
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <p style="margin:0;font-size:11px;color:rgba(0,0,0,0.35);font-family:${fontBody};">Powered by openinvite</p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 

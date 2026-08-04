@@ -6,7 +6,7 @@
  * Isomorphic: imported server-side by api/send-guest-reply.js.
  */
 
-import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { emailShell, emailFooterRow, poweredByRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
 
 function nl2br(str) {
   return escapeHtml(str).replace(/\n/g, '<br />');
@@ -55,7 +55,8 @@ export function renderGuestReplyEmail({ guestName, coupleNames, originalMessage,
 
 ${originalHtml}
           <tr><td style="padding:24px 0 0;"></td></tr>
-${emailFooterRow(`This is a reply to a message you sent through ${escapeHtml(couple)}'s wedding website.`)}`;
+${emailFooterRow(`This is a reply to a message you sent through ${escapeHtml(couple)}'s wedding website.`)}
+${poweredByRow()}`;
 
-  return { subject, html: emailShell({ title: subject, bodyRowsHtml }) };
+  return { subject, html: emailShell({ title: subject, bodyRowsHtml, showHeader: false }) };
 }

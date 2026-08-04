@@ -71,16 +71,7 @@ export function giftRevealEmail({ plan, code, note, buyerLabel }) {
           <!-- Small logo row -->
           <tr>
             <td style="padding:28px 40px 0;">
-              <table cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="padding:0 8px 0 0;vertical-align:middle;">
-                    <img src="${EMAIL_LOGO_MARK_URL}" width="18" height="18" alt="" style="display:block;width:18px;height:18px;" />
-                  </td>
-                  <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:14px;font-weight:800;color:${EMAIL_BLACK};letter-spacing:-0.02em;font-family:${EMAIL_FONT};">openinvite</p>
-                  </td>
-                </tr>
-              </table>
+              <img src="${EMAIL_LOGO_MARK_URL}" width="24" height="24" alt="Openinvite" style="display:block;width:24px;height:24px;" />
             </td>
           </tr>
 
