@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus, Pencil } from "lucide-react";
+import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus, Pencil, MessageCircle } from "lucide-react";
 import { getGuestEventResponse } from "@/lib/weddingEvents";
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
@@ -152,16 +152,21 @@ function fmtDate(iso) {
 }
 
 const CHANNEL_LABELS = { email: 'Email', whatsapp: 'WhatsApp', 'email+whatsapp': 'Email + WhatsApp', 'whatsapp+email': 'Email + WhatsApp' };
+const CHANNEL_ICONS = { email: [Mail], whatsapp: [MessageCircle], 'email+whatsapp': [Mail, MessageCircle], 'whatsapp+email': [Mail, MessageCircle] };
 
 function LastSentCell({ guest }) {
   if (!guest.invite_sent_at) {
     return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Not sent</span>;
   }
+  const icons = CHANNEL_ICONS[guest.invite_channel] || [];
+  const label = CHANNEL_LABELS[guest.invite_channel] || 'Sent';
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>{fmtDate(guest.invite_sent_at)}</span>
-      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
-        {CHANNEL_LABELS[guest.invite_channel] || 'Sent'}
+      <span style={{ display: 'flex', alignItems: 'center', gap: 3 }} title={label}>
+        {icons.length > 0
+          ? icons.map((Icon, i) => <Icon key={i} size={12} style={{ color: 'rgba(10,10,10,0.45)' }} />)
+          : <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Sent</span>}
       </span>
     </div>
   );
@@ -458,6 +463,15 @@ function HoverDiv({ onClick, pointer, children, title }) {
       {children}
     </div>
   );
+}
+
+// The column header already reads "Table" — strip a redundant leading
+// "Table" word from the stored value (typed by hand, or imported from a
+// CSV column literally named "Table") so the cell doesn't repeat it.
+function formatTableAssignment(value) {
+  if (!value) return null;
+  const stripped = String(value).replace(/^table\s*:?\s*/i, '').trim();
+  return stripped || value;
 }
 
 function fmtRespondedAt(iso) {
@@ -989,7 +1003,7 @@ export default function GuestList({
                   <TableCell className="align-middle">
                     {textCell(guest, 'table_assignment',
                       <span style={{ fontSize: 13, color: '#444444', fontFamily: PJS }}>
-                        {guest.table_assignment || '—'}
+                        {formatTableAssignment(guest.table_assignment) || '—'}
                       </span>
                     )}
                   </TableCell>
@@ -1024,6 +1038,7 @@ export default function GuestList({
 
               /* ── Plus one sub-row ── */
               if (guest.plus_one) {
+                const hasDietOrMeal = guest.plus_one_dietary_restrictions || guest.plus_one_meal_choice;
                 rows.push(
                   <TableRow key={`${guest.id}-po`} style={{ background: 'rgba(10,10,10,0.015)', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
                     <TableCell colSpan={2} style={{ paddingTop: 5, paddingBottom: 5, paddingLeft: 52 }}>
@@ -1034,8 +1049,25 @@ export default function GuestList({
                         </span>
                       </div>
                     </TableCell>
+                    {/* Dietary + meal choice — previously hidden entirely for plus-ones */}
+                    <TableCell colSpan={3}>
+                      {hasDietOrMeal ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          {guest.plus_one_dietary_restrictions && (
+                            <DietaryCell value={guest.plus_one_dietary_restrictions} />
+                          )}
+                          {guest.plus_one_meal_choice && (
+                            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+                              {guest.plus_one_meal_choice}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
+                      )}
+                    </TableCell>
                     {/* Remaining columns empty */}
-                    <TableCell colSpan={COLUMN_COUNT - 2} />
+                    <TableCell colSpan={COLUMN_COUNT - 5} />
                   </TableRow>
                 );
               }

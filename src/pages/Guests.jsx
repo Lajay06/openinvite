@@ -398,12 +398,23 @@ export default function Guests() {
     };
   }, [guests]);
 
+  // Row counts, not attendee counts — must match how many rows actually
+  // show up when the pill is clicked (filteredGuests below uses these same
+  // predicates), which differs from stats.attending/declined/awaiting
+  // (those fold in plus-ones as separate attendees for the stat cards).
+  const filterCounts = React.useMemo(() => ({
+    not_invited: guests.filter(g => !g.invite_sent_at).length,
+    awaiting: guests.filter(isAwaitingPrimary).length,
+    attending: guests.filter(isAttending).length,
+    declined: guests.filter(isDeclined).length,
+  }), [guests]);
+
   const FILTERS = [
     { val: 'all',         label: `All (${stats.total})` },
-    { val: 'not_invited', label: 'Not yet invited' },
-    { val: 'awaiting',    label: 'Awaiting reply' },
-    { val: 'attending',   label: 'Attending' },
-    { val: 'declined',    label: 'Declined' },
+    { val: 'not_invited', label: `Not yet invited (${filterCounts.not_invited})` },
+    { val: 'awaiting',    label: `Awaiting reply (${filterCounts.awaiting})` },
+    { val: 'attending',   label: `Attending (${filterCounts.attending})` },
+    { val: 'declined',    label: `Declined (${filterCounts.declined})` },
   ];
 
   // Round 8 ask #14: per-event counts, computed from the same
