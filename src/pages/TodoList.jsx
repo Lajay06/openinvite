@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, CheckSquare, Square, List, Columns } from 'lucide-react';
+import { Plus, Trash2, CheckSquare, Square, List, Columns, Edit3, Calendar } from 'lucide-react';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 
 const Note = base44.entities.Note;
@@ -23,6 +23,20 @@ const PRIORITY = {
 
 const KANBAN_COLS = ['Ideas', 'In progress', 'Done'];
 
+function formatDueDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function isOverdue(task) {
+  if (!task.due_date || task.completed) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return new Date(task.due_date + 'T00:00:00') < today;
+}
+
 export default function TodoList({ embedded = false }) {
   const [tasks, setTasks]           = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -30,7 +44,8 @@ export default function TodoList({ embedded = false }) {
   const [filter, setFilter]         = useState('All');        // 'All' | 'Active' | 'Completed'
   const [newTitle, setNewTitle]     = useState('');
   const [newPriority, setNewPriority] = useState('Medium');
-  const [kanbanAdd, setKanbanAdd]   = useState({ col: null, title: '', desc: '' });
+  const [newDueDate, setNewDueDate] = useState('');
+  const [kanbanAdd, setKanbanAdd]   = useState({ col: null, title: '', desc: '', dueDate: '' });
   const [highlightedTaskId, setHighlightedTaskId] = useState(null);
   const rowRefs = useRef(new Map());
   const scrolledForId = useRef(null);
@@ -80,9 +95,11 @@ export default function TodoList({ embedded = false }) {
       const t = await Note.create({
         title: newTitle.trim(), completed: false,
         priority: newPriority, status: 'Ideas', view_type: 'todo',
+        due_date: newDueDate || undefined,
       });
       setTasks(prev => [t, ...prev]);
       setNewTitle('');
+      setNewDueDate('');
     } catch { toast.error('Failed to add task'); }
   };
 
@@ -90,6 +107,13 @@ export default function TodoList({ embedded = false }) {
     try {
       await Note.update(task.id, { completed: !task.completed });
       setTasks(prev => prev.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t));
+    } catch { toast.error('Failed to update task'); }
+  };
+
+  const handleEditSave = async (id, updates) => {
+    try {
+      await Note.update(id, updates);
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
     } catch { toast.error('Failed to update task'); }
   };
 
@@ -107,11 +131,12 @@ export default function TodoList({ embedded = false }) {
       const t = await Note.create({
         title: kanbanAdd.title.trim(),
         description: kanbanAdd.desc.trim() || undefined,
+        due_date: kanbanAdd.dueDate || undefined,
         completed: col === 'Done', status: col,
         priority: 'Medium', view_type: 'todo',
       });
       setTasks(prev => [t, ...prev]);
-      setKanbanAdd({ col: null, title: '', desc: '' });
+      setKanbanAdd({ col: null, title: '', desc: '', dueDate: '' });
     } catch { toast.error('Failed to add card'); }
   };
 
@@ -196,6 +221,18 @@ export default function TodoList({ embedded = false }) {
                 onFocus={e => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; }}
                 onBlur={e => { e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'; e.target.style.borderBottomWidth = '1px'; }}
               />
+              {/* Deadline */}
+              <input
+                type="date"
+                value={newDueDate}
+                onChange={e => setNewDueDate(e.target.value)}
+                title="Deadline"
+                style={{
+                  border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)',
+                  background: 'none', fontSize: 12, color: newDueDate ? '#0A0A0A' : 'rgba(10,10,10,0.58)',
+                  fontFamily: PJS, outline: 'none', padding: '6px 0', width: 118,
+                }}
+              />
               {/* Priority chips */}
               <div style={{ display: 'flex', gap: 4 }}>
                 {Object.keys(PRIORITY).map(p => (
@@ -259,6 +296,7 @@ export default function TodoList({ embedded = false }) {
                     task={task}
                     onToggle={handleToggle}
                     onDelete={handleDelete}
+                    onSave={handleEditSave}
                     highlighted={task.id === highlightedTaskId}
                     innerRef={el => { if (el) rowRefs.current.set(task.id, el); else rowRefs.current.delete(task.id); }}
                   />
@@ -296,6 +334,7 @@ export default function TodoList({ embedded = false }) {
                       allCols={KANBAN_COLS}
                       onMove={handleMove}
                       onDelete={handleDelete}
+                      onSave={handleEditSave}
                     />
                   ))}
 
@@ -324,7 +363,21 @@ export default function TodoList({ embedded = false }) {
                           width: '100%', border: 'none',
                           borderBottom: '1px solid rgba(10,10,10,0.08)',
                           background: 'none', fontSize: 11, fontFamily: PJS,
-                          outline: 'none', padding: '4px 0', marginBottom: 12,
+                          outline: 'none', padding: '4px 0', marginBottom: 8,
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                      <input
+                        type="date"
+                        value={kanbanAdd.dueDate}
+                        onChange={e => setKanbanAdd(p => ({ ...p, dueDate: e.target.value }))}
+                        title="Deadline"
+                        style={{
+                          width: '100%', border: 'none',
+                          borderBottom: '1px solid rgba(10,10,10,0.08)',
+                          background: 'none', fontSize: 11,
+                          color: kanbanAdd.dueDate ? '#0A0A0A' : 'rgba(10,10,10,0.58)',
+                          fontFamily: PJS, outline: 'none', padding: '4px 0', marginBottom: 12,
                           boxSizing: 'border-box',
                         }}
                       />
@@ -335,7 +388,7 @@ export default function TodoList({ embedded = false }) {
                           style={{ fontSize: 12, padding: '6px 14px' }}
                         >Add</button>
                         <button
-                          onClick={() => setKanbanAdd({ col: null, title: '', desc: '' })}
+                          onClick={() => setKanbanAdd({ col: null, title: '', desc: '', dueDate: '' })}
                           className="btn-editorial-secondary"
                           style={{ fontSize: 12, padding: '6px 14px' }}
                         >Cancel</button>
@@ -343,7 +396,7 @@ export default function TodoList({ embedded = false }) {
                     </div>
                   ) : (
                     <button
-                      onClick={() => setKanbanAdd({ col, title: '', desc: '' })}
+                      onClick={() => setKanbanAdd({ col, title: '', desc: '', dueDate: '' })}
                       style={{
                         width: '100%', marginTop: 8,
                         display: 'flex', alignItems: 'center', gap: 6,
@@ -369,8 +422,90 @@ export default function TodoList({ embedded = false }) {
 
 /* ── Sub-components ── */
 
-function TaskRow({ task, onToggle, onDelete, highlighted, innerRef }) {
+function TaskRow({ task, onToggle, onDelete, onSave, highlighted, innerRef }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(task.title);
+  const [priority, setPriority] = useState(task.priority || 'Medium');
+  const [dueDate, setDueDate] = useState(task.due_date || '');
+
+  useEffect(() => {
+    if (editing) return;
+    setTitle(task.title);
+    setPriority(task.priority || 'Medium');
+    setDueDate(task.due_date || '');
+  }, [task, editing]);
+
+  const startEdit = () => setEditing(true);
+
+  const save = () => {
+    if (!title.trim()) return;
+    onSave(task.id, { title: title.trim(), priority, due_date: dueDate || null });
+    setEditing(false);
+  };
+
+  const cancel = () => {
+    setTitle(task.title);
+    setPriority(task.priority || 'Medium');
+    setDueDate(task.due_date || '');
+    setEditing(false);
+  };
+
   const p = PRIORITY[task.priority] || PRIORITY.Medium;
+  const overdue = isOverdue(task);
+
+  if (editing) {
+    return (
+      <div ref={innerRef} style={{
+        display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+        padding: '12px 0', borderBottom: '1px solid rgba(10,10,10,0.06)',
+      }}>
+        <div style={{ width: 18, flexShrink: 0 }} />
+        <input
+          autoFocus
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancel(); }}
+          style={{
+            flex: 1, minWidth: 120, border: 'none',
+            borderBottom: '2px solid #E03553',
+            background: 'none', fontSize: 14, color: '#0A0A0A',
+            fontFamily: PJS, outline: 'none', padding: '4px 0',
+          }}
+        />
+        <input
+          type="date"
+          value={dueDate}
+          onChange={e => setDueDate(e.target.value)}
+          title="Deadline"
+          style={{
+            border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)',
+            background: 'none', fontSize: 12, color: dueDate ? '#0A0A0A' : 'rgba(10,10,10,0.58)',
+            fontFamily: PJS, outline: 'none', padding: '4px 0', width: 118, flexShrink: 0,
+          }}
+        />
+        <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+          {Object.keys(PRIORITY).map(pr => (
+            <button
+              key={pr}
+              onClick={() => setPriority(pr)}
+              style={{
+                padding: '4px 10px', borderRadius: 999,
+                border: `1px solid ${priority === pr ? PRIORITY[pr].border : 'rgba(10,10,10,0.1)'}`,
+                background: priority === pr ? PRIORITY[pr].bg : 'transparent',
+                color: priority === pr ? PRIORITY[pr].color : '#444444',
+                fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: PJS,
+              }}
+            >{pr}</button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+          <button onClick={save} className="btn-primary" style={{ fontSize: 12, padding: '6px 14px' }}>Save</button>
+          <button onClick={cancel} className="btn-editorial-secondary" style={{ fontSize: 12, padding: '6px 14px' }}>Cancel</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div ref={innerRef} style={{
       display: 'flex', alignItems: 'center', gap: 12,
@@ -388,13 +523,31 @@ function TaskRow({ task, onToggle, onDelete, highlighted, innerRef }) {
         }
       </button>
 
-      <span style={{
-        flex: 1, fontSize: 14, fontWeight: 500, fontFamily: PJS,
-        color: task.completed ? 'rgba(10,10,10,0.6)' : '#0A0A0A',
-        textDecoration: task.completed ? 'line-through' : 'none',
-      }}>
+      <span
+        onClick={startEdit}
+        title="Click to edit"
+        style={{
+          flex: 1, fontSize: 14, fontWeight: 500, fontFamily: PJS, cursor: 'pointer',
+          color: task.completed ? 'rgba(10,10,10,0.6)' : '#0A0A0A',
+          textDecoration: task.completed ? 'line-through' : 'none',
+        }}
+      >
         {task.title}
       </span>
+
+      {task.due_date && (
+        <span style={{
+          display: 'flex', alignItems: 'center', gap: 4,
+          padding: '2px 10px', borderRadius: 999,
+          background: overdue ? 'rgba(224,53,83,0.08)' : 'rgba(10,10,10,0.05)',
+          color: overdue ? '#E03553' : 'rgba(10,10,10,0.6)',
+          border: `1px solid ${overdue ? 'rgba(224,53,83,0.25)' : 'rgba(10,10,10,0.12)'}`,
+          fontSize: 10, fontWeight: 700, fontFamily: PJS, flexShrink: 0,
+        }}>
+          <Calendar size={10} />
+          {formatDueDate(task.due_date)}
+        </span>
+      )}
 
       <span style={{
         padding: '2px 10px', borderRadius: 999,
@@ -403,6 +556,15 @@ function TaskRow({ task, onToggle, onDelete, highlighted, innerRef }) {
       }}>
         {task.priority || 'Medium'}
       </span>
+
+      <button
+        onClick={startEdit}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'rgba(10,10,10,0.2)', display: 'flex', flexShrink: 0 }}
+        onMouseEnter={e => { e.currentTarget.style.color = '#0A0A0A'; }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.2)'; }}
+      >
+        <Edit3 size={14} />
+      </button>
 
       <button
         onClick={() => onDelete(task.id)}
@@ -416,17 +578,94 @@ function TaskRow({ task, onToggle, onDelete, highlighted, innerRef }) {
   );
 }
 
-function KanbanCard({ task, currentCol, allCols, onMove, onDelete }) {
+function KanbanCard({ task, currentCol, allCols, onMove, onDelete, onSave }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description || '');
+  const [dueDate, setDueDate] = useState(task.due_date || '');
+
+  useEffect(() => {
+    if (editing) return;
+    setTitle(task.title);
+    setDescription(task.description || '');
+    setDueDate(task.due_date || '');
+  }, [task, editing]);
+
+  const save = () => {
+    if (!title.trim()) return;
+    onSave(task.id, { title: title.trim(), description: description.trim() || null, due_date: dueDate || null });
+    setEditing(false);
+  };
+
+  const cancel = () => {
+    setTitle(task.title);
+    setDescription(task.description || '');
+    setDueDate(task.due_date || '');
+    setEditing(false);
+  };
+
+  const overdue = isOverdue(task);
+
+  if (editing) {
+    return (
+      <div style={{
+        background: '#FFFFFF', padding: '12px 14px', marginBottom: 8,
+        border: '1px solid #E03553',
+      }}>
+        <input
+          autoFocus
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancel(); }}
+          style={{
+            width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.15)',
+            background: 'none', fontSize: 13, fontFamily: PJS,
+            outline: 'none', padding: '4px 0', marginBottom: 8, boxSizing: 'border-box',
+          }}
+        />
+        <input
+          placeholder="Description (optional)"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          style={{
+            width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.08)',
+            background: 'none', fontSize: 11, fontFamily: PJS,
+            outline: 'none', padding: '4px 0', marginBottom: 8, boxSizing: 'border-box',
+          }}
+        />
+        <input
+          type="date"
+          value={dueDate}
+          onChange={e => setDueDate(e.target.value)}
+          title="Deadline"
+          style={{
+            width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.08)',
+            background: 'none', fontSize: 11, color: dueDate ? '#0A0A0A' : 'rgba(10,10,10,0.58)',
+            fontFamily: PJS, outline: 'none', padding: '4px 0', marginBottom: 12, boxSizing: 'border-box',
+          }}
+        />
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button onClick={save} className="btn-primary" style={{ fontSize: 12, padding: '6px 14px' }}>Save</button>
+          <button onClick={cancel} className="btn-editorial-secondary" style={{ fontSize: 12, padding: '6px 14px' }}>Cancel</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       background: '#FFFFFF', padding: '12px 14px', marginBottom: 8,
       border: '1px solid rgba(10,10,10,0.08)',
     }}>
-      <p style={{
-        fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS,
-        margin: '0 0 4px', overflow: 'hidden',
-        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-      }}>
+      <p
+        onClick={() => setEditing(true)}
+        title="Click to edit"
+        style={{
+          fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, cursor: 'pointer',
+          margin: '0 0 4px', overflow: 'hidden',
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+        }}
+      >
         {task.title}
       </p>
       {task.description && (
@@ -437,6 +676,19 @@ function KanbanCard({ task, currentCol, allCols, onMove, onDelete }) {
         }}>
           {task.description}
         </p>
+      )}
+      {task.due_date && (
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+          padding: '2px 8px', borderRadius: 999, marginBottom: 4,
+          background: overdue ? 'rgba(224,53,83,0.08)' : 'rgba(10,10,10,0.05)',
+          color: overdue ? '#E03553' : 'rgba(10,10,10,0.6)',
+          border: `1px solid ${overdue ? 'rgba(224,53,83,0.25)' : 'rgba(10,10,10,0.12)'}`,
+          fontSize: 9, fontWeight: 700, fontFamily: PJS,
+        }}>
+          <Calendar size={9} />
+          {formatDueDate(task.due_date)}
+        </span>
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
         {allCols.filter(c => c !== currentCol).map(c => (
@@ -451,8 +703,16 @@ function KanbanCard({ task, currentCol, allCols, onMove, onDelete }) {
           >→ {c}</button>
         ))}
         <button
-          onClick={() => onDelete(task.id)}
+          onClick={() => setEditing(true)}
           style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(10,10,10,0.18)', display: 'flex' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#0A0A0A'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.18)'; }}
+        >
+          <Edit3 size={11} />
+        </button>
+        <button
+          onClick={() => onDelete(task.id)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(10,10,10,0.18)', display: 'flex' }}
           onMouseEnter={e => { e.currentTarget.style.color = '#E03553'; }}
           onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.18)'; }}
         >
