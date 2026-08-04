@@ -45,8 +45,8 @@ function useCountUp(target, inView, duration = 1400) {
 const avaFeatures = [
 { value: "briefing", label: "Daily update briefings", description: "Ava sends a short briefing each day: what's coming up, a few smart suggestions, and the little details worth remembering.", detail: "Your countdown, this week's priorities, and quick notes on budget and vendors, all written just for you, every morning.", color: "#E03553", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779218328/DTS_PLAYER_TWO_JELLY_LUISE_Photos_ID13458_a53qq3.jpg", bgPosition: "center center" },
 { value: "budget", label: "Smart Budget Tips", description: "Ava monitors your spending patterns and proactively suggests where you can save, without compromising what matters most.", detail: "When your florals go over budget, Ava suggests reallocation options. When a vendor quote comes in high, Ava benchmarks it against typical costs for your area.", color: "#803D81", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185602/DTS_Remote_Studio_Tino_Renato_Photos_ID3726_vgcgmv.jpg", bgPosition: "center center" },
-{ value: "checklist", label: "Personalised Checklist", description: "Ava generates a custom wedding checklist based on your date, venue, style and priorities, not a generic template.", detail: "A beach elopement 3 months away needs different tasks than a 200-person ballroom wedding 12 months out. Ava knows the difference and plans accordingly.", color: "#6B2CAE", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779240971/kiet-trinh-L5gTFp1iGHE-unsplash_lpjp5z.jpg", bgPosition: "center center" },
-{ value: "guests", label: "Guest Intelligence", description: "Ava analyses your guest list to surface insights (dietary clusters, seating conflicts, RSVP patterns) and makes smart suggestions.", detail: "Ava spots that 40% of your guests are vegetarian before you finalise the menu, or flags that two guests who should not be seated near each other are assigned to adjacent tables.", color: "#DDF762", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779240973/DTS_Remote_Studio_Tino_Renato_Photos_ID3722_copy_qbcgts.jpg", bgPosition: "center center" },
+{ value: "checklist", label: "Personalized Checklist", description: "Ava generates a custom wedding checklist based on your date, venue, style and priorities, not a generic template.", detail: "A beach elopement 3 months away needs different tasks than a 200-person ballroom wedding 12 months out. Ava knows the difference and plans accordingly.", color: "#6B2CAE", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779240971/kiet-trinh-L5gTFp1iGHE-unsplash_lpjp5z.jpg", bgPosition: "center center" },
+{ value: "guests", label: "Guest Intelligence", description: "Ava analyzes your guest list to surface insights (dietary clusters, seating conflicts, RSVP patterns) and makes smart suggestions.", detail: "Ava spots that 40% of your guests are vegetarian before you finalize the menu, or flags that two guests who should not be seated near each other are assigned to adjacent tables.", color: "#DDF762", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779240973/DTS_Remote_Studio_Tino_Renato_Photos_ID3722_copy_qbcgts.jpg", bgPosition: "center center" },
 { value: "vows", label: "Vow Writing Assistant", description: "Stuck on your vows? Ava helps you find the right words: prompting, suggesting, and refining until they feel completely yours.", detail: "Tell Ava your story, your partner's qualities, and the tone you want (funny, heartfelt, poetic). Ava drafts something real: not a template, a starting point that sounds like you.", color: "#C2E5F3", bg: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185622/alok-verma-ARLh7m5S4VA-unsplash_eslg13.jpg", bgPosition: "center center" }];
 
 
@@ -146,7 +146,7 @@ const STATS = [
 { value: "10x", label: "Faster planning", color: "#E03553", numeric: null },
 { value: 37, label: "Tools powered by Ava", color: "#803D81", numeric: 37 },
 { value: "24/7", label: "Always available", color: "#DDF762", numeric: null },
-{ value: "∞", label: "Personalised to you", color: "#6B2CAE", numeric: null }];
+{ value: "∞", label: "Personalized to you", color: "#6B2CAE", numeric: null }];
 
 
 function StatCell({ stat, index, inView }) {
@@ -163,18 +163,18 @@ function StatCell({ stat, index, inView }) {
 // ── How it works cards ────────────────────────────────────────
 const HOW_CARDS = [
 { num: "01", step: "LEARNS", heading: "Understands your wedding", body: "From the moment you start, Ava absorbs your details: your style, your priorities, your story, your budget. The more you plan, the smarter Ava gets.", icon: "🧠" },
-{ num: "02", step: "PLANS", heading: "Builds your entire plan", body: "Ava auto-generates your personalised checklist, populates your website, flags budget risks, and creates seating suggestions, all based on your specific wedding.", icon: "📅" },
+{ num: "02", step: "PLANS", heading: "Builds your entire plan", body: "Ava auto-generates your personalized checklist, populates your website, flags budget risks, and creates seating suggestions, all based on your specific wedding.", icon: "📅" },
 { num: "03", step: "DELIVERS", heading: "Handles the details", body: "When something needs attention, Ava surfaces it. When you're stuck, Ava suggests. When it's time to write your vows, Ava helps you find the words.", icon: "✦" }];
 
 
 // ── Comparison table ──────────────────────────────────────────
 const TABLE_ROWS = [
 { feature: "Wedding website", without: "Built manually, takes hours", with: "Auto-filled in 60 seconds" },
-{ feature: "Checklist", without: "Generic template", with: "Personalised to your wedding" },
+{ feature: "Checklist", without: "Generic template", with: "Personalized to your wedding" },
 { feature: "Budget tracking", without: "Spreadsheet chaos", with: "Real-time AI monitoring" },
 { feature: "Vow writing", without: "Blank page anxiety", with: "Guided by Ava" },
 { feature: "Guest seating", without: "Stressful trial and error", with: "Smart conflict detection" },
-{ feature: "Vendor coordination", without: "Emails everywhere", with: "Centralised with reminders" },
+{ feature: "Vendor coordination", without: "Emails everywhere", with: "Centralized with reminders" },
 { feature: "Day-of schedule", without: "Printed on paper", with: "Dynamic, shareable timeline" }];
 
 
@@ -235,7 +235,7 @@ export default function AvaPage() {
       <section style={{ background: "#FFFFFF", padding: "80px clamp(24px, 6vw, 80px)", textAlign: "center" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <p style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2, color: "#0A0A0A", fontFamily: "Plus Jakarta Sans, sans-serif", margin: 0 }}>
-            Ava takes the guesswork out of planning by using intelligence to personalise your journey, give smart suggestions, and help you stay calm, clear, and totally in control.
+            Ava takes the guesswork out of planning by using intelligence to personalize your journey, give smart suggestions, and help you stay calm, clear, and totally in control.
           </p>
         </div>
       </section>
@@ -282,7 +282,7 @@ export default function AvaPage() {
         labelColor="#DDF762"
         headline="Your website, written by Ava."
         body="Tell Ava about your love story, your venue, your vibe. Ava writes your welcome message, populates every page, and creates a beautiful wedding website, ready in under 60 seconds."
-        bullets={["Couple names, date and venue auto-populated", "Love story written from your answers", "FAQ generated from your details", "Travel info and hotel suggestions", "Personalised welcome message"]}
+        bullets={["Couple names, date and venue auto-populated", "Love story written from your answers", "FAQ generated from your details", "Travel info and hotel suggestions", "Personalized welcome message"]}
         photo="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779241785/aditya-gautama-putra-k0tGYZ6Xbhg-unsplash_z5r24i.jpg"
         reversed={false} />
       
@@ -350,14 +350,14 @@ export default function AvaPage() {
       <section style={{ background: "#0A0A0A", padding: "140px clamp(32px, 6vw, 80px)" }}>
         <div style={{ maxWidth: 1040, margin: "0 auto" }}>
           <h2 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", lineHeight: 1.1, textAlign: "center", margin: "0 auto 56px", maxWidth: 700 }}>
-            Ask Ava anything. Watch her actually answer.
+            Ask Ava anything. Watch Ava actually answer.
           </h2>
           <ProductMediaFrame aspectRatio="16/10" maxWidth="none">
             <ProductVideo
               mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-06-ava-wedding-date.mp4"
               webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-06-ava-wedding-date.webm"
               poster="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/product-shots/flow-06-ava-wedding-date-poster.jpg"
-              alt="Screen recording of asking Ava a question and watching her real, streamed answer"
+              alt="Screen recording of asking Ava a question and watching Ava's real, streamed answer"
             />
           </ProductMediaFrame>
         </div>

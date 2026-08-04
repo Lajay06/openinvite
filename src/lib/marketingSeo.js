@@ -43,11 +43,11 @@ export const MARKETING_PAGE_SEO = {
   },
   '/ava': {
     title: 'Meet Ava, your AI wedding planning assistant',
-    description: 'Ava is the AI wedding assistant built into Openinvite. She helps with your wedding checklist, budget suggestions, vow writing and planning advice, personalised to your wedding.',
+    description: 'Ava is the AI wedding assistant built into Openinvite. Ava helps with your wedding checklist, budget suggestions, vow writing and planning advice, personalized to your wedding.',
   },
   '/universes': {
     title: '20 wedding website design themes to choose from',
-    description: "Choose from 20 fully designed wedding website themes in Openinvite. Each universe sets the fonts, colours and style for your wedding website, invitations and printed pieces.",
+    description: "Choose from 20 fully designed wedding website themes in Openinvite. Each universe sets the fonts, colors and style for your wedding website, invitations and printed pieces.",
   },
   '/pricing': {
     title: 'Pricing: pay once, plan your whole wedding',
