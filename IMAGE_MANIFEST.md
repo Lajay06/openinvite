@@ -304,3 +304,28 @@ derives `photo` from each universe's own `UNIVERSE_CONFIGS.imageUrl` via
 `getUniverse()`, the same single source of truth `UniverseBanner.jsx`
 and `Universes.jsx` already read — this picker can no longer drift out
 of sync with the rest of the product.
+
+## Round 11 (marketing M4 — About page rebuild)
+
+| public_id | Folder | Used on |
+|---|---|---|
+| `DTS_Remote_Studio_Tino_Renato_Photos_ID3691_o8kwfy` | Planning | About.jsx — new hero (MarketingHero, matching Features/Pricing) |
+
+About.jsx's hero previously had no photo at all (plain centred text on a
+flat `#F5F5F3` background) — brought in line with every other marketing
+page's `MarketingHero` treatment.
+
+Freed up: `DTS_la_calma_Parole_Dure_Photos_ID5853_haflhv` (the aerial
+turquoise-cove/rocks photo, Round 9's "About.jsx — full-bleed before
+stats") — that full-bleed section is removed entirely, and this was its
+only use anywhere in `src/`. Available for reassignment.
+
+Also removed the "Our story" section (`TwoColumnSection` with headline
+"Built for the way people actually plan.") — its headline now replaces
+the Editorial Intro's old "Wedding planning, reimagined for the way
+modern couples actually live.", and its own body copy was redundant with
+that section's intro paragraph (both told the same origin story). The
+photo pair (`DTS_LEAP_Shauna_Summers_Photos_ID7601_k27hx3` /
+`DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa`) moved down to sit
+after "What we believe" instead of between the two now-merged editorial
+blocks — no image reassignment, just a position change on the same page.

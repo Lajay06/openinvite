@@ -3,6 +3,7 @@ import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import ApplePillButton from "@/components/motion/ApplePillButton";
+import MarketingHero from "@/components/marketing/MarketingHero";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -17,7 +18,6 @@ const DELIVERABLES = [
   "Collaborative playlists",
   "Registry integration",
   "AI assistant (Ava)",
-  "Photo & memory management",
   "Vendor management",
   "Timeline & schedule builder",
   "RSVP tracking",
@@ -68,60 +68,12 @@ export default function About() {
       <ScrollProgress />
 
       {/* ── S1: HERO ─────────────────────────────────────── */}
-<section
-  style={{
-    background: "#F5F5F3",
-    padding: "120px 80px",
-    borderBottom: "1px solid #E0E0DC",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center"
-  }}
->
-  <div
-    style={{
-      maxWidth: 1200,
-      width: "100%",
-      textAlign: "center",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "20px",
-      padding: "0 24px",
-      boxSizing: "border-box"
-    }}
-  >
-    <h1
-      style={{
-        fontSize: "clamp(36px, 5vw, 64px)",
-        fontWeight: 700,
-        letterSpacing: "-0.02em",
-        lineHeight: 1.1,
-        color: "#0A0A0A",
-        margin: 0,
-        maxWidth: "100%",
-        overflowWrap: "break-word"
-      }}
-    >
-      Planning a wedding should feel like the beginning of something incredible.
-    </h1>
-
-    <p
-      style={{
-        fontSize: 16,
-        fontWeight: 400,
-        color: "#555555",
-        maxWidth: 560,
-        margin: 0,
-        lineHeight: 1.7
-      }}
-    >
-      We built Openinvite because modern couples deserve a planning experience
-      that matches the occasion.
-    </p>
-  </div>
-</section>
+      <MarketingHero
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Remote_Studio_Tino_Renato_Photos_ID3691_o8kwfy.jpg"
+        title="Planning a wedding should feel like the beginning of something incredible."
+        cta={{ label: "Get started", href: "/signup" }}
+        maxWidth={900}
+      />
 
       {/* ── S2: EDITORIAL INTRO ──────────────────────────── */}
       <EditorialIntro />
@@ -131,8 +83,8 @@ export default function About() {
         <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Young_Latin_Martin_Pisotti_Photos_ID6999_p6ixxt.jpg" alt="A young couple sharing a joyful moment together" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
       </section>
 
-      {/* ── S4: OUR STORY ──────────────────────────────── */}
-      <TwoColumnSection id="story" number="01" title="Our story" headline="Built for the way people actually plan." body={["Openinvite was born from a real problem. Couples were drowning in spreadsheets, group chats, and tools that were either too complex or too basic. We saw an opportunity to build something that was genuinely beautiful and genuinely powerful: a platform that respected your time and matched the energy of the occasion.", "From day one, we made a commitment: no feature would ship unless it was designed as carefully as it was engineered. Every screen, every interaction, every detail had to earn its place. The result is a platform that feels as considered as the weddings it helps plan."]} />
+      {/* ── S4: WHAT WE BELIEVE ─────────────────────────── */}
+      <TwoColumnSection id="beliefs" number="01" title="What we believe" headline="Simple beliefs. Big impact." background="#F5F5F3" beliefs={BELIEFS} />
 
       {/* ── S5: PHOTO PAIR ────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
@@ -140,15 +92,7 @@ export default function About() {
         <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa.jpg" alt="A man carrying his partner outdoors, both laughing" style={{ width: "100%", height: "70vh", objectFit: "cover" }} />
       </div>
 
-      {/* ── S6: WHAT WE BELIEVE ─────────────────────────── */}
-      <TwoColumnSection id="beliefs" number="02" title="What we believe" headline="Simple beliefs. Big impact." background="#F5F5F3" beliefs={BELIEFS} />
-
-      {/* ── S7: FULL BLEED PHOTO ─────────────────────────── */}
-      <section style={{ width: "100%", height: "90vh", minHeight: 600, position: "relative", overflow: "hidden" }}>
-        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100482/DTS_la_calma_Parole_Dure_Photos_ID5853_haflhv.jpg" alt="An aerial view of a turquoise cove" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-      </section>
-
-      {/* ── S9: CTA ──────────────────────────────────────── */}
+      {/* ── S6: CTA ──────────────────────────────────────── */}
       <CTASection />
 
       <PublicFooter />
@@ -163,7 +107,7 @@ function EditorialIntro() {
     <section ref={ref} style={{ background: "#FFFFFF", padding: "120px 80px", borderBottom: "1px solid #E0E0DC", maxWidth: 1100, margin: "0 auto" }}>
       <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: "opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s" }}>
         <h2 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 700, color: "#0A0A0A", lineHeight: 1.1, marginBottom: 32, hyphens: "none" }}>
-          Wedding planning, reimagined for the way modern couples actually live.
+          Built for the way people actually plan.
         </h2>
         <p style={{ fontSize: 17, color: "#555555", lineHeight: 1.7, marginBottom: 32 }}>
           Openinvite was built out of a simple frustration: wedding planning tools were outdated, overwhelming, and frankly ugly. We believed that one of the most exciting moments of your life deserved a platform that matched that energy. So we built one.

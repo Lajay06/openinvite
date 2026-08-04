@@ -29,7 +29,7 @@ const FAQS = [
   },
   {
     q: "What if I want a refund?",
-    a: "Refunds are provided as required by the Australian Consumer Law. Contact us and we'll assess your request.",
+    a: "Contact us and we'll assess your request case by case. Australian customers are also covered by guarantees under the Australian Consumer Law, which we never exclude.",
   },
   {
     q: "Do I need a credit card for the trial?",
@@ -332,11 +332,11 @@ export default function Pricing() {
           </p>
           <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(10,10,10,0.6)", marginBottom: 10, fontFamily: PJS }}>
             Your wedding is done, congratulations. After 24 months, your account moves to archive mode.
-            Your data, photos, and memories stay safe. To keep full access to your wedding story,
+            Your data and memories stay safe. To keep full access to your wedding story,
             add an archive plan for a single $49 payment. No recurring fees, ever.
           </p>
           <p style={{ fontSize: 12, color: "rgba(10,10,10,0.6)", margin: 0, fontFamily: PJS }}>
-            Archive access covers your guest list, photos, messages, and wedding website permanently.
+            Archive access covers your guest list, messages, and wedding website permanently.
           </p>
         </div>
       </section>
