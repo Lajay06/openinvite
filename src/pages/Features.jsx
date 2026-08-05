@@ -4,13 +4,13 @@ import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import AnimDivider from "@/components/motion/AnimDivider";
-import ApplePillButton from "@/components/motion/ApplePillButton";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import FeatureTimeline from "@/components/home/FeatureTimeline";
 import FeatureGuests from "@/components/home/FeatureGuests";
 import FeatureBudget from "@/components/home/FeatureBudget";
 import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 import MarketingHero from "@/components/marketing/MarketingHero";
+import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import ProductVideo from "@/components/shared/ProductVideo";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
 
@@ -114,7 +114,10 @@ export default function Features() {
       </div>
 
       {/* ── S8: FINAL CTA ────────────────────────────────── */}
-      <FinalCTASection />
+      <MarketingEndCap
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_CURATIVE_Chris_Abatzis_Photos_ID7678_dlsgrm.jpg"
+        alt="A couple at their wedding reception"
+      />
 
       <PublicFooter />
     </div>);
@@ -310,15 +313,5 @@ function AccordionSection({ features, borders, dots, openFeature, setOpenFeature
 
 }
 
-function FinalCTASection() {
-  const [ref, visible] = useScrollReveal(0.2);
-  return (
-    <section ref={ref} style={{ background: "#0A0A0A", padding: "160px 0" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(32px, 6vw, 80px)", textAlign: "center", transform: visible ? "scale(1)" : "scale(0.92)", opacity: visible ? 1 : 0, transition: prefersReduced() ? "none" : `transform 0.9s ${EASE}, opacity 0.7s ${EASE}` }}>
-        <AnimDivider />
-        <h2 style={{ fontSize: "clamp(32px, 4vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", color: "#FFF", marginTop: 32, marginBottom: 24, overflow: "visible", whiteSpace: "normal", wordBreak: "normal", hyphens: "none" }}>Ready to start planning?</h2>
-        <ApplePillButton href="/signup">Get started</ApplePillButton>
-      </div>
-    </section>);
-
-}
+// The old FinalCTASection ("Ready to start planning?" on flat black) is gone
+// — every marketing page now closes on the shared MarketingEndCap instead.

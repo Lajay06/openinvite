@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { track } from "@/lib/analytics";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import MarketingHero from "@/components/marketing/MarketingHero";
+import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { PRO_FEATURES, ULTRA_EXTRAS } from "@/lib/planFeatures";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -408,15 +409,17 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* ── BOTTOM CTA ── */}
-      <section style={{ background: "#0A0A0A", padding: "100px 24px", textAlign: "center" }}>
-        <h2 style={{
-          fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 800, letterSpacing: "-0.02em",
-          color: "#FFFFFF", marginBottom: 40, lineHeight: 1.15, fontFamily: PJS,
-        }}>
-          Your wedding deserves this.
-        </h2>
-        <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+      {/* ── BOTTOM CTA ──
+          Same shared end-cap as Home, Features and Ava. This page had grown
+          its own text-on-black copy of the identical headline; it now renders
+          the one component, with the photo behind it. The plan buttons below
+          are unchanged and passed through as children — they carry the real
+          signup and billing navigation plus the upgrade_clicked analytics,
+          so they are deliberately not reduced to a plain link. */}
+      <MarketingEndCap
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_day_tripping_Agust%C3%ADn_Far%C3%ADas_Photos_ID6199_g2inky.jpg"
+        alt="A couple on a day trip together"
+      >
           {!isPaidUser && (
             <button
               onClick={goFree}
@@ -463,8 +466,7 @@ export default function Pricing() {
           >
             {ultraLabel}
           </button>
-        </div>
-      </section>
+      </MarketingEndCap>
 
       <PublicFooter />
     </div>

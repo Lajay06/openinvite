@@ -9,7 +9,7 @@ import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
 import UniverseMiniHero from "@/components/home/UniverseMiniHero";
 import UniverseTeaserSection from "@/components/home/UniverseTeaserSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
-import FullBleedPhotoCTA from "@/components/home/FullBleedPhotoCTA";
+import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import { useOrganizationStructuredData } from "@/hooks/useOrganizationStructuredData";
 
@@ -87,7 +87,10 @@ export default function Home() {
       </div>
 
       {/* 9. FULL BLEED PHOTO CTA */}
-      <FullBleedPhotoCTA onCTA={handleCTA} />
+      <MarketingEndCap
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3.jpg"
+        alt="A couple running together, laughing"
+      />
 
       {/* 10. FOOTER */}
       <PublicFooter />
