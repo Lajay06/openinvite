@@ -35,7 +35,7 @@ const CARDS = [
   title: "Budget & registry",
   desc: "See what's spent, what's owed and what's coming, plus a registry your guests actually enjoy using.",
   bullets: ["Budget vs. actual spend", "Vendor payment tracking", "Gift registry"],
-  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100470/DTS_Ceramic_Daniel_Far%C3%B2_Photos_ID3766_gipmok.jpg"
+  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BEHIND_THE_SCENES_Shauna_Summers_Photos_ID8234_esice8.jpg"
 },
 {
   num: "03",
