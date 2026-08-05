@@ -1,8 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import GuestAvatar from '@/components/shared/GuestAvatar';
 import { interactiveDivProps } from '@/lib/a11y';
 
 const SEAT = 20;
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+/* Custom hover tooltip — the browser's native `title` attribute is slow to
+   appear and can't be styled, which left a seat's occupant effectively
+   guessable only from their avatar initials at a glance. Shows the full
+   name + tags immediately on hover instead. */
+function SeatTooltip({ guest }) {
+  return (
+    <div style={{
+      position: 'absolute', bottom: SEAT + 8, left: '50%', transform: 'translateX(-50%)',
+      background: '#0A0A0A', color: '#FFFFFF', padding: '6px 10px', borderRadius: 6,
+      fontSize: 11, fontFamily: PJS, whiteSpace: 'nowrap', pointerEvents: 'none',
+      zIndex: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+    }}>
+      <div style={{ fontWeight: 700 }}>{guest ? guest.name : 'Empty seat'}</div>
+      {guest?.tags?.length > 0 && (
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', marginTop: 1 }}>
+          {guest.tags.join(', ')}
+        </div>
+      )}
+      <div style={{
+        position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+        width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent',
+        borderTop: '5px solid #0A0A0A',
+      }} />
+    </div>
+  );
+}
 
 function getSeatPositions(shape, tableW, tableH, capacity, cx, cy) {
   const positions = [];
@@ -104,48 +132,65 @@ export default function VisualTable({ table, guests, onSeatClick, selected, sele
         const guest = findGuest(i);
         const isSeatSelected = selectedSeatIndex === i;
         return (
-          <div
+          <SeatCircle
             key={i}
-            className={isSeatSelected ? 'seating-seat-selected' : undefined}
+            pos={pos}
+            guest={guest}
+            isSeatSelected={isSeatSelected}
             onClick={(e) => { e.stopPropagation(); onSeatClick && onSeatClick(table.id, i, guest?.id); }}
-            {...interactiveDivProps(() => onSeatClick && onSeatClick(table.id, i, guest?.id), { label: guest ? guest.name : 'Empty seat' })}
-            title={guest ? (guest.tags?.length ? `${guest.name} — ${guest.tags.join(', ')}` : guest.name) : 'Empty seat'}
-            style={{
-              position: 'absolute',
-              left: Math.round(pos.left),
-              top: Math.round(pos.top),
-              width: SEAT,
-              height: SEAT,
-              borderRadius: '50%',
-              // Assigned seats: solid navy fill + a white ring so they read
-              // as "occupied" at a glance, not just a colour swap. Empty
-              // seats: dashed outline only, no fill — the two states can't
-              // be confused even at a small size (fix/seating-polish).
-              // Selected seat: the same accent ring/glow/pulse pattern as a
-              // selected table (fix/seating-select-import-cleanup), scaled
-              // down for a 20px circle — layered on top of the
-              // assigned/empty look so all three states (selected, assigned,
-              // empty) stay visually distinct even in combination.
-              background: guest ? '#0A1930' : (isSeatSelected ? 'rgba(224,53,83,0.14)' : 'transparent'),
-              border: isSeatSelected ? '2px solid #E03553' : (guest ? '2px solid #FFFFFF' : '1.5px dashed rgba(10,10,10,0.45)'),
-              boxShadow: isSeatSelected
-                ? '0 0 0 3px rgba(224,53,83,0.22), 0 2px 10px rgba(224,53,83,0.35)'
-                : (guest ? '0 1px 4px rgba(10,10,10,0.35)' : 'none'),
-              transform: isSeatSelected ? 'scale(1.2)' : 'scale(1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.12s',
-              zIndex: 3,
-            }}
-          >
-            {guest && (
-              <GuestAvatar name={guest.name} email={guest.email} profilePictureUrl={guest.profile_picture_url} size={SEAT - 4} />
-            )}
-          </div>
+            onSeatClick={onSeatClick}
+            tableId={table.id}
+            seatIndex={i}
+          />
         );
       })}
+    </div>
+  );
+}
+
+function SeatCircle({ pos, guest, isSeatSelected, onClick, onSeatClick, tableId, seatIndex }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      className={isSeatSelected ? 'seating-seat-selected' : undefined}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      {...interactiveDivProps(() => onSeatClick && onSeatClick(tableId, seatIndex, guest?.id), { label: guest ? guest.name : 'Empty seat' })}
+      style={{
+        position: 'absolute',
+        left: Math.round(pos.left),
+        top: Math.round(pos.top),
+        width: SEAT,
+        height: SEAT,
+        borderRadius: '50%',
+        // Assigned seats: solid navy fill + a white ring so they read
+        // as "occupied" at a glance, not just a colour swap. Empty
+        // seats: dashed outline only, no fill — the two states can't
+        // be confused even at a small size (fix/seating-polish).
+        // Selected seat: the same accent ring/glow/pulse pattern as a
+        // selected table (fix/seating-select-import-cleanup), scaled
+        // down for a 20px circle — layered on top of the
+        // assigned/empty look so all three states (selected, assigned,
+        // empty) stay visually distinct even in combination.
+        background: guest ? '#0A1930' : (isSeatSelected ? 'rgba(224,53,83,0.14)' : 'transparent'),
+        border: isSeatSelected ? '2px solid #E03553' : (guest ? '2px solid #FFFFFF' : '1.5px dashed rgba(10,10,10,0.45)'),
+        boxShadow: isSeatSelected
+          ? '0 0 0 3px rgba(224,53,83,0.22), 0 2px 10px rgba(224,53,83,0.35)'
+          : (guest ? '0 1px 4px rgba(10,10,10,0.35)' : 'none'),
+        transform: isSeatSelected ? 'scale(1.2)' : 'scale(1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        transition: 'all 0.12s',
+        zIndex: 3,
+      }}
+    >
+      {guest && (
+        <GuestAvatar name={guest.name} email={guest.email} profilePictureUrl={guest.profile_picture_url} size={SEAT - 4} />
+      )}
+      {hovered && <SeatTooltip guest={guest} />}
     </div>
   );
 }
