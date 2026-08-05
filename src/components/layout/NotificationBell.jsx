@@ -23,31 +23,35 @@ function NotificationRow({ notification, onOpen }) {
     <button
       onClick={() => onOpen(notification)}
       style={{
-        display: 'flex', alignItems: 'flex-start', gap: 10, width: '100%',
-        padding: '10px 16px', border: 'none', textAlign: 'left', cursor: 'pointer',
-        background: unread ? 'rgba(224,53,83,0.05)' : 'transparent',
-        borderBottom: '1px solid rgba(10,10,10,0.06)', fontFamily: PJS,
+        display: 'flex', alignItems: 'flex-start', gap: 12, width: '100%',
+        padding: '14px 16px', border: 'none', textAlign: 'left', cursor: 'pointer',
+        background: unread ? 'rgba(224,53,83,0.035)' : '#FFFFFF',
+        fontFamily: PJS, transition: 'background 0.12s',
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = unread ? 'rgba(224,53,83,0.09)' : 'rgba(10,10,10,0.03)'; }}
-      onMouseLeave={e => { e.currentTarget.style.background = unread ? 'rgba(224,53,83,0.05)' : 'transparent'; }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.04)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = unread ? 'rgba(224,53,83,0.035)' : '#FFFFFF'; }}
     >
+      {/* Neutral icon circle regardless of read state — colour was doing
+          double duty as an unread signal; the tint + dot already cover that,
+          so the icon itself stays calm and consistent. */}
       <div style={{
-        width: 28, height: 28, borderRadius: '50%', flexShrink: 0, marginTop: 1,
+        width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: unread ? 'rgba(224,53,83,0.12)' : 'rgba(10,10,10,0.06)',
-        color: unread ? '#E03553' : 'rgba(10,10,10,0.5)',
+        background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.55)',
       }}>
-        <Icon size={14} />
+        <Icon size={15} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 13, fontWeight: unread ? 700 : 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>
+        <p style={{
+          fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
           {notification.title}
         </p>
         {notification.body && (
           <p style={{
-            fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 4px', fontFamily: PJS,
-            overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
-            WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+            fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 3px', fontFamily: PJS,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {notification.body}
           </p>
@@ -57,7 +61,7 @@ function NotificationRow({ notification, onOpen }) {
         </p>
       </div>
       {unread && (
-        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#E03553', flexShrink: 0, marginTop: 6 }} />
+        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#E03553', flexShrink: 0, marginTop: 5 }} />
       )}
     </button>
   );
@@ -95,25 +99,28 @@ function NotificationDropdown({ userId, notifications, onClose, triggerRef }) {
       tabIndex={-1}
       style={{
         position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 200,
-        width: 340, maxHeight: 420, display: 'flex', flexDirection: 'column',
-        background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.1)',
-        boxShadow: '0 12px 40px rgba(0,0,0,0.14)', overflow: 'hidden',
+        width: 360, maxHeight: 440, display: 'flex', flexDirection: 'column',
+        background: '#FFFFFF', borderRadius: 12,
+        boxShadow: '0 8px 30px rgba(10,10,10,0.14)', overflow: 'hidden',
       }}
     >
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 16px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0,
+        padding: '16px 18px 12px', flexShrink: 0,
       }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>Notifications</span>
+        <span style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Notifications</span>
         {unreadIds.length > 0 && (
           <button
             onClick={() => markAllRead.mutate(unreadIds)}
             disabled={markAllRead.isPending}
             style={{
               background: 'none', border: 'none', cursor: markAllRead.isPending ? 'not-allowed' : 'pointer',
-              fontSize: 11, fontWeight: 600, color: '#E03553', fontFamily: PJS, padding: 0,
+              fontSize: 12, fontWeight: 500, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, padding: 0,
               display: 'flex', alignItems: 'center', gap: 4, opacity: markAllRead.isPending ? 0.5 : 1,
+              transition: 'color 0.12s',
             }}
+            onMouseEnter={e => { if (!markAllRead.isPending) { e.currentTarget.style.color = '#0A0A0A'; e.currentTarget.style.textDecoration = 'underline'; } }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.5)'; e.currentTarget.style.textDecoration = 'none'; }}
           >
             {markAllRead.isPending && <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} />}
             Mark all read
@@ -123,7 +130,7 @@ function NotificationDropdown({ userId, notifications, onClose, triggerRef }) {
 
       <div style={{ overflowY: 'auto', flex: 1 }}>
         {notifications.length === 0 ? (
-          <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+          <div style={{ padding: '40px 16px', textAlign: 'center' }}>
             <Bell size={20} style={{ color: 'rgba(10,10,10,0.2)', marginBottom: 8 }} />
             <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS }}>No notifications yet</p>
           </div>
