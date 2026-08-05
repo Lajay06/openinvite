@@ -69,7 +69,7 @@ export default function About() {
 
       {/* ── S1: HERO ─────────────────────────────────────── */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Remote_Studio_Tino_Renato_Photos_ID3691_o8kwfy.jpg"
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2.jpg"
         title="Planning a wedding should feel like the beginning of something incredible."
         cta={{ label: "Get started", href: "/signup" }}
         maxWidth={900}
@@ -109,8 +109,20 @@ function EditorialIntro() {
         <h2 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 700, color: "#0A0A0A", lineHeight: 1.1, marginBottom: 32, hyphens: "none" }}>
           Built for the way people actually plan.
         </h2>
-        <p style={{ fontSize: 17, color: "#555555", lineHeight: 1.7, marginBottom: 32 }}>
+        <p style={{ fontSize: 17, color: "#555555", lineHeight: 1.7, marginBottom: 24 }}>
           Openinvite was built out of a simple frustration: wedding planning tools were outdated, overwhelming, and frankly ugly. We believed that one of the most exciting moments of your life deserved a platform that matched that energy. So we built one.
+        </p>
+
+        {/* The two paragraphs below are restored verbatim from the version
+            2d6a4d9 (M4, #274) removed. M4 had folded About's two back-to-back
+            origin-story blocks into this one and dropped this body as
+            duplicative; the overlap with the paragraph above is a known and
+            accepted tradeoff. */}
+        <p style={{ fontSize: 17, color: "#555555", lineHeight: 1.7, marginBottom: 24 }}>
+          Openinvite was born from a real problem. Couples were drowning in spreadsheets, group chats, and tools that were either too complex or too basic. We saw an opportunity to build something that was genuinely beautiful and genuinely powerful: a platform that respected your time and matched the energy of the occasion.
+        </p>
+        <p style={{ fontSize: 17, color: "#555555", lineHeight: 1.7, marginBottom: 32 }}>
+          From day one, we made a commitment: no feature would ship unless it was designed as carefully as it was engineered. Every screen, every interaction, every detail had to earn its place. The result is a platform that feels as considered as the weddings it helps plan.
         </p>
 
         <div>
