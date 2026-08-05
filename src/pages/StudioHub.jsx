@@ -72,21 +72,26 @@ export default function StudioHub() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <DashboardPageHeader title="Design studio" subtitle="Everything to design, build and share your wedding" />
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 24px' }}>
+      {/* flex:1 + centred content — the card row fills whatever vertical
+          space remains below the heading (bounded by the outer div's own
+          100vh) and sits centred in it, instead of stacking top-anchored
+          with a large empty gap underneath. */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+        <div style={{ maxWidth: 1200, width: '100%' }}>
 
-        {/* Cards — same rich-photo/gradient-scrim/hover-scale language as
-            UniverseBanner.jsx's universe wall, so pressing into Design
-            Studio already feels like the experience it leads to, not three
-            flat list rows ahead of the actual excitement. Horizontal
-            3-column row (not a stack) — equal-width columns filling the
-            page's available width, no scrolling needed for just 3 items. */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16,
-          opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s',
-        }}>
+          {/* Cards — same rich-photo/gradient-scrim/hover-scale language as
+              UniverseBanner.jsx's universe wall, so pressing into Design
+              Studio already feels like the experience it leads to, not three
+              flat list rows ahead of the actual excitement. Horizontal
+              3-column row (not a stack) — equal-width columns filling the
+              page's available width, no scrolling needed for just 3 items. */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16,
+            opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s',
+          }}>
           {cards.map((card, i) => {
             const Icon = card.icon;
             const BadgeIcon = card.badgeIcon;
@@ -166,6 +171,7 @@ export default function StudioHub() {
               </motion.div>
             );
           })}
+        </div>
         </div>
       </div>
     </div>
