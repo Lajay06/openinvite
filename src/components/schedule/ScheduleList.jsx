@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -48,9 +48,77 @@ function downloadEventIcs(item) {
   downloadIcs(`${slugifyForFilename(item.event_name)}.ics`, ics);
 }
 
+const fmtDate = (d) => {
+  if (!d) return '—';
+  try { return format(new Date(d + 'T00:00:00'), 'MMM d'); } catch { return d; }
+};
+
+// Same sort pattern as GuestList.jsx's SORTABLE_COLUMNS/SortableHead — ISO
+// date (YYYY-MM-DD) and 24h time (HH:MM) strings sort correctly as plain
+// strings, no Date-object parsing needed.
+function naturalCompare(a, b) {
+  return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
+}
+
+const SORTABLE_COLUMNS = {
+  event:       { getValue: i => i.event_name || '' },
+  category:    { getValue: i => i.category || '' },
+  date:        { getValue: i => i.event_date || '' },
+  time:        { getValue: i => i.start_time || '' },
+  location:    { getValue: i => i.location || '' },
+  responsible: { getValue: i => i.responsible_person || '' },
+};
+
+function sortItems(items, sortState) {
+  if (!sortState?.field) return items;
+  const { getValue } = SORTABLE_COLUMNS[sortState.field];
+  const dir = sortState.direction === 'desc' ? -1 : 1;
+  return [...items].sort((a, b) => {
+    const va = getValue(a);
+    const vb = getValue(b);
+    const aBlank = va === '' || va == null;
+    const bBlank = vb === '' || vb == null;
+    if (aBlank && bBlank) return 0;
+    if (aBlank) return 1; // blanks always last, regardless of direction
+    if (bBlank) return -1;
+    return naturalCompare(va, vb) * dir;
+  });
+}
+
+/** Clickable column header — cycles asc → desc → unsorted (back to default order). */
+function SortableHead({ field, label, sortState, onSort, style }) {
+  const active = sortState?.field === field;
+  const direction = active ? sortState.direction : null;
+  return (
+    <TableHead
+      onClick={() => onSort(field)}
+      style={{ cursor: 'pointer', userSelect: 'none', ...style }}
+      title={`Sort by ${label.toLowerCase()}`}
+    >
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        {label}
+        <span style={{ fontSize: 10, color: active ? '#E03553' : 'rgba(10,10,10,0.25)', lineHeight: 1 }}>
+          {active ? (direction === 'desc' ? '▼' : '▲') : '⇅'}
+        </span>
+      </span>
+    </TableHead>
+  );
+}
+
 export default function ScheduleList({ items, onEdit, onDelete, readOnly = false, loading = false, scrollToItemId, highlightedItemId }) {
   const rowRefs = useRef(new Map());
   const scrolledForId = useRef(null);
+  const [sortState, setSortState] = useState(null); // null = default (incoming) order
+
+  const handleSort = (field) => {
+    setSortState(prev => {
+      if (prev?.field !== field) return { field, direction: 'asc' };
+      if (prev.direction === 'asc') return { field, direction: 'desc' };
+      return null; // third click: back to default order
+    });
+  };
+
+  const sortedItems = sortItems(items, sortState);
 
   // Same pattern as VendorList's scrollToVendorId — scrolls a Recent
   // activity/search result's row into view once it exists in `items`.
@@ -81,16 +149,17 @@ export default function ScheduleList({ items, onEdit, onDelete, readOnly = false
         <Table>
           <TableHeader>
             <TableRow style={{ background: '#FAFAFA' }}>
-              <TableHead>Event</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Time</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Responsible</TableHead>
+              <SortableHead field="event" label="Event" sortState={sortState} onSort={handleSort} />
+              <SortableHead field="category" label="Category" sortState={sortState} onSort={handleSort} />
+              <SortableHead field="date" label="Date" sortState={sortState} onSort={handleSort} />
+              <SortableHead field="time" label="Time" sortState={sortState} onSort={handleSort} />
+              <SortableHead field="location" label="Location" sortState={sortState} onSort={handleSort} />
+              <SortableHead field="responsible" label="Responsible" sortState={sortState} onSort={handleSort} />
               <TableHead style={{ width: 80 }} />
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((item) => (
+            {sortedItems.map((item) => (
               <TableRow
                 key={item.id}
                 ref={el => { if (el) rowRefs.current.set(item.id, el); else rowRefs.current.delete(item.id); }}
@@ -115,6 +184,14 @@ export default function ScheduleList({ items, onEdit, onDelete, readOnly = false
                   )}
                 </TableCell>
                 <TableCell><CategoryPill category={item.category} /></TableCell>
+                <TableCell>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <Calendar size={11} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      {fmtDate(item.event_date)}
+                    </span>
+                  </div>
+                </TableCell>
                 <TableCell>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <Clock size={11} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
