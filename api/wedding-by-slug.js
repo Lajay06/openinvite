@@ -32,9 +32,18 @@
  * rather than introducing a stricter check the existing preview feature
  * doesn't expect.
  *
+ * Also returns the public registry section — cash funds (CustomGift) and
+ * wishlist items (RegistryProduct) — scoped to this wedding's owner and
+ * field-allowlisted via api/_lib/guestSafeRegistry.js (never
+ * RegistryProduct.purchased_by/notes; CustomGift.payment_link_url only if
+ * it's a validated https:// URL). Both entities have read:null RLS and no
+ * wedding-scoping field of their own, so this scoping — not RLS — is what
+ * keeps one couple's registry from being enumerable alongside every other
+ * couple's; same pattern api/wedding-attendees.js already uses for Guest.
+ *
  * Response: 200 { passwordProtected: true }
- *        or 200 { passwordProtected: false, ...guestSafeFields }
- *        or 200 { passwordProtected: true, ...guestSafeFields }  (correct password supplied)
+ *        or 200 { passwordProtected: false, ...guestSafeFields, customGifts, registryProducts }
+ *        or 200 { passwordProtected: true, ...guestSafeFields, customGifts, registryProducts }  (correct password supplied)
  *        or 404 { error: 'Wedding not found.' }
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
@@ -47,10 +56,45 @@ import {
   sanitizeString,
 } from './_lib/security.js';
 import { pickGuestSafeFields, verifyWeddingPassword } from './_lib/guestSafeWedding.js';
+import { pickGuestSafeCustomGift, pickGuestSafeRegistryProduct } from './_lib/guestSafeRegistry.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
+
+function unwrapList(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.results)) return payload.results;
+  return [];
+}
+
+/**
+ * Cash funds (CustomGift) + wishlist items (RegistryProduct) for the public
+ * registry section — same "resolve owner by created_by_id, query the open-
+ * read entity server-side with the admin key, field-allowlist before
+ * returning" pattern api/wedding-attendees.js already uses for Guest.
+ * CustomGift/RegistryProduct RLS is read:null with no wedding-scoping
+ * field, so this filter (not client-side RLS) is what keeps one couple's
+ * registry from being enumerable alongside every other couple's.
+ */
+async function fetchGuestSafeRegistry(ownerId) {
+  const query = encodeURIComponent(JSON.stringify({ created_by_id: ownerId }));
+  const [giftsRes, productsRes] = await Promise.all([
+    fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/CustomGift?q=${query}`, {
+      headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
+    }),
+    fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/RegistryProduct?q=${query}`, {
+      headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
+    }),
+  ]);
+  const gifts = giftsRes.ok ? unwrapList(await giftsRes.json()).filter(g => !g.is_test) : [];
+  const products = productsRes.ok ? unwrapList(await productsRes.json()).filter(p => !p.is_test) : [];
+  return {
+    customGifts: gifts.map(pickGuestSafeCustomGift),
+    registryProducts: products.map(pickGuestSafeRegistryProduct),
+  };
+}
 
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
@@ -106,7 +150,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ passwordProtected: true });
     }
 
-    return res.status(200).json(pickGuestSafeFields(wedding));
+    const registry = await fetchGuestSafeRegistry(wedding.created_by_id);
+
+    return res.status(200).json({ ...pickGuestSafeFields(wedding), ...registry });
   } catch (err) {
     console.error('[wedding-by-slug] Error:', err.message);
     return res.status(500).json({ error: 'Something went wrong — please try again.' });

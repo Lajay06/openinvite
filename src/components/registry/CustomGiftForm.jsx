@@ -14,12 +14,32 @@ const CATEGORIES = [
   { value: 'custom', label: 'Custom' },
 ];
 
+// Same https:// check the server enforces again (defense in depth) before
+// ever sending this link to the public guest site — see
+// api/_lib/guestSafeRegistry.js's isSafeHttpsUrl. Validating on entry here
+// just gives the couple an immediate, clear error instead of silently
+// having their link dropped later.
+function isHttpsUrl(value) {
+  if (!value.trim()) return true; // optional field — empty is valid
+  try {
+    return new URL(value.trim()).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export default function CustomGiftForm({ item, onSubmit, onClose }) {
-  const [formData, setFormData] = useState(item || { title: '', description: '', category: 'honeymoon', requested_amount: '', image_url: '' });
+  const [formData, setFormData] = useState(item || { title: '', description: '', category: 'honeymoon', requested_amount: '', image_url: '', payment_link_url: '' });
+  const [linkError, setLinkError] = useState('');
   const set = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!isHttpsUrl(formData.payment_link_url || '')) {
+      setLinkError('Enter a valid https:// link, or leave this blank.');
+      return;
+    }
+    setLinkError('');
     onSubmit({ ...formData, requested_amount: parseFloat(formData.requested_amount) || 0 });
   };
 
@@ -56,6 +76,26 @@ export default function CustomGiftForm({ item, onSubmit, onClose }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <Label htmlFor="image_url">Image URL (optional)</Label>
               <Input id="image_url" type="url" value={formData.image_url} onChange={e => set('image_url', e.target.value)} placeholder="https://example.com/image.png" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Label htmlFor="payment_link_url">Payment link (optional)</Label>
+              <Input
+                id="payment_link_url"
+                type="url"
+                value={formData.payment_link_url || ''}
+                onChange={e => { set('payment_link_url', e.target.value); if (linkError) setLinkError(''); }}
+                placeholder="https://paypal.me/yourname"
+              />
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
+                Paste your PayPal.me, Stripe payment link, or bank transfer link. Guests are taken here to contribute.
+              </p>
+              {linkError ? (
+                <p style={{ fontSize: 12, color: '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{linkError}</p>
+              ) : !formData.payment_link_url?.trim() && (
+                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, fontStyle: 'italic' }}>
+                  No link added yet. Guests won't see a Contribute button.
+                </p>
+              )}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <Label htmlFor="description">Description (optional)</Label>
