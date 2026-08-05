@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { UserPlus, Mail, Loader2 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { PasswordInput } from "@/components/ui/password-input";
-import AuthLayout from "@/components/AuthLayout";
+import AuthLayout, { AUTH_LABEL_CLASS } from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import MicrosoftIcon from "@/components/MicrosoftIcon";
 import FacebookIcon from "@/components/FacebookIcon";
@@ -221,7 +221,7 @@ export default function Register() {
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
+        <div className="relative flex justify-center text-xs">
           <span className="bg-card px-3 text-muted-foreground">or</span>
         </div>
       </div>
@@ -234,7 +234,7 @@ export default function Register() {
 
       <form onSubmit={handleSubmit} className="space-y-1.5">
         <div className="space-y-1">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className={AUTH_LABEL_CLASS}>Email</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -251,7 +251,7 @@ export default function Register() {
           </div>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className={AUTH_LABEL_CLASS}>Password</Label>
           <PasswordInput
             id="password"
             autoComplete="new-password"
@@ -263,7 +263,7 @@ export default function Register() {
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="confirm">Confirm Password</Label>
+          <Label htmlFor="confirm" className={AUTH_LABEL_CLASS}>Confirm password</Label>
           <PasswordInput
             id="confirm"
             autoComplete="new-password"

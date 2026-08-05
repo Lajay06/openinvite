@@ -35,6 +35,31 @@ const CAROUSEL_IMAGES = [
   "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj.jpg",
 ];
 
+// Field-label treatment for the auth forms.
+//
+// src/components/ui/label.jsx forces `uppercase` (plus font-bold and the
+// 0.08em tracking that only exists to space out caps) on every <Label> in
+// the product. DESIGN_SPEC.md:6 and :180 forbid uppercase outright, but that
+// primitive has 25 importers and all but Register/Login are dashboard or
+// website-builder surfaces — restyling it is a product-wide change, not an
+// auth one. So the auth pages override it here instead.
+//
+// The values match the local labelStyle that ForgotPassword.jsx and
+// ResetPassword.jsx use (11px / 600 / 0.06em, sentence case), which is what
+// keeps all four auth pages on one label treatment. Import this rather than
+// hand-writing the classes per field, so Register and Login can't drift from
+// each other.
+//
+// The colour is DESIGN_SPEC.md:10's label value, rgba(10,10,10,0.6) — the
+// textMuted token from src/styles/tokens.js. Spelled as an arbitrary value
+// the same way select.jsx does, so it is byte-identical to the inline colour
+// the Forgot/Reset labelStyle now uses; `text-muted-foreground` resolves to
+// rgb(107,107,107), one step off the rgb(108,108,108) that rgba composites
+// to, and that near-miss is exactly the kind of drift this constant exists
+// to prevent.
+export const AUTH_LABEL_CLASS =
+  "normal-case font-semibold tracking-[0.06em] text-[rgba(10,10,10,0.6)]";
+
 export default function AuthLayout({ title, subtitle, footer, children }) {
   return (
     <div className="h-screen overflow-hidden flex flex-col">
