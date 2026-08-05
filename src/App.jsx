@@ -81,6 +81,7 @@ const MockUniverseC = lazy(() => import('./pages/MockUniverseC'));
 const Features = lazy(() => import('./pages/Features'));
 const Home = lazy(() => import('./pages/Home'));
 const FAQ = lazy(() => import('./pages/FAQ'));
+const Tour = lazy(() => import('./pages/Tour'));
 
 // ── Public paths — bypass auth check entirely ─────────────────────────────────
 const PUBLIC_PATH_SET = new Set([
@@ -91,6 +92,9 @@ const PUBLIC_PATH_SET = new Set([
   '/Features', '/features',
   '/ava',
   '/faq',
+  // Private preview until T3: reachable by direct URL, not linked from
+  // PublicNav, not prerendered, absent from sitemap.xml, noindex.
+  '/tour',
   '/scroll-morph',
   '/universes',
   '/gifting',
@@ -172,6 +176,7 @@ const AuthenticatedApp = () => {
         <Route path="/features" element={<Features />} />
         <Route path="/ava" element={<Ava />} />
         <Route path="/faq" element={<FAQ />} />
+        <Route path="/tour" element={<Tour />} />
         <Route path="/scroll-morph" element={<ScrollMorph />} />
         <Route path="/universes" element={<Universes />} />
         <Route path="/gifting" element={<Gifting />} />
