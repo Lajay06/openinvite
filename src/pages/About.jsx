@@ -2,8 +2,8 @@ import React, { useRef, useEffect, useState } from "react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
-import ApplePillButton from "@/components/motion/ApplePillButton";
 import MarketingHero from "@/components/marketing/MarketingHero";
+import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -92,8 +92,11 @@ export default function About() {
         <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa.jpg" alt="A man carrying his partner outdoors, both laughing" style={{ width: "100%", height: "70vh", objectFit: "cover" }} />
       </div>
 
-      {/* ── S6: CTA ──────────────────────────────────────── */}
-      <CTASection />
+      {/* ── S6: END CAP ──────────────────────────────────── */}
+      <MarketingEndCap
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10282_hxzktx.jpg"
+        alt="A couple on their wedding day"
+      />
 
       <PublicFooter />
     </div>
@@ -176,19 +179,7 @@ function TwoColumnSection({ id, number, title, headline, body, background, belie
   );
 }
 
-function CTASection() {
-  const [ref, visible] = useScrollReveal(0.2);
-
-  return (
-    <section ref={ref} id="cta" style={{ background: "#0A0A0A", padding: "160px clamp(32px, 6vw, 80px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(32px)", transition: "opacity 0.8s ease, transform 0.8s ease" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", textAlign: "center" }}>
-        <h2 style={{ fontSize: "clamp(40px, 6vw, 80px)", fontWeight: 700, color: "#FFFFFF", marginBottom: 16, hyphens: "none" }}>
-          Ready to start planning?
-        </h2>
-        <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-          <ApplePillButton href="/signup">Get started</ApplePillButton>
-        </div>
-      </div>
-    </section>
-  );
-}
+// The old CTASection ("Ready to start planning?" on flat black) is gone.
+// About now closes on the shared MarketingEndCap, the same as Home, Features,
+// Ava and Pricing. The side-by-side photo pair above it is unchanged and now
+// sits directly on top of the end cap.
