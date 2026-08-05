@@ -1,10 +1,10 @@
 # Openinvite
 
-> Openinvite is a wedding planning app with a one-time payment: planning tools, guest management, digital invitations, a wedding website and an AI assistant.
+> Openinvite is a wedding planning platform with a one-time payment: planning tools, guest management, digital invitations, a wedding website and an AI assistant.
 
 ## Product
 
-Openinvite helps couples plan their wedding in one app: guest list and RSVP management, budget tracking, a wedding website builder with 20 design themes, digital wedding invitations, a schedule and vendor management, and Ava, an AI wedding planning assistant. A partner, planner or family member can be invited as a collaborator to help plan.
+Openinvite helps couples plan their wedding in one platform: guest list and RSVP management, budget tracking, a wedding website builder with 20 design themes, digital wedding invitations, a schedule and vendor management, and Ava, an AI wedding planning assistant. A partner, planner or family member can be invited as a collaborator to help plan.
 
 ## Pricing
 

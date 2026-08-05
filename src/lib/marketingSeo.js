@@ -26,67 +26,67 @@ export const ORGANIZATION_LOGO = 'https://static.wixstatic.com/media/d2df22_ed80
 // route -> { title, description }. Title is used as-is (already sentence
 // case, no trailing site-name suffix needed since the brand name is
 // already the first word). Description targets ~150-160 characters,
-// working in "wedding planning app", "wedding website builder", "digital
+// working in "wedding planning platform", "wedding website builder", "digital
 // wedding invitations" or "pay once" where it reads naturally for that page.
 export const MARKETING_PAGE_SEO = {
   '/': {
-    title: 'Openinvite: the wedding planning app with one-time pricing',
+    title: 'Openinvite: the wedding planning platform',
     // Verbatim AEO answer capsule — previously also rendered as visible hero
     // subtext on Home (src/components/home/HeroCollage.jsx); now lives only
     // here and in public/llms.txt so the exact wording stays crawler-facing
     // without duplicating on the visible page.
-    description: 'Openinvite is a wedding planning app with a one-time payment: planning tools, guest management, digital invitations, a wedding website and an AI assistant.',
+    description: 'Openinvite is a wedding planning platform with a one-time payment: planning tools, guest management, digital invitations, a wedding website and an AI assistant.',
   },
   '/features': {
-    title: 'Features: everything you need to plan your wedding',
-    description: "Explore Openinvite's wedding planning features: guest management, budget tracking, a wedding website builder, digital wedding invitations and 20 design themes, all in one app.",
+    title: 'Openinvite | Features',
+    description: "Explore Openinvite's wedding planning features: guest management, budget tracking, a wedding website builder, digital wedding invitations and 20 design themes, all in one platform.",
   },
   '/ava': {
-    title: 'Meet Ava, your AI wedding planning assistant',
+    title: 'Openinvite | Ava',
     description: 'Ava is the AI wedding assistant built into Openinvite. Ava helps with your wedding checklist, budget suggestions, vow writing and planning advice, personalized to your wedding.',
   },
   '/universes': {
-    title: '20 wedding website design themes to choose from',
+    title: 'Openinvite | Universes',
     description: "Choose from 20 fully designed wedding website themes in Openinvite. Each universe sets the fonts, colors and style for your wedding website, invitations and printed pieces.",
   },
   '/pricing': {
-    title: 'Pricing: pay once, plan your whole wedding',
-    description: "Openinvite pricing is a one-time payment, not a subscription. See what's included in the Pro and Ultra plans for your wedding planning app and wedding website.",
+    title: 'Openinvite | Pricing',
+    description: "Openinvite pricing is a one-time payment, not a subscription. See what's included in the Pro and Ultra plans for your wedding planning platform and wedding website.",
   },
   '/gifting': {
-    title: 'Give Openinvite as a gift',
-    description: 'Give a couple the gift of Openinvite, a wedding planning app with a one-time payment. Request a gift code and they redeem it at checkout, no subscription required.',
+    title: 'Openinvite | Gifting',
+    description: 'Give a couple the gift of Openinvite, a wedding planning platform with a one-time payment. Request a gift code and they redeem it at checkout, no subscription required.',
   },
   '/contact': {
-    title: 'Contact Openinvite',
+    title: 'Openinvite | Contact',
     description: "Get in touch with Openinvite. We're here to help with questions about wedding planning, your wedding website or your account.",
   },
   '/about': {
-    title: 'About Openinvite',
-    description: 'Openinvite is a wedding planning app built for modern couples. Learn about our story and why we built a wedding planning platform that matches the occasion.',
+    title: 'Openinvite | About',
+    description: 'Openinvite is a wedding planning platform built for modern couples. Learn about our story and why we built a wedding planning platform that matches the occasion.',
   },
   '/privacy-policy': {
-    title: 'Openinvite privacy policy',
-    description: "Read Openinvite's privacy policy to understand how we collect, use and protect your data as a wedding planning app.",
+    title: 'Openinvite | Privacy policy',
+    description: "Read Openinvite's privacy policy to understand how we collect, use and protect your data as a wedding planning platform.",
   },
   '/terms-of-service': {
-    title: 'Openinvite terms of service',
-    description: 'Read the terms of service for using Openinvite, the wedding planning app and wedding website builder.',
+    title: 'Openinvite | Terms of service',
+    description: 'Read the terms of service for using Openinvite, the wedding planning platform and wedding website builder.',
   },
   '/login': {
-    title: 'Log in to Openinvite',
+    title: 'Openinvite | Log in',
     description: 'Log in to your Openinvite account to continue planning your wedding.',
   },
   '/register': {
-    title: 'Create your Openinvite account',
+    title: 'Openinvite | Create account',
     description: 'Create a free Openinvite account and start planning your wedding today.',
   },
   '/forgot-password': {
-    title: 'Reset your Openinvite password',
+    title: 'Openinvite | Reset password',
     description: 'Reset your Openinvite account password.',
   },
   '/faq': {
-    title: 'Frequently asked questions about Openinvite',
+    title: 'Openinvite | FAQ',
     description: 'Answers to common questions about Openinvite: pricing, what is included in Pro and Ultra, design universes, Ava, collaborators, guest RSVPs and currencies.',
   },
 };

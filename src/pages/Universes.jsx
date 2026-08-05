@@ -209,24 +209,16 @@ const Universes = () => {
     return () => observerRef.current?.disconnect();
   }, []);
 
-  // SEO — this SPA has no per-route meta tags beyond the static index.html,
-  // so this is the same lightweight document.title pattern already used on
-  // ScrollMorph.jsx, extended to the description meta tag too. Restores the
-  // sitewide defaults on unmount so navigating away doesn't leave this
-  // page's tags behind.
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = 'Openinvite';
-    const meta = document.querySelector('meta[name="description"]');
-    const prevDescription = meta?.getAttribute('content') ?? null;
-    if (meta) {
-      meta.setAttribute('content', 'Explore all 20 Openinvite universes, a complete visual system for your wedding, from London to Shanghai. Every invitation, website and printed piece follows one aesthetic vision.');
-    }
-    return () => {
-      document.title = prevTitle;
-      if (meta && prevDescription !== null) meta.setAttribute('content', prevDescription);
-    };
-  }, []);
+  // SEO is handled by useMarketingSeo() above, reading /universes from the
+  // single marketingSeo.js config like every other marketing page.
+  //
+  // A hand-rolled document.title effect used to live here, from before that
+  // hook existed ("this SPA has no per-route meta tags beyond the static
+  // index.html", which stopped being true when the hook landed). Because it
+  // ran after the hook's effect it won, and set the title to a bare
+  // "Openinvite" — production served <title>Openinvite</title> on /universes
+  // while the configured title never reached the page. Removed so the
+  // config is actually the source of truth.
 
   const scrollToAssets = () => {
     document.getElementById('assets-section')?.scrollIntoView({ behavior: 'smooth' });
