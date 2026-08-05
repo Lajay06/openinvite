@@ -11,9 +11,9 @@ import { ImageSlider } from "@/components/ui/ImageSlider";
 // ResetPassword.jsx/ForgotPassword.jsx already use, reused here rather than
 // building a second carousel). The four-photo set below is fixed across
 // both pages so a visitor bouncing between /login and /register never sees
-// the carousel jump or reset. showOverlay={false} drops ImageSlider's
-// built-in quote+attribution caption (Reset/Forgot Password keep it — this
-// is scoped to Login/Register only, per design review).
+// the carousel jump or reset. ImageSlider renders photos and dots only —
+// its old quote+attribution caption has been removed from the component
+// itself, so there is no prop to opt out of here any more.
 //
 // PublicNav is included so these pages read as part of the site rather than
 // stranded (matches Contact.jsx's bar). PublicNav is position:fixed, so it
@@ -42,10 +42,10 @@ export default function AuthLayout({ title, subtitle, footer, children }) {
 
       <div className="flex-1 flex overflow-hidden" style={{ paddingTop: 64, boxSizing: "border-box" }}>
         {/* LEFT — full-bleed crossfade carousel, hidden below md same as the
-            Reset/Forgot password pattern this was reused from. No caption
-            overlay here (showOverlay={false}) — clean photos only. */}
+            Reset/Forgot password pattern this was reused from. Clean photos
+            only, no caption overlay. */}
         <div className="hidden md:block h-full" style={{ width: "50%", flexShrink: 0 }}>
-          <ImageSlider images={CAROUSEL_IMAGES} showOverlay={false} />
+          <ImageSlider images={CAROUSEL_IMAGES} />
         </div>
 
         {/* RIGHT — form panel. overflow-y-auto stays on as a safety net for a
