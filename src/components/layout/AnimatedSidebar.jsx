@@ -304,6 +304,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
               url="/studio"
               isActive={isActive("/studio")}
               onClick={() => navigate("/studio")}
+              showBadge={isProPlan}
             />
             <NavItem
               icon={FileText}
@@ -507,9 +508,19 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
               }}
             >
               <Sparkles size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS, flex: 1 }}>
                 Design studio
               </span>
+              {isProPlanMobile && (
+                <span style={{
+                  fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
+                  background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
+                  color: "#FFFFFF", padding: "2px 6px", borderRadius: 3, flexShrink: 0,
+                  fontFamily: PJS,
+                }}>
+                  ULTRA
+                </span>
+              )}
             </div>
           );
         })()}

@@ -6,9 +6,12 @@ import { getMyWeddingDetails, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding
 import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { interactiveDivProps } from '@/lib/a11y';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function StudioHub() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isProPlan = (user?.plan || 'free') === 'pro';
   const [wedding, setWedding] = useState(null);
   const [rsvpCount, setRsvpCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -51,9 +54,9 @@ export default function StudioHub() {
       icon: Sparkles,
       title: 'My Universe',
       subtitle: 'Choose the aesthetic for your entire suite — invitations, website, and every design piece.',
-      badge: wedding?.activeUniverse ? wedding.activeUniverse.toUpperCase() : 'Choose One',
-      badgeColor: '#555555',
-      badgeBg: '#F5F5F5',
+      badge: isProPlan ? 'Ultra' : (wedding?.activeUniverse ? wedding.activeUniverse.toUpperCase() : 'Choose One'),
+      badgeColor: isProPlan ? '#F59E0B' : '#555555',
+      badgeBg: isProPlan ? '#FFFBEB' : '#F5F5F5',
       action: () => navigate('/studio/universe'),
     },
     {

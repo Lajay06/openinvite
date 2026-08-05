@@ -37,6 +37,7 @@ import UniverseWorldView from '@/components/universe-studio/UniverseWorldView';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import UltraGate from '@/components/shared/UltraGate';
 
 // chore/consolidate-overview — the couple name + days-to-go countdown are
 // already global (Layout.jsx's top bar shows them on every page, per
@@ -58,6 +59,13 @@ export default function UniverseStudio() {
   const { user } = useAuth();
   const prefersReducedMotion = useReducedMotion();
   const canAccessUltra = (user?.plan || 'free') === 'ultra';
+  // Page-level gate (Pro is excluded, trial gets full access, same as
+  // every other Ultra-gated page — StudioGuestSuite.jsx, sidebar nav)
+  // — deliberately a separate check from canAccessUltra above, which
+  // excludes trial too but is scoped to per-universe-tier logic
+  // (entrance-transition muting, the in-world upgrade CTA), not page access.
+  const plan = user?.plan || 'free';
+  const canAccess = plan === 'ultra' || plan === 'free';
 
   const [weddingDetails, setWeddingDetails] = useState(null);
   const [guests, setGuests] = useState([]);
@@ -147,6 +155,16 @@ export default function UniverseStudio() {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
         <Loader2 size={22} className="animate-spin" style={{ color: '#E03553' }} />
       </div>
+    );
+  }
+
+  if (!canAccess) {
+    return (
+      <UltraGate
+        heading="Design Studio is an Ultra feature"
+        description="Choose from 20 fully designed style universes and apply that aesthetic across your entire wedding website, invitations, and every guest-facing asset."
+        tabs={['Universes', 'Website', 'Assets', 'Share']}
+      />
     );
   }
 
