@@ -18,7 +18,9 @@ const labelStyle = {
   display: "block",
   fontSize: 11,
   fontWeight: 600,
-  color: "#555555",
+  // DESIGN_SPEC.md:10 label colour (the textMuted token). Was a hand-rolled
+  // #555555, which is neither a token nor what Register/Login render.
+  color: "rgba(10,10,10,0.6)",
   letterSpacing: "0.06em",
   marginBottom: 6,
   fontFamily: PJS,
