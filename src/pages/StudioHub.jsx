@@ -75,13 +75,18 @@ export default function StudioHub() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <DashboardPageHeader title="Design studio" subtitle="Everything to design, build and share your wedding" />
 
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '48px 24px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 24px' }}>
 
         {/* Cards — same rich-photo/gradient-scrim/hover-scale language as
             UniverseBanner.jsx's universe wall, so pressing into Design
             Studio already feels like the experience it leads to, not three
-            flat list rows ahead of the actual excitement. */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s' }}>
+            flat list rows ahead of the actual excitement. Horizontal
+            3-column row (not a stack) — equal-width columns filling the
+            page's available width, no scrolling needed for just 3 items. */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16,
+          opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s',
+        }}>
           {cards.map((card, i) => {
             const Icon = card.icon;
             const BadgeIcon = card.badgeIcon;
@@ -93,7 +98,7 @@ export default function StudioHub() {
                 whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
                 style={{
-                  position: 'relative', height: 'clamp(200px, 22vw, 280px)',
+                  position: 'relative', height: 'clamp(320px, 34vw, 440px)',
                   overflow: 'hidden', cursor: 'pointer', borderRadius: 0,
                   background: card.image ? '#0A0A0A' : 'linear-gradient(135deg, #0A1930 0%, #1a2f4a 100%)',
                 }}
@@ -111,12 +116,12 @@ export default function StudioHub() {
                     for photo-background cards, same as UniverseBanner.jsx). */}
                 <div style={{
                   position: 'absolute', inset: 0,
-                  background: 'linear-gradient(180deg, rgba(10,10,10,0.1) 0%, rgba(10,10,10,0.78) 100%)',
+                  background: 'linear-gradient(180deg, rgba(10,10,10,0.1) 0%, rgba(10,10,10,0.82) 100%)',
                 }} />
 
                 <div style={{
                   position: 'relative', height: '100%', display: 'flex', flexDirection: 'column',
-                  justifyContent: 'flex-end', padding: '28px 32px', boxSizing: 'border-box',
+                  justifyContent: 'flex-end', padding: '24px', boxSizing: 'border-box',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'auto' }}>
                     <div style={{
@@ -141,12 +146,12 @@ export default function StudioHub() {
                   <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.7)', margin: '0 0 6px' }}>
                     {card.kicker}
                   </p>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', letterSpacing: '-0.01em', lineHeight: 1.1 }}>
+                      <p style={{ fontSize: 'clamp(20px, 1.8vw, 26px)', fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', letterSpacing: '-0.01em', lineHeight: 1.15 }}>
                         {card.title}
                       </p>
-                      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0, maxWidth: 440 }}>
+                      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.4 }}>
                         {card.subtitle}
                       </p>
                       {card.rightLabel && (
@@ -155,7 +160,7 @@ export default function StudioHub() {
                         </p>
                       )}
                     </div>
-                    <ChevronRight size={22} color="rgba(255,255,255,0.6)" style={{ flexShrink: 0 }} />
+                    <ChevronRight size={20} color="rgba(255,255,255,0.6)" style={{ flexShrink: 0 }} />
                   </div>
                 </div>
               </motion.div>
