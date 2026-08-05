@@ -30,6 +30,11 @@
       "type": "string",
       "format": "uri",
       "description": "A representative image for the gift or fund."
+    },
+    "payment_link_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Couple's own external payment link (PayPal.me, Venmo, Stripe Payment Link, bank transfer link, etc.) that guests are sent to when contributing. Optional; must be an https:// URL. If empty, no Contribute button is shown."
     }
   },
   "required": [

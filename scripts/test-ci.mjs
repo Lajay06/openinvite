@@ -45,6 +45,7 @@ import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-wi
 import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
 import { runIcsExport } from '../tests/persistence/ics-export.mjs';
 import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
+import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
 
 async function run() {
   console.log('\n═══════════════════════════════════════════════════════');
@@ -88,6 +89,7 @@ async function run() {
   await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
   await runModule('runIcsExport', () => runIcsExport());
   await runModule('runGiftCheckout', () => runGiftCheckout());
+  await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());
 
   const passed = results.filter(Boolean).length;
   const total = results.length;
