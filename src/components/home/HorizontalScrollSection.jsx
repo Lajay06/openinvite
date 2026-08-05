@@ -77,6 +77,12 @@ const CARDS = [
 
 const DOT_COLORS = ["#FFFFFF", "#FFFFFF", "#FFFFFF"];
 
+// PublicNav's desktop pill is position: fixed at top: 20 with height: 48, so
+// it occupies the first 68px of the viewport without contributing any layout
+// height. The sticky viewport below subtracts this so the card row centres in
+// the visible area rather than behind the nav.
+const NAV_OCCUPIED_HEIGHT = 68;
+
 export default function HorizontalScrollSection() {
   const navigate = useNavigate();
   const sectionRef = useRef(null);
@@ -173,12 +179,32 @@ export default function HorizontalScrollSection() {
         background: "#0A0A0A"
       }}>
       
+      {/* paddingTop reserves the band the fixed nav sits over, so the flex
+          centring below happens in the area the visitor can actually see
+          rather than in the full 100vh. Without it the card row centres on
+          the whole viewport, the nav covers the top of that space, and the
+          block reads top-heavy: measured on production, 22px of black above
+          the card against 90px below it at 1440x900, and 12px against 80px
+          at 1440x800 — a 68px imbalance at both.
+
+          68px is PublicNav's occupied height on desktop: it is fixed at
+          top: 20 with height: 48 (see PublicNav.jsx). Below 768px this
+          component returns a different stacked layout entirely and never
+          reaches this branch, so the desktop nav is always the one in play
+          here.
+
+          Padding rather than a margin on the track because an absolutely
+          positioned child resolves top: 0 against the padding box, whose
+          top edge padding does not move — so the progress bar stays exactly
+          where it was. */}
       <div
         className="sticky-container"
         style={{
           position: "sticky",
           top: 0,
           height: "100vh",
+          paddingTop: NAV_OCCUPIED_HEIGHT,
+          boxSizing: "border-box",
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
