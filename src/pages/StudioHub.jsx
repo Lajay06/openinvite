@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Globe, Sparkles, Eye, ChevronRight } from 'lucide-react';
-import { getMyWeddingDetails, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
-import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
+import { Globe, Sparkles, Eye, ChevronRight, Crown } from 'lucide-react';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getUniverse } from '@/lib/universeCatalog';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { interactiveDivProps } from '@/lib/a11y';
 import { useAuth } from '@/lib/AuthContext';
@@ -12,19 +13,15 @@ export default function StudioHub() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isProPlan = (user?.plan || 'free') === 'pro';
+  const prefersReducedMotion = useReducedMotion();
   const [wedding, setWedding] = useState(null);
-  const [rsvpCount, setRsvpCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [details, guests] = await Promise.all([
-          getMyWeddingDetails(),
-          getMyGuestsWithRsvp(),
-        ]);
+        const details = await getMyWeddingDetails();
         setWedding(details || null);
-        setRsvpCount(tallyGuestRsvp(guests).attending);
       } catch (e) {
         console.error(e);
         toast.error('Failed to load — please refresh and try again.');
@@ -34,35 +31,37 @@ export default function StudioHub() {
     load();
   }, []);
 
-  const daysToWedding = wedding?.weddingDate
-    ? Math.max(0, Math.ceil((new Date(wedding.weddingDate) - new Date()) / (1000 * 60 * 60 * 24)))
-    : null;
-
   const siteUrl = wedding?.slug ? `openinvite.com.au/w/${wedding.slug}` : null;
+
+  const universe = getUniverse(wedding?.activeUniverse || 'london');
+  const universeImage = universe?.imageUrl || null;
 
   const cards = [
     {
       icon: Globe,
+      kicker: 'Website & guest experience',
       title: 'Guest Suite',
       subtitle: 'Build your wedding website, invitation assets, and guest experience.',
-      badge: wedding?.websiteEnabled ? 'LIVE' : 'DRAFT',
-      badgeColor: wedding?.websiteEnabled ? '#22C55E' : 'rgba(10,10,10,0.6)',
-      badgeBg: wedding?.websiteEnabled ? '#F0FDF4' : '#F5F5F5',
+      image: wedding?.coverPhoto || universeImage,
+      badge: wedding?.websiteEnabled ? 'Live' : 'Draft',
       action: () => navigate('/studio/guest-suite'),
     },
     {
       icon: Sparkles,
+      kicker: 'Style & aesthetic',
       title: 'My Universe',
       subtitle: 'Choose the aesthetic for your entire suite — invitations, website, and every design piece.',
-      badge: isProPlan ? 'Ultra' : (wedding?.activeUniverse ? wedding.activeUniverse.toUpperCase() : 'Choose One'),
-      badgeColor: isProPlan ? '#F59E0B' : '#555555',
-      badgeBg: isProPlan ? '#FFFBEB' : '#F5F5F5',
+      image: universeImage,
+      badge: isProPlan ? 'Ultra' : (universe?.name || 'Choose one'),
+      badgeIcon: isProPlan ? Crown : null,
       action: () => navigate('/studio/universe'),
     },
     {
       icon: Eye,
-      title: 'Preview Your Site',
-      subtitle: 'See your website as guests see it.',
+      kicker: 'See it live',
+      title: 'Preview your site',
+      subtitle: 'See your website exactly as your guests see it.',
+      image: wedding?.coverPhoto || universeImage,
       badge: null,
       rightLabel: siteUrl,
       action: () => {
@@ -74,103 +73,96 @@ export default function StudioHub() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      {/* Sticky sub-header. Previously `position: fixed; top: 0; left: 220`,
-          which put it at the very top of the viewport — directly underneath
-          Layout.jsx's real top nav bar (also `position: fixed; top: 0`, but
-          z-index 50 vs this bar's 30), so it was painted over and never
-          actually visible; its `left: 220` was also stale against
-          SIDEBAR_WIDTH (200), a second drift on top of the first.
-          `position: sticky` alone isn't enough either — sticky's `top`
-          still means "stick at this many px from the viewport edge," so a
-          bare `top: 0` reproduces the exact same overlap via a different
-          mechanism. The real fix: stick at `--page-content-top`, the CSS
-          custom property Layout.jsx sets on `.page-content` to the actual
-          combined height of the top bar plus whichever trial/collaborator
-          banners are currently showing — so this tracks the real boundary
-          at runtime instead of a hardcoded pixel value that can drift out
-          of sync again. */}
-      <div className="studio-hub-topbar" style={{
-        position: 'sticky', top: 'var(--page-content-top, 48px)', zIndex: 20, height: 56,
-        background: '#FFFFFF', borderBottom: '1px solid #EEEEEE',
-        display: 'flex', alignItems: 'center', padding: '0 24px',
-      }}>
-        <button
-          onClick={() => navigate('/DailyUpdate')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', fontSize: 13, padding: 0 }}
-        >
-          ← Dashboard
-        </button>
-        <p style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>
-          Design Studio
-        </p>
-      </div>
+      <DashboardPageHeader title="Design studio" subtitle="Everything to design, build and share your wedding" />
 
-      {/* Scrollable content — no manual paddingTop needed: the sticky bar
-          above already occupies its own space in normal flow. */}
-      <div>
-        <DashboardPageHeader title="Design studio" subtitle="Everything to design, build and share your wedding" />
-        <div style={{ maxWidth: 800, margin: '0 auto', padding: '48px 24px' }}>
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '48px 24px' }}>
 
-          {/* Nav cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 48 }}>
-            {cards.map((card, i) => {
-              const Icon = card.icon;
-              return (
-                <div
-                  key={i}
-                  onClick={card.action}
-                  {...interactiveDivProps(card.action, { label: card.title })}
-                  style={{
-                    height: 100, display: 'flex', alignItems: 'center',
-                    padding: '0 24px', border: '1px solid #EEEEEE', background: '#FFFFFF',
-                    cursor: 'pointer', transition: 'background 0.15s ease', gap: 16,
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#FAFAFA'}
-                  onMouseLeave={e => e.currentTarget.style.background = '#FFFFFF'}
-                >
-                  <div style={{ width: 44, height: 44, background: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: 8 }}>
-                    <Icon size={24} color="#0A0A0A" strokeWidth={1.5} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 3px' }}>{card.title}</p>
-                    <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0 }}>{card.subtitle}</p>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        {/* Cards — same rich-photo/gradient-scrim/hover-scale language as
+            UniverseBanner.jsx's universe wall, so pressing into Design
+            Studio already feels like the experience it leads to, not three
+            flat list rows ahead of the actual excitement. */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s' }}>
+          {cards.map((card, i) => {
+            const Icon = card.icon;
+            const BadgeIcon = card.badgeIcon;
+            return (
+              <motion.div
+                key={i}
+                onClick={card.action}
+                {...interactiveDivProps(card.action, { label: card.title })}
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                style={{
+                  position: 'relative', height: 'clamp(200px, 22vw, 280px)',
+                  overflow: 'hidden', cursor: 'pointer', borderRadius: 0,
+                  background: card.image ? '#0A0A0A' : 'linear-gradient(135deg, #0A1930 0%, #1a2f4a 100%)',
+                }}
+              >
+                {card.image && (
+                  <img
+                    src={card.image}
+                    alt=""
+                    loading="lazy"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                )}
+                {/* Scrim only where text sits — depth from the photo itself,
+                    not a box-shadow (DESIGN_SPEC.md's documented exception
+                    for photo-background cards, same as UniverseBanner.jsx). */}
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(180deg, rgba(10,10,10,0.1) 0%, rgba(10,10,10,0.78) 100%)',
+                }} />
+
+                <div style={{
+                  position: 'relative', height: '100%', display: 'flex', flexDirection: 'column',
+                  justifyContent: 'flex-end', padding: '28px 32px', boxSizing: 'border-box',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'auto' }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}>
+                      <Icon size={20} color="#FFFFFF" strokeWidth={1.5} />
+                    </div>
                     {card.badge && (
                       <span style={{
-                        fontSize: 10, fontWeight: 700, letterSpacing: '0.12em',
-                        padding: '3px 8px', color: card.badgeColor,
-                        background: card.badgeBg, textTransform: 'uppercase'
-                      }}>{card.badge}</span>
-                    )}
-                    {card.rightLabel && (
-                      <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {card.rightLabel}
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        fontSize: 11, fontWeight: 700, letterSpacing: '0.02em',
+                        padding: '5px 12px', borderRadius: 999,
+                        background: 'rgba(0,0,0,0.45)', color: '#FFFFFF',
+                      }}>
+                        {BadgeIcon && <BadgeIcon size={11} color="#F59E0B" />}
+                        {card.badge}
                       </span>
                     )}
-                    <ChevronRight size={16} color="#CCCCCC" />
+                  </div>
+
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.7)', margin: '0 0 6px' }}>
+                    {card.kicker}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', letterSpacing: '-0.01em', lineHeight: 1.1 }}>
+                        {card.title}
+                      </p>
+                      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0, maxWidth: 440 }}>
+                        {card.subtitle}
+                      </p>
+                      {card.rightLabel && (
+                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', margin: '6px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {card.rightLabel}
+                        </p>
+                      )}
+                    </div>
+                    <ChevronRight size={22} color="rgba(255,255,255,0.6)" style={{ flexShrink: 0 }} />
                   </div>
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Stats row */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderTop: '1px solid #EEEEEE', borderLeft: '1px solid #EEEEEE' }}>
-            {[
-              { label: 'RSVPs', value: loading ? '—' : rsvpCount },
-              { label: 'Days to go', value: loading ? '—' : (daysToWedding ?? '—') },
-              { label: 'Website', value: loading ? '—' : (wedding?.websiteEnabled ? 'Live' : 'Draft') },
-            ].map((stat, i) => (
-              <div key={i} style={{ padding: '24px 16px', textAlign: 'center', borderRight: '1px solid #EEEEEE', borderBottom: '1px solid #EEEEEE' }}>
-                <p style={{ fontSize: 30, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', margin: '0 0 4px' }}>{stat.value}</p>
-                <p style={{ fontSize: 10, color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.15em', margin: 0 }}>{stat.label}</p>
-              </div>
-            ))}
-          </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
-
     </div>
   );
 }
