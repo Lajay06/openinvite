@@ -52,13 +52,34 @@ export default function Features() {
       <PublicNav />
       <ScrollProgress />
 
-      {/* ── S1: HERO ─────────────────────────────────────── */}
+      {/* ── S1: HERO ─────────────────────────────────────────
+          align="left" + a narrow maxWidth keeps the headline in the empty
+          field on the left of this photo, clear of the subject on the right
+          (her face, arm, torso and the case she is carrying). At maxWidth
+          1000 and centred, the two-line headline ran straight across her.
+          This is exactly the case MarketingHero's own `align` prop was added
+          for, so it is set here rather than by editing the shared component.
+          maxWidth 565 is set by the tightest width, not by taste. The source
+          photo is 1280x853, so at 1440 and wider the viewport is the wider of
+          the two, the image crops vertically only, and the subject sits at a
+          fixed ~39.6% of the viewport: x=570 at 1440, x=760 at 1920. At 1280
+          the crop is slightly horizontal and she lands at x=500. The text
+          block's right edge is maxWidth minus its own left padding, so 565
+          puts it at ~488 — clear of her at 1280, and further clear above it.
+          Going wider buys fewer lines but crosses her at 1280: 590 lands on
+          the case she is carrying.
+
+          imagePosition stays "center". Anchoring it left would push her ~35px
+          right at 1280, but object-position applies at every width, and at
+          390px wide the crop is severe enough that "left" moves her to x=502
+          — completely out of frame, leaving the mobile hero an empty wall. */}
       <MarketingHero
         image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx.jpg"
         imagePosition="center 30%"
         title="Everything you needed. Plus a few things you didn't expect."
         cta={{ label: "Get started", href: "/signup" }}
-        maxWidth={1000}
+        align="left"
+        maxWidth={565}
       />
 
       {/* ── S2: STATEMENT BANNER ─────────────────────────── */}
