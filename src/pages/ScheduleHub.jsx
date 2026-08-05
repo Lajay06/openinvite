@@ -262,7 +262,7 @@ export default function ScheduleHub() {
       </div>
 
       {/* 5 ── Tab content */}
-      {activeTab === "calendar" && <CalendarPage embedded />}
+      {activeTab === "calendar" && <CalendarPage embedded hideChrome />}
       {activeTab !== "calendar" && (
         <SchedulePage
           embedded
