@@ -2,7 +2,12 @@ import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-const ImageSlider = React.forwardRef(({ images, interval = 5000, className, showOverlay = true, ...props }, ref) => {
+// Photo carousel used by every auth surface (/register and /login via
+// AuthLayout, plus /forgot-password and /reset-password). Photos and dots
+// only — the caption overlay this once carried (a quote plus an "Openinvite"
+// attribution row) is gone from all four, so there is no showOverlay prop
+// left to switch it back on.
+const ImageSlider = React.forwardRef(({ images, interval = 5000, className, ...props }, ref) => {
   const [currentIndex, setCurrentIndex] = React.useState(0);
 
   React.useEffect(() => {
@@ -41,15 +46,6 @@ const ImageSlider = React.forwardRef(({ images, interval = 5000, className, show
           />
         ))}
       </div>
-      {showOverlay && (
-        <div className="absolute bottom-16 left-6 right-6 z-10">
-          <p className="text-white text-lg font-semibold leading-snug">"Planning a wedding should feel as exciting as the day itself."</p>
-          <div className="flex items-center gap-2 mt-3">
-            <img src="/logo-white.png" alt="Openinvite" className="h-5" onError={(e) => e.target.style.display='none'} />
-            <span className="text-white/70 text-sm">Openinvite</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 });
