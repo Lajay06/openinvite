@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
+import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import ProductVideo from "@/components/shared/ProductVideo";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
@@ -362,6 +363,12 @@ export default function AvaPage() {
           </ProductMediaFrame>
         </div>
       </section>
+
+      {/* ── END CAP ──────────────────────────────────────── */}
+      <MarketingEndCap
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3620_bctcoz.jpg"
+        alt="A couple at home together"
+      />
 
       <PublicFooter />
     </div>);
