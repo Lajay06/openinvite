@@ -8,12 +8,13 @@ import GuestAvatar from '@/components/shared/GuestAvatar';
 const Guest = base44.entities.Guest;
 const Table = base44.entities.Table;
 const VenueAsset = base44.entities.VenueAsset;
-import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users, Pencil, Monitor, Plus, Copy } from 'lucide-react';
+import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users, Pencil, Monitor, Plus, Copy, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 import { validateUploadFile } from '@/lib/uploadValidation';
 import { interactiveDivProps } from '@/lib/a11y';
 
+import { buildTablesWithGuests } from '@/lib/seatingChart';
 import VisualTable from '../components/seating/VisualTable';
 import VisualAsset from '../components/seating/VisualAsset';
 import VenueAssetLibrary from '../components/seating/VenueAssetLibrary';
@@ -100,11 +101,31 @@ export default function SeatingPage() {
   useEffect(() => { tablesRef.current = tables; }, [tables]);
   useEffect(() => { venueAssetsRef.current = venueAssets; }, [venueAssets]);
 
+  const canvasRef = useRef(null);
+  const [isExporting, setIsExporting] = useState(false);
+
   const [selectedTableId, setSelectedTableId] = useState(null);
   const [selectedSeatIndex, setSelectedSeatIndex] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
+  // Delete button visibility — deliberately lags hoveredId by a short delay
+  // (below) so a quick mouse pass-through while reaching for the drag
+  // handle doesn't pop a destructive control on every hover.
+  const [deleteHoverId, setDeleteHoverId] = useState(null);
+  const deleteHoverTimer = useRef(null);
   const [renamingTableId, setRenamingTableId] = useState(null);
   const [renameValue, setRenameValue] = useState('');
+
+  const handleItemHoverStart = (id) => {
+    setHoveredId(id);
+    clearTimeout(deleteHoverTimer.current);
+    deleteHoverTimer.current = setTimeout(() => setDeleteHoverId(id), 250);
+  };
+  const handleItemHoverEnd = () => {
+    setHoveredId(null);
+    clearTimeout(deleteHoverTimer.current);
+    setDeleteHoverId(null);
+  };
+  useEffect(() => () => clearTimeout(deleteHoverTimer.current), []);
 
   const [guestFilter, setGuestFilter] = useState('all');
   const [guestSearch, setGuestSearch] = useState('');
@@ -374,7 +395,15 @@ export default function SeatingPage() {
   };
 
   const handleDeleteItem = async (id, type) => {
-    if (!window.confirm(`Delete this ${type}?`)) return;
+    let confirmMsg = `Delete this ${type}?`;
+    if (type === 'table') {
+      const table = tables.find(t => t.id === id);
+      const seated = table?.assigned_guests?.length || 0;
+      confirmMsg = seated > 0
+        ? `Delete "${table.name}"? This will unassign ${seated} guest${seated === 1 ? '' : 's'} from their seat${seated === 1 ? '' : 's'}.`
+        : `Delete "${table?.name || 'this table'}"?`;
+    }
+    if (!window.confirm(confirmMsg)) return;
     try {
       if (type === 'table') {
         await Table.delete(id);
@@ -386,6 +415,78 @@ export default function SeatingPage() {
       }
       toast.success(`${type === 'table' ? 'Table' : 'Asset'} deleted`);
     } catch { toast.error('Failed to delete'); }
+  };
+
+  /* ── Export layout (image) + name/table list, as one PDF ──
+     Reuses the same html2canvas + jsPDF pattern already established by
+     WeddingDayTimelineBuilder.jsx's "Print PDF" — no new export mechanism,
+     just applied to the seating canvas. Zoom is reset to 100% for the
+     capture (and restored after) so the exported image reflects the
+     canvas's real layout, not whatever zoom level the couple happened to
+     be looking at. */
+  const handleExportSeating = async () => {
+    if (!canvasRef.current || eventTables.length === 0) return;
+    setIsExporting(true);
+    const priorZoom = zoom;
+    setZoom(1);
+    try {
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ]);
+      await new Promise(r => setTimeout(r, 80));
+      const canvas = await html2canvas(canvasRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      const imgData = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const eventLabel = activeEvent?.name || 'Seating chart';
+
+      pdf.setFontSize(16); pdf.setTextColor(10, 10, 10);
+      pdf.text(eventLabel, 10, 14);
+      pdf.setFontSize(9); pdf.setTextColor(120, 120, 120);
+      pdf.text(`Generated ${new Date().toLocaleDateString()}`, 10, 20);
+      const imgW = pageW - 20;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      const y = 26;
+      const ratio = imgH > pageH - y - 10 ? (pageH - y - 10) / imgH : 1;
+      pdf.addImage(imgData, 'PNG', 10, y, imgW * ratio, imgH * ratio);
+
+      // Page 2 — plain text list of names + table arrangement, so the
+      // layout is usable without squinting at the floor-plan image.
+      const tablesWithGuests = buildTablesWithGuests(eventTables, guests);
+      pdf.addPage();
+      pdf.setFontSize(16); pdf.setTextColor(10, 10, 10);
+      pdf.text(`${eventLabel} — table arrangement`, 10, 14);
+      let cursorY = 26;
+      const lineH = 6;
+      const pageBottom = pageH - 14;
+      for (const t of tablesWithGuests) {
+        if (cursorY > pageBottom - lineH) { pdf.addPage(); cursorY = 20; }
+        pdf.setFontSize(12); pdf.setTextColor(10, 10, 10);
+        pdf.text(t.name, 10, cursorY);
+        cursorY += lineH;
+        pdf.setFontSize(10); pdf.setTextColor(80, 80, 80);
+        for (const g of t.guests) {
+          if (cursorY > pageBottom) { pdf.addPage(); cursorY = 20; }
+          pdf.text(`  •  ${g.name}`, 10, cursorY);
+          cursorY += lineH - 1;
+        }
+        cursorY += 3;
+      }
+      if (tablesWithGuests.length === 0) {
+        pdf.setFontSize(11); pdf.setTextColor(120, 120, 120);
+        pdf.text('No guests assigned to a table yet.', 10, cursorY);
+      }
+
+      pdf.save(`seating-chart-${eventLabel.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+      toast.success('Seating chart exported');
+    } catch {
+      toast.error('Failed to export seating chart');
+    }
+    setZoom(priorZoom);
+    setIsExporting(false);
   };
 
   /* ── Import venue layout ── */
@@ -697,14 +798,25 @@ export default function SeatingPage() {
             </button>
           </div>
 
-          {!readOnly && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button
-              onClick={() => setShowAIGenerator(true)}
-              style={{ background: '#E03553', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '8px 16px', fontSize: 14, fontWeight: 500, fontFamily: PJS, cursor: 'pointer' }}
+              onClick={handleExportSeating}
+              disabled={isExporting || eventTables.length === 0}
+              className="btn-editorial-secondary"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: eventTables.length === 0 ? 0.4 : 1 }}
             >
-              Auto-allocate seats
+              <Download size={13} />
+              {isExporting ? 'Exporting…' : 'Export'}
             </button>
-          )}
+            {!readOnly && (
+              <button
+                onClick={() => setShowAIGenerator(true)}
+                style={{ background: '#E03553', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '8px 16px', fontSize: 14, fontWeight: 500, fontFamily: PJS, cursor: 'pointer' }}
+              >
+                Auto-allocate seats
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── Three-panel layout ── */}
@@ -729,6 +841,7 @@ export default function SeatingPage() {
             onMouseLeave={handleCanvasMouseUp}
           >
             <div
+              ref={canvasRef}
               style={{
                 width: CANVAS_W,
                 height: CANVAS_H,
@@ -753,8 +866,8 @@ export default function SeatingPage() {
                   key={`t-${table.id}`}
                   style={{ position: 'absolute', left: table.x || 50, top: table.y || 50, cursor: draggingItem?.id === table.id ? 'grabbing' : 'grab', userSelect: 'none' }}
                   onMouseDown={e => handleItemMouseDown(e, table.id, 'table')}
-                  onMouseEnter={() => setHoveredId(`t-${table.id}`)}
-                  onMouseLeave={() => setHoveredId(null)}
+                  onMouseEnter={() => handleItemHoverStart(`t-${table.id}`)}
+                  onMouseLeave={handleItemHoverEnd}
                 >
                   <VisualTable
                     table={table}
@@ -763,17 +876,24 @@ export default function SeatingPage() {
                     selected={selectedTableId === table.id}
                     selectedSeatIndex={selectedTableId === table.id ? selectedSeatIndex : null}
                   />
-                  {/* Delete button on hover */}
-                  {!readOnly && hoveredId === `t-${table.id}` && (
+                  {/* Delete button — outside the table's own footprint (matches the
+                      asset delete button below) and only appears after a brief hover
+                      delay, so reaching for the drag handle doesn't pop a destructive
+                      control on every stray hover. */}
+                  {!readOnly && (
                     <button
                       onClick={e => { e.stopPropagation(); handleDeleteItem(table.id, 'table'); }}
                       aria-label="Delete table"
                       style={{
-                        position: 'absolute', top: 4, right: 4,
-                        width: 20, height: 20, borderRadius: '50%',
-                        background: '#E03553', border: 'none', cursor: 'pointer',
+                        position: 'absolute', top: -8, right: -8,
+                        width: 22, height: 22, borderRadius: '50%',
+                        background: '#E03553', border: '2px solid #FFFFFF', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         zIndex: 10,
+                        opacity: deleteHoverId === `t-${table.id}` ? 1 : 0,
+                        pointerEvents: deleteHoverId === `t-${table.id}` ? 'auto' : 'none',
+                        transition: 'opacity 0.12s ease',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
                       }}
                     >
                       <Trash2 size={10} style={{ color: '#FFFFFF' }} />
@@ -788,20 +908,24 @@ export default function SeatingPage() {
                   key={`a-${asset.id}`}
                   style={{ position: 'absolute', left: asset.x || 50, top: asset.y || 50, cursor: draggingItem?.id === asset.id ? 'grabbing' : 'grab', userSelect: 'none' }}
                   onMouseDown={e => handleItemMouseDown(e, asset.id, 'asset')}
-                  onMouseEnter={() => setHoveredId(`a-${asset.id}`)}
-                  onMouseLeave={() => setHoveredId(null)}
+                  onMouseEnter={() => handleItemHoverStart(`a-${asset.id}`)}
+                  onMouseLeave={handleItemHoverEnd}
                 >
                   <VisualAsset asset={asset} />
-                  {!readOnly && hoveredId === `a-${asset.id}` && (
+                  {!readOnly && (
                     <button
                       onClick={e => { e.stopPropagation(); handleDeleteItem(asset.id, 'asset'); }}
                       aria-label="Delete item"
                       style={{
                         position: 'absolute', top: -8, right: -8,
-                        width: 20, height: 20, borderRadius: '50%',
-                        background: '#E03553', border: 'none', cursor: 'pointer',
+                        width: 22, height: 22, borderRadius: '50%',
+                        background: '#E03553', border: '2px solid #FFFFFF', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         zIndex: 10,
+                        opacity: deleteHoverId === `a-${asset.id}` ? 1 : 0,
+                        pointerEvents: deleteHoverId === `a-${asset.id}` ? 'auto' : 'none',
+                        transition: 'opacity 0.12s ease',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
                       }}
                     >
                       <Trash2 size={10} style={{ color: '#FFFFFF' }} />
