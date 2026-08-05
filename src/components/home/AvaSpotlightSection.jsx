@@ -79,14 +79,21 @@ export default function AvaSpotlightSection() {
   return (
     <section style={{ background: "#0A0A0A", padding: "120px clamp(24px, 6vw, 80px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        {/* Section intro. Deliberately sized to sit between the section's
+            own weight and the AnimatedRow headings below it, which are
+            clamp(24px, 3vw, 36px)/700 — this stays a step under them so it
+            reads as the lead-in rather than competing with the first row.
+            Solid white at 600 rather than the old 18px/400 at 50% white,
+            which disappeared against the black band. */}
         <p style={{
           textAlign: "center",
-          fontSize: 18,
-          color: "rgba(255,255,255,0.5)",
+          fontSize: "clamp(20px, 2.2vw, 28px)",
+          fontWeight: 600,
+          color: "#FFFFFF",
           maxWidth: 672,
           margin: "0 auto",
           paddingBottom: 48,
-          lineHeight: 1.8,
+          lineHeight: 1.5,
           fontFamily: PJS,
         }}>
           Ava learns your style, your budget, and your vision, then helps you make smarter decisions at every step. From vendor suggestions to seating optimisation, Ava's always one step ahead.
