@@ -35,6 +35,22 @@ const CAROUSEL_IMAGES = [
   "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj.jpg",
 ];
 
+// Field-label treatment for the auth forms.
+//
+// src/components/ui/label.jsx forces `uppercase` (plus font-bold and the
+// 0.08em tracking that only exists to space out caps) on every <Label> in
+// the product. DESIGN_SPEC.md:6 and :180 forbid uppercase outright, but that
+// primitive has 25 importers and all but Register/Login are dashboard or
+// website-builder surfaces — restyling it is a product-wide change, not an
+// auth one. So the auth pages override it here instead.
+//
+// The values match the local labelStyle that ForgotPassword.jsx and
+// ResetPassword.jsx already use (11px / 600 / 0.06em, sentence case), which
+// is what keeps all four auth pages on one label treatment. Import this
+// rather than hand-writing the classes per field, so Register and Login
+// can't drift from each other.
+export const AUTH_LABEL_CLASS = "normal-case font-semibold tracking-[0.06em]";
+
 export default function AuthLayout({ title, subtitle, footer, children }) {
   return (
     <div className="h-screen overflow-hidden flex flex-col">

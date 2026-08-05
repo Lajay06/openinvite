@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogIn, Mail, Loader2 } from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
-import AuthLayout from "@/components/AuthLayout";
+import AuthLayout, { AUTH_LABEL_CLASS } from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import MicrosoftIcon from "@/components/MicrosoftIcon";
 import FacebookIcon from "@/components/FacebookIcon";
@@ -124,7 +124,7 @@ export default function Login() {
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
+        <div className="relative flex justify-center text-xs">
           <span className="bg-card px-3 text-muted-foreground">or</span>
         </div>
       </div>
@@ -137,7 +137,7 @@ export default function Login() {
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="space-y-1">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className={AUTH_LABEL_CLASS}>Email</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
@@ -155,7 +155,7 @@ export default function Login() {
         </div>
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className={AUTH_LABEL_CLASS}>Password</Label>
             <Link to="/forgot-password" className="text-xs text-primary hover:underline">
               Forgot password?
             </Link>
