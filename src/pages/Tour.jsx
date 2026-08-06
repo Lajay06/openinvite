@@ -61,7 +61,7 @@ const isDarkBg = (bg) => bg === DARK;
 
 // Text roles per background. Light values are the textMuted family from
 // src/styles/tokens.js — rgba(10,10,10,0.6) is the WCAG AA muted token, and
-// #444444 is the body colour Features.jsx already uses on its light
+// #444444 is the body color Features.jsx already uses on its light
 // sections. Dark values are the existing white-alpha family from the
 // previous version of this page and from Features' dark sections.
 const ink = (bg) =>
@@ -217,7 +217,7 @@ function Scene({ scene }) {
           }}
         >
           <ProductMediaFrame aspectRatio={FRAME_ASPECT} maxWidth="none" dark={dark}>
-            {/* The travelling layer. Taller than the frame by OVERSCAN so the
+            {/* The traveling layer. Taller than the frame by OVERSCAN so the
                 frame stays fully covered at both ends of the translate — no
                 letterboxing, no gap, no inner padding at any point. */}
             <div
@@ -378,8 +378,8 @@ export default function Tour() {
         }
         @supports (animation-timeline: view()) {
           /* The timeline is NAMED on the frame wrapper, not taken from
-             view() on the travelling layer itself. view() resolves against
-             the nearest scrollport, and the travelling layer's parent is the
+             view() on the traveling layer itself. view() resolves against
+             the nearest scrollport, and the traveling layer's parent is the
              overflow:hidden clip — which IS a scroll container. Anchored
              there the layer never moves relative to its scrollport, so
              progress pinned at ~50% and the parallax rendered a constant
