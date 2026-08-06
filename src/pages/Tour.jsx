@@ -47,13 +47,13 @@ const OVERSCAN = 124;
 const PARALLAX_PCT = 7;
 
 const SCENES = [
-  { num: "01", label: "Daily update", copy: "Open it. It already knows what today needs.",              imageSrc: null, align: "left",  bg: WHITE },
-  { num: "02", label: "Ava",          copy: "Ask a question. Get an answer that fits your budget.",      imageSrc: null, align: "right", bg: OFFWHITE },
-  { num: "03", label: "Guest list",   copy: "Every yes, no, and maybe. One list, always current.",       imageSrc: null, align: "left",  bg: DARK },
-  { num: "04", label: "Seating",      copy: "Drag a name. The table updates. Nobody gets forgotten.",    imageSrc: null, align: "right", bg: WHITE },
+  { num: "01", label: "Daily update", copy: "Your wedding, today's priorities, and what's coming next, all waiting for you.",              imageSrc: null, align: "left",  bg: WHITE },
+  { num: "02", label: "Ava",          copy: "Like having a wedding planner in your pocket, only faster, smarter, and available 24/7.",      imageSrc: null, align: "right", bg: OFFWHITE },
+  { num: "03", label: "Guest list",   copy: "Track every RSVP, meal preference, and plus one without the spreadsheets.",       imageSrc: null, align: "left",  bg: DARK },
+  { num: "04", label: "Seating",      copy: "Design your floor plan visually, drag guests into place, and let every table come together effortlessly.",    imageSrc: null, align: "right", bg: WHITE },
   { num: "05", label: "Budget",       copy: "What you planned. What you spent. No surprises in month nine.", imageSrc: null, align: "left",  bg: OFFWHITE },
-  { num: "06", label: "Schedule",     copy: "Every hour of the day, sorted before the day arrives.",     imageSrc: null, align: "right", bg: DARK },
-  { num: "07", label: "Universes",    copy: "Twenty worlds. Pick one, make it yours.",                   imageSrc: null, align: "left",  bg: WHITE },
+  { num: "06", label: "Schedule",     copy: "Build your entire wedding day with confidence, knowing every detail has its perfect place.",     imageSrc: null, align: "right", bg: DARK },
+  { num: "07", label: "Universes",    copy: "Choose your Universe and every touchpoint follows. One cohesive aesthetic from your first invitation to your final thank you.",                   imageSrc: null, align: "left",  bg: WHITE },
   { num: "08", label: "Your site",    copy: "Guests see this. They will remember it.",                   imageSrc: null, align: "right", bg: OFFWHITE },
 ];
 
