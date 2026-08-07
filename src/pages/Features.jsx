@@ -11,8 +11,6 @@ import FeatureBudget from "@/components/home/FeatureBudget";
 import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
-import ProductVideo from "@/components/shared/ProductVideo";
-import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
 
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -92,12 +90,6 @@ export default function Features() {
       {/* ── S3: DASHBOARD ────────────────────────────────── */}
       <DashboardSection />
 
-      {/* ── S5b: SEATING, REAL PRODUCT VIDEO ─────────────── */}
-      <SeatingSection />
-
-      {/* ── S5c: BUDGET, REAL PRODUCT VIDEO ──────────────── */}
-      <BudgetSection />
-
       {/* ── S6: ACCORDION ────────────────────────────────── */}
       <AccordionSection features={ALL_FEATURES} borders={ACCORDION_BORDERS} dots={DOTS} openFeature={openFeature} setOpenFeature={setOpenFeature} />
 
@@ -157,7 +149,7 @@ function DashboardSection() {
 
   const BULLETS = ["Invite your partner or planner", "Set role-based permissions", "Assign tasks with deadlines", "Real-time collaborative updates", "Shared vendor & budget views", "Manage who sees sensitive data"];
   return (
-    <section ref={ref} style={{ background: "#F5F5F3", minHeight: "100vh", display: "flex", flexDirection: "row", overflow: "hidden" }} className="flex-col lg:flex-row">
+    <section ref={ref} style={{ background: "#FFFFFF", minHeight: "100vh", display: "flex", flexDirection: "row", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 552 }}>
           <FeatureSectionHeading color="#0A0A0A">Customisable Dashboard</FeatureSectionHeading>
@@ -180,89 +172,6 @@ function DashboardSection() {
 }
 
 // Shared grid for the seating/budget video showcases — the video column
-// gets more room than the text (1.15fr vs 1fr) so the media reads as the
-// main event, not an equal-weight afterthought. Single column on mobile.
-function FeatureVideoGridStyle() {
-  return (
-    <style>{`
-      .feature-video-grid { display: grid; grid-template-columns: 1fr; gap: 56px; align-items: center; }
-      @media (min-width: 900px) {
-        .feature-video-grid { grid-template-columns: 1.15fr 1fr; gap: 72px; }
-      }
-    `}</style>
-  );
-}
-
-function SeatingSection() {
-  const [ref, visible] = useScrollReveal(0.2);
-  return (
-    <section ref={ref} style={{ background: "#F5F5F3", padding: "160px clamp(32px, 6vw, 80px)" }}>
-      <FeatureVideoGridStyle />
-      <div className="feature-video-grid" style={{ maxWidth: 1320, margin: "0 auto" }}>
-        <div style={{
-          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-          transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
-        }}>
-          <ProductMediaFrame aspectRatio="16/10" maxWidth="none" dark={false}>
-            <ProductVideo
-              mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-02-seating-exploration.mp4"
-              webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-02-seating-exploration.webm"
-              poster="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/product-shots/flow-02-seating-exploration-poster.jpg"
-              alt="Screen recording of the Openinvite seating canvas"
-            />
-          </ProductMediaFrame>
-        </div>
-        <div style={{
-          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
-        }}>
-          <FeatureSectionHeading color="#0A0A0A" style={{ fontSize: "clamp(32px, 4.2vw, 56px)", lineHeight: 1.08, marginBottom: 28 }}>
-            A real canvas for a real guest list.
-          </FeatureSectionHeading>
-          <p style={{ ...featureBodyTextStyle, color: "#444444", lineHeight: 1.75, fontSize: 18, maxWidth: 420 }}>
-            Drag tables into place, assign guests one at a time or let Ava suggest a starting layout. This is an actual recording of the seating tool, not a mockup.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function BudgetSection() {
-  const [ref, visible] = useScrollReveal(0.2);
-  return (
-    <section ref={ref} style={{ background: "#FFFFFF", padding: "160px clamp(32px, 6vw, 80px)" }}>
-      <FeatureVideoGridStyle />
-      <div className="feature-video-grid" style={{ maxWidth: 1320, margin: "0 auto" }}>
-        <div style={{
-          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-          transition: `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
-        }}>
-          <ProductMediaFrame aspectRatio="16/10" maxWidth="none" dark={false}>
-            <ProductVideo
-              mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-04-budget-tracker.mp4"
-              webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-04-budget-tracker.webm"
-              poster="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/product-shots/flow-04-budget-tracker-poster.jpg"
-              alt="Screen recording of the real Openinvite budget tracker"
-            />
-          </ProductMediaFrame>
-        </div>
-        <div style={{
-          opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)",
-          transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
-        }}>
-          <FeatureSectionHeading color="#0A0A0A" style={{ fontSize: "clamp(32px, 4.2vw, 56px)", lineHeight: 1.08, marginBottom: 28 }}>
-            Every dollar, in real time.
-          </FeatureSectionHeading>
-          <p style={{ ...featureBodyTextStyle, color: "#444444" }}>
-            Budget versus actual spend, category by category. This is the real tracker with a real 201-guest wedding's numbers in it.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 
 function AccordionSection({ features, borders, dots, openFeature, setOpenFeature }) {
   const [ref, visible] = useScrollReveal(0.1);

@@ -1,6 +1,6 @@
 /**
  * Feature 3 — Advanced Guest Management
- * LIGHT section: #FFFFFF background, #0A0A0A text, one strong photo right
+ * LIGHT section: #F5F5F3 background, #0A0A0A text, one strong photo right
  */
 import React, { useRef, useEffect, useState } from "react";
 import { useAppleReveal } from "@/hooks/useAppleReveal";
@@ -67,7 +67,7 @@ export default function FeatureGuests({ children }) {
     <section
       ref={sectionRef}
       style={{
-        background: "#FFFFFF",
+        background: "#F5F5F3",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "row",
