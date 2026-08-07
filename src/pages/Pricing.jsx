@@ -292,26 +292,23 @@ export default function Pricing() {
         <img
           src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SNOWBOUND_Daniel_Far%C3%B2_Photos_ID12431_yunnan.jpg"
           alt="A couple unwrapping a gift together"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
         />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,10,10,0.5) 0%, rgba(10,10,10,0.85) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,10,10,0.5) 0%, rgba(10,10,10,0.78) 100%)" }} />
         <div style={{ position: "relative", zIndex: 1, maxWidth: 640, margin: "0 auto" }}>
-          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", color: "#DDF762", marginBottom: 16, fontFamily: PJS }}>
-            A gift worth giving
-          </p>
           <h2 style={{ fontSize: "clamp(32px, 5vw, 56px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 20, fontFamily: PJS }}>
-            Gifting Openinvite to someone?
+            The gift of a calmer countdown.
           </h2>
           <p style={{ fontSize: 16, lineHeight: 1.7, color: "rgba(255,255,255,0.7)", marginBottom: 40, fontFamily: PJS }}>
-            Give an engaged couple a calmer way to plan. 1 purchase, delivered as a redeemable code, no claim page required.
+            A thoughtful way to help them plan beautifully, stay organized, and enjoy every moment leading up to the big day.
           </p>
           <Link
             to="/gifting"
             style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
-              padding: "20px 56px", borderRadius: 999,
+              padding: "12px 24px", borderRadius: 999,
               background: "#E03553", color: "#FFFFFF",
-              fontSize: 16, fontWeight: 700, fontFamily: PJS, textDecoration: "none",
+              fontSize: "clamp(13px, 1.2vw, 15px)", fontWeight: 600, fontFamily: PJS, textDecoration: "none",
               transition: "opacity 0.15s",
             }}
             onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
