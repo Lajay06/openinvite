@@ -37,7 +37,7 @@ import { renderInvitationEmail, getEmailTypeConfig, getBannerImageUrl } from '..
 import { verifyBase44User, fetchOwnedGuestEmails, filterGuestsByOwnership } from './_lib/auth.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = 'Openinvite <hello@openinvite.com.au>';
+const SUPPORT_ADDRESS = 'hello@openinvite.com.au';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
 
 function replaceMergeTags(str, guestName, coupleName, dateStr, rsvpUrl) {
@@ -104,6 +104,17 @@ export default async function handler(req, res) {
     const weddingDate = sanitizeString(wedding.weddingDate) || '';
     const venue = sanitizeString(wedding.venue) || '';
 
+    // Guest-facing from-name is the couple's own names, not "Openinvite" —
+    // this email should read as coming from them (email branding audit).
+    // The address itself stays on the verified sending domain regardless;
+    // only the display name changes. reply-to is the caller's own verified
+    // email (they ARE the wedding owner, authenticated above), so a guest's
+    // reply reaches the couple directly instead of the support inbox —
+    // falls back to the support address only if that's somehow missing.
+    const fromName = coupleName || 'Openinvite';
+    const FROM = `${fromName} <${SUPPORT_ADDRESS}>`;
+    const replyTo = caller.email || SUPPORT_ADDRESS;
+
     const dateStr = weddingDate
       ? new Date(weddingDate).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
       : '';
@@ -144,7 +155,7 @@ export default async function handler(req, res) {
         universeId, type, guestName, coupleNames: coupleName, events, personalMessage: processedBody, rsvpUrl, bannerImageUrl,
       });
 
-      return { from: FROM, to: g.email, subject, html, text };
+      return { from: FROM, to: g.email, replyTo, subject, html, text };
     });
 
     const result = await resend.batch.send(batch);

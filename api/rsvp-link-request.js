@@ -32,9 +32,10 @@ import {
   verifyTurnstileToken,
 } from './_lib/security.js';
 import { renderInvitationEmail } from '../src/lib/emailTemplate.js';
+import { getBase44User } from './_lib/base44Admin.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = 'Openinvite <hello@openinvite.com.au>';
+const SUPPORT_ADDRESS = 'hello@openinvite.com.au';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -164,9 +165,23 @@ export default async function handler(req, res) {
         rsvpUrl,
       });
 
+      // Guest-facing from-name is the couple's own names (email branding
+      // audit) — address stays on the verified sending domain regardless.
+      // No caller session here (anonymous endpoint), so reply-to is
+      // resolved from the wedding owner's own Base44 User record via the
+      // admin key — same single-record-by-id lookup send-weekly-digest.js
+      // uses, the one path confirmed reliable for the admin key against
+      // the User entity (see BASE44_PLATFORM_NOTES.md). Falls back to the
+      // support address if that lookup fails for any reason.
+      const owner = await getBase44User(wedding.created_by_id, BASE44_ADMIN_KEY);
+      const fromName = coupleName || 'Openinvite';
+      const from = `${fromName} <${SUPPORT_ADDRESS}>`;
+      const replyTo = owner?.email || SUPPORT_ADDRESS;
+
       await resend.emails.send({
-        from: FROM,
+        from,
         to: guest.email,
+        replyTo,
         subject: `Your RSVP link for ${coupleName || 'the wedding'}`,
         html,
         text,
