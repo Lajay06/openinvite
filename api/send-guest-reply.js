@@ -24,7 +24,7 @@ import { verifyBase44User } from './_lib/auth.js';
 import { renderGuestReplyEmail } from '../src/lib/guestReplyEmailTemplate.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = 'Openinvite <hello@openinvite.com.au>';
+const SUPPORT_ADDRESS = 'hello@openinvite.com.au';
 
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
@@ -62,14 +62,25 @@ export default async function handler(req, res) {
   }
 
   try {
+    const cleanCoupleNames = sanitizeString(coupleNames) || '';
+
     const { subject, html } = renderGuestReplyEmail({
       guestName: sanitizeString(guestName) || 'there',
-      coupleNames: sanitizeString(coupleNames) || '',
+      coupleNames: cleanCoupleNames,
       originalMessage: sanitizeString(originalMessage) || '',
       replyText: cleanReply,
     });
 
-    const { error } = await resend.emails.send({ from: FROM, to: cleanEmail, subject, html });
+    // Guest-facing from-name is the couple's own names (email branding
+    // audit) — address stays on the verified sending domain regardless.
+    // reply-to is the caller's own verified email (they ARE the wedding
+    // owner, authenticated above), so a further guest reply reaches the
+    // couple directly, not the support inbox.
+    const fromName = cleanCoupleNames || 'Openinvite';
+    const from = `${fromName} <${SUPPORT_ADDRESS}>`;
+    const replyTo = caller.email || SUPPORT_ADDRESS;
+
+    const { error } = await resend.emails.send({ from, to: cleanEmail, replyTo, subject, html });
     if (error) throw new Error(error.message || 'Resend send failed');
 
     console.log(`[send-guest-reply] Sent reply to ${cleanEmail}`);
