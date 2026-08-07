@@ -46,6 +46,7 @@ import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs
 import { runIcsExport } from '../tests/persistence/ics-export.mjs';
 import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
 import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
+import { runGuestSafeWedding } from '../tests/persistence/guest-safe-wedding.mjs';
 
 async function run() {
   console.log('\n═══════════════════════════════════════════════════════');
@@ -90,6 +91,7 @@ async function run() {
   await runModule('runIcsExport', () => runIcsExport());
   await runModule('runGiftCheckout', () => runGiftCheckout());
   await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());
+  await runModule('runGuestSafeWedding', () => runGuestSafeWedding());
 
   const passed = results.filter(Boolean).length;
   const total = results.length;

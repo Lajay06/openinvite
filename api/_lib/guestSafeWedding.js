@@ -42,7 +42,6 @@ export const GUEST_SAFE_WEDDING_FIELDS = [
   'weddingPolicies',
   'polls',
   'qna',
-  'music',
   'musicContent',
   'accommodation',
   'guestSuiteAccommodation',
@@ -84,6 +83,37 @@ export const NEVER_RETURN_FIELDS = [
 ];
 
 /**
+ * WeddingDetails.music is NOT in GUEST_SAFE_WEDDING_FIELDS above —
+ * deliberately, unlike every other object field, which is copied wholesale.
+ * music also holds spotifyConnection ({accessToken, refreshToken,
+ * expiresAt, ...} — the couple's real, usable Spotify OAuth tokens,
+ * written by api/spotify-callback.js) and spotifyUserId. A flat top-level
+ * allowlist can only ever say "include this whole object or don't" — it
+ * has no way to strip one sub-field out of an object it includes, so
+ * `music` needs its own nested picker instead (security audit, 2026-08-07:
+ * both api/wedding-by-slug.js and api/rsvp-lookup.js were shipping
+ * spotifyConnection verbatim to anonymous callers via the old flat entry).
+ *
+ * Allowlist here too, not a denylist on spotifyConnection specifically —
+ * same reasoning as the file-level allowlist above. Verified by grepping
+ * every guest-facing page that reads `weddingDetails.music.*`
+ * (GuestMusic.jsx, MultiPageWeddingWebsite.jsx): only these three fields
+ * are ever actually read. Add a field here only when a real guest-facing
+ * read site needs it — requestsRequireApproval/playlists/notes are on the
+ * live schema but have no current guest-facing reader, so they stay out
+ * until one exists.
+ */
+const MUSIC_SAFE_FIELDS = ['guestRequestsEnabled', 'requestsClosedDate', 'requestMessage'];
+
+function pickGuestSafeMusic(music) {
+  const out = {};
+  for (const field of MUSIC_SAFE_FIELDS) {
+    if (field in music) out[field] = music[field];
+  }
+  return out;
+}
+
+/**
  * Builds the guest-safe payload for a single WeddingDetails record: only
  * the allowlisted fields, plus a computed passwordProtected boolean in
  * place of the real password. Never mutates the input.
@@ -97,6 +127,7 @@ export function pickGuestSafeFields(wedding) {
     if (NEVER_RETURN_FIELDS.includes(field)) continue; // defensive, should never trigger
     if (field in wedding) out[field] = wedding[field];
   }
+  if (wedding.music) out.music = pickGuestSafeMusic(wedding.music);
   out.passwordProtected = !!wedding.websitePassword?.trim();
   return out;
 }

@@ -25,9 +25,10 @@
  *  3. Reduced-motion gates exist and are actually branched on (not just
  *     imported and ignored) in the entrance overlay, the banner's hover/
  *     scroll-reveal, and the world view's parallax hero.
- *  4. The Ultra badge renders conditionally on isUltra, the Ultra id set
- *     matches the two gated universes, and locked worlds get an upgrade
- *     path rather than a locked door.
+ *  4. The Ultra badge (text-only, no crown icon — feat/remove-ultra-crown-
+ *     selector) renders conditionally on isUltra, the Ultra id set matches
+ *     the two gated universes, and locked worlds get an upgrade path
+ *     rather than a locked door.
  *  5. "Your design assets" is actually gone from the page (no AssetGrid/
  *     AssetEditorModal import left on UniverseStudio.jsx).
  */
@@ -302,9 +303,12 @@ export async function runDesignStudioEntrance() {
 
   console.log('\n  Design Studio — Ultra badge presence for gated universes:\n');
 
-  results.push(/\{isUltra && \(/.test(bannerSource) && /<Crown size=\{10\} \/> Ultra/.test(bannerSource)
-    ? pass('UniverseBanner.jsx renders the Ultra badge conditionally on isUltra', 'found')
-    : fail('UniverseBanner.jsx renders the Ultra badge conditionally on isUltra', 'found', 'not found'));
+  // feat/remove-ultra-crown-selector: owner decision — no crown on the
+  // selector tiles for any plan tier, text-only "Ultra" pill instead. This
+  // check follows that change; it no longer asserts a Crown icon.
+  results.push(/\{isUltra && \(/.test(bannerSource) && /\s+Ultra\s*<\/span>/.test(bannerSource) && !/<Crown/.test(bannerSource)
+    ? pass('UniverseBanner.jsx renders the text-only Ultra badge conditionally on isUltra, no crown icon', 'found')
+    : fail('UniverseBanner.jsx renders the text-only Ultra badge conditionally on isUltra, no crown icon', 'found', 'not found'));
   // Gating is config-driven (feat/universes-expansion-10) — verify the
   // mechanism (every tier:'ultra' config entry is gated, and only those)
   // rather than a hardcoded id list, which is exactly the anti-pattern
