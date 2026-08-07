@@ -400,8 +400,8 @@ export default function AvaPage() {
 
       {/* ── END CAP ──────────────────────────────────────── */}
       <MarketingEndCap
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3620_bctcoz.jpg"
-        alt="A couple at home together"
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp.jpg"
+        alt="A couple walking through a mountain meadow"
       />
 
       <PublicFooter />
