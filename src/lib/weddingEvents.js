@@ -176,3 +176,40 @@ export function effectiveMealChoice(eventResponses) {
   const anyAnswered = responses.find(r => r.invited && r.meal_choice);
   return anyAnswered ? anyAnswered.meal_choice : null;
 }
+
+/**
+ * Default meal choices for a wedding that hasn't defined its own menu (Pro,
+ * or an Ultra wedding that hasn't visited Food & beverage → Menu yet — see
+ * FoodBeveragePage.jsx's "Guest meal options" section, Menu Phase 1). id
+ * matches Guest.meal_choice's original hardcoded enum values, so
+ * pre-Phase-1 RsvpResponse rows still resolve to a real label via
+ * mealOptionLabel() below, not a raw id. kids_meal was previously missing
+ * from RSVPPage.jsx's own copy of this list (5 of the enum's 6 values).
+ */
+export const DEFAULT_MEAL_OPTIONS = [
+  { id: 'chicken', label: 'Chicken' },
+  { id: 'beef', label: 'Beef' },
+  { id: 'fish', label: 'Fish' },
+  { id: 'vegetarian', label: 'Vegetarian' },
+  { id: 'vegan', label: 'Vegan' },
+  { id: 'kids_meal', label: 'Kids meal' },
+];
+
+/**
+ * Resolves a stored meal_choice (an id into either the wedding's own
+ * mealOptions or DEFAULT_MEAL_OPTIONS) back to a human-readable label for
+ * display — GuestList, CSV export, Ava's context. Falls back to the raw
+ * stored value itself (never blank) if it doesn't match any known option —
+ * e.g. a menu option the couple has since edited or removed, or an older
+ * RsvpResponse row written before this wedding ever had mealOptions set.
+ *
+ * @param {string|null} mealChoiceId
+ * @param {Array} [mealOptions]  the wedding's own WeddingDetails.mealOptions
+ * @returns {string|null}
+ */
+export function mealOptionLabel(mealChoiceId, mealOptions) {
+  if (!mealChoiceId) return null;
+  const options = (mealOptions && mealOptions.length) ? mealOptions : DEFAULT_MEAL_OPTIONS;
+  const match = options.find(o => o.id === mealChoiceId);
+  return match ? match.label : mealChoiceId;
+}

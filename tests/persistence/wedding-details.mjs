@@ -264,6 +264,13 @@ const TEST_FIELDS = {
     saveTheDate: { headerText: 'Test header', subtitle: 'Test subtitle', layout: 'centered' },
     seatingChart: { title: 'Test seating chart', bgMode: 'light' },
   },
+  // Menu Phase 1 — couple-defined guest meal options (Ultra only). id is
+  // stable and independent of label so renaming a label never orphans an
+  // existing RsvpResponse.meal_choice value.
+  mealOptions: [
+    { id: 'test-meal-1', label: 'Herb-roasted chicken' },
+    { id: 'test-meal-2', label: 'Grilled salmon' },
+  ],
 };
 
 export async function runWeddingDetails(token) {
@@ -426,6 +433,18 @@ export async function runWeddingDetails(token) {
     results.push(deepEqual(written, got)
       ? pass('polls', `${got?.length} poll(s)`)
       : fail('polls', written, got));
+  }
+
+  // mealOptions — Menu Phase 1 (Ultra). Confirms the field is actually live
+  // on Base44, not just declared in the local base44/entities/*.jsonc
+  // mirror (see BASE44_PLATFORM_NOTES.md's "schema drift" section — a
+  // pushed field can silently revert with no error at the time).
+  {
+    const written = TEST_FIELDS.mealOptions;
+    const got     = record.mealOptions;
+    results.push(deepEqual(written, got)
+      ? pass('mealOptions — SCHEMA REGISTRATION VERIFIED LIVE', `${got?.length} option(s)`)
+      : fail('mealOptions — SCHEMA REGISTRATION REQUIRED (field not live on Base44)', written, got));
   }
 
   // ── Event Details canonical field tests (data-model refactor + redesign) ─────

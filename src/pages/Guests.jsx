@@ -26,7 +26,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import EmailTemplates from "../components/guests/EmailTemplates";
 import PageConsiderations from '../components/shared/PageConsiderations';
-import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, effectiveMealChoice } from '@/lib/weddingEvents';
+import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
 import CountUp from "@/components/shared/CountUp";
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
@@ -91,6 +91,8 @@ export default function Guests() {
   const [weddingEvents, setWeddingEvents] = useState([]);
   const [weddingId, setWeddingId] = useState(null);
   const [weddingSlug, setWeddingSlug] = useState(null);
+  // Menu Phase 1 (Ultra) — for mapping a stored meal_choice id back to a label
+  const [mealOptions, setMealOptions] = useState([]);
   const [pendingSubmissions, setPendingSubmissions] = useState([]);
   const [showPendingImports, setShowPendingImports] = useState(false);
 
@@ -134,6 +136,7 @@ export default function Guests() {
       setWeddingEvents(getWeddingEvents(wd));
       setWeddingId(wd.id || null);
       setWeddingSlug(wd.slug || null);
+      setMealOptions(wd.mealOptions || []);
     }).catch(() => {});
   }, [isCollaborating]);
 
@@ -469,7 +472,7 @@ export default function Guests() {
       // event_responses overlay getMyGuestsWithRsvp already attaches.
       ...guests.map(g => [
         g.name, g.email || '', g.phone || '', g.category || '',
-        g.rsvp_status || '', effectiveMealChoice(g.event_responses) || '', g.table_assignment || '',
+        g.rsvp_status || '', mealOptionLabel(effectiveMealChoice(g.event_responses), mealOptions) || '', g.table_assignment || '',
         g.plus_one ? 'Yes' : 'No', g.plus_one_name || '', g.dietary_restrictions || ''
       ].map(f => `"${f}"`).join(','))
     ].join('\n');
@@ -805,6 +808,7 @@ export default function Guests() {
               guestRoles={guestRoles}
               loading={loading}
               weddingEvents={weddingEvents}
+              mealOptions={mealOptions}
               filterEvent={activeEvent}
               selectedIds={selectedIds}
               onToggleSelect={readOnly ? undefined : toggleSelect}

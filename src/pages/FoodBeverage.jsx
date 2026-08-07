@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UtensilsCrossed, Wine, Loader2, Plus, X, FileText, BookOpen, Check } from "lucide-react";
+import { UtensilsCrossed, Wine, Loader2, Plus, X, FileText, BookOpen, Check, Crown } from "lucide-react";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
@@ -11,6 +12,7 @@ import AvaModal from '@/components/layout/AvaModal';
 import VendorContactSection from '../components/vendors/VendorContactSection';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { useAuth } from '@/lib/AuthContext';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -28,6 +30,38 @@ const inputStyle = {
   boxSizing: 'border-box',
 };
 
+function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
+
+// Section-scoped Ultra paywall — src/components/shared/UltraGate.jsx is a
+// full-page swap (blurred fake page chrome behind a centered upgrade card),
+// built for gating an entire page (Design Studio, Guest Suite); dropping it
+// into one section of an otherwise-accessible tab would render a fake page
+// mockup inside a real one. Same "Ultra feature" look and upgrade action,
+// sized for a section instead.
+function MealOptionsUltraGate() {
+  const navigate = useNavigate();
+  return (
+    <div style={{ border: '1px solid rgba(10,10,10,0.1)', padding: '32px 28px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+      <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #FBBF24, #F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Crown size={20} color="#FFFFFF" strokeWidth={1.8} />
+      </div>
+      <div>
+        <p style={{ fontSize: 11, fontWeight: 800, color: '#F59E0B', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: PJS }}>Ultra feature</p>
+        <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: PJS }}>Guest meal options is an Ultra feature</p>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, margin: '0 auto', fontFamily: PJS, maxWidth: 380 }}>
+          Define your own menu choices and guests pick from your list on the RSVP form, instead of a generic default.
+        </p>
+      </div>
+      <button
+        onClick={() => navigate('/account')}
+        style={{ padding: '10px 22px', border: 'none', borderRadius: 999, background: 'linear-gradient(135deg, #FBBF24, #F59E0B)', color: '#FFFFFF', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: PJS }}
+      >
+        Upgrade to Ultra
+      </button>
+    </div>
+  );
+}
+
 const TABS = [
   { key: 'catering',       label: 'Catering' },
   { key: 'menu',           label: 'Menu' },
@@ -37,8 +71,16 @@ const TABS = [
 ];
 
 export default function FoodBeveragePage() {
+  const { user } = useAuth();
+  // Menu Phase 1 — same Ultra-gate pattern as UniverseStudio.jsx/
+  // StudioGuestSuite.jsx (#287): only 'pro' is excluded, 'free' (trial)
+  // gets full access same as every other Ultra-gated feature.
+  const plan = user?.plan || 'free';
+  const canAccessUltra = plan === 'ultra' || plan === 'free';
+
   const [data, setData] = useState({});
   const [menuItems, setMenuItems] = useState([]);
+  const [mealOptions, setMealOptions] = useState([]);
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
@@ -54,6 +96,7 @@ export default function FoodBeveragePage() {
       const r = (await getMyWeddingDetails()) || {};
       setData(r.foodBeverage || {});
       setMenuItems(r.menuItems || []);
+      setMealOptions(r.mealOptions || []);
       setRecordId(r.id || null);
       latestRef.current = r;
     } catch (e) { console.error(e); toast.error('Failed to load — please refresh and try again.'); }
@@ -106,6 +149,33 @@ export default function FoodBeveragePage() {
     const updated = menuItems.map((item, idx) => idx === i ? { ...item, [field]: val } : item);
     setMenuItems(updated);
     const full = { ...latestRef.current, menuItems: updated };
+    latestRef.current = full;
+    persist(full);
+  };
+
+  // Menu Phase 1 (Ultra) — couple-defined guest meal options for the RSVP
+  // form. id is generated once and never changes, distinct from label, so
+  // renaming a label never orphans a stored RsvpResponse.meal_choice value.
+  const addMealOption = () => {
+    const updated = [...mealOptions, { id: uid(), label: '' }];
+    setMealOptions(updated);
+    const full = { ...latestRef.current, mealOptions: updated };
+    latestRef.current = full;
+    persist(full);
+  };
+
+  const removeMealOption = (id) => {
+    const updated = mealOptions.filter(o => o.id !== id);
+    setMealOptions(updated);
+    const full = { ...latestRef.current, mealOptions: updated };
+    latestRef.current = full;
+    persist(full);
+  };
+
+  const updateMealOptionLabel = (id, label) => {
+    const updated = mealOptions.map(o => o.id === id ? { ...o, label } : o);
+    setMealOptions(updated);
+    const full = { ...latestRef.current, mealOptions: updated };
     latestRef.current = full;
     persist(full);
   };
@@ -192,6 +262,31 @@ export default function FoodBeveragePage() {
                 </button>
               </div>
               <SectionInput label="Wedding cake details" isTextarea value={data.weddingCakeDetails} onChange={e => update({ weddingCakeDetails: e.target.value })} placeholder="Flavour, design, tiers, baker…" />
+            </DetailsSection>
+
+            <DetailsSection title="Guest meal options" icon={UtensilsCrossed}>
+              {canAccessUltra ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={labelStyle}>Meal choices guests can pick on your RSVP form</label>
+                  <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 4px' }}>
+                    Leave this empty and guests will see a default list (chicken, beef, fish, vegetarian, vegan, kids meal).
+                  </p>
+                  {mealOptions.map((opt) => (
+                    <div key={opt.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'flex-end' }}>
+                      <input value={opt.label || ''} onChange={e => updateMealOptionLabel(opt.id, e.target.value)} placeholder="e.g. Herb-roasted chicken" style={{ ...inputStyle }} />
+                      <button onClick={() => removeMealOption(opt.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', display: 'flex', padding: '0 0 7px' }}>
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  <button onClick={addMealOption}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#E03553', fontWeight: 700, background: 'none', border: '1px dashed rgba(224,53,83,0.4)', borderRadius: 999, padding: '7px 14px', cursor: 'pointer', fontFamily: PJS, width: 'fit-content', marginTop: 4 }}>
+                    <Plus size={12} />Add meal option
+                  </button>
+                </div>
+              ) : (
+                <MealOptionsUltraGate />
+              )}
             </DetailsSection>
           </div>
         )}
