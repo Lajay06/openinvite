@@ -183,8 +183,33 @@ const TABLE_ROWS = [
 function FeatureSplit({ bg, label, labelColor, headline, body, bullets, photo, reversed, bgColor }) {
   const [ref, inView] = useInView(0.1);
   return (
-    <div ref={ref} style={{ display: "flex", flexDirection: reversed ? "row-reverse" : "row", minHeight: 560, background: bgColor, overflow: "hidden" }}>
-      <div style={{ flex: 1, padding: "80px clamp(32px,5vw,80px)", display: "flex", flexDirection: "column", justifyContent: "center", opacity: inView ? 1 : 0, transform: inView ? "none" : `translateX(${reversed ? 40 : -40}px)`, transition: "opacity 0.7s ease, transform 0.7s ease" }}>
+    <div
+      ref={ref}
+      // Structure, gutters and rhythm copied from the Features deep-dive
+      // sections (FeatureTimeline/Guests/Budget): minHeight 100vh, w-1/2
+      // columns, 80px clamp(32px, 5vw, 64px) text padding, photo minHeight
+      // 320. Those use exactly-half columns, not the 1.15fr 1fr of the
+      // Features *video* grid, so "perfect 50/50" and "match Features" are
+      // the same thing here.
+      //
+      // The photo column comes FIRST in the DOM so a phone always reads
+      // image then copy, on every block. The desktop side swap is driven by
+      // the .ava-split--flip class in the style block at the foot of this
+      // file, never by an inline `order` with a media-query override: that
+      // pattern needs !important to beat the inline value, which then
+      // clobbers it at every width and silently collapses the alternation
+      // (the T2 bug, which looked correct in screenshots).
+      className={`ava-split${reversed ? " ava-split--flip" : ""} flex-col lg:flex-row`}
+      style={{ display: "flex", minHeight: "100vh", background: bgColor, overflow: "hidden" }}>
+      <div
+        className="ava-split-photo w-full lg:w-1/2"
+        style={{ backgroundImage: `url(${photo})`, backgroundSize: "cover", backgroundPosition: "center", minHeight: 320, flexShrink: 0 }} />
+      <div
+        className="ava-split-text w-full lg:w-1/2"
+        // minWidth 0 is what actually makes the split even: with flex:1 alone
+        // the text column's min-content width won out and it rendered 792px
+        // against the photo's 648px at 1440.
+        style={{ minWidth: 0, padding: "80px clamp(32px, 5vw, 64px)", display: "flex", flexDirection: "column", justifyContent: "center", opacity: inView ? 1 : 0, transform: inView ? "none" : `translateX(${reversed ? 40 : -40}px)`, transition: "opacity 0.7s ease, transform 0.7s ease" }}>
         <h2 style={{ fontSize: "clamp(28px,3.5vw,48px)", fontWeight: 700, color: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "#fff" : "#0A0A0A", margin: "0 0 20px", letterSpacing: "-0.02em", lineHeight: 1.1 }}>{headline}</h2>
         <p style={{ fontSize: 16, color: bgColor === "#0A0A0A" || bgColor === "#0A1930" ? "#CCCCCC" : "#444444", lineHeight: 1.7, marginBottom: 28, maxWidth: 440 }}>{body}</p>
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -195,7 +220,6 @@ function FeatureSplit({ bg, label, labelColor, headline, body, bullets, photo, r
           )}
         </div>
       </div>
-      <div style={{ flex: 1, backgroundImage: `url(${photo})`, backgroundSize: "cover", backgroundPosition: "center", minHeight: 400 }} />
     </div>);
 
 }
@@ -222,6 +246,16 @@ export default function AvaPage() {
         @keyframes scrollLine { 0%,100% { opacity: 1; transform: scaleY(1); } 50% { opacity: 0.3; transform: scaleY(0.3); } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes punchIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        /* Deep-dive side alternation. Photo is first in the DOM, so below lg
+           every block stacks image-then-copy with no order rules at all.
+           Above lg a flipped block swaps them. Class-driven on purpose: an
+           inline order plus an !important media-query override is what
+           silently broke the tour page's alternation. */
+        @media (min-width: 1024px) {
+          .ava-split--flip .ava-split-photo { order: 2; }
+          .ava-split--flip .ava-split-text  { order: 1; }
+        }
       `}</style>
 
       {/* ── HERO ─────────────────────────────────────────────── */}
@@ -295,7 +329,7 @@ export default function AvaPage() {
         body="Ava tracks every dollar, benchmarks against real wedding costs, and proactively alerts you before you overspend, not after. It's like having a financial advisor who only thinks about your wedding."
         bullets={["Real-time spend vs budget alerts", "Category reallocation suggestions", "Vendor quote benchmarking", "Payment reminder automation", "Cost-saving tips tailored to your style"]}
         photo="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185605/DTS_Fall_Dinner_Kristine_Isabedra_Photos_ID2915_pqoldr.jpg"
-        reversed={false} />
+        reversed={true} />
       
       <FeatureSplit
         bgColor="#FFFFFF"
