@@ -48,6 +48,13 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
       if (!res.ok) {
         if (res.status === 401) {
           setError('Your Spotify session has expired — please reconnect in Settings.');
+          // Stop lying to the couple: previously spotifyConnection was
+          // never cleared on a failed token, so isSpotifyConnected
+          // (Music.jsx) — a plain !!accessToken check — kept reading
+          // "Connected" forever. Clear it the same way a manual disconnect
+          // does (onUpdateConnection(null) -> updateMusic('spotifyConnection',
+          // null)) so the badge actually flips and the couple can reconnect.
+          onUpdateConnection?.(null);
         } else {
           throw new Error(data.error || 'Search failed');
         }

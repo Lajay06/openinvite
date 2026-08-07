@@ -12,9 +12,10 @@
  * spotifyAuth.js's isKnownSpotifyRefreshToken): a refresh token not tied to
  * any wedding's stored music.spotifyConnection is rejected before ever
  * exchanging it with Spotify — a leaked/guessed token can't be replayed.
- * Used by BOTH spotify-refresh.js (rejects outright, 401) and
- * spotify-search.js's silent-refresh path (skips the refresh and falls
- * through to the app-token search, same as a failed refresh already did).
+ * Used by spotify-search.js's silent-refresh path (skips the refresh and
+ * falls through to the app-token search, same as a failed refresh already
+ * did) — the only refresh path left in the app; api/spotify-refresh.js (a
+ * second, orphaned implementation nothing ever called) was deleted.
  *
  * Handler-level tests (same pattern as endpoint-auth.mjs / spotify-oauth.mjs)
  * — imports the real handler, invokes it directly with a minimal mock
@@ -35,7 +36,6 @@ import placesSearchHandler from '../../api/places-search.js';
 import placeDetailsHandler from '../../api/place-details.js';
 import placesPhotoHandler from '../../api/places-photo.js';
 import spotifySearchHandler from '../../api/spotify-search.js';
-import spotifyRefreshHandler from '../../api/spotify-refresh.js';
 import { isKnownSpotifyRefreshToken } from '../../api/_lib/spotifyAuth.js';
 import spotifyCallbackHandler from '../../api/spotify-callback.js';
 import spotifySessionFetchHandler from '../../api/spotify-session-fetch.js';
@@ -144,15 +144,6 @@ export async function runRateLimiting() {
       : fail('spotify-search.js — 21st request in a minute is rate limited', 429, status));
   }
 
-  {
-    const status = await assertRateLimited(spotifyRefreshHandler, {
-      limit: 10, ip: '203.0.113.15', reqShape: { method: 'POST', body: {} },
-    });
-    results.push(status === 429
-      ? pass('spotify-refresh.js — 11th request in a minute is rate limited', '429')
-      : fail('spotify-refresh.js — 11th request in a minute is rate limited', 429, status));
-  }
-
   // ── Confirm limits are per-IP, not global — a fresh IP is never blocked
   //    by another IP's exhausted bucket. ──
   {
@@ -163,34 +154,7 @@ export async function runRateLimiting() {
       : fail('places.js — a fresh IP is not affected by another IP\'s rate limit', '!== 429', res._status));
   }
 
-  console.log('\n  spotify-refresh.js — refresh token ownership check:\n');
-
-  {
-    // A syntactically-plausible but entirely made-up refresh token, tied to
-    // no wedding's stored music.spotifyConnection — must be rejected before
-    // ever reaching Spotify's token endpoint.
-    const { req, res } = mockReqRes({
-      method: 'POST',
-      ip: '203.0.113.50',
-      body: { refreshToken: `unknown-refresh-token-${Date.now()}-does-not-exist` },
-    });
-    await spotifyRefreshHandler(req, res);
-    results.push(res._status === 401 && res._json?.error === 'Unknown refresh token'
-      ? pass('spotify-refresh.js — unknown refresh token is rejected (401)', JSON.stringify(res._json))
-      : fail('spotify-refresh.js — unknown refresh token is rejected (401)', '401 {"error":"Unknown refresh token"}', `${res._status} ${JSON.stringify(res._json)}`));
-  }
-
-  {
-    // Missing refreshToken entirely — 400, distinct from the 401 ownership
-    // rejection, and must not even attempt the ownership lookup.
-    const { req, res } = mockReqRes({ method: 'POST', ip: '203.0.113.51', body: {} });
-    await spotifyRefreshHandler(req, res);
-    results.push(res._status === 400
-      ? pass('spotify-refresh.js — missing refreshToken → 400 (not 401)', res._status)
-      : fail('spotify-refresh.js — missing refreshToken → 400 (not 401)', 400, res._status));
-  }
-
-  console.log('\n  spotify-search.js — same ownership check on its silent-refresh path:\n');
+  console.log('\n  spotify-search.js — refresh-token ownership check on its silent-refresh path:\n');
 
   {
     // The shared check itself, direct: an unknown token is never "known."
