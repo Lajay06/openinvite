@@ -71,7 +71,6 @@ export default function About() {
       <MarketingHero
         image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2.jpg"
         title="Planning a wedding should feel like the beginning of something incredible."
-        cta={{ label: "Get started", href: "/signup" }}
         maxWidth={900}
       />
 
