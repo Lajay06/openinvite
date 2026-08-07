@@ -23,8 +23,8 @@ export function onboardingDay3Email({ name, email }) {
               </h1>
               <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:${EMAIL_BODY_TEXT};">
                 Ava is your AI wedding assistant, built into your dashboard and available any time.
-                She knows your date, your venue, your budget, and your guest list,
-                so she can give you advice that's actually relevant to your wedding.
+                Ava already knows your date, your venue, your budget, and your guest list,
+                so the advice you get is actually relevant to your wedding.
               </p>
             </td>
           </tr>
@@ -57,8 +57,8 @@ export function onboardingDay3Email({ name, email }) {
           <tr>
             <td style="padding:0 40px 40px;">
               <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:${EMAIL_BODY_TEXT};">
-                Tap the sparkle ✦ in your dashboard to open Ava and ask her anything.
-                She's ready when you are.
+                Tap the sparkle ✦ in your dashboard to open Ava and ask anything.
+                Ava's ready when you are.
               </p>
               <table cellpadding="0" cellspacing="0">
                 <tr>
