@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Globe, Sparkles, Eye, ChevronRight, Crown } from 'lucide-react';
+import { Globe, Sparkles, Eye, ChevronRight } from 'lucide-react';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { getUniverse } from '@/lib/universeCatalog';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -53,7 +53,6 @@ export default function StudioHub() {
       subtitle: 'Choose the aesthetic for your entire suite — invitations, website, and every design piece.',
       image: universeImage,
       badge: isProPlan ? 'Ultra' : (universe?.name || 'Choose one'),
-      badgeIcon: isProPlan ? Crown : null,
       action: () => navigate('/studio/universe'),
     },
     {

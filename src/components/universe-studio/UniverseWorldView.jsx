@@ -22,7 +22,7 @@
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
-import { Crown, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 import MinimalMasthead from '@/components/guest-website/layouts/MinimalMasthead';
 import KyotoMasthead from '@/components/guest-website/layouts/KyotoMasthead';
@@ -522,9 +522,6 @@ export default function UniverseWorldView({
         <Reveal prefersReducedMotion={prefersReducedMotion} style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto' }}>
           {showUpgrade ? (
             <>
-              <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg,#FBBF24,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                <Crown size={22} color="#FFFFFF" />
-              </div>
               <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', color: colors.lightBg, margin: '0 0 12px' }}>
                 {universe.name} is part of Ultra
               </p>
