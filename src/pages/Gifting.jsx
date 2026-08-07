@@ -106,7 +106,6 @@ export default function Gifting() {
         image={HERO_IMAGE}
         title="Give someone a calmer wedding"
         overlay={false}
-        cta={{ href: "#gift", label: "Choose a plan" }}
       />
 
       {/* ── PLAN PICKER ── */}
