@@ -113,10 +113,13 @@ function TierChip({ name, price, blurb, accent }) {
   return (
     <div
       style={{
-        display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        textAlign: "center",
         gap: 4, padding: "24px 40px", borderRadius: 999,
         border: "1px solid rgba(10,10,10,0.12)",
-        minWidth: 200,
+        // Width comes from the grid column, height from row stretch, so both
+        // pills match and their labels/prices/blurbs share baselines.
+        width: "100%", height: "100%", boxSizing: "border-box",
       }}
     >
       <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: accent, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -164,8 +167,23 @@ function PricingSection() {
       }}>
         Two plans, no subscriptions, ever. Pick the one that fits.
       </p>
-      <div style={{
-        display: "flex", gap: 20, flexWrap: "wrap", justifyContent: "center", marginBottom: 48,
+      <style>{`
+        /* Below 640px the two-up grid would force a max-content width wider
+           than the viewport, so stack instead. Single column keeps the pills
+           equal width to each other and inside the screen. */
+        @media (max-width: 639px) {
+          .tier-chip-row { grid-template-columns: 1fr !important; width: 100% !important; }
+        }
+      `}</style>
+      <div className="tier-chip-row" style={{
+        // Grid at width: max-content with 1fr columns makes BOTH columns take
+        // the widest pill's max-content width, so the pair is symmetrical
+        // without hardcoding a pixel value that would silently break if the
+        // blurb copy changed. The old flex row let each pill size to its own
+        // content: 263px vs 357px, because the Ultra blurb is 47 characters
+        // against Pro's 29.
+        display: "grid", gridTemplateColumns: "repeat(2, 1fr)", width: "max-content", maxWidth: "100%",
+        gap: 20, justifyContent: "center", margin: "0 auto 48px",
         opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
         transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.15s, transform 0.7s ${EASE} 0.15s`,
       }}>
