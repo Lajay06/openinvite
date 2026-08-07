@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { Toaster } from "@/components/ui/toaster"
 import ScrollToTop from "@/components/ScrollToTop"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -14,74 +14,75 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import RouteLoadingFallback from '@/components/shared/RouteLoadingFallback';
+import { lazyWithReload } from '@/lib/lazyWithReload.js';
 
 // AUDIT_2026-07.md B1: every page below is lazy-loaded so each becomes its
 // own chunk — a marketing-site visitor no longer downloads the entire
 // authenticated dashboard's code, and vice versa.
-const NotFound = lazy(() => import('./pages/NotFound'));
-const Unauthorized = lazy(() => import('./pages/Unauthorized'));
-const DevReset = lazy(() => import('./pages/DevReset'));
-const About = lazy(() => import('./pages/About'));
-const Ava = lazy(() => import('./pages/Ava'));
-const Pricing = lazy(() => import('./pages/Pricing'));
-const Contact = lazy(() => import('./pages/Contact'));
-const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
-const TermsOfService = lazy(() => import('./pages/TermsOfService'));
-const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
-const DataDeletion = lazy(() => import('./pages/DataDeletion'));
-const RefundPolicy = lazy(() => import('./pages/RefundPolicy'));
-const ScrollMorph = lazy(() => import('./pages/ScrollMorph'));
-const Universes = lazy(() => import('./pages/Universes'));
-const Gifting = lazy(() => import('./pages/Gifting'));
-const GiftPurchaseSuccess = lazy(() => import('./pages/GiftPurchaseSuccess'));
-const Onboarding = lazy(() => import('./pages/Onboarding'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const ChoosePlan = lazy(() => import('./pages/ChoosePlan'));
-const MultiPageWeddingWebsite = lazy(() => import('./components/guest-website/MultiPageWeddingWebsite'));
-const RSVPPage = lazy(() => import('./components/rsvp/RSVPPage'));
-const GamesPage = lazy(() => import('./components/games/GamesPage'));
-const CollaboratorAccept = lazy(() => import('./pages/CollaboratorAccept'));
-const CollaboratorGuests = lazy(() => import('./pages/CollaboratorGuests'));
-const GuestRSVPRetired = lazy(() => import('./pages/GuestRSVPRetired'));
-const UniverseStudio = lazy(() => import('./pages/UniverseStudio'));
-const StudioHub = lazy(() => import('./pages/StudioHub'));
-const StudioWebsite = lazy(() => import('./pages/StudioWebsite'));
-const FoodBeverage = lazy(() => import('./pages/FoodBeverage'));
-const EntertainmentDetails = lazy(() => import('./pages/EntertainmentDetails'));
-const Transport = lazy(() => import('./pages/Transport'));
-const Accommodation = lazy(() => import('./pages/Accommodation'));
-const GuestAccommodation = lazy(() => import('./pages/GuestAccommodation'));
-const GuestMusic = lazy(() => import('./pages/GuestMusic'));
-const GuestCollect = lazy(() => import('./pages/GuestCollect'));
-const Music = lazy(() => import('./pages/Music'));
-const CeremonyDetails = lazy(() => import('./pages/CeremonyDetails'));
-const Honeymoon = lazy(() => import('./pages/Honeymoon'));
-const EmergencyContact = lazy(() => import('./pages/EmergencyContact'));
-const LiveStreaming = lazy(() => import('./pages/LiveStreaming'));
-const WeddingParty = lazy(() => import('./pages/WeddingParty'));
-const WeddingFavours = lazy(() => import('./pages/WeddingFavours'));
-const EventDetails = lazy(() => import('./pages/EventDetails'));
-const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
-const AvaStudio = lazy(() => import('./pages/AvaStudio'));
-const AvaStudioWebsite = lazy(() => import('./pages/AvaStudioWebsite'));
-const AvaStudioAssets = lazy(() => import('./pages/AvaStudioAssets'));
-const Help = lazy(() => import('./pages/Help'));
-const Account = lazy(() => import('./pages/Account'));
-const Admin = lazy(() => import('./pages/Admin'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const ResetPassword = lazy(() => import('./pages/ResetPassword'));
-const StudioGuestSuite = lazy(() => import('./pages/StudioGuestSuite'));
+const NotFound = lazyWithReload(() => import('./pages/NotFound'));
+const Unauthorized = lazyWithReload(() => import('./pages/Unauthorized'));
+const DevReset = lazyWithReload(() => import('./pages/DevReset'));
+const About = lazyWithReload(() => import('./pages/About'));
+const Ava = lazyWithReload(() => import('./pages/Ava'));
+const Pricing = lazyWithReload(() => import('./pages/Pricing'));
+const Contact = lazyWithReload(() => import('./pages/Contact'));
+const PrivacyPolicy = lazyWithReload(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazyWithReload(() => import('./pages/TermsOfService'));
+const CookiePolicy = lazyWithReload(() => import('./pages/CookiePolicy'));
+const DataDeletion = lazyWithReload(() => import('./pages/DataDeletion'));
+const RefundPolicy = lazyWithReload(() => import('./pages/RefundPolicy'));
+const ScrollMorph = lazyWithReload(() => import('./pages/ScrollMorph'));
+const Universes = lazyWithReload(() => import('./pages/Universes'));
+const Gifting = lazyWithReload(() => import('./pages/Gifting'));
+const GiftPurchaseSuccess = lazyWithReload(() => import('./pages/GiftPurchaseSuccess'));
+const Onboarding = lazyWithReload(() => import('./pages/Onboarding'));
+const Login = lazyWithReload(() => import('./pages/Login'));
+const Register = lazyWithReload(() => import('./pages/Register'));
+const ChoosePlan = lazyWithReload(() => import('./pages/ChoosePlan'));
+const MultiPageWeddingWebsite = lazyWithReload(() => import('./components/guest-website/MultiPageWeddingWebsite'));
+const RSVPPage = lazyWithReload(() => import('./components/rsvp/RSVPPage'));
+const GamesPage = lazyWithReload(() => import('./components/games/GamesPage'));
+const CollaboratorAccept = lazyWithReload(() => import('./pages/CollaboratorAccept'));
+const CollaboratorGuests = lazyWithReload(() => import('./pages/CollaboratorGuests'));
+const GuestRSVPRetired = lazyWithReload(() => import('./pages/GuestRSVPRetired'));
+const UniverseStudio = lazyWithReload(() => import('./pages/UniverseStudio'));
+const StudioHub = lazyWithReload(() => import('./pages/StudioHub'));
+const StudioWebsite = lazyWithReload(() => import('./pages/StudioWebsite'));
+const FoodBeverage = lazyWithReload(() => import('./pages/FoodBeverage'));
+const EntertainmentDetails = lazyWithReload(() => import('./pages/EntertainmentDetails'));
+const Transport = lazyWithReload(() => import('./pages/Transport'));
+const Accommodation = lazyWithReload(() => import('./pages/Accommodation'));
+const GuestAccommodation = lazyWithReload(() => import('./pages/GuestAccommodation'));
+const GuestMusic = lazyWithReload(() => import('./pages/GuestMusic'));
+const GuestCollect = lazyWithReload(() => import('./pages/GuestCollect'));
+const Music = lazyWithReload(() => import('./pages/Music'));
+const CeremonyDetails = lazyWithReload(() => import('./pages/CeremonyDetails'));
+const Honeymoon = lazyWithReload(() => import('./pages/Honeymoon'));
+const EmergencyContact = lazyWithReload(() => import('./pages/EmergencyContact'));
+const LiveStreaming = lazyWithReload(() => import('./pages/LiveStreaming'));
+const WeddingParty = lazyWithReload(() => import('./pages/WeddingParty'));
+const WeddingFavours = lazyWithReload(() => import('./pages/WeddingFavours'));
+const EventDetails = lazyWithReload(() => import('./pages/EventDetails'));
+const PaymentSuccess = lazyWithReload(() => import('./pages/PaymentSuccess'));
+const AvaStudio = lazyWithReload(() => import('./pages/AvaStudio'));
+const AvaStudioWebsite = lazyWithReload(() => import('./pages/AvaStudioWebsite'));
+const AvaStudioAssets = lazyWithReload(() => import('./pages/AvaStudioAssets'));
+const Help = lazyWithReload(() => import('./pages/Help'));
+const Account = lazyWithReload(() => import('./pages/Account'));
+const Admin = lazyWithReload(() => import('./pages/Admin'));
+const ForgotPassword = lazyWithReload(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazyWithReload(() => import('./pages/ResetPassword'));
+const StudioGuestSuite = lazyWithReload(() => import('./pages/StudioGuestSuite'));
 // Dev-only Design Studio redesign mocks — not linked from any nav, not
 // used by the real DesignStudio (UniverseStudio.jsx) route. See each
 // file's header comment.
-const MockUniverseA = lazy(() => import('./pages/MockUniverseA'));
-const MockUniverseB = lazy(() => import('./pages/MockUniverseB'));
-const MockUniverseC = lazy(() => import('./pages/MockUniverseC'));
-const Features = lazy(() => import('./pages/Features'));
-const Home = lazy(() => import('./pages/Home'));
-const FAQ = lazy(() => import('./pages/FAQ'));
-const Tour = lazy(() => import('./pages/Tour'));
+const MockUniverseA = lazyWithReload(() => import('./pages/MockUniverseA'));
+const MockUniverseB = lazyWithReload(() => import('./pages/MockUniverseB'));
+const MockUniverseC = lazyWithReload(() => import('./pages/MockUniverseC'));
+const Features = lazyWithReload(() => import('./pages/Features'));
+const Home = lazyWithReload(() => import('./pages/Home'));
+const FAQ = lazyWithReload(() => import('./pages/FAQ'));
+const Tour = lazyWithReload(() => import('./pages/Tour'));
 
 // ── Public paths — bypass auth check entirely ─────────────────────────────────
 const PUBLIC_PATH_SET = new Set([

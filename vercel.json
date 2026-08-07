@@ -4,7 +4,7 @@
   "framework": "vite",
   "rewrites": [
     { "source": "/api/apps/:path*", "destination": "https://base44.app/api/apps/:path*" },
-    { "source": "/((?!api/)(?!\\.well-known/).*)","destination": "/index.html" }
+    { "source": "/((?!api/)(?!\\.well-known/)(?!assets/).*)","destination": "/index.html" }
   ],
   "headers": [
     {

@@ -5,6 +5,20 @@ import { Sentry } from '@/lib/sentry'
 import App from '@/App.jsx'
 import '@/index.css'
 import '@/lib/analytics.js' // initialises PostHog on app load
+import { reloadOnceForChunkError } from '@/lib/chunkReloadGuard.js'
+
+// Stale-build-after-deploy fix (see chunkReloadGuard.js) — Vite's built
+// __vitePreload wrapper dispatches this on window (a plain Event with the
+// original error on .payload — confirmed against node_modules/vite/dist,
+// not a CustomEvent/.detail) whenever a route's dynamic import fails,
+// including the real import call itself, not just its modulepreload
+// optimization. Deliberately never calls event.preventDefault(): Vite's own
+// handler re-throws unless defaultPrevented is set, and that rethrow is
+// exactly what lazyWithReload.js's own .catch() needs to see too — this
+// listener is a side-channel, not a replacement for that rejection path.
+window.addEventListener('vite:preloadError', (event) => {
+  reloadOnceForChunkError(event.payload);
+});
 
 /**
  * DIAGNOSTIC (temporary, additive) — Vercel server logs show no systematic
