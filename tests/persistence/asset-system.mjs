@@ -31,11 +31,15 @@ const EDITABLE_ASSET_KEYS = [
   'instagramStory', 'welcomeSignage', 'guestTags', 'thankYouNotes', 'motionGraphic',
 ];
 
+// meal_choice lives on event_responses (the live per-event RsvpResponse
+// overlay), not a flat g.meal_choice column — that column is vestigial,
+// nothing writes it once a guest RSVPs (fix/vestigial-meal-choice-reads).
+// buildGuestTagList must read it from here.
 const GUESTS = [
-  { id: 'g1', name: 'Alice Chen', meal_choice: 'vegetarian' },
-  { id: 'g2', name: 'Ben Okafor', meal_choice: 'beef' },
-  { id: 'g3', name: 'Carla Diaz', meal_choice: 'fish' },
-  { id: 'g4', name: '__PERSISTENCE_TEST_GUEST__', meal_choice: 'chicken', is_test: true },
+  { id: 'g1', name: 'Alice Chen', event_responses: [{ event_id: 'reception', invited: true, status: 'yes', meal_choice: 'vegetarian' }] },
+  { id: 'g2', name: 'Ben Okafor', event_responses: [{ event_id: 'reception', invited: true, status: 'yes', meal_choice: 'beef' }] },
+  { id: 'g3', name: 'Carla Diaz', event_responses: [{ event_id: 'reception', invited: true, status: 'yes', meal_choice: 'fish' }] },
+  { id: 'g4', name: '__PERSISTENCE_TEST_GUEST__', event_responses: [{ event_id: 'reception', invited: true, status: 'yes', meal_choice: 'chicken' }], is_test: true },
 ];
 
 const TABLES = [
@@ -78,6 +82,13 @@ export async function runAssetSystem() {
     results.push(alice?.table === 'Table 1'
       ? pass('buildGuestTagList — seated guest gets their real table name', alice?.table)
       : fail('buildGuestTagList — seated guest gets their real table name', 'Table 1', alice?.table));
+
+    // fix/vestigial-meal-choice-reads — meal_choice must come from
+    // event_responses (the live overlay), not a flat g.meal_choice field
+    // (Alice's fixture has no such field at all, only event_responses).
+    results.push(alice?.meal_choice === 'vegetarian'
+      ? pass('buildGuestTagList — meal_choice read from event_responses (live overlay), not a flat field', alice?.meal_choice)
+      : fail('buildGuestTagList — meal_choice read from event_responses (live overlay), not a flat field', 'vegetarian', alice?.meal_choice));
 
     // Carla is a real guest but not assigned to any table — must still
     // appear (couples want a full guest list even before seating is done),

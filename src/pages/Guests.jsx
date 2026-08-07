@@ -26,7 +26,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import EmailTemplates from "../components/guests/EmailTemplates";
 import PageConsiderations from '../components/shared/PageConsiderations';
-import { getWeddingEvents, defaultEventResponses, getGuestEventResponse } from '@/lib/weddingEvents';
+import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, effectiveMealChoice } from '@/lib/weddingEvents';
 import CountUp from "@/components/shared/CountUp";
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
@@ -463,9 +463,13 @@ export default function Guests() {
   const exportGuestList = () => {
     const csvContent = [
       ['Name', 'Email', 'Phone', 'Category', 'RSVP Status', 'Meal Choice', 'Table Assignment', 'Plus One', 'Plus One Name', 'Dietary Restrictions'].join(','),
+      // Meal Choice: fix/vestigial-meal-choice-reads — g.meal_choice is a
+      // dead column (nothing writes it once a guest RSVPs; see
+      // api/rsvp-submit.js). The live source is the per-event
+      // event_responses overlay getMyGuestsWithRsvp already attaches.
       ...guests.map(g => [
         g.name, g.email || '', g.phone || '', g.category || '',
-        g.rsvp_status || '', g.meal_choice || '', g.table_assignment || '',
+        g.rsvp_status || '', effectiveMealChoice(g.event_responses) || '', g.table_assignment || '',
         g.plus_one ? 'Yes' : 'No', g.plus_one_name || '', g.dietary_restrictions || ''
       ].map(f => `"${f}"`).join(','))
     ].join('\n');

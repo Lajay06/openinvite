@@ -153,3 +153,26 @@ export function toggleEventInvite(guest, event, invited) {
   }
   return responses.map((r, i) => i === idx ? { ...r, invited } : r);
 }
+
+/**
+ * Picks one representative meal choice out of a guest's per-event
+ * event_responses[] — for the flat, event-agnostic surfaces (CSV export,
+ * seating chart / place card exports, Ava's context) that show one guest
+ * per row and have no per-event breakdown, unlike GuestList.jsx's own
+ * per-event detail row which already reads event_responses[].meal_choice
+ * directly, one row per event. Prefers the reception's answer (the event
+ * these surfaces are conventionally about); falls back to the first
+ * invited event with a non-null meal_choice for guests without a
+ * reception entry (e.g. all-custom-events weddings).
+ *
+ * @param {Array} eventResponses  guest.event_responses (or the plus-one
+ *   equivalent) — may be undefined for a guest who hasn't RSVP'd yet
+ * @returns {string|null}
+ */
+export function effectiveMealChoice(eventResponses) {
+  const responses = eventResponses || [];
+  const reception = responses.find(r => r.event_id === RECEPTION_EVENT_ID && r.meal_choice);
+  if (reception) return reception.meal_choice;
+  const anyAnswered = responses.find(r => r.invited && r.meal_choice);
+  return anyAnswered ? anyAnswered.meal_choice : null;
+}

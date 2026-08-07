@@ -1,5 +1,6 @@
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
+import { effectiveMealChoice } from '@/lib/weddingEvents';
 
 export async function buildWeddingContext() {
   const [guestsResult, budgetResult, vendorsResult, scheduleResult, wdResult] = await Promise.allSettled([
@@ -58,7 +59,10 @@ export async function buildWeddingContext() {
   const guestListLines = guests.slice(0, GUEST_LIST_CAP).map(g => {
     const parts = [g.rsvp_status || 'pending'];
     if (g.table_assignment) parts.push(`table ${g.table_assignment}`);
-    if (g.meal_choice) parts.push(g.meal_choice.replace(/_/g, ' '));
+    // fix/vestigial-meal-choice-reads — g.meal_choice is a dead column;
+    // the live source is the per-event event_responses overlay.
+    const mealChoice = effectiveMealChoice(g.event_responses);
+    if (mealChoice) parts.push(mealChoice.replace(/_/g, ' '));
     return `${g.name} — ${parts.join(', ')}`;
   });
   const guestListBlock = guestListLines.length
