@@ -458,6 +458,17 @@
         "type": "object"
       }
     },
+    "mealOptions": {
+      "type": "array",
+      "description": "Couple-defined guest meal choices for the RSVP form (Ultra only, Menu Phase 1). Each id is stable and independent of label — RsvpResponse.meal_choice stores the id, so renaming a label never orphans existing RSVP answers. Read by RSVPPage.jsx (falls back to a fixed default list when empty) and exposed to the public guest site via guestSafeWedding.js's allowlist.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" }
+        }
+      }
+    },
     "welcomeSignageText": {
       "type": "string"
     },

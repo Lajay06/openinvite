@@ -1,19 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { getWeddingEvents, getGuestEventResponse } from '@/lib/weddingEvents';
+import { getWeddingEvents, getGuestEventResponse, DEFAULT_MEAL_OPTIONS } from '@/lib/weddingEvents';
 import { resolveColors, resolveTypography, resolveUniverseConfig, googleFontsHref, isMotionEnabled } from '@/lib/universeStyling';
 import SectionReveal from '@/components/guest-website/SectionReveal';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
-
-const MEAL_OPTIONS = [
-  { value: 'chicken', label: 'Chicken' },
-  { value: 'beef', label: 'Beef' },
-  { value: 'fish', label: 'Fish' },
-  { value: 'vegetarian', label: 'Vegetarian' },
-  { value: 'vegan', label: 'Vegan' },
-];
 
 // Matches this page's original, pre-universe hardcoded look exactly — used
 // when a wedding has no active universe, per BUILDER_UNIVERSE_AUDIT.md item
@@ -161,7 +153,7 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices, theme, typ
               style={{ width: '100%', padding: '9px 10px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none' }}
             >
               <option value="">Select a meal</option>
-              {mealChoices.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+              {mealChoices.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
             </select>
           </div>
 
@@ -467,7 +459,7 @@ export default function RSVPPage() {
   // For the "done" screen icon/copy — attending overall if any invited event is a yes.
   const anyAttending = Object.values(eventForm).some(v => v.status === 'yes');
   const hasMealOptions = wedding?.mealOptions && wedding.mealOptions.length > 0;
-  const mealChoices = hasMealOptions ? wedding.mealOptions : MEAL_OPTIONS;
+  const mealChoices = hasMealOptions ? wedding.mealOptions : DEFAULT_MEAL_OPTIONS;
 
   const F = { fontFamily: typography.bodyFont };
 

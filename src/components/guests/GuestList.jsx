@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus, Pencil, MessageCircle } from "lucide-react";
-import { getGuestEventResponse, effectiveMealChoice } from "@/lib/weddingEvents";
+import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/lib/weddingEvents";
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
 
@@ -531,7 +531,7 @@ function DietaryField({ guest, onUpdate, readOnly }) {
 }
 
 /* ── Per-event RSVP detail sub-row — shows what a guest actually answered ── */
-function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly }) {
+function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly, mealOptions }) {
   const hasNote = !!(guest.rsvp_note || guest.song_request);
 
   return (
@@ -574,7 +574,7 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly 
                     {r.invited ? (STATUS_LABELS[r.status] || 'Pending') : '—'}
                   </span>
                   <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
-                    {r.invited && r.meal_choice ? r.meal_choice : '—'}
+                    {r.invited && r.meal_choice ? mealOptionLabel(r.meal_choice, mealOptions) : '—'}
                   </span>
                   <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
                     {r.invited ? plusOneText : '—'}
@@ -675,6 +675,11 @@ export default function GuestList({
   highlightedGuestId,
   readOnly = false,
   filterEvent = null,
+  // Menu Phase 1 (Ultra) — the wedding's own couple-defined meal options,
+  // for mapping a stored meal_choice id back to its label. Empty/absent for
+  // Pro weddings or an Ultra wedding that hasn't set one — mealOptionLabel
+  // falls back to DEFAULT_MEAL_OPTIONS, then the raw stored value.
+  mealOptions = [],
 }) {
   const [editCell, setEditCell] = useState(null); // { id, field }
   const [editValue, setEditValue] = useState('');
@@ -1044,7 +1049,7 @@ export default function GuestList({
                 // The live source is the plus-one's own per-event RsvpResponse
                 // rows, overlaid onto plus_one_event_responses by
                 // api/my-guests-rsvp.js.
-                const plusOneMealChoice = effectiveMealChoice(guest.plus_one_event_responses);
+                const plusOneMealChoice = mealOptionLabel(effectiveMealChoice(guest.plus_one_event_responses), mealOptions);
                 const hasDietOrMeal = guest.plus_one_dietary_restrictions || plusOneMealChoice;
                 rows.push(
                   <TableRow key={`${guest.id}-po`} style={{ background: 'rgba(10,10,10,0.015)', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
@@ -1082,7 +1087,7 @@ export default function GuestList({
               /* ── RSVP detail sub-row (per-event answers + note/song) ── */
               if (isExpanded) {
                 rows.push(
-                  <RsvpDetailRow key={`${guest.id}-rsvp`} guest={guest} weddingEvents={weddingEvents} onEditEvents={onEditEvents} onUpdate={onUpdate} readOnly={readOnly} />
+                  <RsvpDetailRow key={`${guest.id}-rsvp`} guest={guest} weddingEvents={weddingEvents} onEditEvents={onEditEvents} onUpdate={onUpdate} readOnly={readOnly} mealOptions={mealOptions} />
                 );
               }
 

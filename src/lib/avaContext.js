@@ -1,6 +1,6 @@
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
-import { effectiveMealChoice } from '@/lib/weddingEvents';
+import { effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
 
 export async function buildWeddingContext() {
   const [guestsResult, budgetResult, vendorsResult, scheduleResult, wdResult] = await Promise.allSettled([
@@ -60,8 +60,10 @@ export async function buildWeddingContext() {
     const parts = [g.rsvp_status || 'pending'];
     if (g.table_assignment) parts.push(`table ${g.table_assignment}`);
     // fix/vestigial-meal-choice-reads — g.meal_choice is a dead column;
-    // the live source is the per-event event_responses overlay.
-    const mealChoice = effectiveMealChoice(g.event_responses);
+    // the live source is the per-event event_responses overlay. Mapped
+    // through mealOptionLabel so Ava reports a real label, not a raw
+    // couple-defined menu option id (Menu Phase 1, Ultra).
+    const mealChoice = mealOptionLabel(effectiveMealChoice(g.event_responses), wd.mealOptions);
     if (mealChoice) parts.push(mealChoice.replace(/_/g, ' '));
     return `${g.name} — ${parts.join(', ')}`;
   });
