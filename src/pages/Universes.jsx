@@ -475,7 +475,7 @@ const Universes = () => {
           the lightest step that clears it (4.94:1 at 1440, 5.40:1 at 390), so
           the photo stays as visible as legibility allows. The primary
           "Get started" pill is opaque #E03553 and unaffected either way.
-          #0A0A0A stays as the paint-in colour behind the image so nothing
+          #0A0A0A stays as the paint-in color behind the image so nothing
           flashes white while it loads. */}
       <section style={{
         position: 'relative',
