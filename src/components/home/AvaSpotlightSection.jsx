@@ -87,13 +87,24 @@ export default function AvaSpotlightSection() {
             which disappeared against the black band. */}
         <p style={{
           textAlign: "center",
-          fontSize: "clamp(20px, 2.2vw, 28px)",
-          fontWeight: 600,
+          // Type matched exactly to the Universes section intro heading on
+          // this same page (UniverseTeaserSection.jsx): the same
+          // clamp(32px, 5vw, 60px) / 700 / -0.03em / 1.08, read from that
+          // component rather than approximated. Supersedes the V3 sizing
+          // (clamp(20px, 2.2vw, 28px) / 600 / 1.5), which is retired.
+          fontSize: "clamp(32px, 5vw, 60px)",
+          fontWeight: 700,
+          letterSpacing: "-0.03em",
+          lineHeight: 1.08,
           color: "#FFFFFF",
           maxWidth: 672,
-          margin: "0 auto",
-          paddingBottom: 48,
-          lineHeight: 1.5,
+          // Centred in the band between the banner above and the first row
+          // divider below: the section's own 120px padding-top sets the gap
+          // above, so the gap below is an equal 120px margin-bottom. The
+          // previous 48px padding-bottom sat INSIDE the box, which both made
+          // the two gaps unequal (120 vs 48, so the text sat low) and made
+          // them awkward to compare when measuring.
+          margin: "0 auto 120px",
           fontFamily: PJS,
         }}>
           Ava learns your style, your budget, and your vision, then helps you make smarter decisions at every step. From vendor suggestions to seating optimisation, Ava's always one step ahead.
