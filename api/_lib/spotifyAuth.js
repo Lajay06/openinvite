@@ -1,11 +1,11 @@
 /**
  * api/_lib/spotifyAuth.js
  *
- * Shared refresh-token ownership check for every endpoint that accepts a
- * Spotify refreshToken directly from the client (api/spotify-refresh.js,
- * api/spotify-search.js's silent-refresh path) — one implementation so both
- * reject a leaked/guessed token identically, rather than one being hardened
- * and the other quietly sharing the same replay risk.
+ * Shared refresh-token ownership check for api/spotify-search.js's silent-
+ * refresh path — the only place in the app that accepts a Spotify
+ * refreshToken directly from the client. (api/spotify-refresh.js used to be
+ * a second caller; it was orphaned/never actually invoked by anything and
+ * was deleted rather than kept as a parallel refresh implementation.)
  */
 
 const BASE44_API = 'https://base44.app/api';
@@ -21,7 +21,7 @@ const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no V
  * can't be replayed by an arbitrary caller who merely knows the value.
  *
  * @param {string} refreshToken
- * @param {string} [logPrefix] — e.g. '[spotify-refresh]', for console output
+ * @param {string} [logPrefix] — e.g. '[spotify-search]', for console output
  * @returns {Promise<boolean>}
  */
 export async function isKnownSpotifyRefreshToken(refreshToken, logPrefix = '[spotifyAuth]') {

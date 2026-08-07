@@ -95,8 +95,9 @@ function gcRateLimitStore() {
  *   'places-search'   — 20 req/min  (places-search.js — text search)
  *   'place-details'   — 40 req/min  (place-details.js — one call per selection)
  *   'places-photo'    — 60 req/min  (places-photo.js — several photos per page load)
- *   'spotify-search'  — 20 req/min  (spotify-search.js — search-as-you-type)
- *   'spotify-refresh' — 10 req/min  (spotify-refresh.js — infrequent, security-sensitive)
+ *   'spotify-search'  — 20 req/min  (spotify-search.js — search-as-you-type;
+ *     also the sole token-refresh path — api/spotify-refresh.js, a second,
+ *     orphaned implementation nothing ever called, was deleted)
  *   'spotify-callback'      — 10 req/min  (spotify-callback.js — OAuth callback, 2 external calls per hit)
  *   'spotify-session-fetch' — 30 req/min  (spotify-session-fetch.js — cheap cookie read, generous)
  *   'on-signup'       — 5 req/min   (on-signup.js — sends an email per call, not idempotent)
