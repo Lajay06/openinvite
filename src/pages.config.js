@@ -47,64 +47,65 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  *
- * AUDIT_2026-07.md B1: every page below is lazy-loaded (React.lazy) rather
- * than statically imported, so each becomes its own chunk instead of all
- * ~55 dashboard pages shipping in one bundle regardless of which page a
- * couple actually visits. __Layout stays a static import — it's app shell
- * chrome needed on every authenticated page, not a route body.
+ * AUDIT_2026-07.md B1: every page below is lazy-loaded (React.lazy, via the
+ * lazyWithReload() wrapper — see src/lib/lazyWithReload.js) rather than
+ * statically imported, so each becomes its own chunk instead of all ~55
+ * dashboard pages shipping in one bundle regardless of which page a couple
+ * actually visits. __Layout stays a static import — it's app shell chrome
+ * needed on every authenticated page, not a route body.
  */
-import { lazy } from 'react';
 import __Layout from './Layout.jsx';
+import { lazyWithReload } from './lib/lazyWithReload.js';
 
-const Accommodation = lazy(() => import('./pages/Accommodation'));
-const Budget = lazy(() => import('./pages/Budget'));
-const CeremonyDetails = lazy(() => import('./pages/CeremonyDetails'));
-const EmergencyContact = lazy(() => import('./pages/EmergencyContact'));
-const EntertainmentDetails = lazy(() => import('./pages/EntertainmentDetails'));
-const FoodBeverage = lazy(() => import('./pages/FoodBeverage'));
-const Honeymoon = lazy(() => import('./pages/Honeymoon'));
-const Transport = lazy(() => import('./pages/Transport'));
-const ScheduleHub = lazy(() => import('./pages/ScheduleHub'));
-const TasksHub = lazy(() => import('./pages/TasksHub'));
-const Considerations = lazy(() => import('./pages/Considerations'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const EventDetails = lazy(() => import('./pages/EventDetails'));
-const Features = lazy(() => import('./pages/Features'));
-const GuestExperience = lazy(() => import('./pages/GuestExperience'));
-const GuestSuiteQandA = lazy(() => import('./pages/GuestSuiteQandA'));
-const GuestSuiteSchedule = lazy(() => import('./pages/GuestSuiteSchedule'));
-const GuestSuiteAccommodation = lazy(() => import('./pages/GuestSuiteAccommodation'));
-const GuestSuiteTransport = lazy(() => import('./pages/GuestSuiteTransport'));
-const GuestSuiteRegistry = lazy(() => import('./pages/GuestSuiteRegistry'));
-const GuestSuitePolls = lazy(() => import('./pages/GuestSuitePolls'));
-const GuestSuiteLiveStream = lazy(() => import('./pages/GuestSuiteLiveStream'));
-const GuestSuiteExperience = lazy(() => import('./pages/GuestSuiteExperience'));
-const GuestSuitePolicies = lazy(() => import('./pages/GuestSuitePolicies'));
-const Guests = lazy(() => import('./pages/Guests'));
-const Home = lazy(() => import('./pages/Home'));
-const Invitations = lazy(() => import('./pages/Invitations'));
-const LiveStreaming = lazy(() => import('./pages/LiveStreaming'));
-const Messages = lazy(() => import('./pages/Messages'));
-const Moodboard = lazy(() => import('./pages/Moodboard'));
-const Music = lazy(() => import('./pages/Music'));
-const Notes = lazy(() => import('./pages/Notes'));
-const Onboarding = lazy(() => import('./pages/Onboarding'));
-const OurStory = lazy(() => import('./pages/OurStory'));
-const PhotoGallery = lazy(() => import('./pages/PhotoGallery'));
-const Photography = lazy(() => import('./pages/Photography'));
-const Policies = lazy(() => import('./pages/Policies'));
-const Pricing = lazy(() => import('./pages/Pricing'));
-const Registry = lazy(() => import('./pages/Registry'));
-const Seating = lazy(() => import('./pages/Seating'));
-const Styling = lazy(() => import('./pages/Styling'));
-const Vendors = lazy(() => import('./pages/Vendors'));
-const VowsSpeeches = lazy(() => import('./pages/VowsSpeeches'));
-const WeddingWebsite = lazy(() => import('./pages/WeddingWebsite'));
-const VendorMarketplace = lazy(() => import('./pages/VendorMarketplace'));
-const QandA = lazy(() => import('./pages/QandA'));
-const Polls = lazy(() => import('./pages/Polls'));
-const Beauty = lazy(() => import('./pages/Beauty'));
-const DailyUpdate = lazy(() => import('./pages/DailyUpdate'));
+const Accommodation = lazyWithReload(() => import('./pages/Accommodation'));
+const Budget = lazyWithReload(() => import('./pages/Budget'));
+const CeremonyDetails = lazyWithReload(() => import('./pages/CeremonyDetails'));
+const EmergencyContact = lazyWithReload(() => import('./pages/EmergencyContact'));
+const EntertainmentDetails = lazyWithReload(() => import('./pages/EntertainmentDetails'));
+const FoodBeverage = lazyWithReload(() => import('./pages/FoodBeverage'));
+const Honeymoon = lazyWithReload(() => import('./pages/Honeymoon'));
+const Transport = lazyWithReload(() => import('./pages/Transport'));
+const ScheduleHub = lazyWithReload(() => import('./pages/ScheduleHub'));
+const TasksHub = lazyWithReload(() => import('./pages/TasksHub'));
+const Considerations = lazyWithReload(() => import('./pages/Considerations'));
+const Dashboard = lazyWithReload(() => import('./pages/Dashboard'));
+const EventDetails = lazyWithReload(() => import('./pages/EventDetails'));
+const Features = lazyWithReload(() => import('./pages/Features'));
+const GuestExperience = lazyWithReload(() => import('./pages/GuestExperience'));
+const GuestSuiteQandA = lazyWithReload(() => import('./pages/GuestSuiteQandA'));
+const GuestSuiteSchedule = lazyWithReload(() => import('./pages/GuestSuiteSchedule'));
+const GuestSuiteAccommodation = lazyWithReload(() => import('./pages/GuestSuiteAccommodation'));
+const GuestSuiteTransport = lazyWithReload(() => import('./pages/GuestSuiteTransport'));
+const GuestSuiteRegistry = lazyWithReload(() => import('./pages/GuestSuiteRegistry'));
+const GuestSuitePolls = lazyWithReload(() => import('./pages/GuestSuitePolls'));
+const GuestSuiteLiveStream = lazyWithReload(() => import('./pages/GuestSuiteLiveStream'));
+const GuestSuiteExperience = lazyWithReload(() => import('./pages/GuestSuiteExperience'));
+const GuestSuitePolicies = lazyWithReload(() => import('./pages/GuestSuitePolicies'));
+const Guests = lazyWithReload(() => import('./pages/Guests'));
+const Home = lazyWithReload(() => import('./pages/Home'));
+const Invitations = lazyWithReload(() => import('./pages/Invitations'));
+const LiveStreaming = lazyWithReload(() => import('./pages/LiveStreaming'));
+const Messages = lazyWithReload(() => import('./pages/Messages'));
+const Moodboard = lazyWithReload(() => import('./pages/Moodboard'));
+const Music = lazyWithReload(() => import('./pages/Music'));
+const Notes = lazyWithReload(() => import('./pages/Notes'));
+const Onboarding = lazyWithReload(() => import('./pages/Onboarding'));
+const OurStory = lazyWithReload(() => import('./pages/OurStory'));
+const PhotoGallery = lazyWithReload(() => import('./pages/PhotoGallery'));
+const Photography = lazyWithReload(() => import('./pages/Photography'));
+const Policies = lazyWithReload(() => import('./pages/Policies'));
+const Pricing = lazyWithReload(() => import('./pages/Pricing'));
+const Registry = lazyWithReload(() => import('./pages/Registry'));
+const Seating = lazyWithReload(() => import('./pages/Seating'));
+const Styling = lazyWithReload(() => import('./pages/Styling'));
+const Vendors = lazyWithReload(() => import('./pages/Vendors'));
+const VowsSpeeches = lazyWithReload(() => import('./pages/VowsSpeeches'));
+const WeddingWebsite = lazyWithReload(() => import('./pages/WeddingWebsite'));
+const VendorMarketplace = lazyWithReload(() => import('./pages/VendorMarketplace'));
+const QandA = lazyWithReload(() => import('./pages/QandA'));
+const Polls = lazyWithReload(() => import('./pages/Polls'));
+const Beauty = lazyWithReload(() => import('./pages/Beauty'));
+const DailyUpdate = lazyWithReload(() => import('./pages/DailyUpdate'));
 
 export const PAGES = {
     "Accommodation": Accommodation,
