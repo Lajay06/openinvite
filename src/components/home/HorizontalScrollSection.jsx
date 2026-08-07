@@ -61,7 +61,7 @@ const CARDS = [
 {
   num: "06",
   title: "Plus 1",
-  desc: "Bring someone into the planning. Invite your partner, a parent or a friend, with their own login and their own access.",
+  desc: "Bring someone into the planning. Invite your partner, a parent or a friend to share the load.",
   bullets: ["Invite a partner, parent or friend", "Their own login and their own access", "Everyone stays in sync automatically"],
   photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj.jpg"
 },
