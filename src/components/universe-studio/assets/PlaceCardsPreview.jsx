@@ -1,4 +1,5 @@
 import React from 'react';
+import { effectiveMealChoice } from '@/lib/weddingEvents';
 
 const MEAL_SYMBOL = { beef: '◆', fish: '○', vegetarian: '☆', vegan: '☆', chicken: '△', default: '' };
 
@@ -38,27 +39,33 @@ export default function PlaceCardsPreview({ universe, weddingDetails, guests }) 
 
       {/* Card grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, width: '100%' }}>
-        {cards.slice(0, 6).map((g, i) => (
-          <div key={i} style={{
-            background: '#F8F7F5', padding: '6px 5px',
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', position: 'relative'
-          }}>
-            <p style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
-              fontStyle: 'italic', fontWeight: 300, fontSize: 7,
-              color: '#0A0A0A', textAlign: 'center', marginBottom: 2,
-              lineHeight: 1.2
+        {cards.slice(0, 6).map((g, i) => {
+          // fix/vestigial-meal-choice-reads — g.meal_choice is a dead
+          // column; the live source is the per-event event_responses
+          // overlay (guests prop must come from getMyGuestsWithRsvp).
+          const mealChoice = effectiveMealChoice(g.event_responses);
+          return (
+            <div key={i} style={{
+              background: '#F8F7F5', padding: '6px 5px',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', position: 'relative'
             }}>
-              {g.name?.split(' ')[0] || 'Guest'}
-            </p>
-            <div style={{ width: '80%', height: '1px', background: '#DDDDDD', marginBottom: 2 }} />
-            <p style={{ fontSize: 5, color: '#888888', letterSpacing: '0.15em', textTransform: 'uppercase', textAlign: 'center' }}>
-              {g.table_assignment ? `T${g.table_assignment}` : '—'}
-              {g.meal_choice ? ` ${MEAL_SYMBOL[g.meal_choice] || ''}` : ''}
-            </p>
-          </div>
-        ))}
+              <p style={{
+                fontFamily: 'Cormorant Garamond, Georgia, serif',
+                fontStyle: 'italic', fontWeight: 300, fontSize: 7,
+                color: '#0A0A0A', textAlign: 'center', marginBottom: 2,
+                lineHeight: 1.2
+              }}>
+                {g.name?.split(' ')[0] || 'Guest'}
+              </p>
+              <div style={{ width: '80%', height: '1px', background: '#DDDDDD', marginBottom: 2 }} />
+              <p style={{ fontSize: 5, color: '#888888', letterSpacing: '0.15em', textTransform: 'uppercase', textAlign: 'center' }}>
+                {g.table_assignment ? `T${g.table_assignment}` : '—'}
+                {mealChoice ? ` ${MEAL_SYMBOL[mealChoice] || ''}` : ''}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
       <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 6, fontFamily: "'Plus Jakarta Sans', sans-serif", marginTop: 4 }}>

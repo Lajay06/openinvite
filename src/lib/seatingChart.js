@@ -7,6 +7,8 @@
  * No DOM, no React — directly testable from the plain-Node harness.
  */
 
+import { effectiveMealChoice } from './weddingEvents.js';
+
 /**
  * @param {object[]} tables   Table records ({ id, name, assigned_guests })
  * @param {object[]} guests   Guest records ({ id, name, meal_choice, ... })
@@ -29,6 +31,9 @@ export function buildTablesWithGuests(tables, guests) {
 
 /**
  * Flat, alphabetised guest+table list for name tags / place cards.
+ * meal_choice is read from event_responses (the live per-event RsvpResponse
+ * overlay), not the vestigial flat g.meal_choice column — nothing writes
+ * that column once a guest RSVPs (fix/vestigial-meal-choice-reads).
  * @returns {{ name: string, table: string|null, meal_choice: string|null }[]}
  */
 export function buildGuestTagList(tables, guests) {
@@ -42,7 +47,7 @@ export function buildGuestTagList(tables, guests) {
     .map(g => ({
       name: g.name,
       table: tableNameByGuestId.get(g.id) || null,
-      meal_choice: g.meal_choice || null,
+      meal_choice: effectiveMealChoice(g.event_responses),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }

@@ -18,9 +18,10 @@
  *
  * Response: 200 { byGuestId: { [guestId]: { event_responses, rsvp_status,
  *   song_request, rsvp_note, dietary_restrictions, email,
- *   plus_one_rsvp_status } } } — only guests with at least one RsvpResponse
- *   row are present; callers should treat a missing entry as "no overlay,
- *   use the Guest record as-is," exactly as getMyGuestsWithRsvp did.
+ *   plus_one_rsvp_status, plus_one_event_responses } } } — only guests with
+ *   at least one RsvpResponse row are present; callers should treat a
+ *   missing entry as "no overlay, use the Guest record as-is," exactly as
+ *   getMyGuestsWithRsvp did.
  * or 401 { error: 'Unauthorized' }
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
@@ -146,8 +147,9 @@ export default async function handler(req, res) {
       const eventResponses = eventRows ? toEventResponsesShape(eventRows) : (g.event_responses || []);
 
       let plusOneRsvpStatus = null;
+      let plusOneEventResponses = null;
       if (g.plus_one_email) {
-        const plusOneEventResponses = mergePlusOneEventResponses(eventResponses, rowsByGuestHash.get(gHash) || []);
+        plusOneEventResponses = mergePlusOneEventResponses(eventResponses, rowsByGuestHash.get(gHash) || []);
         plusOneRsvpStatus = deriveRsvpStatus(plusOneEventResponses);
       }
 
@@ -164,6 +166,11 @@ export default async function handler(req, res) {
         // api/rsvp-lookup.js's identical rule.
         email: g.email || decrypted?.email || null,
         plus_one_rsvp_status: plusOneRsvpStatus,
+        // Same shape as event_responses above, but from the plus-one's own
+        // is_plus_one:true rows — lets the dashboard show the plus-one's
+        // actual per-event meal choice instead of the vestigial flat
+        // Guest.plus_one_meal_choice column (fix/vestigial-meal-choice-reads).
+        plus_one_event_responses: plusOneEventResponses,
       };
     }
 

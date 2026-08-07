@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus, Pencil, MessageCircle } from "lucide-react";
-import { getGuestEventResponse } from "@/lib/weddingEvents";
+import { getGuestEventResponse, effectiveMealChoice } from "@/lib/weddingEvents";
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
 
@@ -1038,7 +1038,14 @@ export default function GuestList({
 
               /* ── Plus one sub-row ── */
               if (guest.plus_one) {
-                const hasDietOrMeal = guest.plus_one_dietary_restrictions || guest.plus_one_meal_choice;
+                // Plus-one meal choice: fix/vestigial-meal-choice-reads —
+                // guest.plus_one_meal_choice is a dead column (nothing
+                // writes it once the plus-one RSVPs; see api/rsvp-submit.js).
+                // The live source is the plus-one's own per-event RsvpResponse
+                // rows, overlaid onto plus_one_event_responses by
+                // api/my-guests-rsvp.js.
+                const plusOneMealChoice = effectiveMealChoice(guest.plus_one_event_responses);
+                const hasDietOrMeal = guest.plus_one_dietary_restrictions || plusOneMealChoice;
                 rows.push(
                   <TableRow key={`${guest.id}-po`} style={{ background: 'rgba(10,10,10,0.015)', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
                     <TableCell colSpan={2} style={{ paddingTop: 5, paddingBottom: 5, paddingLeft: 52 }}>
@@ -1056,9 +1063,9 @@ export default function GuestList({
                           {guest.plus_one_dietary_restrictions && (
                             <DietaryCell value={guest.plus_one_dietary_restrictions} />
                           )}
-                          {guest.plus_one_meal_choice && (
+                          {plusOneMealChoice && (
                             <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
-                              {guest.plus_one_meal_choice}
+                              {plusOneMealChoice}
                             </span>
                           )}
                         </div>

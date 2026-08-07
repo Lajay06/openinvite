@@ -29,7 +29,7 @@ import toast from 'react-hot-toast';
 import { Loader2, Calendar, MapPin, ArrowRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { UNIVERSE_CATALOG, STYLE_TAGS, getUniverse } from '@/lib/universeCatalog';
 import UniverseBanner from '@/components/universe-studio/UniverseBanner';
 import UniverseEntranceOverlay from '@/components/universe-studio/UniverseEntranceOverlay';
@@ -90,7 +90,11 @@ export default function UniverseStudio() {
   const wallScrollRef = useRef(0);
 
   useEffect(() => {
-    Promise.all([getMyWeddingDetails(), getMyRecords('Guest')])
+    // getMyGuestsWithRsvp (not the plain getMyRecords('Guest')) so guests
+    // carry their live event_responses overlay — PlaceCardsPreview/
+    // SeatingChartPreview need it for meal choice, not the vestigial flat
+    // Guest.meal_choice column (fix/vestigial-meal-choice-reads).
+    Promise.all([getMyWeddingDetails(), getMyGuestsWithRsvp()])
       .then(([wd, g]) => {
         const details = wd || {};
         setWeddingDetails(details);
