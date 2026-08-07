@@ -460,7 +460,23 @@ const Universes = () => {
         </div>
       </section>
 
-      {/* SECTION 8: FINAL CTA — solid black background, white text (PR G1). */}
+      {/* SECTION 8: FINAL CTA.
+          Was a plain #0A0A0A section with no image at all (PR G1) — it read as
+          solid black because it was. A photo is introduced here, so the text
+          needs a scrim it never previously required. The flat rgba(0,0,0,0.45)
+          started from MarketingEndCap's treatment rather than an invented one:
+          MarketingHero's alternative is a bottom-weighted gradient tuned for
+          its own composition, whereas this block, like the end cap, is centred
+          text over a photo. It is darkened from that component's 0.45 to 0.60
+          because the secondary "See all features" button is translucent
+          (rgba(255,255,255,0.08)), so its 13px white label reads against the
+          photo itself: at 0.45 it measured 3.08:1 at 1440 against the 4.5:1
+          needed for normal text, and 0.55 still only reached 4.16:1. 0.60 is
+          the lightest step that clears it (4.94:1 at 1440, 5.40:1 at 390), so
+          the photo stays as visible as legibility allows. The primary
+          "Get started" pill is opaque #E03553 and unaffected either way.
+          #0A0A0A stays as the paint-in colour behind the image so nothing
+          flashes white while it loads. */}
       <section style={{
         position: 'relative',
         minHeight: 480,
@@ -472,6 +488,12 @@ const Universes = () => {
         justifyContent: 'center',
         background: '#0A0A0A',
       }}>
+        <img
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Slices_of_Summer_Mark_La_Montagne_Photos_ID2661_vb5omq.jpg"
+          alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+        />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 900, margin: '0 auto' }}>
           <h2 style={{
             fontFamily: 'Plus Jakarta Sans, sans-serif',
