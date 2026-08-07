@@ -19,7 +19,12 @@
  * Auth: DEV_EMAIL_TEST_SECRET, a dedicated one-off secret generated
  * specifically for this endpoint and added to Vercel's Preview environment
  * only (not Production, not CRON_SECRET/DEV_DIGEST_SECRET or any other
- * existing secret).
+ * existing secret). Accepted either as an Authorization: Bearer header or
+ * a ?secret= query param — the query-param form exists only so this can be
+ * triggered by pasting a URL into a browser already signed in to Vercel
+ * (Vercel's own deployment-protection SSO wall blocks a bare curl from
+ * ever reaching this handler at all, header or not — a logged-in browser
+ * clears that wall automatically, a script can't).
  */
 
 import { Resend } from 'resend';
@@ -38,8 +43,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'DEV_EMAIL_TEST_SECRET not set' });
   }
   const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
-  if (token !== devSecret) {
+  const headerToken = auth.startsWith('Bearer ') ? auth.slice(7) : auth;
+  const queryToken = req.query?.secret;
+  if (headerToken !== devSecret && queryToken !== devSecret) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
