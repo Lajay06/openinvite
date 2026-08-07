@@ -76,8 +76,8 @@ export default function FeatureTimeline() {
         }}
       >
         <img
-          src="https://static.wixstatic.com/media/d2df22_2bbfee1f5b034379a76f063c2f97f653~mv2.jpg"
-          alt="French outdoor venue chandelier"
+          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Another_Planet_Daniel_Far%C3%B2_Photos_ID3985_ue685l.jpg"
+          alt="A person checking their phone outdoors"
           style={{
             position: "absolute",
             inset: 0,
