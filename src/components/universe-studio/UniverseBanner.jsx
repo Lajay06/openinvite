@@ -18,7 +18,6 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
-import { Crown } from 'lucide-react';
 import HairlineRule from '@/components/guest-website/layouts/HairlineRule';
 import EnsoRing from '@/components/guest-website/layouts/EnsoRing';
 import CitrusScallop from '@/components/guest-website/layouts/CitrusScallop';
@@ -116,7 +115,7 @@ function BannerContent({ name, tagline, tileDescription, tags, isUltra, isCurren
         )}
         {isUltra && (
           <span style={{ marginLeft: isCurrent ? 0 : 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, fontFamily: PJS, letterSpacing: '0.06em', color: '#FFFFFF', background: 'rgba(0,0,0,0.45)', padding: '4px 10px', borderRadius: 999 }}>
-            <Crown size={10} /> Ultra
+            Ultra
           </span>
         )}
       </div>
