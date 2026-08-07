@@ -14,9 +14,9 @@
  *     image wordmark, rgba(0,0,0,…) borders.
  *
  * Standardised on the first lineage's tokens (more of the live, frequently-
- * seen emails already matched it) and on the plain-text wordmark
- * specifically — a hosted image can render as a broken-image icon in any
- * client that blocks remote images by default, and this asset never can.
+ * seen emails already matched it) and, since then (email branding audit),
+ * on the hosted logo image specifically, not plain text — see
+ * EMAIL_LOGO_MARK_URL below for why a real image now renders reliably here.
  *
  * NOT used by the wedding-invitation family (src/lib/emailTemplate.js,
  * RSVP reminders, thank-you cards) — those are deliberately themed per the
@@ -88,7 +88,7 @@ export function poweredByRow() {
                     <img src="${EMAIL_LOGO_MARK_URL}" width="11" height="11" alt="" style="display:block;width:11px;height:11px;opacity:0.5;" />
                   </td>
                   <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:11px;color:${EMAIL_MUTED_LIGHT};font-family:${EMAIL_FONT};">Powered by openinvite</p>
+                    <p style="margin:0;font-size:11px;color:${EMAIL_MUTED_LIGHT};font-family:${EMAIL_FONT};">Powered by Openinvite</p>
                   </td>
                 </tr>
               </table>

@@ -259,7 +259,7 @@ export default async function handler(req, res) {
       } else {
         const r = await sendEmail(
           email, name,
-          'Have you tried Ava yet? 👋',
+          'Have you tried Ava yet?',
           onboardingDay3Email
         );
         if (r.ok) {
@@ -280,7 +280,7 @@ export default async function handler(req, res) {
       } else {
         const r = await sendEmail(
           email, name,
-          'Your free trial has 7 days left ⏰',
+          'Your free trial has 7 days left',
           onboardingDay7Email
         );
         if (r.ok) {

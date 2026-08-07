@@ -297,7 +297,7 @@ ${ctaHtml}
                     <img src="${EMAIL_LOGO_MARK_URL}" width="11" height="11" alt="" style="display:block;width:11px;height:11px;opacity:0.5;" />
                   </td>
                   <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:11px;color:rgba(0,0,0,0.35);font-family:${fontBody};">Powered by openinvite</p>
+                    <p style="margin:0;font-size:11px;color:rgba(0,0,0,0.35);font-family:${fontBody};">Powered by Openinvite</p>
                   </td>
                 </tr>
               </table>
