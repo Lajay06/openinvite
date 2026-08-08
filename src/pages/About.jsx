@@ -10,20 +10,6 @@ const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const DELIVERABLES = [
-  "Guest management suite",
-  "Smart budget tracker",
-  "Digital invitations",
-  "Seating planner",
-  "Collaborative playlists",
-  "Registry integration",
-  "AI assistant (Ava)",
-  "Vendor management",
-  "Timeline & schedule builder",
-  "RSVP tracking",
-  "Collaboration access",
-];
-
 const BELIEFS = [
   {
     title: "Design first.",
@@ -68,8 +54,27 @@ export default function About() {
       <ScrollProgress />
 
       {/* ── S1: HERO ─────────────────────────────────────── */}
+      {/* c_crop re-frames the photo rather than nudging imagePosition, because
+          at these viewport sizes the CSS lever is nearly dead: the source is
+          1600x1065 and object-fit cover already shows y 0-1065 at 390 (zero
+          vertical slack) and y 32-1032 at 1440 (32px of slack).
+
+          Two separate faults, both fixed by the crop:
+          1. The couple sits left of center-frame — heads span x 520-670, image
+             center is x 800 — so a centered crop on a narrow viewport framed
+             torsos and hay instead of faces. The crop is centered on x 595.
+          2. PublicNav is fixed, 65px tall and 95% opaque, and the hero starts
+             at y 0, so it covers the top 65px of the photo. Head clearance is
+             an absolute pixel distance, so shortening the delivered image
+             raises the cover scale and pushes the heads below the nav. The
+             bottom ~40% of the source was empty hay, so this costs nothing.
+
+          Measured head-top screen y (nav occupies 0-65):
+            390x844   47 -> 76      1440x900   52 -> 82
+            1280x900  49 -> 82      1920x1080  40 -> 98
+          h_640 keeps both pairs of feet in frame (lowest foot is y 615). */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2.jpg"
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/c_crop,x_0,y_0,w_1190,h_640/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2.jpg"
         title="Planning a wedding should feel like the beginning of something incredible."
         maxWidth={900}
       />
@@ -111,32 +116,20 @@ function EditorialIntro() {
         <h2 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 700, color: "#0A0A0A", lineHeight: 1.1, marginBottom: 32, hyphens: "none" }}>
           Built for the way people actually plan.
         </h2>
+        {/* Owner-supplied copy, used verbatim. This supersedes the two
+            paragraphs V5 restored from 2d6a4d9 (M4, #274) — the overlap that
+            restoration knowingly accepted is resolved here, because this
+            version tells the origin story once rather than twice. */}
         <p style={{ fontSize: 17, color: "#555555", lineHeight: 1.7, marginBottom: 24 }}>
-          Openinvite was built out of a simple frustration: wedding planning tools were outdated, overwhelming, and frankly ugly. We believed that one of the most exciting moments of your life deserved a platform that matched that energy. So we built one.
+          Openinvite was born from a simple frustration: wedding planning tools were outdated, overwhelming, and, frankly, ugly. We believed one of the most exciting chapters of your life deserved a platform that matched that energy. So we built one.
         </p>
-
-        {/* The two paragraphs below are restored verbatim from the version
-            2d6a4d9 (M4, #274) removed. M4 had folded About's two back-to-back
-            origin-story blocks into this one and dropped this body as
-            duplicative; the overlap with the paragraph above is a known and
-            accepted tradeoff. */}
         <p style={{ fontSize: 17, color: "#555555", lineHeight: 1.7, marginBottom: 24 }}>
-          Openinvite was born from a real problem. Couples were drowning in spreadsheets, group chats, and tools that were either too complex or too basic. We saw an opportunity to build something that was genuinely beautiful and genuinely powerful: a platform that respected your time and matched the energy of the occasion.
+          Couples were juggling spreadsheets, endless group chats, and disconnected tools that were either too complicated or too limited. We saw an opportunity to create something different, a platform that was as beautiful as it was powerful, bringing planning, invitations, guests, and every detail together in one seamless experience.
         </p>
-        <p style={{ fontSize: 17, color: "#555555", lineHeight: 1.7, marginBottom: 32 }}>
-          From day one, we made a commitment: no feature would ship unless it was designed as carefully as it was engineered. Every screen, every interaction, every detail had to earn its place. The result is a platform that feels as considered as the weddings it helps plan.
+        <p style={{ fontSize: 17, color: "#555555", lineHeight: 1.7, marginBottom: 0 }}>
+          From day one, we made one promise: every feature had to earn its place. Thoughtfully designed, beautifully built, and created to make planning feel less like a chore and more like part of the celebration.
         </p>
-
-        <div>
-          {DELIVERABLES.map((item, i) => (
-            <div key={i} style={{ padding: "10px 0", borderBottom: "1px solid #E8E8E8", fontSize: 14, color: "#0A0A0A", opacity: visible ? 1 : 0, animation: visible ? `fadeIn 0.6s ease ${i * 0.05}s forwards` : "none" }}>
-              {item}
-            </div>
-          ))}
-        </div>
       </div>
-
-      <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
     </section>
   );
 }
