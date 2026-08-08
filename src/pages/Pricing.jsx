@@ -421,17 +421,17 @@ export default function Pricing() {
           are unchanged and passed through as children — they carry the real
           signup and billing navigation plus the upgrade_clicked analytics,
           so they are deliberately not reduced to a plain link. */}
-      {/* c_crop,h_700 re-centres the subject inside the delivered image rather
+      {/* c_crop,h_700 re-centers the subject inside the delivered image rather
           than nudging the CSS crop. MarketingEndCap hardcodes
           objectPosition: "center" and is shared by seven pages, so the only
           per-page lever is the transformation on this URL.
 
           The source is 1600x1067 and both heads sit high in it: the band runs
-          y 62-620, centred on y 341, while the image centre is y 533. Because
-          object-fit: cover always crops around the image centre, that 192px
+          y 62-620, centered on y 341, while the image center is y 533. Because
+          object-fit: cover always crops around the image center, that 192px
           offset clipped the top of his head by 122px at 1440 and 78px at 1280
-          (390 was already fine). Cropping to y 0-700 puts the band centre at
-          350 against an image centre of 350, so cover now trims evenly.
+          (390 was already fine). Cropping to y 0-700 puts the band center at
+          350 against an image center of 350, so cover now trims evenly.
 
           Measured clearance from the head band to the crop edge, +15px pad:
             1440x900  -136px (clipped)  ->  +47px
