@@ -1,32 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Upload } from 'lucide-react';
+import { Upload, Download, AlertCircle } from 'lucide-react';
+import { downloadGuestTemplate, parseGuestFile } from '@/lib/guestImport';
 
-export default function OnboardingPathAGuestList({ onNext, data }) {
-  const [file, setFile] = useState(null);
-  const [manualMode, setManualMode] = useState(false);
-  const [preview, setPreview] = useState([]);
+const PJS = "'Plus Jakarta Sans', sans-serif";
 
-  const handleFileUpload = async (e) => {
-    const uploadedFile = e.target.files?.[0];
-    if (!uploadedFile) return;
+// Was a broken stub — took the first 4 raw lines of any uploaded file
+// (header row included) and stored each whole line as a single guest's
+// name, with no real column parsing despite the UI claiming "Expected
+// columns: Name, Email, Phone, Group". Now shares the dashboard's real
+// template-download + XLSX/CSV column-mapped parser + row-validation
+// preview (src/lib/guestImport.js, also used by ImportGuestModal.jsx),
+// so a couple who imports here sees the exact same, correct behaviour
+// they'd get from Guests.jsx later.
+export default function OnboardingPathAGuestList({ onNext }) {
+  const [rows, setRows] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
+  const [parseError, setParseError] = useState('');
 
-    setFile(uploadedFile);
-
-    // Simple CSV parsing (in production, use Papa Parse)
-    const text = await uploadedFile.text();
-    const lines = text.split('\n').slice(0, 4);
-    setPreview(lines);
+  const handleFile = async (file) => {
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['csv', 'xlsx', 'xls'].includes(ext)) {
+      setParseError('Please upload a CSV or Excel file');
+      return;
+    }
+    try {
+      setParseError('');
+      setRows(await parseGuestFile(file));
+    } catch (err) {
+      setParseError(err.message);
+    }
   };
 
   const handleSubmit = () => {
-    if (file) {
-      // Parse CSV and extract guest data
-      onNext({ guestList: preview.map(line => ({ name: line })) });
-    } else {
-      onNext({ guestList: [] });
-    }
+    const validGuests = (rows || [])
+      .filter(r => !r._error)
+      .map(({ _rowIndex, _error, ...guest }) => guest);
+    onNext({ guestList: validGuests });
   };
+
+  const errorRows = rows ? rows.filter(r => r._error) : [];
+  const validCount = rows ? rows.filter(r => !r._error).length : 0;
 
   return (
     <div className="w-full max-w-2xl text-center">
@@ -43,40 +59,94 @@ export default function OnboardingPathAGuestList({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="space-y-8 mb-12"
+        className="mb-12 text-left"
       >
-        {!manualMode && (
-          <div>
-            <label className="block mb-4">
-              <div className="border-2 border-dashed border-[rgba(10,10,10,0.18)] rounded-none p-12 cursor-pointer hover:border-[#E03553] transition-colors">
-                <Upload className="w-8 h-8 text-[rgba(10,10,10,0.45)] mx-auto mb-3" />
-                <p className="text-[#0A0A0A] font-medium">Upload CSV or Excel file</p>
-                <p className="text-[rgba(10,10,10,0.6)] text-sm mt-1">Expected columns: Name, Email, Phone, Group</p>
-              </div>
-              <input
-                type="file"
-                accept=".csv,.xlsx"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
+        <button
+          type="button"
+          onClick={downloadGuestTemplate}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: '1px solid rgba(10,10,10,0.18)', borderRadius: 999, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, cursor: 'pointer', marginBottom: 20 }}
+        >
+          <Download size={13} />Download template
+        </button>
 
-            {preview.length > 0 && (
-              <div className="bg-[#FFFFFF] border border-[rgba(10,10,10,0.18)] rounded-none p-4 text-left">
-                {preview.map((line, i) => (
-                  <p key={i} className="text-[#0A0A0A] text-sm py-1 border-b border-[rgba(10,10,10,0.1)] last:border-0">
-                    {line.substring(0, 50)}...
-                  </p>
-                ))}
+        {!rows && (
+          <div
+            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={e => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              border: `2px dashed ${dragOver ? '#E03553' : 'rgba(10,10,10,0.18)'}`,
+              padding: '48px 24px',
+              textAlign: 'center',
+              cursor: 'pointer',
+              background: dragOver ? 'rgba(224,53,83,0.03)' : 'transparent',
+              transition: 'border-color 0.15s, background 0.15s',
+            }}
+          >
+            <Upload size={24} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px', display: 'block' }} />
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 4px' }}>Drag and drop or click to upload</p>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Accepts .csv and .xlsx — download the template above if you're starting from scratch</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              style={{ display: 'none' }}
+              onChange={e => handleFile(e.target.files[0])}
+            />
+          </div>
+        )}
+
+        {parseError && (
+          <p style={{ fontSize: 13, color: '#E03553', fontFamily: PJS, margin: '10px 0 0' }}>{parseError}</p>
+        )}
+
+        {rows && (
+          <div style={{ marginTop: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
+                Preview — {validCount} of {rows.length} rows valid
+              </p>
+              <button
+                onClick={() => setRows(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#E03553', fontFamily: PJS, padding: 0 }}
+              >
+                Change file
+              </button>
+            </div>
+            <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
+              <div style={{ overflowX: 'auto', maxHeight: 240, overflowY: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: PJS }}>
+                  <thead style={{ position: 'sticky', top: 0 }}>
+                    <tr style={{ background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                      {['Name', 'Email', 'Phone', '+1', 'Status'].map(h => (
+                        <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 700, fontSize: 11, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid rgba(10,10,10,0.05)', background: row._error ? 'rgba(224,53,83,0.04)' : 'transparent' }}>
+                        <td style={{ padding: '8px 12px', color: '#0A0A0A', fontWeight: 600 }}>{row.name || '—'}</td>
+                        <td style={{ padding: '8px 12px', color: '#444' }}>{row.email || '—'}</td>
+                        <td style={{ padding: '8px 12px', color: '#444' }}>{row.phone || '—'}</td>
+                        <td style={{ padding: '8px 12px', color: '#444' }}>{row.plus_one ? 'Yes' : 'No'}</td>
+                        <td style={{ padding: '8px 12px' }}>
+                          {row._error
+                            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#E03553', fontSize: 11, fontWeight: 600 }}><AlertCircle size={11} />{row._error}</span>
+                            : <span style={{ color: '#16a34a', fontSize: 11, fontWeight: 600 }}>OK</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            </div>
+            {errorRows.length > 0 && (
+              <p style={{ fontSize: 12, color: '#E03553', fontFamily: PJS, margin: '10px 0 0' }}>
+                {errorRows.length} row{errorRows.length > 1 ? 's' : ''} will be skipped — fix and re-upload if needed.
+              </p>
             )}
-
-            <button
-              onClick={() => setManualMode(true)}
-              className="text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors mt-6"
-            >
-              I'll add them manually →
-            </button>
           </div>
         )}
       </motion.div>

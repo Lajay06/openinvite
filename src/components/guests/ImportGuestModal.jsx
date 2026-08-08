@@ -4,47 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { downloadGuestTemplate, parseGuestFile } from '@/lib/guestImport';
 
 const Guest = base44.entities.Guest;
 const PJS = "'Plus Jakarta Sans', sans-serif";
-
-// feat/guestlist-editable: simplified to exactly what a couple needs to get
-// guests in fast — category, RSVP, table, and dietary are all editable
-// in-place afterwards (single cell, or bulk-edit for many at once), so
-// they're no longer import-time fields at all.
-const TEMPLATE_HEADERS = ['Name', 'Email', 'Phone', 'Plus one (Y/blank)'];
-
-const VALID_RSVP = ['attending', 'declined', 'pending', 'maybe'];
-
-function rowToGuest(row) {
-  const name = String(row['Name'] ?? '').trim();
-  if (!name) throw new Error('Name is required');
-
-  // Support the current 'Plus one (Y/blank)' header and older exports'
-  // 'Plus one' / '+1'.
-  const plusOneRaw = String(row['Plus one (Y/blank)'] ?? row['Plus one'] ?? row['+1'] ?? '').toLowerCase().trim();
-  const plusOne = ['yes', 'true', '1', 'x', 'y'].includes(plusOneRaw);
-
-  // RSVP/table/dietary are tolerated from an older-format file for backward
-  // compatibility, but are no longer part of the template. Category is
-  // deliberately NEVER read from any import — an imported guest's category
-  // is always blank, set afterwards via inline or bulk edit, never guessed
-  // or defaulted (was silently landing on the schema's old 'family'
-  // default; that default has been removed).
-  const rsvpRaw = String(row['RSVP'] ?? '').toLowerCase().trim();
-  const rsvpStatus = VALID_RSVP.includes(rsvpRaw) ? rsvpRaw : 'pending';
-
-  return {
-    name,
-    email: String(row['Email'] ?? '').trim() || undefined,
-    phone: String(row['Phone'] ?? '').trim() || undefined,
-    rsvp_status: rsvpStatus,
-    table_assignment: String(row['Table'] ?? '').trim() || undefined,
-    plus_one: plusOne,
-    plus_one_name: String(row['Plus one name'] ?? row['+1 Name'] ?? '').trim() || undefined,
-    dietary_restrictions: String(row['Dietary requirements'] ?? '').trim() || undefined,
-  };
-}
 
 export default function ImportGuestModal({ onClose, onImported }) {
   const [rows, setRows] = useState(null);
@@ -52,50 +15,20 @@ export default function ImportGuestModal({ onClose, onImported }) {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
 
-  const downloadTemplate = async () => {
-    const XLSX = await import('xlsx');
-    const ws = XLSX.utils.aoa_to_sheet([TEMPLATE_HEADERS]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Guests');
-    XLSX.writeFile(wb, 'guest-list-template.csv');
-  };
+  const downloadTemplate = () => downloadGuestTemplate();
 
-  const parseFile = (file) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const XLSX = await import('xlsx');
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-        if (jsonRows.length === 0) {
-          toast.error('File is empty or has no data rows');
-          return;
-        }
-        const parsed = jsonRows.map((row, i) => {
-          try {
-            return { ...rowToGuest(row), _rowIndex: i + 2, _error: null };
-          } catch (err) {
-            return { _rowIndex: i + 2, _error: err.message, name: '—', rsvp_status: '—', plus_one: false };
-          }
-        });
-        setRows(parsed);
-      } catch {
-        toast.error('Failed to parse file — check it is a valid CSV or XLSX');
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
-  const handleFile = (file) => {
+  const handleFile = async (file) => {
     if (!file) return;
     const ext = file.name.split('.').pop().toLowerCase();
     if (!['csv', 'xlsx', 'xls'].includes(ext)) {
       toast.error('Please upload a CSV or Excel file');
       return;
     }
-    parseFile(file);
+    try {
+      setRows(await parseGuestFile(file));
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
   const handleImport = async () => {
