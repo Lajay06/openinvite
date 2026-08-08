@@ -12,7 +12,7 @@ import { PRO_FEATURES, ULTRA_EXTRAS } from "@/lib/planFeatures";
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 // One alignment grid for the page's contained sections. These three used to
-// be 720, 860 and 640, which all centred on the viewport axis but produced
+// be 720, 860 and 640, which all centered on the viewport axis but produced
 // three different left edges (360, 290, 400 at 1440) and read as misaligned.
 // 1100 is the width Features' accordion and About's sections already use, so
 // Pricing now sits on the same grid rather than a fourth invented one. The

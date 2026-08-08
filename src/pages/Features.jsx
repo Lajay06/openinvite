@@ -57,7 +57,7 @@ export default function Features() {
           ("All the powerful tools, beautifully designed...") is a separate
           statement banner, NOT the hero, and is not governed by the hero rule.
 
-          Sitewide hero rule: every marketing hero is centred horizontally and
+          Sitewide hero rule: every marketing hero is centered horizontally and
           vertically, and only the home page hero carries a CTA button. Both
           come from MarketingHero's defaults, so this passes no align and no
           cta rather than overriding them.
