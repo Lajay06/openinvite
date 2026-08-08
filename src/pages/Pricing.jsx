@@ -447,6 +447,17 @@ export default function Pricing() {
       <MarketingEndCap
         image="https://res.cloudinary.com/dsr84xknv/image/upload/c_crop,x_0,y_0,w_1600,h_700/f_auto,q_auto/DTS_day_tripping_Agust%C3%ADn_Far%C3%ADas_Photos_ID6199_g2inky.jpg"
         alt="A couple on a day trip together"
+        /* 0.45 read muddy against this photo. Worst-case (lightest backdrop
+           pixel) contrast for the "Start free trial" button, which is the
+           binding element at 14px/700 = normal text, AA 4.5:1:
+             scrim   1440    1280     390
+             0.30    7.95    7.95    4.37  <- fails on mobile
+             0.35    8.46    8.46    4.81  <- lightest value that passes
+             0.45    9.59    9.59    5.89     (previous)
+           Mobile binds because the crop puts pale water behind the buttons
+           there. The headline is never the constraint: >=32px bold is AA
+           large text at 3:1 and clears even at 0.25. */
+        scrim={0.35}
       >
           {!isPaidUser && (
             <button
