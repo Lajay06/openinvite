@@ -11,7 +11,6 @@ const WeddingDetails = base44.entities.WeddingDetails;
 const Guest = base44.entities.Guest;
 const Budget = base44.entities.Budget;
 const Vendor = base44.entities.Vendor;
-const MoodboardItem = base44.entities.MoodboardItem;
 
 // Step components
 import OnboardingWelcome from '@/components/onboarding/OnboardingWelcome';
@@ -88,7 +87,6 @@ export default function Onboarding() {
     currency: 'USD',
     vendors: [],
     theme: null,
-    inspirationPhotos: [],
     activeUniverse: 'london',
     websiteMode: 'dark',
   });
@@ -284,7 +282,7 @@ export default function Onboarding() {
 
   const saveOnboarding = async (path) => {
     setSavingFinal(true);
-    const completed = { weddingDetails: false, guests: false, budget: false, vendors: false, moodboard: false, userFlag: false };
+    const completed = { weddingDetails: false, guests: false, budget: false, vendors: false, userFlag: false };
     try {
       const payload = { ...buildWeddingDetailsPayload(onboardingData), onboardingDraft: false };
       payload.slug = await resolveUniqueSlug(payload.slug, draftWeddingId);
@@ -325,16 +323,9 @@ export default function Onboarding() {
       }
       completed.vendors = true;
 
-      if (onboardingData.inspirationPhotos.length > 0) {
-        await Promise.all(onboardingData.inspirationPhotos.map(photo =>
-          MoodboardItem.create({
-            title: 'Inspiration',
-            image_url: photo,
-            category: 'other',
-          })
-        ));
-      }
-      completed.moodboard = true;
+      // Inspiration photos (OnboardingPathAInspiration) create their own
+      // MoodboardItem records immediately on upload now, matching
+      // Moodboard.jsx's own pattern — no deferred batch-create here anymore.
 
       // /api/on-signup existed but was never actually called from anywhere
       // in the app (PR B4 email audit) — no user has ever received the
