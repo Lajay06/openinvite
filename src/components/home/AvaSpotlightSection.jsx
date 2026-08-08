@@ -39,11 +39,20 @@ function AnimatedRow({ row, delay }) {
   return (
     <div
       ref={ref}
+      // The two columns were a hardcoded "40% 60%" with a 40px gap and no
+      // breakpoint. Percentages of the content box plus a fixed gap always
+      // exceed 100%, which is invisible at desktop widths but overflows on a
+      // phone: at 390px the content box is 342px, and 40% + 60% + 40px comes
+      // to 382px, putting the row's right edge at 406 against a 390 viewport
+      // and making the whole page scroll sideways. Single column below md
+      // removes the gap from the horizontal budget entirely; above md the
+      // original proportions are preserved via minmax(0, …) so a long word
+      // can't push a column past its track either.
+      className="ava-row-grid"
       style={{
         borderTop: "1px solid rgba(255,255,255,0.08)",
         padding: "40px 0",
         display: "grid",
-        gridTemplateColumns: "40% 60%",
         gap: 40,
         alignItems: "start",
         opacity: visible ? 1 : 0,
@@ -113,6 +122,12 @@ export default function AvaSpotlightSection() {
           <AnimatedRow key={i} row={row} delay={i * 100} />
         ))}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
+        <style>{`
+          .ava-row-grid { grid-template-columns: 1fr; }
+          @media (min-width: 768px) {
+            .ava-row-grid { grid-template-columns: minmax(0, 40%) minmax(0, 60%); }
+          }
+        `}</style>
       </div>
     </section>
   );
