@@ -85,7 +85,14 @@ export default function ChoosePlan() {
   const goFree = async () => {
     setLoadingPlan('free');
     track('plan_chosen', { plan: 'free' });
-    await markPlanStepDone();
+    // trialStartedAt marks the moment the 14-day clock actually starts.
+    // Without it, Layout.jsx's trial banner fell back to the account's
+    // created_date — correct only when signup and "Start free" happen at
+    // the same moment. Any gap (an abandoned signup revisited weeks later,
+    // a pre-existing account from before this plan gate shipped) meant the
+    // banner read "Your free trial has ended" on a trial that never
+    // actually started.
+    await base44.auth.updateMe({ plan_step_completed: true, trialStartedAt: new Date().toISOString() }).catch(() => {});
     navigate('/onboarding');
   };
 

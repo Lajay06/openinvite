@@ -248,6 +248,7 @@ const USER_RESET_FIELDS = {
   plan_step_completed: false,
   plan: null,
   planActivatedAt: null,
+  trialStartedAt: null,          // so a reset account's trial clock restarts on the next "Start free"
 };
 
 // ── HTTP helper ───────────────────────────────────────────────────────────────

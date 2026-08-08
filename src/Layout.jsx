@@ -16,6 +16,7 @@ import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolv
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'react-hot-toast';
 import { CollaboratorProvider, useCollaboratorContext, permissionKeyForPageName, hasPagePermission } from '@/lib/collaboratorContext';
+import { parseBase44Date } from '@/lib/base44Date';
 import TopBarSearch from './components/layout/TopBarSearch';
 
 const SIDEBAR_WIDTH = 200;
@@ -353,8 +354,8 @@ function LayoutShell({ children, currentPageName }) {
     const plan = user.plan;
     if (plan === 'pro' || plan === 'ultra') return null; // paid — no banner
 
-    const trialStart = user.trialStartedAt ? new Date(user.trialStartedAt) : null;
-    const trialStartFallback = user.created_date ? new Date(user.created_date) : new Date();
+    const trialStart = user.trialStartedAt ? parseBase44Date(user.trialStartedAt) : null;
+    const trialStartFallback = user.created_date ? parseBase44Date(user.created_date) : new Date();
     const start = trialStart || trialStartFallback;
     const trialEnd = new Date(start.getTime() + 14 * 24 * 60 * 60 * 1000);
     const daysLeft = Math.max(0, Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)));
