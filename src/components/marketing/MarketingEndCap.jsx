@@ -23,6 +23,7 @@ export default function MarketingEndCap({
   image,
   alt = "",
   title = "Your wedding deserves this.",
+  scrim = 0.45,
   children,
 }) {
   const sectionRef = useRef(null);
@@ -65,14 +66,23 @@ export default function MarketingEndCap({
         }}
       />
 
-      {/* Uniform scrim so the centred text stays legible regardless of what
+      {/* Uniform scrim so the centered text stays legible regardless of what
           is behind it — the photo differs per page, so a directional
-          gradient tuned to one image would not carry to the others. */}
+          gradient tuned to one image would not carry to the others.
+
+          `scrim` defaults to 0.45, which is what every page rendered before
+          this prop existed, so callers that omit it are unchanged. It exists
+          because the right value depends on how light the photo is behind the
+          controls, and that is per-page. The binding constraint is not the
+          headline (>=32px bold, so AA large text at 3:1, which clears even at
+          0.25) but the translucent secondary button — 14px/700 is normal text
+          at 4.5:1, over a rgba(255,255,255,0.1) fill that lifts the backdrop.
+          Measure worst-case (lightest) backdrop pixels before lowering it. */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(0,0,0,0.45)",
+          background: `rgba(0,0,0,${scrim})`,
           zIndex: 2,
           pointerEvents: "none",
         }}
