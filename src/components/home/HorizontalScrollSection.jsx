@@ -79,7 +79,7 @@ const DOT_COLORS = ["#FFFFFF", "#FFFFFF", "#FFFFFF"];
 
 // PublicNav's desktop pill is position: fixed at top: 20 with height: 48, so
 // it occupies the first 68px of the viewport without contributing any layout
-// height. The sticky viewport below subtracts this so the card row centres in
+// height. The sticky viewport below subtracts this so the card row centers in
 // the visible area rather than behind the nav.
 const NAV_OCCUPIED_HEIGHT = 68;
 
@@ -181,7 +181,7 @@ export default function HorizontalScrollSection() {
       
       {/* paddingTop reserves the band the fixed nav sits over, so the flex
           centring below happens in the area the visitor can actually see
-          rather than in the full 100vh. Without it the card row centres on
+          rather than in the full 100vh. Without it the card row centers on
           the whole viewport, the nav covers the top of that space, and the
           block reads top-heavy: measured on production, 22px of black above
           the card against 90px below it at 1440x900, and 12px against 80px

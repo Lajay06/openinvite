@@ -2,7 +2,7 @@
  * MarketingHero — the one hero every marketing page (except Home, which has
  * its own distinct collage treatment) must render through. Features.jsx is
  * the reference standard this was extracted from: full-viewport photo,
- * bottom-heavy dark gradient, one centred statement, no subtext. Built to
+ * bottom-heavy dark gradient, one centered statement, no subtext. Built to
  * stop the hero drift that kept recurring page by page (see
  * scripts/test-marketing-hero-consistency.mjs, the structural guard that
  * fails if a required marketing page renders a hero without importing this).
@@ -22,7 +22,7 @@ export default function MarketingHero({
   maxWidth = 800,
   overlay = true,
   // "left" pins the headline to the left edge instead of centring it —
-  // for a hero photo whose subject sits on the right, so a wide centred
+  // for a hero photo whose subject sits on the right, so a wide centered
   // headline never crosses their face (PR G1).
   align = "center",
 }) {

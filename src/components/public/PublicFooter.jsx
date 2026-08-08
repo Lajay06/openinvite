@@ -14,9 +14,9 @@ export default function PublicFooter() {
                 white "Openinvite" wordmark baked in, meant for dark
                 backgrounds — filter:brightness(0) (the old approach) makes
                 the text readable on this white footer but flattens the
-                icon's colour gradient along with it. Cropping to just the
+                icon's color gradient along with it. Cropping to just the
                 icon (via background-position, natural aspect ratio) keeps
-                its colour, and the wordmark renders as real black text
+                its color, and the wordmark renders as real black text
                 instead. */}
             <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
               <div

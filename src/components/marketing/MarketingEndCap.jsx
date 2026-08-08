@@ -10,7 +10,7 @@
  * The photo is the only thing that varies between pages, so it is the one
  * required prop. `children` is an optional actions slot: Pricing renders its
  * existing plan buttons in it, which is why this takes children rather than a
- * fixed cta prop — those buttons carry real signup/billing behaviour and
+ * fixed cta prop — those buttons carry real signup/billing behavior and
  * analytics that must not be reduced to a link.
  */
 import React, { useRef, useState, useEffect } from "react";

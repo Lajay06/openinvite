@@ -85,7 +85,7 @@ function UniverseTile({ universe, index }) {
   );
 }
 
-// Pinned crossfade showcase — restores the pre-round-2 behaviour: the
+// Pinned crossfade showcase — restores the pre-round-2 behavior: the
 // component pins on screen showing one universe full bleed, and scrolling
 // crossfades to the next while the screen stays still, rather than
 // physically scrolling past a stack of panels. The original version of
@@ -294,7 +294,7 @@ const Universes = () => {
             concept, maxWidth 1200) — this section previously had none, so
             its heading and grid sat flush to the section's own 80px
             padding while every neighbouring section's content optically
-            centred within ~1200-1400px, reading as misaligned on wide
+            centered within ~1200-1400px, reading as misaligned on wide
             screens. */}
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <h2 style={{
@@ -485,7 +485,7 @@ const Universes = () => {
           needs a scrim it never previously required. The flat rgba(0,0,0,0.45)
           started from MarketingEndCap's treatment rather than an invented one:
           MarketingHero's alternative is a bottom-weighted gradient tuned for
-          its own composition, whereas this block, like the end cap, is centred
+          its own composition, whereas this block, like the end cap, is centered
           text over a photo. It is darkened from that component's 0.45 to 0.60
           because the secondary "See all features" button is translucent
           (rgba(255,255,255,0.08)), so its 13px white label reads against the
