@@ -219,7 +219,11 @@ export default function Pricing() {
                 width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
                 fontFamily: PJS, cursor: proDisabled ? "default" : "pointer", border: "none",
                 background: proDisabled ? "rgba(10,10,10,0.08)" : "#E03553",
-                color: proDisabled ? "rgba(10,10,10,0.3)" : "#FFFFFF",
+                /* textMuted, not textDisabled. Disabled here still says "Your
+                   plan" / "Included in Ultra", which is status the user has to
+                   read, and the token rule exempts only decorative disabled
+                   text. See the measurement note on the Ultra button below. */
+                color: proDisabled ? "rgba(10,10,10,0.6)" : "#FFFFFF",
                 transition: "opacity 0.15s",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               }}
@@ -271,7 +275,17 @@ export default function Pricing() {
                 width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
                 fontFamily: PJS, cursor: ultraDisabled ? "default" : "pointer",
                 background: ultraDisabled ? "rgba(10,10,10,0.08)" : "#F59E0B",
-                color: ultraDisabled ? "rgba(10,10,10,0.3)" : "#FFFFFF",
+                /* Label contrast against its own rgba(10,10,10,0.08) fill,
+                   which sits on white and computes to rgb(235,235,235). The
+                   backdrop is flat, so unlike the end cap there is no photo to
+                   sample — this is exact, not a worst-case estimate:
+                     0.30 textDisabled (was)   2.01  fails
+                     0.45 iconMuted            3.07  fails
+                     0.58 textPlaceholder      4.64  passes
+                     0.60 textMuted            4.97  passes  <- used
+                   textMuted's documented ~5.25:1 is against pure white; on
+                   this 0.08 tint it lands at 4.97, still clear of AA 4.5. */
+                color: ultraDisabled ? "rgba(10,10,10,0.6)" : "#FFFFFF",
                 border: "none",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 transition: "opacity 0.15s",
