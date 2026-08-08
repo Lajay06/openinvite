@@ -480,7 +480,12 @@ export default function Pricing() {
               padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
               fontFamily: PJS, cursor: proDisabled ? "default" : "pointer", border: "none",
               background: proDisabled ? "rgba(255,255,255,0.1)" : "#E03553",
-              color: proDisabled ? "rgba(255,255,255,0.4)" : "#FFFFFF",
+              /* Solid white, not a dimmed value. In the disabled state the
+                 label reads "Your plan" or "Included in Ultra" — that is
+                 status the user has to read, so the design-token rule that
+                 exempts disabled controls from contrast does not apply. See
+                 the measurement note on the Ultra button below. */
+              color: "#FFFFFF",
               transition: "opacity 0.15s",
               display: "flex", alignItems: "center", gap: 8,
             }}
@@ -496,7 +501,19 @@ export default function Pricing() {
               padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
               fontFamily: PJS, cursor: ultraDisabled ? "default" : "pointer", border: "none",
               background: ultraDisabled ? "rgba(255,255,255,0.1)" : "#F59E0B",
-              color: ultraDisabled ? "rgba(255,255,255,0.4)" : "#FFFFFF",
+              /* Worst-case (lightest) backdrop pixel sampled across the whole
+                 button row, not one button, because the paid-user layout hides
+                 "Start free trial" and re-centers the two that remain, so a
+                 pill can land anywhere along the row. Label contrast against
+                 its own rgba(255,255,255,0.1) fill over the 0.35 scrim:
+                   label alpha   1440   1280    390
+                   0.40 (was)    2.07   2.07   2.08
+                   0.75          3.48   3.48   3.50
+                   0.85          3.97   3.97   3.99
+                   1.00          4.78   4.78   4.81  <- only value that passes
+                 Raising the fill instead would make it worse: a lighter fill
+                 lifts the backdrop toward the white label. */
+              color: "#FFFFFF",
               transition: "opacity 0.15s",
               display: "flex", alignItems: "center", gap: 8,
             }}
