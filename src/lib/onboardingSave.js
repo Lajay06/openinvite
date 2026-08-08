@@ -42,14 +42,15 @@ export function buildWeddingDetailsPayload(data) {
     activeUniverse: data.activeUniverse || 'london',
     websiteMode: data.websiteMode || 'dark',
     activeTheme: (data.websiteMode || 'dark') === 'light' ? 'ivory' : 'still',
-    // culturalNotes (OnboardingPathACultural's free-text "any cultural or
-    // religious traditions?" question) had no home in the payload before —
-    // silently discarded on save. Event Details' ThemeSection.jsx uses the
-    // structured theme.culture[]/theme.cultureOther fields instead, which is
-    // what buildWeddingContext() (src/lib/avaContext.js) reads for Ava's
-    // prompts — routing it there means an onboarding-only couple's answer
-    // still reaches Ava instead of vanishing.
-    ...(data.culturalNotes ? { theme: { cultureOther: data.culturalNotes } } : {}),
+    // OnboardingPathACultural now presents the same FAITH_OPTIONS/
+    // CULTURE_REGIONS/CULTURE_CROSS_CUTTING pills as Event Details'
+    // ThemeSection.jsx (src/lib/weddingThemeOptions.js), writing directly to
+    // the structured theme.faith/theme.faithSecondary/theme.culture[]/
+    // theme.cultureOther fields ThemeSection.jsx itself reads — which is
+    // also what buildWeddingContext() (src/lib/avaContext.js) reads for
+    // Ava's prompts. Previously this only ever wrote a free-text
+    // theme.cultureOther from a bare textarea, discarding faith entirely.
+    ...(data.theme ? { theme: data.theme } : {}),
   };
 }
 
