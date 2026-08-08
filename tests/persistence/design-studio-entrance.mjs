@@ -31,6 +31,16 @@
  *     rather than a locked door.
  *  5. "Your design assets" is actually gone from the page (no AssetGrid/
  *     AssetEditorModal import left on UniverseStudio.jsx).
+ *  6. feat/universe-world-persistent-fullscreen: the entered world view
+ *     escapes Layout.jsx's sidebar for the WHOLE exploration phase (not
+ *     just the transient entrance wash) via the same document.body portal
+ *     + position:fixed;inset:0 technique UniverseEntranceOverlay.jsx uses,
+ *     gated behind an escapeLayout prop (default true) — and that
+ *     OnboardingStepUniverse.jsx (which renders this same view inside its
+ *     own Dialog/DialogContent) explicitly opts out with
+ *     escapeLayout={false}, since a second nested portal there would
+ *     escape the Dialog itself, not just a sidebar that isn't present in
+ *     that context.
  */
 import { readFileSync, statSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
@@ -245,7 +255,12 @@ export async function runDesignStudioEntrance() {
     ? pass('UniverseBanner.jsx still lazy-loads the universe font on viewport entry (unrelated perf optimisation, kept)', 'found')
     : fail('UniverseBanner.jsx still lazy-loads the universe font on viewport entry', 'found', 'not found'));
 
-  results.push(/useScroll\(\{ target: ref, offset: \['start start', 'end start'\] \}\)/.test(worldViewSource)
+  // feat/universe-world-persistent-fullscreen split this onto multiple
+  // lines and added a conditional `container` spread (so useScroll tracks
+  // the portal's own scroll container when escapeLayout is active, instead
+  // of always window/document scroll) — the old single-line literal this
+  // checked for no longer appears verbatim.
+  results.push(/useScroll\(\{\s*\n\s*target: ref,\s*\n\s*offset: \['start start', 'end start'\],/.test(worldViewSource)
     ? pass('UniverseWorldView.jsx hero uses scroll-linked parallax (useScroll/useTransform)', 'found')
     : fail('UniverseWorldView.jsx hero uses scroll-linked parallax (useScroll/useTransform)', 'found', 'not found'));
   results.push(/y: prefersReducedMotion \? 0 : parallaxY/.test(worldViewSource)
@@ -266,9 +281,44 @@ export async function runDesignStudioEntrance() {
 
   console.log('\n  Design Studio — entering/leaving a world resets/restores scroll position correctly:\n');
 
-  results.push(/useLayoutEffect\(\(\) => \{\s*\n\s*window\.scrollTo\(0, 0\);\s*\n\s*\}, \[\]\);/.test(worldViewSource)
-    ? pass('UniverseWorldView.jsx resets scroll to 0 synchronously on mount (useLayoutEffect, before paint)', 'found')
-    : fail('UniverseWorldView.jsx resets scroll to 0 synchronously on mount (useLayoutEffect, before paint)', 'found', 'not found'));
+  // feat/universe-world-persistent-fullscreen: the reset now targets
+  // whichever element is actually the scrolling one — the new fixed
+  // scroll-container portal when escapeLayout (window itself no longer
+  // scrolls), window.scrollTo unchanged otherwise (OnboardingStepUniverse's
+  // own Dialog-scrolled, non-escaping case).
+  results.push(/useLayoutEffect\(\(\) => \{\s*\n\s*if \(escapeLayout\) scrollContainerRef\.current\?\.scrollTo\(0, 0\);\s*\n\s*else window\.scrollTo\(0, 0\);\s*\n\s*\}, \[escapeLayout\]\);/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx resets scroll to 0 synchronously on mount (useLayoutEffect, before paint) — scroll-container-aware', 'found')
+    : fail('UniverseWorldView.jsx resets scroll to 0 synchronously on mount (useLayoutEffect, before paint) — scroll-container-aware', 'found', 'not found'));
+
+  console.log('\n  Design Studio — the world view stays full-screen for the whole exploration phase, not just the entrance wash:\n');
+
+  results.push(/escapeLayout = true/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx — escapeLayout prop defaults true', 'found')
+    : fail('UniverseWorldView.jsx — escapeLayout prop defaults true', 'found', 'not found'));
+  results.push(/return createPortal\(\s*\n\s*<div\s*\n\s*ref={scrollContainerRef}\s*\n\s*style={{ position: 'fixed', inset: 0, zIndex: 2000, overflowY: 'auto'/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx — escapeLayout path portals the whole view to document.body as a fixed, internally-scrolling layer', 'found')
+    : fail('UniverseWorldView.jsx — escapeLayout path portals the whole view to document.body as a fixed, internally-scrolling layer', 'found', 'not found'));
+  results.push(/if \(!escapeLayout\) \{\s*\n\s*return \(\s*\n\s*<div>\s*\n\s*\{createPortal\(backButton, document\.body\)\}\s*\n\s*\{chapters\}\s*\n\s*<\/div>/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx — non-escaping path (OnboardingStepUniverse) is untouched: plain div, back button portalled alone, no full-screen container', 'found')
+    : fail('UniverseWorldView.jsx — non-escaping path (OnboardingStepUniverse) is untouched: plain div, back button portalled alone, no full-screen container', 'found', 'not found'));
+  results.push(/scrollContainerRef={escapeLayout \? scrollContainerRef : undefined}/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx — HeroChapter\'s parallax useScroll() is pointed at the new scroll container only when escaping (never window-scroll-tracking a non-scrolling window)', 'found')
+    : fail('UniverseWorldView.jsx — HeroChapter\'s parallax useScroll() is pointed at the new scroll container only when escaping', 'found', 'not found'));
+  results.push(/document\.body\.style\.overflow = 'hidden';/.test(worldViewSource) && /document\.body\.style\.overflow = prevOverflow;/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx — locks and restores the underlying dashboard\'s own body scroll while the full-screen portal is open', 'found')
+    : fail('UniverseWorldView.jsx — locks and restores the underlying dashboard\'s own body scroll while the full-screen portal is open', 'found', 'not found'));
+  results.push(/zIndex: escapeLayout \? 2001 : 60/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx — back button z-index clears its own full-screen container (2000) only when escaping, unchanged (60) otherwise', 'found')
+    : fail('UniverseWorldView.jsx — back button z-index clears its own full-screen container (2000) only when escaping, unchanged (60) otherwise', 'found', 'not found'));
+
+  const onboardingUniverseSource = read('src/components/onboarding/OnboardingStepUniverse.jsx');
+  results.push(/escapeLayout={false}/.test(onboardingUniverseSource)
+    ? pass('OnboardingStepUniverse.jsx explicitly opts out of escapeLayout (already inside its own Dialog/DialogContent)', 'found')
+    : fail('OnboardingStepUniverse.jsx explicitly opts out of escapeLayout (already inside its own Dialog/DialogContent)', 'found', 'not found'));
+
+  results.push(/backButtonStyle={{ left: 32 }}/.test(read('src/pages/UniverseStudio.jsx'))
+    ? pass('UniverseStudio.jsx overrides the back button\'s left offset (no sidebar-width clearance needed once the sidebar is fully covered)', 'found')
+    : fail('UniverseStudio.jsx overrides the back button\'s left offset (no sidebar-width clearance needed once the sidebar is fully covered)', 'found', 'not found'));
 
   const studioSource = read('src/pages/UniverseStudio.jsx');
   results.push(/wallScrollRef\.current = window\.scrollY;/.test(studioSource)
@@ -379,7 +429,12 @@ export async function runDesignStudioEntrance() {
   results.push(/← All universes/.test(worldViewSource)
     ? pass('World page back button reads "All universes" (was "All worlds")', 'found')
     : fail('World page back button reads "All universes" (was "All worlds")', 'found', 'not found'));
-  results.push(/top: 96, left: 232, zIndex: 60/.test(worldViewSource)
+  // fix/design-studio-back-fade-fix's escapeLayout change gave the button a
+  // conditional zIndex (2001 when escapeLayout portals the whole view at
+  // 2000, else the original 60 that only needs to beat the sidebar's 40) —
+  // the literal `zIndex: 60` this used to check for no longer appears on
+  // its own.
+  results.push(/top: 96, left: 232, zIndex: escapeLayout \? 2001 : 60/.test(worldViewSource)
     ? pass('World page back button sits below the app top bar/trial banner, above default chrome z-index', 'found')
     : fail('World page back button sits below the app top bar/trial banner, above default chrome z-index', 'found', 'not found'));
   // fix/design-studio-back-fade-fix — left:232 = 200 (sidebar width,
@@ -403,7 +458,17 @@ export async function runDesignStudioEntrance() {
   // button's centre returned the sidebar div, not the button, before
   // this fix. Portalling to document.body escapes it, same as the
   // entrance overlay fix just above.
-  results.push(/createPortal\(\s*\n\s*<button/.test(worldViewSource) && /<\/button>,\s*\n\s*document\.body\s*\n\s*\)\}/.test(worldViewSource)
+  // fix/design-studio-back-fade-fix extracted the button into a `backButton`
+  // JSX variable (it's now reused by both the !escapeLayout and escapeLayout
+  // render branches below), so it's no longer inlined directly inside a
+  // createPortal(<button ...) call — check the extracted variable is itself
+  // a <button>, and that both branches still route it to document.body:
+  // directly in the !escapeLayout branch, and nested inside the escapeLayout
+  // branch's own full-screen portalled wrapper div.
+  const backButtonIsButton = /const backButton = \(\s*\n\s*<button/.test(worldViewSource);
+  const directPortalToBody = /createPortal\(backButton, document\.body\)/.test(worldViewSource);
+  const escapeLayoutPortalsBackButton = /return createPortal\(\s*\n\s*<div[\s\S]{0,400}\{backButton\}[\s\S]{0,400}document\.body/.test(worldViewSource);
+  results.push(backButtonIsButton && directPortalToBody && escapeLayoutPortalsBackButton
     ? pass('World page back button portals to document.body, escaping .page-content\'s stacking context (was invisible behind the sidebar)', 'found')
     : fail('World page back button portals to document.body, escaping .page-content\'s stacking context (was invisible behind the sidebar)', 'found', 'not found'));
 

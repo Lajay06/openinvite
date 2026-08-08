@@ -18,6 +18,32 @@
  * Ultra-locked worlds are still fully enterable — every chapter renders
  * identically to an unlocked world; only the closing chapter's action
  * differs (upgrade path instead of a locked door).
+ *
+ * feat/universe-world-persistent-fullscreen: previously this rendered as
+ * an ordinary in-flow child of Layout.jsx's .page-content — the entrance
+ * transition (UniverseEntranceOverlay.jsx) portals to document.body and
+ * genuinely covers the sidebar, but once phase flips to 'world' that
+ * portal unmounts and THIS view took over with no such technique, so the
+ * sidebar reappeared beside it (a windowed layout, not an escape). The
+ * owner wanted persistent full-screen — this now uses the exact same
+ * document.body portal + position:fixed;inset:0 technique
+ * UniverseEntranceOverlay already proved out, but for the WHOLE 'world'
+ * phase, not just the transient wash. Gated behind `escapeLayout` (default
+ * true) rather than applied unconditionally: OnboardingStepUniverse.jsx
+ * renders this same component inside its own Dialog/DialogContent (which
+ * already IS its own scrollable, portalled overlay) — portalling a SECOND
+ * time there would escape the Dialog itself, not just the sidebar, and
+ * break its close/backdrop behaviour. That caller passes
+ * escapeLayout={false} and keeps its existing (pre-this-change) rendering
+ * untouched.
+ *
+ * Double-mount safety (same reasoning as UniverseEntranceOverlay.jsx):
+ * Layout.jsx mounts every page twice (desktop + mobile trees, CSS-
+ * toggled), so UniverseStudio.jsx — and this component's `phase==='world'`
+ * gate that controls whether it renders at all — exists as two independent
+ * component-local state instances. Only the tree that actually received
+ * the click can ever transition its own phase to 'world', so only one
+ * instance of this view (and its portal) is ever mounted at a time.
  */
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -211,9 +237,21 @@ function Chapter({ background, children, minHeight = '60vh' }) {
   );
 }
 
-function HeroChapter({ universe, isCurrent, prefersReducedMotion }) {
+function HeroChapter({ universe, isCurrent, prefersReducedMotion, scrollContainerRef }) {
   const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
+  // Without an explicit `container`, useScroll tracks progress against
+  // document/window scroll — correct when this chapter is an ordinary
+  // in-flow page element, but the full-screen portal below is its own
+  // position:fixed, internally-scrolling element, and window itself no
+  // longer scrolls once escapeLayout is active. scrollContainerRef is only
+  // passed in that case; omitted (undefined) preserves the original
+  // window-scroll-tracking behaviour for the non-escaping (onboarding
+  // Dialog) caller, unchanged.
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start start', 'end start'],
+    ...(scrollContainerRef ? { container: scrollContainerRef } : {}),
+  });
   const parallaxY = useTransform(scrollYProgress, [0, 1], ['0%', '22%']);
   const Masthead = MASTHEAD_BY_LAYOUT[universe.layout] || GenericMasthead;
   const smallUrl = universe.imageUrl ? universe.imageUrl.replace(/\.jpg$/, '-800.jpg') : null;
@@ -270,10 +308,25 @@ export default function UniverseWorldView({
   onBack, onSwitchUniverse, onUpgrade, motifNote,
   // backButtonStyle: overrides the fixed "← All universes" button's
   // position. Defaults to the Design Studio placement (clears its
-  // 200px sidebar + 48px top bar + trial banner). Onboarding renders this
-  // view with none of that chrome present, so it passes its own offset —
-  // see OnboardingStepUniverse.jsx.
+  // 200px sidebar + 48px top bar + trial banner) when escapeLayout is
+  // true — see below, the sidebar is covered either way, but the button
+  // still sits at the content-area edge rather than the raw viewport edge,
+  // matching where a couple's eye already expects dashboard chrome.
+  // Onboarding renders this view with none of that chrome present at all,
+  // so it passes its own offset — see OnboardingStepUniverse.jsx.
   backButtonStyle,
+  // escapeLayout: portals the whole view to document.body as a persistent
+  // position:fixed;inset:0 layer (same technique UniverseEntranceOverlay.jsx
+  // already uses for the transient entrance wash), so it stays full-screen
+  // for as long as the couple is exploring rather than rendering as an
+  // ordinary windowed page beside the dashboard sidebar. Defaults true —
+  // the Design Studio caller (UniverseStudio.jsx) wants this. Defaults to
+  // false only for OnboardingStepUniverse.jsx, which already renders this
+  // component inside its own Dialog/DialogContent (an existing scrollable
+  // overlay) — portalling a second, independent full-screen layer there
+  // would escape the Dialog itself, not just a sidebar that isn't present
+  // in that context anyway.
+  escapeLayout = true,
 }) {
   const prefersReducedMotion = useReducedMotion();
   const coupleNames = weddingDetails?.coupleNames || 'Your names';
@@ -281,6 +334,7 @@ export default function UniverseWorldView({
   const showUpgrade = universe.isUltra && !canAccessUltra && !isCurrent;
   const motifLarge = MOTIF_LARGE[universe.id];
   const { colors, typography } = universe;
+  const scrollContainerRef = useRef(null);
 
   // Opening a world is a deliberate, immediate need for its real font (not
   // a "might scroll into view" case like the banner wall) — load it as
@@ -291,14 +345,33 @@ export default function UniverseWorldView({
 
   // The world view mounts wherever the banner wall happened to be
   // scrolled to (entering a world is a same-page conditional swap, not a
-  // real route change — nothing else resets window.scrollY on its own).
+  // real route change — nothing else resets scroll position on its own).
   // Resetting here, in useLayoutEffect, runs synchronously before the
   // browser paints this component's first frame, so the hero is always
   // what's actually shown first — never a visible jump from a mid-page
-  // landing back up to the top.
+  // landing back up to the top. Targets the new fixed scroll container
+  // when escapeLayout is active (window itself no longer scrolls — the
+  // portal covers it); otherwise unchanged (window.scrollTo, exactly as
+  // before this change) for the non-escaping caller.
   useLayoutEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    if (escapeLayout) scrollContainerRef.current?.scrollTo(0, 0);
+    else window.scrollTo(0, 0);
+  }, [escapeLayout]);
+
+  // Locks the underlying dashboard's own scroll while the full-screen
+  // portal is open — without this, a wheel/touch gesture that runs past
+  // the portal's own scroll extent can scroll-chain into whatever's
+  // sitting behind it (still fully mounted, just visually covered),
+  // producing a jarring peek of the sidebar mid-scroll. Restores on
+  // unmount unconditionally, not just when escapeLayout — cheap, and
+  // guarantees this can never leave the dashboard permanently unscrollable
+  // if escapeLayout's value somehow changes across a re-render.
+  useEffect(() => {
+    if (!escapeLayout) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prevOverflow; };
+  }, [escapeLayout]);
 
   // Escape is a second way back, alongside the fixed "All universes"
   // button below — both call the same onBack, which restores the wall's
@@ -311,54 +384,42 @@ export default function UniverseWorldView({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onBack]);
 
-  return (
-    <div>
-      {/* Portalled to document.body — root cause of an earlier invisible/
-          unclickable bug: this button lives inside .page-content, which
-          (per the same fix applied to UniverseEntranceOverlay.jsx) gets
-          its own stacking context the moment any animation with
-          animation-fill-mode:forwards is applied to it (pageFadeIn is
-          opacity-only, but that's still enough to trigger this). Trapped
-          inside that context, this button's zIndex:60 was never compared
-          directly against the sidebar (zIndex:40, a sibling outside
-          .page-content, promoted to its own stacking context by its own
-          `contain: layout` CSS) — the sidebar's outer-level effective
-          zIndex beat .page-content's (which has none set, so effectively
-          0), and its opaque white background painted straight over this
-          button. Confirmed via a real browser: before this fix,
-          elementFromPoint at the button's centre returned the sidebar div;
-          after portalling, it returns the button itself.
+  const backButton = (
+    <button
+      onClick={onBack}
+      style={{
+        // top clears the app's fixed 48px top bar (plus the 36px trial
+        // banner, when present) with room to spare — 20px collided with
+        // both. A dark scrim + blur (rather than a light pill) reads
+        // legibly over every chapter background, light or dark, without
+        // needing to know which chapter is currently in view.
+        //
+        // zIndex must clear whatever this view's own full-screen container
+        // uses (2000, when escapeLayout — see below) as well as the
+        // sidebar (60 was only ever chosen to beat the sidebar's own 40;
+        // see the escapeLayout history note above the component for how
+        // that stacking-context bug was originally found and fixed).
+        position: 'fixed', top: 96, left: 232, zIndex: escapeLayout ? 2001 : 60,
+        display: 'flex', alignItems: 'center', gap: 6,
+        background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(8px)',
+        border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px',
+        cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+        ...backButtonStyle,
+      }}
+    >
+      ← All universes
+    </button>
+  );
 
-          left is offset from the CONTENT area, not the viewport — the
-          sidebar is a constant, non-responsive, non-collapsible 200px
-          (AnimatedSidebar.jsx; no breakpoint/collapsed state exists), so
-          200 (sidebar width) + 32 (8px-grid offset) = 232 always lands
-          just inside the content edge, never over the sidebar, at every
-          viewport width. */}
-      {createPortal(
-        <button
-          onClick={onBack}
-          style={{
-            // top clears the app's fixed 48px top bar (plus the 36px trial
-            // banner, when present) with room to spare — 20px collided with
-            // both. A dark scrim + blur (rather than a light pill) reads
-            // legibly over every chapter background, light or dark, without
-            // needing to know which chapter is currently in view.
-            position: 'fixed', top: 96, left: 232, zIndex: 60,
-            display: 'flex', alignItems: 'center', gap: 6,
-            background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px',
-            cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#FFFFFF',
-            ...backButtonStyle,
-          }}
-        >
-          ← All universes
-        </button>,
-        document.body
-      )}
-
+  const chapters = (
+    <>
       {/* Chapter 1 — hero, full-bleed, parallax */}
-      <HeroChapter universe={universe} isCurrent={isCurrent} prefersReducedMotion={prefersReducedMotion} />
+      <HeroChapter
+        universe={universe}
+        isCurrent={isCurrent}
+        prefersReducedMotion={prefersReducedMotion}
+        scrollContainerRef={escapeLayout ? scrollContainerRef : undefined}
+      />
 
       {/* Chapter 2 — the world's story */}
       <Chapter background={colors.lightBg} minHeight="50vh">
@@ -551,6 +612,35 @@ export default function UniverseWorldView({
           )}
         </Reveal>
       </Chapter>
-    </div>
+    </>
+  );
+
+  if (!escapeLayout) {
+    return (
+      <div>
+        {createPortal(backButton, document.body)}
+        {chapters}
+      </div>
+    );
+  }
+
+  // escapeLayout: the whole view — chapters AND back button — portals to
+  // document.body as one persistent position:fixed;inset:0 layer, so it
+  // genuinely covers the sidebar (still mounted underneath, per the
+  // double-mount note above) for as long as this phase is active, not just
+  // during the transient entrance wash. overflowY:auto makes this div the
+  // real scrolling element from here on — window itself no longer scrolls
+  // (see the body-scroll-lock effect above), which is exactly why
+  // HeroChapter's useScroll() above was given this same ref as its
+  // `container`.
+  return createPortal(
+    <div
+      ref={scrollContainerRef}
+      style={{ position: 'fixed', inset: 0, zIndex: 2000, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
+    >
+      {backButton}
+      {chapters}
+    </div>,
+    document.body
   );
 }

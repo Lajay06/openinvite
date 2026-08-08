@@ -214,6 +214,12 @@ export default function OnboardingStepUniverse({ onNext, data }) {
               onUpgrade={() => {}}
               motifNote={previewUniverse.motifNote}
               backButtonStyle={{ top: 20, left: 'auto', right: 24 }}
+              // This view already renders inside a Dialog/DialogContent —
+              // its own scrollable, already-portalled overlay. Escaping to
+              // a SECOND document.body portal here (the Design Studio
+              // default) would break out of the Dialog itself, not just a
+              // sidebar that isn't present in this context anyway.
+              escapeLayout={false}
             />
           )}
         </DialogContent>

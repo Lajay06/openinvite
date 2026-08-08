@@ -318,6 +318,12 @@ export default function UniverseStudio() {
           onSwitchUniverse={handleSwitchUniverse}
           onUpgrade={handleUpgrade}
           motifNote={opened.motifNote}
+          // escapeLayout defaults true — this is the persistent full-screen
+          // caller. The sidebar it used to clear (left: 232 = 200px width +
+          // 32px margin) is now fully covered by the view's own portal, not
+          // just visually beside it, so the button only needs the plain
+          // 32px edge margin, not the sidebar-width offset.
+          backButtonStyle={{ left: 32 }}
         />
       )}
 
