@@ -2,13 +2,26 @@ import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { UploadFile } from '@/integrations/Core';
 import { validateUploadFile } from '@/lib/uploadValidation';
 import UploadStatus from '@/components/shared/UploadStatus';
 
+const MoodboardItem = base44.entities.MoodboardItem;
+
 let inspirationQueueId = 0;
 
+// Was structurally close to Moodboard.jsx's own upload pattern already
+// (same UploadFile call, same UploadStatus queue component), but stopped
+// short of it: images collected here as raw URLs, then Onboarding.jsx's
+// saveOnboarding created MoodboardItem records later with hardcoded
+// generic values (title: 'Inspiration' for every photo, category: 'other',
+// no board_name, no tags). Now calls MoodboardItem.create() immediately
+// per upload, same as Moodboard.jsx's own uploadOne — a filename-derived
+// title, board_name: 'Main board' (Moodboard.jsx's own default board), and
+// tags: [] — so photos uploaded during onboarding show up in the real
+// Moodboard page properly titled and boarded, not as generic placeholders.
 export default function OnboardingPathAInspiration({ onNext, data }) {
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState([]); // [{ id, image_url }]
   const [queue, setQueue] = useState([]); // [{ id, file, status: 'uploading'|'error', error }]
   const [formError, setFormError] = useState(null);
   const uploading = queue.some(q => q.status === 'uploading');
@@ -16,8 +29,15 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
   const uploadOne = useCallback(async (item) => {
     setQueue(q => q.map(i => i.id === item.id ? { ...i, status: 'uploading', error: null } : i));
     try {
-      const result = await base44.integrations.Core.UploadFile({ file: item.file });
-      setImages(prev => [...prev, result.file_url]);
+      const { file_url } = await UploadFile({ file: item.file });
+      const created = await MoodboardItem.create({
+        title: item.file.name.split('.')[0],
+        image_url: file_url,
+        category: 'other',
+        board_name: 'Main board',
+        tags: [],
+      });
+      setImages(prev => [...prev, { id: created.id, image_url: file_url }]);
       setQueue(q => q.filter(i => i.id !== item.id));
     } catch (err) {
       console.error('Upload error:', err);
@@ -54,13 +74,16 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
     });
   }, [uploadOne]);
 
-  const removeImage = (url) => {
-    setImages(prev => prev.filter(img => img !== url));
+  const removeImage = async (id) => {
+    setImages(prev => prev.filter(img => img.id !== id));
+    try {
+      await MoodboardItem.delete(id);
+    } catch (err) {
+      console.error('Failed to remove moodboard item:', err);
+    }
   };
 
-  const handleSubmit = () => {
-    onNext({ inspirationPhotos: images });
-  };
+  const handleSubmit = () => onNext();
 
   return (
     <div className="w-full max-w-2xl text-center">
@@ -114,22 +137,22 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
 
         {(images.length > 0 || queue.length > 0) && (
           <div className="grid grid-cols-3 gap-4">
-            {images.map((url, i) => (
+            {images.map((img) => (
               <motion.div
-                key={url + i}
+                key={img.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative aspect-square rounded-lg overflow-hidden group"
+                className="relative aspect-square overflow-hidden group"
               >
                 <img
-                  src={url}
+                  src={img.image_url}
                   alt="Inspiration"
                   className="w-full h-full object-cover"
                 />
                 <motion.button
                   initial={{ opacity: 0 }}
                   whileHover={{ opacity: 1 }}
-                  onClick={() => removeImage(url)}
+                  onClick={() => removeImage(img.id)}
                   className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <X className="w-6 h-6 text-white" />
@@ -137,13 +160,13 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
               </motion.div>
             ))}
             {queue.map(item => (
-              <div key={item.id} className="relative aspect-square rounded-lg overflow-hidden">
+              <div key={item.id} className="relative aspect-square overflow-hidden">
                 <UploadStatus
                   status={item.status}
                   error={item.error}
                   onRetry={() => retryUpload(item.id)}
                   height="100%"
-                  style={{ height: '100%', minHeight: 0, borderRadius: 8 }}
+                  style={{ height: '100%', minHeight: 0 }}
                 />
               </div>
             ))}
@@ -166,7 +189,7 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
         </button>
 
         <button
-          onClick={() => onNext({ inspirationPhotos: [] })}
+          onClick={handleSubmit}
           className="block mx-auto text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
         >
           Skip for now →
