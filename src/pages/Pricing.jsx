@@ -421,8 +421,31 @@ export default function Pricing() {
           are unchanged and passed through as children — they carry the real
           signup and billing navigation plus the upgrade_clicked analytics,
           so they are deliberately not reduced to a plain link. */}
+      {/* c_crop,h_700 re-centres the subject inside the delivered image rather
+          than nudging the CSS crop. MarketingEndCap hardcodes
+          objectPosition: "center" and is shared by seven pages, so the only
+          per-page lever is the transformation on this URL.
+
+          The source is 1600x1067 and both heads sit high in it: the band runs
+          y 62-620, centred on y 341, while the image centre is y 533. Because
+          object-fit: cover always crops around the image centre, that 192px
+          offset clipped the top of his head by 122px at 1440 and 78px at 1280
+          (390 was already fine). Cropping to y 0-700 puts the band centre at
+          350 against an image centre of 350, so cover now trims evenly.
+
+          Measured clearance from the head band to the crop edge, +15px pad:
+            1440x900  -136px (clipped)  ->  +47px
+            1280x900   -93px (clipped)  ->  +47px
+             390x844   +47px            ->  +16px
+          h_700 beat h_680 (+9 at 390) and h_760 (+17 at 1440) on worst case.
+
+          Known limit: on very wide, short windows the section's fixed
+          70vh/minHeight 480 makes the visible strip shorter than the head band
+          itself, so no crop can keep both heads (1920x720 is still -93px here).
+          This crop improves every such case by a uniform +184px, but the full
+          fix would be a change to the shared component's height rule. */}
       <MarketingEndCap
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_day_tripping_Agust%C3%ADn_Far%C3%ADas_Photos_ID6199_g2inky.jpg"
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/c_crop,x_0,y_0,w_1600,h_700/f_auto,q_auto/DTS_day_tripping_Agust%C3%ADn_Far%C3%ADas_Photos_ID6199_g2inky.jpg"
         alt="A couple on a day trip together"
       >
           {!isPaidUser && (
