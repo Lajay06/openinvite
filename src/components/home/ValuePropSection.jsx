@@ -79,19 +79,34 @@ export default function ValuePropSection() {
           </h2>
         </div>
       ) : (
+        /* The subject sits on the right of the photo. Her silhouette's
+            leftmost edge, measured off the source image (1280x853), is x 720
+            at its tightest across y 120-660 — so the text has to stay left of
+            720/1280 of the width. At 80vw it did not: the block ran 4 wide
+            lines that crossed her face by up to 314px at 1440.
+
+            Width alone cannot fix it at 72px. 820px is the narrowest maxWidth
+            that still wraps to 5 lines, and it clears her by only 5px, which
+            is inside font-rendering noise. Dropping to 68px is what buys real
+            clearance. Measured worst-case per-line gap at 1440:
+              80vw  / 72px -> 4 lines, -314px  (overlaps)
+              820px / 72px -> 5 lines,   +5px  (ceiling for width-only)
+              760px / 68px -> 5 lines,  +51px  <- used
+            The min() keeps 80px of breathing room at the narrow end of the
+            desktop branch, which starts at 769px. */
         <div
           style={{
             position: "absolute",
             top: "50%",
             left: "80px",
             transform: "translateY(-50%)",
-            maxWidth: "80vw",
+            maxWidth: "min(760px, calc(100vw - 160px))",
             zIndex: 10,
           }}
         >
           <h2
             style={{
-              fontSize: "clamp(40px, 5.5vw, 72px)",
+              fontSize: "clamp(40px, 5.2vw, 68px)",
               fontWeight: 700,
               lineHeight: 1.15,
               letterSpacing: "-0.02em",
