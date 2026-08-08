@@ -13,10 +13,10 @@ const ROWS = [
   },
   {
     heading: "Guest insights",
-    description: "Dietary, seating, and RSVP patterns analysed automatically",
+    description: "Dietary, seating, and RSVP patterns analyzed automatically",
   },
   {
-    heading: "Timeline optimisation",
+    heading: "Timeline optimization",
     description: "Day-of schedule refined to perfection",
   },
 ];
@@ -116,7 +116,7 @@ export default function AvaSpotlightSection() {
           margin: "0 auto 120px",
           fontFamily: PJS,
         }}>
-          Ava learns your style, your budget, and your vision, then helps you make smarter decisions at every step. From vendor suggestions to seating optimisation, Ava's always one step ahead.
+          Ava learns your style, your budget, and your vision, then helps you make smarter decisions at every step. From vendor suggestions to seating optimization, Ava's always one step ahead.
         </p>
         {ROWS.map((row, i) => (
           <AnimatedRow key={i} row={row} delay={i * 100} />

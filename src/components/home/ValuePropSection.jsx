@@ -8,7 +8,7 @@ const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const TEXT = "All the powerful tools, beautifully designed to make wedding planning smooth, stylish, and seriously organised.";
+const TEXT = "All the powerful tools, beautifully designed to make wedding planning smooth, stylish, and seriously organized.";
 const IMG_SRC = "https://static.wixstatic.com/media/d2df22_c34b84a5b42f49b0963b953b94c0e8c4~mv2.jpg";
 
 export default function ValuePropSection() {
