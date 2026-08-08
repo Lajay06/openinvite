@@ -92,21 +92,26 @@ export default function ValuePropSection() {
               80vw  / 72px -> 4 lines, -314px  (overlaps)
               820px / 72px -> 5 lines,   +5px  (ceiling for width-only)
               760px / 68px -> 5 lines,  +51px  <- used
-            The min() keeps 80px of breathing room at the narrow end of the
-            desktop branch, which starts at 769px. */
+            Everything here is in vw because the photo is width:100% with no
+            crop, so her silhouette sits at a fixed *fraction* of the width at
+            every viewport. Fixed px offsets or a capped font break that
+            relationship: the working 1440 values held at 1440 and above but
+            overlapped her by 33px at 1280 and 178px at 1024. Expressed as
+            fractions of the 1440 layout (left 80px, box 760px, text 68px)
+            they hold at every width. */
         <div
           style={{
             position: "absolute",
             top: "50%",
-            left: "80px",
+            left: "5.56vw",
             transform: "translateY(-50%)",
-            maxWidth: "min(760px, calc(100vw - 160px))",
+            maxWidth: "52.8vw",
             zIndex: 10,
           }}
         >
           <h2
             style={{
-              fontSize: "clamp(40px, 5.2vw, 68px)",
+              fontSize: "clamp(30px, 4.72vw, 110px)",
               fontWeight: 700,
               lineHeight: 1.15,
               letterSpacing: "-0.02em",
