@@ -143,10 +143,26 @@ export default function MusicPage() {
   const details = isCollaborating ? collabDataQuery.data?.weddingDetails : ownDetails;
   const detailsLoaded = isCollaborating ? collabDataQuery.isSuccess : ownDetailsLoaded;
 
+  // NOT getMyRecords('SongRequest') — SongRequest rows are written by
+  // api/song-request-submit.js via the admin key, and Base44 always stamps
+  // admin-key creates created_by_id: "anonymous" regardless of what's sent
+  // (same pattern as RsvpResponse/GuestContactSubmission — see
+  // BASE44_PLATFORM_NOTES.md), so a created_by_id-scoped query can never
+  // see a single real guest submission. api/song-request-review.js resolves
+  // the caller's own wedding server-side and scopes by weddingId instead.
   const { data: ownSongRequests } = useQuery({
     queryKey: ['songRequests'],
     enabled: !isCollaborating,
-    queryFn: async () => { try { return await getMyRecords('SongRequest'); } catch { return []; } },
+    queryFn: async () => {
+      try {
+        const res = await fetch('/api/song-request-review', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        });
+        if (!res.ok) return [];
+        const { requests } = await res.json();
+        return requests || [];
+      } catch { return []; }
+    },
   });
   const songRequests = isCollaborating ? collabDataQuery.data?.SongRequest : ownSongRequests;
 
@@ -180,6 +196,27 @@ export default function MusicPage() {
   const deleteTrackMutation = useMutation({
     mutationFn: async (id) => base44.entities.Music.delete(id),
     onSuccess: () => queryClient.invalidateQueries(['musicTracks']),
+  });
+
+  // 'add' bridges the request straight onto the real Music list (creates
+  // the Music entry + sets SongRequest.status to 'added', server-side,
+  // ownership-verified) — one click, not a separate approve-then-add step.
+  const reviewRequestMutation = useMutation({
+    mutationFn: async ({ songRequestId, action }) => {
+      const res = await fetch('/api/song-request-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        body: JSON.stringify({ songRequestId, action }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+    },
+    onSuccess: (_data, { action }) => {
+      queryClient.invalidateQueries(['songRequests']);
+      if (action === 'add') queryClient.invalidateQueries(['musicTracks']);
+      toast.success(action === 'add' ? 'Added to your list' : 'Request declined');
+    },
+    onError: (err) => toast.error(err.message || 'Something went wrong.'),
   });
 
   useEffect(() => {
@@ -588,8 +625,8 @@ export default function MusicPage() {
           <div style={{ width: 300, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 10px' }}>Song requests</p>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {['pending', 'approved', 'declined'].map(status => (
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                {['pending', 'approved', 'added', 'declined'].map(status => (
                   <button key={status} onClick={() => setRequestFilter(status)}
                     style={{ padding: '3px 10px', border: 'none', background: requestFilter === status ? '#E03553' : 'rgba(10,10,10,0.06)', color: requestFilter === status ? '#FFFFFF' : 'rgba(10,10,10,0.6)', fontSize: 12, fontWeight: 600, cursor: 'pointer', borderRadius: 999, fontFamily: PJS, whiteSpace: 'nowrap', transition: 'background 0.12s, color 0.12s' }}>
                     {status.charAt(0).toUpperCase() + status.slice(1)}{status === 'pending' && pendingCount > 0 ? ` (${pendingCount})` : ''}
@@ -602,7 +639,10 @@ export default function MusicPage() {
               {filteredRequests.length === 0 ? (
                 <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: 'center', padding: '32px 0' }}>No {requestFilter} requests</p>
               ) : (
-                filteredRequests.map(req => (
+                filteredRequests.map(req => {
+                  const actionable = !readOnly && (req.status === 'pending' || req.status === 'approved');
+                  const busy = reviewRequestMutation.isPending && reviewRequestMutation.variables?.songRequestId === req.id;
+                  return (
                   <div key={req.id} style={{ border: '1px solid rgba(10,10,10,0.08)' }}>
                     <div style={{ display: 'flex', gap: 10, padding: 12 }}>
                       {req.albumArt && <img src={req.albumArt} style={{ width: 44, height: 44, objectFit: 'cover', flexShrink: 0 }} alt={`${req.title} album art`} />}
@@ -617,8 +657,27 @@ export default function MusicPage() {
                         <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", fontStyle: 'italic', margin: 0 }}>"{req.guestNote}"</p>
                       </div>
                     )}
+                    {actionable && (
+                      <div style={{ display: 'flex', gap: 8, padding: '8px 12px', borderTop: '1px solid rgba(10,10,10,0.05)' }}>
+                        <button
+                          onClick={() => reviewRequestMutation.mutate({ songRequestId: req.id, action: 'add' })}
+                          disabled={busy}
+                          style={{ flex: 1, padding: '6px 0', border: 'none', background: '#166534', color: '#FFFFFF', fontSize: 12, fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1, fontFamily: PJS, borderRadius: 999 }}
+                        >
+                          Add to my list
+                        </button>
+                        <button
+                          onClick={() => reviewRequestMutation.mutate({ songRequestId: req.id, action: 'decline' })}
+                          disabled={busy}
+                          style={{ flex: 1, padding: '6px 0', border: '1px solid rgba(10,10,10,0.15)', background: 'none', color: 'rgba(10,10,10,0.6)', fontSize: 12, fontWeight: 700, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1, fontFamily: PJS, borderRadius: 999 }}
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    )}
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
-import { ChevronLeft, Music } from 'lucide-react';
+import { ChevronLeft, Music, Loader2 } from 'lucide-react';
 import { interactiveDivProps } from '@/lib/a11y';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -13,8 +13,11 @@ export default function GuestMusic() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
   const [selectedTrack, setSelectedTrack] = useState(null);
   const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
   const [guestNote, setGuestNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -22,6 +25,7 @@ export default function GuestMusic() {
 
   const turnstileRef = useRef(null);
   const tsTokenRef = useRef('');
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,9 +57,58 @@ export default function GuestMusic() {
 
   const music = details?.music;
   const isOpen = !music?.requestsClosedDate || new Date(music.requestsClosedDate) > new Date();
+  // The couple's own dashboard enforces these server-side regardless (see
+  // api/song-request-submit.js) — asking for email up front here just
+  // avoids a guest filling out the whole form before hitting a 400 for a
+  // gate this page could have told them about immediately.
+  const emailRequired = !!(music?.onlyForConfirmedGuests || music?.limitOnePerGuest);
+  const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.trim());
+
+  const search = (q) => {
+    const sq = q.trim();
+    if (sq.length < 2) {
+      setSearchResults([]);
+      setSearchError('');
+      return;
+    }
+    setSearching(true);
+    setSearchError('');
+    fetch('/api/spotify-search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: sq }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Search failed');
+        setSearchResults((data.tracks || []).map(t => ({
+          id: t.id,
+          title: t.name,
+          artist: t.artists,
+          album: t.album,
+          albumArt: t.artwork_url || t.artwork_url_small || '',
+          duration: t.duration_ms || 0,
+          explicit: !!t.explicit,
+          spotifyUrl: t.spotify_url || '',
+        })));
+      })
+      .catch((e) => {
+        setSearchResults([]);
+        setSearchError(e.message || 'Search failed. Please try again.');
+      })
+      .finally(() => setSearching(false));
+  };
+
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => search(val), 300);
+  };
 
   const submitRequest = async () => {
     if (!guestName.trim() || !selectedTrack) return;
+    if (emailRequired && !emailLooksValid) { setSubmitError('A valid email is required to request a song.'); return; }
     if (!tsTokenRef.current) { setSubmitError('Security check still loading — please try again in a moment.'); return; }
     setSubmitError('');
     setSubmitting(true);
@@ -74,6 +127,7 @@ export default function GuestMusic() {
           explicit: selectedTrack.explicit || false,
           spotifyUrl: selectedTrack.spotifyUrl || '',
           submittedBy: guestName,
+          guestEmail: guestEmail.trim(),
           guestNote: guestNote,
           turnstileToken: tsTokenRef.current,
         }),
@@ -101,7 +155,7 @@ export default function GuestMusic() {
           <ChevronLeft size={16} /> Back
         </Link>
         <p style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 14, fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
-          Song Requests
+          Song requests
         </p>
       </div>
 
@@ -111,7 +165,7 @@ export default function GuestMusic() {
           <Music size={28} color="#000000" />
         </div>
         <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#FFFFFF', margin: '0 0 16px', lineHeight: 1.1 }}>
-          Request a Song
+          Request a song
         </h1>
         <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, maxWidth: 400, margin: '0 auto' }}>
           {music?.requestMessage || "Help us build the soundtrack to our night. Request a song you'd love to hear."}
@@ -132,26 +186,36 @@ export default function GuestMusic() {
           <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#1DB954', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 32, color: '#FFFFFF', marginBottom: 12 }}>Request Submitted!</h2>
+          <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 32, color: '#FFFFFF', marginBottom: 12 }}>Request submitted!</h2>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 32 }}>
             "{selectedTrack?.title}" by {selectedTrack?.artist} has been sent to the couple.
           </p>
-          <button onClick={() => { setSubmitted(false); setSelectedTrack(null); setGuestNote(''); setSearchQuery(''); setSearchResults([]); }} style={{ padding: '12px 32px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-            Request Another Song
+          <button onClick={() => { setSubmitted(false); setSelectedTrack(null); setGuestNote(''); setGuestEmail(''); setSearchQuery(''); setSearchResults([]); }} style={{ padding: '12px 32px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            Request another song
           </button>
         </div>
       ) : (
         <div style={{ padding: '0 24px' }}>
           {/* Search */}
           <div style={{ position: 'relative', marginBottom: 16 }}>
-            <svg style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            {searching
+              ? <Loader2 size={16} className="animate-spin" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
+              : <svg style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            }
             <input
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search for a song..."
+              onChange={handleSearchChange}
+              placeholder="Search for a song…"
               style={{ width: '100%', padding: '16px 16px 16px 44px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#FFFFFF', fontSize: 16, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
+
+          {searchError && (
+            <p style={{ fontSize: 13, color: '#E03553', marginBottom: 16 }}>{searchError}</p>
+          )}
+          {!searching && !searchError && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '16px 0' }}>No results. Try a different search.</p>
+          )}
 
           {/* Search results */}
           {searchResults.map(track => (
@@ -191,6 +255,13 @@ export default function GuestMusic() {
               </div>
 
               <input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="Your name" style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: 16, outline: 'none', marginBottom: 10, boxSizing: 'border-box' }} />
+              <input
+                type="email"
+                value={guestEmail}
+                onChange={e => setGuestEmail(e.target.value)}
+                placeholder={emailRequired ? 'Your email' : 'Your email (optional)'}
+                style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: 16, outline: 'none', marginBottom: 10, boxSizing: 'border-box' }}
+              />
               <textarea value={guestNote} onChange={e => setGuestNote(e.target.value)} placeholder="Add a note (optional)" rows={3} style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: 16, outline: 'none', resize: 'none', marginBottom: 20, boxSizing: 'border-box' }} />
 
               {submitError && (
@@ -208,10 +279,10 @@ export default function GuestMusic() {
 
               <button
                 onClick={submitRequest}
-                disabled={!guestName.trim() || submitting}
-                style={{ width: '100%', padding: '18px', background: guestName.trim() ? '#1DB954' : 'rgba(255,255,255,0.1)', color: guestName.trim() ? '#000000' : 'rgba(255,255,255,0.3)', border: 'none', fontSize: 16, fontWeight: 700, cursor: guestName.trim() ? 'pointer' : 'not-allowed', minHeight: 60 }}
+                disabled={!guestName.trim() || (emailRequired && !emailLooksValid) || submitting}
+                style={{ width: '100%', padding: '18px', background: (guestName.trim() && (!emailRequired || emailLooksValid)) ? '#1DB954' : 'rgba(255,255,255,0.1)', color: (guestName.trim() && (!emailRequired || emailLooksValid)) ? '#000000' : 'rgba(255,255,255,0.3)', border: 'none', fontSize: 16, fontWeight: 700, cursor: (guestName.trim() && (!emailRequired || emailLooksValid)) ? 'pointer' : 'not-allowed', minHeight: 60 }}
               >
-                {submitting ? 'Submitting...' : 'Submit Song Request'}
+                {submitting ? 'Submitting…' : 'Submit song request'}
               </button>
             </div>
           )}

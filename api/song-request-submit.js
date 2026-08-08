@@ -6,18 +6,23 @@
  * key, stamps the correct weddingId onto the SongRequest server-side
  * (the previous client-side base44.entities.SongRequest.create() call had
  * NO wedding linkage at all — every wedding's requests landed in one
- * unscoped table), and re-validates the guest-requests-enabled /
- * requests-closed gates server-side rather than trusting the client's own
- * UI gating.
+ * unscoped table), and re-validates every music.* gate server-side rather
+ * than trusting the client's own UI gating: guestRequestsEnabled,
+ * requestsClosedDate, onlyForConfirmedGuests (cross-checked against the
+ * live, RsvpResponse-derived attendance status — Guest.rsvp_status itself
+ * is a frozen-at-creation column nothing keeps current, same reasoning
+ * api/my-guests-rsvp.js documents), and limitOnePerGuest (deduped by
+ * guestEmail against this wedding's existing requests).
  *
  * Body: {
- *   weddingSlug: string, turnstileToken: string,
+ *   weddingSlug: string, turnstileToken: string, guestEmail?: string,
  *   spotifyTrackId?, title, artist, album?, albumArt?, duration?, explicit?,
  *   spotifyUrl?, submittedBy: string, guestNote?: string,
  * }
  * Response: 200 { ok: true }
+ *        or 400 { error: 'A valid email is required to request a song.' } (onlyForConfirmedGuests/limitOnePerGuest on, no/bad email)
+ *        or 403 { error: '...' } (requests closed/disabled, not a confirmed guest, or already submitted)
  *        or 404 { error: 'Wedding not found.' }
- *        or 403 { error: 'Song requests are not open for this wedding.' }
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
@@ -27,8 +32,11 @@ import {
   checkRateLimit,
   getClientIp,
   sanitizeString,
+  isValidEmail,
   verifyTurnstileToken,
 } from './_lib/security.js';
+import { hashId } from './_lib/questionnaireCrypto.js';
+import { latestEventResponses, toEventResponsesShape, deriveRsvpStatus } from '../src/lib/rsvpAggregation.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -42,6 +50,15 @@ function unwrapList(payload) {
   if (Array.isArray(payload?.data)) return payload.data;
   if (Array.isArray(payload?.results)) return payload.results;
   return [];
+}
+
+async function adminGet(path) {
+  const res = await fetch(`${BASE44_API}${path}`, { headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` } });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Base44 GET ${path} failed (${res.status}): ${body.slice(0, 200)}`);
+  }
+  return unwrapList(await res.json());
 }
 
 export default async function handler(req, res) {
@@ -91,15 +108,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const query = encodeURIComponent(JSON.stringify({ slug: weddingSlug }));
-    const findRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${query}`, {
-      headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
-    });
-    if (!findRes.ok) {
-      const body = await findRes.text().catch(() => '');
-      throw new Error(`Base44 WeddingDetails lookup failed (${findRes.status}): ${body.slice(0, 200)}`);
-    }
-    const wedding = unwrapList(await findRes.json()).find(w => w.slug === weddingSlug && !w.is_test);
+    const wedding = (await adminGet(`/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${encodeURIComponent(JSON.stringify({ slug: weddingSlug }))}`))
+      .find(w => w.slug === weddingSlug && !w.is_test);
     if (!wedding) {
       return res.status(404).json({ error: 'Wedding not found.' });
     }
@@ -114,6 +124,43 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Song requests have closed for this wedding.' });
     }
 
+    const guestEmail = sanitizeString(req.body?.guestEmail || '').toLowerCase().slice(0, 200);
+    if (music.onlyForConfirmedGuests || music.limitOnePerGuest) {
+      if (!guestEmail || !isValidEmail(guestEmail)) {
+        return res.status(400).json({ error: 'A valid email is required to request a song.' });
+      }
+    }
+
+    if (music.onlyForConfirmedGuests) {
+      const guests = (await adminGet(`/apps/${BASE44_APP_ID}/entities/Guest?q=${encodeURIComponent(JSON.stringify({ created_by_id: wedding.created_by_id }))}`))
+        .filter(g => !g.is_test);
+      const matchedGuest = guests.find(g => typeof g.email === 'string' && g.email.toLowerCase() === guestEmail);
+      if (!matchedGuest) {
+        return res.status(403).json({ error: "We couldn't find your invitation — song requests are limited to confirmed guests." });
+      }
+
+      // "Confirmed" = attending (RSVP'd yes to at least one invited event).
+      // Guest.rsvp_status is frozen at creation and never kept current
+      // (api/rsvp-submit.js writes RsvpResponse rows instead) — live status
+      // has to be derived the same way api/my-guests-rsvp.js already does.
+      const guestHash = hashId(matchedGuest.id);
+      const rsvpRows = (await adminGet(`/apps/${BASE44_APP_ID}/entities/RsvpResponse?q=${encodeURIComponent(JSON.stringify({ wedding_id: wedding.id, guest_id_hash: guestHash }))}`))
+        .filter(r => !r.is_test);
+      const status = deriveRsvpStatus(toEventResponsesShape(latestEventResponses(rsvpRows)));
+      if (status !== 'attending') {
+        return res.status(403).json({ error: "Song requests are limited to guests who've confirmed they're attending." });
+      }
+    }
+
+    if (music.limitOnePerGuest) {
+      const existing = (await adminGet(`/apps/${BASE44_APP_ID}/entities/SongRequest?q=${encodeURIComponent(JSON.stringify({ weddingId: wedding.id }))}`))
+        .filter(r => !r.is_test);
+      const alreadySubmitted = existing.some(r => typeof r.guestEmail === 'string' && r.guestEmail.toLowerCase() === guestEmail);
+      if (alreadySubmitted) {
+        return res.status(403).json({ error: "You've already submitted a song request." });
+      }
+    }
+
     const payload = {
       weddingId: wedding.id,
       spotifyTrackId: sanitizeString(req.body?.spotifyTrackId || ''),
@@ -125,6 +172,7 @@ export default async function handler(req, res) {
       explicit: !!req.body?.explicit,
       spotifyUrl: sanitizeString(req.body?.spotifyUrl || ''),
       submittedBy,
+      guestEmail,
       guestNote: sanitizeString(req.body?.guestNote || '').slice(0, MAX_NOTE_LENGTH),
       status: music.requestsRequireApproval ? 'pending' : 'approved',
       playlist: 'general',

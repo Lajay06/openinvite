@@ -103,6 +103,8 @@ function gcRateLimitStore() {
  *   'on-signup'       — 5 req/min   (on-signup.js — sends an email per call, not idempotent)
  *   'admin-stats'     — 20 req/min  (admin/stats.js — up to 200 Stripe API reads per call)
  *   'portal-session'  — 10 req/min  (create-portal-session.js — live Stripe API call per hit)
+ *   'song-request'        — 10 req/min  (song-request-submit.js — public guest form)
+ *   'song-request-review' — 60 req/min  (song-request-review.js — authenticated dashboard moderation, several actions per session)
  *
  * @param {string} ip
  * @param {string} bucket
