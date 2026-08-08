@@ -11,6 +11,14 @@ import { PRO_FEATURES, ULTRA_EXTRAS } from "@/lib/planFeatures";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
+// One alignment grid for the page's contained sections. These three used to
+// be 720, 860 and 640, which all centred on the viewport axis but produced
+// three different left edges (360, 290, 400 at 1440) and read as misaligned.
+// 1100 is the width Features' accordion and About's sections already use, so
+// Pricing now sits on the same grid rather than a fourth invented one. The
+// full-bleed sections (hero, plan pills, gift block, end cap) are unaffected.
+const SECTION_MAX = 1100;
+
 const FAQS = [
   {
     q: "Is this really a one-time payment?",
@@ -322,7 +330,7 @@ export default function Pricing() {
       {/* ── AFTER 24 MONTHS ── */}
       <section style={{ background: "#F7F7F7", padding: "40px 24px" }}>
         <div style={{
-          maxWidth: 720, margin: "0 auto",
+          maxWidth: SECTION_MAX, margin: "0 auto",
           borderLeft: "3px solid #E03553", paddingLeft: 24,
         }}>
           <p style={{ fontSize: 16, fontWeight: 600, color: "#0A0A0A", marginBottom: 10, fontFamily: PJS }}>
@@ -341,13 +349,13 @@ export default function Pricing() {
 
       {/* ── COMPARISON TABLE ── */}
       <section style={{ background: "#FFFFFF", padding: "80px 24px" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto" }}>
+        <div style={{ maxWidth: SECTION_MAX, margin: "0 auto" }}>
           <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 40, fontFamily: PJS }}>
             Compare plans
           </h2>
 
           {/* margin: 0, not "0 auto" — the table is narrower than this
-              860px container, so centering it left it floating well right
+              1100px container, so centering it left it floating well right
               of the "Compare plans" heading above. Left-aligned, it lines
               up with the heading instead. */}
           <div style={{ overflowX: "auto" }}>
@@ -386,7 +394,7 @@ export default function Pricing() {
 
       {/* ── FAQ ── */}
       <section style={{ background: "#FFFFFF", padding: "0 24px 80px" }}>
-        <div style={{ maxWidth: 640, margin: "0 auto" }}>
+        <div style={{ maxWidth: SECTION_MAX, margin: "0 auto" }}>
           <h2 style={{ fontSize: 24, fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", marginBottom: 40, fontFamily: PJS }}>
             Questions
           </h2>
