@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-
-const CURRENCIES = [
-  { code: 'AUD', symbol: '$' },
-  { code: 'USD', symbol: '$' },
-  { code: 'GBP', symbol: '£' },
-  { code: 'EUR', symbol: '€' },
-  { code: 'NZD', symbol: '$' }
-];
+import { CURRENCIES } from '@/contexts/CurrencyContext';
 
 export default function OnboardingPathABudget({ onNext, data }) {
   const [amount, setAmount] = useState('');
