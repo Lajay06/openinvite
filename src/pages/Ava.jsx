@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
-import ProductVideo from "@/components/shared/ProductVideo";
-import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import MarketingHero from "@/components/marketing/MarketingHero";
 
@@ -381,22 +379,12 @@ export default function AvaPage() {
         </div>
       </section>
 
-      {/* ── AVA, ACTUALLY ANSWERING ──────────────────────── */}
-      <section style={{ background: "#0A0A0A", padding: "140px clamp(32px, 6vw, 80px)" }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", lineHeight: 1.1, textAlign: "center", margin: "0 auto 56px", maxWidth: 700 }}>
-            Ask Ava anything. Watch Ava actually answer.
-          </h2>
-          <ProductMediaFrame aspectRatio="16/10" maxWidth="none">
-            <ProductVideo
-              mp4="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-06-ava-wedding-date.mp4"
-              webm="https://res.cloudinary.com/dsr84xknv/video/upload/product-shots/flow-06-ava-wedding-date.webm"
-              poster="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/product-shots/flow-06-ava-wedding-date-poster.jpg"
-              alt="Screen recording of asking Ava a question and watching Ava's real, streamed answer"
-            />
-          </ProductMediaFrame>
-        </div>
-      </section>
+      {/* The "Ask Ava anything. Watch Ava actually answer." demo block used to
+          sit here. It moves to /tour, so the Cloudinary video and poster
+          (product-shots/flow-06-ava-wedding-date.*) are deliberately left in
+          place — do not delete those assets. ProductMediaFrame and
+          ProductVideo were imported only for this block, so both imports went
+          with it. */}
 
       {/* ── END CAP ──────────────────────────────────────── */}
       <MarketingEndCap
