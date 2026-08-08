@@ -2,61 +2,12 @@ import React, { useState } from 'react';
 import { Plus, X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
+import { FAITH_OPTIONS, FAITH_FOR_INTERFAITH, CULTURE_REGIONS, CULTURE_CROSS_CUTTING } from '@/lib/weddingThemeOptions';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 // Round 8 ask #11: every option list on this page ordered alphabetically.
 const AESTHETIC_OPTIONS  = ['Beach', 'Boho', 'Classic', 'Garden', 'Glamorous', 'Luxury', 'Minimalist', 'Modern', 'Romantic', 'Rustic', 'Vintage'];
-const FAITH_OPTIONS      = ['Buddhist', 'Catholic', 'Christian', 'Hindu', 'Interfaith', 'Jewish', 'Muslim', 'Non-religious', 'Sikh'];
-const FAITH_FOR_INTERFAITH = ['Buddhist', 'Catholic', 'Christian', 'Hindu', 'Jewish', 'Muslim', 'Sikh'];
-
-// Cultures and traditions — round 7 ask #11. Stored on the same
-// theme.culture array WeddingDetails already declares (already registered
-// in schemaDropScan.mjs's _nested.theme list; no schema change needed for
-// a wider set of string values in an already-unconstrained string array).
-// Organised by region exactly as specified, plus the additions called out
-// as missing, plus the cross-cutting options shown separately below.
-const CULTURE_REGIONS = [
-  {
-    region: 'Asia & Middle East',
-    items: [
-      'Arab', 'Armenian', 'Bangladeshi', 'Chinese', 'Filipino',
-      'Indian (Hindu, Sikh, Muslim, Christian)', 'Indonesian', 'Japanese',
-      'Khmer (Cambodian)', 'Korean', 'Lebanese', 'Malay/Singaporean', 'Nepali',
-      'Pakistani', 'Persian/Iranian', 'Sri Lankan', 'Thai', 'Turkish', 'Vietnamese',
-    ],
-  },
-  {
-    region: 'Africa',
-    items: [
-      'East African (Kenyan/Tanzanian)', 'Ethiopian/Eritrean', 'Ghanaian', 'Moroccan',
-      'Nigerian (Yoruba, Igbo, Hausa)', 'Somali', 'South African (Zulu, Xhosa, Sotho)',
-    ],
-  },
-  {
-    region: 'Europe',
-    items: [
-      'British', 'Dutch', 'French', 'German', 'Greek', 'Irish', 'Italian',
-      'Jewish (Ashkenazi & Sephardic)', 'Polish', 'Portuguese', 'Russian/Eastern European',
-      'Scandinavian/Nordic', 'Spanish', 'Ukrainian',
-    ],
-  },
-  {
-    region: 'North & South America',
-    items: [
-      'American (Contemporary, Black American, Southern)', 'Argentine', 'Brazilian',
-      'Caribbean', 'Colombian/Andean', 'Indigenous North American', 'Mexican', 'Peruvian',
-    ],
-  },
-  {
-    region: 'Oceania & Pacific',
-    items: [
-      'Australian (incl. Aboriginal and Torres Strait Islander)', 'Hawaiian',
-      'New Zealand Māori', 'Samoan/Tongan/Fijian',
-    ],
-  },
-];
-const CULTURE_CROSS_CUTTING = ['Destination', 'Interfaith/fusion', 'LGBTQ+ inclusive', 'Minimalist/non-traditional'];
 
 const ATMOSPHERE_OPTIONS = ['Big party', 'Destination', 'Formal & elegant', 'Intimate & relaxed', 'Multi-day', 'Outdoor & nature'];
 const SEASON_OPTIONS     = ['Autumn', 'Spring', 'Summer', 'Winter'];

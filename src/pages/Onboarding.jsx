@@ -87,7 +87,7 @@ export default function Onboarding() {
     budget: null,
     currency: 'USD',
     vendors: [],
-    culturalNotes: '',
+    theme: null,
     inspirationPhotos: [],
     activeUniverse: 'london',
     websiteMode: 'dark',
