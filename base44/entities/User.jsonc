@@ -27,6 +27,10 @@
       "type": "string",
       "description": "ISO timestamp set when the user submits an in-app account deletion request (see DataDeletion.jsx policy) — actual deletion is manual, verified via hello@openinvite.com.au"
     },
+    "trialStartedAt": {
+      "type": "string",
+      "description": "ISO timestamp written when the user chooses the free trial on ChoosePlan.jsx (goFree). Marks when the 14-day trial clock actually starts — Layout.jsx's trial banner reads this, falling back to created_date only when absent (pre-existing accounts from before this field existed)."
+    },
     "notification_prefs": {
       "type": "object",
       "description": "Per-user notification channel preferences, read by the bell UI and the event-wiring/digest cron. Defaults applied client-side when absent (pre-existing accounts): instant_email_rsvp=true, instant_email_collaborator=true, weekly_digest=true, in_app_only=false. In-app notifications themselves are never fully disableable — in_app_only=true suppresses instant emails and the digest, keeping only the bell.",
