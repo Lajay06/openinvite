@@ -403,7 +403,12 @@ const Universes = () => {
       {/* SECTION 6: EDITOR EXPERIENCE */}
       <section data-animate style={{
         background: '#0A0A0A',
-        padding: '100px 80px',
+        // Was a fixed '100px 80px'. At 390px that reserved 160px of gutter
+        // from a 390px viewport, leaving only 230px of content box. Clamped
+        // to the same value the rest of the marketing pages use; at 1440 the
+        // 6vw term resolves above 80 so it clamps back to 80 and desktop is
+        // unchanged.
+        padding: '100px clamp(24px, 6vw, 80px)',
       }}>
         <h2 style={{
           fontFamily: 'Plus Jakarta Sans, sans-serif',
@@ -416,7 +421,21 @@ const Universes = () => {
           Every detail in your hands.
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 60 }}>
+        {/* repeat(3, 1fr) with a fixed 60px gap and no breakpoint. `1fr` is
+            minmax(auto, 1fr), and that `auto` floor is the track's
+            min-content width, so the columns could not shrink below their
+            longest word: three ~88px tracks plus 120px of gaps came to 384px
+            inside a 230px content box, pushing the right edge to 458 against
+            a 390 viewport. Single column below md removes both the gaps and
+            the floor from the horizontal budget; minmax(0, 1fr) above it
+            stops the same floor biting at any width. */}
+        <style>{`
+          .editor-feature-grid { grid-template-columns: 1fr; }
+          @media (min-width: 768px) {
+            .editor-feature-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+          }
+        `}</style>
+        <div className="editor-feature-grid" style={{ display: 'grid', gap: 60 }}>
           {editorFeatures.map((feature, i) => (
             <div key={i} style={{ flex: 1 }}>
               <p style={{
