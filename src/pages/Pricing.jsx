@@ -17,6 +17,25 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // 1100 is the width Features' accordion and About's sections already use, so
 // Pricing now sits on the same grid rather than a fourth invented one. The
 // full-bleed sections (hero, plan pills, gift block, end cap) are unaffected.
+// Pricing hero. The source is the print-resolution original (6667x5000,
+// 33.3 MP); the previous web export was only 1280x960, which the browser had
+// to upscale into the 1440-wide hero box. It is delivered through Cloudinary
+// only — the raw original is 5.9MB, and even f_auto,q_auto without a width cap
+// returns the full 6667x5000 at 1.83MB, so a width is always pinned.
+//
+// c_limit never upscales, so each candidate is capped at the real pixels.
+// MarketingHero's default `sizes` is aspect-aware: this hero is 100vw x 100vh
+// with object-fit cover, so on a phone the crop is height-driven and needs
+// ~133vh of width (about 1125px at 390x844), not 100vw.
+const HERO_ID =
+  "DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_-_Print_ew6e2a";
+const heroUrl = (w) =>
+  `https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_${w},c_limit/${HERO_ID}.jpg`;
+const HERO_SRC = heroUrl(1440);
+const HERO_SRCSET = [640, 960, 1280, 1440, 1920, 2560]
+  .map((w) => `${heroUrl(w)} ${w}w`)
+  .join(", ");
+
 const SECTION_MAX = 1100;
 
 const FAQS = [
@@ -143,7 +162,8 @@ export default function Pricing() {
 
       {/* ── HERO ── */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185627/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d.jpg"
+        image={HERO_SRC}
+        srcSet={HERO_SRCSET}
         imagePosition="center 30%"
         title={<>Pay once.<br />Plan your entire wedding.</>}
         showScrollCue={false}
