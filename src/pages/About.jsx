@@ -3,7 +3,6 @@ import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import MarketingHero from "@/components/marketing/MarketingHero";
-import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import MarketingPhotoPair from "@/components/marketing/MarketingPhotoPair";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
@@ -116,11 +115,9 @@ export default function About() {
         right={{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa.jpg", alt: "A man carrying his partner outdoors, both laughing" }}
       />
 
-      {/* ── S6: END CAP ──────────────────────────────────── */}
-      <MarketingEndCap
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10282_hxzktx.jpg"
-        alt="A couple on their wedding day"
-      />
+      {/* No end cap. The page closes on the photo pair above, directly into
+          the footer. The Cloudinary asset it used
+          (DTS_NU_NUPTIALS_..._ID10282_hxzktx) is left in place, not deleted. */}
 
       <PublicFooter />
     </div>
@@ -191,7 +188,7 @@ function TwoColumnSection({ id, number, title, headline, body, background, belie
   );
 }
 
-// The old CTASection ("Ready to start planning?" on flat black) is gone.
-// About now closes on the shared MarketingEndCap, the same as Home, Features,
-// Ava and Pricing. The side-by-side photo pair above it is unchanged and now
-// sits directly on top of the end cap.
+// About has no end cap. It closes on the side-by-side photo pair, which runs
+// straight into PublicFooter. Two closers were removed to get here: first the
+// old CTASection ("Ready to start planning?" on flat black), then the shared
+// MarketingEndCap that had replaced it.
