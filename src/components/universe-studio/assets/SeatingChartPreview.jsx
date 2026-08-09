@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 
+// universe: the full config object (colors/typography), not just its id —
+// see UniverseWorldView.jsx's Chapter 6 comment for why.
 export default function SeatingChartPreview({ universe, weddingDetails, guests }) {
+  const bg = universe?.colors?.darkBg || '#0A0A0A';
+  const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const date = weddingDetails?.weddingDate
     ? new Date(weddingDetails.weddingDate).toLocaleDateString('en-GB')
@@ -15,15 +19,13 @@ export default function SeatingChartPreview({ universe, weddingDetails, guests }
 
   return (
     <div style={{
-      width: '100%', height: '100%', background: '#0A0A0A',
+      width: '100%', height: '100%', background: bg,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center',
       padding: '12px 14px',
-      fontFamily: 'Cormorant Garamond, Georgia, serif',
+      fontFamily: headingFont,
       overflow: 'hidden'
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&display=swap');`}</style>
-
       {/* Search */}
       <input
         value={search}

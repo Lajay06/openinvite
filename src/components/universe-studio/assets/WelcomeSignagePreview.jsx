@@ -1,6 +1,13 @@
 import React from 'react';
 
+// universe: the full config object (colors/typography), not just its id —
+// see UniverseWorldView.jsx's Chapter 6 comment for why.
 export default function WelcomeSignagePreview({ universe, weddingDetails }) {
+  const bg = universe?.colors?.lightBg || '#F8F7F5';
+  const text = universe?.colors?.lightText || '#0A0A0A';
+  const muted = universe?.colors?.accentSecondary || '#888888';
+  const rule = universe?.colors?.accentSecondary ? `${universe.colors.accentSecondary}55` : '#CCCCCC';
+  const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const date = weddingDetails?.weddingDate
     ? new Date(weddingDetails.weddingDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -9,15 +16,13 @@ export default function WelcomeSignagePreview({ universe, weddingDetails }) {
 
   return (
     <div style={{
-      width: '100%', height: '100%', background: '#F8F7F5',
+      width: '100%', height: '100%', background: bg,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: '16px 20px',
-      fontFamily: 'Cormorant Garamond, Georgia, serif',
+      fontFamily: headingFont,
       position: 'relative', overflow: 'hidden'
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&display=swap');`}</style>
-
       {/* Placeholder couple photo (Launch folder, "Bandits" shoot — same
           consistent set as the other assets) — many welcome signs use a
           photo backdrop behind the lettering; replaced once the couple
@@ -30,16 +35,16 @@ export default function WelcomeSignagePreview({ universe, weddingDetails }) {
 
       <div style={{ position: 'relative', zIndex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {/* Top rule */}
-      <div style={{ width: '100%', height: '1px', background: '#CCCCCC', marginBottom: 12 }} />
+      <div style={{ width: '100%', height: '1px', background: rule, marginBottom: 12 }} />
 
       {/* Welcome label */}
-      <p style={{ fontSize: 7, fontWeight: 300, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#888888', textAlign: 'center', marginBottom: 8 }}>
+      <p style={{ fontSize: 7, fontWeight: 300, letterSpacing: '0.4em', textTransform: 'uppercase', color: muted, textAlign: 'center', marginBottom: 8 }}>
         WELCOME TO THE WEDDING OF
       </p>
 
       {/* Couple names — large */}
       <p style={{
-        fontWeight: 300, fontSize: 30, color: '#0A0A0A',
+        fontWeight: 300, fontSize: 30, color: text,
         letterSpacing: '0.08em', textAlign: 'center', lineHeight: 1.1,
         marginBottom: 10
       }}>
@@ -47,18 +52,18 @@ export default function WelcomeSignagePreview({ universe, weddingDetails }) {
       </p>
 
       {/* Date & venue */}
-      <p style={{ fontSize: 9, color: '#888888', textAlign: 'center', letterSpacing: '0.1em', marginBottom: 2 }}>
+      <p style={{ fontSize: 9, color: muted, textAlign: 'center', letterSpacing: '0.1em', marginBottom: 2 }}>
         {date}
       </p>
-      <p style={{ fontSize: 9, color: '#888888', textAlign: 'center', letterSpacing: '0.1em', marginBottom: 12 }}>
+      <p style={{ fontSize: 9, color: muted, textAlign: 'center', letterSpacing: '0.1em', marginBottom: 12 }}>
         {venue}
       </p>
 
       {/* Bottom rule */}
-      <div style={{ width: '100%', height: '1px', background: '#CCCCCC', marginBottom: 8 }} />
+      <div style={{ width: '100%', height: '1px', background: rule, marginBottom: 8 }} />
 
       {/* Footer text */}
-      <p style={{ fontSize: 6, fontWeight: 300, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#888888', textAlign: 'center' }}>
+      <p style={{ fontSize: 6, fontWeight: 300, letterSpacing: '0.35em', textTransform: 'uppercase', color: muted, textAlign: 'center' }}>
         PLEASE FIND YOUR SEAT INSIDE
       </p>
       </div>

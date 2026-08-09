@@ -504,7 +504,16 @@ export default function UniverseWorldView({
           couple's real names belong (per the hero-title consistency
           fix — the hero above always shows the universe's own name, this
           chapter is where their actual pieces, in their actual names,
-          are shown). Every asset type the product has, not a subset. */}
+          are shown). Every asset type the product has, not a subset.
+
+          Passes the FULL universe object (not universe.id) to every asset
+          preview below — was passing just the id, which is why every
+          universe's assets rendered identically: none of the 8 preview
+          components could reach universe.colors/typography from an id
+          string alone, so each hardcoded its own styling instead. The
+          colors/typography themselves already existed for all 20
+          universes in UNIVERSE_CONFIGS — this was a wiring gap, not
+          missing design data. */}
       <Chapter background={colors.lightBg} minHeight="70vh">
         <Reveal prefersReducedMotion={prefersReducedMotion}>
           <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 12px', textAlign: 'center' }}>
@@ -516,7 +525,7 @@ export default function UniverseWorldView({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 18, maxWidth: 1040, margin: '0 auto' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <SaveTheDatePreview universe={universe.id} weddingDetails={weddingDetails} />
+                <SaveTheDatePreview universe={universe} weddingDetails={weddingDetails} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Save the date</span>
             </div>
@@ -534,43 +543,43 @@ export default function UniverseWorldView({
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <MenuCardPreview universe={universe.id} weddingDetails={weddingDetails} />
+                <MenuCardPreview universe={universe} weddingDetails={weddingDetails} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Menu</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <SeatingChartPreview universe={universe.id} weddingDetails={weddingDetails} guests={guests} />
+                <SeatingChartPreview universe={universe} weddingDetails={weddingDetails} guests={guests} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Seating chart</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <PlaceCardsPreview universe={universe.id} weddingDetails={weddingDetails} guests={guests} />
+                <PlaceCardsPreview universe={universe} weddingDetails={weddingDetails} guests={guests} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Place cards</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <WelcomeSignagePreview universe={universe.id} weddingDetails={weddingDetails} />
+                <WelcomeSignagePreview universe={universe} weddingDetails={weddingDetails} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Welcome sign</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <ThankYouPreview universe={universe.id} weddingDetails={weddingDetails} />
+                <ThankYouPreview universe={universe} weddingDetails={weddingDetails} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Thank you card</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <InstagramKitPreview universe={universe.id} weddingDetails={weddingDetails} />
+                <InstagramKitPreview universe={universe} weddingDetails={weddingDetails} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Instagram kit</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <MotionGraphicPreview universe={universe.id} weddingDetails={weddingDetails} />
+                <MotionGraphicPreview universe={universe} weddingDetails={weddingDetails} />
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Motion graphic</span>
             </div>

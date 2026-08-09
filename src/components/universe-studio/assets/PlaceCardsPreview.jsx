@@ -3,7 +3,14 @@ import { effectiveMealChoice } from '@/lib/weddingEvents';
 
 const MEAL_SYMBOL = { beef: '◆', fish: '○', vegetarian: '☆', vegan: '☆', chicken: '△', default: '' };
 
+// universe: the full config object (colors/typography), not just its id —
+// see UniverseWorldView.jsx's Chapter 6 comment for why.
 export default function PlaceCardsPreview({ universe, weddingDetails, guests }) {
+  const outerBg = universe?.colors?.darkBg || '#111111';
+  const cardBg = universe?.colors?.lightBg || '#F8F7F5';
+  const cardText = universe?.colors?.lightText || '#0A0A0A';
+  const cardMuted = universe?.colors?.accentSecondary || '#888888';
+  const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
   // fix/asset-system: previously fell back to 6 hardcoded fake names
   // (Elizabeth Hartley, James Morrison, ...) whenever there were no real
   // guests yet — indistinguishable from real data at a glance. An honest
@@ -13,7 +20,7 @@ export default function PlaceCardsPreview({ universe, weddingDetails, guests }) 
   if (cards.length === 0) {
     return (
       <div style={{
-        width: '100%', height: '100%', background: '#111111',
+        width: '100%', height: '100%', background: outerBg,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: 12, gap: 6, textAlign: 'center',
@@ -26,13 +33,11 @@ export default function PlaceCardsPreview({ universe, weddingDetails, guests }) 
 
   return (
     <div style={{
-      width: '100%', height: '100%', background: '#111111',
+      width: '100%', height: '100%', background: outerBg,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: 12, gap: 6
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300&display=swap');`}</style>
-
       <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 7, fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 4 }}>
         Place Cards
       </p>
@@ -46,20 +51,20 @@ export default function PlaceCardsPreview({ universe, weddingDetails, guests }) 
           const mealChoice = effectiveMealChoice(g.event_responses);
           return (
             <div key={i} style={{
-              background: '#F8F7F5', padding: '6px 5px',
+              background: cardBg, padding: '6px 5px',
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', position: 'relative'
             }}>
               <p style={{
-                fontFamily: 'Cormorant Garamond, Georgia, serif',
+                fontFamily: headingFont,
                 fontStyle: 'italic', fontWeight: 300, fontSize: 7,
-                color: '#0A0A0A', textAlign: 'center', marginBottom: 2,
+                color: cardText, textAlign: 'center', marginBottom: 2,
                 lineHeight: 1.2
               }}>
                 {g.name?.split(' ')[0] || 'Guest'}
               </p>
-              <div style={{ width: '80%', height: '1px', background: '#DDDDDD', marginBottom: 2 }} />
-              <p style={{ fontSize: 5, color: '#888888', letterSpacing: '0.15em', textTransform: 'uppercase', textAlign: 'center' }}>
+              <div style={{ width: '80%', height: '1px', background: `${cardMuted}55`, marginBottom: 2 }} />
+              <p style={{ fontSize: 5, color: cardMuted, letterSpacing: '0.15em', textTransform: 'uppercase', textAlign: 'center' }}>
                 {g.table_assignment ? `T${g.table_assignment}` : '—'}
                 {mealChoice ? ` ${MEAL_SYMBOL[mealChoice] || ''}` : ''}
               </p>
