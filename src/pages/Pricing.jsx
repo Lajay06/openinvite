@@ -148,6 +148,7 @@ export default function Pricing() {
         title={<>Pay once.<br />Plan your entire wedding.</>}
         showScrollCue={false}
         maxWidth={900}
+        cta={{ label: "Get started", href: "/signup" }}
       />
 
       {/* ── PRICING CARDS ── */}
