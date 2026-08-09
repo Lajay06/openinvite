@@ -182,6 +182,38 @@ Reference implementation: `src/pages/Onboarding.jsx` + `src/components/onboardin
   like the rest of the wizard (light, black-selected) precisely so it
   doesn't read as a live preview of the wizard itself.
 
+## Full-bleed marketing photography
+
+Every full-bleed photo behind text — `MarketingHero`, `MarketingEndCap`, and
+the Universes closing CTA — is delivered through `responsivePhoto()` in
+`src/lib/marketingImage.js`. Never hand-write a Cloudinary URL for one.
+
+- `responsivePhoto(publicId, sourceWidth, { transform, croppedWidth })` returns
+  `{ src, srcSet }`. `sourceWidth` is the master's real pixel width, read from
+  `.../fl_getinfo/<publicId>.jpg` — never estimated. It caps the ladder at the
+  real asset so a descriptor can never advertise pixels that do not exist.
+- Ladder runs to **3840** (a 1920px viewport at dpr 2). It stops there
+  deliberately: uncapped, a 4K display would pull the raw multi-megabyte
+  original.
+- Quality is per candidate width, not flat: `q_auto` below 2560 where the file
+  can be painted near 1:1, `q_50` at 2560+ where it is only ever chosen by a
+  display painting it at ≥2 device px per CSS px and artifacts land sub-pixel.
+  Measured: more pixels at lower quality beats fewer pixels at higher quality
+  (`q_50,w_3200` is sharper than `q_auto,w_2560` at the same byte count).
+- **Crop by ratio, never by fixed pixels.** A `c_crop,w_1190` on a 1600px
+  master throws away 26% of the resolution before the ladder ever sees it.
+  Where a crop is only needed to reframe horizontally, use `objectPosition`
+  instead — it costs no pixels and adapts per viewport.
+- Judge sharpness as **delivered px ÷ (CSS box px × devicePixelRatio)**. 1.0 is
+  correct; below ~0.7 reads as soft on a retina display. Note that
+  `naturalWidth` is density-corrected for srcset images and will understate the
+  real decode — measure with `createImageBitmap`, not `naturalWidth`.
+- `npm run test:marketing-images` enforces both halves of this and must pass.
+
+Known ceiling: only the Pricing and About heroes are print masters. The other
+eleven full-bleed photos are 1280–1600px web exports and sit at 0.34–0.42x;
+that is an asset limit, not a code one, and only a larger upload lifts it.
+
 ## Rules
 - No text-transform: uppercase anywhere
 - No box-shadow on cards

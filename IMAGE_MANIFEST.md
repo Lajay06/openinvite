@@ -329,3 +329,38 @@ photo pair (`DTS_LEAP_Shauna_Summers_Photos_ID7601_k27hx3` /
 `DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa`) moved down to sit
 after "What we believe" instead of between the two now-merged editorial
 blocks — no image reassignment, just a position change on the same page.
+
+## Master resolution of the full-bleed photos (measured 2026-08-10)
+
+Every hero and end cap sits behind text at 100vw. Widths below are the real
+uploaded master, read from `.../fl_getinfo/<public_id>.jpg` — not the delivered
+size. "Cover" is delivered px ÷ (CSS box px × devicePixelRatio) at 1892×846,
+dpr 2, i.e. how much of what the screen needs actually arrives. 1.0 is correct.
+
+| Photo | Used on | Master | Cover @2x |
+|---|---|---|---|
+| `DTS_Please_Do_Not_Disturb_..._-_Print_ew6e2a` | Pricing hero | **6667×5000** | 1.01 |
+| `DTS_Modern_Home_..._ID3654_h6b8gy` | About hero | **6720×4480** | 1.01 |
+| `DTS_Tradition_..._ID9181_erzsi2` | Tour hero | 1600×1065 | 0.42 |
+| `DTS_CURATIVE_..._ID7678_dlsgrm` | Features end cap | 1600×1078 | 0.42 |
+| `DTS_Tradition_..._ID9150_yiunlp` | Ava end cap | 1600×1078 | 0.42 |
+| `DTS_Like_a_Movie_..._ID1042_qaddk3` | Home end cap | 1600×1067 | 0.42 |
+| `DTS_day_tripping_..._ID6199_g2inky` | Pricing end cap | 1600×1067 | 0.42 |
+| `DTS_Slices_of_Summer_..._ID2661_vb5omq` | Universes CTA | 1600×1067 | 0.42 |
+| `DTS_THE_INTERN_..._ID11406_giy6nx` | Features hero | 1280×853 | 0.34 |
+| `DTS_Misc_1__Nick_Fancher_..._ID6161_isrtef` | Ava hero | 1280×853 | 0.34 |
+| `DTS_ISOLA_..._ID13172_fu4zfe` | Universes hero | 1280×853 | 0.34 |
+| `DTS_SNOWBOUND_..._ID12431_yunnan` | Gifting hero | 1280×853 | 0.34 |
+| `DTS_BANDITS_..._ID14229_mhwb5h` | Tour end cap | 1280×960 | 0.34 |
+
+Only the top two are print masters. The other eleven are web exports, and
+**no URL change can make them sharp at dpr 2** — `c_limit` never upscales, so
+the ladder in `src/lib/marketingImage.js` correctly stops at each one's real
+width. Lifting them needs a larger master re-uploaded under the same
+public_id (or a new id with `sourceWidth` updated at the call site); the
+Pricing hero is the worked example, where a `- Print` export of the same
+photograph was uploaded alongside the 1280px web one.
+
+`npm run test:marketing-images` re-derives this table's right-hand columns
+from live Cloudinary responses, so it fails if an asset is swapped for a
+smaller one.
