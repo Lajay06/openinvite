@@ -80,14 +80,38 @@ const RETINA_QUALITY = "q_50";
  *                     carry percent-encoded characters and must not be touched.
  * @param sourceWidth  Real pixel width of the uploaded master. Get it from
  *                     `${CLOUD}/fl_getinfo/${publicId}.jpg` — do not estimate.
- * @param transform    Optional Cloudinary transform applied BEFORE the width
- *                     step, for crops. Prefer a ratio crop that keeps the full
- *                     source width; a fixed-pixel crop throws away resolution
- *                     before the ladder ever sees it (see Tour.jsx).
- * @param croppedWidth When `transform` narrows the image, the width the crop
- *                     leaves behind — that, not sourceWidth, is the ceiling.
+ * @param cropFraction Crop expressed as a FRACTION of the master, `{w, h}`
+ *                     (and optional `{x, y}`, default 0). Prefer this over
+ *                     `transform` for any crop that narrows the image: the
+ *                     ceiling is derived from sourceWidth, so re-uploading a
+ *                     larger master is a one-number change and the ladder
+ *                     follows automatically. A pixel-absolute crop cannot do
+ *                     that — it stays pinned to the old master's size.
+ *
+ *                     NOTE: a proportional crop does not make a small master
+ *                     bigger. Cloudinary rounds these to ~2 decimals, and the
+ *                     region still contains only the pixels it contains:
+ *                     w_0.74 of a 1600px master is 1184px whether you then ask
+ *                     for w_1600 or w_3840. What it buys is that the SAME
+ *                     fraction of a 5100px master is 3774px, with no code
+ *                     change beyond sourceWidth.
+ * @param transform    Escape hatch for a pixel-absolute Cloudinary transform,
+ *                     for a crop that was measured in source pixels and should
+ *                     not be re-derived. Only safe when the crop keeps the full
+ *                     source WIDTH (a height-only crop) — otherwise it silently
+ *                     caps resolution. Pass croppedWidth with it.
+ * @param croppedWidth Ceiling when using `transform`. Ignored with cropFraction.
  */
-export function responsivePhoto(publicId, sourceWidth, { transform = "", croppedWidth } = {}) {
+export function responsivePhoto(
+  publicId,
+  sourceWidth,
+  { cropFraction, transform = "", croppedWidth } = {}
+) {
+  if (cropFraction) {
+    const { w, h, x = 0, y = 0 } = cropFraction;
+    transform = `c_crop,x_${x},y_${y},w_${w},h_${h}`;
+    croppedWidth = Math.round(sourceWidth * w);
+  }
   const ceiling = Math.min(croppedWidth ?? sourceWidth, MAX_WIDTH);
   const widths = [...new Set([...LADDER.filter((w) => w < ceiling), ceiling])];
 

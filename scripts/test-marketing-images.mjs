@@ -73,8 +73,10 @@ for (const file of walk(SRC)) {
     if (m[3]) {
       const t = /transform:\s*["']([^"']+)["']/.exec(m[3]);
       const c = /croppedWidth:\s*(\d+)/.exec(m[3]);
+      const f = /cropFraction:\s*\{\s*w:\s*([\d.]+)\s*,\s*h:\s*([\d.]+)/.exec(m[3]);
       if (t) opts.transform = t[1];
       if (c) opts.croppedWidth = Number(c[1]);
+      if (f) opts.cropFraction = { w: Number(f[1]), h: Number(f[2]) };
     }
     calls.push({ file: file.replace(SRC, "src"), id: m[1], w: Number(m[2]), opts });
   }

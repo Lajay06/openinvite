@@ -26,9 +26,22 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // Even delivered whole they only cover 0.42x and 0.34x of the device pixels
 // their boxes need at dpr 2. Responsive delivery recovers everything the URLs
 // were throwing away; closing the rest needs larger uploads, not new URLs.
+// The tight framing is back, expressed as a FRACTION of the master rather than
+// the old pixel-absolute c_crop,w_1190,h_640. Same region (0.74 x 0.60 of
+// 1600x1065 is 1184x639, within 0.5% of the original), but it now scales: if a
+// larger master is uploaded, changing 1600 below is the only edit needed and
+// both the crop and the ladder follow.
+//
+// It does NOT make this master sharper, and measurement says nothing can:
+// w_0.74 of 1600px is 1184px whether the ladder then asks for 1600 or 3840, so
+// this hero delivers 0.31x of the device pixels a 1892px box needs at dpr 2.
+// The wider crop that briefly replaced it reached only 0.42x — also nowhere
+// near sharp — so the composition was being traded for an improvement that
+// never arrived. Upscaling is worse than useless here: c_scale to 3784 measured
+// 78% of the native crop's acutance for 4x the bytes.
+// Sharp at 2x with THIS framing needs a master ~5100px wide (3784 / 0.74).
 const HERO = responsivePhoto("DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2", 1600, {
-  transform: "c_crop,x_0,y_0,w_1600,h_640",
-  croppedWidth: 1600,
+  cropFraction: { w: 0.74, h: 0.6 },
 });
 const END_CAP = responsivePhoto("DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h", 1280);
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -457,24 +470,17 @@ export default function Tour() {
           makes cover height-driven, which raises the scale and pushes them
           clear.
 
-          Only the HEIGHT does that work. The previous crop was w_1190 x h_640,
-          and the 1190 was pure loss: it threw away 26% of the master's width
-          before delivery, leaving 1190px to cover a 3784px-wide box at dpr 2 —
-          0.31x, the softest image on the site. Height is unchanged at 640, so
-          the vertical framing is identical: cover is height-driven at every
-          supported viewport, so the scale is boxH/640 either way and the heads
-          land in exactly the same place (screen y 82 at 1440, 77 at 1892).
+          The crop centers the frame on the heads (x 595) and shortens the image
+          so cover becomes height-driven, raising the scale until they clear the
+          nav. objectPosition stays at the component default: the crop already
+          places the couple centrally, so nothing needs nudging.
 
-          Widening the crop does move the couple off-center — they sit at source
-          x 595, which is 37% across 1600 rather than the middle of 1190 — so
-          objectPosition carries the horizontal framing instead. That is the
-          right place for it: it costs no pixels, and it adapts per viewport
-          rather than baking one desktop crop into the file. Verified in frame
-          at 390, 1440 and 1892. */}
+          See the HERO constant above for why this framing costs no sharpness
+          that was ever available — the wider crop it briefly used reached 0.42x
+          against this one's 0.31x, and 1.0x needs a bigger master either way. */}
       <MarketingHero
         image={HERO.src}
         srcSet={HERO.srcSet}
-        imagePosition="37% center"
         title="This is what planning looks like now."
         maxWidth={1000}
       />
