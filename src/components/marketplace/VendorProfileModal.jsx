@@ -127,7 +127,7 @@ function ContactTab({ vendor, details, onSave, isSaved }) {
 
       <div style={{ borderTop: '1px solid rgba(10,10,10,0.08)', paddingTop: 20 }}>
         <button
-          onClick={() => onSave(vendor)}
+          onClick={() => onSave(vendor, details)}
           disabled={isSaved}
           style={{ width: '100%', padding: '10px 0', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: isSaved ? 'default' : 'pointer', border: '1.5px solid rgba(10,10,10,0.15)', background: 'none', color: isSaved ? '#10B981' : '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
         >
