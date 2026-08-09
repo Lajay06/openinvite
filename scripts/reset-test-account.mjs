@@ -4,7 +4,10 @@
  * The standard test-account reset tool for this repo. Resets ANY permitted
  * test account to pre-onboarding state (deletes wedding data, clears
  * onboarding/plan flags) so signup/onboarding/plan-selection can be walked
- * repeatedly.
+ * repeatedly — reuse the same +alias account run after run instead of
+ * minting a new one. Prints a before/after count (a live re-fetch after
+ * deleting, not just the delete counts) so it's unambiguous the account is
+ * actually empty before you reuse it, not just "probably fine."
  *
  * Usage:
  *   node scripts/reset-test-account.mjs <email> [password]
@@ -241,6 +244,14 @@ const GUEST_CONTACT_SUBMISSION_ENTITY = 'GuestContactSubmission';
 //   NOT touched by this script — this only resets the User record's own
 //   already-written field to a cleared state, same as any other field reset
 //   here).
+//
+// NOT here: onboardingStepIndex / onboardingDraft. Those are fields on the
+// WeddingDetails RECORD, not the User — there's nothing to reset on User for
+// them. They're handled by step 4 deleting every WeddingDetails row this
+// account owns, unconditionally (not filtered by onboardingDraft's value),
+// so a row stuck at onboardingDraft:true from an interrupted/raced
+// completion is deleted exactly the same as any other — the field never
+// survives, because the row it lives on doesn't.
 const USER_RESET_FIELDS = {
   onboardingCompleted: false,
   onboarding_completed: false,   // legacy snake_case, belt-and-braces
@@ -370,6 +381,13 @@ async function run() {
   console.log(`✓  ${confirmedEmail}  (id=${me.id})\n`);
 
   const summary = { deleted: {}, skipped: [] };
+  // Grand "before" total — every owned row found across every entity this
+  // script touches, summed as each is discovered (before any delete is
+  // attempted). Printed alongside a live post-delete re-check (step 9) so
+  // "the account is empty" is a verified fact, not an assumption from the
+  // delete counts alone (a 200 response that doesn't actually delete, e.g.
+  // an RLS quirk, would otherwise go unnoticed).
+  let totalFound = 0;
 
   // ── 4. Delete WeddingDetails ──────────────────────────────────────────────────
   //
@@ -391,6 +409,7 @@ async function run() {
     const rawRows = unwrapList(res);
     const ownedRows = rawRows.filter(r => r.created_by_id === me.id);
     const foreignCount = rawRows.length - ownedRows.length;
+    totalFound += ownedRows.length;
 
     if (ownedRows.length === 0) {
       console.log(`✓  none found (already clean)${foreignCount ? `  [${foreignCount} other-account record(s) correctly excluded]` : ''}`);
@@ -429,6 +448,7 @@ async function run() {
         const res = await api('GET', `/apps/${APP_ID}/entities/${GUEST_CONTACT_SUBMISSION_ENTITY}?q=${q}`, undefined, token);
         const rows = unwrapList(res);
         gcsSeen += rows.length;
+        totalFound += rows.length;
         for (const row of rows) {
           try {
             await api('DELETE', `/apps/${APP_ID}/entities/${GUEST_CONTACT_SUBMISSION_ENTITY}/${row.id}`, undefined, token);
@@ -455,6 +475,7 @@ async function run() {
       const rawRows = unwrapList(res);
       const rows = rawRows.filter(r => r[ownerField] === me.id);
       const foreignCount = rawRows.length - rows.length;
+      totalFound += rows.length;
 
       if (rows.length === 0) {
         console.log(`–  0 records${foreignCount ? `  [${foreignCount} other-account record(s) excluded]` : ''}`);
@@ -501,12 +522,38 @@ async function run() {
     process.exit(1);
   }
 
-  // ── 9. Summary ────────────────────────────────────────────────────────────────
+  // ── 9. Verify — live re-fetch, not the delete counts alone ──────────────────
+  // A 200 from DELETE doesn't guarantee the row is actually gone (an RLS
+  // quirk could make it a silent no-op — this codebase has documented that
+  // exact shape of surprise before). Re-fetching after every delete confirms
+  // it for real. Scoped to the entities that actually matter for "ready to
+  // re-run onboarding" (WeddingDetails is the critical one — a surviving
+  // draft row, onboardingDraft:true or not, would trip the resume-guard /
+  // Incident-1 dup-check logic) rather than re-fetching all ~30 entity types
+  // a second time; the attempted/deleted counts above already cover those.
+  console.log('\n  Verifying the account is actually empty (live re-fetch, not just delete counts)…\n');
+  const VERIFY_ENTITIES = ['WeddingDetails', 'Guest', 'Vendor', 'MoodboardItem', 'Task', 'Note'];
+  let residual = 0;
+  for (const entity of VERIFY_ENTITIES) {
+    process.stdout.write(`    ${entity.padEnd(22)} `);
+    try {
+      const res = await api('GET', `/apps/${APP_ID}/entities/${entity}`, undefined, token);
+      const remaining = unwrapList(res).filter(r => r.created_by_id === me.id).length;
+      residual += remaining;
+      console.log(remaining === 0 ? '✓  0 remaining' : `⚠️  ${remaining} STILL PRESENT`);
+    } catch (err) {
+      console.log(`⚠  could not verify: ${err.message.slice(0, 60)}`);
+    }
+  }
+
+  // ── 10. Summary ───────────────────────────────────────────────────────────────
   const totalDeleted = Object.values(summary.deleted).reduce((s, n) => s + n, 0);
   const entityTypesAttempted = Object.keys(summary.deleted).length;
 
   console.log(`\n${'─'.repeat(58)}`);
   console.log(`  Account reset:      ${confirmedEmail}  (id=${me.id})`);
+  console.log(`  Before:             ${totalFound} owned record(s) found across ${entityTypesAttempted + 1} entity type(s)`);
+  console.log(`  After:              ${residual} record(s) remaining in the ${VERIFY_ENTITIES.length} core entities (verified live)`);
   console.log(`  Total deleted:      ${totalDeleted} record(s) across ${entityTypesAttempted} entity type(s)`);
   console.log(`  Skipped entirely:   ${summary.skipped.length} entity type(s) — see list above`);
   console.log('  User fields reset:  ' + Object.keys(USER_RESET_FIELDS).join(', '));
@@ -532,8 +579,14 @@ async function run() {
   ─────────────────────────────────────────────────────
 `);
 
-  console.log('  ✅ Test account reset to pre-onboarding state.');
-  console.log('     Clear browser localStorage, then log in to walk onboarding fresh.\n');
+  if (residual === 0) {
+    console.log('  ✅ Test account reset to pre-onboarding state — verified empty, ready to re-run onboarding.');
+    console.log('     Clear browser localStorage, then log in to walk onboarding fresh.\n');
+  } else {
+    console.log(`  ⚠️  ${residual} record(s) still present after reset — see "STILL PRESENT" lines above.`);
+    console.log('     The account is NOT confirmed empty. Re-run this script, or investigate before reusing it.\n');
+    process.exitCode = 1;
+  }
 }
 
 run().catch(err => {
