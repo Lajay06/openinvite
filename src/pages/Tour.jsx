@@ -63,7 +63,7 @@ const SCENES = [
 // (#0A0A0A / #FFFFFF / #F5F5F3), which is gone.
 //
 // The 50% stop is the crossover, where the background passes through mid-grey
-// and NEITHER ink colour reaches AA. It is deliberately parked on the photo
+// and NEITHER ink color reaches AA. It is deliberately parked on the photo
 // pair between scenes 04 and 05, which carries no text — that placement is the
 // only reason this passes. IF THE PHOTO PAIR MOVES, THESE STOPS MOVE WITH IT.
 //
@@ -99,7 +99,7 @@ const mix = (a, b, t) => {
   return `#${c(ar, br)}${c(ag, bg2)}${c(ab, bb)}`;
 };
 
-/** Sample the arc at 0..1. Used for the reduced-motion static colours. */
+/** Sample the arc at 0..1. Used for the reduced-motion static colors. */
 const arcAt = (t) => {
   for (let i = 1; i < ARC.length; i++) {
     if (t <= ARC[i][0]) {
@@ -122,11 +122,8 @@ const ink = (dark) =>
     : { heading: "#0A0A0A", number: "#0A0A0A", meta: "rgba(10,10,10,0.72)" };
 
 // Both rings together: the light one carries on dark backgrounds, the dark one
-// on light backgrounds, and at mid-grey both are partly visible. A single
-// border in either colour disappears at the crossover.
-// Both rings together: the light one carries on dark backgrounds, the dark one
 // on light backgrounds, and at the crossover both are partly visible. A single
-// border in either colour disappears at one end of the arc.
+// border in either color disappears at one end of the arc.
 //
 // Alphas solved, not guessed. Worst-of-arc for max(light, dark) against the
 // 3:1 non-text minimum (WCAG 1.4.11):
@@ -275,7 +272,7 @@ function Scene({ scene, index }) {
       // Section padding and container width copied from Features.jsx's
       // SeatingSection/BudgetSection, not approximated.
       // Transparent so the fixed arc layer shows through. Under reduced
-      // motion there is no arc layer, so the section paints the colour its own
+      // motion there is no arc layer, so the section paints the color its own
       // position along the arc corresponds to — same story, nothing moving.
       style={{
         background: reduced ? arcAt(sceneT(index)) : "transparent",
@@ -385,9 +382,9 @@ export default function Tour() {
   const reducedMotion = prefersReduced();
 
   // Fallback for browsers without scroll-driven animations. Quantised to 24
-  // steps: writing a colour every frame would repaint a full-viewport layer
+  // steps: writing a color every frame would repaint a full-viewport layer
   // 60x a second for no visible benefit — 24 steps across the page is already
-  // below the threshold where a colour step is perceptible. The rAF is only
+  // below the threshold where a color step is perceptible. The rAF is only
   // scheduled when the step actually changes.
   useEffect(() => {
     if (reducedMotion || supportsScrollTimeline()) return;
@@ -420,7 +417,7 @@ export default function Tour() {
       {/* The arc. ONE fixed full-viewport layer, not eight section
           backgrounds — animating eight would be eight full-width paints per
           frame. Under prefers-reduced-motion this layer is not rendered and
-          each section paints its own static colour instead, so the same
+          each section paints its own static color instead, so the same
           light-to-dark story is told without anything animating. */}
       {!reducedMotion && <div className="tour-arc" aria-hidden="true" />}
       <PublicNav />
