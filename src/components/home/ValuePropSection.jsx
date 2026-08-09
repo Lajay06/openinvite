@@ -42,13 +42,21 @@ export default function ValuePropSection() {
   return (
     <section
       ref={sectionRef}
-      style={{ position: "relative", width: "100%", overflow: "hidden" }}
+      style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}
     >
-      {/* Full-width natural-height image — no cropping */}
+      {/* Was width:100% / height:auto, so the section height was the image's
+          intrinsic 1280x853 ratio at full width — 960px at 1440, i.e. 107vh.
+          The banner could therefore never sit on screen at once and always
+          needed scrolling to center. 100vh + cover is the treatment the hero
+          (MarketingHero) and the universe photo band (UniverseMiniHero)
+          already use, so this matches them rather than inventing a third. */}
       <img
         src={IMG_SRC}
         alt="Openinvite platform"
-        style={{ width: "100%", height: "auto", display: "block" }}
+        style={{
+          position: "absolute", inset: 0, width: "100%", height: "100%",
+          objectFit: "cover", objectPosition: "center", display: "block",
+        }}
       />
 
       {/* Text overlay — absolute on desktop, relative on mobile */}
