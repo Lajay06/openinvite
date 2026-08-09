@@ -5,6 +5,7 @@ import ScrollProgress from "@/components/motion/ScrollProgress";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingPhotoPair from "@/components/marketing/MarketingPhotoPair";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
+import { responsivePhoto } from "@/lib/marketingImage";
 
 // About hero. Swapped in from /tour. This is a print-resolution original
 // (6720x4480, 30 MP) and is 2.3MB with f_auto,q_auto and no width cap, so the
@@ -15,13 +16,9 @@ import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 // and shows source x 0..6720, y 140..4340, which already contains her head
 // (x 420-1036) and his raised hand with the glass (x 5208-5684, glass top
 // y 532). Nothing needs cropping; a crop could only lose one of them.
-const HERO_ID = "DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654_h6b8gy";
-const heroUrl = (w) =>
-  `https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_${w},c_limit/${HERO_ID}.jpg`;
-const HERO_SRC = heroUrl(1440);
-const HERO_SRCSET = [640, 960, 1280, 1440, 1920, 2560]
-  .map((w) => `${heroUrl(w)} ${w}w`)
-  .join(", ");
+// The ladder previously stopped at 2560, which covers only 68% of the device
+// pixels a 1892px box needs at dpr 2; it now runs to 3840.
+const HERO = responsivePhoto("DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654_h6b8gy", 6720);
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -91,8 +88,8 @@ export default function About() {
             1280x900  49 -> 82      1920x1080  40 -> 98
           h_640 keeps both pairs of feet in frame (lowest foot is y 615). */}
       <MarketingHero
-        image={HERO_SRC}
-        srcSet={HERO_SRCSET}
+        image={HERO.src}
+        srcSet={HERO.srcSet}
         title="Planning a wedding should feel like the beginning of something incredible."
         maxWidth={900}
         cta={{ label: "Get started", href: "/signup" }}

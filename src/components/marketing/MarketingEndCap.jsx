@@ -15,6 +15,7 @@
  */
 import React, { useRef, useState, useEffect } from "react";
 import ApplePillButton from "@/components/motion/ApplePillButton";
+import { ENDCAP_SIZES } from "@/lib/marketingImage";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -22,6 +23,13 @@ const prefersReduced = () =>
 
 export default function MarketingEndCap({
   image,
+  // Responsive delivery. Optional so nothing breaks if a caller omits it, but
+  // every caller in the repo passes it — end caps had NO srcSet at all until
+  // this was added, which is why all six shipped one fixed file and measured
+  // 0.34-0.42x of the device pixels their box needs at dpr 2. Build both with
+  // responsivePhoto() in src/lib/marketingImage.js rather than by hand.
+  srcSet,
+  sizes = ENDCAP_SIZES,
   alt = "",
   title = "Your wedding deserves this.",
   // STANDING RULE (owner, 2026-08-09): end-cap photos carry NO scrim by
@@ -65,6 +73,8 @@ export default function MarketingEndCap({
     >
       <img
         src={image}
+        srcSet={srcSet}
+        sizes={srcSet ? sizes : undefined}
         alt={alt}
         style={{
           position: "absolute",

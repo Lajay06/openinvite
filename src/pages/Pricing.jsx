@@ -8,6 +8,7 @@ import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { PRO_FEATURES, ULTRA_EXTRAS } from "@/lib/planFeatures";
+import { responsivePhoto } from "@/lib/marketingImage";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -17,24 +18,23 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // 1100 is the width Features' accordion and About's sections already use, so
 // Pricing now sits on the same grid rather than a fourth invented one. The
 // full-bleed sections (hero, plan pills, gift block, end cap) are unaffected.
-// Pricing hero. The source is the print-resolution original (6667x5000,
-// 33.3 MP); the previous web export was only 1280x960, which the browser had
-// to upscale into the 1440-wide hero box. It is delivered through Cloudinary
-// only — the raw original is 5.9MB, and even f_auto,q_auto without a width cap
-// returns the full 6667x5000 at 1.83MB, so a width is always pinned.
-//
-// c_limit never upscales, so each candidate is capped at the real pixels.
-// MarketingHero's default `sizes` is aspect-aware: this hero is 100vw x 100vh
-// with object-fit cover, so on a phone the crop is height-driven and needs
-// ~133vh of width (about 1125px at 390x844), not 100vw.
-const HERO_ID =
-  "DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_-_Print_ew6e2a";
-const heroUrl = (w) =>
-  `https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_${w},c_limit/${HERO_ID}.jpg`;
-const HERO_SRC = heroUrl(1440);
-const HERO_SRCSET = [640, 960, 1280, 1440, 1920, 2560]
-  .map((w) => `${heroUrl(w)} ${w}w`)
-  .join(", ");
+// Pricing hero. One of only two marketing photos backed by a print-resolution
+// master (6667x5000, 33.3 MP), so it is one of only two that can actually be
+// sharp at dpr 2. The previous ladder stopped at 2560, which covered 68% of the
+// device pixels a 1892px box needs; it now runs to 3840.
+const HERO = responsivePhoto(
+  "DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_-_Print_ew6e2a",
+  6667
+);
+
+// Pricing end cap. Ratio crop, not a fixed-pixel one: w_1600 IS the master's
+// full width, so this reframes without discarding resolution. 1600 is the
+// ceiling — 0.42x at dpr 2 — and only a larger master can lift it.
+const END_CAP = responsivePhoto(
+  "DTS_day_tripping_Agust%C3%ADn_Far%C3%ADas_Photos_ID6199_g2inky",
+  1600,
+  { transform: "c_crop,x_0,y_0,w_1600,h_700", croppedWidth: 1600 }
+);
 
 const SECTION_MAX = 1100;
 
@@ -162,8 +162,8 @@ export default function Pricing() {
 
       {/* ── HERO ── */}
       <MarketingHero
-        image={HERO_SRC}
-        srcSet={HERO_SRCSET}
+        image={HERO.src}
+        srcSet={HERO.srcSet}
         imagePosition="center 30%"
         title={<>Pay once.<br />Plan your entire wedding.</>}
         showScrollCue={false}
@@ -483,7 +483,8 @@ export default function Pricing() {
           This crop improves every such case by a uniform +184px, but the full
           fix would be a change to the shared component's height rule. */}
       <MarketingEndCap
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/c_crop,x_0,y_0,w_1600,h_700/f_auto,q_auto/DTS_day_tripping_Agust%C3%ADn_Far%C3%ADas_Photos_ID6199_g2inky.jpg"
+        image={END_CAP.src}
+        srcSet={END_CAP.srcSet}
         title="Your wedding deserves better. So, shall we?"
         alt="A couple on a day trip together"
         /* 0.45 read muddy against this photo. Worst-case (lightest backdrop

@@ -8,6 +8,7 @@ import ApplePillButton from "@/components/motion/ApplePillButton";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import { startGiftCheckout } from "@/lib/checkoutSession";
 import { PRO_FEATURES, ULTRA_EXTRAS } from "@/lib/planFeatures";
+import { responsivePhoto } from "@/lib/marketingImage";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -16,7 +17,11 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // imagery, no dark overlays" direction for this page. Also reused as the
 // gift-reveal email's own banner (api/emails/gift-reveal.js) for one
 // consistent "gifting" visual identity across the page and the email.
-const HERO_IMAGE = "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SNOWBOUND_Daniel_Far%C3%B2_Photos_ID12431_yunnan.jpg";
+// Web export (1280x853): 0.34x at dpr 2 is this asset's ceiling.
+// api/emails/gift-reveal.js keeps its own literal copy of this URL rather than
+// importing it — deliberately, since email clients ignore srcset and that
+// banner wants one fixed file. Changing the ladder here does not touch it.
+const HERO = responsivePhoto("DTS_SNOWBOUND_Daniel_Far%C3%B2_Photos_ID12431_yunnan", 1280);
 
 // Support-only fallback, kept alongside the real checkout flow — costs
 // nothing to leave in place (PR G4 proposal, open question 5).
@@ -103,7 +108,8 @@ export default function Gifting() {
       <PublicNav />
 
       <MarketingHero
-        image={HERO_IMAGE}
+        image={HERO.src}
+        srcSet={HERO.srcSet}
         title="Give someone a calmer wedding"
         overlay={false}
         cta={{ label: "Get started", href: "/signup" }}
