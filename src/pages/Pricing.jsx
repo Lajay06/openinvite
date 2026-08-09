@@ -493,7 +493,6 @@ export default function Pricing() {
            Mobile binds because the crop puts pale water behind the buttons
            there. The headline is never the constraint: >=32px bold is AA
            large text at 3:1 and clears even at 0.25. */
-        scrim={0.35}
       >
           {!isPaidUser && (
             <button

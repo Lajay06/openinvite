@@ -3,7 +3,6 @@
  */
 import React, { useEffect, useState } from "react";
 import ScrollCue from "@/components/motion/ScrollCue";
-import { EXPERIMENT_NO_OVERLAY } from "@/experimentNoOverlay";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReducedMotion = () =>
@@ -52,7 +51,8 @@ export default function HeroCollage({ onCTA }) {
         style={{
           position: "absolute",
           inset: 0,
-          background: EXPERIMENT_NO_OVERLAY ? "none" : "linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%)",
+          // No overlay, per the 2026-08-09 standing rule.
+          background: "none",
           zIndex: 3,
           pointerEvents: "none",
         }}

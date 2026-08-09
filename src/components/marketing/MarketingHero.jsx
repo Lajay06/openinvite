@@ -8,7 +8,6 @@
  * fails if a required marketing page renders a hero without importing this).
  */
 import React from "react";
-import { EXPERIMENT_NO_OVERLAY } from "@/experimentNoOverlay";
 
 import ScrollCue from "@/components/motion/ScrollCue";
 import ApplePillButton from "@/components/motion/ApplePillButton";
@@ -25,7 +24,12 @@ export default function MarketingHero({
   cta,
   showScrollCue = true,
   maxWidth = 800,
-  overlay = true,
+  // STANDING RULE (owner, 2026-08-09): marketing hero photos carry NO overlay
+  // by default. This supersedes the previous measured-scrim default for heroes
+  // and end caps. Pass a number (0-1) to opt a single page back in; the
+  // measured-scrim METHOD still applies wherever a scrim IS specified, and to
+  // every other text-over-photo block.
+  overlay = 0,
   // Opt-in alternative to `overlay`. Scrims a soft horizontal band behind the
   // copy instead of dimming the whole photo, for a bright picture where the
   // full-height gradient wastes the image. Default off: every existing
@@ -52,22 +56,10 @@ export default function MarketingHero({
         alt=""
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: imagePosition, zIndex: 1 }}
       />
-      {overlay && !copyBand && !EXPERIMENT_NO_OVERLAY && (
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%)", zIndex: 2 }} />
+      {overlay > 0 && !copyBand && (
+        <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlay})`, zIndex: 2 }} />
       )}
-      {/* Band scrim. Measured against the /tour pool photo, whose lightest
-          pixel behind the copy is (254,254,255) — the white swan float and
-          blown-out water sit directly under the headline, so there is no room
-          to lighten the full-height gradient. Contrast for white 64px/36px
-          bold copy (large text, AA 3:1), band alpha vs measured ratio:
-            0.40  2.87:1  fails
-            0.42  3.06:1  passes with no margin
-            0.45  3.37:1  passes  <- used
-            0.50  4.00:1  passes
-          The full-height gradient it replaces measured 3.15:1, so 0.45 is
-          BETTER for legibility while leaving the rest of the photo unscrimmed.
-          Do not lighten below 0.42 without re-measuring. */}
-      {copyBand && !EXPERIMENT_NO_OVERLAY && (
+      {copyBand && (
         <div
           style={{
             position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",

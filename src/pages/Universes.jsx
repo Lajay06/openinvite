@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { EXPERIMENT_NO_OVERLAY } from "@/experimentNoOverlay";
 import { useNavigate } from 'react-router-dom';
 import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
@@ -514,7 +513,7 @@ const Universes = () => {
           alt=""
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: EXPERIMENT_NO_OVERLAY ? 'none' : 'rgba(0,0,0,0.6)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'none', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 900, margin: '0 auto' }}>
           <h2 style={{
             fontFamily: 'Plus Jakarta Sans, sans-serif',

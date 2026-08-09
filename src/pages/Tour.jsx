@@ -333,7 +333,15 @@ export default function Tour() {
         srcSet={HERO_SRCSET}
         title="This is what planning looks like now."
         maxWidth={1000}
-        copyBand
+        overlay={0.2}
+        /* Moves the visible window UP the source so more of the top shows and
+           the couple sit lower. Range here is small: the delivered 1440x960
+           into a 1440x900 box leaves only 60px of vertical slack, so 50% -> 25%
+           is +15px of extra top, and 0% would be the maximum at +30px. The
+           larger lever, if this is not enough, is a Cloudinary bottom crop:
+           c_crop,y_0,h_4200 moves the couple from 44.6% to 47.6% of frame
+           height, at the cost of some pool water at the bottom. */
+        imagePosition="center 25%"
       />
 
       {SCENES.slice(0, 4).map((scene) => (
