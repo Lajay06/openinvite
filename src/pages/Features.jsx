@@ -117,9 +117,9 @@ export default function Features() {
 function QuickStartSection() {
   const [ref, visible] = useScrollReveal(0.2);
   return (
-      {/* Direction is owned by the flex-col / lg:flex-row classes below. An
-          inline flexDirection: "row" used to override them, so these columns
-          stayed side by side under lg and the text ran off screen. */}
+    /* Direction is owned by the flex-col / lg:flex-row classes below. An
+       inline flexDirection: "row" used to override them, so these columns
+       stayed side by side under lg and the text ran off screen. */
     <section ref={ref} style={{ background: "#0A0A0A", minHeight: "100vh", display: "flex", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-1" style={{ position: "relative", minHeight: 320, overflow: "hidden", flexShrink: 0 }}>
         <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_INFLUENCER_Daniel_Farò_Photos_ID8195_hcbnri.jpg" alt="A person setting up their wedding plan on a laptop" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-100px)", transition: `opacity 0.9s ${EASE}, transform 1s ${EASE}` }} />
