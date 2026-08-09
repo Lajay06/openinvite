@@ -7,6 +7,23 @@ import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import MarketingPhotoPair from "@/components/marketing/MarketingPhotoPair";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
+// About hero. Swapped in from /tour. This is a print-resolution original
+// (6720x4480, 30 MP) and is 2.3MB with f_auto,q_auto and no width cap, so the
+// width-capped responsive delivery travels WITH the image — a bare
+// f_auto,q_auto URL here would ship a 2.3MB hero. c_limit never upscales.
+//
+// Crop re-derived, not carried across: at 1440 the cover crop is width-driven
+// and shows source x 0..6720, y 140..4340, which already contains her head
+// (x 420-1036) and his raised hand with the glass (x 5208-5684, glass top
+// y 532). Nothing needs cropping; a crop could only lose one of them.
+const HERO_ID = "DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654_h6b8gy";
+const heroUrl = (w) =>
+  `https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_${w},c_limit/${HERO_ID}.jpg`;
+const HERO_SRC = heroUrl(1440);
+const HERO_SRCSET = [640, 960, 1280, 1440, 1920, 2560]
+  .map((w) => `${heroUrl(w)} ${w}w`)
+  .join(", ");
+
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -75,7 +92,8 @@ export default function About() {
             1280x900  49 -> 82      1920x1080  40 -> 98
           h_640 keeps both pairs of feet in frame (lowest foot is y 615). */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/c_crop,x_0,y_0,w_1190,h_640/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2.jpg"
+        image={HERO_SRC}
+        srcSet={HERO_SRCSET}
         title="Planning a wedding should feel like the beginning of something incredible."
         maxWidth={900}
         cta={{ label: "Get started", href: "/signup" }}

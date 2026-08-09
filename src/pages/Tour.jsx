@@ -48,20 +48,6 @@ const OFFWHITE = "#F5F5F3";
 const OVERSCAN = 124;
 const PARALLAX_PCT = 7;
 
-// Tour hero. Print-resolution original (6720x4480, 30 MP) — 2.3MB even with
-// f_auto,q_auto and no width cap, so a width is always pinned. c_limit never
-// upscales. Delivered UNCROPPED: measured at 1440 the cover crop is
-// width-driven and shows source x 0..6720, y 140..4340, which already contains
-// both her head (x 420-1036) and his raised hand with the glass (x 5208-5684,
-// top y 532). A crop could only lose one of them.
-const HERO_ID = "DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654_h6b8gy";
-const heroUrl = (w) =>
-  `https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_${w},c_limit/${HERO_ID}.jpg`;
-const HERO_SRC = heroUrl(1440);
-const HERO_SRCSET = [640, 960, 1280, 1440, 1920, 2560]
-  .map((w) => `${heroUrl(w)} ${w}w`)
-  .join(", ");
-
 const SCENES = [
   { num: "01", label: "Daily update", copy: "Your wedding, today's priorities, and what's coming next, all waiting for you.",              imageSrc: null, align: "left",  bg: WHITE },
   { num: "02", label: "Ava",          copy: "Like having a wedding planner in your pocket, only faster, smarter, and available 24/7.",      imageSrc: null, align: "right", bg: OFFWHITE },
@@ -328,19 +314,18 @@ export default function Tour() {
           is unchanged. No `cta` is passed — /tour stays out of the hero CTA
           rollout deliberately. maxWidth 1000 preserves the original measure;
           the type follows the shared scale, so the cap moves 84px -> 64px. */}
+      {/* Swapped with About. This is the field photo; its crop is re-derived
+          here from scratch rather than carried over, because the framing
+          problem is Tour's own: PublicNav is fixed, 65px tall and opaque, and
+          the couple sit high in the source (heads y 58-180 of 1065). Uncropped
+          at 1440 the cover scale is 0.9 and their heads land at screen y 23 —
+          under the nav. Cropping to w_1190 x h_640 centres the frame on the
+          heads (x 595) and shortens the image so the cover scale rises and
+          pushes them clear. Numbers verified at the preview. */}
       <MarketingHero
-        image={HERO_SRC}
-        srcSet={HERO_SRCSET}
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/c_crop,x_0,y_0,w_1190,h_640/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2.jpg"
         title="This is what planning looks like now."
         maxWidth={1000}
-        /* Moves the visible window UP the source so more of the top shows and
-           the couple sit lower. Range here is small: the delivered 1440x960
-           into a 1440x900 box leaves only 60px of vertical slack, so 50% -> 25%
-           is +15px of extra top, and 0% would be the maximum at +30px. The
-           larger lever, if this is not enough, is a Cloudinary bottom crop:
-           c_crop,y_0,h_4200 moves the couple from 44.6% to 47.6% of frame
-           height, at the cost of some pool water at the bottom. */
-        imagePosition="center 25%"
       />
 
       {SCENES.slice(0, 4).map((scene) => (
