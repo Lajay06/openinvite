@@ -83,6 +83,7 @@ const Features = lazyWithReload(() => import('./pages/Features'));
 const Home = lazyWithReload(() => import('./pages/Home'));
 const FAQ = lazyWithReload(() => import('./pages/FAQ'));
 const Tour = lazyWithReload(() => import('./pages/Tour'));
+const TourPreview = lazyWithReload(() => import('./pages/TourPreview'));
 
 // ── Public paths — bypass auth check entirely ─────────────────────────────────
 const PUBLIC_PATH_SET = new Set([
@@ -96,6 +97,9 @@ const PUBLIC_PATH_SET = new Set([
   // Private preview until T3: reachable by direct URL, not linked from
   // PublicNav, not prerendered, absent from sitemap.xml, noindex.
   '/tour',
+  // Disposable prototype of a split-screen scroll treatment. Same private
+  // terms as /tour: direct URL only, not linked, not prerendered, noindex.
+  '/tour-preview',
   '/scroll-morph',
   '/universes',
   '/gifting',
@@ -178,6 +182,7 @@ const AuthenticatedApp = () => {
         <Route path="/ava" element={<Ava />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/tour" element={<Tour />} />
+        <Route path="/tour-preview" element={<TourPreview />} />
         <Route path="/scroll-morph" element={<ScrollMorph />} />
         <Route path="/universes" element={<Universes />} />
         <Route path="/gifting" element={<Gifting />} />
