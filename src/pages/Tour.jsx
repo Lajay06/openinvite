@@ -381,24 +381,6 @@ export default function Tour() {
 
   const reducedMotion = prefersReduced();
 
-  // The arc layer sits at z-index -1 so page content paints over it without
-  // each section needing its own stacking context. That only works if nothing
-  // above it is opaque — and body/#root default to white, which covered it
-  // completely. Cleared while this page is mounted, restored on unmount so no
-  // other route is affected.
-  useEffect(() => {
-    if (reducedMotion) return;
-    const root = document.getElementById("root");
-    const prevBody = document.body.style.background;
-    const prevRoot = root ? root.style.background : "";
-    document.body.style.background = "transparent";
-    if (root) root.style.background = "transparent";
-    return () => {
-      document.body.style.background = prevBody;
-      if (root) root.style.background = prevRoot;
-    };
-  }, [reducedMotion]);
-
   // Fallback for browsers without scroll-driven animations. Quantised to 24
   // steps: writing a color every frame would repaint a full-viewport layer
   // 60x a second for no visible benefit — 24 steps across the page is already
@@ -434,7 +416,7 @@ export default function Tour() {
     // Transparent, not DARK: the arc layer sits at z-index -1, so an opaque
     // background here paints straight over it and the arc never shows. The
     // dark fallback lives on the arc layer's own initial color instead.
-    <div style={{ background: "transparent", minHeight: "100vh", position: "relative" }}>
+    <div className="tour-page" style={{ minHeight: "100vh", position: "relative" }}>
       {/* The arc. ONE fixed full-viewport layer, not eight section
           backgrounds — animating eight would be eight full-width paints per
           frame. Under prefers-reduced-motion this layer is not rendered and
@@ -494,10 +476,16 @@ export default function Tour() {
         /* ── BACKGROUND ARC ────────────────────────────────────────────
            One fixed layer, painted once per frame by the compositor. The
            stops match ARC above; keep them in sync. */
+        /* z-index 0, NOT -1. At -1 the arc paints behind the whole stacking
+           context, and the app shell renders an opaque white div between this
+           page and <body> which covered it completely. Lifting the arc to 0
+           and every sibling to 1 keeps it local to this page — no ancestor
+           background has to be touched. */
+        .tour-page > * { position: relative; z-index: 1; }
         .tour-arc {
           position: fixed;
           inset: 0;
-          z-index: -1;
+          z-index: 0 !important;
           background-color: #FFFFFF;
           pointer-events: none;
         }
