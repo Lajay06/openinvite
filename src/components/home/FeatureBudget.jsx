@@ -73,7 +73,6 @@ export default function FeatureBudget() {
       style={{
         minHeight: "100vh",
         display: "flex",
-        flexDirection: "row",
         overflow: "hidden",
         background: "#0A0A0A",
         position: "relative",

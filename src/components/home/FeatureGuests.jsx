@@ -70,7 +70,6 @@ export default function FeatureGuests({ children }) {
         background: "#F5F5F3",
         minHeight: "100vh",
         display: "flex",
-        flexDirection: "row",
         overflow: "hidden",
         position: "relative",
         borderBottom: "1px solid #E8E8E8"
