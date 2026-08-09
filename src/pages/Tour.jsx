@@ -381,6 +381,24 @@ export default function Tour() {
 
   const reducedMotion = prefersReduced();
 
+  // The arc layer sits at z-index -1 so page content paints over it without
+  // each section needing its own stacking context. That only works if nothing
+  // above it is opaque — and body/#root default to white, which covered it
+  // completely. Cleared while this page is mounted, restored on unmount so no
+  // other route is affected.
+  useEffect(() => {
+    if (reducedMotion) return;
+    const root = document.getElementById("root");
+    const prevBody = document.body.style.background;
+    const prevRoot = root ? root.style.background : "";
+    document.body.style.background = "transparent";
+    if (root) root.style.background = "transparent";
+    return () => {
+      document.body.style.background = prevBody;
+      if (root) root.style.background = prevRoot;
+    };
+  }, [reducedMotion]);
+
   // Fallback for browsers without scroll-driven animations. Quantised to 24
   // steps: writing a color every frame would repaint a full-viewport layer
   // 60x a second for no visible benefit — 24 steps across the page is already
