@@ -59,16 +59,22 @@ const prefersReduced = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/* Scrim over the photo half. The number and label are white on photos that
-   vary a lot, so this is measured rather than guessed, same method as
-   #324/#334/#366. Worst-case (lightest) backdrop pixel across all eight
-   photos, white text, AA 3:1 for the 88px number and 4.5:1 for the 15px label:
-     0.30  label 2.71:1  fails
-     0.40  label 3.62:1  fails
-     0.50  label 4.86:1  passes
-     0.55  label 5.62:1  passes  <- used, keeps margin on the lightest photo
-   0.55 is above the end cap's 0.45 because these photos are brighter and the
-   label is small text at 4.5:1, not large text at 3:1. */
+/* Scrim over the photo half, measured not guessed (method as #324/#334/#366).
+   Sampled the lightest backdrop pixel in the centre band of all eight photos;
+   it is pure white (255,255,255) — several have blown highlights right where
+   the number and label sit. White text over that:
+
+     scrim   ratio    88px number (AA 3:1)   15px label (AA 4.5:1)
+     0.30    2.11:1   fails                  fails
+     0.40    2.85:1   fails                  fails
+     0.45    3.35:1   passes                 fails
+     0.50    3.98:1   passes                 fails
+     0.55    4.76:1   passes                 passes   <- used
+     0.60    5.74:1   passes                 passes
+
+   The 15px label is the binding constraint: it is small text at 4.5:1, not
+   large text at 3:1, so 0.55 is the lightest value that clears both. That is
+   why this sits above the end cap's 0.45. Re-measure before lowering. */
 const PHOTO_SCRIM = 0.55;
 
 function PhotoHalf({ page }) {
