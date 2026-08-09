@@ -333,7 +333,6 @@ export default function Tour() {
         srcSet={HERO_SRCSET}
         title="This is what planning looks like now."
         maxWidth={1000}
-        overlay={0.2}
         /* Moves the visible window UP the source so more of the top shows and
            the couple sit lower. Range here is small: the delivered 1440x960
            into a 1440x900 box leaves only 60px of vertical slack, so 50% -> 25%
