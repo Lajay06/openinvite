@@ -20,7 +20,7 @@ import { ImageSlider } from "@/components/ui/ImageSlider";
 // contributes no layout height on its own — paddingTop: 64 below reserves
 // the same 64px (h-16) it occupies, exactly as Contact.jsx does.
 //
-// The old per-page coloured icon square (UserPlus/LogIn/Mail) is gone —
+// The old per-page colored icon square (UserPlus/LogIn/Mail) is gone —
 // the wordmark alone is the mark now, no icon.
 //
 // The source logo asset is a white wordmark (built for dark backgrounds —
@@ -50,9 +50,9 @@ const CAROUSEL_IMAGES = [
 // hand-writing the classes per field, so Register and Login can't drift from
 // each other.
 //
-// The colour is DESIGN_SPEC.md:10's label value, rgba(10,10,10,0.6) — the
+// The color is DESIGN_SPEC.md:10's label value, rgba(10,10,10,0.6) — the
 // textMuted token from src/styles/tokens.js. Spelled as an arbitrary value
-// the same way select.jsx does, so it is byte-identical to the inline colour
+// the same way select.jsx does, so it is byte-identical to the inline color
 // the Forgot/Reset labelStyle now uses; `text-muted-foreground` resolves to
 // rgb(107,107,107), one step off the rgb(108,108,108) that rgba composites
 // to, and that near-miss is exactly the kind of drift this constant exists

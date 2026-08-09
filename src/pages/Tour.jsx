@@ -309,7 +309,7 @@ export default function Tour() {
       <PublicNav />
 
       {/* Opening. Was a bespoke text-only section (dark, minHeight 100vh,
-          centred h1 at clamp(36px, 6vw, 84px)); it now consumes the shared
+          centered h1 at clamp(36px, 6vw, 84px)); it now consumes the shared
           MarketingHero so /tour matches every other marketing page. The copy
           is unchanged. No `cta` is passed — /tour stays out of the hero CTA
           rollout deliberately. maxWidth 1000 preserves the original measure;

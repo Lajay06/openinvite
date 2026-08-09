@@ -57,7 +57,7 @@ export default function HeroCollage({ onCTA }) {
         }}
       />
 
-      {/* Centred text content — horizontally and vertically dead-center of
+      {/* Centered text content — horizontally and vertically dead-center of
           the frame. 1c14c93 had bottom-anchored this to keep the couple's
           faces clear; the resulting low placement read as off-center, and
           the overlap is an accepted tradeoff, so the centering is restored. */}
