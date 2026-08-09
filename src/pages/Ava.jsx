@@ -391,6 +391,8 @@ export default function AvaPage() {
       <MarketingEndCap
         image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp.jpg"
         alt="A couple walking through a mountain meadow"
+        title="Turns out, you can have it all figured out."
+        cta={{ label: "Get started", href: "/signup" }}
       />
 
       <PublicFooter />

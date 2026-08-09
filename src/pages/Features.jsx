@@ -105,6 +105,8 @@ export default function Features() {
       <MarketingEndCap
         image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_CURATIVE_Chris_Abatzis_Photos_ID7678_dlsgrm.jpg"
         alt="A couple at their wedding reception"
+        title="Consider wedding planning, upgraded."
+        cta={{ label: "Start planning", href: "/signup" }}
       />
 
       <PublicFooter />
