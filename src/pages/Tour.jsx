@@ -32,8 +32,6 @@ const FRAME_ASPECT = "16/10";
 // Budget sections, #F5F5F3 its Dashboard and Seating sections. About.jsx
 // uses the same #F5F5F3 for its beliefs block. No new values.
 const DARK = "#0A0A0A";
-const WHITE = "#FFFFFF";
-const OFFWHITE = "#F5F5F3";
 
 // How much larger than the frame the image renders, so there is something to
 // travel, and how far it travels.
@@ -49,27 +47,99 @@ const OVERSCAN = 124;
 const PARALLAX_PCT = 7;
 
 const SCENES = [
-  { num: "01", label: "Daily update", copy: "Your wedding, today's priorities, and what's coming next, all waiting for you.",              imageSrc: null, align: "left",  bg: WHITE },
-  { num: "02", label: "Ava",          copy: "Like having a wedding planner in your pocket, only faster, smarter, and available 24/7.",      imageSrc: null, align: "right", bg: OFFWHITE },
-  { num: "03", label: "Guest list",   copy: "Track every RSVP, meal preference, and plus one without the spreadsheets.",       imageSrc: null, align: "left",  bg: DARK },
-  { num: "04", label: "Seating",      copy: "Design your floor plan visually, drag guests into place, and let every table come together effortlessly.",    imageSrc: null, align: "right", bg: WHITE },
-  { num: "05", label: "Budget",       copy: "What you planned. What you spent. No surprises in month nine.", imageSrc: null, align: "left",  bg: OFFWHITE },
-  { num: "06", label: "Schedule",     copy: "Build your entire wedding day with confidence, knowing every detail has its perfect place.",     imageSrc: null, align: "right", bg: DARK },
-  { num: "07", label: "Universes",    copy: "Choose your Universe and every touchpoint follows. One cohesive aesthetic from your first invitation to your final thank you.",                   imageSrc: null, align: "left",  bg: WHITE },
-  { num: "08", label: "Your site",    copy: "Guests see this. They will remember it.",                   imageSrc: null, align: "right", bg: OFFWHITE },
+  { num: "01", label: "Daily update", copy: "Your wedding, today's priorities, and what's coming next, all waiting for you.",              imageSrc: null, align: "left" },
+  { num: "02", label: "Ava",          copy: "Like having a wedding planner in your pocket, only faster, smarter, and available 24/7.",      imageSrc: null, align: "right" },
+  { num: "03", label: "Guest list",   copy: "Track every RSVP, meal preference, and plus one without the spreadsheets.",       imageSrc: null, align: "left" },
+  { num: "04", label: "Seating",      copy: "Design your floor plan visually, drag guests into place, and let every table come together effortlessly.",    imageSrc: null, align: "right" },
+  { num: "05", label: "Budget",       copy: "What you planned. What you spent. No surprises in month nine.", imageSrc: null, align: "left" },
+  { num: "06", label: "Schedule",     copy: "Build your entire wedding day with confidence, knowing every detail has its perfect place.",     imageSrc: null, align: "right" },
+  { num: "07", label: "Universes",    copy: "Choose your Universe and every touchpoint follows. One cohesive aesthetic from your first invitation to your final thank you.",                   imageSrc: null, align: "left" },
+  { num: "08", label: "Your site",    copy: "Guests see this. They will remember it.",                   imageSrc: null, align: "right" },
 ];
 
-const isDarkBg = (bg) => bg === DARK;
+// ── BACKGROUND ARC ────────────────────────────────────────────────
+// One continuous journey: light at the top, dark at the bottom, ending dark
+// into the end cap. This REPLACES the old scene-to-scene ping-pong
+// (#0A0A0A / #FFFFFF / #F5F5F3), which is gone.
+//
+// The 50% stop is the crossover, where the background passes through mid-grey
+// and NEITHER ink colour reaches AA. It is deliberately parked on the photo
+// pair between scenes 04 and 05, which carries no text — that placement is the
+// only reason this passes. IF THE PHOTO PAIR MOVES, THESE STOPS MOVE WITH IT.
+//
+// Measured contrast across the scroll (#324 method), best ink at each frame:
+//   t     bg        best ink   ratio   (all arc text is LARGE, AA 3:1)
+//   0.00  #FFFFFF   dark       19.80
+//   0.20  #F7F7F5   dark       18.46
+//   0.40  #B4B4B2   dark        9.62
+//   0.50  #8A8A88   dark        5.72
+//   0.55  #767675   light       4.50  <- WORST FRAME
+//   0.60  #636362   light       5.96
+//   0.80  #232323   light      15.60
+//   1.00  #0A0A0A   light      19.80
+// WORST FRAME 4.50:1 at t=0.55, against 3:1 for large text — 50% headroom.
+// This only holds because every element on the arc is large text: the scene
+// number is now 20px/700 SOLID. The old 11px rgba(255,255,255,0.4) measured
+// 3.77:1 and already failed AA on the dark scenes before the arc existed.
+// Text inside the placeholder frames sits on the frame's own solid background
+// (#161616 / #E8E8E6), not the arc, so it is unaffected: 20px label 18.10:1
+// and 16.14:1, 14px meta 9.71:1 and 7.44:1.
+const ARC = [
+  [0.00, "#FFFFFF"],
+  [0.25, "#F5F5F3"],
+  [0.50, "#8A8A88"],
+  [0.75, "#2A2A2A"],
+  [1.00, "#0A0A0A"],
+];
 
-// Text roles per background. Light values are the textMuted family from
-// src/styles/tokens.js — rgba(10,10,10,0.6) is the WCAG AA muted token, and
-// #444444 is the body color Features.jsx already uses on its light
-// sections. Dark values are the existing white-alpha family from the
-// previous version of this page and from Features' dark sections.
-const ink = (bg) =>
-  isDarkBg(bg)
-    ? { heading: "#FFFFFF", number: "rgba(255,255,255,0.4)", meta: "rgba(255,255,255,0.5)" }
-    : { heading: "#0A0A0A", number: "rgba(10,10,10,0.6)", meta: "#444444" };
+const mix = (a, b, t) => {
+  const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [ar, ag, ab] = p(a), [br, bg2, bb] = p(b);
+  const c = (x, y) => Math.round(x + (y - x) * t).toString(16).padStart(2, "0");
+  return `#${c(ar, br)}${c(ag, bg2)}${c(ab, bb)}`;
+};
+
+/** Sample the arc at 0..1. Used for the reduced-motion static colours. */
+const arcAt = (t) => {
+  for (let i = 1; i < ARC.length; i++) {
+    if (t <= ARC[i][0]) {
+      const [t0, c0] = ARC[i - 1], [t1, c1] = ARC[i];
+      return mix(c0, c1, (t - t0) / (t1 - t0));
+    }
+  }
+  return ARC[ARC.length - 1][1];
+};
+
+/** Scene i sits at i/7 along the arc, so 00-03 land light and 04-07 land dark,
+ *  with the crossover falling between them — i.e. on the photo pair. */
+const sceneT = (i) => i / (SCENES.length - 1);
+const sceneIsDark = (i) => sceneT(i) > 0.5;
+
+// Solid ink only. No alpha: alpha is what put the old scene number at 3.77:1.
+const ink = (dark) =>
+  dark
+    ? { heading: "#FFFFFF", number: "#FFFFFF", meta: "rgba(255,255,255,0.72)" }
+    : { heading: "#0A0A0A", number: "#0A0A0A", meta: "rgba(10,10,10,0.72)" };
+
+// Both rings together: the light one carries on dark backgrounds, the dark one
+// on light backgrounds, and at mid-grey both are partly visible. A single
+// border in either colour disappears at the crossover.
+// Both rings together: the light one carries on dark backgrounds, the dark one
+// on light backgrounds, and at the crossover both are partly visible. A single
+// border in either colour disappears at one end of the arc.
+//
+// Alphas solved, not guessed. Worst-of-arc for max(light, dark) against the
+// 3:1 non-text minimum (WCAG 1.4.11):
+//   light 0.50 / dark 0.32  ->  1.99:1   (first attempt, FAILED)
+//   light 0.60 / dark 0.60  ->  2.71:1   fails
+//   light 0.60 / dark 0.80  ->  3.16:1   passes
+//   light 0.70 / dark 0.80  ->  3.38:1   passes  <- used
+// Worst frame sits at t=0.57, just past the crossover. Re-solve if the stops
+// change.
+const FRAME_RING = {
+  border: "1px solid rgba(255,255,255,0.7)",
+  boxShadow: "0 0 0 1px rgba(10,10,10,0.8)",
+};
 
 const prefersReduced = () =>
   typeof window !== "undefined" &&
@@ -157,14 +227,14 @@ function useParallaxFallback(frameRef, imageRef) {
 }
 
 /** Grey placeholder. Fills the frame exactly as a real capture will. */
-function PlaceholderFill({ num, label, bg }) {
-  const c = ink(bg);
+function PlaceholderFill({ num, label, dark }) {
+  const c = ink(dark);
   return (
     <div
       style={{
         position: "absolute",
         inset: 0,
-        background: isDarkBg(bg) ? "#161616" : "#E8E8E6",
+        background: dark ? "#161616" : "#E8E8E6",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -175,21 +245,23 @@ function PlaceholderFill({ num, label, bg }) {
         boxSizing: "border-box",
       }}
     >
-      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: c.number, fontFamily: PJS }}>{num}</span>
-      <span style={{ fontSize: "clamp(14px, 1.6vw, 18px)", fontWeight: 600, color: c.heading, fontFamily: PJS }}>{label}</span>
-      <span style={{ fontSize: 12, color: c.meta, fontFamily: PJS }}>Dashboard capture 16:10</span>
+      {/* 20px/700 — large text at AA 3:1. Was 11px with rgba(...,0.4), which
+          measured 3.77:1 on the dark scenes and failed AA before the arc. */}
+      <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.06em", color: c.number, fontFamily: PJS }}>{num}</span>
+      <span style={{ fontSize: "clamp(16px, 1.8vw, 20px)", fontWeight: 700, color: c.heading, fontFamily: PJS }}>{label}</span>
+      <span style={{ fontSize: 14, color: c.meta, fontFamily: PJS }}>Dashboard capture 16:10</span>
     </div>
   );
 }
 
-function Scene({ scene }) {
+function Scene({ scene, index }) {
   const [ref, visible] = useReveal(0.2);
   const frameRef = useRef(null);
   const imageRef = useRef(null);
   useParallaxFallback(frameRef, imageRef);
 
-  const c = ink(scene.bg);
-  const dark = isDarkBg(scene.bg);
+  const dark = sceneIsDark(index);
+  const c = ink(dark);
   const isRight = scene.align === "right";
   const reduced = prefersReduced();
 
@@ -202,7 +274,13 @@ function Scene({ scene }) {
       ref={ref}
       // Section padding and container width copied from Features.jsx's
       // SeatingSection/BudgetSection, not approximated.
-      style={{ background: scene.bg, padding: "160px clamp(32px, 6vw, 80px)" }}
+      // Transparent so the fixed arc layer shows through. Under reduced
+      // motion there is no arc layer, so the section paints the colour its own
+      // position along the arc corresponds to — same story, nothing moving.
+      style={{
+        background: reduced ? arcAt(sceneT(index)) : "transparent",
+        padding: "160px clamp(32px, 6vw, 80px)",
+      }}
     >
       <div
         className={`tour-scene-grid${isRight ? " tour-scene-grid--flip" : ""}`}
@@ -218,7 +296,7 @@ function Scene({ scene }) {
             transition: frameTransition,
           }}
         >
-          <ProductMediaFrame aspectRatio={FRAME_ASPECT} maxWidth="none" dark={dark}>
+          <ProductMediaFrame aspectRatio={FRAME_ASPECT} maxWidth="none" dark={dark} style={FRAME_RING}>
             {/* The traveling layer. Taller than the frame by OVERSCAN so the
                 frame stays fully covered at both ends of the translate — no
                 letterboxing, no gap, no inner padding at any point. */}
@@ -245,7 +323,7 @@ function Scene({ scene }) {
                     style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
                 ) : (
-                  <PlaceholderFill num={scene.num} label={scene.label} bg={scene.bg} />
+                  <PlaceholderFill num={scene.num} label={scene.label} dark={dark} />
                 )}
               </div>
             </div>
@@ -260,7 +338,7 @@ function Scene({ scene }) {
             transition: copyTransition,
           }}
         >
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: c.number, fontFamily: PJS, marginBottom: 12 }}>
+          <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.06em", color: c.number, fontFamily: PJS, marginBottom: 12 }}>
             {scene.num}
           </div>
           <h2
@@ -304,8 +382,47 @@ export default function Tour() {
   }, []);
 
 
+  const reducedMotion = prefersReduced();
+
+  // Fallback for browsers without scroll-driven animations. Quantised to 24
+  // steps: writing a colour every frame would repaint a full-viewport layer
+  // 60x a second for no visible benefit — 24 steps across the page is already
+  // below the threshold where a colour step is perceptible. The rAF is only
+  // scheduled when the step actually changes.
+  useEffect(() => {
+    if (reducedMotion || supportsScrollTimeline()) return;
+    const el = document.querySelector(".tour-arc");
+    if (!el) return;
+    const STEPS = 24;
+    let last = -1, raf = 0;
+    const apply = () => {
+      raf = 0;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const t = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+      const step = Math.round(t * STEPS);
+      if (step === last) return;
+      last = step;
+      el.style.backgroundColor = arcAt(step / STEPS);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply); };
+    apply();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [reducedMotion]);
+
   return (
-    <div style={{ background: DARK, minHeight: "100vh" }}>
+    <div style={{ background: DARK, minHeight: "100vh", position: "relative" }}>
+      {/* The arc. ONE fixed full-viewport layer, not eight section
+          backgrounds — animating eight would be eight full-width paints per
+          frame. Under prefers-reduced-motion this layer is not rendered and
+          each section paints its own static colour instead, so the same
+          light-to-dark story is told without anything animating. */}
+      {!reducedMotion && <div className="tour-arc" aria-hidden="true" />}
       <PublicNav />
 
       {/* Opening. Was a bespoke text-only section (dark, minHeight 100vh,
@@ -328,8 +445,8 @@ export default function Tour() {
         maxWidth={1000}
       />
 
-      {SCENES.slice(0, 4).map((scene) => (
-        <Scene key={scene.num} scene={scene} />
+      {SCENES.slice(0, 4).map((scene, i) => (
+        <Scene key={scene.num} scene={scene} index={i} />
       ))}
 
       {/* Break between scenes 04 and 05. Alternation is data-driven off each
@@ -340,8 +457,11 @@ export default function Tour() {
         right={{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Pride_Agust%C3%ADn_Far%C3%ADas_Photos_ID5510_dn4jws.jpg", alt: "Two people celebrating at a wedding party" }}
       />
 
-      {SCENES.slice(4).map((scene) => (
-        <Scene key={scene.num} scene={scene} />
+      {SCENES.slice(4).map((scene, i) => (
+        // +4: this slice restarts i at 0, and the index drives which side of
+        // the arc crossover the scene's ink sits on. Without the offset all
+        // eight scenes would take the light-background ink.
+        <Scene key={scene.num} scene={scene} index={i + 4} />
       ))}
 
       <MarketingEndCap
@@ -353,6 +473,33 @@ export default function Tour() {
       <PublicFooter />
 
       <style>{`
+        /* ── BACKGROUND ARC ────────────────────────────────────────────
+           One fixed layer, painted once per frame by the compositor. The
+           stops match ARC above; keep them in sync. */
+        .tour-arc {
+          position: fixed;
+          inset: 0;
+          z-index: -1;
+          background-color: #FFFFFF;
+          pointer-events: none;
+        }
+        @keyframes tourArc {
+          0%   { background-color: #FFFFFF; }
+          25%  { background-color: #F5F5F3; }
+          50%  { background-color: #8A8A88; }
+          75%  { background-color: #2A2A2A; }
+          100% { background-color: #0A0A0A; }
+        }
+        @supports (animation-timeline: scroll()) {
+          .tour-arc {
+            animation: tourArc linear both;
+            animation-timeline: scroll(root block);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .tour-arc { display: none; }
+        }
+
         /* Grid copied from Features.jsx's FeatureVideoGridStyle — same
            columns, same gaps, same 900px breakpoint. Duplicated rather than
            imported because that style component is local to Features.jsx and
