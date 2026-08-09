@@ -15,6 +15,9 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 export default function MarketingHero({
   image,
+  // Optional responsive delivery. Pass both, or neither.
+  srcSet,
+  sizes = "(max-aspect-ratio: 4/3) 134vh, 100vw",
   imagePosition = "center",
   title,
   cta,
@@ -29,8 +32,16 @@ export default function MarketingHero({
   const isLeft = align === "left";
   return (
     <section style={{ position: "relative", height: "100vh", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: isLeft ? "flex-start" : "center" }}>
+      {/* srcSet/sizes are optional. Consumers that omit them render exactly as
+          before — the attributes are simply absent. Note the correct `sizes`
+          for this hero is NOT 100vw: the box is 100vw x 100vh with object-fit
+          cover, so on a portrait viewport the crop is height-driven and the
+          browser needs roughly 133vh of image width, not 100vw. A 390x844
+          phone needs ~1125px, not 390px. */}
       <img
         src={image}
+        srcSet={srcSet}
+        sizes={srcSet ? sizes : undefined}
         alt=""
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: imagePosition, zIndex: 1 }}
       />
