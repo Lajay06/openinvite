@@ -86,7 +86,7 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
   const handleSubmit = () => onNext();
 
   return (
-    <div className="w-full max-w-2xl text-center">
+    <div className="w-full max-w-2xl">
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -113,7 +113,7 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
       >
         {images.length + queue.length < 6 && (
           <label className="block mb-6">
-            <div className="border-2 border-dashed border-[rgba(10,10,10,0.18)] rounded-none p-12 cursor-pointer hover:border-[#E03553] transition-colors">
+            <div className="border-2 border-dashed border-[rgba(10,10,10,0.18)] rounded-none p-12 cursor-pointer hover:border-[#E03553] transition-colors text-center">
               <Upload className="w-8 h-8 text-[rgba(10,10,10,0.45)] mx-auto mb-3" />
               <p className="text-[#0A0A0A] font-medium">Upload images</p>
               <p className="text-[rgba(10,10,10,0.6)] text-sm mt-1">
@@ -190,7 +190,7 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
 
         <button
           onClick={handleSubmit}
-          className="block mx-auto text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
+          className="block text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
         >
           Skip for now →
         </button>

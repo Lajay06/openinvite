@@ -4,7 +4,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 export default function OnboardingWelcome({ onNext }) {
   return (
-    <div style={{ textAlign: 'center', maxWidth: 560, width: '100%', padding: '0 24px' }}>
+    <div style={{ width: '100%' }}>
 
       {/* Headline */}
       <h1 style={{

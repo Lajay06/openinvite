@@ -285,7 +285,7 @@ export default function ChoosePlan() {
       )}
 
       <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>
-        Prices in USD · Refunds as required by law · No recurring fees
+        Prices in USD · No recurring fees
       </p>
     </div>
   );

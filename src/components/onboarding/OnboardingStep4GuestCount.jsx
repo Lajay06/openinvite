@@ -32,7 +32,7 @@ export default function OnboardingStep4GuestCount({ onNext, data }) {
   const isReady = selected || customCount;
 
   return (
-    <div className="w-full max-w-3xl text-center">
+    <div className="w-full max-w-3xl">
       <style>{`.s4-input::placeholder { color: rgba(10,10,10,0.58); }`}</style>
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
@@ -87,7 +87,7 @@ export default function OnboardingStep4GuestCount({ onNext, data }) {
         className="mb-12"
       >
         <p style={{ color: textMuted, fontSize: 14, marginBottom: 16, fontFamily: PJS }}>Or enter a number:</p>
-        <div className="flex justify-center gap-3">
+        <div className="flex justify-start gap-3">
           <input
             type="number"
             value={customCount}

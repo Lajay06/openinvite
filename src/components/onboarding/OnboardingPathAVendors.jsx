@@ -67,7 +67,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
   };
 
   return (
-    <div className="w-full max-w-2xl text-center">
+    <div className="w-full max-w-2xl">
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -111,7 +111,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
       </motion.div>
 
       {status === 'searching' && (
-        <div className="flex items-center justify-center gap-2 text-[rgba(10,10,10,0.6)] text-sm mb-8">
+        <div className="flex items-center justify-start gap-2 text-[rgba(10,10,10,0.6)] text-sm mb-8">
           <Loader2 size={14} className="animate-spin" /> Searching Google Places…
         </div>
       )}
@@ -129,7 +129,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
           className="space-y-3 mb-8 text-left"
         >
           {results.length === 0 ? (
-            <p className="text-sm text-[rgba(10,10,10,0.6)] text-center">
+            <p className="text-sm text-[rgba(10,10,10,0.6)]">
               No {activeCategory.toLowerCase()} vendors found nearby. Try another category.
             </p>
           ) : (
@@ -184,7 +184,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
 
         <button
           onClick={() => onNext()}
-          className="block mx-auto text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
+          className="block text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
         >
           Skip for now →
         </button>

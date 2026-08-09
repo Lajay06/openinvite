@@ -18,6 +18,9 @@ export default function OnboardingCompletion({ onDone, data }) {
   const textMuted = 'rgba(10,10,10,0.6)';
   const itemBg = '#FFFFFF';
   const itemBorder = 'rgba(10,10,10,0.18)';
+  // First token only, in case a full name ever ends up in this field —
+  // this heading is a first-name greeting, not a full-name one.
+  const firstName = data.couple1Name?.trim().split(/\s+/)[0] || '';
 
   useEffect(() => {
     // AUDIT_2026-07.md N4: none of these were captured/cleared before — if
@@ -63,14 +66,14 @@ export default function OnboardingCompletion({ onDone, data }) {
   }, []);
 
   return (
-    <div className="w-full max-w-2xl text-center">
+    <div className="w-full max-w-2xl">
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, color: textPrimary, fontFamily: PJS, marginBottom: 12 }}
       >
-        You're all set, {data.couple1Name || 'friend'}.
+        {firstName ? `You're all set, ${firstName}.` : "You're all set."}
       </motion.h1>
 
       <motion.p

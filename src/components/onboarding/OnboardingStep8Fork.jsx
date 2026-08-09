@@ -1,28 +1,35 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
+// Cards no longer invert to a solid black background on hover — that made
+// the whole card (including its bullet list) hard to read mid-transition
+// and gave no dedicated click target. Each card is a static white panel
+// (border darkens on hover as the only hover affordance) with a real
+// "Select" button at the bottom, styled like every other primary CTA in
+// the flow (px-8 py-3 rounded-full bg-[#E03553] hover:bg-black
+// active:bg-neutral-900 text-white text-sm font-medium) — both paths are
+// equally valid choices, so both get the same button treatment rather than
+// a primary/secondary pair.
+// border lives in the className (not this style object) so the
+// hover:border-* Tailwind class can actually win — an inline `border`
+// property always beats a stylesheet rule, hover pseudo-class or not.
+const cardStyle = {
+  textAlign: 'left',
+  padding: 32,
+  background: '#FFFFFF',
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+const textDark = '#0A0A0A';
+const textMid = '#555555';
+const textFaint = 'rgba(10,10,10,0.35)';
+const textMuted = 'rgba(10,10,10,0.5)';
+const accentColor = '#E03553';
+
 export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
-  const [hoveredCard, setHoveredCard] = useState(null); // 'a' | 'b' | null
-
-  const cardStyle = (cardKey) => ({
-    textAlign: 'left',
-    padding: 32,
-    background: hoveredCard === cardKey ? '#0A0A0A' : '#FFFFFF',
-    border: `1px solid ${hoveredCard === cardKey ? '#0A0A0A' : '#E5E5E5'}`,
-    cursor: 'pointer',
-    transition: 'background 0.15s ease, border-color 0.15s ease',
-    display: 'flex',
-    flexDirection: 'column',
-  });
-
-  const textDark = (cardKey) => hoveredCard === cardKey ? '#FFFFFF' : '#0A0A0A';
-  const textMid = (cardKey) => hoveredCard === cardKey ? 'rgba(255,255,255,0.75)' : '#555555';
-  const textFaint = (cardKey) => hoveredCard === cardKey ? 'rgba(255,255,255,0.45)' : 'rgba(10,10,10,0.35)';
-  const textMuted = (cardKey) => hoveredCard === cardKey ? 'rgba(255,255,255,0.5)' : 'rgba(10,10,10,0.5)';
-  const accentColor = (cardKey) => hoveredCard === cardKey ? 'rgba(255,255,255,0.6)' : '#E03553';
-
   return (
     <div
       className="w-full max-w-5xl text-center"
@@ -58,71 +65,50 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
         className="grid grid-cols-1 lg:grid-cols-2 gap-8"
       >
         {/* Card A — Tell us more */}
-        <motion.button
-          onClick={onPathA}
-          onHoverStart={() => setHoveredCard('a')}
-          onHoverEnd={() => setHoveredCard(null)}
-          style={cardStyle('a')}
+        <motion.div
+          className="border border-[rgba(10,10,10,0.12)] hover:border-[#0A0A0A] transition-colors duration-150"
+          style={cardStyle}
         >
-          <h3 style={{ color: textDark('a'), fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>Tell us more</h3>
-          <p style={{ color: textMid('a'), fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
+          <h3 style={{ color: textDark, fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>Tell us more</h3>
+          <p style={{ color: textMid, fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
             Upload your guest list, add vendors, set your budget, and give Ava everything Ava needs to hit the ground running.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
             {['Upload guest list (CSV or manual)', 'Add cultural/religious details', 'Set your budget', 'Add known vendors', 'Upload inspiration photos'].map(item => (
-              <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, color: textMuted('a'), fontSize: 14, fontFamily: PJS }}>
-                <span style={{ color: accentColor('a'), fontWeight: 700, fontSize: 14, lineHeight: 1 }}>—</span> {item}
+              <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, color: textMuted, fontSize: 14, fontFamily: PJS }}>
+                <span style={{ color: accentColor, fontWeight: 700, fontSize: 14, lineHeight: 1 }}>—</span> {item}
               </div>
             ))}
           </div>
-          <div style={{
-            display: 'inline-block',
-            alignSelf: 'flex-start',
-            marginTop: 'auto',
-            background: hoveredCard === 'a' ? '#FFFFFF' : '#E03553',
-            color: hoveredCard === 'a' ? '#0A0A0A' : '#FFFFFF',
-            borderRadius: 999,
-            padding: '10px 24px',
-            fontSize: 14,
-            fontWeight: 600,
-            fontFamily: PJS,
-            transition: 'background 0.15s ease, color 0.15s ease',
-          }}>
-            Let's do it
-          </div>
-        </motion.button>
+          <button
+            onClick={onPathA}
+            style={{ marginTop: 'auto', alignSelf: 'flex-start' }}
+            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 border-none cursor-pointer"
+          >
+            Select
+          </button>
+        </motion.div>
 
         {/* Card B — Get started now */}
-        <motion.button
-          onClick={onPathB}
-          onHoverStart={() => setHoveredCard('b')}
-          onHoverEnd={() => setHoveredCard(null)}
-          style={cardStyle('b')}
+        <motion.div
+          className="border border-[rgba(10,10,10,0.12)] hover:border-[#0A0A0A] transition-colors duration-150"
+          style={cardStyle}
         >
-          <h3 style={{ color: textDark('b'), fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>Get started now</h3>
-          <p style={{ color: textMid('b'), fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
+          <h3 style={{ color: textDark, fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>Get started now</h3>
+          <p style={{ color: textMid, fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
             Jump straight into your dashboard. Ava will guide you through the key details as you go — no overwhelm.
           </p>
-          <p style={{ color: textFaint('b'), fontSize: 13, marginBottom: 24, fontFamily: PJS }}>
+          <p style={{ color: textFaint, fontSize: 13, marginBottom: 24, fontFamily: PJS }}>
             You can always add more later.
           </p>
-          <div style={{
-            display: 'inline-block',
-            alignSelf: 'flex-start',
-            marginTop: 'auto',
-            background: hoveredCard === 'b' ? '#FFFFFF' : '#FFFFFF',
-            color: hoveredCard === 'b' ? '#0A0A0A' : '#0A0A0A',
-            borderRadius: 999,
-            border: `1px solid ${hoveredCard === 'b' ? 'rgba(255,255,255,0.4)' : '#0A0A0A'}`,
-            padding: '10px 24px',
-            fontSize: 14,
-            fontWeight: 600,
-            fontFamily: PJS,
-            transition: 'border-color 0.15s ease',
-          }}>
-            Let's go
-          </div>
-        </motion.button>
+          <button
+            onClick={onPathB}
+            style={{ marginTop: 'auto', alignSelf: 'flex-start' }}
+            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 border-none cursor-pointer"
+          >
+            Select
+          </button>
+        </motion.div>
       </motion.div>
     </div>
   );

@@ -110,6 +110,39 @@ const SHELL_STEPS = new Set([
 // below its own 200px minWidth, clipping "Partner's name"'s placeholder.
 const SHELL_CONTENT_WIDTH = { 'pathA-cultural': 640, 'names': 700 };
 
+// Visual pass (PR A) — one fixed photo per shell step, replacing
+// OnboardingShell's old 4-photo rotating carousel. Every id below is
+// hand-picked per step and confirmed to resolve (f_auto,q_auto HTTP 200)
+// before shipping — a bad id renders a blank panel, so don't add one here
+// without checking it first.
+//
+// pathA-vendors gets its own c_fill,g_face crop: the source photo's subject
+// is seated off to the right with empty couch filling the left two-thirds,
+// so a plain center-crop into this panel's tall aspect ratio would cut her
+// out of frame — g_face keeps her centered regardless of panel height.
+//
+// pathA-cultural has no dedicated photo from the brief (which specified 12
+// images for these 13 shell steps) — reusing weddingType's celebration shot
+// as the closest thematic match (cultural traditions ~ celebration) until a
+// dedicated one is picked.
+const CLOUDINARY_BASE = 'https://res.cloudinary.com/dsr84xknv/image/upload';
+const CELEBRATION_IMAGE = `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10294_qw316r.jpg`;
+const SHELL_STEP_IMAGES = {
+  welcome: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg`,
+  names: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14160_vgcgxf.jpg`,
+  date: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_First_Date_Marlen_Stahlhuth_Photos_ID4764_nostak.jpg`,
+  location: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_Philia_Daniel_Far%C3%B2_Photos_ID4659_pnnku3.jpg`,
+  guestCount: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_LAST_SUPPER_PALI_MENDEZ_Photos_ID13844_lya23b.jpg`,
+  weddingType: CELEBRATION_IMAGE,
+  ava: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6163_yzjazb.jpg`,
+  'pathA-guestList': `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_Pride_Agust%C3%ADn_Far%C3%ADas_Photos_ID5544_sgsmaz.jpg`,
+  'pathA-budget': `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa.jpg`,
+  'pathA-vendors': `${CLOUDINARY_BASE}/f_auto,q_auto,c_fill,g_face,w_800,h_1200/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6183_eapdy7.jpg`,
+  'pathA-cultural': CELEBRATION_IMAGE,
+  'pathA-inspiration': `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_TERRA_Chris_Abatzis_Photos_ID13220_kxcbio.jpg`,
+  completion: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_Community_Agust%C3%ADn_Far%C3%ADas_Photos_ID6374_iumjqj.jpg`,
+};
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -703,7 +736,7 @@ export default function Onboarding() {
           }}
         >
           {isShellStep ? (
-            <OnboardingShell contentMaxWidth={SHELL_CONTENT_WIDTH[currentStep] || 600}>
+            <OnboardingShell contentMaxWidth={SHELL_CONTENT_WIDTH[currentStep] || 600} image={SHELL_STEP_IMAGES[currentStep]}>
               <div style={{ marginBottom: 32, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {stepChrome}
               </div>

@@ -41,7 +41,7 @@ export default function OnboardingStep3Location({ onNext, data }) {
   };
 
   return (
-    <div className="w-full max-w-2xl text-center">
+    <div className="w-full max-w-2xl">
       <style>{`
         .s3-input::placeholder { color: rgba(10,10,10,0.58); }
         .s3-input:focus { border-bottom-color: #E03553 !important; border-bottom-width: 2px !important; }
@@ -68,7 +68,7 @@ export default function OnboardingStep3Location({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="space-y-6 mb-12 max-w-md mx-auto text-left"
+        className="space-y-6 mb-12 max-w-md"
       >
         {/* Venue name — Places-powered search */}
         <VenueSearchPanel
@@ -119,7 +119,7 @@ export default function OnboardingStep3Location({ onNext, data }) {
         )}
         <button
           onClick={() => onNext({ venue: null, location: '' })}
-          style={{ display: 'block', margin: '0 auto', color: skipColor, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS }}
+          style={{ display: 'block', color: skipColor, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, padding: 0 }}
         >
           Not sure yet →
         </button>

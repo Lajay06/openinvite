@@ -60,34 +60,44 @@ const CAROUSEL_IMAGES = [
 export const AUTH_LABEL_CLASS =
   "normal-case font-semibold tracking-[0.06em] text-[rgba(10,10,10,0.6)]";
 
-// showNav/images/bare/contentMaxWidth are additive — every existing caller
-// (Login/Register/ForgotPassword/ResetPassword) passes none of them and
-// gets byte-identical output. Added for OnboardingShell.jsx (Group A shell
-// redesign): onboarding hides PublicNav (a wizard mid-flow isn't a page a
-// visitor should navigate away from), uses its own photo set, and skips
-// this component's built-in logo/title/card chrome entirely — each
-// onboarding step already renders its own heading in the wizard's own
-// voice, and the wizard's logo/step-counter/back button live in its own
-// fixed-position overlay (independent of this component either way).
-export default function AuthLayout({ title, subtitle, footer, children, showNav = true, images = CAROUSEL_IMAGES, bare = false, contentMaxWidth }) {
+// showNav/images/image/bare/contentMaxWidth are additive — every existing
+// caller (Login/Register/ForgotPassword/ResetPassword) passes none of them
+// and gets byte-identical output. Added for OnboardingShell.jsx (Group A
+// shell redesign): onboarding hides PublicNav (a wizard mid-flow isn't a
+// page a visitor should navigate away from), shows one fixed photo per step
+// instead of the carousel (image, singular — takes over from `images` when
+// passed), and skips this component's built-in logo/title/card chrome
+// entirely — each onboarding step already renders its own heading in the
+// wizard's own voice, and the wizard's logo/step-counter/back button live in
+// its own fixed-position overlay (independent of this component either
+// way). `bare` also switches the content column to left-aligned — every
+// onboarding step wants its heading/inputs/CTA flush to one left margin,
+// whereas Login/Register (the only non-bare callers) stay centered.
+export default function AuthLayout({ title, subtitle, footer, children, showNav = true, images = CAROUSEL_IMAGES, image, bare = false, contentMaxWidth }) {
   return (
     <div className="h-screen overflow-hidden flex flex-col">
       {showNav && <PublicNav />}
 
       <div className="flex-1 flex overflow-hidden" style={{ paddingTop: showNav ? 64 : 0, boxSizing: "border-box" }}>
-        {/* LEFT — full-bleed crossfade carousel, hidden below md same as the
-            Reset/Forgot password pattern this was reused from. Clean photos
-            only, no caption overlay. */}
+        {/* LEFT — full-bleed photo, hidden below md same as the
+            Reset/Forgot password pattern this was reused from. `image`
+            (singular) renders one fixed photo, no crossfade/dots — the
+            onboarding call site passes this per-step. Falls back to the
+            4-photo crossfade carousel for Login/Register/Forgot/Reset. */}
         <div className="hidden md:block h-full" style={{ width: "50%", flexShrink: 0 }}>
-          <ImageSlider images={images} />
+          {image ? (
+            <img src={image} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <ImageSlider images={images} />
+          )}
         </div>
 
         {/* RIGHT — form panel. overflow-y-auto stays on as a safety net for a
             genuinely short viewport (Register's 4 OAuth buttons + divider +
             3 fields is the tallest case), not the default path. */}
-        <div className="w-full md:w-1/2 h-full overflow-y-auto flex items-center justify-center bg-background px-4 py-3">
+        <div className={`w-full md:w-1/2 h-full overflow-y-auto flex items-center bg-background px-4 py-3 ${bare ? "justify-start" : "justify-center"}`}>
           {bare ? (
-            <div className="w-full" style={{ maxWidth: contentMaxWidth }}>
+            <div className="w-full pl-8 md:pl-16" style={{ maxWidth: contentMaxWidth }}>
               {children}
             </div>
           ) : (
