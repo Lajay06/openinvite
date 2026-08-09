@@ -378,7 +378,7 @@ export default function Onboarding() {
       // this write is deterministically last.
       await draftSaveChain.current;
 
-      const payload = { ...buildWeddingDetailsPayload(onboardingData), onboardingDraft: false };
+      const payload = { ...buildWeddingDetailsPayload(onboardingData), onboardingDraft: false, onboardingStepIndex: null };
       payload.slug = await resolveUniqueSlug(payload.slug, draftWeddingId);
 
       let weddingId = draftWeddingId;
