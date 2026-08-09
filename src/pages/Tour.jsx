@@ -413,7 +413,10 @@ export default function Tour() {
   }, [reducedMotion]);
 
   return (
-    <div style={{ background: DARK, minHeight: "100vh", position: "relative" }}>
+    // Transparent, not DARK: the arc layer sits at z-index -1, so an opaque
+    // background here paints straight over it and the arc never shows. The
+    // dark fallback lives on the arc layer's own initial color instead.
+    <div style={{ background: "transparent", minHeight: "100vh", position: "relative" }}>
       {/* The arc. ONE fixed full-viewport layer, not eight section
           backgrounds — animating eight would be eight full-width paints per
           frame. Under prefers-reduced-motion this layer is not rendered and
