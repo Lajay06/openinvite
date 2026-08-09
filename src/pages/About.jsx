@@ -4,6 +4,7 @@ import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
+import MarketingPhotoPair from "@/components/marketing/MarketingPhotoPair";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -92,10 +93,10 @@ export default function About() {
       <TwoColumnSection id="beliefs" number="01" title="What we believe" headline="Simple beliefs. Big impact." background="#F5F5F3" beliefs={BELIEFS} />
 
       {/* ── S5: PHOTO PAIR ────────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
-        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100478/DTS_LEAP_Shauna_Summers_Photos_ID7601_k27hx3.jpg" alt="A woman leaping joyfully against a blue backdrop" style={{ width: "100%", height: "70vh", objectFit: "cover" }} />
-        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa.jpg" alt="A man carrying his partner outdoors, both laughing" style={{ width: "100%", height: "70vh", objectFit: "cover" }} />
-      </div>
+      <MarketingPhotoPair
+        left={{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100478/DTS_LEAP_Shauna_Summers_Photos_ID7601_k27hx3.jpg", alt: "A woman leaping joyfully against a blue backdrop" }}
+        right={{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100474/DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa.jpg", alt: "A man carrying his partner outdoors, both laughing" }}
+      />
 
       {/* ── S6: END CAP ──────────────────────────────────── */}
       <MarketingEndCap

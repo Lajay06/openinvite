@@ -15,6 +15,8 @@ import React, { useEffect, useRef, useState } from "react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
+import MarketingHero from "@/components/marketing/MarketingHero";
+import MarketingPhotoPair from "@/components/marketing/MarketingPhotoPair";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -301,46 +303,36 @@ export default function Tour() {
     };
   }, []);
 
-  const [openRef, openVisible] = useReveal(0.1);
 
   return (
     <div style={{ background: DARK, minHeight: "100vh" }}>
       <PublicNav />
 
-      {/* Opening — text only, no image. */}
-      <section
-        ref={openRef}
-        style={{
-          background: DARK,
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "0 clamp(24px, 6vw, 80px)",
-          boxSizing: "border-box",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "clamp(36px, 6vw, 84px)",
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.05,
-            color: "#FFFFFF",
-            fontFamily: PJS,
-            textAlign: "center",
-            maxWidth: 1000,
-            margin: 0,
-            opacity: openVisible ? 1 : 0,
-            transform: openVisible ? "translateY(0)" : "translateY(24px)",
-            transition: prefersReduced() ? "none" : `opacity 0.9s ${EASE}, transform 0.9s ${EASE}`,
-          }}
-        >
-          This is what planning looks like now.
-        </h1>
-      </section>
+      {/* Opening. Was a bespoke text-only section (dark, minHeight 100vh,
+          centred h1 at clamp(36px, 6vw, 84px)); it now consumes the shared
+          MarketingHero so /tour matches every other marketing page. The copy
+          is unchanged. No `cta` is passed — /tour stays out of the hero CTA
+          rollout deliberately. maxWidth 1000 preserves the original measure;
+          the type follows the shared scale, so the cap moves 84px -> 64px. */}
+      <MarketingHero
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654_njhrp7.jpg"
+        title="This is what planning looks like now."
+        maxWidth={1000}
+      />
 
-      {SCENES.map((scene) => (
+      {SCENES.slice(0, 4).map((scene) => (
+        <Scene key={scene.num} scene={scene} />
+      ))}
+
+      {/* Break between scenes 04 and 05. Alternation is data-driven off each
+          scene's own `align`, so inserting a block here cannot shift it —
+          asserted by measured position, not by reading the array. */}
+      <MarketingPhotoPair
+        left={{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10310_o5dcie.jpg", alt: "A couple laughing together on their wedding day" }}
+        right={{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Pride_Agust%C3%ADn_Far%C3%ADas_Photos_ID5510_dn4jws.jpg", alt: "Two people celebrating at a wedding party" }}
+      />
+
+      {SCENES.slice(4).map((scene) => (
         <Scene key={scene.num} scene={scene} />
       ))}
 
