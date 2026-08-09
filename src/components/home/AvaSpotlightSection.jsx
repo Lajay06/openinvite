@@ -96,18 +96,25 @@ export default function AvaSpotlightSection() {
             which disappeared against the black band. */}
         <p style={{
           textAlign: "center",
-          // Type matched exactly to the Universes section intro heading on
-          // this same page (UniverseTeaserSection.jsx): the same
-          // clamp(32px, 5vw, 60px) / 700 / -0.03em / 1.08, read from that
-          // component rather than approximated. Supersedes the V3 sizing
-          // (clamp(20px, 2.2vw, 28px) / 600 / 1.5), which is retired.
-          fontSize: "clamp(32px, 5vw, 60px)",
+          // Sized to render the sentence on exactly two lines at 1440.
+          //
+          // This BREAKS the deliberate match to the Universes section intro
+          // heading (UniverseTeaserSection.jsx, clamp(32px, 5vw, 60px)) that
+          // #319 set up. The two goals are incompatible: measured at 1440,
+          // two lines needs a 1248px container at 52px and 1152px at 48px,
+          // and at 60px it is unreachable at any width the viewport allows
+          // (still 3 lines at 1392px, the full width minus padding). Two
+          // lines was the explicit instruction, so the type match gives way.
+          fontSize: "clamp(32px, 3.33vw, 48px)",
           fontWeight: 700,
           letterSpacing: "-0.03em",
           lineHeight: 1.08,
           color: "#FFFFFF",
-          maxWidth: 672,
-          // Centred in the band between the banner above and the first row
+          // 672 -> 1200, which is the cap the parent div already imposes, so
+          // this widens the paragraph without changing the section's layout
+          // for the rows below it.
+          maxWidth: 1200,
+          // Centered in the band between the banner above and the first row
           // divider below: the section's own 120px padding-top sets the gap
           // above, so the gap below is an equal 120px margin-bottom. The
           // previous 48px padding-bottom sat INSIDE the box, which both made
@@ -116,7 +123,7 @@ export default function AvaSpotlightSection() {
           margin: "0 auto 120px",
           fontFamily: PJS,
         }}>
-          Ava learns your style, your budget, and your vision, then helps you make smarter decisions at every step. From vendor suggestions to seating optimization, Ava's always one step ahead.
+          Ava learns your style, your budget, and your vision, then helps you make smarter decisions at every step.
         </p>
         {ROWS.map((row, i) => (
           <AnimatedRow key={i} row={row} delay={i * 100} />
