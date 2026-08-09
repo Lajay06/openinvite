@@ -48,6 +48,20 @@ const OFFWHITE = "#F5F5F3";
 const OVERSCAN = 124;
 const PARALLAX_PCT = 7;
 
+// Tour hero. Print-resolution original (6720x4480, 30 MP) — 2.3MB even with
+// f_auto,q_auto and no width cap, so a width is always pinned. c_limit never
+// upscales. Delivered UNCROPPED: measured at 1440 the cover crop is
+// width-driven and shows source x 0..6720, y 140..4340, which already contains
+// both her head (x 420-1036) and his raised hand with the glass (x 5208-5684,
+// top y 532). A crop could only lose one of them.
+const HERO_ID = "DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654_h6b8gy";
+const heroUrl = (w) =>
+  `https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_${w},c_limit/${HERO_ID}.jpg`;
+const HERO_SRC = heroUrl(1440);
+const HERO_SRCSET = [640, 960, 1280, 1440, 1920, 2560]
+  .map((w) => `${heroUrl(w)} ${w}w`)
+  .join(", ");
+
 const SCENES = [
   { num: "01", label: "Daily update", copy: "Your wedding, today's priorities, and what's coming next, all waiting for you.",              imageSrc: null, align: "left",  bg: WHITE },
   { num: "02", label: "Ava",          copy: "Like having a wedding planner in your pocket, only faster, smarter, and available 24/7.",      imageSrc: null, align: "right", bg: OFFWHITE },
@@ -315,9 +329,11 @@ export default function Tour() {
           rollout deliberately. maxWidth 1000 preserves the original measure;
           the type follows the shared scale, so the cap moves 84px -> 64px. */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654_njhrp7.jpg"
+        image={HERO_SRC}
+        srcSet={HERO_SRCSET}
         title="This is what planning looks like now."
         maxWidth={1000}
+        copyBand
       />
 
       {SCENES.slice(0, 4).map((scene) => (
@@ -337,8 +353,9 @@ export default function Tour() {
       ))}
 
       <MarketingEndCap
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_CURATIVE_Chris_Abatzis_Photos_ID7678_dlsgrm.jpg"
-        alt="A couple at their wedding reception"
+        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h.jpg"
+        alt="Friends celebrating together at a wedding party"
+        title="All that. And we're still just getting started."
       />
 
       <PublicFooter />
