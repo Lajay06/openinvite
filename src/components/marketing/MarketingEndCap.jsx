@@ -101,7 +101,22 @@ export default function MarketingEndCap({
           zIndex: 10,
           textAlign: "center",
           padding: "0 clamp(24px, 6vw, 80px)",
-          maxWidth: 900,
+          // 900 -> 1320 so every end-cap heading sits on ONE line at desktop.
+          // At 900 the content box was only 740px wide (900 minus 2x80 of
+          // padding), which wrapped Features and Ava to two lines. Measured
+          // single-line widths at the shared 56px:
+          //   Your wedding deserves this.                  720
+          //   Generic was never your style.                748
+          //   Consider wedding planning, upgraded.        1006
+          //   Turns out, you can have it all figured out. 1007
+          //   Your wedding deserves better. So, shall we? 1126  <- widest
+          // 1126 + 160 padding = 1286 minimum; 1320 leaves 34px of slack.
+          // Widening the container is the lever rather than shrinking the
+          // type, so the shared clamp(32px, 4vw, 56px) is untouched. Below
+          // 1400 the 4vw term shrinks the type faster than the container
+          // narrows, so single-line holds down the desktop range; below the
+          // md breakpoint headings wrap, which is intended.
+          maxWidth: 1320,
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(24px)",
           transition: prefersReduced() ? "none" : `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`,

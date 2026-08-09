@@ -461,6 +461,7 @@ export default function Pricing() {
           fix would be a change to the shared component's height rule. */}
       <MarketingEndCap
         image="https://res.cloudinary.com/dsr84xknv/image/upload/c_crop,x_0,y_0,w_1600,h_700/f_auto,q_auto/DTS_day_tripping_Agust%C3%ADn_Far%C3%ADas_Photos_ID6199_g2inky.jpg"
+        title="Your wedding deserves better. So, shall we?"
         alt="A couple on a day trip together"
         /* 0.45 read muddy against this photo. Worst-case (lightest backdrop
            pixel) contrast for the "Start free trial" button, which is the

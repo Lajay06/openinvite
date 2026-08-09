@@ -518,13 +518,18 @@ const Universes = () => {
           <h2 style={{
             fontFamily: 'Plus Jakarta Sans, sans-serif',
             fontWeight: 700,
-            fontSize: 'clamp(40px, 7vw, 80px)',
+            // Matched to the shared MarketingEndCap heading scale. This block
+            // is Universes' own closing CTA, not MarketingEndCap, and it was
+            // running clamp(40px, 7vw, 80px) — 80px against the end cap's 56px
+            // at 1440, which is why it read as oversized next to every other
+            // page's closer.
+            fontSize: 'clamp(32px, 4vw, 56px)',
             color: '#FFFFFF',
             letterSpacing: '-0.02em',
             lineHeight: 1,
             margin: '0 0 40px',
           }}>
-            Choose your universe.
+            Generic was never your style.
           </h2>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button onClick={() => navigate('/signup')} style={{
