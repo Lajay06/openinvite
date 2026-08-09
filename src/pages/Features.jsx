@@ -71,6 +71,7 @@ export default function Features() {
       <MarketingHero
         image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx.jpg"
         imagePosition="center 30%"
+        overlay={0.2}
         title="Everything you needed. Plus a few things you didn't expect."
         maxWidth={1000}
         cta={{ label: "Get started", href: "/signup" }}

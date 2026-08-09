@@ -15,7 +15,6 @@
  */
 import React, { useRef, useState, useEffect } from "react";
 import ApplePillButton from "@/components/motion/ApplePillButton";
-import { EXPERIMENT_NO_OVERLAY } from "@/experimentNoOverlay";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -25,7 +24,10 @@ export default function MarketingEndCap({
   image,
   alt = "",
   title = "Your wedding deserves this.",
-  scrim = 0.45,
+  // STANDING RULE (owner, 2026-08-09): end-cap photos carry NO scrim by
+  // default. The measured values below are kept as records of the method, not
+  // as the default.
+  scrim = 0,
   // Optional {label, href}. Rendered into the same actions row as `children`,
   // using the same ApplePillButton the marketing heroes use, so the end-cap
   // CTA and the hero CTA are the one button. Pricing passes `children` and no
@@ -90,7 +92,7 @@ export default function MarketingEndCap({
         style={{
           position: "absolute",
           inset: 0,
-          background: `rgba(0,0,0,${EXPERIMENT_NO_OVERLAY ? 0 : scrim})`,
+          background: `rgba(0,0,0,${scrim})`,
           zIndex: 2,
           pointerEvents: "none",
         }}
