@@ -3,8 +3,13 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
+// Paths are lowercase to match what the site actually serves. React Router
+// matches case-insensitively so "/Features" routed fine, but isActive() below
+// is a case-SENSITIVE pathname equality check, and marketingRoutes.mjs, the
+// sitemap and every other internal link use lowercase. The result was that
+// Features and Pricing never showed their active state for a real visitor.
 const NAV_LINKS = [
-  { label: "Features", to: "/Features" },
+  { label: "Features", to: "/features" },
   { label: "Ava", to: "/ava" },
   { label: "Universes", to: "/universes" },
   // Sits before Pricing so Pricing stays the last item, which is where the
@@ -12,7 +17,7 @@ const NAV_LINKS = [
   // in App.jsx exactly — isActive() is a case-sensitive pathname equality
   // check, so "/Tour" would render but never highlight.
   { label: "Tour", to: "/tour" },
-  { label: "Pricing", to: "/Pricing" },
+  { label: "Pricing", to: "/pricing" },
 ];
 
 const UserIcon = () => (
