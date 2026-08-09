@@ -162,13 +162,19 @@ Reference implementation: `src/pages/Onboarding.jsx` + `src/components/onboardin
 - Text colours follow the same tokens as the dashboard: `#0A0A0A` primary,
   `rgba(10,10,10,0.6)` muted, `rgba(10,10,10,0.58)` placeholders,
   `rgba(10,10,10,0.18)` default borders.
-- Exception — universe picker tiles (`OnboardingStepUniverse.jsx`): each
-  tile is a photo with a dark gradient overlay and white caption text.
-  This is a fixed property of the image-card treatment, not tied to page
-  theme, and must stay white-on-photo regardless of the page background.
-  The same applies to any other card whose background is a photo rather
-  than a flat colour (e.g. `OnboardingStep8Fork.jsx`'s hover-to-black
-  card state, which is a hover accent, not page theme).
+- Universe picker tiles (`OnboardingStepUniverse.jsx`'s `UniverseGridTile`)
+  are light cards, same as every other card in the wizard (white
+  background, `rgba(10,10,10,0.12)` default border, `#0A0A0A` border on
+  hover/selection) — NOT an exception. An earlier version made these full-
+  bleed dark photos with a gradient scrim and white caption text (documented
+  here at the time as a deliberate "fixed property of the image-card
+  treatment"); next to the rest of the wizard's light, left-aligned steps a
+  wall of 20 dense dark tiles read as a different product, so that
+  exception was removed, not just overridden per-tile. The tile's photo now
+  lives in its own confined panel at the top of the card instead of filling
+  it. `OnboardingStep8Fork.jsx`'s cards no longer invert to black on hover
+  either (see its own PR A note) — there is currently no dark-card
+  exception left anywhere in the wizard.
 - The "wedding website appearance" Dark/Light toggle on the universe step
   sets the couple's *published wedding website* theme (`websiteMode`) —
   a completely different concept from the wizard's own (now fixed-light)
