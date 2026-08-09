@@ -120,43 +120,43 @@ export default function ChoosePlan() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(16px, 3vh, 40px) 24px' }}>
 
       {/* Header */}
-      <div style={{ textAlign: 'center', maxWidth: 560, marginBottom: 56 }}>
-        <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', lineHeight: 1.15, margin: '0 0 14px', fontFamily: PJS }}>
+      <div style={{ textAlign: 'center', maxWidth: 560, marginBottom: 24 }}>
+        <h1 style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', lineHeight: 1.15, margin: '0 0 8px', fontFamily: PJS }}>
           Choose your plan
         </h1>
-        <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', lineHeight: 1.65, margin: 0, fontFamily: PJS }}>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: 0, fontFamily: PJS }}>
           Your account is ready. Pick a plan to continue, pay once and there are no subscriptions.
         </p>
       </div>
 
       {/* Plan cards */}
-      <div style={{ display: 'flex', gap: 20, alignItems: 'stretch', flexWrap: 'wrap', justifyContent: 'center', width: '100%', maxWidth: 1100, marginBottom: 24 }}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'stretch', flexWrap: 'wrap', justifyContent: 'center', width: '100%', maxWidth: 1100, marginBottom: 14 }}>
 
         {/* Free */}
         <div style={{
           flex: '0 1 320px', minWidth: 280, border: selected === 'free' ? '1px solid #0A0A0A' : '1px solid #E5E5E5',
-          background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column', cursor: 'pointer',
+          background: '#FAFAF9', padding: 20, display: 'flex', flexDirection: 'column', cursor: 'pointer',
         }}
           onClick={() => setSelected('free')}
         >
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS }}>Free trial</p>
-          <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: 48, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$0</span>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 10px', fontFamily: PJS }}>Free trial</p>
+          <div style={{ marginBottom: 2 }}>
+            <span style={{ fontSize: 40, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$0</span>
           </div>
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: PJS }}>14 days · no card needed</p>
-          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: PJS }}>14 days · no card needed</p>
+          <p style={{ fontSize: 14, lineHeight: 1.55, color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS }}>
             Full Ultra access for 14 days. Choose Pro or Ultra anytime to keep your data.
           </p>
-          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 20 }} />
-          <div style={{ flex: 1, marginBottom: 20 }} />
+          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 14 }} />
+          <div style={{ flex: 1, marginBottom: 14 }} />
           <button
             onClick={goFree}
             disabled={!!loadingPlan}
             style={{
-              width: '100%', padding: '13px 0', borderRadius: 999, fontSize: 13, fontWeight: 700,
+              width: '100%', padding: '12px 0', borderRadius: 999, fontSize: 13, fontWeight: 700,
               fontFamily: PJS, background: '#0A0A0A', color: '#FFFFFF', border: 'none',
               cursor: loadingPlan ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -171,20 +171,20 @@ export default function ChoosePlan() {
         {/* Pro */}
         <div style={{
           flex: '0 1 320px', minWidth: 280, border: selected === 'pro' ? '1px solid #E03553' : '1px solid #E5E5E5',
-          background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column', cursor: 'pointer',
+          background: '#FAFAF9', padding: 20, display: 'flex', flexDirection: 'column', cursor: 'pointer',
         }}
           onClick={() => setSelected('pro')}
         >
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS }}>Pro</p>
-          <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: 48, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>US$49</span>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 10px', fontFamily: PJS }}>Pro</p>
+          <div style={{ marginBottom: 2 }}>
+            <span style={{ fontSize: 40, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>US$49</span>
           </div>
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: PJS }}>24-month access · one-time payment</p>
-          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: PJS }}>24-month access · one-time payment</p>
+          <p style={{ fontSize: 14, lineHeight: 1.55, color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS }}>
             Your complete wedding planning command center. Everything from first plan to final dance.
           </p>
-          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 20 }} />
-          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 10 }} />
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 10px', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
             {PRO_FEATURES.map((f, i) => (
               <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
                 <CheckIcon />
@@ -196,7 +196,7 @@ export default function ChoosePlan() {
             onClick={goPro}
             disabled={proDisabled}
             style={{
-              width: '100%', padding: '13px 0', borderRadius: 999, fontSize: 13, fontWeight: 700,
+              width: '100%', padding: '12px 0', borderRadius: 999, fontSize: 13, fontWeight: 700,
               fontFamily: PJS, border: 'none',
               background: proDisabled ? 'rgba(10,10,10,0.08)' : '#E03553',
               color: proDisabled ? 'rgba(10,10,10,0.3)' : '#FFFFFF',
@@ -213,26 +213,26 @@ export default function ChoosePlan() {
         {/* Ultra */}
         <div style={{
           flex: '0 1 320px', minWidth: 280, border: selected === 'ultra' ? '1px solid #F59E0B' : '1px solid #E5E5E5',
-          background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column', cursor: 'pointer',
+          background: '#FAFAF9', padding: 20, display: 'flex', flexDirection: 'column', cursor: 'pointer',
         }}
           onClick={() => setSelected('ultra')}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <CrownIcon />
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>Ultra</p>
           </div>
-          <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: 48, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>US$99</span>
+          <div style={{ marginBottom: 2 }}>
+            <span style={{ fontSize: 40, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>US$99</span>
           </div>
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: PJS }}>24-month access · one-time payment</p>
-          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', fontFamily: PJS }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: PJS }}>24-month access · one-time payment</p>
+          <p style={{ fontSize: 14, lineHeight: 1.55, color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS }}>
             Everything in Pro, plus the full digital wedding suite: website, invitations, and RSVP.
           </p>
-          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 14 }} />
-          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', letterSpacing: '0.04em', fontFamily: PJS }}>
+          <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 8 }} />
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 8px', letterSpacing: '0.04em', fontFamily: PJS }}>
             Everything in Pro, plus:
           </p>
-          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 10px', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
             {ULTRA_EXTRAS.map((f, i) => (
               <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
                 <CheckIcon />
@@ -244,7 +244,7 @@ export default function ChoosePlan() {
             onClick={goUltra}
             disabled={ultraDisabled}
             style={{
-              width: '100%', padding: '13px 0', borderRadius: 999, fontSize: 13, fontWeight: 700,
+              width: '100%', padding: '12px 0', borderRadius: 999, fontSize: 13, fontWeight: 700,
               fontFamily: PJS, border: 'none',
               background: ultraDisabled ? 'rgba(10,10,10,0.08)' : '#F59E0B',
               color: ultraDisabled ? 'rgba(10,10,10,0.3)' : '#FFFFFF',
@@ -260,13 +260,13 @@ export default function ChoosePlan() {
 
       </div>
 
-      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px', fontFamily: PJS }}>
+      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 10px', fontFamily: PJS }}>
         Have a gift code? You'll be able to enter it at checkout.
       </p>
 
       {checkoutError && (
         <div style={{
-          maxWidth: 720, width: '100%', margin: '0 auto', marginBottom: 24,
+          maxWidth: 720, width: '100%', margin: '0 auto', marginBottom: 10,
           background: '#FEF2F2', border: '1px solid #FECACA',
           padding: '14px 20px',
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16,
