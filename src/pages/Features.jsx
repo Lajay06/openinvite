@@ -64,7 +64,7 @@ export default function Features() {
 
           This supersedes the previous align="left" + maxWidth 565 treatment,
           which pinned the headline into the empty field left of the subject to
-          keep it off her. Centred, the headline crosses the figure again; that
+          keep it off her. Centered, the headline crosses the figure again; that
           is the accepted consequence of applying one consistent rule across
           every page. maxWidth returns to 1000, the value in place before that
           change. */}
@@ -158,7 +158,7 @@ function DashboardSection() {
     <section ref={ref} style={{ background: "#FFFFFF", minHeight: "100vh", display: "flex", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 552 }}>
-          <FeatureSectionHeading color="#0A0A0A">Customisable Dashboard</FeatureSectionHeading>
+          <FeatureSectionHeading color="#0A0A0A">Customizable Dashboard</FeatureSectionHeading>
           <p style={{ ...featureBodyTextStyle, color: "#444444", marginBottom: 32 }}>Invite your partner, planner, or mom. Set who sees what, and assign tasks like a pro.</p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {BULLETS.map((b, i) =>
