@@ -45,11 +45,11 @@ export default function ValuePropSection() {
       style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}>
       
       {/* Was width:100% / height:auto, so the section height was the image's
-           intrinsic 1280x853 ratio at full width — 960px at 1440, i.e. 107vh.
-           The banner could therefore never sit on screen at once and always
-           needed scrolling to center. 100vh + cover is the treatment the hero
-           (MarketingHero) and the universe photo band (UniverseMiniHero)
-           already use, so this matches them rather than inventing a third. */}
+            intrinsic 1280x853 ratio at full width — 960px at 1440, i.e. 107vh.
+            The banner could therefore never sit on screen at once and always
+            needed scrolling to center. 100vh + cover is the treatment the hero
+            (MarketingHero) and the universe photo band (UniverseMiniHero)
+            already use, so this matches them rather than inventing a third. */}
       <img
         src={IMG_SRC}
         alt="Openinvite platform"
@@ -146,7 +146,7 @@ export default function ValuePropSection() {
             opacity: textIn ? 1 : 0,
             transform: textIn ? "translateX(0)" : "translateX(-40px)",
             transition: prefersReduced() ? "none" : `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`
-          }} className="text-xs">
+          }} className="text-5xl">
           
             {TEXT}
           </h2>
