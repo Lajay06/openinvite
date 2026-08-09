@@ -5,7 +5,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const ROWS = [
   {
     heading: "Smart suggestions",
-    description: "Personalised recommendations based on your style and budget",
+    description: "Personalized recommendations based on your style and budget",
   },
   {
     heading: "Budget intelligence",
