@@ -54,7 +54,13 @@ function AnimatedRow({ row, delay }) {
         padding: "40px 0",
         display: "grid",
         gap: 40,
-        alignItems: "start",
+        // baseline, not start. `start` aligns the two grid items' BOXES, and
+        // both did start at the same y — but the heading is 36px and the
+        // description 16px, so their first baselines sat at different depths
+        // inside those boxes: 70.6px vs 62.4px from the row top, an 8.2px
+        // mismatch that read as the grey text floating high. Baseline
+        // alignment lines up the text itself, which is the actual cause.
+        alignItems: "baseline",
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(24px)",
         transition: `opacity 0.5s ease ${delay}ms, transform 0.5s ease ${delay}ms`,
