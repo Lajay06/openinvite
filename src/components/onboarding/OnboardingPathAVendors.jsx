@@ -83,7 +83,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
         transition={{ delay: 0.1 }}
         className="text-[rgba(10,10,10,0.6)] text-sm mb-10"
       >
-        Search and save real vendors — you can add more later from your vendor pages.
+        Search and save real vendors, you can add more later from your vendor pages.
       </motion.p>
 
       <motion.div
@@ -118,7 +118,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
 
       {status === 'error' && (
         <p className="text-sm text-[rgba(10,10,10,0.6)] mb-8">
-          Couldn't reach Google Places right now — you can add vendors later from your dashboard.
+          Couldn't reach Google Places right now. You can add vendors later from your dashboard.
         </p>
       )}
 

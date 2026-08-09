@@ -124,7 +124,7 @@ function AccordionSection({ title, isOpen, onToggle, summary, children }) {
 }
 
 export default function OnboardingStep5WeddingType({ onNext, data }) {
-  const [openSection, setOpenSection] = useState('style');
+  const [openSection, setOpenSection] = useState(null);
   const [selected, setSelected] = useState([]);
   const [otherText, setOtherText] = useState({ style: '', vibe: '' });
   const [faith, setFaithState] = useState(data?.theme?.faith || '');
@@ -252,7 +252,7 @@ export default function OnboardingStep5WeddingType({ onNext, data }) {
           {faith === 'Interfaith' && (
             <div style={{ marginTop: 14, padding: '12px 14px', border: '1px solid rgba(10,10,10,0.08)', background: '#FAFAFA' }}>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 8px' }}>
-                Select the two faiths — {interfaithPicks.length}/2 selected
+                Select the two faiths ({interfaithPicks.length}/2 selected)
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {FAITH_FOR_INTERFAITH.map(opt => (

@@ -76,7 +76,7 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
             {['Upload guest list (CSV or manual)', 'Add cultural/religious details', 'Set your budget', 'Add known vendors', 'Upload inspiration photos'].map(item => (
               <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, color: textMuted, fontSize: 14, fontFamily: PJS }}>
-                <span style={{ color: accentColor, fontWeight: 700, fontSize: 14, lineHeight: 1 }}>—</span> {item}
+                <span style={{ color: accentColor, fontWeight: 700, fontSize: 14, lineHeight: 1 }}>•</span> {item}
               </div>
             ))}
           </div>
@@ -96,7 +96,7 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
         >
           <h3 style={{ color: textDark, fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>Get started now</h3>
           <p style={{ color: textMid, fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
-            Jump straight into your dashboard. Ava will guide you through the key details as you go — no overwhelm.
+            Jump straight into your dashboard. Ava will guide you through the key details as you go, no overwhelm.
           </p>
           <p style={{ color: textFaint, fontSize: 13, marginBottom: 24, fontFamily: PJS }}>
             You can always add more later.
