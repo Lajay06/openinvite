@@ -343,6 +343,21 @@ export default function Onboarding() {
     setSavingFinal(true);
     const completed = { weddingDetails: false, guests: false, budget: false, vendors: false, userFlag: false };
     try {
+      // Drain every already-enqueued persistDraftStep write before this
+      // function's own WeddingDetails write. Without this, the two write
+      // paths race: persistDraftStep sets onboardingDraft:true on every step
+      // transition (fire-and-forget, chained onto draftSaveChain), this
+      // function sets onboardingDraft:false directly and unchained — Base44
+      // updates are partial merges, so whichever lands on the server LAST
+      // wins. If a still-queued draft write (e.g. from the step transition
+      // that landed on 'completion') resolves after this write, the record
+      // is left permanently stuck at onboardingDraft:true even though
+      // onboardingCompleted is correctly true on the User record —
+      // Incident-1-class silent corruption. Awaiting the chain here
+      // guarantees nothing is left pending by the time this write fires, so
+      // this write is deterministically last.
+      await draftSaveChain.current;
+
       const payload = { ...buildWeddingDetailsPayload(onboardingData), onboardingDraft: false };
       payload.slug = await resolveUniqueSlug(payload.slug, draftWeddingId);
 
