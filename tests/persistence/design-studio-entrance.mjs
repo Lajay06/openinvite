@@ -298,9 +298,24 @@ export async function runDesignStudioEntrance() {
   results.push(/return createPortal\(\s*\n\s*<div\s*\n\s*ref={scrollContainerRef}\s*\n\s*style={{ position: 'fixed', inset: 0, zIndex: 2000, overflowY: 'auto'/.test(worldViewSource)
     ? pass('UniverseWorldView.jsx — escapeLayout path portals the whole view to document.body as a fixed, internally-scrolling layer', 'found')
     : fail('UniverseWorldView.jsx — escapeLayout path portals the whole view to document.body as a fixed, internally-scrolling layer', 'found', 'not found'));
-  results.push(/if \(!escapeLayout\) \{\s*\n\s*return \(\s*\n\s*<div>\s*\n\s*\{createPortal\(backButton, document\.body\)\}\s*\n\s*\{chapters\}\s*\n\s*<\/div>/.test(worldViewSource)
-    ? pass('UniverseWorldView.jsx — non-escaping path (OnboardingStepUniverse) is untouched: plain div, back button portalled alone, no full-screen container', 'found')
-    : fail('UniverseWorldView.jsx — non-escaping path (OnboardingStepUniverse) is untouched: plain div, back button portalled alone, no full-screen container', 'found', 'not found'));
+  // PR B (universe-step on-brand pass) — the non-escaping path USED to
+  // portal backButton to document.body independently of the Dialog's own
+  // portal. That was the bug, not a feature the old assertion below (now
+  // replaced) treated it as: Radix sets pointer-events:none on <body>
+  // while its modal Dialog is open and only re-enables it for the Dialog's
+  // OWN portalled subtree. A button portalled separately to document.body
+  // is a sibling of that subtree, never gets pointer-events restored, and
+  // was silently unclickable — confirmed live via getComputedStyle
+  // (pointer-events: none on the button itself) — despite rendering
+  // visually on top. That pushed users toward the browser's native Back
+  // button instead, which exits the wizard entirely (no history entry was
+  // ever pushed for opening the preview) rather than returning to the
+  // grid. Fix: render backButton as a normal child — already inside the
+  // Dialog's own subtree here, since escapeLayout=false means no second
+  // full-screen portal wraps it — so it inherits pointer-events:auto.
+  results.push(/if \(!escapeLayout\) \{[\s\S]*?return \(\s*\n\s*<div>\s*\n\s*\{backButton\}\s*\n\s*\{chapters\}\s*\n\s*<\/div>/.test(worldViewSource)
+    ? pass('UniverseWorldView.jsx — non-escaping path (OnboardingStepUniverse) renders backButton as a normal child (not a second, independent createPortal) so it inherits the Dialog\'s own pointer-events scope', 'found')
+    : fail('UniverseWorldView.jsx — non-escaping path (OnboardingStepUniverse) renders backButton as a normal child (not a second, independent createPortal) so it inherits the Dialog\'s own pointer-events scope', 'found', 'not found'));
   results.push(/scrollContainerRef={escapeLayout \? scrollContainerRef : undefined}/.test(worldViewSource)
     ? pass('UniverseWorldView.jsx — HeroChapter\'s parallax useScroll() is pointed at the new scroll container only when escaping (never window-scroll-tracking a non-scrolling window)', 'found')
     : fail('UniverseWorldView.jsx — HeroChapter\'s parallax useScroll() is pointed at the new scroll container only when escaping', 'found', 'not found'));
@@ -459,18 +474,27 @@ export async function runDesignStudioEntrance() {
   // this fix. Portalling to document.body escapes it, same as the
   // entrance overlay fix just above.
   // fix/design-studio-back-fade-fix extracted the button into a `backButton`
-  // JSX variable (it's now reused by both the !escapeLayout and escapeLayout
-  // render branches below), so it's no longer inlined directly inside a
-  // createPortal(<button ...) call — check the extracted variable is itself
-  // a <button>, and that both branches still route it to document.body:
-  // directly in the !escapeLayout branch, and nested inside the escapeLayout
-  // branch's own full-screen portalled wrapper div.
+  // JSX variable, reused by both the !escapeLayout and escapeLayout render
+  // branches below — check it's a real <button>, and that the escapeLayout
+  // (Design Studio) branch still routes the whole view (backButton included)
+  // to document.body, escaping .page-content's stacking context.
+  //
+  // PR B (universe-step on-brand pass) — the !escapeLayout (onboarding)
+  // branch used to ALSO portal backButton to document.body independently,
+  // a second time. That was never load-bearing for Design Studio (that
+  // branch is never taken there) and turned out to be the root cause of a
+  // separate bug: Radix's modal Dialog sets pointer-events:none on <body>
+  // and only restores it for its own portalled subtree, so a button
+  // portalled independently to document.body sat as a sibling — outside
+  // that subtree — and was silently unclickable. See the non-escaping-path
+  // assertion above for the fix; assert here that the independent portal
+  // is gone (not just moved) so it can't quietly come back.
   const backButtonIsButton = /const backButton = \(\s*\n\s*<button/.test(worldViewSource);
-  const directPortalToBody = /createPortal\(backButton, document\.body\)/.test(worldViewSource);
+  const independentPortalGone = !/if \(!escapeLayout\)[\s\S]*?createPortal\(backButton, document\.body\)/.test(worldViewSource);
   const escapeLayoutPortalsBackButton = /return createPortal\(\s*\n\s*<div[\s\S]{0,400}\{backButton\}[\s\S]{0,400}document\.body/.test(worldViewSource);
-  results.push(backButtonIsButton && directPortalToBody && escapeLayoutPortalsBackButton
-    ? pass('World page back button portals to document.body, escaping .page-content\'s stacking context (was invisible behind the sidebar)', 'found')
-    : fail('World page back button portals to document.body, escaping .page-content\'s stacking context (was invisible behind the sidebar)', 'found', 'not found'));
+  results.push(backButtonIsButton && independentPortalGone && escapeLayoutPortalsBackButton
+    ? pass('World page back button: Design Studio escapeLayout branch still portals the whole view (button included) to document.body; onboarding\'s non-escaping branch no longer portals the button a second, independent time', 'found')
+    : fail('World page back button: Design Studio escapeLayout branch still portals the whole view (button included) to document.body; onboarding\'s non-escaping branch no longer portals the button a second, independent time', 'found', 'not found'));
 
   console.log('\n  Design Studio — world hero shows the universe (not the couple), asset chapter shows every asset type:\n');
 

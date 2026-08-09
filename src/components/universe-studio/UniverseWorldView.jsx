@@ -616,8 +616,8 @@ export default function UniverseWorldView({
   );
 
   if (!escapeLayout) {
-    // Was createPortal(backButton, document.body) — a second, independent
-    // portal, separate from the Dialog's own DialogPortal (the caller here
+    // Was a second, independent createPortal call for just this button,
+    // separate from the Dialog's own DialogPortal (the caller here
     // is OnboardingStepUniverse.jsx's Dialog/DialogContent). Radix sets
     // pointer-events:none on <body> while a modal Dialog is open (its
     // focus-lock) and only re-enables it for the Dialog's own portalled
