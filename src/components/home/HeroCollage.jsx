@@ -3,6 +3,7 @@
  */
 import React, { useEffect, useState } from "react";
 import ScrollCue from "@/components/motion/ScrollCue";
+import { EXPERIMENT_NO_OVERLAY } from "@/experimentNoOverlay";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReducedMotion = () =>
