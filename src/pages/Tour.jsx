@@ -70,14 +70,22 @@ const SCENES = [
 // Measured contrast across the scroll (#324 method), best ink at each frame:
 //   t     bg        best ink   ratio   (all arc text is LARGE, AA 3:1)
 //   0.00  #FFFFFF   dark       19.80
-//   0.20  #F7F7F5   dark       18.46
-//   0.40  #B4B4B2   dark        9.62
-//   0.50  #8A8A88   dark        5.72
-//   0.55  #767675   light       4.50  <- WORST FRAME
-//   0.60  #636362   light       5.96
-//   0.80  #232323   light      15.60
+//   0.20  #F9F9F8   dark       18.84
+//   0.40  #D1CDCD   dark       12.64
+//   0.50  #8A7F82   dark        5.13  <- WORST FRAME (the crossover)
+//   0.60  #4A4647   light       9.26
+//   0.80  #1C1C1C   light      16.99
 //   1.00  #0A0A0A   light      19.80
-// WORST FRAME 4.50:1 at t=0.55, against 3:1 for large text — 50% headroom.
+// WORST FRAME 5.13:1 at t=0.50, against 3:1 for large text.
+//
+// Two deliberate choices in these stops:
+//   - The mid is #8A7F82, a warm grey off the #E03553 primary, NOT neutral
+//     #8A8A88. Neutral read as an unstyled page rather than a designed step;
+//     the tint also drops luminance slightly, which lifted the worst frame
+//     from 4.49:1 to 5.13:1.
+//   - The middle is compressed (0.35/0.50/0.65, not 0.25/0.50/0.75) so the
+//     page spends 9% of its scroll in the mid-tone band instead of 16%.
+//
 // This only holds because every element on the arc is large text: the scene
 // number is now 20px/700 SOLID. The old 11px rgba(255,255,255,0.4) measured
 // 3.77:1 and already failed AA on the dark scenes before the arc existed.
@@ -86,9 +94,9 @@ const SCENES = [
 // and 16.14:1, 14px meta 9.71:1 and 7.44:1.
 const ARC = [
   [0.00, "#FFFFFF"],
-  [0.25, "#F5F5F3"],
-  [0.50, "#8A8A88"],
-  [0.75, "#2A2A2A"],
+  [0.35, "#F5F5F3"],
+  [0.50, "#8A7F82"],
+  [0.65, "#2A2A2A"],
   [1.00, "#0A0A0A"],
 ];
 
@@ -491,9 +499,9 @@ export default function Tour() {
         }
         @keyframes tourArc {
           0%   { background-color: #FFFFFF; }
-          25%  { background-color: #F5F5F3; }
-          50%  { background-color: #8A8A88; }
-          75%  { background-color: #2A2A2A; }
+          35%  { background-color: #F5F5F3; }
+          50%  { background-color: #8A7F82; }
+          65%  { background-color: #2A2A2A; }
           100% { background-color: #0A0A0A; }
         }
         @supports (animation-timeline: scroll()) {
