@@ -153,6 +153,16 @@ export default function Onboarding() {
   // Serialises draft persistence calls so a slow earlier step's write can
   // never land after and clobber a faster later step's write.
   const draftSaveChain = useRef(Promise.resolve());
+  // Set the instant saveOnboarding starts finalizing (before it awaits the
+  // chain above). persistDraftStep checks this at the top of its own queued
+  // callback and no-ops if set — covers not just writes already queued when
+  // finalization begins (draftSaveChain's flush handles those), but also any
+  // stray goNext()/persistDraftStep() that fires WHILE saveOnboarding's own
+  // write is still in flight (e.g. a duplicate click landing on a step that
+  // hasn't fully unmounted yet) — draftSaveChain is only awaited once, at
+  // the start, so a write enqueued after that point would otherwise still
+  // race saveOnboarding's own onboardingDraft:false write.
+  const completingRef = useRef(false);
   const draftWeddingIdRef = useRef(null);
   useEffect(() => { draftWeddingIdRef.current = draftWeddingId; }, [draftWeddingId]);
 
@@ -255,6 +265,11 @@ export default function Onboarding() {
   const persistDraftStep = (mergedData, stepIndex) => {
     draftSaveChain.current = draftSaveChain.current
       .then(async () => {
+        // Finalization already started (or started between this call being
+        // enqueued and its turn coming up) — never write onboardingDraft:true
+        // again once saveOnboarding is in flight, or its own draft:false
+        // write can be clobbered by this one landing after it.
+        if (completingRef.current) return;
         const payload = { ...buildWeddingDetailsPayload(mergedData), onboardingDraft: true, onboardingStepIndex: stepIndex };
         if (draftWeddingIdRef.current) {
           await WeddingDetails.update(draftWeddingIdRef.current, payload);
@@ -340,10 +355,30 @@ export default function Onboarding() {
   };
 
   const saveOnboarding = async (path) => {
+    // Set before anything else (even before awaiting the chain below) — a
+    // persistDraftStep call already mid-chain, or one that fires while this
+    // function is still running, must see this as true the moment its own
+    // turn comes up.
+    completingRef.current = true;
     setSavingFinal(true);
     const completed = { weddingDetails: false, guests: false, budget: false, vendors: false, userFlag: false };
     try {
-      const payload = { ...buildWeddingDetailsPayload(onboardingData), onboardingDraft: false };
+      // Drain every already-enqueued persistDraftStep write before this
+      // function's own WeddingDetails write. Without this, the two write
+      // paths race: persistDraftStep sets onboardingDraft:true on every step
+      // transition (fire-and-forget, chained onto draftSaveChain), this
+      // function sets onboardingDraft:false directly and unchained — Base44
+      // updates are partial merges, so whichever lands on the server LAST
+      // wins. If a still-queued draft write (e.g. from the step transition
+      // that landed on 'completion') resolves after this write, the record
+      // is left permanently stuck at onboardingDraft:true even though
+      // onboardingCompleted is correctly true on the User record —
+      // Incident-1-class silent corruption. Awaiting the chain here
+      // guarantees nothing is left pending by the time this write fires, so
+      // this write is deterministically last.
+      await draftSaveChain.current;
+
+      const payload = { ...buildWeddingDetailsPayload(onboardingData), onboardingDraft: false, onboardingStepIndex: null };
       payload.slug = await resolveUniqueSlug(payload.slug, draftWeddingId);
 
       let weddingId = draftWeddingId;
