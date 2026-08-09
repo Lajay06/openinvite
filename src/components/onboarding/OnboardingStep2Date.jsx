@@ -15,7 +15,7 @@ export default function OnboardingStep2Date({ onNext, data }) {
   };
 
   return (
-    <div className="w-full max-w-2xl text-center">
+    <div className="w-full max-w-2xl">
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -37,7 +37,7 @@ export default function OnboardingStep2Date({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="mb-12 max-w-xs mx-auto"
+        className="mb-12 max-w-xs"
       >
         <DatePicker
           value={date}
@@ -45,7 +45,7 @@ export default function OnboardingStep2Date({ onNext, data }) {
           placeholder="Select your wedding date"
         />
         {date && (
-          <p style={{ color: textMuted, fontSize: 13, marginTop: 8, textAlign: 'center', fontFamily: PJS }}>
+          <p style={{ color: textMuted, fontSize: 13, marginTop: 8, fontFamily: PJS }}>
             {formatDateDisplay(date)}
           </p>
         )}
@@ -67,7 +67,7 @@ export default function OnboardingStep2Date({ onNext, data }) {
         )}
         <button
           onClick={() => onNext({ weddingDate: null })}
-          style={{ display: 'block', margin: '0 auto', color: skipColor, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS }}
+          style={{ display: 'block', color: skipColor, fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, padding: 0 }}
         >
           We haven't set a date yet →
         </button>

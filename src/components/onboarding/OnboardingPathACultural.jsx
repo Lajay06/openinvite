@@ -71,7 +71,7 @@ export default function OnboardingPathACultural({ onNext, data }) {
   const handleSkip = () => onNext({ theme: null });
 
   return (
-    <div className="w-full max-w-3xl text-center">
+    <div className="w-full max-w-3xl">
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -187,7 +187,7 @@ export default function OnboardingPathACultural({ onNext, data }) {
 
         <button
           onClick={handleSkip}
-          className="block mx-auto text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
+          className="block text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
         >
           Skip for now →
         </button>

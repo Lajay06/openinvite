@@ -49,7 +49,7 @@ export default function OnboardingStep5WeddingType({ onNext, data }) {
   const hasSelection = selected.length > 0 || GROUPS.some(g => otherText[g.key].trim());
 
   return (
-    <div className="w-full max-w-4xl text-center">
+    <div className="w-full max-w-4xl">
       <style>{`
         .s5-other::placeholder { color: rgba(10,10,10,0.58); }
         .s5-pill:not(.s5-active):hover {

@@ -15,7 +15,7 @@ export default function OnboardingPathABudget({ onNext, data }) {
   };
 
   return (
-    <div className="w-full max-w-2xl text-center">
+    <div className="w-full max-w-2xl">
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -31,7 +31,7 @@ export default function OnboardingPathABudget({ onNext, data }) {
         transition={{ delay: 0.1 }}
         className="space-y-8 mb-12"
       >
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 justify-start">
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
@@ -81,7 +81,7 @@ export default function OnboardingPathABudget({ onNext, data }) {
 
         <button
           onClick={() => onNext({ budget: null })}
-          className="block mx-auto text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
+          className="block text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] text-sm transition-colors"
         >
           Not sure yet →
         </button>

@@ -19,7 +19,7 @@ export default function OnboardingStep7Ava({ onNext, data }) {
   const textMuted = 'rgba(10,10,10,0.6)';
 
   return (
-    <div className="w-full max-w-3xl text-center">
+    <div className="w-full max-w-3xl">
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -42,7 +42,7 @@ export default function OnboardingStep7Ava({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        style={{ color: textMuted, fontSize: 16, lineHeight: 1.7, maxWidth: 480, margin: '0 auto 48px', fontFamily: PJS }}
+        style={{ color: textMuted, fontSize: 16, lineHeight: 1.7, maxWidth: 480, marginBottom: 48, fontFamily: PJS }}
       >
         Ava knows you're planning a {weddingTypeStr} wedding for {guestCountStr} {locationPart}. Ava will help you stay organized, suggest vendors, and keep everything on track.
       </motion.p>

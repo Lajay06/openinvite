@@ -45,13 +45,13 @@ export default function OnboardingStep1Names({ onNext }) {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, width: '100%', maxWidth: 700, margin: '0 auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 24, width: '100%', maxWidth: 700 }}>
       <style>{`
         .s1-input::placeholder { color: rgba(10,10,10,0.58); }
       `}</style>
 
       {/* Line 1 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 12, width: '100%', flexWrap: 'wrap' }}>
         <span style={sentenceStyle}>Hi, my name is</span>
         <input
           type="text"
@@ -67,7 +67,7 @@ export default function OnboardingStep1Names({ onNext }) {
       </div>
 
       {/* Line 2 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 12, width: '100%', flexWrap: 'wrap' }}>
         <span style={sentenceStyle}>and my partner's name is</span>
         <input
           type="text"
