@@ -90,6 +90,7 @@ export default function Home() {
       <MarketingEndCap
         image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3.jpg"
         alt="A couple running together, laughing"
+        cta={{ label: "Get started", href: "/signup" }}
       />
 
       {/* 10. FOOTER */}

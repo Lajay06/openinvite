@@ -14,6 +14,7 @@
  * analytics that must not be reduced to a link.
  */
 import React, { useRef, useState, useEffect } from "react";
+import ApplePillButton from "@/components/motion/ApplePillButton";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -24,6 +25,12 @@ export default function MarketingEndCap({
   alt = "",
   title = "Your wedding deserves this.",
   scrim = 0.45,
+  // Optional {label, href}. Rendered into the same actions row as `children`,
+  // using the same ApplePillButton the marketing heroes use, so the end-cap
+  // CTA and the hero CTA are the one button. Pricing passes `children` and no
+  // `cta`; Home/Features/Ava pass `cta` and no children. Nothing passes both,
+  // but the row handles it if something ever does.
+  cta,
   children,
 }) {
   const sectionRef = useRef(null);
@@ -114,8 +121,9 @@ export default function MarketingEndCap({
           {title}
         </h2>
 
-        {children && (
+        {(cta || children) && (
           <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginTop: 32 }}>
+            {cta && <ApplePillButton href={cta.href} light={false}>{cta.label}</ApplePillButton>}
             {children}
           </div>
         )}
