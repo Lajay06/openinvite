@@ -58,7 +58,6 @@ export default function FeatureTimeline() {
         background: "#FFFFFF",
         minHeight: "100vh",
         display: "flex",
-        flexDirection: "row",
         overflow: "visible",
         position: "relative",
         borderBottom: "1px solid #E8E8E8",
