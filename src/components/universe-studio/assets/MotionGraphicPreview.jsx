@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
+// universe: the full config object (colors/typography), not just its id —
+// see UniverseWorldView.jsx's Chapter 6 comment for why.
 export default function MotionGraphicPreview({ universe, weddingDetails }) {
+  const bg = universe?.colors?.darkBg || '#0A0A0A';
+  const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const date = weddingDetails?.weddingDate
     ? new Date(weddingDetails.weddingDate).toLocaleDateString('en-GB')
@@ -21,13 +25,11 @@ export default function MotionGraphicPreview({ universe, weddingDetails }) {
 
   return (
     <div style={{
-      width: '100%', height: '100%', background: '#0A0A0A',
+      width: '100%', height: '100%', background: bg,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       gap: 8, position: 'relative', overflow: 'hidden'
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300&display=swap');`}</style>
-
       {/* Names */}
       <div style={{ display: 'flex', minHeight: 28, alignItems: 'center', justifyContent: 'center' }}>
         {chars.map((char, i) => (
@@ -37,7 +39,7 @@ export default function MotionGraphicPreview({ universe, weddingDetails }) {
             animate={{ opacity: phase >= 1 ? 1 : 0 }}
             transition={{ delay: i * 0.08, duration: 0.3 }}
             style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
+              fontFamily: headingFont,
               fontWeight: 300, fontSize: 18, color: '#FFFFFF',
               letterSpacing: char === ' ' ? '0.3em' : '0.15em',
             }}

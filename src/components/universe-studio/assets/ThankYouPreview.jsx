@@ -1,20 +1,22 @@
 import React from 'react';
 
+// universe: the full config object (colors/typography), not just its id —
+// see UniverseWorldView.jsx's Chapter 6 comment for why.
 export default function ThankYouPreview({ universe, weddingDetails }) {
+  const bg = universe?.colors?.darkBg || '#0A0A0A';
+  const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const message = weddingDetails?.thankYouMessage || 'Your presence on our wedding day meant the world to us. Thank you for celebrating this moment with us.';
 
   return (
     <div style={{
-      width: '100%', height: '100%', background: '#0A0A0A',
+      width: '100%', height: '100%', background: bg,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: '16px 20px',
-      fontFamily: 'Cormorant Garamond, Georgia, serif',
+      fontFamily: headingFont,
       position: 'relative'
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap');`}</style>
-
       {/* Top rule */}
       <div style={{ position: 'absolute', top: 20, left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.15)' }} />
 

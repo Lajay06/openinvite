@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
 
+// universe: the FULL config object from UNIVERSE_CATALOG/UNIVERSE_CONFIGS
+// (colors, typography, ...), not just its id — the caller (UniverseWorldView's
+// Chapter 6) already calls loadUniverseFont(universe) on mount, so by the
+// time this renders, universe.typography's real Google Font is already
+// loading/loaded; no separate font-loading needed here. Falls back to
+// generic values so this still renders sensibly if ever used without a
+// resolved universe.
 export default function SaveTheDatePreview({ universe, weddingDetails }) {
+  const bg = universe?.colors?.darkBg || '#0A0A0A';
+  const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const date = weddingDetails?.weddingDate
     ? new Date(weddingDetails.weddingDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, ' · ')
@@ -23,14 +32,12 @@ export default function SaveTheDatePreview({ universe, weddingDetails }) {
 
   return (
     <div style={{
-      width: '100%', height: '100%', background: '#0A0A0A',
+      width: '100%', height: '100%', background: bg,
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       position: 'relative', overflow: 'hidden',
-      fontFamily: 'Cormorant Garamond, Georgia, serif',
+      fontFamily: headingFont,
     }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&display=swap');`}</style>
-
       {/* Placeholder couple photo (Launch folder, "Bandits" shoot — same
           consistent set across every universe) — real save-the-dates are
           almost always photo-led; replaced automatically once the couple

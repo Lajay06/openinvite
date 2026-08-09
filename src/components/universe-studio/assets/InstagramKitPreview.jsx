@@ -8,21 +8,27 @@ const STORY_TYPES = [
   { id: 'thank-you', label: 'Thank You' },
 ];
 
-function StoryFrame({ type, weddingDetails }) {
+function StoryFrame({ type, weddingDetails, universe }) {
+  const darkBg = universe?.colors?.darkBg || '#0A0A0A';
+  const lightBg = universe?.colors?.lightBg || '#F8F7F5';
+  const lightText = universe?.colors?.lightText || '#0A0A0A';
+  const muted = universe?.colors?.accentSecondary || '#888888';
+  const rule = universe?.colors?.accentSecondary ? `${universe.colors.accentSecondary}55` : '#CCCCCC';
+  const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const date = weddingDetails?.weddingDate ? new Date(weddingDetails.weddingDate) : new Date('2026-03-15');
   const daysLeft = Math.max(0, Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24)));
   const venue = weddingDetails?.mainCeremony?.venueName || 'The Grand Hall';
 
   const shared = {
-    fontFamily: 'Cormorant Garamond, Georgia, serif',
+    fontFamily: headingFont,
     display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center',
     height: '100%', padding: '10px 8px', position: 'relative'
   };
 
   if (type === 'save-date') return (
-    <div style={{ ...shared, background: '#0A0A0A', padding: 0, overflow: 'hidden' }}>
+    <div style={{ ...shared, background: darkBg, padding: 0, overflow: 'hidden' }}>
       {/* Placeholder couple photo (Launch folder, "Bandits" shoot) — real
           save-the-date / day-of story templates are almost always
           photo-backed; replaced once the couple picks their own. */}
@@ -43,7 +49,7 @@ function StoryFrame({ type, weddingDetails }) {
   );
 
   if (type === 'countdown') return (
-    <div style={{ ...shared, background: '#0A0A0A' }}>
+    <div style={{ ...shared, background: darkBg }}>
       <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 6, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 4 }}>DAYS TO GO</p>
       <p style={{ color: '#FFFFFF', fontSize: 36, fontWeight: 300, lineHeight: 1, letterSpacing: '-0.02em' }}>{daysLeft}</p>
       <div style={{ width: 20, height: '1px', background: 'rgba(255,255,255,0.3)', margin: '6px 0' }} />
@@ -52,16 +58,16 @@ function StoryFrame({ type, weddingDetails }) {
   );
 
   if (type === 'rsvp') return (
-    <div style={{ ...shared, background: '#F8F7F5' }}>
-      <p style={{ color: '#888888', fontSize: 6, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 6 }}>DON'T FORGET</p>
-      <p style={{ color: '#0A0A0A', fontSize: 12, fontWeight: 300, letterSpacing: '0.1em', textAlign: 'center', marginBottom: 4 }}>Please RSVP</p>
-      <div style={{ width: 20, height: '1px', background: '#CCCCCC', margin: '4px 0' }} />
-      <p style={{ color: '#888888', fontSize: 6, letterSpacing: '0.15em', textTransform: 'uppercase' }}>{names}</p>
+    <div style={{ ...shared, background: lightBg }}>
+      <p style={{ color: muted, fontSize: 6, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 6 }}>DON'T FORGET</p>
+      <p style={{ color: lightText, fontSize: 12, fontWeight: 300, letterSpacing: '0.1em', textAlign: 'center', marginBottom: 4 }}>Please RSVP</p>
+      <div style={{ width: 20, height: '1px', background: rule, margin: '4px 0' }} />
+      <p style={{ color: muted, fontSize: 6, letterSpacing: '0.15em', textTransform: 'uppercase' }}>{names}</p>
     </div>
   );
 
   if (type === 'day-of') return (
-    <div style={{ ...shared, background: '#0A0A0A', padding: 0, overflow: 'hidden' }}>
+    <div style={{ ...shared, background: darkBg, padding: 0, overflow: 'hidden' }}>
       <img
         src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14276_n3xobb.jpg"
         alt=""
@@ -78,21 +84,24 @@ function StoryFrame({ type, weddingDetails }) {
   );
 
   return (
-    <div style={{ ...shared, background: '#F8F7F5' }}>
-      <p style={{ color: '#888888', fontSize: 6, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 4 }}>THANK YOU</p>
-      <p style={{ color: '#0A0A0A', fontSize: 11, fontWeight: 300, letterSpacing: '0.1em', textAlign: 'center' }}>For celebrating with us.</p>
-      <div style={{ width: 20, height: '1px', background: '#CCCCCC', margin: '5px 0' }} />
-      <p style={{ color: '#888888', fontSize: 7, letterSpacing: '0.1em', fontStyle: 'italic' }}>{names}</p>
+    <div style={{ ...shared, background: lightBg }}>
+      <p style={{ color: muted, fontSize: 6, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 4 }}>THANK YOU</p>
+      <p style={{ color: lightText, fontSize: 11, fontWeight: 300, letterSpacing: '0.1em', textAlign: 'center' }}>For celebrating with us.</p>
+      <div style={{ width: 20, height: '1px', background: rule, margin: '5px 0' }} />
+      <p style={{ color: muted, fontSize: 7, letterSpacing: '0.1em', fontStyle: 'italic' }}>{names}</p>
     </div>
   );
 }
 
+// universe: the full config object (colors/typography), not just its id —
+// see UniverseWorldView.jsx's Chapter 6 comment for why. The tab bar/frame
+// chrome below stays a neutral #111111 (a device-mockup frame, not part of
+// the couple's own branding); only each StoryFrame's own content re-themes.
 export default function InstagramKitPreview({ universe, weddingDetails }) {
   const [activeStory, setActiveStory] = useState(0);
 
   return (
     <div style={{ width: '100%', height: '100%', background: '#111111', display: 'flex', flexDirection: 'column' }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap');`}</style>
       {/* Tabs */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
         {STORY_TYPES.map((s, i) => (
@@ -114,7 +123,7 @@ export default function InstagramKitPreview({ universe, weddingDetails }) {
       {/* Frame */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12 }}>
         <div style={{ width: 80, height: 140, border: '1px solid rgba(255,255,255,0.15)', overflow: 'hidden' }}>
-          <StoryFrame type={STORY_TYPES[activeStory].id} weddingDetails={weddingDetails} />
+          <StoryFrame type={STORY_TYPES[activeStory].id} weddingDetails={weddingDetails} universe={universe} />
         </div>
       </div>
       <p style={{ textAlign: 'center', fontSize: 7, color: 'rgba(255,255,255,0.3)', padding: '0 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '0.1em' }}>
