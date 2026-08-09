@@ -1,6 +1,6 @@
 /**
  * Value prop section — "All the powerful tools..."
- * Full-width image with natural height (zero cropping), text overlaid.
+ * Full-bleed photo at viewport height, object-fit cover, text overlaid.
  */
 import React, { useRef, useEffect, useState } from "react";
 
@@ -42,13 +42,21 @@ export default function ValuePropSection() {
   return (
     <section
       ref={sectionRef}
-      style={{ position: "relative", width: "100%", overflow: "hidden" }}
+      style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}
     >
-      {/* Full-width natural-height image — no cropping */}
+      {/* Was width:100% / height:auto, so the section height was the image's
+          intrinsic 1280x853 ratio at full width — 960px at 1440, i.e. 107vh.
+          The banner could therefore never sit on screen at once and always
+          needed scrolling to center. 100vh + cover is the treatment the hero
+          (MarketingHero) and the universe photo band (UniverseMiniHero)
+          already use, so this matches them rather than inventing a third. */}
       <img
         src={IMG_SRC}
         alt="Openinvite platform"
-        style={{ width: "100%", height: "auto", display: "block" }}
+        style={{
+          position: "absolute", inset: 0, width: "100%", height: "100%",
+          objectFit: "cover", objectPosition: "center", display: "block",
+        }}
       />
 
       {/* Text overlay — absolute on desktop, relative on mobile */}
@@ -92,13 +100,19 @@ export default function ValuePropSection() {
               80vw  / 72px -> 4 lines, -314px  (overlaps)
               820px / 72px -> 5 lines,   +5px  (ceiling for width-only)
               760px / 68px -> 5 lines,  +51px  <- used
-            Everything here is in vw because the photo is width:100% with no
-            crop, so her silhouette sits at a fixed *fraction* of the width at
-            every viewport. Fixed px offsets or a capped font break that
-            relationship: the working 1440 values held at 1440 and above but
-            overlapped her by 33px at 1280 and 178px at 1024. Expressed as
-            fractions of the 1440 layout (left 80px, box 760px, text 68px)
-            they hold at every width. */
+            Everything here is in vw because her silhouette sits at a fixed
+            *fraction* of the rendered width. Fixed px offsets or a capped font
+            break that relationship: the working 1440 values held at 1440 and
+            above but overlapped her by 33px at 1280 and 178px at 1024.
+            Expressed as fractions of the 1440 layout (left 80px, box 760px,
+            text 68px) they hold at every width.
+
+            Still true now the photo is object-fit: cover at 100vh. Above the
+            source's own 1.501 aspect — every normal desktop — cover scales by
+            width, so the horizontal mapping is unchanged and only the top and
+            bottom are trimmed. Below 1.501 it scales by height and centers
+            horizontally, which moves her by ~2px at 1440x982. Measured, not
+            assumed. */
         <div
           style={{
             position: "absolute",
