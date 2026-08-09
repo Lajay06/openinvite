@@ -60,44 +60,59 @@ const CAROUSEL_IMAGES = [
 export const AUTH_LABEL_CLASS =
   "normal-case font-semibold tracking-[0.06em] text-[rgba(10,10,10,0.6)]";
 
-export default function AuthLayout({ title, subtitle, footer, children }) {
+// showNav/images/bare/contentMaxWidth are additive — every existing caller
+// (Login/Register/ForgotPassword/ResetPassword) passes none of them and
+// gets byte-identical output. Added for OnboardingShell.jsx (Group A shell
+// redesign): onboarding hides PublicNav (a wizard mid-flow isn't a page a
+// visitor should navigate away from), uses its own photo set, and skips
+// this component's built-in logo/title/card chrome entirely — each
+// onboarding step already renders its own heading in the wizard's own
+// voice, and the wizard's logo/step-counter/back button live in its own
+// fixed-position overlay (independent of this component either way).
+export default function AuthLayout({ title, subtitle, footer, children, showNav = true, images = CAROUSEL_IMAGES, bare = false, contentMaxWidth }) {
   return (
     <div className="h-screen overflow-hidden flex flex-col">
-      <PublicNav />
+      {showNav && <PublicNav />}
 
-      <div className="flex-1 flex overflow-hidden" style={{ paddingTop: 64, boxSizing: "border-box" }}>
+      <div className="flex-1 flex overflow-hidden" style={{ paddingTop: showNav ? 64 : 0, boxSizing: "border-box" }}>
         {/* LEFT — full-bleed crossfade carousel, hidden below md same as the
             Reset/Forgot password pattern this was reused from. Clean photos
             only, no caption overlay. */}
         <div className="hidden md:block h-full" style={{ width: "50%", flexShrink: 0 }}>
-          <ImageSlider images={CAROUSEL_IMAGES} />
+          <ImageSlider images={images} />
         </div>
 
         {/* RIGHT — form panel. overflow-y-auto stays on as a safety net for a
             genuinely short viewport (Register's 4 OAuth buttons + divider +
             3 fields is the tallest case), not the default path. */}
         <div className="w-full md:w-1/2 h-full overflow-y-auto flex items-center justify-center bg-background px-4 py-3">
-          <div className="w-full max-w-md">
-            <div className="text-center mb-3">
-              <img
-                src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
-                alt="Openinvite"
-                className="h-6 w-auto mx-auto mb-4"
-                style={{ filter: "brightness(0)" }}
-              />
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
-              {subtitle && <p className="text-muted-foreground text-sm mt-1">{subtitle}</p>}
-            </div>
-            {/* Card: 0 border-radius, no box-shadow — DESIGN_SPEC's card rules.
-                The modal 16px-radius rule doesn't apply here — this isn't a
-                modal, and border-radius stays scoped to buttons/pills only. */}
-            <div className="bg-card border border-border p-4">
+          {bare ? (
+            <div className="w-full" style={{ maxWidth: contentMaxWidth }}>
               {children}
             </div>
-            {footer && (
-              <p className="text-center text-sm text-muted-foreground mt-3">{footer}</p>
-            )}
-          </div>
+          ) : (
+            <div className="w-full max-w-md">
+              <div className="text-center mb-3">
+                <img
+                  src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
+                  alt="Openinvite"
+                  className="h-6 w-auto mx-auto mb-4"
+                  style={{ filter: "brightness(0)" }}
+                />
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
+                {subtitle && <p className="text-muted-foreground text-sm mt-1">{subtitle}</p>}
+              </div>
+              {/* Card: 0 border-radius, no box-shadow — DESIGN_SPEC's card rules.
+                  The modal 16px-radius rule doesn't apply here — this isn't a
+                  modal, and border-radius stays scoped to buttons/pills only. */}
+              <div className="bg-card border border-border p-4">
+                {children}
+              </div>
+              {footer && (
+                <p className="text-center text-sm text-muted-foreground mt-3">{footer}</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

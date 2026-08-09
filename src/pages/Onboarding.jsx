@@ -28,6 +28,7 @@ import OnboardingPathAVendors from '@/components/onboarding/OnboardingPathAVendo
 import OnboardingPathACultural from '@/components/onboarding/OnboardingPathACultural';
 import OnboardingPathAInspiration from '@/components/onboarding/OnboardingPathAInspiration';
 import OnboardingCompletion from '@/components/onboarding/OnboardingCompletion';
+import OnboardingShell from '@/components/onboarding/OnboardingShell';
 
 // TASK 6+7: 'welcome' added as step 0; 'priorities' removed
 const STEPS = [
@@ -62,6 +63,26 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // Core steps counted in the progress indicator (excludes welcome, pathA, and completion)
 const CORE_STEPS = ['names', 'date', 'location', 'guestCount', 'weddingType', 'ava', 'universe', 'fork'];
 const DISPLAY_STEP_COUNT = CORE_STEPS.length; // 8
+
+// Group A shell redesign — every step except 'universe' and 'fork' adopts
+// the split-with-image OnboardingShell. Universe and Fork stay full-bleed:
+// Universe's horizontal card rail + full-screen preview Dialog and Fork's
+// side-by-side 2-column grid both assume more horizontal room than a
+// ~50%-viewport-width split panel leaves, and Universe already has its own
+// separate redesign coming (marketing-grid style) — building a split-shell
+// treatment for its current layout now would just be thrown away then.
+const SHELL_STEPS = new Set([
+  'welcome', 'names', 'date', 'location', 'guestCount', 'weddingType', 'ava',
+  'pathA-guestList', 'pathA-budget', 'pathA-vendors', 'pathA-cultural', 'pathA-inspiration',
+  'completion',
+]);
+// pathA-cultural's region-grouped culture pills (with their own internal
+// scroll box) want a bit more room than the other shell steps' default.
+// names' 32px inline-sentence layout ("Hi, my name is ___ and my
+// partner's name is ___") was built for its original unconstrained
+// maxWidth:700 — the shell's 600px default squeezed its second input
+// below its own 200px minWidth, clipping "Partner's name"'s placeholder.
+const SHELL_CONTENT_WIDTH = { 'pathA-cultural': 640, 'names': 700 };
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -109,6 +130,7 @@ export default function Onboarding() {
   useEffect(() => { draftWeddingIdRef.current = draftWeddingId; }, [draftWeddingId]);
 
   const currentStep = STEPS[currentStepIndex];
+  const isShellStep = SHELL_STEPS.has(currentStep);
 
   // Progress: 0 on welcome, fills across the 8 core steps, 100 on completion
   const coreIndex = CORE_STEPS.indexOf(currentStep); // -1 if not a core step
@@ -441,6 +463,109 @@ export default function Onboarding() {
     return <div style={{ minHeight: '100vh', background: '#FFFFFF' }} />;
   }
 
+  // Coloured logo: the source PNG's wordmark text is baked in white (built
+  // for dark backgrounds — see AuthLayout.jsx's own comment on the same
+  // asset), so flattening the whole lockup to black (the old approach here)
+  // was the only way to make it legible on white, at the cost of the icon's
+  // real color gradient. PublicFooter.jsx already solved this exact problem
+  // on its own white background: crop to just the icon (background-position,
+  // no filter) to keep its color, real "Openinvite" text alongside it
+  // instead of relying on the image's own (white) text. Reused verbatim
+  // here, scaled from PublicFooter's 41×48 icon crop down to a 20px-tall
+  // mark (20/48 of every dimension).
+  const stepChrome = (
+    <>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <div
+          aria-hidden="true"
+          style={{
+            width: 17, height: 20, flexShrink: 0,
+            backgroundImage: `url(${LOGO_URL})`,
+            backgroundSize: '87px 20px',
+            backgroundPosition: '0 0',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+        <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.01em' }}>
+          Openinvite
+        </span>
+      </div>
+
+      {showStepCounter && (
+        <span style={{
+          fontSize: 11, fontFamily: PJS,
+          color: 'rgba(10,10,10,0.4)',
+        }}>
+          Step {stepNum} of {DISPLAY_STEP_COUNT}
+        </span>
+      )}
+
+      {showBack && (
+        <button
+          onClick={goBack}
+          className="border-none cursor-pointer text-[13px] text-left bg-transparent rounded-full px-2 py-1 transition-colors duration-150 hover:bg-black hover:text-white active:bg-neutral-900 text-[rgba(10,10,10,0.4)]"
+          style={{ fontFamily: PJS, alignSelf: 'flex-start' }}
+        >
+          ← Back
+        </button>
+      )}
+    </>
+  );
+
+  const stepContent = (
+    <>
+      {currentStep === 'welcome' && (
+        <OnboardingWelcome onNext={goNext} />
+      )}
+      {currentStep === 'names' && (
+        <OnboardingStep1Names onNext={goNext} />
+      )}
+      {currentStep === 'date' && (
+        <OnboardingStep2Date onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'location' && (
+        <OnboardingStep3Location onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'guestCount' && (
+        <OnboardingStep4GuestCount onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'weddingType' && (
+        <OnboardingStep5WeddingType onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'ava' && (
+        <OnboardingStep7Ava onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'universe' && (
+        <OnboardingStepUniverse onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'fork' && (
+        <OnboardingStep8Fork
+          onPathA={handlePathA}
+          onPathB={handlePathB}
+          data={onboardingData}
+        />
+      )}
+      {currentStep === 'pathA-guestList' && (
+        <OnboardingPathAGuestList onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'pathA-budget' && (
+        <OnboardingPathABudget onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'pathA-vendors' && (
+        <OnboardingPathAVendors onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'pathA-cultural' && (
+        <OnboardingPathACultural onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'pathA-inspiration' && (
+        <OnboardingPathAInspiration onNext={goNext} data={onboardingData} />
+      )}
+      {currentStep === 'completion' && (
+        <OnboardingCompletion onDone={handleCompletion} data={onboardingData} />
+      )}
+    </>
+  );
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -490,42 +615,20 @@ export default function Onboarding() {
         </div>
       )}
 
-      {/* TASK 3+4+5: Top-left fixed column — logo, step counter, back */}
-      <div style={{
-        position: 'fixed', top: 20, left: 24, zIndex: 50,
-        display: 'flex', flexDirection: 'column', gap: 6,
-      }}>
-        {/* Logo */}
-        <img
-          src={LOGO_URL}
-          alt="openinvite"
-          style={{
-            height: 20, width: 'auto', display: 'block',
-            filter: 'brightness(0)',
-          }}
-        />
-
-        {/* Step counter */}
-        {showStepCounter && (
-          <span style={{
-            fontSize: 11, fontFamily: PJS,
-            color: 'rgba(10,10,10,0.4)',
-          }}>
-            Step {stepNum} of {DISPLAY_STEP_COUNT}
-          </span>
-        )}
-
-        {/* Back button */}
-        {showBack && (
-          <button
-            onClick={goBack}
-            className="border-none cursor-pointer text-[13px] text-left bg-transparent rounded-full px-2 py-1 transition-colors duration-150 hover:bg-black hover:text-white active:bg-neutral-900 text-[rgba(10,10,10,0.4)]"
-            style={{ fontFamily: PJS }}
-          >
-            ← Back
-          </button>
-        )}
-      </div>
+      {/* TASK 3+4+5: logo, step counter, back. Full-bleed steps (Universe/
+          Fork) keep this as a page-fixed top-left overlay, unchanged.
+          Shell steps render the same block inline at the top of
+          OnboardingShell's own panel instead (see below) — position:fixed
+          at left:24 would land on top of the shell's left-hand image panel
+          on desktop, so it can't be reused as-is there. */}
+      {!isShellStep && (
+        <div style={{
+          position: 'fixed', top: 20, left: 24, zIndex: 50,
+          display: 'flex', flexDirection: 'column', gap: 6,
+        }}>
+          {stepChrome}
+        </div>
+      )}
 
       {/* Steps container */}
       <AnimatePresence mode="wait">
@@ -535,61 +638,20 @@ export default function Onboarding() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -40, opacity: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          style={{
+          style={isShellStep ? { height: '100vh' } : {
             minHeight: '100vh',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '80px 24px',
           }}
         >
-          {currentStep === 'welcome' && (
-            <OnboardingWelcome onNext={goNext} />
-          )}
-          {currentStep === 'names' && (
-            <OnboardingStep1Names onNext={goNext} />
-          )}
-          {currentStep === 'date' && (
-            <OnboardingStep2Date onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'location' && (
-            <OnboardingStep3Location onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'guestCount' && (
-            <OnboardingStep4GuestCount onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'weddingType' && (
-            <OnboardingStep5WeddingType onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'ava' && (
-            <OnboardingStep7Ava onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'universe' && (
-            <OnboardingStepUniverse onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'fork' && (
-            <OnboardingStep8Fork
-              onPathA={handlePathA}
-              onPathB={handlePathB}
-              data={onboardingData}
-            />
-          )}
-          {currentStep === 'pathA-guestList' && (
-            <OnboardingPathAGuestList onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'pathA-budget' && (
-            <OnboardingPathABudget onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'pathA-vendors' && (
-            <OnboardingPathAVendors onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'pathA-cultural' && (
-            <OnboardingPathACultural onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'pathA-inspiration' && (
-            <OnboardingPathAInspiration onNext={goNext} data={onboardingData} />
-          )}
-          {currentStep === 'completion' && (
-            <OnboardingCompletion onDone={handleCompletion} data={onboardingData} />
-          )}
+          {isShellStep ? (
+            <OnboardingShell contentMaxWidth={SHELL_CONTENT_WIDTH[currentStep] || 600}>
+              <div style={{ marginBottom: 32, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {stepChrome}
+              </div>
+              {stepContent}
+            </OnboardingShell>
+          ) : stepContent}
         </motion.div>
       </AnimatePresence>
     </div>
