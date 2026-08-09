@@ -26,14 +26,20 @@ const UNIVERSES = UNIVERSE_CATALOG.map((u, i) => ({
   photo: u.imageUrl || `/universes/${u.id}.jpg`,
 }));
 
-// [5] universe-step-rebuild: the tile visuals (photo, gradient scrim,
-// always-visible tagline/name, hover-reveal colour swatches) are ported
-// from Universes.jsx's UniverseTile — same catalog, same look-and-feel as
-// the marketing grid. That component has no onClick at all (it's
-// decorative there), so this is a fork, not a straight import: adds the
-// click-to-preview handler and a selected-state ring/badge the marketing
-// page has no concept of. Sized down from marketing's 300px minimum tile
-// width for the wizard's ~960px content column.
+// Light-card treatment (PR B on-brand pass) — previously a full-bleed dark
+// photo tile with a gradient scrim and white caption text, ported straight
+// from Universes.jsx's marketing-grid tile. DESIGN_SPEC.md used to carve
+// out an explicit exception for that (white-on-photo "fixed property of
+// the image-card treatment"), but next to the rest of this wizard's light,
+// left-aligned, sentence-case steps, a wall of 20 dense dark tiles read as
+// a different product dropped into the middle of it. Now matches the
+// wizard's own card language (see OnboardingStep4GuestCount's Intimate/
+// Celebration/Grand tiles): white background, a thin default border that
+// darkens on hover/selection (same affordance as OnboardingStep8Fork's
+// cards), photo confined to its own panel instead of filling the tile,
+// name/tagline in dark text below it. Selection badge and the hover-reveal
+// palette swatches are unchanged in spirit, just recomposed onto a light
+// ground.
 function UniverseGridTile({ universe, index, isSelected, onSelect }) {
   const [hovered, setHovered] = useState(false);
   const swatches = [
@@ -42,6 +48,7 @@ function UniverseGridTile({ universe, index, isSelected, onSelect }) {
     { color: universe.colors.accent, label: 'Accent' },
     { color: universe.colors.accentSecondary, label: 'Secondary' },
   ].filter(s => !!s.color);
+  const isActive = isSelected || hovered;
 
   return (
     <div
@@ -50,54 +57,49 @@ function UniverseGridTile({ universe, index, isSelected, onSelect }) {
       onMouseLeave={() => setHovered(false)}
       {...interactiveDivProps(onSelect, { label: `Preview the ${universe.name} universe` })}
       style={{
-        position: 'relative', aspectRatio: '3 / 4', overflow: 'hidden', cursor: 'pointer',
-        border: isSelected ? '1px solid rgba(255,255,255,0.7)' : '1px solid transparent',
+        display: 'flex', flexDirection: 'column',
+        background: '#FFFFFF', cursor: 'pointer',
+        border: `1px solid ${isActive ? '#0A0A0A' : 'rgba(10,10,10,0.12)'}`,
         transition: 'border-color 0.2s ease',
       }}
     >
-      <img
-        src={universe.photo}
-        alt={`The ${universe.name} universe: ${universe.tagline || 'a full wedding aesthetic'}`}
-        loading={index < 4 ? 'eager' : 'lazy'}
-        style={{
-          position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-          transform: hovered ? 'scale(1.04)' : 'scale(1)', transition: 'transform 0.6s cubic-bezier(0.16,1,0.3,1)',
-        }}
-      />
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: hovered
-          ? 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.15) 100%)'
-          : 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0) 100%)',
-        transition: 'background 0.4s ease',
-      }} />
+      <div style={{ position: 'relative', aspectRatio: '4 / 3', overflow: 'hidden' }}>
+        <img
+          src={universe.photo}
+          alt={`The ${universe.name} universe: ${universe.tagline || 'a full wedding aesthetic'}`}
+          loading={index < 4 ? 'eager' : 'lazy'}
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+            transform: hovered ? 'scale(1.04)' : 'scale(1)', transition: 'transform 0.6s cubic-bezier(0.16,1,0.3,1)',
+          }}
+        />
+        {isSelected && (
+          <div style={{
+            position: 'absolute', top: 8, right: 8, width: 18, height: 18, borderRadius: '50%',
+            background: '#E03553', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="9" height="9" viewBox="0 0 14 14" fill="none">
+              <path d="M2.5 7L5.5 10L11.5 4" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
+      </div>
 
-      {isSelected && (
-        <div style={{
-          position: 'absolute', top: 10, right: 10, width: 20, height: 20, borderRadius: '50%',
-          background: '#E03553', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2,
-        }}>
-          <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
-            <path d="M2.5 7L5.5 10L11.5 4" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      )}
-
-      <div style={{ position: 'absolute', inset: 0, zIndex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 14 }}>
-        <p style={{ fontSize: 10, fontStyle: 'italic', color: 'rgba(255,255,255,0.6)', margin: '0 0 4px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <p style={{ fontSize: 10, fontStyle: 'italic', color: 'rgba(10,10,10,0.5)', margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           {universe.tagline}
         </p>
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.01em', margin: '0 0 8px', lineHeight: 1.1 }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', letterSpacing: '-0.01em', margin: 0, lineHeight: 1.2 }}>
           {universe.name}
         </h3>
 
         <div style={{
-          display: 'flex', gap: 4,
+          display: 'flex', gap: 4, marginTop: hovered ? 6 : 0,
           maxHeight: hovered ? 12 : 0, opacity: hovered ? 1 : 0, overflow: 'hidden',
-          transition: 'max-height 0.35s ease, opacity 0.3s ease',
+          transition: 'max-height 0.35s ease, opacity 0.3s ease, margin-top 0.35s ease',
         }}>
           {swatches.map((s, i) => (
-            <span key={i} title={s.label} style={{ width: 10, height: 10, background: s.color, border: s.color === '#FFFFFF' ? '1px solid rgba(255,255,255,0.3)' : 'none', flexShrink: 0 }} />
+            <span key={i} title={s.label} style={{ width: 10, height: 10, background: s.color, border: s.color === '#FFFFFF' ? '1px solid rgba(10,10,10,0.18)' : 'none', flexShrink: 0 }} />
           ))}
         </div>
       </div>
@@ -159,14 +161,16 @@ export default function OnboardingStepUniverse({ onNext, data }) {
           Tap any universe to preview it. You can change this at any time from your Design Studio.
         </motion.p>
 
-        {/* Universe grid — /universes-style tiles (UniverseGridTile above),
-            scaled to the wizard's content column instead of a full marketing
-            section width. */}
+        {/* Universe grid — light UniverseGridTile cards (see above), scaled
+            to the wizard's content column instead of a full marketing
+            section width. gap bumped from the marketing grid's dense 3px —
+            the wizard elsewhere uses generous whitespace, and 3px between
+            20 tiles read as a wall, not a picker. */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 3 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}
         >
           {UNIVERSES.map((u, i) => (
             <UniverseGridTile

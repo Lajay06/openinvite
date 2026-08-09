@@ -616,9 +616,26 @@ export default function UniverseWorldView({
   );
 
   if (!escapeLayout) {
+    // Was createPortal(backButton, document.body) — a second, independent
+    // portal, separate from the Dialog's own DialogPortal (the caller here
+    // is OnboardingStepUniverse.jsx's Dialog/DialogContent). Radix sets
+    // pointer-events:none on <body> while a modal Dialog is open (its
+    // focus-lock) and only re-enables it for the Dialog's own portalled
+    // subtree — a button portalled separately to document.body sits as a
+    // sibling to that subtree, never gets pointer-events restored, and is
+    // silently unclickable despite rendering visually on top (confirmed via
+    // getComputedStyle: pointer-events: none on the button itself). That
+    // silently-dead button is what pushed a user to the browser's own Back
+    // button instead — which, since opening the preview never pushes a
+    // history entry, exits the wizard entirely rather than returning to the
+    // grid. Rendering backButton as a normal child here (already inside the
+    // Dialog's own subtree, since escapeLayout=false means no second
+    // full-screen portal wraps it) fixes that: same fixed positioning
+    // (backButtonStyle is unchanged), now correctly inside the scope Radix
+    // keeps interactive.
     return (
       <div>
-        {createPortal(backButton, document.body)}
+        {backButton}
         {chapters}
       </div>
     );

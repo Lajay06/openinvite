@@ -34,9 +34,14 @@ export default function SaveTheDatePreview({ universe, weddingDetails }) {
       {/* Placeholder couple photo (Launch folder, "Bandits" shoot — same
           consistent set across every universe) — real save-the-dates are
           almost always photo-led; replaced automatically once the couple
-          picks their own photo for this asset. */}
+          picks their own photo for this asset. The original id here
+          (ID14262_nd4v2e) 404s — dead asset, not a Cloudinary outage;
+          swapped for another photo from the same shoot, confirmed to
+          resolve, and not already used elsewhere in this same "your
+          wedding in this world" asset grid (Welcome sign uses ID14274,
+          Instagram kit uses ID14263/ID14276). */}
       <img
-        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14262_nd4v2e.jpg"
+        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h.jpg"
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }}
       />
