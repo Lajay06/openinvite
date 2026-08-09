@@ -369,12 +369,15 @@ export default function Pricing() {
             Compare plans
           </h2>
 
-          {/* margin: 0, not "0 auto" — the table is narrower than this
-              1100px container, so centering it left it floating well right
-              of the "Compare plans" heading above. Left-aligned, it lines
-              up with the heading instead. */}
+          {/* margin: "0 auto" — SUPERSEDES #331, which pinned the table left
+              to line it up with the "Compare plans" heading. Measured at 1440
+              that put the table at left 170 / right 676, center 423 against a
+              viewport center of 720 — 297px off-axis, and a 594px void to its
+              right, which is what read as "pushed to one side". Centering the
+              table puts its mass on the page axis. Cell text stays
+              left-aligned; only the block moves. */}
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "auto", margin: 0, borderCollapse: "collapse", tableLayout: "fixed", fontFamily: PJS }}>
+            <table style={{ width: "auto", margin: "0 auto", borderCollapse: "collapse", tableLayout: "fixed", fontFamily: PJS }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: "left", fontSize: 12, fontWeight: 600, color: "rgba(10,10,10,0.6)", padding: "0 24px 20px 0" }} />
