@@ -62,7 +62,34 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 // Core steps counted in the progress indicator (excludes welcome, pathA, and completion)
 const CORE_STEPS = ['names', 'date', 'location', 'guestCount', 'weddingType', 'ava', 'universe', 'fork'];
-const DISPLAY_STEP_COUNT = CORE_STEPS.length; // 8
+
+// [5] universe-step-rebuild: Universes (Design Studio / custom wedding
+// website) are Ultra-only (planFeatures.js's ULTRA_EXTRAS) — an account
+// that has already bought Pro specifically has nothing to pick here. Trial
+// accounts (plan: null) get full Ultra access for the 14-day trial and
+// haven't foreclosed Ultra yet, and Ultra accounts obviously qualify, so
+// both of those still see the step — only 'pro' skips.
+//
+// Single source of truth for what's visible, so forward-nav, back-nav, the
+// resume/mount path, and the progress-bar math can never disagree about it
+// — every one of them calls this or nextVisibleIndex() below rather than
+// re-deriving "is this a Pro account" separately.
+function isStepVisible(step, plan) {
+  if (step === 'universe') return plan !== 'pro';
+  return true;
+}
+
+// Walks from startIndex in `direction` (+1/-1) until landing on a step
+// isStepVisible allows for `plan`, then clamps to the array bounds. STEPS
+// itself is never reordered or filtered — draft.onboardingStepIndex stays
+// a plain absolute STEPS index, so existing drafts need no migration.
+function nextVisibleIndex(startIndex, direction, plan) {
+  let i = startIndex;
+  while (i >= 0 && i < STEPS.length && !isStepVisible(STEPS[i], plan)) {
+    i += direction;
+  }
+  return Math.min(Math.max(i, 0), STEPS.length - 1);
+}
 
 // Group A shell redesign — every step except 'universe' and 'fork' adopts
 // the split-with-image OnboardingShell. Universe and Fork stay full-bleed:
@@ -132,11 +159,15 @@ export default function Onboarding() {
   const currentStep = STEPS[currentStepIndex];
   const isShellStep = SHELL_STEPS.has(currentStep);
 
-  // Progress: 0 on welcome, fills across the 8 core steps, 100 on completion
-  const coreIndex = CORE_STEPS.indexOf(currentStep); // -1 if not a core step
+  // Same isStepVisible a Pro account's nav routes through — "Step X of N"
+  // shows N=7 for Pro (no phantom 8th step), N=8 for everyone else.
+  const effectiveCoreSteps = CORE_STEPS.filter(step => isStepVisible(step, user?.plan));
+
+  // Progress: 0 on welcome, fills across the core steps, 100 on completion
+  const coreIndex = effectiveCoreSteps.indexOf(currentStep); // -1 if not a core step
   const progress = currentStep === 'welcome' ? 0
     : currentStep === 'completion' ? 100
-    : coreIndex >= 0 ? ((coreIndex + 1) / DISPLAY_STEP_COUNT) * 100
+    : coreIndex >= 0 ? ((coreIndex + 1) / effectiveCoreSteps.length) * 100
     : 100; // pathA steps show full bar
 
   // Step counter: only shown on core steps ("Step 1 of 8")
@@ -191,9 +222,14 @@ export default function Onboarding() {
           activeUniverse: draft.activeUniverse || prev.activeUniverse,
           websiteMode: draft.websiteMode || prev.websiteMode,
         }));
-        const resumeIndex = typeof draft.onboardingStepIndex === 'number'
+        // currentUser (not React state — that hasn't committed yet) is what
+        // isStepVisible needs here: correcting resumeIndex before this
+        // synchronous block ends means 'universe' never renders even for
+        // one frame for a resuming Pro account, no separate effect needed.
+        const rawResumeIndex = typeof draft.onboardingStepIndex === 'number'
           ? Math.min(Math.max(draft.onboardingStepIndex, 0), STEPS.length - 1)
           : 0;
+        const resumeIndex = nextVisibleIndex(rawResumeIndex, 1, currentUser?.plan);
         setCurrentStepIndex(resumeIndex);
       }
     } catch (err) {
@@ -239,7 +275,8 @@ export default function Onboarding() {
   const goNext = (data) => {
     const merged = { ...onboardingData, ...(data || {}) };
     setOnboardingData(merged);
-    const nextIndex = Math.min(currentStepIndex + 1, STEPS.length - 1);
+    const rawNext = Math.min(currentStepIndex + 1, STEPS.length - 1);
+    const nextIndex = nextVisibleIndex(rawNext, 1, user?.plan);
     setCurrentStepIndex(nextIndex);
     window.scrollTo(0, 0);
     // Only worth persisting once there's a name to identify the draft by —
@@ -250,12 +287,12 @@ export default function Onboarding() {
   };
 
   const goBack = () => {
-    setCurrentStepIndex(prev => Math.max(prev - 1, 0));
+    setCurrentStepIndex(prev => nextVisibleIndex(Math.max(prev - 1, 0), -1, user?.plan));
     window.scrollTo(0, 0);
   };
 
   const goToStep = (stepIndex) => {
-    setCurrentStepIndex(stepIndex);
+    setCurrentStepIndex(nextVisibleIndex(stepIndex, 1, user?.plan));
     window.scrollTo(0, 0);
   };
 
@@ -496,7 +533,7 @@ export default function Onboarding() {
           fontSize: 11, fontFamily: PJS,
           color: 'rgba(10,10,10,0.4)',
         }}>
-          Step {stepNum} of {DISPLAY_STEP_COUNT}
+          Step {stepNum} of {effectiveCoreSteps.length}
         </span>
       )}
 

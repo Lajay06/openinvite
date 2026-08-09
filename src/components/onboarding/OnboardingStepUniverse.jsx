@@ -26,6 +26,85 @@ const UNIVERSES = UNIVERSE_CATALOG.map((u, i) => ({
   photo: u.imageUrl || `/universes/${u.id}.jpg`,
 }));
 
+// [5] universe-step-rebuild: the tile visuals (photo, gradient scrim,
+// always-visible tagline/name, hover-reveal colour swatches) are ported
+// from Universes.jsx's UniverseTile — same catalog, same look-and-feel as
+// the marketing grid. That component has no onClick at all (it's
+// decorative there), so this is a fork, not a straight import: adds the
+// click-to-preview handler and a selected-state ring/badge the marketing
+// page has no concept of. Sized down from marketing's 300px minimum tile
+// width for the wizard's ~960px content column.
+function UniverseGridTile({ universe, index, isSelected, onSelect }) {
+  const [hovered, setHovered] = useState(false);
+  const swatches = [
+    { color: universe.colors.darkBg, label: 'Ground' },
+    { color: universe.colors.lightBg, label: 'Paper' },
+    { color: universe.colors.accent, label: 'Accent' },
+    { color: universe.colors.accentSecondary, label: 'Secondary' },
+  ].filter(s => !!s.color);
+
+  return (
+    <div
+      onClick={onSelect}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      {...interactiveDivProps(onSelect, { label: `Preview the ${universe.name} universe` })}
+      style={{
+        position: 'relative', aspectRatio: '3 / 4', overflow: 'hidden', cursor: 'pointer',
+        border: isSelected ? '1px solid rgba(255,255,255,0.7)' : '1px solid transparent',
+        transition: 'border-color 0.2s ease',
+      }}
+    >
+      <img
+        src={universe.photo}
+        alt={`The ${universe.name} universe: ${universe.tagline || 'a full wedding aesthetic'}`}
+        loading={index < 4 ? 'eager' : 'lazy'}
+        style={{
+          position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+          transform: hovered ? 'scale(1.04)' : 'scale(1)', transition: 'transform 0.6s cubic-bezier(0.16,1,0.3,1)',
+        }}
+      />
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: hovered
+          ? 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.15) 100%)'
+          : 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0) 100%)',
+        transition: 'background 0.4s ease',
+      }} />
+
+      {isSelected && (
+        <div style={{
+          position: 'absolute', top: 10, right: 10, width: 20, height: 20, borderRadius: '50%',
+          background: '#E03553', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2,
+        }}>
+          <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+            <path d="M2.5 7L5.5 10L11.5 4" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
+
+      <div style={{ position: 'absolute', inset: 0, zIndex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 14 }}>
+        <p style={{ fontSize: 10, fontStyle: 'italic', color: 'rgba(255,255,255,0.6)', margin: '0 0 4px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          {universe.tagline}
+        </p>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.01em', margin: '0 0 8px', lineHeight: 1.1 }}>
+          {universe.name}
+        </h3>
+
+        <div style={{
+          display: 'flex', gap: 4,
+          maxHeight: hovered ? 12 : 0, opacity: hovered ? 1 : 0, overflow: 'hidden',
+          transition: 'max-height 0.35s ease, opacity 0.3s ease',
+        }}>
+          {swatches.map((s, i) => (
+            <span key={i} title={s.label} style={{ width: 10, height: 10, background: s.color, border: s.color === '#FFFFFF' ? '1px solid rgba(255,255,255,0.3)' : 'none', flexShrink: 0 }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OnboardingStepUniverse({ onNext, data }) {
   const [selectedUniverse, setSelectedUniverse] = useState(data.activeUniverse || null);
   const [websiteMode, setWebsiteMode] = useState(data.websiteMode || 'dark');
@@ -35,6 +114,10 @@ export default function OnboardingStepUniverse({ onNext, data }) {
   const textMuted = 'rgba(10,10,10,0.6)';
 
   const handleContinue = () => {
+    onNext({ activeUniverse: selectedUniverse || 'london', websiteMode });
+  };
+
+  const handleSkip = () => {
     onNext({ activeUniverse: selectedUniverse || 'london', websiteMode });
   };
 
@@ -76,45 +159,24 @@ export default function OnboardingStepUniverse({ onNext, data }) {
           Tap any universe to preview it. You can change this at any time from your Design Studio.
         </motion.p>
 
-        {/* Universe cards */}
+        {/* Universe grid — /universes-style tiles (UniverseGridTile above),
+            scaled to the wizard's content column instead of a full marketing
+            section width. */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 16, scrollbarWidth: 'none' }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 3 }}
         >
-          {UNIVERSES.map((u) => {
-            const isSelected = selectedUniverse === u.id;
-            return (
-              <div
-                key={u.id}
-                onClick={() => setPreviewUniverse(u)}
-                {...interactiveDivProps(() => setPreviewUniverse(u))}
-                style={{
-                  width: 220, flexShrink: 0, height: 280,
-                  position: 'relative', overflow: 'hidden',
-                  cursor: 'pointer',
-                  border: isSelected ? '1px solid rgba(255,255,255,0.6)' : '1px solid transparent',
-                  transition: 'border 0.2s ease',
-                  opacity: 1,
-                  background: '#111',
-                }}
-              >
-                <img
-                  src={u.photo}
-                  alt={u.name}
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.45 }}
-                />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0A0A0A 0%, rgba(10,10,10,0.6) 50%, transparent 100%)' }} />
-
-                {/* Bottom info */}
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 16px 18px' }}>
-                  <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 300, fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.2em', margin: '0 0 4px' }}>{u.number}</p>
-                  <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: 0, letterSpacing: '0.05em' }}>{u.tagline || u.name}</p>
-                </div>
-              </div>
-            );
-          })}
+          {UNIVERSES.map((u, i) => (
+            <UniverseGridTile
+              key={u.id}
+              universe={u}
+              index={i}
+              isSelected={selectedUniverse === u.id}
+              onSelect={() => setPreviewUniverse(u)}
+            />
+          ))}
         </motion.div>
 
         {/* Website mode */}
@@ -163,7 +225,7 @@ export default function OnboardingStepUniverse({ onNext, data }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          style={{ display: 'flex', justifyContent: 'center', marginTop: 40 }}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, marginTop: 40 }}
         >
           <button
             onClick={handleContinue}
@@ -186,6 +248,15 @@ export default function OnboardingStepUniverse({ onNext, data }) {
             }}
           >
             Continue →
+          </button>
+          <button
+            onClick={handleSkip}
+            style={{
+              background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+              fontSize: 13, color: textMuted, fontFamily: 'Plus Jakarta Sans, sans-serif',
+            }}
+          >
+            Skip for now →
           </button>
         </motion.div>
       </div>
@@ -224,8 +295,6 @@ export default function OnboardingStepUniverse({ onNext, data }) {
           )}
         </DialogContent>
       </Dialog>
-
-      <style>{`div::-webkit-scrollbar { display: none; }`}</style>
     </>
   );
 }
