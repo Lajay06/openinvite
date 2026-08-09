@@ -77,6 +77,7 @@ export default function About() {
         image="https://res.cloudinary.com/dsr84xknv/image/upload/c_crop,x_0,y_0,w_1190,h_640/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2.jpg"
         title="Planning a wedding should feel like the beginning of something incredible."
         maxWidth={900}
+        cta={{ label: "Get started", href: "/signup" }}
       />
 
       {/* ── S2: EDITORIAL INTRO ──────────────────────────── */}

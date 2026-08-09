@@ -262,6 +262,7 @@ export default function AvaPage() {
         title={<>Meet Ava.<br />Your AI wedding planner.</>}
         overlay={false}
         maxWidth={1200}
+        cta={{ label: "Get started", href: "/signup" }}
       />
 
       {/* ── STATEMENT BANNER ─────────────────────────────────── */}
