@@ -253,6 +253,19 @@ export default function Onboarding() {
         setDraftWeddingId(draft.id);
         setOnboardingData(prev => ({
           ...prev,
+          // A still-draft record can only ever be Path A: Path B
+          // (handlePathB) calls saveOnboarding('quick') directly, which
+          // writes onboardingDraft:false synchronously before the
+          // completion step ever renders — it never leaves a draft
+          // behind to resume into. Path is otherwise only set by
+          // handlePathA's own goNext({ path: 'detailed' }) click, which a
+          // resumed session (reloaded after that click) would never
+          // re-trigger — leaving path unset here and letting
+          // handleCompletion's `path !== 'detailed'` guard silently skip
+          // the final save was the bug: the resumed session would land on
+          // completion, click through, and get punted to /DailyUpdate
+          // with onboardingDraft stuck true forever, no save, no bounce.
+          path: 'detailed',
           couple1Name: draft.couple1Name || prev.couple1Name,
           couple2Name: draft.couple2Name || prev.couple2Name,
           weddingDate: draft.weddingDate || prev.weddingDate,
