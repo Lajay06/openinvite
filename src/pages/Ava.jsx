@@ -380,13 +380,6 @@ export default function AvaPage() {
         </div>
       </section>
 
-      {/* The "Ask Ava anything. Watch Ava actually answer." demo block used to
-          sit here. It moves to /tour, so the Cloudinary video and poster
-          (product-shots/flow-06-ava-wedding-date.*) are deliberately left in
-          place — do not delete those assets. ProductMediaFrame and
-          ProductVideo were imported only for this block, so both imports went
-          with it. */}
-
       {/* ── END CAP ──────────────────────────────────────── */}
       <MarketingEndCap
         image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp.jpg"
