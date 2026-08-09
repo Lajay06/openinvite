@@ -94,14 +94,29 @@ export default function AuthLayout({ title, subtitle, footer, children, showNav 
 
         {/* RIGHT — form panel. overflow-y-auto stays on as a safety net for a
             genuinely short viewport (Register's 4 OAuth buttons + divider +
-            3 fields is the tallest case), not the default path. */}
-        <div className={`w-full md:w-1/2 h-full overflow-y-auto flex items-center bg-background px-4 py-3 ${bare ? "justify-start" : "justify-center"}`}>
+            3 fields is the tallest case), not the default path.
+
+            `items-center` used to live on THIS container. With overflow-y:
+            auto and taller-than-viewport content, align-items:center on the
+            scroll container mathematically centers the overflow equally
+            above and below — the content's own top edge (the step's heading)
+            ends up in the unreachable half, so scrolling down is the only
+            direction that does anything and the top is permanently trapped
+            off-screen (confirmed live on a wizard step whose content grows
+            past viewport height after a search/selection, e.g. onboarding's
+            vendor step once results render). Centering now lives on the
+            CHILD instead, via `my-auto`: vertical auto-margins split evenly
+            when the child is shorter than the container (identical short-
+            content look to before) but collapse to 0 once the child is
+            taller, so tall content just starts at the top and scrolls
+            normally with nothing unreachable. */}
+        <div className={`w-full md:w-1/2 h-full overflow-y-auto flex bg-background px-4 py-3 ${bare ? "justify-start" : "justify-center"}`}>
           {bare ? (
-            <div className="w-full pl-8 md:pl-16" style={{ maxWidth: contentMaxWidth }}>
+            <div className="w-full pl-8 md:pl-16 my-auto" style={{ maxWidth: contentMaxWidth }}>
               {children}
             </div>
           ) : (
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-md my-auto">
               <div className="text-center mb-3">
                 <img
                   src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"

@@ -86,7 +86,7 @@ export default function OnboardingPathAGuestList({ onNext }) {
           >
             <Upload size={24} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px', display: 'block' }} />
             <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 4px' }}>Drag and drop or click to upload</p>
-            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Accepts .csv and .xlsx — download the template above if you're starting from scratch</p>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Accepts .csv and .xlsx (download the template above if you're starting from scratch)</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -105,7 +105,7 @@ export default function OnboardingPathAGuestList({ onNext }) {
           <div style={{ marginTop: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
-                Preview — {validCount} of {rows.length} rows valid
+                Preview ({validCount} of {rows.length} rows valid)
               </p>
               <button
                 onClick={() => setRows(null)}
@@ -127,9 +127,9 @@ export default function OnboardingPathAGuestList({ onNext }) {
                   <tbody>
                     {rows.map((row, i) => (
                       <tr key={i} style={{ borderBottom: '1px solid rgba(10,10,10,0.05)', background: row._error ? 'rgba(224,53,83,0.04)' : 'transparent' }}>
-                        <td style={{ padding: '8px 12px', color: '#0A0A0A', fontWeight: 600 }}>{row.name || '—'}</td>
-                        <td style={{ padding: '8px 12px', color: '#444' }}>{row.email || '—'}</td>
-                        <td style={{ padding: '8px 12px', color: '#444' }}>{row.phone || '—'}</td>
+                        <td style={{ padding: '8px 12px', color: '#0A0A0A', fontWeight: 600 }}>{row.name || '(none)'}</td>
+                        <td style={{ padding: '8px 12px', color: '#444' }}>{row.email || '(none)'}</td>
+                        <td style={{ padding: '8px 12px', color: '#444' }}>{row.phone || '(none)'}</td>
                         <td style={{ padding: '8px 12px', color: '#444' }}>{row.plus_one ? 'Yes' : 'No'}</td>
                         <td style={{ padding: '8px 12px' }}>
                           {row._error
@@ -144,7 +144,7 @@ export default function OnboardingPathAGuestList({ onNext }) {
             </div>
             {errorRows.length > 0 && (
               <p style={{ fontSize: 12, color: '#E03553', fontFamily: PJS, margin: '10px 0 0' }}>
-                {errorRows.length} row{errorRows.length > 1 ? 's' : ''} will be skipped — fix and re-upload if needed.
+                {errorRows.length} row{errorRows.length > 1 ? 's' : ''} will be skipped. Fix and re-upload if needed.
               </p>
             )}
           </div>

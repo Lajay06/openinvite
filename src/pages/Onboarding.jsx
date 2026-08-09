@@ -121,12 +121,13 @@ const SHELL_CONTENT_WIDTH = { 'pathA-cultural': 640, 'names': 700 };
 // so a plain center-crop into this panel's tall aspect ratio would cut her
 // out of frame — g_face keeps her centered regardless of panel height.
 //
-// pathA-cultural has no dedicated photo from the brief (which specified 12
-// images for these 13 shell steps) — reusing weddingType's celebration shot
-// as the closest thematic match (cultural traditions ~ celebration) until a
-// dedicated one is picked.
 const CLOUDINARY_BASE = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 const CELEBRATION_IMAGE = `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10294_qw316r.jpg`;
+// pathA-cultural's own dedicated photo (accept-pass round 2) — previously
+// reused weddingType's CELEBRATION_IMAGE, which meant the two steps showed
+// the literal same champagne photo back to back. Confirmed to resolve
+// (f_auto,q_auto HTTP 200) before shipping.
+const CULTURAL_IMAGE = `${CLOUDINARY_BASE}/f_auto,q_auto/justin-follis-A7Um4oi-UYU-unsplash_bbjjam.jpg`;
 const SHELL_STEP_IMAGES = {
   welcome: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg`,
   names: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14160_vgcgxf.jpg`,
@@ -138,7 +139,7 @@ const SHELL_STEP_IMAGES = {
   'pathA-guestList': `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_Pride_Agust%C3%ADn_Far%C3%ADas_Photos_ID5544_sgsmaz.jpg`,
   'pathA-budget': `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa.jpg`,
   'pathA-vendors': `${CLOUDINARY_BASE}/f_auto,q_auto,c_fill,g_face,w_800,h_1200/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6183_eapdy7.jpg`,
-  'pathA-cultural': CELEBRATION_IMAGE,
+  'pathA-cultural': CULTURAL_IMAGE,
   'pathA-inspiration': `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_TERRA_Chris_Abatzis_Photos_ID13220_kxcbio.jpg`,
   completion: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_Community_Agust%C3%ADn_Far%C3%ADas_Photos_ID6374_iumjqj.jpg`,
 };
@@ -547,7 +548,7 @@ export default function Onboarding() {
             Something went wrong.
           </h1>
           <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(10,10,10,0.6)', margin: '0 0 32px', fontFamily: PJS }}>
-            We couldn't load your wedding setup. This is usually temporary — try again, or contact us if it keeps happening.
+            We couldn't load your wedding setup. This is usually temporary, try again, or contact us if it keeps happening.
           </p>
           <button
             onClick={checkAuth}
