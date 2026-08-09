@@ -51,7 +51,7 @@ export default function HeroCollage({ onCTA }) {
         style={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%)",
+          background: EXPERIMENT_NO_OVERLAY ? "none" : "linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%)",
           zIndex: 3,
           pointerEvents: "none",
         }}
