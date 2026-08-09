@@ -7,24 +7,33 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 // ── Profile builder ──────────────────────────────────────────────────────────
 
-function buildProfile(weddingStyle) {
+// faith: theme.faith (PR C dedup) — the canonical single-value source now
+// that OnboardingStep5WeddingType.jsx's "Ceremony type & faith" section
+// writes it directly, using the same FAITH_OPTIONS vocabulary
+// (Hindu/Muslim/Sikh/Jewish/Catholic/Christian/Buddhist/Non-religious/
+// Interfaith) ThemeSection.jsx reads. Falls back to scanning the legacy
+// weddingStyle tag array (Christian/Catholic/.../Cultural Fusion/Civil —
+// the old ceremony-type pills, which used to be the only place this data
+// lived) so records saved before this PR keep working unchanged.
+function buildProfile(weddingStyle, faith) {
   const ws = Array.isArray(weddingStyle) ? weddingStyle : [];
   const has = (...values) => values.some(v => ws.includes(v));
+  const is = (...faithValues) => faith ? faithValues.includes(faith) : has(...faithValues);
   return {
     raw: ws,
-    isHindu:         has('Hindu'),
-    isMuslim:        has('Muslim'),
-    isSikh:          has('Sikh'),
-    isJewish:        has('Jewish'),
-    isCatholic:      has('Catholic'),
-    isChristian:     has('Christian', 'Catholic'),
-    isBuddhist:      has('Buddhist'),
+    isHindu:         is('Hindu'),
+    isMuslim:        is('Muslim'),
+    isSikh:          is('Sikh'),
+    isJewish:        is('Jewish'),
+    isCatholic:      is('Catholic'),
+    isChristian:     is('Christian', 'Catholic'),
+    isBuddhist:      is('Buddhist'),
     isCivil:         has('Civil'),
-    isNonReligious:  has('Non-religious'),
-    isCulturalFusion:has('Cultural Fusion'),
-    isReligious:     has('Hindu','Muslim','Sikh','Jewish','Catholic','Christian','Buddhist'),
-    hasFaithDietary: has('Hindu','Muslim','Sikh','Jewish','Buddhist'),
-    hasAlcoholRestriction: has('Muslim','Sikh','Buddhist'),
+    isNonReligious:  is('Non-religious'),
+    isCulturalFusion:faith ? faith === 'Interfaith' : has('Cultural Fusion'),
+    isReligious:     is('Hindu','Muslim','Sikh','Jewish','Catholic','Christian','Buddhist'),
+    hasFaithDietary: is('Hindu','Muslim','Sikh','Jewish','Buddhist'),
+    hasAlcoholRestriction: is('Muslim','Sikh','Buddhist'),
     isLuxury:        has('Luxury'),
     isMinimalist:    has('Minimalist'),
     isMaximalist:    has('Maximalist'),
@@ -824,6 +833,7 @@ function AccordionItem({ item }) {
 
 export default function Considerations() {
   const [weddingStyle, setWeddingStyle] = useState([]);
+  const [faith, setFaith] = useState('');
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('cultural');
 
@@ -832,6 +842,7 @@ export default function Considerations() {
       .then(r => {
         r = r || {};
         setWeddingStyle(Array.isArray(r.weddingStyle) ? r.weddingStyle : []);
+        setFaith(r.theme?.faith || '');
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -844,8 +855,10 @@ export default function Considerations() {
     </div>
   );
 
-  const profile = buildProfile(weddingStyle);
-  const contextPills = profile.raw;
+  const profile = buildProfile(weddingStyle, faith);
+  // faith no longer lives inside weddingStyle (profile.raw) once it's set —
+  // add it back into the "Personalized for" banner so it's still shown.
+  const contextPills = faith && faith !== 'Non-religious' ? [faith, ...profile.raw] : profile.raw;
   const tabItems = buildTabItems(tab, profile);
 
   return (

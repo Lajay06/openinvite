@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, X } from 'lucide-react';
-import { FAITH_OPTIONS, FAITH_FOR_INTERFAITH, CULTURE_REGIONS, CULTURE_CROSS_CUTTING } from '@/lib/weddingThemeOptions';
+import { CULTURE_REGIONS, CULTURE_CROSS_CUTTING } from '@/lib/weddingThemeOptions';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -29,46 +29,35 @@ function Pill({ label, selected, onClick }) {
   );
 }
 
-// Points at the same FAITH_OPTIONS/CULTURE_REGIONS/CULTURE_CROSS_CUTTING
-// source as EventDetails' ThemeSection.jsx (src/lib/weddingThemeOptions.js)
-// instead of the free-text-only textarea this step used to be — the couple's
-// answer here now lands in the same structured theme.faith/theme.culture[]
-// fields ThemeSection.jsx itself reads/writes, not just theme.cultureOther.
+// PR C dedup (#14) — this page used to also ask Faith or religion
+// (FAITH_OPTIONS + an Interfaith sub-pick), duplicating the question
+// OnboardingStep5WeddingType.jsx's "Ceremony type & faith" accordion
+// section now owns. Owner call: keep faith capture in Step 5, this page is
+// heritage-only from here on — just the regional Cultures & traditions
+// list. No question asked twice.
 export default function OnboardingPathACultural({ onNext, data }) {
-  const [faith, setFaithState] = useState('');
-  const [interfaithPicks, setInterfaithPicks] = useState([]);
   const [culture, setCulture] = useState([]);
   const [cultureOther, setCultureOther] = useState('');
   const [showCultureInput, setShowCultureInput] = useState(false);
 
-  const setFaith = (value) => {
-    setFaithState(prev => (prev === value ? '' : value));
-    if (value !== 'Interfaith') setInterfaithPicks([]);
-  };
-
-  const toggleInterfaithPick = (value) => {
-    setInterfaithPicks(prev => {
-      if (prev.includes(value)) return prev.filter(v => v !== value);
-      if (prev.length >= 2) return prev;
-      return [...prev, value];
-    });
-  };
-
   const toggleCulture = (value) =>
     setCulture(prev => (prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]));
 
+  // Spreads data.theme first — Step 5 already wrote theme.faith/
+  // faithSecondary earlier in the flow, and Onboarding.jsx's goNext does a
+  // shallow top-level merge, so an un-spread { theme: {...} } here would
+  // silently overwrite (not merge with) that earlier write.
   const handleSubmit = () => {
     onNext({
       theme: {
-        faith,
-        faithSecondary: faith === 'Interfaith' ? interfaithPicks.join(' and ') : '',
+        ...data.theme,
         culture,
         cultureOther,
       },
     });
   };
 
-  const handleSkip = () => onNext({ theme: null });
+  const handleSkip = () => onNext({ theme: data.theme || null });
 
   return (
     <div className="w-full max-w-3xl">
@@ -78,7 +67,7 @@ export default function OnboardingPathACultural({ onNext, data }) {
         className="font-bold text-[#0A0A0A] mb-3"
         style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}
       >
-        Any cultural or religious traditions?
+        Any cultural traditions?
       </motion.h1>
       <motion.p
         initial={{ opacity: 0 }}
@@ -86,39 +75,13 @@ export default function OnboardingPathACultural({ onNext, data }) {
         transition={{ delay: 0.05 }}
         style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 32px' }}
       >
-        Separate questions — you can be culturally Indian and non-religious, for example. This shapes Ava's suggestions later.
+        This shapes Ava's suggestions later.
       </motion.p>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="text-left mb-8"
-      >
-        <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 12px' }}>Faith or religion</p>
-        <div className="flex flex-wrap gap-2">
-          {FAITH_OPTIONS.map(opt => (
-            <Pill key={opt} label={opt} selected={faith === opt} onClick={() => setFaith(opt)} />
-          ))}
-        </div>
-        {faith === 'Interfaith' && (
-          <div style={{ marginTop: 14, padding: '12px 14px', border: '1px solid rgba(10,10,10,0.08)', background: '#FAFAFA' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 8px' }}>
-              Select the two faiths — {interfaithPicks.length}/2 selected
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {FAITH_FOR_INTERFAITH.map(opt => (
-                <Pill key={opt} label={opt} selected={interfaithPicks.includes(opt)} onClick={() => toggleInterfaithPick(opt)} />
-              ))}
-            </div>
-          </div>
-        )}
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
         className="text-left mb-10"
       >
         <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 12px' }}>Cultures and traditions</p>
