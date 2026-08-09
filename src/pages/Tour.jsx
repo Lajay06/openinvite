@@ -319,7 +319,7 @@ export default function Tour() {
           problem is Tour's own: PublicNav is fixed, 65px tall and opaque, and
           the couple sit high in the source (heads y 58-180 of 1065). Uncropped
           at 1440 the cover scale is 0.9 and their heads land at screen y 23 —
-          under the nav. Cropping to w_1190 x h_640 centres the frame on the
+          under the nav. Cropping to w_1190 x h_640 centers the frame on the
           heads (x 595) and shortens the image so the cover scale rises and
           pushes them clear. Numbers verified at the preview. */}
       <MarketingHero
