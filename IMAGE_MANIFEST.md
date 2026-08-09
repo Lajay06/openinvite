@@ -364,3 +364,43 @@ photograph was uploaded alongside the 1280px web one.
 `npm run test:marketing-images` re-derives this table's right-hand columns
 from live Cloudinary responses, so it fails if an asset is swapped for a
 smaller one.
+
+### Tour hero — tight framing is a re-upload item, not a code item
+
+The Tour hero's original framing (`c_crop,x_0,y_0,w_1190,h_640`, a tight crop
+centred on the couple's heads) was replaced with a full-width crop because the
+pixel-absolute version delivered only 1190px into a 3784px-wide box — 0.31x at
+dpr 2, the softest image on the site.
+
+Re-expressing that crop proportionally does NOT recover the sharpness. Measured:
+
+    c_crop,w_0.74,h_0.60 + w_1600,c_limit  ->  1184x639
+    c_crop,w_0.74,h_0.60 + w_2560,c_limit  ->  1184x639
+    c_crop,w_0.74,h_0.60 + w_3840,c_limit  ->  1184x639
+
+0.74 of a 1600px master is 1184px whatever the ladder asks for. Upscaling is
+worse than useless: `c_scale` to 3784 measured 78% of the native crop's acutance
+for 4x the bytes.
+
+**To restore the tight framing at 1.0x, `DTS_Tradition_Chris_Abatzis_Photos_ID9181`
+needs a master ~5100px wide** (3784 / 0.74). At that size the crop becomes
+correct with no further work — the branch `feat/tour-hero-tight-crop` (PR #386,
+closed unmerged, deliberately not deleted) already holds the proportional
+expression, and `responsivePhoto`'s `cropFraction` option derives the ceiling
+from `sourceWidth`, so updating that one number is the whole change.
+
+Second reason the tight crop cannot simply be reinstated at the current size:
+its aspect (1.85) is taller than the widest supported viewport aspect, so
+`object-fit: cover` flips to width-driven on short wide windows and clips the
+couple's heads under the fixed 65px nav. Measured head-top clearance:
+
+| Viewport | Tight crop | Full-width crop (live) |
+|---|---|---|
+| 1898x846 | **-61px (clipped)** | +12px |
+| 1440x900 | +17px | +17px |
+| 1280x800 | +8px | +8px |
+| 390x844 | +12px | +11px |
+
+A ~5100px master fixes the resolution but NOT the clipping — that needs the
+crop shortened (h ~0.445 keeps the tight horizontal framing and clears the nav
+at every viewport) or a shorter aspect chosen at re-export time.
