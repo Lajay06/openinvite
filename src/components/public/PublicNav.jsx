@@ -7,6 +7,11 @@ const NAV_LINKS = [
   { label: "Features", to: "/Features" },
   { label: "Ava", to: "/ava" },
   { label: "Universes", to: "/universes" },
+  // Sits before Pricing so Pricing stays the last item, which is where the
+  // rest of the nav convention puts it. Lowercase "/tour" matches the route
+  // in App.jsx exactly — isActive() is a case-sensitive pathname equality
+  // check, so "/Tour" would render but never highlight.
+  { label: "Tour", to: "/tour" },
   { label: "Pricing", to: "/Pricing" },
 ];
 
