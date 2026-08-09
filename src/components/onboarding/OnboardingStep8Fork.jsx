@@ -13,6 +13,8 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
     border: `1px solid ${hoveredCard === cardKey ? '#0A0A0A' : '#E5E5E5'}`,
     cursor: 'pointer',
     transition: 'background 0.15s ease, border-color 0.15s ease',
+    display: 'flex',
+    flexDirection: 'column',
   });
 
   const textDark = (cardKey) => hoveredCard === cardKey ? '#FFFFFF' : '#0A0A0A';
@@ -75,6 +77,8 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
           </div>
           <div style={{
             display: 'inline-block',
+            alignSelf: 'flex-start',
+            marginTop: 'auto',
             background: hoveredCard === 'a' ? '#FFFFFF' : '#E03553',
             color: hoveredCard === 'a' ? '#0A0A0A' : '#FFFFFF',
             borderRadius: 999,
@@ -104,6 +108,8 @@ export default function OnboardingStep8Fork({ onPathA, onPathB, data }) {
           </p>
           <div style={{
             display: 'inline-block',
+            alignSelf: 'flex-start',
+            marginTop: 'auto',
             background: hoveredCard === 'b' ? '#FFFFFF' : '#FFFFFF',
             color: hoveredCard === 'b' ? '#0A0A0A' : '#0A0A0A',
             borderRadius: 999,
