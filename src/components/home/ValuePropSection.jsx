@@ -104,8 +104,17 @@ export default function ValuePropSection() {
             *fraction* of the rendered width. Fixed px offsets or a capped font
             break that relationship: the working 1440 values held at 1440 and
             above but overlapped her by 33px at 1280 and 178px at 1024.
-            Expressed as fractions of the 1440 layout (left 80px, box 760px,
-            text 68px) they hold at every width.
+            Expressed as fractions of the 1440 layout (left 80px, box 700px,
+            text 60px) they hold at every width.
+
+            Type reduced 68px -> 60px while holding exactly 5 lines. Those two
+            pull against each other — smaller type fits more words per line —
+            so the box narrows with it, 760px -> 700px. Measured at 1440, the
+            container widths that give exactly 5 lines are:
+              68px  760..900     60px  668..884     52px  580..768
+              64px  716..900     56px  624..828     48px  536..708
+            700px sits mid-band at 60px, so the line count is not balanced on
+            a knife edge in either direction.
 
             Still true now the photo is object-fit: cover at 100vh. Above the
             source's own 1.501 aspect — every normal desktop — cover scales by
@@ -119,13 +128,13 @@ export default function ValuePropSection() {
             top: "50%",
             left: "5.56vw",
             transform: "translateY(-50%)",
-            maxWidth: "52.8vw",
+            maxWidth: "48.6vw",
             zIndex: 10,
           }}
         >
           <h2
             style={{
-              fontSize: "clamp(30px, 4.72vw, 110px)",
+              fontSize: "clamp(26px, 4.17vw, 97px)",
               fontWeight: 700,
               lineHeight: 1.15,
               letterSpacing: "-0.02em",
