@@ -1,0 +1,60 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "recipient_user_id": {
+      "type": "string",
+      "description": "The Base44 User.id of who should see this notification. Set server-side (admin key) or via a guest-token path, never by the recipient themselves \u2014 this is the field RLS read/update/delete are scoped against, not created_by_id, so admin-key-created rows are still visible to the recipient (see BASE44_PLATFORM_NOTES.md)."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "rsvp_received",
+        "collaborator_joined",
+        "questionnaire_answered",
+        "task_due",
+        "system"
+      ],
+      "description": "Drives which icon/label the bell dropdown renders and which email template (if any) accompanies it."
+    },
+    "title": {
+      "type": "string",
+      "description": "Short headline shown in the bell dropdown, e.g. 'New RSVP from Jamie Lee'."
+    },
+    "body": {
+      "type": "string",
+      "description": "One or two lines of additional detail, e.g. the guest's response and party size."
+    },
+    "link": {
+      "type": "string",
+      "description": "In-app route to navigate to on click, e.g. /Guests or /polls-and-games."
+    },
+    "read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set true when the recipient opens/clicks the notification, or via mark-all-read."
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by test scripts on every record they create. Product queries (unread count, bell dropdown, digest) must exclude is_test records."
+    }
+  },
+  "required": [
+    "recipient_user_id",
+    "type",
+    "title"
+  ],
+  "rls": {
+    "create": null,
+    "read": {
+      "data.recipient_user_id": "{{user.id}}"
+    },
+    "update": {
+      "data.recipient_user_id": "{{user.id}}"
+    },
+    "delete": {
+      "data.recipient_user_id": "{{user.id}}"
+    }
+  }
+}

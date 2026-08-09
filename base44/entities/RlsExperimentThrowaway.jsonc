@@ -1,0 +1,19 @@
+{
+  "name": "RlsExperimentThrowaway",
+  "type": "object",
+  "properties": {
+    "marker": {
+      "type": "string",
+      "description": "Throwaway test field, no real meaning. Created solely to test whether Base44's single-record GET-by-id bypasses owner-scoped read RLS the way it does for the built-in User entity (PR 1c experiment, 2026-08-03). Safe to delete this entity's schema entirely once the experiment concludes."
+    }
+  },
+  "required": [],
+  "rls": {
+    "create": null,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": null,
+    "delete": null
+  }
+}
