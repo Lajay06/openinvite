@@ -362,26 +362,6 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* ── AFTER 24 MONTHS ── */}
-      <section style={{ background: "#F7F7F7", padding: "40px 24px" }}>
-        <div style={{
-          maxWidth: SECTION_MAX, margin: "0 auto",
-          borderLeft: "3px solid #E03553", paddingLeft: 24,
-        }}>
-          <p style={{ fontSize: 16, fontWeight: 600, color: "#0A0A0A", marginBottom: 10, fontFamily: PJS }}>
-            What happens after 24 months?
-          </p>
-          <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(10,10,10,0.6)", marginBottom: 10, fontFamily: PJS }}>
-            Your wedding is done, congratulations. After 24 months, your account moves to archive mode.
-            Your data and memories stay safe. To keep full access to your wedding story,
-            add an archive plan for a single $49 payment. No recurring fees, ever.
-          </p>
-          <p style={{ fontSize: 12, color: "rgba(10,10,10,0.6)", margin: 0, fontFamily: PJS }}>
-            Archive access covers your guest list, messages, and wedding website permanently.
-          </p>
-        </div>
-      </section>
-
       {/* ── COMPARISON TABLE ── */}
       <section style={{ background: "#FFFFFF", padding: "80px 24px" }}>
         <div style={{ maxWidth: SECTION_MAX, margin: "0 auto" }}>
@@ -446,6 +426,26 @@ export default function Pricing() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── AFTER 24 MONTHS ── */}
+      <section style={{ background: "#F7F7F7", padding: "40px 24px" }}>
+        <div style={{
+          maxWidth: SECTION_MAX, margin: "0 auto",
+          borderLeft: "3px solid #E03553", paddingLeft: 24,
+        }}>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "#0A0A0A", marginBottom: 10, fontFamily: PJS }}>
+            What happens after 24 months?
+          </p>
+          <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(10,10,10,0.6)", marginBottom: 10, fontFamily: PJS }}>
+            Your wedding is done, congratulations. After 24 months, your account moves to archive mode.
+            Your data and memories stay safe. To keep full access to your wedding story,
+            add an archive plan for a single $49 payment. No recurring fees, ever.
+          </p>
+          <p style={{ fontSize: 12, color: "rgba(10,10,10,0.6)", margin: 0, fontFamily: PJS }}>
+            Archive access covers your guest list, messages, and wedding website permanently.
+          </p>
         </div>
       </section>
 
