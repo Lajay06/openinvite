@@ -8,6 +8,8 @@
  * fails if a required marketing page renders a hero without importing this).
  */
 import React from "react";
+import { EXPERIMENT_NO_OVERLAY } from "@/experimentNoOverlay";
+
 import ScrollCue from "@/components/motion/ScrollCue";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 
@@ -50,7 +52,7 @@ export default function MarketingHero({
         alt=""
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: imagePosition, zIndex: 1 }}
       />
-      {overlay && !copyBand && (
+      {overlay && !copyBand && !EXPERIMENT_NO_OVERLAY && (
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%)", zIndex: 2 }} />
       )}
       {/* Band scrim. Measured against the /tour pool photo, whose lightest
@@ -65,7 +67,7 @@ export default function MarketingHero({
           The full-height gradient it replaces measured 3.15:1, so 0.45 is
           BETTER for legibility while leaving the rest of the photo unscrimmed.
           Do not lighten below 0.42 without re-measuring. */}
-      {copyBand && (
+      {copyBand && !EXPERIMENT_NO_OVERLAY && (
         <div
           style={{
             position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",

@@ -15,6 +15,7 @@
  */
 import React, { useRef, useState, useEffect } from "react";
 import ApplePillButton from "@/components/motion/ApplePillButton";
+import { EXPERIMENT_NO_OVERLAY } from "@/experimentNoOverlay";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -89,7 +90,7 @@ export default function MarketingEndCap({
         style={{
           position: "absolute",
           inset: 0,
-          background: `rgba(0,0,0,${scrim})`,
+          background: `rgba(0,0,0,${EXPERIMENT_NO_OVERLAY ? 0 : scrim})`,
           zIndex: 2,
           pointerEvents: "none",
         }}
