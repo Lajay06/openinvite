@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, MapPin, ChevronDown, Loader2, LocateFixed, Building2, X } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -8,14 +7,9 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import VendorCard from '@/components/marketplace/VendorCard';
 import VendorProfileModal from '@/components/marketplace/VendorProfileModal';
+import { CATEGORIES, CATEGORY_QUERIES, saveVendorFromPlaces } from '@/lib/vendorPlaces';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
-
-const CATEGORIES = [
-  'All','Photography','Videography','Catering','Florals',
-  'Styling','Hair & makeup','Music & DJ','Entertainment',
-  'Venues','Transport','Celebrant','Stationery','Cake','Jewellery','Other',
-];
 
 const PRICE_LABELS = { '$': 'Budget', '$$': 'Mid-range', '$$$': 'Premium', '$$$$': 'Luxury' };
 const PRICE_MAP = { 0: '$', 1: '$', 2: '$$', 3: '$$$', 4: '$$$$' };
@@ -29,24 +23,6 @@ const SORT_OPTIONS = ['Relevance', 'Rating', 'Price low–high', 'Price high–l
 // drops the location constraint from the search entirely instead of
 // pretending to know which specific results are remote-capable.
 const REMOTE_PLAUSIBLE_CATEGORIES = ['Celebrant', 'Styling', 'Stationery', 'Entertainment'];
-
-const CATEGORY_QUERIES = {
-  'Photography':   'wedding photographer',
-  'Videography':   'wedding videographer filmmaker',
-  'Catering':      'wedding catering caterer',
-  'Florals':       'wedding florist',
-  'Styling':       'wedding stylist event planner',
-  'Hair & makeup': 'bridal hair makeup artist',
-  'Music & DJ':    'wedding DJ band music',
-  'Entertainment': 'wedding entertainment performer',
-  'Venues':        'wedding venue function center',
-  'Transport':     'wedding car hire chauffeur',
-  'Celebrant':     'wedding celebrant officiant',
-  'Stationery':    'wedding stationery invitations',
-  'Cake':          'wedding cake bakery',
-  'Jewellery':     'engagement ring jewellery',
-  'Other':         'wedding vendor',
-};
 
 // Real Google Places data only — /api/places-search (text search) + /api/place-details
 // (profile view) + /api/places-photo (thumbnails), all server-side proxies keeping
@@ -113,17 +89,11 @@ export default function VendorMarketplace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSave = async (vendor) => {
+  const handleSave = async (vendor, details) => {
     if (savedIds.has(vendor.id)) return;
     setSavingIds(prev => new Set([...prev, vendor.id]));
     try {
-      await base44.entities.Vendor.create({
-        name: vendor.name,
-        category: vendor.category.toLowerCase(),
-        website: vendor.website || '',
-        notes: vendor.location,
-        status: 'researching',
-      });
+      await saveVendorFromPlaces(vendor, details);
       setSavedIds(prev => new Set([...prev, vendor.id]));
       toast.success('Saved to My vendors');
     } catch {

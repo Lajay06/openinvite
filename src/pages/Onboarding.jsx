@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 const WeddingDetails = base44.entities.WeddingDetails;
 const Guest = base44.entities.Guest;
 const Budget = base44.entities.Budget;
-const Vendor = base44.entities.Vendor;
 
 // Step components
 import OnboardingWelcome from '@/components/onboarding/OnboardingWelcome';
@@ -133,7 +132,6 @@ export default function Onboarding() {
     guestList: [],
     budget: null,
     currency: 'USD',
-    vendors: [],
     theme: null,
     activeUniverse: 'london',
     websiteMode: 'dark',
@@ -361,7 +359,7 @@ export default function Onboarding() {
     // turn comes up.
     completingRef.current = true;
     setSavingFinal(true);
-    const completed = { weddingDetails: false, guests: false, budget: false, vendors: false, userFlag: false };
+    const completed = { weddingDetails: false, guests: false, budget: false, userFlag: false };
     try {
       // Drain every already-enqueued persistDraftStep write before this
       // function's own WeddingDetails write. Without this, the two write
@@ -404,18 +402,6 @@ export default function Onboarding() {
         });
       }
       completed.budget = true;
-
-      if (onboardingData.vendors.length > 0) {
-        await Promise.all(onboardingData.vendors.map(v =>
-          Vendor.create({
-            name: v.name,
-            category: v.category,
-            contact_person: v.contact,
-            status: 'researching',
-          })
-        ));
-      }
-      completed.vendors = true;
 
       // Inspiration photos (OnboardingPathAInspiration) create their own
       // MoodboardItem records immediately on upload now, matching
