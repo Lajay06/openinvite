@@ -4,6 +4,14 @@ import PublicFooter from "@/components/public/PublicFooter";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import MarketingHero from "@/components/marketing/MarketingHero";
+import { responsivePhoto } from "@/lib/marketingImage";
+
+// Web exports (1280x853 and 1600x1078), so 0.34x and 0.42x at dpr 2 is the
+// ceiling until larger masters are uploaded. The hero is the site's most
+// compressed image — q_auto returns 20KB for the full frame, and q_auto:best
+// only reaches 24KB, so quality is not the lever here: resolution is.
+const HERO = responsivePhoto("v1779217006/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6161_isrtef", 1280);
+const END_CAP = responsivePhoto("DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp", 1600);
 
 // ── Scroll animation hook ─────────────────────────────────────
 function useInView(threshold = 0.15, once = true) {
@@ -258,7 +266,8 @@ export default function AvaPage() {
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779217006/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6161_isrtef.jpg"
+        image={HERO.src}
+        srcSet={HERO.srcSet}
         title={<>Meet Ava.<br />Your AI wedding planner.</>}
         overlay={false}
         maxWidth={1200}
@@ -382,7 +391,8 @@ export default function AvaPage() {
 
       {/* ── END CAP ──────────────────────────────────────── */}
       <MarketingEndCap
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp.jpg"
+        image={END_CAP.src}
+        srcSet={END_CAP.srcSet}
         alt="A couple walking through a mountain meadow"
         title="Turns out, you can have it all figured out."
         cta={{ label: "Get started", href: "/signup" }}

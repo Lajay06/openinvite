@@ -18,8 +18,19 @@ import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingPhotoPair from "@/components/marketing/MarketingPhotoPair";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
+import { responsivePhoto } from "@/lib/marketingImage";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
+
+// Both masters are web exports, not print originals: 1600x1065 and 1280x960.
+// Even delivered whole they only cover 0.42x and 0.34x of the device pixels
+// their boxes need at dpr 2. Responsive delivery recovers everything the URLs
+// were throwing away; closing the rest needs larger uploads, not new URLs.
+const HERO = responsivePhoto("DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2", 1600, {
+  transform: "c_crop,x_0,y_0,w_1600,h_640",
+  croppedWidth: 1600,
+});
+const END_CAP = responsivePhoto("DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h", 1280);
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 
 // 16:10 is the dashboard capture aspect, and the same value Features.jsx
@@ -439,16 +450,31 @@ export default function Tour() {
           is unchanged. No `cta` is passed — /tour stays out of the hero CTA
           rollout deliberately. maxWidth 1000 preserves the original measure;
           the type follows the shared scale, so the cap moves 84px -> 64px. */}
-      {/* Swapped with About. This is the field photo; its crop is re-derived
-          here from scratch rather than carried over, because the framing
-          problem is Tour's own: PublicNav is fixed, 65px tall and opaque, and
-          the couple sit high in the source (heads y 58-180 of 1065). Uncropped
-          at 1440 the cover scale is 0.9 and their heads land at screen y 23 —
-          under the nav. Cropping to w_1190 x h_640 centers the frame on the
-          heads (x 595) and shortens the image so the cover scale rises and
-          pushes them clear. Numbers verified at the preview. */}
+      {/* Swapped with About. The framing problem is Tour's own: PublicNav is
+          fixed, 65px tall and opaque, and the couple sit high in the source
+          (heads y 58-180 of 1065). Uncropped at 1440 the cover scale is 0.9 and
+          their heads land at screen y 23 — under the nav. Shortening the image
+          makes cover height-driven, which raises the scale and pushes them
+          clear.
+
+          Only the HEIGHT does that work. The previous crop was w_1190 x h_640,
+          and the 1190 was pure loss: it threw away 26% of the master's width
+          before delivery, leaving 1190px to cover a 3784px-wide box at dpr 2 —
+          0.31x, the softest image on the site. Height is unchanged at 640, so
+          the vertical framing is identical: cover is height-driven at every
+          supported viewport, so the scale is boxH/640 either way and the heads
+          land in exactly the same place (screen y 82 at 1440, 77 at 1892).
+
+          Widening the crop does move the couple off-center — they sit at source
+          x 595, which is 37% across 1600 rather than the middle of 1190 — so
+          objectPosition carries the horizontal framing instead. That is the
+          right place for it: it costs no pixels, and it adapts per viewport
+          rather than baking one desktop crop into the file. Verified in frame
+          at 390, 1440 and 1892. */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/c_crop,x_0,y_0,w_1190,h_640/f_auto,q_auto/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2.jpg"
+        image={HERO.src}
+        srcSet={HERO.srcSet}
+        imagePosition="37% center"
         title="This is what planning looks like now."
         maxWidth={1000}
       />
@@ -473,7 +499,8 @@ export default function Tour() {
       ))}
 
       <MarketingEndCap
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h.jpg"
+        image={END_CAP.src}
+        srcSet={END_CAP.srcSet}
         alt="Friends celebrating together at a wedding party"
         title="All that. And we're still just getting started."
       />

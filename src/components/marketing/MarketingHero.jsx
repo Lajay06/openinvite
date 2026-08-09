@@ -11,14 +11,17 @@ import React from "react";
 
 import ScrollCue from "@/components/motion/ScrollCue";
 import ApplePillButton from "@/components/motion/ApplePillButton";
+import { HERO_SIZES } from "@/lib/marketingImage";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 export default function MarketingHero({
   image,
-  // Optional responsive delivery. Pass both, or neither.
+  // Responsive delivery. Build both with responsivePhoto() in
+  // src/lib/marketingImage.js — hand-rolled Cloudinary URLs are what let the
+  // Tour hero regress to a fixed 1190x640 crop with no srcSet at all.
   srcSet,
-  sizes = "(max-aspect-ratio: 4/3) 134vh, 100vw",
+  sizes = HERO_SIZES,
   imagePosition = "center",
   title,
   cta,
@@ -43,12 +46,8 @@ export default function MarketingHero({
   const isLeft = align === "left";
   return (
     <section style={{ position: "relative", height: "100vh", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: isLeft ? "flex-start" : "center" }}>
-      {/* srcSet/sizes are optional. Consumers that omit them render exactly as
-          before — the attributes are simply absent. Note the correct `sizes`
-          for this hero is NOT 100vw: the box is 100vw x 100vh with object-fit
-          cover, so on a portrait viewport the crop is height-driven and the
-          browser needs roughly 133vh of image width, not 100vw. A 390x844
-          phone needs ~1125px, not 390px. */}
+      {/* Why HERO_SIZES is not 100vw, and how to measure whether it is right,
+          are documented once in src/lib/marketingImage.js. */}
       <img
         src={image}
         srcSet={srcSet}

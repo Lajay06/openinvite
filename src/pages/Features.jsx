@@ -11,7 +11,14 @@ import FeatureBudget from "@/components/home/FeatureBudget";
 import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
+import { responsivePhoto } from "@/lib/marketingImage";
 
+// Both are web exports (1280x853 and 1600x1078), so 0.34x and 0.42x of the
+// device pixels their boxes need at dpr 2 is the ceiling until larger masters
+// are uploaded — the ladder below stops at the real source width rather than
+// advertising candidates Cloudinary would silently downgrade.
+const HERO = responsivePhoto("v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx", 1280);
+const END_CAP = responsivePhoto("DTS_CURATIVE_Chris_Abatzis_Photos_ID7678_dlsgrm", 1600);
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -69,7 +76,8 @@ export default function Features() {
           every page. maxWidth returns to 1000, the value in place before that
           change. */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx.jpg"
+        image={HERO.src}
+        srcSet={HERO.srcSet}
         imagePosition="center 30%"
         overlay={0.2}
         title="Everything you needed. Plus a few things you didn't expect."
@@ -104,7 +112,8 @@ export default function Features() {
 
       {/* ── S8: FINAL CTA ────────────────────────────────── */}
       <MarketingEndCap
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_CURATIVE_Chris_Abatzis_Photos_ID7678_dlsgrm.jpg"
+        image={END_CAP.src}
+        srcSet={END_CAP.srcSet}
         alt="A couple at their wedding reception"
         title="Consider wedding planning, upgraded."
         cta={{ label: "Start planning", href: "/signup" }}

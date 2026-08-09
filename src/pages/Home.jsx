@@ -12,6 +12,11 @@ import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import { useOrganizationStructuredData } from "@/hooks/useOrganizationStructuredData";
+import { responsivePhoto } from "@/lib/marketingImage";
+
+// Web export (1600x1067): 0.42x of the device pixels the end-cap box needs at
+// dpr 2, and that is the asset's ceiling, not the URL's.
+const END_CAP = responsivePhoto("DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3", 1600);
 
 export default function Home() {
   useMarketingSeo();
@@ -88,7 +93,8 @@ export default function Home() {
 
       {/* 9. FULL BLEED PHOTO CTA */}
       <MarketingEndCap
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3.jpg"
+        image={END_CAP.src}
+        srcSet={END_CAP.srcSet}
         alt="A couple running together, laughing"
         cta={{ label: "Get started", href: "/signup" }}
       />

@@ -5,6 +5,13 @@ import PublicFooter from '@/components/public/PublicFooter';
 import { UNIVERSE_CATALOG } from '@/lib/universeCatalog';
 import { useMarketingSeo } from '@/hooks/useMarketingSeo';
 import MarketingHero from '@/components/marketing/MarketingHero';
+import { responsivePhoto, ENDCAP_SIZES } from '@/lib/marketingImage';
+
+// Web exports (1280x853 and 1600x1067). The closing CTA is this page's own
+// block rather than MarketingEndCap, so it wires srcSet/sizes by hand — but it
+// uses the same ENDCAP_SIZES so the two cannot drift apart.
+const HERO = responsivePhoto('DTS_ISOLA_Daniel_Far%C3%B2_Photos_ID13172_fu4zfe', 1280);
+const CLOSING_CTA = responsivePhoto('DTS_Slices_of_Summer_Mark_La_Montagne_Photos_ID2661_vb5omq', 1600);
 
 // Every universe now has its own dedicated /universes/*.jpg photography
 // (UNIVERSE_CONFIGS' imageUrl). Kept as a safety net for any future
@@ -263,7 +270,8 @@ const Universes = () => {
 
       {/* SECTION 1: HERO */}
       <MarketingHero
-        image="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_ISOLA_Daniel_Far%C3%B2_Photos_ID13172_fu4zfe.jpg"
+        image={HERO.src}
+        srcSet={HERO.srcSet}
         title="Your universe. One aesthetic vision for every piece of your wedding."
         maxWidth={1200}
         cta={{ label: "Get started", href: "/signup" }}
@@ -509,7 +517,9 @@ const Universes = () => {
         background: '#0A0A0A',
       }}>
         <img
-          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Slices_of_Summer_Mark_La_Montagne_Photos_ID2661_vb5omq.jpg"
+          src={CLOSING_CTA.src}
+          srcSet={CLOSING_CTA.srcSet}
+          sizes={ENDCAP_SIZES}
           alt=""
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
         />
