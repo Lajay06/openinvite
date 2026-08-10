@@ -17,17 +17,17 @@ export default function AvaStudio() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
+    let stale = false;
     (async () => {
       const [details, counts] = await Promise.all([getMyWeddingDetails(), getJourneyCounts()]);
-      if (cancelled) return;
+      if (stale) return;
       setWedding(details || null);
       const p = getJourneyProgress(details, counts);
       setProgress(p);
       setActiveIndex(p.nextIndex);
       setLoading(false);
     })();
-    return () => { cancelled = true; };
+    return () => { stale = true; };
   }, []);
 
   const firstName = wedding?.couple1Name || 'there';
