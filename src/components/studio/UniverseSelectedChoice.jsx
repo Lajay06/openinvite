@@ -7,8 +7,7 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
   const navigate = useNavigate();
 
   const handleChoice = (choice) => {
-    if (choice === 'ava') navigate('/studio/ava?from=universe');
-    else if (choice === 'builder') navigate('/studio/website?from=universe');
+    if (choice === 'builder') navigate('/studio/website?from=universe');
     else navigate('/dashboard');
   };
 
@@ -34,25 +33,10 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
       </div>
 
       <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28 }}>
-        How would you like to build your wedding?
+        Ready to build your wedding website?
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, maxWidth: 640, width: '100%' }}>
-        {/* Ava's Studio */}
-        <div
-          onClick={() => handleChoice('ava')}
-          {...interactiveDivProps(() => handleChoice('ava'), { label: "Ava's Studio" })}
-          style={{ padding: '40px 32px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s ease', textAlign: 'left' }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.background = 'rgba(224,53,83,0.05)'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-        >
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #E03553, #803D81)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, marginBottom: 20, color: '#FFF' }}>✦</div>
-          <p style={{ fontSize: 16, fontWeight: 700, color: '#FFFFFF', margin: '0 0 8px' }}>Ava's Studio</p>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, margin: '0 0 20px' }}>
-            Let Ava guide you one step at a time. Personal, focused, no overwhelm.
-          </p>
-        </div>
-
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, maxWidth: 320, width: '100%' }}>
         {/* Website Builder */}
         <div
           onClick={() => handleChoice('builder')}
