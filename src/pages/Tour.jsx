@@ -84,10 +84,10 @@ const SCENES = [
 // holds one of three exact values and only moves between them for
 // THEME_MS on a boundary.
 //
-// Mechanism: ONE fixed full-viewport layer carries the colour and a CSS
+// Mechanism: ONE fixed full-viewport layer carries the color and a CSS
 // transition on background-color does the dissolve; sections are transparent
 // and simply declare which theme is theirs. Per-section backgrounds cannot
-// cross-fade — a colour change that travels through SPACE as you scroll is a
+// cross-fade — a color change that travels through SPACE as you scroll is a
 // hard edge scrolling past, which is what we had before. A dissolve has to
 // happen in TIME on a shared surface.
 //
@@ -259,7 +259,7 @@ function Scene({ scene }) {
       // Section padding and container width copied from Features.jsx's
       // SeatingSection/BudgetSection, not approximated.
       // Transparent so the fixed theme layer shows through. Under reduced
-      // motion there is no theme layer, so the section paints its own colour
+      // motion there is no theme layer, so the section paints its own color
       // directly — same three-theme rhythm, nothing animating.
       style={{
         background: reduced ? scene.bg : "transparent",
@@ -322,7 +322,7 @@ function Scene({ scene }) {
             transition: copyTransition,
           }}
         >
-          {/* No colour transition on this ink, deliberately. A scene's theme
+          {/* No color transition on this ink, deliberately. A scene's theme
               never changes, so its ink never changes, so a `transition: color`
               here could never fire — it would be decoration that reads as a
               feature. What actually needs handling is the opposite case: while
@@ -411,10 +411,10 @@ export default function Tour() {
     // dark fallback lives on the arc layer's own initial color instead.
     <div className="tour-page" style={{ minHeight: "100vh", position: "relative" }}>
       {/* The theme layer. ONE fixed full-viewport surface: the dissolve has to
-          happen in time on a shared surface, because a colour change that
+          happen in time on a shared surface, because a color change that
           travels through space as you scroll is just a hard edge scrolling
           past. Under prefers-reduced-motion this layer is not rendered and
-          each section paints its own static colour instead — same rhythm,
+          each section paints its own static color instead — same rhythm,
           nothing animating. */}
       {!reducedMotion && <div className="tour-theme" aria-hidden="true" />}
       <PublicNav />
@@ -490,7 +490,7 @@ export default function Tour() {
         /* ── PER-SECTION THEME LAYER ───────────────────────────────────
            One fixed surface. The dissolve is this single transition; there
            is no keyframe track and no scroll timeline, so the background is
-           only ever one of the three exact theme colours or briefly between
+           only ever one of the three exact theme colors or briefly between
            two of them. */
         /* z-index 0, NOT -1. This is load-bearing and survives the arc it was
            written for: at -1 the layer paints behind the whole stacking
@@ -504,7 +504,7 @@ export default function Tour() {
           inset: 0;
           z-index: 0 !important;
           /* Scene 01's theme, so the first paint already matches rather than
-             dissolving from an arbitrary colour on load. */
+             dissolving from an arbitrary color on load. */
           background-color: #FFFFFF;
           pointer-events: none;
           transition: background-color ${THEME_MS}ms linear;
