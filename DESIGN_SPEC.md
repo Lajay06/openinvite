@@ -163,24 +163,32 @@ Reference implementation: `src/pages/Onboarding.jsx` + `src/components/onboardin
   `rgba(10,10,10,0.6)` muted, `rgba(10,10,10,0.58)` placeholders,
   `rgba(10,10,10,0.18)` default borders.
 - Universe picker tiles (`OnboardingStepUniverse.jsx`'s `UniverseGridTile`)
-  are light cards, same as every other card in the wizard (white
-  background, `rgba(10,10,10,0.12)` default border, `#0A0A0A` border on
-  hover/selection) — NOT an exception. An earlier version made these full-
-  bleed dark photos with a gradient scrim and white caption text (documented
-  here at the time as a deliberate "fixed property of the image-card
-  treatment"); next to the rest of the wizard's light, left-aligned steps a
-  wall of 20 dense dark tiles read as a different product, so that
-  exception was removed, not just overridden per-tile. The tile's photo now
-  lives in its own confined panel at the top of the card instead of filling
-  it. `OnboardingStep8Fork.jsx`'s cards no longer invert to black on hover
-  either (see its own PR A note) — there is currently no dark-card
-  exception left anywhere in the wizard.
-- The "wedding website appearance" Dark/Light toggle on the universe step
-  sets the couple's *published wedding website* theme (`websiteMode`) —
-  a completely different concept from the wizard's own (now fixed-light)
-  chrome. Never conflate the two: the toggle's pill buttons are styled
-  like the rest of the wizard (light, black-selected) precisely so it
-  doesn't read as a live preview of the wizard itself.
+  ARE a deliberate dark-card exception — the one dark surface left in the
+  wizard. They match the live marketing `/universes` page's own grid tile
+  (`Universes.jsx`'s `UniverseTile`) byte-for-byte in visual language:
+  full-bleed photo, a bottom gradient scrim, italic tagline, bold white
+  name, hover-reveal `worldStory` + palette swatches, laid out 5 columns ×
+  4 rows (`gap: 3`, forced `repeat(5, 1fr)` at desktop widths — not
+  auto-fill). This reverses an earlier round's light-card treatment (see
+  git history on this file for that reasoning); the owner call this time
+  was that the picker is the couple's first real look at what a universe
+  feels like, and a plain white thumbnail undersold it next to the actual
+  product. Do not "fix" this back to a light card without checking with the
+  owner first — it has flipped both ways once already. Every OTHER card in
+  the wizard (`OnboardingStep4GuestCount`'s tiles, `OnboardingStep8Fork`'s
+  cards, etc.) stays light — this is scoped to the universe grid only.
+- The old "wedding website appearance" Dark/Light toggle on the universe
+  step has been removed entirely (accept-pass round 2). It set
+  `websiteMode` on the couple's *published wedding website* theme, but
+  `resolveColors()` gives the selected universe's own colours unconditional
+  priority over it (see `BASE44_PLATFORM_NOTES.md`), so the toggle never
+  had any visible effect anywhere — it read as a dead control. `websiteMode`
+  still defaults to `'dark'` and is still written to `WeddingDetails` on
+  completion; only the picker UI is gone.
+- The old "A"-in-a-circle quote-bubble avatar on the universe step's intro
+  line is also gone — it was leftover chat-bubble branding from an earlier
+  design. The intro is now a plain paragraph, same voice as every other
+  step's subtext, no quotation marks.
 
 ## Full-bleed marketing photography
 

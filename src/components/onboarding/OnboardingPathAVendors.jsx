@@ -1,21 +1,31 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Star, Check } from 'lucide-react';
+import { Loader2, Star, Check, Search } from 'lucide-react';
 import { CATEGORY_QUERIES, saveVendorFromPlaces } from '@/lib/vendorPlaces';
 
-// Trimmed version of VendorMarketplace.jsx's search — a category chip (no
-// free-text search bar, no filters/sort, no profile modal) so a couple can
-// find and save a vendor or two without leaving the wizard's pace. Every
-// label here is one of VendorMarketplace.jsx's own CATEGORIES entries (not
-// a separate vocabulary), so CATEGORY_QUERIES/schemaCategory apply
-// directly — narrowed to the 8 categories a couple is most likely to have
-// already booked this early (matches the original stub's own vendor list).
+const PJS = "'Plus Jakarta Sans', sans-serif";
+
+// Trimmed version of VendorMarketplace.jsx's search (no filters/sort, no
+// profile modal) so a couple can find and save a vendor or two without
+// leaving the wizard's pace. Every label here is one of
+// VendorMarketplace.jsx's own CATEGORIES entries (not a separate
+// vocabulary), so CATEGORY_QUERIES/schemaCategory apply directly, narrowed
+// to the 8 categories a couple is most likely to have already booked this
+// early (matches the original stub's own vendor list).
+//
+// Accept-pass round 2: this used to be category-only (no text search at
+// all, despite the heading promising "Search and save real vendors"). Now
+// mirrors VendorMarketplace.jsx's own runSearch precedence exactly: typed
+// text wins outright over the category keywords, never both at once
+// (mixing them over-constrains Google's Text Search and drops exact name
+// matches) — see that file's own comment on the same rule.
 const VENDOR_CATEGORIES = [
   'Photography', 'Videography', 'Catering', 'Florals',
   'Music & DJ', 'Hair & makeup', 'Transport', 'Celebrant',
 ];
 
 export default function OnboardingPathAVendors({ onNext, data }) {
+  const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
   const [results, setResults] = useState(null); // null = no search yet
   const [status, setStatus] = useState(''); // '' | 'searching' | 'done' | 'error'
@@ -23,10 +33,13 @@ export default function OnboardingPathAVendors({ onNext, data }) {
   const [savingIds, setSavingIds] = useState(new Set());
 
   const runSearch = async (categoryLabel) => {
-    setActiveCategory(categoryLabel);
+    const nextCategory = categoryLabel !== undefined ? categoryLabel : activeCategory;
+    setActiveCategory(nextCategory);
     setStatus('searching');
     try {
-      const body = { q: CATEGORY_QUERIES[categoryLabel] || 'wedding vendor' };
+      const rawSearch = search.trim();
+      const categoryQuery = (!rawSearch && nextCategory) ? (CATEGORY_QUERIES[nextCategory] || 'wedding vendor') : null;
+      const body = { q: rawSearch || categoryQuery || 'wedding vendor' };
       if (data.location) body.location = data.location;
       const res = await fetch('/api/places-search', {
         method: 'POST',
@@ -39,7 +52,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
         id: p.place_id,
         placeId: p.place_id,
         name: p.name,
-        category: categoryLabel,
+        category: nextCategory || 'Other',
         rating: p.rating,
         reviewCount: p.user_ratings_total || 0,
         location: p.address || '',
@@ -90,20 +103,45 @@ export default function OnboardingPathAVendors({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="grid grid-cols-2 gap-3 mb-8"
+        className="mb-6"
+      >
+        <div className="relative">
+          <Search size={14} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && runSearch()}
+            placeholder="Search vendors by name…"
+            style={{
+              width: '100%', paddingLeft: 22, paddingBottom: 8, fontSize: 14, fontFamily: PJS, color: '#0A0A0A',
+              background: 'transparent', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', outline: 'none',
+            }}
+            onFocus={e => e.target.style.borderBottomColor = '#E03553'}
+            onBlur={e => e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'}
+          />
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="flex flex-wrap gap-2 mb-8"
       >
         {VENDOR_CATEGORIES.map((cat, i) => (
           <motion.button
             key={cat}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.25 + i * 0.05 }}
-            onClick={() => runSearch(cat)}
-            className={`p-4 rounded-none border-2 transition-colors duration-150 text-sm font-medium ${
-              activeCategory === cat
-                ? 'bg-black border-black text-white'
-                : 'bg-transparent border-[rgba(10,10,10,0.18)] text-[rgba(10,10,10,0.6)] hover:bg-black hover:border-black hover:text-white active:bg-neutral-900'
-            }`}
+            transition={{ delay: 0.28 + i * 0.03 }}
+            onClick={() => { setSearch(''); runSearch(cat); }}
+            style={{
+              padding: '8px 16px', borderRadius: 999, fontSize: 12, fontWeight: 500, fontFamily: PJS,
+              cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
+              background: activeCategory === cat ? '#0A0A0A' : 'transparent',
+              color: activeCategory === cat ? '#FFFFFF' : 'rgba(10,10,10,0.6)',
+              border: `1px solid ${activeCategory === cat ? '#0A0A0A' : 'rgba(10,10,10,0.18)'}`,
+            }}
           >
             {cat}
           </motion.button>
@@ -130,7 +168,9 @@ export default function OnboardingPathAVendors({ onNext, data }) {
         >
           {results.length === 0 ? (
             <p className="text-sm text-[rgba(10,10,10,0.6)]">
-              No {activeCategory.toLowerCase()} vendors found nearby. Try another category.
+              {activeCategory
+                ? `No ${activeCategory.toLowerCase()} vendors found nearby. Try another category.`
+                : 'No vendors found for that search. Try a different name or a category.'}
             </p>
           ) : (
             results.map(vendor => {
