@@ -201,7 +201,7 @@ export default function OnboardingStepUniverse({ onNext, data }) {
             'dark' and flows through unchanged; the Dark/Light picker UI
             is gone (accept-pass round 2 — it read as a live preview toggle
             for the wizard itself and, per BASE44_PLATFORM_NOTES.md,
-            resolveColors() gives universe colours unconditional priority
+            resolveColors() gives universe colors unconditional priority
             over it anyway, so it never had a visible effect here). */}
         <motion.div
           initial={{ opacity: 0 }}
