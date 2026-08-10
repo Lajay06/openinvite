@@ -65,6 +65,99 @@ for (const file of walk(SRC)) {
 }
 if (!failures) console.log("  ✓ every MarketingHero/MarketingEndCap photo goes through responsivePhoto()");
 
+// ── 1b. No full-bleed photo may be served from outside our CDN ───────────
+//
+// The check above only sees Cloudinary URLs on the two shared components. It
+// could not see the failure that actually happened: a base44-builder "Visual
+// edits" commit repointed UniverseMiniHero's 100vh photo at media.base44.com,
+// which shipped a 7.76 MB raw print master with no resize, no format
+// negotiation and no srcset. Off our CDN means outside every protection here,
+// so a full-bleed image hosted anywhere else is a failure by definition —
+// not a warning, because a warning is how the last one survived.
+//
+// "Full-bleed" is detected structurally: an <img>/background whose own styles
+// say it fills its box (100% width AND height, or position:absolute + inset:0)
+// alongside objectFit cover, or a backgroundImage on a 100vh section. Small
+// inline editorial photos and the nav logo are out of scope.
+console.log("\nFull-bleed photos are on our own CDN:");
+// Terminators include ) so the CSS `url(https://...)` form is caught. Missing
+// that is how the Home hero — the first image every visitor sees — stayed
+// invisible to the first draft of this check.
+const FOREIGN = /(https?:\/\/(?!res\.cloudinary\.com)[^"'`\s)]+\.(?:jpe?g|png|webp|avif))/gi;
+
+/** Does this slice of source describe an image that fills its box? */
+const fullBleedNear = (s) =>
+  (/objectFit:\s*["']cover["']/.test(s) &&
+    /(width:\s*["']100%["'][\s\S]{0,240}height:\s*["']100%["']|inset:\s*0)/.test(s)) ||
+  (/backgroundImage/.test(s) && /(100vh|minHeight:\s*["']100vh["'])/.test(s));
+
+// KNOWN, RECORDED, AND NOT YET FIXED.
+//
+// These four full-bleed photos are served from static.wixstatic.com and so get
+// no f_auto, no q_auto and no responsive ladder. They pre-date this check and
+// are listed here so the guard can fail on anything NEW while these are dealt
+// with deliberately. This list may only ever shrink. Adding to it needs a
+// reason better than "the build was red".
+//
+// Measured 2026-08-10 (all four are 100vw x 100vh, object-fit cover):
+//   Home HERO      1280x960 JPEG  664 KB  0.44x @1440/dpr2, 0.57x @390/dpr2
+//   Home banner    1280x853 JPEG  200 KB  0.44x @1440/dpr2, 0.51x @390/dpr2
+//   Budget block   see report in the PR that added this list
+// Wix CAN serve adaptively (/v1/fill/w_,h_,q_/file.webp works) but the site
+// requests the bare original, so none of it is in use. The masters are only
+// 1280 wide — Wix upscales past that without capping and the extra pixels are
+// interpolated, so moving to its transforms buys format and mobile weight,
+// NOT sharpness.
+const OFF_CDN_ALLOWLIST = new Set([
+  "https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg", // Home hero
+  "https://static.wixstatic.com/media/d2df22_c34b84a5b42f49b0963b953b94c0e8c4~mv2.jpg", // Home red banner
+  "https://static.wixstatic.com/media/d2df22_2d4ea077497f48679138b2e04dbc7e3a~mv2.jpg", // Home budget block
+]);
+
+const WINDOW = 700;
+let offCdn = 0;
+const known = [];
+
+for (const file of walk(SRC)) {
+  const text = readFileSync(file, "utf8");
+  const rel = file.replace(SRC, "src");
+  for (const m of text.matchAll(FOREIGN)) {
+    const at = m.index;
+    // Direct use: the styles sit right next to the URL.
+    let flagged = fullBleedNear(text.slice(Math.max(0, at - WINDOW), at + WINDOW));
+
+    // Indirect use: `const IMG_SRC = "https://..."` at the top of the file and
+    // the full-bleed styles hundreds of lines below. Resolve the binding and
+    // look around each place the name is actually used — ValuePropSection is
+    // exactly this shape, and a window around the declaration alone misses it.
+    if (!flagged) {
+      const decl = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*["'`]?[^"'`\n]*$/.exec(text.slice(0, at));
+      if (decl) {
+        const name = decl[1];
+        for (const u of text.matchAll(new RegExp(`\\b${name}\\b`, "g"))) {
+          if (u.index === decl.index) continue;
+          if (fullBleedNear(text.slice(Math.max(0, u.index - WINDOW), u.index + WINDOW))) { flagged = true; break; }
+        }
+      }
+    }
+    if (!flagged) continue;
+
+    if (OFF_CDN_ALLOWLIST.has(m[1])) { known.push(`${rel}  ${m[1].slice(30, 90)}`); continue; }
+
+    offCdn++;
+    fail(
+      `${rel}: full-bleed photo served from outside our CDN — no f_auto, no q_auto,\n` +
+      `      no responsive ladder, and invisible to every check below.\n` +
+      `      ${m[1].slice(0, 96)}`
+    );
+  }
+}
+if (!offCdn) console.log("  ✓ no NEW full-bleed photo is served from a third-party host");
+if (known.length) {
+  console.log(`  ! ${known.length} known off-CDN full-bleed photo(s) still outstanding — see OFF_CDN_ALLOWLIST:`);
+  known.forEach((k) => console.log(`      ${k}`));
+}
+
 // ── 2. Every advertised srcset width must be one the master can deliver ──
 const calls = [];
 for (const file of walk(SRC)) {
