@@ -14,6 +14,7 @@
  * existed once, un-reused — so both are fixed here, once.
  */
 import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 
 export const CATEGORIES = [
   'All', 'Photography', 'Videography', 'Catering', 'Florals',
@@ -67,6 +68,38 @@ export function schemaCategory(label) {
   return CATEGORY_TO_SCHEMA[label] || 'other';
 }
 
+/**
+ * The google_place_id values this couple has already added. Callers seed
+ * their own "already added" set from this on mount, so a vendor that's
+ * already in My vendors reads as added instead of offering a fresh add that
+ * would write a second copy of the same business.
+ *
+ * The place_id namespace is shared end to end: /api/places-search returns
+ * `place_id`, the marketplace maps it to both `vendor.id` and
+ * `vendor.placeId`, and it's stored verbatim as Vendor.google_place_id — so
+ * these ids can be compared against a result list directly, with no mapping.
+ *
+ * @returns {Promise<Set<string>>}
+ */
+export async function getSavedPlaceIds() {
+  const rows = await getMyRecords('Vendor');
+  return new Set(rows.map(v => v.google_place_id).filter(Boolean));
+}
+
+/**
+ * This couple's existing Vendor record for a given Places id, or null.
+ * Owner-scoped the same way getMyRecords is — a place saved by a different
+ * account is not a duplicate of this one.
+ */
+async function findMyVendorByPlaceId(placeId) {
+  const me = await base44.auth.me().catch(() => null);
+  if (!me?.id) return null;
+  const rows = await base44.entities.Vendor
+    .filter({ created_by_id: me.id, google_place_id: placeId })
+    .catch(() => []);
+  return (rows || []).find(r => !r.is_test) || null;
+}
+
 // `vendor` is a mapped /api/places-search list item (id, placeId, name,
 // category, rating, reviewCount, location, website, phone — the last two
 // always null there, Text Search doesn't return them). `details` is the
@@ -74,16 +107,40 @@ export function schemaCategory(label) {
 // passed when the caller already fetched it (the profile modal), omitted
 // when saving straight from a search-result card. Prefers `details` when
 // present since it's fresher and more complete.
+//
+// Deduped at the write, not just in the caller's UI state. Every caller
+// keeps a local set of ids it has already added this session, but that set
+// is component state: it starts empty on every mount, so a reload, a second
+// tab, or an add that happened during onboarding all left the button
+// offering a fresh add — and google_place_id was written but never checked,
+// so accepting it created a duplicate Vendor record for the same business.
+//
+// This is a read-then-write check, not a database constraint: two adds of
+// the same place fired inside one round trip can still both pass it. Base44
+// has no unique-index facility to enforce it properly, and the realistic
+// failure it does close (a stale mount, a second tab, onboarding then
+// marketplace) is a slow one, not a race.
+//
+// @returns {Promise<{record: object, created: boolean}>} `created` is false
+//   when an existing record was found and returned instead of writing.
 export async function saveVendorFromPlaces(vendor, details) {
-  return base44.entities.Vendor.create({
+  const placeId = vendor.placeId || null;
+
+  if (placeId) {
+    const existing = await findMyVendorByPlaceId(placeId);
+    if (existing) return { record: existing, created: false };
+  }
+
+  const record = await base44.entities.Vendor.create({
     name: vendor.name,
     category: schemaCategory(vendor.category),
     website: details?.website || vendor.website || '',
     phone: details?.phone || vendor.phone || '',
     address: details?.address || vendor.location || '',
-    google_place_id: vendor.placeId || null,
+    google_place_id: placeId,
     google_rating: details?.rating ?? vendor.rating ?? null,
     google_reviews_count: details?.user_ratings_total ?? vendor.reviewCount ?? null,
     status: 'researching',
   });
+  return { record, created: true };
 }
