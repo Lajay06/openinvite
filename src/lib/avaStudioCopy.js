@@ -58,6 +58,10 @@ function join(...parts) {
   return parts.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
 }
 
+function cap(str) {
+  return str ? str[0].toUpperCase() + str.slice(1) : str;
+}
+
 const TEMPLATES = {
   website: (wedding, counts) => {
     const names = coupleNames(wedding);
@@ -75,14 +79,14 @@ const TEMPLATES = {
     const loc = locationPhrase(wedding);
     const names = coupleNames(wedding);
     return {
-      todo: join(`${guests}${loc ? ` ${loc}` : ''} — let's get everyone into one place.`),
+      todo: cap(join(`${guests}${loc ? ` ${loc}` : ''} — let's get everyone into one place.`)),
       done: names ? `${names}'s guest list is in. Add more any time.` : `Your guest list is in. Add more any time.`,
     };
   },
   rsvp: (wedding, counts) => {
     const guests = guestCountPhrase(wedding, counts);
     return {
-      todo: `${guests[0].toUpperCase()}${guests.slice(1)}, one clear way to say yes. Set your meal options and reply deadline.`,
+      todo: `${cap(guests)}, one clear way to say yes. Set your meal options and reply deadline.`,
       done: `RSVP is set up — your guests know exactly how to respond.`,
     };
   },
