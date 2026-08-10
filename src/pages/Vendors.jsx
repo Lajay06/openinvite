@@ -16,6 +16,7 @@ import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import CountUp from "@/components/shared/CountUp";
+import { useAvaFocus } from "@/hooks/useAvaFocus";
 const Vendor = base44.entities.Vendor;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -70,6 +71,8 @@ export default function VendorsPage() {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  useAvaFocus();
 
   // Arriving from the top-bar search — scroll to and briefly highlight the
   // row instead of landing at the top of the page. Same pattern as Guests.jsx.
@@ -203,6 +206,7 @@ export default function VendorsPage() {
         {!isCollaborating ? <AvaButton label="Ask Ava to find the perfect vendors" onClick={() => setAvaOpen(true)} /> : <div />}
         {!readOnly && (
           <button
+            data-ava-focus="vendors"
             onClick={() => { setEditingVendor(null); setShowForm(true); }}
             className="btn-primary"
           >

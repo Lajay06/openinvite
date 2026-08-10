@@ -18,6 +18,7 @@ import { base44 } from "@/api/base44Client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { getMyRecords, getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
+import { useAvaFocus } from "@/hooks/useAvaFocus";
 const Budget = base44.entities.Budget;
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -166,7 +167,7 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
   };
 
   return (
-    <div style={{ marginBottom: 32, border: '1px solid rgba(10,10,10,0.08)', padding: '24px 32px' }}>
+    <div data-ava-focus="budget" style={{ marginBottom: 32, border: '1px solid rgba(10,10,10,0.08)', padding: '24px 32px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
         <button onClick={save} disabled={saving} className="btn-primary" style={{ padding: '7px 20px', fontSize: 13, opacity: saving ? 0.7 : 1 }}>
           {saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save plan'}
@@ -241,6 +242,8 @@ export default function BudgetPage() {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  useAvaFocus();
 
   // Arriving from Recent activity (or top-bar search) with a specific line
   // item to land on — same pattern as Vendors.jsx/Guests.jsx.
