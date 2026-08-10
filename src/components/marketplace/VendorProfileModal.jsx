@@ -132,7 +132,7 @@ function ContactTab({ vendor, details, onSave, isSaved }) {
           style={{ width: '100%', padding: '10px 0', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: isSaved ? 'default' : 'pointer', border: '1.5px solid rgba(10,10,10,0.15)', background: 'none', color: isSaved ? '#10B981' : '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
         >
           {/* Matches VendorCard's affordance — adding to My vendors, not
-              favouriting. See the comment there. */}
+              starring as a favorite. See the comment there. */}
           {isSaved
             ? <Check size={13} style={{ color: '#10B981' }} />
             : <Plus size={13} style={{ color: '#0A0A0A' }} />}

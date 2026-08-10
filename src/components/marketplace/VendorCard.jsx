@@ -104,8 +104,8 @@ export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isS
         </button>
         {/* "Add to my vendors", not a bookmark or a star. This writes a
             Vendor record onto the My vendors list; starring a vendor as a
-            favourite is a separate action that lives on that page. The old
-            "Save" + bookmark icon read as favouriting, which is why saving
+            favorite is a separate action that lives on that page. The old
+            "Save" + bookmark icon read as starring, which is why adding
             here and then finding nothing under Favorites looked broken. */}
         <button
           onClick={() => onSave(vendor)}
