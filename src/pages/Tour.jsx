@@ -43,6 +43,8 @@ const FRAME_ASPECT = "16/10";
 // Budget sections, #F5F5F3 its Dashboard and Seating sections. About.jsx
 // uses the same #F5F5F3 for its beliefs block. No new values.
 const DARK = "#0A0A0A";
+const WHITE = "#FFFFFF";
+const OFFWHITE = "#F5F5F3";
 
 // How much larger than the frame the image renders, so there is something to
 // travel, and how far it travels.
@@ -57,101 +59,64 @@ const DARK = "#0A0A0A";
 const OVERSCAN = 124;
 const PARALLAX_PCT = 7;
 
+// `bg` is the scene's theme and is the ONLY thing that decides its ink. It is
+// declared per scene rather than derived from array position, which is what the
+// arc did — and that derivation is exactly how `SCENES.slice(4)` silently
+// re-themed the back half when its index restarted at 0. Stating the theme on
+// the data makes that class of bug unrepresentable rather than merely fixed.
 const SCENES = [
-  { num: "01", label: "Daily update", copy: "Your wedding, today's priorities, and what's coming next, all waiting for you.",              imageSrc: null, align: "left" },
-  { num: "02", label: "Ava",          copy: "Like having a wedding planner in your pocket, only faster, smarter, and available 24/7.",      imageSrc: null, align: "right" },
-  { num: "03", label: "Guest list",   copy: "Track every RSVP, meal preference, and plus one without the spreadsheets.",       imageSrc: null, align: "left" },
-  { num: "04", label: "Seating",      copy: "Design your floor plan visually, drag guests into place, and let every table come together effortlessly.",    imageSrc: null, align: "right" },
-  { num: "05", label: "Budget",       copy: "What you planned. What you spent. No surprises in month nine.", imageSrc: null, align: "left" },
-  { num: "06", label: "Schedule",     copy: "Build your entire wedding day with confidence, knowing every detail has its perfect place.",     imageSrc: null, align: "right" },
-  { num: "07", label: "Universes",    copy: "Choose your Universe and every touchpoint follows. One cohesive aesthetic from your first invitation to your final thank you.",                   imageSrc: null, align: "left" },
-  { num: "08", label: "Your site",    copy: "Guests see this. They will remember it.",                   imageSrc: null, align: "right" },
+  { num: "01", label: "Daily update", copy: "Your wedding, today's priorities, and what's coming next, all waiting for you.",              imageSrc: null, align: "left",  bg: WHITE },
+  { num: "02", label: "Ava",          copy: "Like having a wedding planner in your pocket, only faster, smarter, and available 24/7.",      imageSrc: null, align: "right", bg: OFFWHITE },
+  { num: "03", label: "Guest list",   copy: "Track every RSVP, meal preference, and plus one without the spreadsheets.",       imageSrc: null, align: "left",  bg: DARK },
+  { num: "04", label: "Seating",      copy: "Design your floor plan visually, drag guests into place, and let every table come together effortlessly.",    imageSrc: null, align: "right", bg: WHITE },
+  { num: "05", label: "Budget",       copy: "What you planned. What you spent. No surprises in month nine.", imageSrc: null, align: "left",  bg: OFFWHITE },
+  { num: "06", label: "Schedule",     copy: "Build your entire wedding day with confidence, knowing every detail has its perfect place.",     imageSrc: null, align: "right", bg: DARK },
+  { num: "07", label: "Universes",    copy: "Choose your Universe and every touchpoint follows. One cohesive aesthetic from your first invitation to your final thank you.",                   imageSrc: null, align: "left",  bg: WHITE },
+  { num: "08", label: "Your site",    copy: "Guests see this. They will remember it.",                   imageSrc: null, align: "right", bg: OFFWHITE },
 ];
 
-// ── BACKGROUND ARC ────────────────────────────────────────────────
-// One continuous journey: light at the top, dark at the bottom, ending dark
-// into the end cap. This REPLACES the old scene-to-scene ping-pong
-// (#0A0A0A / #FFFFFF / #F5F5F3), which is gone.
+// ── PER-SECTION THEMES ────────────────────────────────────────────
+// Each scene owns a theme (WHITE / OFFWHITE / DARK, the pre-#382 rhythm) and
+// the change between them CROSS-FADES rather than hard-cutting. This replaces
+// the scroll-linked arc, which interpolated the background continuously and
+// therefore had to pass through a mid-grey where neither ink reached AA. There
+// is no continuous interpolation here and no mid-grey dwell: the background
+// holds one of three exact values and only moves between them for
+// THEME_MS on a boundary.
 //
-// The 50% stop is the crossover, where the background passes through mid-grey
-// and NEITHER ink color reaches AA. It is deliberately parked on the photo
-// pair between scenes 04 and 05, which carries no text — that placement is the
-// only reason this passes. IF THE PHOTO PAIR MOVES, THESE STOPS MOVE WITH IT.
+// Mechanism: ONE fixed full-viewport layer carries the color and a CSS
+// transition on background-color does the dissolve; sections are transparent
+// and simply declare which theme is theirs. Per-section backgrounds cannot
+// cross-fade — a color change that travels through SPACE as you scroll is a
+// hard edge scrolling past, which is what we had before. A dissolve has to
+// happen in TIME on a shared surface.
 //
-// Measured contrast across the scroll (#324 method), best ink at each frame:
-//   t     bg        best ink   ratio   (all arc text is LARGE, AA 3:1)
-//   0.00  #FFFFFF   dark       19.80
-//   0.20  #F9F9F8   dark       18.84
-//   0.40  #D1CDCD   dark       12.64
-//   0.50  #8A7F82   dark        5.13  <- WORST FRAME (the crossover)
-//   0.60  #4A4647   light       9.26
-//   0.80  #1C1C1C   light      16.99
-//   1.00  #0A0A0A   light      19.80
-// WORST FRAME 5.13:1 at t=0.50, against 3:1 for large text.
-//
-// Two deliberate choices in these stops:
-//   - The mid is #8A7F82, a warm grey off the #E03553 primary, NOT neutral
-//     #8A8A88. Neutral read as an unstyled page rather than a designed step;
-//     the tint also drops luminance slightly, which lifted the worst frame
-//     from 4.49:1 to 5.13:1.
-//   - The middle is compressed (0.35/0.50/0.65, not 0.25/0.50/0.75) so the
-//     page spends 9% of its scroll in the mid-tone band instead of 16%.
-//
-// This only holds because every element on the arc is large text: the scene
-// number is now 20px/700 SOLID. The old 11px rgba(255,255,255,0.4) measured
-// 3.77:1 and already failed AA on the dark scenes before the arc existed.
-// Text inside the placeholder frames sits on the frame's own solid background
-// (#161616 / #E8E8E6), not the arc, so it is unaffected: 20px label 18.10:1
-// and 16.14:1, 14px meta 9.71:1 and 7.44:1.
-const ARC = [
-  [0.00, "#FFFFFF"],
-  [0.35, "#F5F5F3"],
-  [0.50, "#8A7F82"],
-  [0.65, "#2A2A2A"],
-  [1.00, "#0A0A0A"],
-];
-
-const mix = (a, b, t) => {
-  const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-  const [ar, ag, ab] = p(a), [br, bg2, bb] = p(b);
-  const c = (x, y) => Math.round(x + (y - x) * t).toString(16).padStart(2, "0");
-  return `#${c(ar, br)}${c(ag, bg2)}${c(ab, bb)}`;
-};
-
-/** Sample the arc at 0..1. Used for the reduced-motion static colors. */
-const arcAt = (t) => {
-  for (let i = 1; i < ARC.length; i++) {
-    if (t <= ARC[i][0]) {
-      const [t0, c0] = ARC[i - 1], [t1, c1] = ARC[i];
-      return mix(c0, c1, (t - t0) / (t1 - t0));
-    }
-  }
-  return ARC[ARC.length - 1][1];
-};
-
-/** Scene i sits at i/7 along the arc, so 00-03 land light and 04-07 land dark,
- *  with the crossover falling between them — i.e. on the photo pair. */
-const sceneT = (i) => i / (SCENES.length - 1);
-const sceneIsDark = (i) => sceneT(i) > 0.5;
+// The trigger is the viewport midline (IntersectionObserver, -50%/-50%), so a
+// scene takes the theme as it passes the middle of the screen. That places the
+// change on the 160px padding gap between sections rather than across a block
+// of text wherever possible.
+const THEME_MS = 400;
 
 // Solid ink only. No alpha: alpha is what put the old scene number at 3.77:1.
-const ink = (dark) =>
-  dark
+// Keyed off the scene's own theme, not its index.
+const ink = (bg) =>
+  bg === DARK
     ? { heading: "#FFFFFF", number: "#FFFFFF", meta: "rgba(255,255,255,0.72)" }
     : { heading: "#0A0A0A", number: "#0A0A0A", meta: "rgba(10,10,10,0.72)" };
 
 // Both rings together: the light one carries on dark backgrounds, the dark one
-// on light backgrounds, and at the crossover both are partly visible. A single
-// border in either color disappears at one end of the arc.
+// on light backgrounds, and mid-dissolve both are partly visible. A single
+// border in either color disappears against one of the three themes.
 //
-// Alphas solved, not guessed. Worst-of-arc for max(light, dark) against the
-// 3:1 non-text minimum (WCAG 1.4.11):
+// Alphas solved, not guessed, against the 3:1 non-text minimum (WCAG 1.4.11).
+// These were derived for the arc's worst frame, which was a mid-grey around
+// #8A7F82 — a background this page no longer produces. That makes the pair
+// strictly more conservative than it now needs to be, so it is kept as-is:
+// re-solving could only loosen it, and it already passes on all three themes.
 //   light 0.50 / dark 0.32  ->  1.99:1   (first attempt, FAILED)
 //   light 0.60 / dark 0.60  ->  2.71:1   fails
 //   light 0.60 / dark 0.80  ->  3.16:1   passes
 //   light 0.70 / dark 0.80  ->  3.38:1   passes  <- used
-// Worst frame sits at t=0.57, just past the crossover. Re-solve if the stops
-// change.
 const FRAME_RING = {
   border: "1px solid rgba(255,255,255,0.7)",
   boxShadow: "0 0 0 1px rgba(10,10,10,0.8)",
@@ -270,14 +235,14 @@ function PlaceholderFill({ num, label, dark }) {
   );
 }
 
-function Scene({ scene, index }) {
+function Scene({ scene }) {
   const [ref, visible] = useReveal(0.2);
   const frameRef = useRef(null);
   const imageRef = useRef(null);
   useParallaxFallback(frameRef, imageRef);
 
-  const dark = sceneIsDark(index);
-  const c = ink(dark);
+  const dark = scene.bg === DARK;
+  const c = ink(scene.bg);
   const isRight = scene.align === "right";
   const reduced = prefersReduced();
 
@@ -288,13 +253,16 @@ function Scene({ scene, index }) {
   return (
     <section
       ref={ref}
+      // The theme layer reads this to know what to fade to as the section
+      // crosses the viewport midline.
+      data-tour-bg={scene.bg}
       // Section padding and container width copied from Features.jsx's
       // SeatingSection/BudgetSection, not approximated.
-      // Transparent so the fixed arc layer shows through. Under reduced
-      // motion there is no arc layer, so the section paints the color its own
-      // position along the arc corresponds to — same story, nothing moving.
+      // Transparent so the fixed theme layer shows through. Under reduced
+      // motion there is no theme layer, so the section paints its own color
+      // directly — same three-theme rhythm, nothing animating.
       style={{
-        background: reduced ? arcAt(sceneT(index)) : "transparent",
+        background: reduced ? scene.bg : "transparent",
         padding: "160px clamp(32px, 6vw, 80px)",
       }}
     >
@@ -354,6 +322,15 @@ function Scene({ scene, index }) {
             transition: copyTransition,
           }}
         >
+          {/* No color transition on this ink, deliberately. A scene's theme
+              never changes, so its ink never changes, so a `transition: color`
+              here could never fire — it would be decoration that reads as a
+              feature. What actually needs handling is the opposite case: while
+              the shared layer dissolves A->B, THIS section's ink is still
+              correct for its own theme but the backdrop behind it is briefly
+              between two. That is a placement problem, solved by triggering on
+              the midline so the change lands in the 160px padding gap, and it
+              is measured rather than assumed — see the PR. */}
           <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.06em", color: c.number, fontFamily: PJS, marginBottom: 12 }}>
             {scene.num}
           </div>
@@ -400,35 +377,32 @@ export default function Tour() {
 
   const reducedMotion = prefersReduced();
 
-  // Fallback for browsers without scroll-driven animations. Quantised to 24
-  // steps: writing a color every frame would repaint a full-viewport layer
-  // 60x a second for no visible benefit — 24 steps across the page is already
-  // below the threshold where a color step is perceptible. The rAF is only
-  // scheduled when the step actually changes.
+  // Drive the theme layer discretely: whichever themed section is crossing the
+  // viewport midline owns the background. No scroll listener and no rAF — the
+  // observer fires only at boundaries, and the dissolve itself is a CSS
+  // transition the compositor runs.
+  //
+  // rootMargin -50%/-50% collapses the root box to a single line at the middle
+  // of the viewport, so "intersecting" means "this section covers the midline"
+  // and at most one section qualifies. Between sections — the photo pair, the
+  // hero, the end cap — nothing fires and the last theme simply persists,
+  // which is what those full-bleed blocks want anyway.
   useEffect(() => {
-    if (reducedMotion || supportsScrollTimeline()) return;
-    const el = document.querySelector(".tour-arc");
-    if (!el) return;
-    const STEPS = 24;
-    let last = -1, raf = 0;
-    const apply = () => {
-      raf = 0;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const t = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-      const step = Math.round(t * STEPS);
-      if (step === last) return;
-      last = step;
-      el.style.backgroundColor = arcAt(step / STEPS);
-    };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply); };
-    apply();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
+    if (reducedMotion) return;
+    const layer = document.querySelector(".tour-theme");
+    const sections = document.querySelectorAll("[data-tour-bg]");
+    if (!layer || !sections.length) return;
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) layer.style.backgroundColor = e.target.dataset.tourBg;
+        }
+      },
+      { rootMargin: "-50% 0px -50% 0px", threshold: 0 }
+    );
+    sections.forEach((s) => obs.observe(s));
+    return () => obs.disconnect();
   }, [reducedMotion]);
 
   return (
@@ -436,12 +410,13 @@ export default function Tour() {
     // background here paints straight over it and the arc never shows. The
     // dark fallback lives on the arc layer's own initial color instead.
     <div className="tour-page" style={{ minHeight: "100vh", position: "relative" }}>
-      {/* The arc. ONE fixed full-viewport layer, not eight section
-          backgrounds — animating eight would be eight full-width paints per
-          frame. Under prefers-reduced-motion this layer is not rendered and
-          each section paints its own static color instead, so the same
-          light-to-dark story is told without anything animating. */}
-      {!reducedMotion && <div className="tour-arc" aria-hidden="true" />}
+      {/* The theme layer. ONE fixed full-viewport surface: the dissolve has to
+          happen in time on a shared surface, because a color change that
+          travels through space as you scroll is just a hard edge scrolling
+          past. Under prefers-reduced-motion this layer is not rendered and
+          each section paints its own static color instead — same rhythm,
+          nothing animating. */}
+      {!reducedMotion && <div className="tour-theme" aria-hidden="true" />}
       <PublicNav />
 
       {/* Opening. Was a bespoke text-only section (dark, minHeight 100vh,
@@ -479,8 +454,10 @@ export default function Tour() {
         maxWidth={1000}
       />
 
-      {SCENES.slice(0, 4).map((scene, i) => (
-        <Scene key={scene.num} scene={scene} index={i} />
+      {/* No index passed. Theme comes from `scene.bg`, so slicing the array
+          cannot re-theme anything — see the SCENES comment. */}
+      {SCENES.slice(0, 4).map((scene) => (
+        <Scene key={scene.num} scene={scene} />
       ))}
 
       {/* Break between scenes 04 and 05. Alternation is data-driven off each
@@ -491,11 +468,13 @@ export default function Tour() {
         right={{ src: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Pride_Agust%C3%ADn_Far%C3%ADas_Photos_ID5510_dn4jws.jpg", alt: "Two people celebrating at a wedding party" }}
       />
 
-      {SCENES.slice(4).map((scene, i) => (
-        // +4: this slice restarts i at 0, and the index drives which side of
-        // the arc crossover the scene's ink sits on. Without the offset all
-        // eight scenes would take the light-background ink.
-        <Scene key={scene.num} scene={scene} index={i + 4} />
+      {/* This slice used to need an explicit `index={i + 4}`, because `i`
+          restarts at 0 here and the index decided the ink — without the offset
+          all eight scenes took the light-background ink. That offset is gone
+          rather than kept: the theme now travels on the scene object, so the
+          bug it patched can no longer be expressed. */}
+      {SCENES.slice(4).map((scene) => (
+        <Scene key={scene.num} scene={scene} />
       ))}
 
       <MarketingEndCap
@@ -508,37 +487,34 @@ export default function Tour() {
       <PublicFooter />
 
       <style>{`
-        /* ── BACKGROUND ARC ────────────────────────────────────────────
-           One fixed layer, painted once per frame by the compositor. The
-           stops match ARC above; keep them in sync. */
-        /* z-index 0, NOT -1. At -1 the arc paints behind the whole stacking
+        /* ── PER-SECTION THEME LAYER ───────────────────────────────────
+           One fixed surface. The dissolve is this single transition; there
+           is no keyframe track and no scroll timeline, so the background is
+           only ever one of the three exact theme colors or briefly between
+           two of them. */
+        /* z-index 0, NOT -1. This is load-bearing and survives the arc it was
+           written for: at -1 the layer paints behind the whole stacking
            context, and the app shell renders an opaque white div between this
-           page and <body> which covered it completely. Lifting the arc to 0
+           page and <body> that covered it completely. Lifting the layer to 0
            and every sibling to 1 keeps it local to this page — no ancestor
            background has to be touched. */
         .tour-page > * { position: relative; z-index: 1; }
-        .tour-arc {
+        .tour-theme {
           position: fixed;
           inset: 0;
           z-index: 0 !important;
+          /* Scene 01's theme, so the first paint already matches rather than
+             dissolving from an arbitrary color on load. */
           background-color: #FFFFFF;
           pointer-events: none;
+          transition: background-color ${THEME_MS}ms linear;
         }
-        @keyframes tourArc {
-          0%   { background-color: #FFFFFF; }
-          35%  { background-color: #F5F5F3; }
-          50%  { background-color: #8A7F82; }
-          65%  { background-color: #2A2A2A; }
-          100% { background-color: #0A0A0A; }
-        }
-        @supports (animation-timeline: scroll()) {
-          .tour-arc {
-            animation: tourArc linear both;
-            animation-timeline: scroll(root block);
-          }
-        }
+        /* linear, not an ease: an eased dissolve spends its slow tail near the
+           midpoint, which is precisely the frame where contrast is weakest.
+           Linear crosses that region at constant speed and minimises time
+           spent there. */
         @media (prefers-reduced-motion: reduce) {
-          .tour-arc { display: none; }
+          .tour-theme { display: none; }
         }
 
         /* Grid copied from Features.jsx's FeatureVideoGridStyle — same
