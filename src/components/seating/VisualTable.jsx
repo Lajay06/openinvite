@@ -17,7 +17,7 @@ const TABLE_W_RECT  = 130, TABLE_H_RECT  = 60;
 const SEAT_ORBIT_GAP = 30;
 
 /**
- * Centre-to-centre distance between two adjacent seats, in unscaled canvas
+ * Center-to-center distance between two adjacent seats, in unscaled canvas
  * px. Mirrors getSeatPositions() exactly — round seats sit on an orbit and
  * divide its circumference; rectangle seats divide the table's width across
  * the top and bottom edges independently.
@@ -40,7 +40,7 @@ export function seatSpacingCanvasPx(shape, capacity) {
  * Why degrade at all rather than hard-gate on zoom: a couple wants full
  * names when zoomed in on one table, and density when zoomed out looking at
  * the whole room. Degrading matches how the feature is used, so it is the
- * intended behaviour rather than a fallback. The hover tooltip always
+ * intended behavior rather than a fallback. The hover tooltip always
  * carries the complete name, at every form.
  *
  * Ordered widest to narrowest, which is NOT the order it looks like it
@@ -70,8 +70,8 @@ export const LABEL_FORMS = [
 ];
 
 /**
- * Room on screen for one seat's label: the centre-to-centre gap to the next
- * seat. Labels are centred under their seat, so two adjacent ones touch at
+ * Room on screen for one seat's label: the center-to-center gap to the next
+ * seat. Labels are centered under their seat, so two adjacent ones touch at
  * exactly this width — measuring against it is what keeps them apart.
  */
 export function availableLabelPx(shape, capacity, renderScale) {

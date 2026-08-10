@@ -787,8 +787,10 @@ export default function SeatingPage() {
           ))}
           {/* No marginBottom here. The strip is alignItems:'center' and the
               tab buttons are padding:'13px 0' with a 2px bottom border, so
-              the button centres itself against the labels; the 8px bottom
-              margin this used to carry was what pushed it above the line. */}
+              the button centers itself against the labels; the 8px bottom
+              margin this used to carry was what lifted it off that line.
+              Measured shift was 4px, not 8 — flex centering absorbs half the
+              margin, so the visible error is half what the value suggests. */}
           {!readOnly && addableEvents.length > 0 && (
             <div style={{ position: 'relative' }}>
               <button
