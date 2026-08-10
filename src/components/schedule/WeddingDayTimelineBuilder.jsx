@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Printer, Edit2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { interactiveDivProps } from '@/lib/a11y';
@@ -64,6 +64,89 @@ const HOUR_HEIGHT = 80;
 // the grid unboundedly.
 const MAX_END_HOUR = 36;
 
+// Shortest a block is ever drawn, so a brief moment stays readable. At
+// HOUR_HEIGHT 80 this is 24 minutes of vertical space, which is exactly why
+// lanes are needed — see assignLanes.
+const MIN_BLOCK_HEIGHT = 32;
+const BLOCK_INSET = 6;  // px clear of the grid's left/right edges
+const LANE_GAP = 2;     // horizontal px between adjacent lanes
+// Narrowest a lane is allowed to get. A busy 20 minutes of a reception can
+// legitimately need eight or nine lanes, and dividing a 390px phone by nine
+// gives unreadable slivers — so past this point the grid scrolls sideways
+// instead of subdividing further, the way calendar apps do on a phone. The
+// hour labels sit outside the scrolling area and stay put.
+const MIN_LANE_WIDTH = 96;
+// Vertical px kept clear between two blocks sharing a lane. Subpixel
+// rounding must never be able to make two boxes touch, let alone overlap.
+const STACK_GAP = 1;
+
+/**
+ * Splits overlapping blocks into side-by-side lanes, the way a calendar app
+ * does.
+ *
+ * Every block is positioned by its start time and given a minimum rendered
+ * height so short moments stay legible. That means a two-minute item claims
+ * 24 minutes of vertical space. Blocks used to be drawn full width
+ * (left:6/right:6), so any two whose rendered boxes overlapped simply
+ * painted on top of one another — "First dance" disappeared behind "Cake
+ * cutting", and the colliding pairs were always the short or instantaneous
+ * ones, because those are the blocks whose drawn height most exceeds their
+ * real duration.
+ *
+ * Pushing the later block downward would have been the cheaper fix and the
+ * wrong one: this is a schedule people follow to the minute, so a block's
+ * vertical position has to keep meaning its actual start time. Lanes leave
+ * top and height untouched and change only width and horizontal offset.
+ *
+ * Collision is computed on RENDERED PIXEL EXTENTS, never on times. Two
+ * two-minute moments at 7:00 and 7:10 do not overlap in time at all, yet
+ * their 32px boxes do. Detecting on time would have left precisely the
+ * reported bug in place for the items that actually cause it.
+ *
+ * @param {{idx:number, top:number, height:number}[]} boxes
+ * @returns {{idx:number, top:number, height:number, lane:number, laneCount:number}[]}
+ *          indexed by the box's own `idx`
+ */
+function assignLanes(boxes) {
+  // Taller blocks first at equal tops, so a long parent-looking event takes
+  // lane 0 and the brief moments inside its span fan out to its right.
+  const ordered = [...boxes].sort((a, b) => a.top - b.top || b.height - a.height);
+
+  // A cluster is a maximal run of blocks connected by overlap. Lane counts
+  // are per cluster, so one crowded hour doesn't narrow the whole day.
+  const clusters = [];
+  let current = [];
+  let clusterBottom = -Infinity;
+  for (const box of ordered) {
+    if (current.length && box.top >= clusterBottom) {
+      clusters.push(current);
+      current = [];
+      clusterBottom = -Infinity;
+    }
+    current.push(box);
+    clusterBottom = Math.max(clusterBottom, box.top + box.height + STACK_GAP);
+  }
+  if (current.length) clusters.push(current);
+
+  const result = [];
+  for (const cluster of clusters) {
+    const laneBottoms = []; // bottom edge (plus gap) of each lane's last block
+    for (const box of cluster) {
+      let lane = laneBottoms.findIndex(bottom => box.top >= bottom);
+      if (lane === -1) {
+        lane = laneBottoms.length;
+        laneBottoms.push(0);
+      }
+      laneBottoms[lane] = box.top + box.height + STACK_GAP;
+      box.lane = lane;
+    }
+    for (const box of cluster) {
+      result[box.idx] = { ...box, laneCount: laneBottoms.length };
+    }
+  }
+  return result;
+}
+
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
@@ -76,6 +159,22 @@ function DayChart({ items, onEdit, onTimeUpdate, readOnly }) {
   const [draggingId, setDraggingId] = useState(null);
   const [dragOffsetMins, setDragOffsetMins] = useState(0);
   const [ghostMins, setGhostMins] = useState(null);
+
+  // Measured, not inferred. How much text a block can carry depends on how
+  // wide a lane actually ends up, and that is a function of the viewport as
+  // well as the lane count — three lanes is roomy at 1440 and cramped at
+  // 390. Deriving it from laneCount alone would strip the location off
+  // desktop blocks that had ample room for it.
+  const [trackWidth, setTrackWidth] = useState(0);
+  useEffect(() => {
+    const el = timelineRef.current;
+    if (!el) return;
+    setTrackWidth(el.getBoundingClientRect().width);
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(([entry]) => setTrackWidth(entry.contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const { startHour, endHour, hours } = useMemo(() => {
     const times = items.flatMap(i => [
@@ -97,11 +196,26 @@ function DayChart({ items, onEdit, onTimeUpdate, readOnly }) {
     [items]
   );
 
-  const getTop = (t) => ((timeToMinutes(t) - startHour * 60) / 60) * HOUR_HEIGHT;
-  const getHeight = (start, end) => {
-    if (!end) return HOUR_HEIGHT * 0.5;
-    return Math.max((effectiveEndMinutes(start, end) - timeToMinutes(start)) / 60 * HOUR_HEIGHT, 32);
-  };
+  // One computation of every block's geometry, used for BOTH collision
+  // detection and the rendered style. They must never be derived separately
+  // — the moment detection measures anything other than what gets painted,
+  // it stops preventing the overlap it exists to prevent. Rounded here, once,
+  // so the lane algorithm and the DOM agree to the pixel.
+  const layout = useMemo(() => {
+    const boxes = sorted.map((item, idx) => {
+      const startMins = timeToMinutes(item.start_time);
+      const endMins = item.end_time ? effectiveEndMinutes(item.start_time, item.end_time) : null;
+      const rawHeight = endMins === null
+        ? HOUR_HEIGHT * 0.5
+        : ((endMins - startMins) / 60) * HOUR_HEIGHT;
+      return {
+        idx,
+        top: Math.round(((startMins - startHour * 60) / 60) * HOUR_HEIGHT),
+        height: Math.round(Math.max(rawHeight, MIN_BLOCK_HEIGHT)),
+      };
+    });
+    return assignLanes(boxes);
+  }, [sorted, startHour]);
 
   const handleDragStart = (e, item) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -140,6 +254,9 @@ function DayChart({ items, onEdit, onTimeUpdate, readOnly }) {
   };
 
   const totalHours = endHour - startHour;
+  // Widest cluster in the day decides the track's minimum width, so lanes
+  // stay legible; a quieter cluster in the same day simply gets wider lanes.
+  const maxLanes = layout.reduce((n, box) => Math.max(n, box?.laneCount || 1), 1);
 
   return (
     <div style={{ display: 'flex', minHeight: totalHours * HOUR_HEIGHT + 'px', userSelect: 'none' }}>
@@ -159,10 +276,18 @@ function DayChart({ items, onEdit, onTimeUpdate, readOnly }) {
         ))}
       </div>
 
-      {/* Grid + event blocks (droppable area) */}
+      {/* Grid + event blocks (droppable area).
+          Two nested elements on purpose: the outer one scrolls sideways when
+          a crowded cluster needs more lanes than the viewport can show at a
+          legible width; the inner one is the track everything is positioned
+          against, so a block's percentage lane offset resolves against the
+          full track rather than the visible slice. timelineRef stays on the
+          outer element — drag math only reads its top edge, which horizontal
+          scrolling never moves. */}
+      <div style={{ flex: 1, minWidth: 0, overflowX: 'auto' }}>
       <div
         ref={timelineRef}
-        style={{ flex: 1, position: 'relative', height: totalHours * HOUR_HEIGHT + 'px' }}
+        style={{ position: 'relative', height: totalHours * HOUR_HEIGHT + 'px', minWidth: maxLanes * MIN_LANE_WIDTH + 'px' }}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
@@ -189,26 +314,49 @@ function DayChart({ items, onEdit, onTimeUpdate, readOnly }) {
         )}
 
         {/* Event blocks */}
-        {sorted.map((item) => {
+        {sorted.map((item, idx) => {
           const cfg = CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG.other;
-          const top = getTop(item.start_time);
-          const height = getHeight(item.start_time, item.end_time);
+          const box = layout[idx] || { top: 0, height: MIN_BLOCK_HEIGHT, lane: 0, laneCount: 1 };
+          const { top, height, lane, laneCount } = box;
           const dur = item.end_time ? effectiveEndMinutes(item.start_time, item.end_time) - timeToMinutes(item.start_time) : 30;
           const crossesMidnight = item.end_time && effectiveEndMinutes(item.start_time, item.end_time) >= 1440;
           const isDragging = draggingId === item.id;
 
+          // Lane geometry. The grid's usable width is its own width less the
+          // inset on each side; a lane is an equal share of that, minus a gap
+          // so two adjacent lanes can never share an edge pixel.
+          const track = `(100% - ${BLOCK_INSET * 2}px)`;
+          const laneLeft  = `calc(${BLOCK_INSET}px + ${track} * ${lane} / ${laneCount})`;
+          const laneWidth = `calc(${track} / ${laneCount} - ${laneCount > 1 ? LANE_GAP : 0}px)`;
+          // Below this the block cannot carry a third line without the
+          // location colliding with the name, so drop it rather than let it
+          // collide. Uses the measured track, so a wide desktop lane keeps
+          // its location no matter how many lanes the cluster has.
+          const laneWidthPx = trackWidth
+            ? (trackWidth - BLOCK_INSET * 2) / laneCount - (laneCount > 1 ? LANE_GAP : 0)
+            : Infinity;
+          const narrow = laneWidthPx < 150;
+
           return (
             <div
-              key={item.id}
+              key={item.id ?? idx}
               draggable={!readOnly}
               onDragStart={readOnly ? undefined : (e) => handleDragStart(e, item)}
               onDragEnd={readOnly ? undefined : handleDragEnd}
               onClick={readOnly ? undefined : () => !isDragging && onEdit && onEdit(item)}
               {...interactiveDivProps(readOnly ? undefined : () => !isDragging && onEdit && onEdit(item), { disabled: readOnly })}
               style={{
-                position: 'absolute', left: 6, right: 6,
-                top: top + 'px', height: Math.max(height, 32) + 'px',
+                position: 'absolute', left: laneLeft, width: laneWidth,
+                top: top + 'px', height: height + 'px',
                 background: cfg.bg, color: cfg.text,
+                // border-box is load-bearing, not tidiness. The block used to
+                // be sized by left/right insets, where padding is irrelevant.
+                // Now that lanes set an explicit width, content-box would add
+                // the 8px padding to each side on top of it — adjacent lanes
+                // would overlap by 14px (16px padding less the 2px gap) and
+                // the collision this whole change exists to prevent would be
+                // back, just narrower. Measured at 1440 before this line went in.
+                boxSizing: 'border-box',
                 padding: '4px 8px', overflow: 'hidden',
                 cursor: readOnly ? 'default' : (isDragging ? 'grabbing' : 'grab'),
                 opacity: isDragging ? 0.35 : 1,
@@ -218,29 +366,43 @@ function DayChart({ items, onEdit, onTimeUpdate, readOnly }) {
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 4 }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <p style={{
-                    fontSize: 11, fontWeight: 700, margin: 0,
-                    color: cfg.text, fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }}>
-                    {item.event_name}
-                  </p>
+                  {/* A block at the minimum height has no room for the time
+                      line below, and short items are exactly the ones whose
+                      drawn height overstates their real duration — so the
+                      start time goes inline instead of being dropped. Now
+                      that these blocks are visible side by side rather than
+                      hidden behind each other, they have to say when they are. */}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, minWidth: 0 }}>
+                    <p style={{
+                      fontSize: 11, fontWeight: 700, margin: 0, flex: 1,
+                      color: cfg.text, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {item.event_name}
+                    </p>
+                    {height <= 40 && !narrow && (
+                      <span style={{ fontSize: 9, color: cfg.text, opacity: 0.75, flexShrink: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                        {fmt12(item.start_time)}
+                      </span>
+                    )}
+                  </div>
                   {height > 40 && (
-                    <p style={{ fontSize: 10, color: cfg.text, opacity: 0.7, margin: '1px 0 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <p style={{ fontSize: 10, color: cfg.text, opacity: 0.7, margin: '1px 0 0', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {fmt12(item.start_time)}{item.end_time ? ` – ${fmt12(item.end_time)}${crossesMidnight ? ' (+1)' : ''}` : ''} ({dur}m)
                     </p>
                   )}
-                  {height > 58 && item.location && (
+                  {height > 58 && !narrow && item.location && (
                     <p style={{ fontSize: 10, color: cfg.text, opacity: 0.6, margin: '1px 0 0', fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {item.location}
                     </p>
                   )}
                 </div>
-                {!readOnly && <Edit2 size={10} style={{ color: cfg.text, opacity: 0.5, flexShrink: 0, marginTop: 2 }} />}
+                {!readOnly && !narrow && <Edit2 size={10} style={{ color: cfg.text, opacity: 0.5, flexShrink: 0, marginTop: 2 }} />}
               </div>
             </div>
           );
         })}
+      </div>
       </div>
     </div>
   );
