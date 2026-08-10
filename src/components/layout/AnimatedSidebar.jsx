@@ -62,7 +62,7 @@ import {
   Clock, Heart, Radio, UtensilsCrossed,
   Plane, Hotel, Car, Phone, Globe,
   UserPlus, LogOut, HelpCircle, Lightbulb, CreditCard,
-  Sparkles,
+  Sparkles, Wand2,
   BarChart2,
   MapPin,
   ScrollText,
@@ -313,6 +313,13 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
               isActive={isActive("/event-details")}
               onClick={() => navigate("/event-details")}
             />
+            <NavItem
+              icon={Wand2}
+              label="Ava Studio"
+              url="/studio/ava"
+              isActive={isActive("/studio/ava")}
+              onClick={() => navigate("/studio/ava")}
+            />
           </>
         )}
 
@@ -544,6 +551,30 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
               <FileText size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
               <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS }}>
                 Event details
+              </span>
+            </div>
+          );
+        })()}
+
+        {/* Ava Studio link */}
+        {!isCollaboratorMobile && (() => {
+          const active = isActive("/studio/ava");
+          return (
+            <div
+              onClick={() => handleNav("/studio/ava")}
+              aria-label="Ava Studio"
+              {...interactiveRowProps(() => handleNav("/studio/ava"))}
+              style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "10px 16px", cursor: "pointer",
+                borderLeft: active ? "2px solid #E03553" : "2px solid transparent",
+                background: active ? "rgba(224,53,83,0.08)" : "transparent",
+                transition: "background 0.15s ease",
+              }}
+            >
+              <Wand2 size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS }}>
+                Ava Studio
               </span>
             </div>
           );
