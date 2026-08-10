@@ -114,8 +114,14 @@ export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isS
           onMouseEnter={e => { if (!isSaved) e.currentTarget.style.color = '#0A0A0A'; }}
           onMouseLeave={e => { if (!isSaved) e.currentTarget.style.color = 'rgba(10,10,10,0.6)'; }}
         >
+          {/* The added state is "Added", not the full sentence the modal
+              uses. This column is flexShrink: 0, so every character in it
+              is taken straight off the vendor name and address beside it —
+              measured, 31px of them at a 390 viewport. The check icon
+              carries the rest of the meaning; the name is what the couple
+              actually needs to read. */}
           {isSaved ? <Check size={11} /> : <Plus size={11} />}
-          {isSaving ? 'Adding…' : isSaved ? 'Added to my vendors' : 'Add to my vendors'}
+          {isSaving ? 'Adding…' : isSaved ? 'Added' : 'Add to my vendors'}
         </button>
       </div>
     </div>
