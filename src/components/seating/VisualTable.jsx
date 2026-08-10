@@ -24,10 +24,18 @@ const SEAT_ORBIT_GAP = 30;
  */
 export function seatSpacingCanvasPx(shape, capacity) {
   const cap = Math.max(1, capacity || 1);
-  if (shape !== 'rectangle') {
-    return (2 * Math.PI * (TABLE_W_ROUND / 2 + SEAT_ORBIT_GAP)) / cap;
+  // Two different branch conditions, deliberately, because the component
+  // already uses two: the table BODY is round for anything that isn't
+  // 'rectangle', but getSeatPositions only ORBITS the seats when the shape
+  // is literally 'round'. Table.jsonc's enum is round|rectangle and shape is
+  // required, so today the two always agree — but an imported layout
+  // carrying any third value would draw a round body with seats in rows,
+  // and spacing has to follow the seats, not the body.
+  const tableW = shape !== 'rectangle' ? TABLE_W_ROUND : TABLE_W_RECT;
+  if (shape === 'round') {
+    return (2 * Math.PI * (tableW / 2 + SEAT_ORBIT_GAP)) / cap;
   }
-  return TABLE_W_RECT / (Math.ceil(cap / 2) + 1);
+  return tableW / (Math.ceil(cap / 2) + 1);
 }
 
 /**
