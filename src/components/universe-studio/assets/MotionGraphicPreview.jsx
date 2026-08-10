@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 // see UniverseWorldView.jsx's Chapter 6 comment for why.
 export default function MotionGraphicPreview({ universe, weddingDetails }) {
   const bg = universe?.colors?.darkBg || '#0A0A0A';
+  const text = universe?.colors?.darkText || '#FFFFFF';
+  const accent = universe?.colors?.accent || '#E03553';
   const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const date = weddingDetails?.weddingDate
@@ -40,7 +42,7 @@ export default function MotionGraphicPreview({ universe, weddingDetails }) {
             transition={{ delay: i * 0.08, duration: 0.3 }}
             style={{
               fontFamily: headingFont,
-              fontWeight: 300, fontSize: 18, color: '#FFFFFF',
+              fontWeight: 300, fontSize: 18, color: text,
               letterSpacing: char === ' ' ? '0.3em' : '0.15em',
             }}
           >
@@ -54,26 +56,26 @@ export default function MotionGraphicPreview({ universe, weddingDetails }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: phase >= 1 ? 0.6 : 0 }}
         transition={{ delay: chars.length * 0.08 + 0.2 }}
-        style={{ fontSize: 8, color: '#FFFFFF', letterSpacing: '0.25em', textAlign: 'center' }}
+        style={{ fontSize: 8, color: `${text}99`, letterSpacing: '0.25em', textAlign: 'center' }}
       >
         {date}
       </motion.p>
 
-      {/* Line */}
+      {/* Line — the universe's own accent, not a neutral divider */}
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: phase >= 2 ? '60%' : 0 }}
         transition={{ duration: 0.8, ease: 'easeInOut' }}
-        style={{ height: '1px', background: 'rgba(255,255,255,0.4)' }}
+        style={{ height: '1px', background: accent }}
       />
 
       {/* Tagline */}
       <motion.p
         initial={{ opacity: 0 }}
-        animate={{ opacity: phase >= 3 ? 0.5 : 0 }}
+        animate={{ opacity: phase >= 3 ? 1 : 0 }}
         transition={{ duration: 0.6 }}
         style={{
-          fontSize: 7, color: '#FFFFFF', letterSpacing: '0.5em',
+          fontSize: 7, color: accent, letterSpacing: '0.5em',
           textTransform: 'uppercase', textAlign: 'center'
         }}
       >
