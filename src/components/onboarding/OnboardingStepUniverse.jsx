@@ -36,7 +36,24 @@ const UNIVERSES = UNIVERSE_CATALOG.map((u, i) => ({
 // deliberate dark-tile exception in the wizard now — see DESIGN_SPEC.md.
 // Same visual language as the marketing tile, plus a selection checkmark
 // badge the marketing page has no reason to need.
-function UniverseGridTile({ universe, index, isSelected, onSelect }) {
+//
+// Accept-pass round 3 (follow-up #1/#2): the tile itself used to be the
+// ONLY tap target, and tapping it just opened the full-screen preview
+// (setPreviewUniverse) — it never called setSelectedUniverse. The real
+// "select" action lived at the bottom of that preview's own scrollable
+// world-view (UniverseWorldView's "Make this my universe" button), so a
+// couple who tapped a few tiles to compare, looked at the previews, and
+// closed them had selected nothing — Continue silently defaulted to
+// 'london'. Not a persistence bug (activeUniverse writes and reads
+// correctly everywhere downstream); the pick just never registered.
+// Explore/Select are now explicit per-tile buttons instead of one
+// ambiguous tap: Explore opens the same preview as before, Select calls
+// setSelectedUniverse directly — no detour through the preview required.
+// Both funnel into the same selectedUniverse state the preview's own
+// "Make this my universe" button already used, so the two stay in sync
+// automatically; whichever path a couple takes, every tile's checkmark
+// reflects the current choice.
+function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile }) {
   const [hovered, setHovered] = useState(false);
   const swatches = [
     { color: universe.colors.darkBg, label: 'Ground' },
@@ -48,10 +65,10 @@ function UniverseGridTile({ universe, index, isSelected, onSelect }) {
 
   return (
     <article
-      onClick={onSelect}
+      onClick={onExplore}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      {...interactiveDivProps(onSelect, { label: `Preview the ${universe.name} universe` })}
+      {...interactiveDivProps(onExplore, { label: `Preview the ${universe.name} universe` })}
       style={{
         position: 'relative', aspectRatio: '3 / 4', overflow: 'hidden', cursor: 'pointer',
         outline: isSelected ? '2px solid #E03553' : 'none', outlineOffset: -2,
@@ -103,10 +120,42 @@ function UniverseGridTile({ universe, index, isSelected, onSelect }) {
           </p>
         )}
 
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
           {swatches.map((s, i) => (
             <span key={i} title={s.label} style={{ width: 10, height: 10, background: s.color, border: s.color === '#FFFFFF' ? '1px solid rgba(255,255,255,0.3)' : 'none', flexShrink: 0 }} />
           ))}
+        </div>
+
+        {/* Explicit per-tile actions (accept-pass round 3) — always visible,
+            not hover-gated, since the whole point is that the old single
+            ambiguous tap was easy to miss. stopPropagation on both: without
+            it, a click bubbles to the article's own onClick=onExplore,
+            which would immediately reopen the preview right after Select
+            was pressed. */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onExplore(); }}
+            style={{
+              flex: 1, padding: '6px 0', borderRadius: 999, fontSize: 10, fontWeight: 600,
+              fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap',
+              background: 'rgba(255,255,255,0.12)', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.3)',
+            }}
+          >
+            Explore
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); if (!isSelected) onSelectTile(); }}
+            disabled={isSelected}
+            style={{
+              flex: 1, padding: '6px 0', borderRadius: 999, fontSize: 10, fontWeight: 700,
+              fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: isSelected ? 'default' : 'pointer', whiteSpace: 'nowrap',
+              background: isSelected ? 'rgba(255,255,255,0.15)' : '#E03553', color: '#FFFFFF', border: 'none',
+            }}
+          >
+            {isSelected ? 'Selected' : 'Select'}
+          </button>
         </div>
       </div>
     </article>
@@ -190,7 +239,8 @@ export default function OnboardingStepUniverse({ onNext, data }) {
               universe={u}
               index={i}
               isSelected={selectedUniverse === u.id}
-              onSelect={() => setPreviewUniverse(u)}
+              onExplore={() => setPreviewUniverse(u)}
+              onSelectTile={() => setSelectedUniverse(u.id)}
             />
           ))}
         </motion.div>
