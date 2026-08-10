@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
 import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
+import { useAvaFocus } from "@/hooks/useAvaFocus";
 import { tallyGuestRsvp, isAttending, isDeclined, isAwaitingPrimary } from "@/lib/guestRsvpTally";
 const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,8 @@ export default function Guests() {
   // this feature is supposed to avoid — so this stays true until that
   // backend limitation is actually fixed, not just when canEdit is false.
   const readOnly = isCollaborating;
+
+  useAvaFocus();
 
   const [guests, setGuests] = useState([]);
   const [tables, setTables] = useState([]);
@@ -671,7 +674,7 @@ export default function Guests() {
           </button>
           {!isCollaborating && (
             <>
-              <button onClick={() => { setEditingGuest(null); setShowForm(true); setActiveTab('guests'); }} className="btn-editorial-secondary">
+              <button data-ava-focus="guests" onClick={() => { setEditingGuest(null); setShowForm(true); setActiveTab('guests'); }} className="btn-editorial-secondary">
                 + Add guest
               </button>
               <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>

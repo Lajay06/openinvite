@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
 import { interactiveDivProps } from "@/lib/a11y";
+import { useAvaFocus } from "@/hooks/useAvaFocus";
 import { Loader2, X, MapPin, Trash2, Edit2, Calendar } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -409,7 +410,10 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
   const dateTimeStr = [dateStr, timeStr].filter(Boolean).join(' · ');
 
   return (
-    <div className={`ev-card${hasImage ? '' : ' ev-card--no-image'}`}>
+    <div
+      className={`ev-card${hasImage ? '' : ' ev-card--no-image'}`}
+      data-ava-focus={fixedType === 'ceremony' ? 'day' : undefined}
+    >
       {/* ── Info panel ───────────────────────────────────────────────────── */}
       <div className="ev-info">
         {/* Type overline */}
@@ -485,8 +489,17 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+// The ceremony card useAvaFocus targets lives on the "events" tab, not this
+// page's default "details" tab — resolved synchronously in useState's own
+// lazy initializer (not an effect) so the very first render already has the
+// right tab mounted, before useAvaFocus's own effect looks for the element.
+function initialTab() {
+  return new URLSearchParams(window.location.search).get('ava_focus') === 'day' ? 'events' : 'details';
+}
+
 export default function EventDetailsPage() {
-  const [tab, setTab] = useState('details');
+  const [tab, setTab] = useState(initialTab);
+  useAvaFocus();
   const [record, setRecord] = useState(null);
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
