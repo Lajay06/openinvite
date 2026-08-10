@@ -968,6 +968,14 @@
         "showAttending": { "type": "boolean", "default": false },
         "showCircle": { "type": "boolean", "default": false }
       }
+    },
+    "avaStudioMilestones": {
+      "type": "object",
+      "description": "Ava Studio experience overhaul — server-side one-time celebration guards so a milestone (e.g. website publish) confetti-celebrates once per wedding, not once per browser/device. Read/written by src/pages/AvaStudio.jsx only.",
+      "properties": {
+        "publishCelebrated": { "type": "boolean", "default": false },
+        "allDoneCelebrated": { "type": "boolean", "default": false }
+      }
     }
   },
   "rls": {

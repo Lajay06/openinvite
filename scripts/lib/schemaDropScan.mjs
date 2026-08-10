@@ -63,6 +63,10 @@ export const SCHEMAS = {
     // target + per-category allocation, was localStorage-only before, never
     // in the schema at all.
     budget:1,
+    // Registered — Ava Studio experience overhaul: server-side one-time
+    // milestone-celebration guards (publish/all-done confetti fires once
+    // per wedding, not once per browser).
+    avaStudioMilestones:1,
     // Nested objects with registered sub-fields
     _nested: {
       mainCeremony: ['venueName','address','placeId','mapsUrl','photoUrl','phone','website',
@@ -93,6 +97,7 @@ export const SCHEMAS = {
       emergencyContacts: ['primary','backup','venue','otherNotes'],
       guestExperienceSettings: ['backgroundMusic','showAttending','showCircle'],
       budget: ['total','categories'],
+      avaStudioMilestones: ['publishCelebrated','allDoneCelebrated'],
     },
   },
 
