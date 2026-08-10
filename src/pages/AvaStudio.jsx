@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { JOURNEY_STEPS, getJourneyCounts, getJourneyProgress } from '@/lib/setupJourney';
+import { getJourneyCounts, getJourneyProgress } from '@/lib/setupJourney';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { interactiveDivProps } from '@/lib/a11y';
 
