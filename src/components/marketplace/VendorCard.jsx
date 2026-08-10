@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Star, Heart, Camera, Video, UtensilsCrossed, Flower, Palette, Scissors, Music2, Sparkles, Building2, Car, FileText, Cake, Award, MoreHorizontal, Bookmark } from 'lucide-react';
+import { MapPin, Star, Heart, Camera, Video, UtensilsCrossed, Flower, Palette, Scissors, Music2, Sparkles, Building2, Car, FileText, Cake, Award, MoreHorizontal, Plus, Check } from 'lucide-react';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -102,15 +102,20 @@ export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isS
         >
           View profile
         </button>
+        {/* "Add to my vendors", not a bookmark or a star. This writes a
+            Vendor record onto the My vendors list; starring a vendor as a
+            favourite is a separate action that lives on that page. The old
+            "Save" + bookmark icon read as favouriting, which is why saving
+            here and then finding nothing under Favorites looked broken. */}
         <button
           onClick={() => onSave(vendor)}
           disabled={isSaved || isSaving}
-          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, fontFamily: PJS, cursor: isSaved ? 'default' : 'pointer', border: 'none', background: 'none', color: isSaved ? '#10B981' : 'rgba(10,10,10,0.6)', padding: '2px 0', transition: 'color 0.12s' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, fontFamily: PJS, cursor: isSaved ? 'default' : 'pointer', border: 'none', background: 'none', color: isSaved ? '#10B981' : 'rgba(10,10,10,0.6)', padding: '2px 0', transition: 'color 0.12s', textAlign: 'right' }}
           onMouseEnter={e => { if (!isSaved) e.currentTarget.style.color = '#0A0A0A'; }}
           onMouseLeave={e => { if (!isSaved) e.currentTarget.style.color = 'rgba(10,10,10,0.6)'; }}
         >
-          <Bookmark size={11} style={{ fill: isSaved ? '#10B981' : 'transparent' }} />
-          {isSaving ? 'Saving…' : isSaved ? 'Saved' : 'Save'}
+          {isSaved ? <Check size={11} /> : <Plus size={11} />}
+          {isSaving ? 'Adding…' : isSaved ? 'Added to my vendors' : 'Add to my vendors'}
         </button>
       </div>
     </div>

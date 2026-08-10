@@ -7,7 +7,7 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import VendorCard from '@/components/marketplace/VendorCard';
 import VendorProfileModal from '@/components/marketplace/VendorProfileModal';
-import { CATEGORIES, CATEGORY_QUERIES, saveVendorFromPlaces } from '@/lib/vendorPlaces';
+import { CATEGORIES, CATEGORY_QUERIES, saveVendorFromPlaces, getSavedPlaceIds } from '@/lib/vendorPlaces';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -89,15 +89,32 @@ export default function VendorMarketplace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Seed the added set from what this couple already has, so a vendor
+  // already in My vendors reads as added instead of offering an add that
+  // would write a second copy. savedIds is keyed by place_id, which is
+  // exactly what Vendor.google_place_id stores — same namespace, no mapping.
+  // Merged into whatever is already there rather than replacing it, so it
+  // can't clobber an add that completed while this was in flight.
+  useEffect(() => {
+    getSavedPlaceIds()
+      .then(ids => setSavedIds(prev => new Set([...prev, ...ids])))
+      .catch(() => { /* non-fatal — the write-time guard in
+                        saveVendorFromPlaces still prevents the duplicate,
+                        the button just won't say so up front */ });
+  }, []);
+
   const handleSave = async (vendor, details) => {
     if (savedIds.has(vendor.id)) return;
     setSavingIds(prev => new Set([...prev, vendor.id]));
     try {
-      await saveVendorFromPlaces(vendor, details);
+      const { created } = await saveVendorFromPlaces(vendor, details);
       setSavedIds(prev => new Set([...prev, vendor.id]));
-      toast.success('Saved to My vendors');
+      // Distinguish the two outcomes rather than claiming an add that
+      // didn't happen — "already there" is the honest result when the
+      // write-time guard finds an existing record this mount didn't know about.
+      toast.success(created ? 'Added to my vendors' : 'Already in my vendors');
     } catch {
-      toast.error('Failed to save vendor');
+      toast.error('Failed to add vendor');
     }
     setSavingIds(prev => { const s = new Set(prev); s.delete(vendor.id); return s; });
   };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, MapPin, Globe, Phone, Star, ExternalLink, Bookmark, Loader2, Map as MapIcon } from 'lucide-react';
+import { X, MapPin, Globe, Phone, Star, ExternalLink, Plus, Check, Loader2, Map as MapIcon } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -131,8 +131,12 @@ function ContactTab({ vendor, details, onSave, isSaved }) {
           disabled={isSaved}
           style={{ width: '100%', padding: '10px 0', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: isSaved ? 'default' : 'pointer', border: '1.5px solid rgba(10,10,10,0.15)', background: 'none', color: isSaved ? '#10B981' : '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
         >
-          <Bookmark size={13} style={{ fill: isSaved ? '#10B981' : 'transparent', color: isSaved ? '#10B981' : '#0A0A0A' }} />
-          {isSaved ? 'Saved to my vendors' : 'Save to my vendors'}
+          {/* Matches VendorCard's affordance — adding to My vendors, not
+              favouriting. See the comment there. */}
+          {isSaved
+            ? <Check size={13} style={{ color: '#10B981' }} />
+            : <Plus size={13} style={{ color: '#0A0A0A' }} />}
+          {isSaved ? 'Added to my vendors' : 'Add to my vendors'}
         </button>
       </div>
     </div>
