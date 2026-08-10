@@ -3,6 +3,11 @@
  */
 import React, { useEffect, useState } from "react";
 import ScrollCue from "@/components/motion/ScrollCue";
+import { wixPhoto } from "@/lib/wixImage";
+
+// The first image every visitor sees, and until now the heaviest thing on the
+// page: the bare Wix original is 664 KB of JPEG for 1280x960.
+const HERO_BG = wixPhoto("d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg", 1280, 960).src;
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReducedMotion = () =>
@@ -35,7 +40,11 @@ export default function HeroCollage({ onCTA }) {
         display: "flex",
         alignItems: "center",
         overflow: "hidden",
-        backgroundImage: `url(https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg)`,
+        // A CSS background cannot take a srcset, so this is the single best
+        // choice rather than a ladder: the master's full 1280px as WebP. Going
+        // wider would upscale (see src/lib/wixImage.js) and going narrower
+        // would throw away the only real pixels there are.
+        backgroundImage: `url(${HERO_BG})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundAttachment: "scroll",

@@ -3,13 +3,21 @@
  * Full-bleed photo at viewport height, object-fit cover, text overlaid.
  */
 import React, { useRef, useEffect, useState } from "react";
+import { wixPhoto } from "@/lib/wixImage";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
 typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const TEXT = "All the powerful tools, beautifully designed to make wedding planning smooth, stylish, and seriously organized.";
-const IMG_SRC = "https://static.wixstatic.com/media/d2df22_c34b84a5b42f49b0963b953b94c0e8c4~mv2.jpg";
+// Full-bleed at viewport height, so it takes a real ladder: mobile no longer
+// pulls the desktop file. Capped at the 1280px master — see src/lib/wixImage.js
+// for why asking Wix for more is upscaling, not detail.
+const IMG = wixPhoto("d2df22_c34b84a5b42f49b0963b953b94c0e8c4~mv2.jpg", 1280, 853);
+// 100vw x 100vh with object-fit cover, so on a portrait phone the crop is
+// height-driven and needs ~150vh of image width, not 100vw — the same reasoning
+// as HERO_SIZES, with 150 rather than 134 because this photo is 3:2, not 4:3.
+const IMG_SIZES = "(max-aspect-ratio: 3/2) 150vh, 100vw";
 
 export default function ValuePropSection() {
   const sectionRef = useRef(null);
@@ -51,7 +59,9 @@ export default function ValuePropSection() {
             (MarketingHero) and the universe photo band (UniverseMiniHero)
             already use, so this matches them rather than inventing a third. */}
       <img
-        src={IMG_SRC}
+        src={IMG.src}
+        srcSet={IMG.srcSet}
+        sizes={IMG_SIZES}
         alt="Openinvite platform"
         style={{
           position: "absolute", inset: 0, width: "100%", height: "100%",
