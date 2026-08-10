@@ -17,14 +17,28 @@
 
 import { getMyRecords } from '@/lib/resolveMyWedding';
 
+// Same Cloudinary bucket/asset pool the onboarding wizard's own
+// SHELL_STEP_IMAGES (Onboarding.jsx) draws from — reused deliberately so
+// Ava Studio's photography-forward look shares the exact visual world as
+// onboarding, with no new asset sourcing.
+const CLOUDINARY_BASE = 'https://res.cloudinary.com/dsr84xknv/image/upload';
+const img = (path) => `${CLOUDINARY_BASE}/f_auto,q_auto/${path}`;
+
+// ultraGated: true marks the 3 steps that require the Ultra plan (wedding
+// website builder, universes, and online RSVP pages are Ultra-only per
+// src/lib/planFeatures.js's ULTRA_EXTRAS — confirmed against the live
+// pricing page, the source of truth that list is copied from). AvaStudio.jsx
+// uses this to group them into a separate "What Ultra adds" upgrade-nudge
+// cluster for Pro-plan accounts, rather than routing a Pro user into a step
+// they can't act on.
 export const JOURNEY_STEPS = [
   {
     key: 'website',
     title: 'Build your website',
     purpose: 'Add your story, photos, and the pages guests will actually see.',
     route: '/studio/guest-suite',
-    avaLine: "Let's start with your website — it's the first thing your guests see, so let's make it feel like you.",
-    avaLineDone: "Your website's taking shape. Come back anytime to add more.",
+    image: img('DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10294_qw316r.jpg'),
+    ultraGated: true,
     isComplete: (wedding) => {
       const sections = wedding?.pageSections || {};
       const corePages = ['home', 'our-story', 'celebration'];
@@ -36,8 +50,8 @@ export const JOURNEY_STEPS = [
     title: 'Add your guests',
     purpose: 'Get your guest list into Openinvite so RSVPs and seating have somewhere to go.',
     route: '/Guests?ava_focus=guests',
-    avaLine: "Time to bring your people in. Add your guest list to get started.",
-    avaLineDone: "Your guest list is in. You can add more any time.",
+    image: img('DTS_Pride_Agust%C3%ADn_Far%C3%ADas_Photos_ID5544_sgsmaz.jpg'),
+    ultraGated: false,
     isComplete: (wedding, counts) => (counts?.guestCount || 0) > 0,
   },
   {
@@ -45,8 +59,8 @@ export const JOURNEY_STEPS = [
     title: 'Turn on RSVP',
     purpose: 'Set meal options, plus-ones, and your reply deadline.',
     route: '/studio/guest-suite',
-    avaLine: "Let's make it easy for guests to say yes — set up your RSVP details.",
-    avaLineDone: "RSVP is set up. Guests will know exactly how to respond.",
+    image: img('DTS_Philia_Daniel_Far%C3%B2_Photos_ID4659_pnnku3.jpg'),
+    ultraGated: true,
     isComplete: (wedding) => !!(wedding?.rsvpContent && Object.keys(wedding.rsvpContent).length > 0),
   },
   {
@@ -54,8 +68,8 @@ export const JOURNEY_STEPS = [
     title: 'Publish your website',
     purpose: 'Go live so guests can find everything in one place.',
     route: '/studio/guest-suite/share',
-    avaLine: "Everything's ready — let's take your website live.",
-    avaLineDone: "Your website is live.",
+    image: img('DTS_Community_Agust%C3%ADn_Far%C3%ADas_Photos_ID6374_iumjqj.jpg'),
+    ultraGated: true,
     isComplete: (wedding) => !!wedding?.websiteEnabled,
   },
   {
@@ -63,8 +77,8 @@ export const JOURNEY_STEPS = [
     title: 'Set your budget',
     purpose: 'Put a number on it, then track it as you book.',
     route: '/Budget?ava_focus=budget',
-    avaLine: "Let's put a number on this wedding — a budget now saves you stress later.",
-    avaLineDone: "Your budget's set. Keep tracking as you book.",
+    image: img('DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa.jpg'),
+    ultraGated: false,
     isComplete: (wedding) => (wedding?.budget?.total || 0) > 0,
   },
   {
@@ -72,8 +86,8 @@ export const JOURNEY_STEPS = [
     title: 'Add your vendors',
     purpose: "Already booked?, keep every contact in one place. Still looking?, browse the marketplace.",
     route: '/Vendors?ava_focus=vendors',
-    avaLine: "Add the vendors you've already booked, or start browsing to fill the gaps.",
-    avaLineDone: "Your vendors are in one place. Nice.",
+    image: img('DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6183_eapdy7.jpg'),
+    ultraGated: false,
     isComplete: (wedding, counts) => (counts?.vendorCount || 0) > 0,
   },
   {
@@ -81,8 +95,8 @@ export const JOURNEY_STEPS = [
     title: 'Plan the day',
     purpose: 'Lock in your ceremony venue, time, and order of events.',
     route: '/event-details?ava_focus=day',
-    avaLine: "Last one — let's lock in your ceremony details so the day has a shape.",
-    avaLineDone: "The day is planned. You're in great shape.",
+    image: img('justin-follis-A7Um4oi-UYU-unsplash_bbjjam.jpg'),
+    ultraGated: false,
     isComplete: (wedding, counts) => !!wedding?.mainCeremony?.venueName || (counts?.scheduleCount || 0) > 0,
   },
 ];
