@@ -15,7 +15,7 @@ import { validateUploadFile } from '@/lib/uploadValidation';
 import { interactiveDivProps } from '@/lib/a11y';
 
 import { buildTablesWithGuests } from '@/lib/seatingChart';
-import VisualTable from '../components/seating/VisualTable';
+import VisualTable, { LABEL_FORMS, labelForName, availableLabelPx } from '../components/seating/VisualTable';
 import VisualAsset from '../components/seating/VisualAsset';
 import VenueAssetLibrary from '../components/seating/VenueAssetLibrary';
 import AddTableModal from '../components/seating/AddTableModal';
@@ -142,12 +142,59 @@ export default function SeatingPage() {
   const MIN_ZOOM = 0.4;
   const MAX_ZOOM = 2;
 
+  // ── Dot grid, derived from zoom ────────────────────────────────────────
+  // Both grid layers are painted INSIDE the scaled canvas, so a fixed pitch
+  // and dot radius shrink with it. At MIN_ZOOM 0.4 the 1.5px dot rendered at
+  // 0.6 screen px on a 9.6px pitch — sub-pixel at 13% alpha, which is why
+  // the grid appeared to disappear rather than merely thin out. Counter-
+  // scaling the dot alone would have left a 9.6px pitch, which reads as
+  // noise, so the pitch steps too: the on-screen band lands at 18-30px
+  // across the whole 0.4-2.0 zoom range instead of collapsing.
+  const gridDotPx = +(1.5 / zoom).toFixed(2);
+  const gridPitchPx = 24 * (zoom < 0.75 ? 2 : zoom >= 1.5 ? 0.5 : 1);
+
+  // Measured render scale of the canvas, including the zoom transform.
+  // getBoundingClientRect is used rather than ResizeObserver's contentRect
+  // because contentRect reports the pre-transform layout box — it would
+  // report 1400 at every zoom level and the label tiers would never fire.
+  // The observer is still wired up, for viewport changes that re-lay-out
+  // the canvas without changing zoom.
+  const [renderScale, setRenderScale] = useState(1);
+
+  // ── Seat labels: initials or names (b) ─────────────────────────────────
+  // localStorage, keyed per event, not the couple's record: this is a
+  // per-viewer display preference, not wedding data, and putting it on
+  // WeddingDetails would mean a cross-lane Base44 schema change for a UI
+  // toggle. Accepted trade-off — the setting does NOT follow the user
+  // between devices or browsers. Cheap to promote to the entity later if
+  // that turns out to matter.
+  const [labelMode, setLabelMode] = useState('initials');
+
   // ── Multi-event seating (PR6) ──────────────────────────────────────────
   // A tab is "visible" if it's Reception (always, undeletable — the
   // migrated original chart), or it has at least one Table/VenueAsset, or
   // the couple just added it via "+ Add event" this session (before
   // they've added a table yet).
   const [activeEventId, setActiveEventId] = useState(RECEPTION_EVENT_ID);
+  const labelPrefKey = `oi_seating_labels:${activeEventId}`;
+
+  // Load the saved preference whenever the active event changes — each
+  // event tab keeps its own, so a densely-seated reception can stay on
+  // initials while a small ceremony shows names.
+  useEffect(() => {
+    try {
+      setLabelMode(localStorage.getItem(labelPrefKey) === 'names' ? 'names' : 'initials');
+    } catch { setLabelMode('initials'); }
+  }, [labelPrefKey]);
+
+  const toggleLabelMode = () => {
+    setLabelMode(prev => {
+      const next = prev === 'names' ? 'initials' : 'names';
+      try { localStorage.setItem(labelPrefKey, next); } catch { /* private mode — session-only, not fatal */ }
+      return next;
+    });
+  };
+
   const [manuallyAddedEventIds, setManuallyAddedEventIds] = useState(new Set());
   const [showAddEventMenu, setShowAddEventMenu] = useState(false);
   const [showCopyMenu, setShowCopyMenu] = useState(false);
@@ -253,6 +300,45 @@ export default function SeatingPage() {
   /* ── This event's tables/assets — everything below the tab bar reads
      these, never the full unfiltered arrays. ── */
   const eventTables = useMemo(() => tables.filter(t => resolveEventId(t) === activeEventId), [tables, activeEventId]);
+
+  // Re-measure on every commit (zoom changes re-render, and an ancestor
+  // transform change fires no observer), guarded so it can't loop. The
+  // ResizeObserver covers the other direction: a viewport resize that
+  // relays out the canvas without re-rendering this component.
+  React.useLayoutEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    const read = () => {
+      const w = el.getBoundingClientRect().width;
+      if (!w) return;
+      setRenderScale(prev => (Math.abs(prev - w / CANVAS_W) > 0.001 ? w / CANVAS_W : prev));
+    };
+    read();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  });
+
+  // Least-informative form actually in use across the seats on screen — the
+  // toggle has to describe what the couple is looking at, so if any seat has
+  // fallen back to initials the label says so rather than claiming full
+  // names are showing. Computed from the same per-name measurement the seats
+  // themselves use, so the two can't disagree.
+  const activeLabelForm = useMemo(() => {
+    let worst = 0;
+    for (const t of eventTables) {
+      const avail = availableLabelPx(t.shape, t.capacity, renderScale);
+      for (const a of (t.assigned_guests || [])) {
+        const g = guests.find(x => x.id === a.guest_id);
+        if (!g) continue;
+        const idx = LABEL_FORMS.indexOf(labelForName(g.name, avail).form);
+        if (idx > worst) worst = idx;
+        if (worst === LABEL_FORMS.length - 1) return LABEL_FORMS[worst];
+      }
+    }
+    return LABEL_FORMS[worst];
+  }, [eventTables, guests, renderScale]);
   const eventAssets = useMemo(() => venueAssets.filter(a => resolveEventId(a) === activeEventId), [venueAssets, activeEventId]);
 
   /* ── Copy layout — tables only, never guest assignments (decision #3).
@@ -699,8 +785,14 @@ export default function SeatingPage() {
               {ev.name}
             </button>
           ))}
+          {/* No marginBottom here. The strip is alignItems:'center' and the
+              tab buttons are padding:'13px 0' with a 2px bottom border, so
+              the button centers itself against the labels; the 8px bottom
+              margin this used to carry was what lifted it off that line.
+              Measured shift was 4px, not 8 — flex centering absorbs half the
+              margin, so the visible error is half what the value suggests. */}
           {!readOnly && addableEvents.length > 0 && (
-            <div style={{ position: 'relative', marginBottom: 8 }}>
+            <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setShowAddEventMenu(v => !v)}
                 style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: '#444444', fontFamily: PJS, background: 'none', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}
@@ -796,6 +888,34 @@ export default function SeatingPage() {
               <RotateCcw size={10} />
               <span style={{ fontSize: 11, fontWeight: 700, fontFamily: PJS }}>Reset</span>
             </button>
+
+            {/* Seat labels toggle. When names are on but the measured space
+                per seat has degraded them, the label says which tier is
+                actually showing — a couple who switched names on and sees
+                initials needs to know that is the zoom, not a broken
+                setting. */}
+            <button
+              onClick={toggleLabelMode}
+              aria-pressed={labelMode === 'names'}
+              title={labelMode === 'names'
+                ? 'Showing guest names on seats. Hover a seat for the full name at any zoom.'
+                : 'Showing initials on seats. Hover a seat for the full name.'}
+              style={{
+                marginLeft: 10, display: 'flex', alignItems: 'center', gap: 5,
+                borderRadius: 999, padding: '4px 12px', cursor: 'pointer', fontFamily: PJS,
+                fontSize: 11, fontWeight: 600,
+                border: '1px solid rgba(10,10,10,0.15)',
+                background: labelMode === 'names' ? 'rgba(224,53,83,0.08)' : 'transparent',
+                color: labelMode === 'names' ? '#E03553' : '#444444',
+              }}
+            >
+              <Users size={11} />
+              {labelMode === 'names'
+                ? (activeLabelForm.key === 'full'
+                    ? 'Names'
+                    : `Names · ${activeLabelForm.label} at this zoom`)
+                : 'Initials'}
+            </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -808,11 +928,15 @@ export default function SeatingPage() {
               <Download size={13} />
               {isExporting ? 'Exporting…' : 'Export'}
             </button>
+            {/* btn-primary, not a hand-rolled copy of it. The inline style
+                this replaces was already #E03553 on white — it was trying to
+                be the primary button and missed on every axis: 8px/16px
+                padding against the standard 6px/14px, 14px type against 12px,
+                and weight 500 against 600, so it sat oversized AND lighter
+                than Export beside it. The class also restores the hover
+                state it never had. */}
             {!readOnly && (
-              <button
-                onClick={() => setShowAIGenerator(true)}
-                style={{ background: '#E03553', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '8px 16px', fontSize: 14, fontWeight: 500, fontFamily: PJS, cursor: 'pointer' }}
-              >
+              <button onClick={() => setShowAIGenerator(true)} className="btn-primary">
                 Auto-allocate seats
               </button>
             )}
@@ -850,14 +974,18 @@ export default function SeatingPage() {
                 position: 'relative',
                 ...(venueImageUrl
                   ? { backgroundImage: `url(${venueImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                  : { backgroundImage: 'radial-gradient(circle, rgba(10,10,10,0.13) 1.5px, transparent 1.5px)', backgroundSize: '24px 24px', backgroundColor: '#FAFAFA' }
+                  : { backgroundImage: `radial-gradient(circle, rgba(10,10,10,0.13) ${gridDotPx}px, transparent ${gridDotPx}px)`, backgroundSize: `${gridPitchPx}px ${gridPitchPx}px`, backgroundColor: '#FAFAFA' }
                 ),
               }}
               onClick={(e) => { if (e.target === e.currentTarget) { setSelectedTableId(null); setSelectedSeatIndex(null); } }}
             >
               {/* Semi-transparent overlay when venue image loaded */}
               {venueImageUrl && (
-                <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(10,10,10,0.08) 1px, transparent 1px)', backgroundSize: '24px 24px', pointerEvents: 'none' }} />
+                /* Same zoom derivation as the no-image grid above. This
+                   overlay is the easier of the two to miss and the worse
+                   of the two when missed: a 1px dot at 8% alpha rendered
+                   at 0.4 screen px was invisible well before the other. */
+                <div style={{ position: 'absolute', inset: 0, backgroundImage: `radial-gradient(circle, rgba(10,10,10,0.08) ${+(1 / zoom).toFixed(2)}px, transparent ${+(1 / zoom).toFixed(2)}px)`, backgroundSize: `${gridPitchPx}px ${gridPitchPx}px`, pointerEvents: 'none' }} />
               )}
 
               {/* Tables — this event's only */}
@@ -875,6 +1003,8 @@ export default function SeatingPage() {
                     onSeatClick={handleSeatClick}
                     selected={selectedTableId === table.id}
                     selectedSeatIndex={selectedTableId === table.id ? selectedSeatIndex : null}
+                    labelMode={labelMode}
+                    renderScale={renderScale}
                   />
                   {/* Delete button — outside the table's own footprint (matches the
                       asset delete button below) and only appears after a brief hover
