@@ -331,7 +331,7 @@ const AuthenticatedApp = () => {
         <Route path="/wedding-favours" element={<LayoutWrapper currentPageName="WeddingFavours"><WeddingFavours /></LayoutWrapper>} />
         <Route path="/event-details" element={<LayoutWrapper currentPageName="EventDetails"><EventDetails /></LayoutWrapper>} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
-        <Route path="/studio/ava" element={<AvaStudio />} />
+        <Route path="/studio/ava" element={<LayoutWrapper currentPageName="AvaStudio"><AvaStudio /></LayoutWrapper>} />
         <Route path="/studio/ava/website" element={<AvaStudioWebsite />} />
         <Route path="/studio/ava/website/:step" element={<AvaStudioWebsite />} />
         <Route path="/studio/ava/assets" element={<AvaStudioAssets />} />
