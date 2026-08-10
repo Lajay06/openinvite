@@ -108,11 +108,20 @@ const fullBleedNear = (s) =>
 // 1280 wide — Wix upscales past that without capping and the extra pixels are
 // interpolated, so moving to its transforms buys format and mobile weight,
 // NOT sharpness.
+// Keyed by Wix media id, not by full URL. The URLs are now composed inside
+// src/lib/wixImage.js, so no literal appears in the components any more — and
+// the first version of this list, which held full URLs, silently stopped
+// matching the moment that helper landed. A guard that quietly finds nothing
+// is worse than no guard, so the key is the one thing that cannot move.
 const OFF_CDN_ALLOWLIST = new Set([
-  "https://static.wixstatic.com/media/d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg", // Home hero
-  "https://static.wixstatic.com/media/d2df22_c34b84a5b42f49b0963b953b94c0e8c4~mv2.jpg", // Home red banner
-  "https://static.wixstatic.com/media/d2df22_2d4ea077497f48679138b2e04dbc7e3a~mv2.jpg", // Home budget block
+  "d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg", // Home hero background
+  "d2df22_c34b84a5b42f49b0963b953b94c0e8c4~mv2.jpg", // Home red statement banner
+  "d2df22_2d4ea077497f48679138b2e04dbc7e3a~mv2.jpg", // Home budget block photo
 ]);
+
+// Any full-bleed photo routed through the Wix helper is off our CDN by
+// definition, whatever the composed URL ends up looking like.
+const WIX_CALL = /wixPhoto\(\s*["']([^"']+)["']/g;
 
 const WINDOW = 700;
 let offCdn = 0;
@@ -142,8 +151,6 @@ for (const file of walk(SRC)) {
     }
     if (!flagged) continue;
 
-    if (OFF_CDN_ALLOWLIST.has(m[1])) { known.push(`${rel}  ${m[1].slice(30, 90)}`); continue; }
-
     offCdn++;
     fail(
       `${rel}: full-bleed photo served from outside our CDN — no f_auto, no q_auto,\n` +
@@ -152,6 +159,20 @@ for (const file of walk(SRC)) {
     );
   }
 }
+// Every wixPhoto() call site: allowlisted ones are reported as outstanding
+// debt, anything else fails.
+for (const file of walk(SRC)) {
+  if (file.endsWith("wixImage.js")) continue;          // the helper itself
+  const text = readFileSync(file, "utf8");
+  const rel = file.replace(SRC, "src");
+  for (const m of text.matchAll(WIX_CALL)) {
+    if (OFF_CDN_ALLOWLIST.has(m[1])) { known.push(`${rel}  ${m[1]}`); continue; }
+    offCdn++;
+    fail(`${rel}: new off-CDN full-bleed photo via wixPhoto() — ${m[1]}\n` +
+         `      Put it on Cloudinary behind responsivePhoto() instead.`);
+  }
+}
+
 if (!offCdn) console.log("  ✓ no NEW full-bleed photo is served from a third-party host");
 if (known.length) {
   console.log(`  ! ${known.length} known off-CDN full-bleed photo(s) still outstanding — see OFF_CDN_ALLOWLIST:`);

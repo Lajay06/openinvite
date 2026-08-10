@@ -8,6 +8,14 @@ import { useScrollEngine } from "@/hooks/useScrollEngine";
 import { useSpotlight } from "@/hooks/useSpotlight";
 import { useAppleReveal } from "@/hooks/useAppleReveal";
 import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
+import { wixPhoto } from "@/lib/wixImage";
+
+// Not full-viewport like the other two: the photo column is `w-full lg:w-1/2`,
+// so it spans the viewport below Tailwind's lg (1024px) and half of it above.
+// `sizes` says exactly that rather than assuming 100vw, which would make the
+// browser pick one candidate too large on every desktop.
+const PHOTO = wixPhoto("d2df22_2d4ea077497f48679138b2e04dbc7e3a~mv2.jpg", 1280, 854);
+const PHOTO_SIZES = "(min-width: 1024px) 50vw, 100vw";
 
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
@@ -129,7 +137,9 @@ export default function FeatureBudget() {
        >
          <img
            ref={imgRef}
-           src="https://static.wixstatic.com/media/d2df22_2d4ea077497f48679138b2e04dbc7e3a~mv2.jpg"
+           src={PHOTO.src}
+           srcSet={PHOTO.srcSet}
+           sizes={PHOTO_SIZES}
            alt="Wine being poured at outdoor table"
            style={{
              position: "absolute",
