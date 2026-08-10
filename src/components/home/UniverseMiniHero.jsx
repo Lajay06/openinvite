@@ -5,6 +5,23 @@
  * then the statement line lands.
  */
 import { useRef, useState, useEffect } from "react";
+import { responsivePhoto, HERO_SIZES } from "@/lib/marketingImage";
+
+// This slot previously pointed at media.base44.com, put there by a
+// base44-builder "Visual edits" commit (c534419) that replaced the Cloudinary
+// URL with a Base44-hosted one. Three things came with that:
+//   1. It shipped the 6720x4480 PRINT master as a raw 7.76 MB JPEG — no
+//      resize, no format negotiation, no srcset — into a 100vh section. The
+//      single heaviest asset on the site, in the exact shape the width cap
+//      exists to prevent.
+//   2. It duplicated the About hero photograph (ID3654) onto Home, against
+//      IMAGE_MANIFEST.md's rule that no photo appears twice on the site.
+//   3. Being off Cloudinary, it was invisible to every check we have.
+// Restoring the original photograph (ID3960) from its own print master fixes
+// all three. Verified the same frame before swapping, not assumed: the web
+// export and the print master correlate 0.9986 with a mean pixel difference of
+// 0.75/255 at matched size, and share an identical 1.5015 aspect.
+const PHOTO = responsivePhoto("DTS_Caldo_Daniel_Far%C3%B2_Photos_ID3960_Print_iii9ub", 6529);
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -29,8 +46,9 @@ export default function UniverseMiniHero() {
         display: "flex", alignItems: "center", justifyContent: "center"
       }}>
       
-      <img src="https://media.base44.com/images/public/68731d183f075e406eda2236/ac34abfd6_DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654.jpg"
-
+      <img src={PHOTO.src}
+      srcSet={PHOTO.srcSet}
+      sizes={HERO_SIZES}
       alt=""
       loading="lazy"
       style={{
