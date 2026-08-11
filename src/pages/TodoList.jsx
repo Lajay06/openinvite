@@ -5,7 +5,7 @@ import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, CheckSquare, Square, List, Columns, Edit3, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
-import { PRIORITY, SETTABLE_PRIORITIES, SORT_KEYS, DEFAULT_SORT, normalisePriority, nextSort, sortTasks } from '@/lib/todoSort';
+import { PRIORITY, SETTABLE_PRIORITIES, SORT_KEYS, DEFAULT_SORT, normalizePriority, nextSort, sortTasks } from '@/lib/todoSort';
 
 const Note = base44.entities.Note;
 
@@ -59,7 +59,7 @@ function isUpcoming(task) {
 // Subtle text-color-only emphasis for the due-date chip — no badge, no
 // background/border swap. Muted red for overdue, muted amber for upcoming
 // (both reuse tones already established elsewhere in this app, e.g.
-// GuestList.jsx's declined/pending status colors), plain muted grey by
+// GuestList.jsx's declined/pending status colors), plain muted gray by
 // default.
 function dueDateTone(task) {
   if (isOverdue(task)) return '#991b1b';
@@ -515,14 +515,14 @@ function TaskRow({ task, onToggle, onDelete, onSave, highlighted, innerRef }) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
-  const [priority, setPriority] = useState(normalisePriority(task.priority));
+  const [priority, setPriority] = useState(normalizePriority(task.priority));
   const [dueDate, setDueDate] = useState(task.due_date || '');
 
   useEffect(() => {
     if (editing) return;
     setTitle(task.title);
     setDescription(task.description || '');
-    setPriority(normalisePriority(task.priority));
+    setPriority(normalizePriority(task.priority));
     setDueDate(task.due_date || '');
   }, [task, editing]);
 
@@ -537,12 +537,12 @@ function TaskRow({ task, onToggle, onDelete, onSave, highlighted, innerRef }) {
   const cancel = () => {
     setTitle(task.title);
     setDescription(task.description || '');
-    setPriority(normalisePriority(task.priority));
+    setPriority(normalizePriority(task.priority));
     setDueDate(task.due_date || '');
     setEditing(false);
   };
 
-  const p = PRIORITY[normalisePriority(task.priority)];
+  const p = PRIORITY[normalizePriority(task.priority)];
 
   if (editing) {
     // The editor spans the full table width rather than trying to squeeze
@@ -649,9 +649,9 @@ function TaskRow({ task, onToggle, onDelete, onSave, highlighted, innerRef }) {
       </td>
 
       {/* Due date is a cell now, not a pill. The overdue/upcoming treatment
-          is unchanged: dueDateTone() still drives it, still text-colour only
+          is unchanged: dueDateTone() still drives it, still text-color only
           — #991b1b overdue (8.31:1 on white), #854d0e within 7 days
-          (6.85:1), muted grey otherwise (5.25:1). All three already passed
+          (6.85:1), muted gray otherwise (5.25:1). All three already passed
           AA, so the rebuild kept them rather than restyling them. */}
       <td style={{ ...cell, width: 130, whiteSpace: 'nowrap' }}>
         {task.due_date ? (

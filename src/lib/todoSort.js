@@ -10,11 +10,11 @@
  * Note.jsonc's enum is ['low','medium','high','urgent'] and every live row
  * uses it. TodoList.jsx's own map used to be keyed 'High'/'Medium'/'Low', so
  * every lookup missed and every task rendered with the Medium swatch
- * whatever its real priority. The colour coding was not wrong, it was
+ * whatever its real priority. The color coding was not wrong, it was
  * absent.
  *
  * Three levels are rendered and three are settable. 'urgent' is neither a
- * fourth colour nor a fourth rank: it normalises to high, so an existing
+ * fourth color nor a fourth rank: it normalizes to high, so an existing
  * urgent row keeps its meaning and its place in the order without anything
  * being written to it.
  *
@@ -26,7 +26,7 @@
  * High was #E03553 and measured 3.91:1 — it failed. #c42d47 is the app's
  * existing .btn-primary:hover rose, so the fix reuses a token already in the
  * system rather than inventing a red. The text label always renders
- * alongside, so colour reinforces the level rather than carrying it.
+ * alongside, so color reinforces the level rather than carrying it.
  */
 
 export const PRIORITY = {
@@ -44,7 +44,7 @@ export const SORT_KEYS = ['due_date', 'title', 'priority'];
 export const DEFAULT_SORT = { key: 'due_date', dir: 'asc' };
 
 /** Stored value -> one of the three we render. 'urgent' folds into high. */
-export function normalisePriority(value) {
+export function normalizePriority(value) {
   const key = String(value || '').toLowerCase();
   if (key === 'urgent') return 'high';
   return PRIORITY[key] ? key : 'medium';
@@ -80,7 +80,7 @@ export function sortTasks(tasks, sort) {
     // Priority (whose natural first direction is desc) surfaced the Low rows
     // at the top. Caught by asserting rank order on the real 16 records.
     priority: (a, b) =>
-      (PRIORITY[normalisePriority(a.priority)].rank - PRIORITY[normalisePriority(b.priority)].rank) * dir,
+      (PRIORITY[normalizePriority(a.priority)].rank - PRIORITY[normalizePriority(b.priority)].rank) * dir,
   };
   const cmp = byKey[sort.key] || byKey.due_date;
   return [...tasks].sort((a, b) =>
