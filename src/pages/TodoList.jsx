@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, CheckSquare, Square, List, Columns, Edit3, Calendar } from 'lucide-react';
+import { Plus, Trash2, CheckSquare, Square, List, Columns, Edit3, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
+import { PRIORITY, SETTABLE_PRIORITIES, SORT_KEYS, DEFAULT_SORT, normalisePriority, nextSort, sortTasks } from '@/lib/todoSort';
 
 const Note = base44.entities.Note;
 
@@ -15,13 +16,19 @@ const labelStyle = {
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 
-const PRIORITY = {
-  High:   { bg: 'rgba(224,53,83,0.08)',   color: '#E03553', border: 'rgba(224,53,83,0.25)' },
-  Medium: { bg: 'rgba(128,61,129,0.08)',  color: '#803D81', border: 'rgba(128,61,129,0.25)' },
-  Low:    { bg: 'rgba(10,10,10,0.05)',    color: '#444444', border: 'rgba(10,10,10,0.12)' },
-};
-
 const KANBAN_COLS = ['Ideas', 'In progress', 'Done'];
+
+// Sort choice is a per-viewer display preference, so localStorage rather
+// than the couple's record — same reasoning as the seating label toggle.
+// It does not follow the user between devices; cheap to promote later.
+const SORT_PREF_KEY = 'oi_todo_sort';
+function loadSortPref() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SORT_PREF_KEY) || 'null');
+    if (raw && SORT_KEYS.includes(raw.key) && ['asc', 'desc'].includes(raw.dir)) return raw;
+  } catch { /* fall through to the default */ }
+  return DEFAULT_SORT;
+}
 
 function formatDueDate(dateStr) {
   if (!dateStr) return '';
@@ -60,13 +67,56 @@ function dueDateTone(task) {
   return 'rgba(10,10,10,0.6)';
 }
 
+const headerCellStyle = {
+  fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
+  padding: '10px 12px 10px 0', textAlign: 'left', whiteSpace: 'nowrap',
+};
+
+/**
+ * Column header that sorts. The direction indicator is a caret that is only
+ * rendered for the active column — an always-visible neutral glyph on every
+ * header reads as "all four are sorted", which is the opposite of the signal.
+ * aria-sort carries the same state to assistive tech, since the caret is
+ * decorative.
+ */
+function SortableHeader({ label, sortKey, sort, onSort, width }) {
+  const active = sort.key === sortKey;
+  const asc = sort.dir === 'asc';
+  return (
+    <th
+      style={{ ...headerCellStyle, width }}
+      aria-sort={active ? (asc ? 'ascending' : 'descending') : 'none'}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        title={`Sort by ${label.toLowerCase()}`}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+          font: 'inherit', letterSpacing: 'inherit',
+          color: active ? '#0A0A0A' : 'rgba(10,10,10,0.6)',
+        }}
+      >
+        {label}
+        {active && (asc ? <ChevronUp size={12} aria-hidden /> : <ChevronDown size={12} aria-hidden />)}
+      </button>
+    </th>
+  );
+}
+
 export default function TodoList({ embedded = false }) {
   const [tasks, setTasks]           = useState([]);
   const [loading, setLoading]       = useState(true);
   const [view, setView]             = useState('list');       // 'list' | 'kanban'
   const [filter, setFilter]         = useState('All');        // 'All' | 'Active' | 'Completed'
+  const [sort, setSort]             = useState(loadSortPref); // { key, dir }
   const [newTitle, setNewTitle]     = useState('');
-  const [newPriority, setNewPriority] = useState('Medium');
+  // Lowercase, because that is Note.jsonc's enum. This used to hold
+  // 'Medium' and write it verbatim, so every task the couple created was
+  // saved with a value outside the schema's own enum.
+  const [newPriority, setNewPriority] = useState('medium');
   const [newDueDate, setNewDueDate] = useState('');
   const [kanbanAdd, setKanbanAdd]   = useState({ col: null, title: '', desc: '', dueDate: '' });
   const [highlightedTaskId, setHighlightedTaskId] = useState(null);
@@ -156,7 +206,7 @@ export default function TodoList({ embedded = false }) {
         description: kanbanAdd.desc.trim() || undefined,
         due_date: kanbanAdd.dueDate || undefined,
         completed: col === 'Done', status: col,
-        priority: 'Medium', view_type: 'todo',
+        priority: 'medium', view_type: 'todo',
       });
       setTasks(prev => [t, ...prev]);
       setKanbanAdd({ col: null, title: '', desc: '', dueDate: '' });
@@ -179,12 +229,15 @@ export default function TodoList({ embedded = false }) {
     return true;
   });
 
-  const colTasks = (col) => tasks.filter(t =>
-    t.status === col || (col === 'Ideas' && !t.status)
-  );
+  const sorted = useMemo(() => sortTasks(filtered, sort), [filtered, sort]);
 
-  const done  = tasks.filter(t => t.completed).length;
-  const total = tasks.length;
+  const toggleSort = (key) => {
+    setSort(prev => {
+      const next = nextSort(prev, key);
+      try { localStorage.setItem(SORT_PREF_KEY, JSON.stringify(next)); } catch { /* private mode — session only */ }
+      return next;
+    });
+  };
 
   /* ── Render ── */
   return (
@@ -258,7 +311,7 @@ export default function TodoList({ embedded = false }) {
               />
               {/* Priority chips */}
               <div style={{ display: 'flex', gap: 4 }}>
-                {Object.keys(PRIORITY).map(p => (
+                {SETTABLE_PRIORITIES.map(p => (
                   <button
                     key={p}
                     onClick={() => setNewPriority(p)}
@@ -270,7 +323,7 @@ export default function TodoList({ embedded = false }) {
                       fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: PJS,
                       transition: 'all 0.12s',
                     }}
-                  >{p}</button>
+                  >{PRIORITY[p].label}</button>
                 ))}
               </div>
               <button
@@ -299,13 +352,13 @@ export default function TodoList({ embedded = false }) {
               ))}
             </div>
 
-            {/* Task rows */}
-            <div style={{ marginTop: 0 }}>
+            {/* Task table */}
+            <div style={{ marginTop: 0, overflowX: 'auto' }}>
               {loading ? (
                 <div style={{ padding: '48px 0', textAlign: 'center' }}>
                   <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Loading…</p>
                 </div>
-              ) : filtered.length === 0 ? (
+              ) : sorted.length === 0 ? (
                 <div style={{ padding: '64px 0', textAlign: 'center' }}>
                   <CheckSquare size={32} style={{ color: 'rgba(10,10,10,0.1)', margin: '0 auto 12px', display: 'block' }} />
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
@@ -313,17 +366,30 @@ export default function TodoList({ embedded = false }) {
                   </p>
                 </div>
               ) : (
-                filtered.map(task => (
-                  <TaskRow
-                    key={task.id}
-                    task={task}
-                    onToggle={handleToggle}
-                    onDelete={handleDelete}
-                    onSave={handleEditSave}
-                    highlighted={task.id === highlightedTaskId}
-                    innerRef={el => { if (el) rowRefs.current.set(task.id, el); else rowRefs.current.delete(task.id); }}
-                  />
-                ))
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
+                      <th style={{ width: 34 }} />
+                      <SortableHeader label="Task"      sortKey="title"    sort={sort} onSort={toggleSort} />
+                      <SortableHeader label="Due date"  sortKey="due_date" sort={sort} onSort={toggleSort} width={130} />
+                      <SortableHeader label="Priority"  sortKey="priority" sort={sort} onSort={toggleSort} width={110} />
+                      <th style={{ width: 72, ...headerCellStyle, textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sorted.map(task => (
+                      <TaskRow
+                        key={task.id}
+                        task={task}
+                        onToggle={handleToggle}
+                        onDelete={handleDelete}
+                        onSave={handleEditSave}
+                        highlighted={task.id === highlightedTaskId}
+                        innerRef={el => { if (el) rowRefs.current.set(task.id, el); else rowRefs.current.delete(task.id); }}
+                      />
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           </>
@@ -449,14 +515,14 @@ function TaskRow({ task, onToggle, onDelete, onSave, highlighted, innerRef }) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
-  const [priority, setPriority] = useState(task.priority || 'Medium');
+  const [priority, setPriority] = useState(normalisePriority(task.priority));
   const [dueDate, setDueDate] = useState(task.due_date || '');
 
   useEffect(() => {
     if (editing) return;
     setTitle(task.title);
     setDescription(task.description || '');
-    setPriority(task.priority || 'Medium');
+    setPriority(normalisePriority(task.priority));
     setDueDate(task.due_date || '');
   }, [task, editing]);
 
@@ -471,19 +537,21 @@ function TaskRow({ task, onToggle, onDelete, onSave, highlighted, innerRef }) {
   const cancel = () => {
     setTitle(task.title);
     setDescription(task.description || '');
-    setPriority(task.priority || 'Medium');
+    setPriority(normalisePriority(task.priority));
     setDueDate(task.due_date || '');
     setEditing(false);
   };
 
-  const p = PRIORITY[task.priority] || PRIORITY.Medium;
+  const p = PRIORITY[normalisePriority(task.priority)];
 
   if (editing) {
+    // The editor spans the full table width rather than trying to squeeze
+    // into the four cells — the inline form has its own layout and forcing
+    // it into the column grid would make both worse.
     return (
-      <div ref={innerRef} style={{
-        display: 'flex', flexDirection: 'column', gap: 8,
-        padding: '12px 0', borderBottom: '1px solid rgba(10,10,10,0.06)',
-      }}>
+      <tr ref={innerRef} style={{ borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
+        <td colSpan={5} style={{ padding: '12px 0' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ width: 18, flexShrink: 0 }} />
           <input
@@ -510,7 +578,7 @@ function TaskRow({ task, onToggle, onDelete, onSave, highlighted, innerRef }) {
             }}
           />
           <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-            {Object.keys(PRIORITY).map(pr => (
+            {SETTABLE_PRIORITIES.map(pr => (
               <button
                 key={pr}
                 onClick={() => setPriority(pr)}
@@ -521,7 +589,7 @@ function TaskRow({ task, onToggle, onDelete, onSave, highlighted, innerRef }) {
                   color: priority === pr ? PRIORITY[pr].color : '#444444',
                   fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: PJS,
                 }}
-              >{pr}</button>
+              >{PRIORITY[pr].label}</button>
             ))}
           </div>
           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
@@ -541,77 +609,92 @@ function TaskRow({ task, onToggle, onDelete, onSave, highlighted, innerRef }) {
           }}
         />
       </div>
+        </td>
+      </tr>
     );
   }
 
+  const cell = { padding: '11px 12px 11px 0', verticalAlign: 'middle', borderBottom: '1px solid rgba(10,10,10,0.06)' };
+
   return (
-    <div ref={innerRef} style={{
-      display: 'flex', alignItems: 'center', gap: 12,
-      padding: '12px 0', borderBottom: '1px solid rgba(10,10,10,0.06)',
+    <tr ref={innerRef} style={{
       background: highlighted ? 'rgba(224,53,83,0.12)' : undefined,
       transition: 'background 1.2s ease',
     }}>
-      <button
-        onClick={() => onToggle(task)}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexShrink: 0 }}
-      >
-        {task.completed
-          ? <CheckSquare size={18} style={{ color: '#E03553' }} />
-          : <Square size={18} style={{ color: 'rgba(10,10,10,0.2)' }} />
-        }
-      </button>
+      <td style={{ ...cell, width: 34 }}>
+        <button
+          onClick={() => onToggle(task)}
+          aria-label={task.completed ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
+        >
+          {task.completed
+            ? <CheckSquare size={18} style={{ color: '#E03553' }} />
+            : <Square size={18} style={{ color: 'rgba(10,10,10,0.2)' }} />
+          }
+        </button>
+      </td>
 
-      <span
-        onClick={startEdit}
-        title="Click to edit"
-        style={{
-          flex: 1, fontSize: 14, fontWeight: 500, fontFamily: PJS, cursor: 'pointer',
-          color: task.completed ? 'rgba(10,10,10,0.6)' : '#0A0A0A',
-          textDecoration: task.completed ? 'line-through' : 'none',
-        }}
-      >
-        {task.title}
-      </span>
-
-      {task.due_date && (
-        <span style={{
-          display: 'flex', alignItems: 'center', gap: 4,
-          padding: '2px 10px', borderRadius: 999,
-          background: 'rgba(10,10,10,0.05)', border: '1px solid rgba(10,10,10,0.12)',
-          color: dueDateTone(task),
-          fontSize: 10, fontWeight: 700, fontFamily: PJS, flexShrink: 0,
-        }}>
-          <Calendar size={10} />
-          {formatDueDate(task.due_date)}
+      <td style={cell}>
+        <span
+          onClick={startEdit}
+          title="Click to edit"
+          style={{
+            fontSize: 14, fontWeight: 500, fontFamily: PJS, cursor: 'pointer',
+            color: task.completed ? 'rgba(10,10,10,0.6)' : '#0A0A0A',
+            textDecoration: task.completed ? 'line-through' : 'none',
+          }}
+        >
+          {task.title}
         </span>
-      )}
+      </td>
 
-      <span style={{
-        padding: '2px 10px', borderRadius: 999,
-        background: p.bg, color: p.color, border: `1px solid ${p.border}`,
-        fontSize: 10, fontWeight: 700, fontFamily: PJS, flexShrink: 0,
-      }}>
-        {task.priority || 'Medium'}
-      </span>
+      {/* Due date is a cell now, not a pill. The overdue/upcoming treatment
+          is unchanged: dueDateTone() still drives it, still text-colour only
+          — #991b1b overdue (8.31:1 on white), #854d0e within 7 days
+          (6.85:1), muted grey otherwise (5.25:1). All three already passed
+          AA, so the rebuild kept them rather than restyling them. */}
+      <td style={{ ...cell, width: 130, whiteSpace: 'nowrap' }}>
+        {task.due_date ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: dueDateTone(task), fontSize: 12, fontWeight: 600, fontFamily: PJS }}>
+            <Calendar size={11} />
+            {formatDueDate(task.due_date)}
+          </span>
+        ) : (
+          <span style={{ color: 'rgba(10,10,10,0.3)', fontSize: 12, fontFamily: PJS }}>—</span>
+        )}
+      </td>
 
-      <button
-        onClick={startEdit}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'rgba(10,10,10,0.2)', display: 'flex', flexShrink: 0 }}
-        onMouseEnter={e => { e.currentTarget.style.color = '#0A0A0A'; }}
-        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.2)'; }}
-      >
-        <Edit3 size={14} />
-      </button>
+      <td style={{ ...cell, width: 110 }}>
+        <span style={{
+          display: 'inline-block', padding: '2px 10px', borderRadius: 999,
+          background: p.bg, color: p.color, border: `1px solid ${p.border}`,
+          fontSize: 10, fontWeight: 700, fontFamily: PJS,
+        }}>
+          {p.label}
+        </span>
+      </td>
 
-      <button
-        onClick={() => onDelete(task.id)}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'rgba(10,10,10,0.2)', display: 'flex', flexShrink: 0 }}
-        onMouseEnter={e => { e.currentTarget.style.color = '#E03553'; }}
-        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.2)'; }}
-      >
-        <Trash2 size={14} />
-      </button>
-    </div>
+      <td style={{ ...cell, width: 72, textAlign: 'right', whiteSpace: 'nowrap' }}>
+        <button
+          onClick={startEdit}
+          aria-label={`Edit ${task.title}`}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'rgba(10,10,10,0.45)' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#0A0A0A'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.45)'; }}
+        >
+          <Edit3 size={14} />
+        </button>
+        <button
+          onClick={() => onDelete(task.id)}
+          aria-label={`Delete ${task.title}`}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'rgba(10,10,10,0.45)' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#E03553'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.45)'; }}
+        >
+          <Trash2 size={14} />
+        </button>
+      </td>
+    </tr>
   );
 }
 
