@@ -61,6 +61,14 @@ export default async function handler(req, res) {
       rating:            p.rating            || null,
       user_ratings_total:p.user_ratings_total || 0,
       price_level:       p.price_level       ?? null,
+      // Google's own category signal, forwarded verbatim. Additive only —
+      // nothing here is removed or renamed, and none of this endpoint's
+      // seven consumers iterate the response keys (they all destructure
+      // named fields), so an extra key cannot reach them. Consumers beyond
+      // the marketplace: event-details/VenueSearch, shared/VenueSearchPanel,
+      // onboarding/OnboardingPathAVendors, GuestSuiteAccommodation,
+      // GuestSuiteTransport, and guest-suite/ExperienceGuideTab.
+      types:             Array.isArray(p.types) ? p.types : [],
       photo_reference:   p.photos?.[0]?.photo_reference || null,
       maps_url:          `https://www.google.com/maps/place/?q=place_id:${p.place_id}`,
     }));
