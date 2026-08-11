@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 
+// Fallbacks only — used if a universe somehow has no imageUrl (none
+// currently do; all 20 carry a real, distinct photo).
+const FALLBACK_IMAGE_SAVE_DATE = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg';
+const FALLBACK_IMAGE_DAY_OF = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14276_n3xobb.jpg';
+
 const STORY_TYPES = [
   { id: 'save-date', label: 'Save the Date' },
   { id: 'countdown', label: 'Countdown' },
@@ -15,6 +20,12 @@ function StoryFrame({ type, weddingDetails, universe }) {
   const muted = universe?.colors?.accentSecondary || '#888888';
   const rule = universe?.colors?.accentSecondary ? `${universe.colors.accentSecondary}55` : '#CCCCCC';
   const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
+  // The universe's own destination photography (PR B), not the shared
+  // couple-photo stock shoot — see SaveTheDatePreview.jsx's own comment for
+  // why this is correct for a "browsing universes" preview specifically.
+  // Same photo for both the save-date and day-of story types (a real
+  // Instagram kit commonly reuses one hero shot across a story set too).
+  const image = universe?.imageUrl ? universe.imageUrl.replace(/\.jpg$/, '-800.jpg') : null;
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const date = weddingDetails?.weddingDate ? new Date(weddingDetails.weddingDate) : new Date('2026-03-15');
   const daysLeft = Math.max(0, Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24)));
@@ -29,11 +40,10 @@ function StoryFrame({ type, weddingDetails, universe }) {
 
   if (type === 'save-date') return (
     <div style={{ ...shared, background: darkBg, padding: 0, overflow: 'hidden' }}>
-      {/* Placeholder couple photo (Launch folder, "Bandits" shoot) — real
-          save-the-date / day-of story templates are almost always
-          photo-backed; replaced once the couple picks their own. */}
+      {/* PR B: the universe's own destination photo — see this file's
+          top-level comment. */}
       <img
-        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg"
+        src={image || FALLBACK_IMAGE_SAVE_DATE}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
       />
@@ -68,8 +78,10 @@ function StoryFrame({ type, weddingDetails, universe }) {
 
   if (type === 'day-of') return (
     <div style={{ ...shared, background: darkBg, padding: 0, overflow: 'hidden' }}>
+      {/* PR B: the universe's own destination photo — see this file's
+          top-level comment. */}
       <img
-        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14276_n3xobb.jpg"
+        src={image || FALLBACK_IMAGE_DAY_OF}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
       />
