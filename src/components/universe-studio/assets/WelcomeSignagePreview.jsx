@@ -1,5 +1,9 @@
 import React from 'react';
 
+// Fallback only — used if a universe somehow has no imageUrl (none currently
+// do; all 20 carry a real, distinct photo).
+const FALLBACK_IMAGE = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14274_nhniqk.jpg';
+
 // universe: the full config object (colors/typography), not just its id —
 // see UniverseWorldView.jsx's Chapter 6 comment for why.
 export default function WelcomeSignagePreview({ universe, weddingDetails }) {
@@ -8,6 +12,10 @@ export default function WelcomeSignagePreview({ universe, weddingDetails }) {
   const muted = universe?.colors?.accentSecondary || '#888888';
   const rule = universe?.colors?.accentSecondary ? `${universe.colors.accentSecondary}55` : '#CCCCCC';
   const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
+  // The universe's own destination photography (PR B), not the shared
+  // couple-photo stock shoot — see SaveTheDatePreview.jsx's own comment for
+  // why this is correct for a "browsing universes" preview specifically.
+  const image = universe?.imageUrl ? universe.imageUrl.replace(/\.jpg$/, '-800.jpg') : FALLBACK_IMAGE;
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const date = weddingDetails?.weddingDate
     ? new Date(weddingDetails.weddingDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -23,12 +31,10 @@ export default function WelcomeSignagePreview({ universe, weddingDetails }) {
       fontFamily: headingFont,
       position: 'relative', overflow: 'hidden'
     }}>
-      {/* Placeholder couple photo (Launch folder, "Bandits" shoot — same
-          consistent set as the other assets) — many welcome signs use a
-          photo backdrop behind the lettering; replaced once the couple
-          picks their own photo for this asset. */}
+      {/* PR B: the universe's own destination photo, low-opacity backdrop
+          behind the lettering — see SaveTheDatePreview.jsx's comment. */}
       <img
-        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14274_nhniqk.jpg"
+        src={image}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.16 }}
       />

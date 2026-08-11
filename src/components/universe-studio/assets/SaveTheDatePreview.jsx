@@ -7,11 +7,24 @@ import React, { useEffect, useState } from 'react';
 // loading/loaded; no separate font-loading needed here. Falls back to
 // generic values so this still renders sensibly if ever used without a
 // resolved universe.
+// Fallback only — used if a universe somehow has no imageUrl (none currently
+// do; all 20 carry a real, distinct photo). Same "Bandits" shoot photo this
+// file used unconditionally before PR B.
+const FALLBACK_IMAGE = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h.jpg';
+
 export default function SaveTheDatePreview({ universe, weddingDetails }) {
   const bg = universe?.colors?.darkBg || '#0A0A0A';
   const text = universe?.colors?.darkText || '#FFFFFF';
   const accent = universe?.colors?.accent || '#E03553';
   const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
+  // The universe's own destination photography (UNIVERSE_CONFIGS.imageUrl —
+  // 20 distinct, verified photos), not the shared couple-photo stock shoot.
+  // -800 is the same responsive variant UniverseWorldView.jsx's HeroChapter
+  // already requests for a card this size. This is the "browsing universes"
+  // preview only — the real save-the-date the couple produces (StudioAssetsTab.jsx)
+  // uses their own uploaded photo (assetContent.saveTheDate.photoUrl), never
+  // this scenery image; confirmed no code path there reads universe.imageUrl.
+  const image = universe?.imageUrl ? universe.imageUrl.replace(/\.jpg$/, '-800.jpg') : FALLBACK_IMAGE;
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const date = weddingDetails?.weddingDate
     ? new Date(weddingDetails.weddingDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, ' · ')
@@ -40,17 +53,13 @@ export default function SaveTheDatePreview({ universe, weddingDetails }) {
       position: 'relative', overflow: 'hidden',
       fontFamily: headingFont,
     }}>
-      {/* Placeholder couple photo (Launch folder, "Bandits" shoot — same
-          consistent set across every universe) — real save-the-dates are
-          almost always photo-led; replaced automatically once the couple
-          picks their own photo for this asset. The original id here
-          (ID14262_nd4v2e) 404s — dead asset, not a Cloudinary outage;
-          swapped for another photo from the same shoot, confirmed to
-          resolve, and not already used elsewhere in this same "your
-          wedding in this world" asset grid (Welcome sign uses ID14274,
-          Instagram kit uses ID14263/ID14276). */}
+      {/* PR B: the universe's own destination photo (see `image` above) —
+          this is a "browsing universes" preview, so a couple's actual save-
+          the-date photo obviously isn't known yet; showing that universe's
+          own scenery here (not a shared stock couple photo) is what
+          actually differentiates the 20 styles while previewing. */}
       <img
-        src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h.jpg"
+        src={image}
         alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }}
       />
