@@ -4,6 +4,8 @@ import React from 'react';
 // see UniverseWorldView.jsx's Chapter 6 comment for why.
 export default function ThankYouPreview({ universe, weddingDetails }) {
   const bg = universe?.colors?.darkBg || '#0A0A0A';
+  const text = universe?.colors?.darkText || '#FFFFFF';
+  const accent = universe?.colors?.accent || '#E03553';
   const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const message = weddingDetails?.thankYouMessage || 'Your presence on our wedding day meant the world to us. Thank you for celebrating this moment with us.';
@@ -18,33 +20,33 @@ export default function ThankYouPreview({ universe, weddingDetails }) {
       position: 'relative'
     }}>
       {/* Top rule */}
-      <div style={{ position: 'absolute', top: 20, left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.15)' }} />
+      <div style={{ position: 'absolute', top: 20, left: 0, right: 0, height: '1px', background: `${text}26` }} />
 
-      {/* Recipient placeholder */}
-      <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 8, textAlign: 'center' }}>
+      {/* Recipient placeholder — the universe's own accent */}
+      <p style={{ fontSize: 8, color: accent, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 8, textAlign: 'center' }}>
         PERSONALIZED FOR EACH GUEST
       </p>
 
       {/* Thank you */}
-      <p style={{ fontStyle: 'italic', fontWeight: 300, fontSize: 16, color: '#FFFFFF', textAlign: 'center', letterSpacing: '0.05em', marginBottom: 8, lineHeight: 1.3 }}>
+      <p style={{ fontStyle: 'italic', fontWeight: 300, fontSize: 16, color: text, textAlign: 'center', letterSpacing: '0.05em', marginBottom: 8, lineHeight: 1.3 }}>
         Thank you, [Guest Name].
       </p>
 
       {/* Message */}
-      <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', textAlign: 'center', lineHeight: 1.6, fontWeight: 300, maxWidth: '85%' }}>
+      <p style={{ fontSize: 8, color: `${text}80`, textAlign: 'center', lineHeight: 1.6, fontWeight: 300, maxWidth: '85%' }}>
         {message.slice(0, 80)}{message.length > 80 ? '…' : ''}
       </p>
 
       {/* Divider */}
-      <div style={{ width: 30, height: '1px', background: 'rgba(255,255,255,0.2)', margin: '10px 0' }} />
+      <div style={{ width: 30, height: '1px', background: accent, margin: '10px 0' }} />
 
       {/* Names */}
-      <p style={{ fontWeight: 300, fontSize: 11, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.1em', textAlign: 'center' }}>
+      <p style={{ fontWeight: 300, fontSize: 11, color: `${text}B3`, letterSpacing: '0.1em', textAlign: 'center' }}>
         {names}
       </p>
 
       {/* Bottom rule */}
-      <div style={{ position: 'absolute', bottom: 20, left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.15)' }} />
+      <div style={{ position: 'absolute', bottom: 20, left: 0, right: 0, height: '1px', background: `${text}26` }} />
     </div>
   );
 }

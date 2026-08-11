@@ -9,6 +9,8 @@ import React, { useEffect, useState } from 'react';
 // resolved universe.
 export default function SaveTheDatePreview({ universe, weddingDetails }) {
   const bg = universe?.colors?.darkBg || '#0A0A0A';
+  const text = universe?.colors?.darkText || '#FFFFFF';
+  const accent = universe?.colors?.accent || '#E03553';
   const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
   const names = weddingDetails?.coupleNames || 'Sarah & James';
   const date = weddingDetails?.weddingDate
@@ -58,11 +60,11 @@ export default function SaveTheDatePreview({ universe, weddingDetails }) {
           the photo + scrim regardless of DOM order. */}
       <div style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         {/* Top rule */}
-        <div style={{ position: 'absolute', top: 28, left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.2)' }} />
+        <div style={{ position: 'absolute', top: 28, left: 0, right: 0, height: '1px', background: `${text}33` }} />
 
         {/* Names — animated */}
         <p style={{
-          fontWeight: 300, fontSize: 22, color: '#FFFFFF',
+          fontWeight: 300, fontSize: 22, color: text,
           letterSpacing: '0.2em', textTransform: 'uppercase', textAlign: 'center',
           margin: 0, minHeight: 32, lineHeight: 1.2
         }}>
@@ -71,24 +73,24 @@ export default function SaveTheDatePreview({ universe, weddingDetails }) {
           ))}
         </p>
 
-        {/* Center rule */}
-        <div style={{ width: 40, height: '1px', background: 'rgba(255,255,255,0.3)', margin: '10px 0' }} />
+        {/* Center rule — the universe's own accent, not a neutral divider */}
+        <div style={{ width: 40, height: '1px', background: accent, margin: '10px 0' }} />
 
         {/* Date */}
-        <p style={{ fontSize: 9, color: '#FFFFFF', letterSpacing: '0.4em', textTransform: 'uppercase', textAlign: 'center', margin: 0 }}>
+        <p style={{ fontSize: 9, color: text, letterSpacing: '0.4em', textTransform: 'uppercase', textAlign: 'center', margin: 0 }}>
           {date}
         </p>
-        <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.2em', marginTop: 4, textAlign: 'center' }}>
+        <p style={{ fontSize: 8, color: `${text}99`, letterSpacing: '0.2em', marginTop: 4, textAlign: 'center' }}>
           {location}
         </p>
 
         {/* Bottom rule */}
-        <div style={{ position: 'absolute', bottom: 28, left: 0, right: 0, height: '1px', background: 'rgba(255,255,255,0.2)' }} />
+        <div style={{ position: 'absolute', bottom: 28, left: 0, right: 0, height: '1px', background: `${text}33` }} />
 
-        {/* Bottom label */}
+        {/* Bottom label — the universe's own accent */}
         <p style={{
           position: 'absolute', bottom: 12,
-          fontSize: 7, color: 'rgba(255,255,255,0.4)',
+          fontSize: 7, color: accent,
           letterSpacing: '0.5em', textTransform: 'uppercase', textAlign: 'center'
         }}>
           SAVE THE DATE
