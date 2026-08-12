@@ -19,6 +19,8 @@ import { useCollaboratorContext } from '@/lib/collaboratorContext';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
+import SectionHeading, { CONTENT_WIDTH, sectionDivider, FIELD_GAP } from '../components/event-details/SectionHeading';
+
 const TABS = [
   { key: 'details', label: 'Details' },
   { key: 'events',  label: 'Events' },
@@ -102,7 +104,7 @@ const PRE_WEDDING_TYPES  = ['Engagement Party', 'Bridal Shower', 'Bachelor Party
 const POST_WEDDING_TYPES = ['After Party', 'Next-Day Brunch', 'Farewell Brunch', 'Thank You Reception', 'Other'];
 
 const sLabel = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block' };
-const divider = { height: 1, background: 'rgba(10,10,10,0.08)', margin: '28px 0' };
+const divider = sectionDivider;
 
 function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
 function fmtTime(t) {
@@ -122,7 +124,7 @@ function fmtDate(d) {
 function UInput({ label, value, onChange, placeholder = '', type = 'text', disabled = false }) {
   const [focused, setFocused] = useState(false);
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: FIELD_GAP }}>
       {label && <span style={sLabel}>{label}</span>}
       <input type={type} value={value || ''} onChange={onChange} placeholder={placeholder} disabled={disabled}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
@@ -135,7 +137,7 @@ function UInput({ label, value, onChange, placeholder = '', type = 'text', disab
 function UTextarea({ label, value, onChange, placeholder = '', rows = 3 }) {
   const [focused, setFocused] = useState(false);
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: FIELD_GAP }}>
       {label && <span style={sLabel}>{label}</span>}
       <textarea value={value || ''} onChange={onChange} placeholder={placeholder} rows={rows}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
@@ -838,21 +840,21 @@ export default function EventDetailsPage() {
 
       {/* ── Details tab ──────────────────────────────────────────────────────── */}
       {tab === 'details' && (
-        <div style={{ padding: '32px 32px 80px', maxWidth: 640, margin: '0 auto' }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS, textAlign: 'center' }}>Couple</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div style={{ padding: '32px 32px 80px', maxWidth: CONTENT_WIDTH, margin: '0 auto' }}>
+          <SectionHeading>Couple</SectionHeading>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: FIELD_GAP }}>
             <UInput label="Partner 1 name" value={r.couple1Name} onChange={e => update({ couple1Name: e.target.value })} placeholder="e.g. Sophie" disabled={readOnly} />
             <UInput label="Partner 2 name" value={r.couple2Name} onChange={e => update({ couple2Name: e.target.value })} placeholder="e.g. James" disabled={readOnly} />
           </div>
 
           <div style={divider} />
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS, textAlign: 'center' }}>The date</p>
+          <SectionHeading>The date</SectionHeading>
           <span style={sLabel}>Wedding date</span>
           <DatePicker value={r.weddingDate} onChange={v => update({ weddingDate: v })} placeholder="Select your wedding date" disabled={readOnly} />
 
           <div style={divider} />
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS, textAlign: 'center' }}>Guest count</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
+          <SectionHeading>Guest count</SectionHeading>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: FIELD_GAP }}>
             {GUEST_TYPES.map(g => {
               const sel = r.guestType === g.id;
               return (
@@ -872,12 +874,10 @@ export default function EventDetailsPage() {
 
       {/* ── Events tab ───────────────────────────────────────────────────────── */}
       {tab === 'events' && (
-        <div style={{ padding: '32px 32px 80px' }}>
+        <div style={{ padding: '32px 32px 80px', maxWidth: CONTENT_WIDTH, margin: '0 auto' }}>
 
           {/* Fixed events header */}
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 auto 12px', maxWidth: 680 }}>
-            Main events
-          </p>
+          <SectionHeading>Main events</SectionHeading>
 
           {/* Main events — sorted by start time within the group */}
           {sortedMain.map(({ event, fixedType }) => (
@@ -895,9 +895,7 @@ export default function EventDetailsPage() {
           {/* Custom events — sorted chronologically */}
           {sortedCustom.length > 0 && (
             <>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '28px auto 12px', maxWidth: 680 }}>
-                Additional events
-              </p>
+              <SectionHeading style={{ marginTop: 36 }}>Additional events</SectionHeading>
               {sortedCustom.map(ev => (
                 <EventCardRow
                   key={ev.id}
@@ -915,7 +913,7 @@ export default function EventDetailsPage() {
 
           {/* Empty custom events state */}
           {sortedCustom.length === 0 && (
-            <div style={{ padding: '32px', textAlign: 'center', border: '1px dashed rgba(10,10,10,0.12)', marginTop: 24, maxWidth: 680, marginLeft: 'auto', marginRight: 'auto' }}>
+            <div style={{ padding: '32px', textAlign: 'center', border: '1px dashed rgba(10,10,10,0.12)', marginTop: 24 }}>
               <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.35)', margin: '0 0 12px', fontFamily: PJS }}>
                 {readOnly ? 'No additional events yet.' : 'No additional events yet — add an engagement party, rehearsal dinner, and more.'}
               </p>
@@ -931,7 +929,7 @@ export default function EventDetailsPage() {
 
       {/* ── Theme tab ────────────────────────────────────────────────────────── */}
       {tab === 'theme' && (
-        <div style={{ padding: '32px 32px 80px', maxWidth: 640, margin: '0 auto' }}>
+        <div style={{ padding: '32px 32px 80px', maxWidth: CONTENT_WIDTH, margin: '0 auto' }}>
           <ThemeSection
             theme={theme}
             onSave={(nextTheme) => {
