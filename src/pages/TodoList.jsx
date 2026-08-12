@@ -229,6 +229,17 @@ export default function TodoList({ embedded = false }) {
     return true;
   });
 
+  // Restored after #406. The sortable-table change replaced a range of this
+  // derived block and took these three with it — colTasks feeds the kanban
+  // columns, done/total feed the progress counter in the header — which
+  // crashed /TodoList outright with "Can't find variable: done".
+  const colTasks = (col) => tasks.filter(t =>
+    t.status === col || (col === 'Ideas' && !t.status)
+  );
+
+  const done  = tasks.filter(t => t.completed).length;
+  const total = tasks.length;
+
   const sorted = useMemo(() => sortTasks(filtered, sort), [filtered, sort]);
 
   const toggleSort = (key) => {
