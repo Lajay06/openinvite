@@ -72,6 +72,15 @@ export default [
       // exist across the whole src/ tree — that's its own audit), just
       // flagging the mechanism and turning this one specific rule back on
       // explicitly, since it's exactly what this PR needs enforced.
+      // The rule this whole config exists to make possible. #406 shipped a
+      // production crash — three declarations deleted by a range replace,
+      // ReferenceError on /TodoList — that BOTH `npm run build` and
+      // `npm run lint` passed, because no-undef was inert: the explicit
+      // `rules` block below overwrites eslint:recommended rather than
+      // layering on it (see the comment above). #410 is the other half of
+      // the evidence: the same linter DID catch a dead import, because
+      // unused-imports is registered. One rule on, one off, same session.
+      "no-undef": "error",
       "no-empty": ["error", { allowEmptyCatch: false }],
       "no-unused-vars": "off",
       "react/jsx-uses-vars": "error",
@@ -117,6 +126,40 @@ export default [
     plugins: { "unused-imports": pluginUnusedImports },
     rules: {
       // No react/react-hooks rules here — this code never renders.
+      "no-undef": "error",
+      "no-empty": ["error", { allowEmptyCatch: false }],
+      "no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": ["warn", { vars: "all", varsIgnorePattern: "^_", args: "after-used", argsIgnorePattern: "^_" }],
+    },
+  },
+  {
+    // Dual-runtime by nature, not by sloppiness. These are Node scripts, but
+    // each contains Playwright `page.evaluate(() => ...)` callbacks whose
+    // BODIES are serialised and executed inside the browser, where `document`
+    // and `window` genuinely exist:
+    //
+    //   await page.evaluate(() => document.body.innerText)
+    //   await page.evaluate(() => window.dispatchEvent(new Event('openAva')))
+    //
+    // So they get both global sets. Enabling no-undef without this produced 5
+    // errors here and nowhere else in the repo — every one a false positive of
+    // exactly this shape. Do not "tidy" this group away.
+    //
+    // Listed by name because there are only three. If a fourth Playwright file
+    // appears, turn this into a directory pattern rather than growing the list.
+    files: [
+      "scripts/test-marketing-routes.mjs",
+      "scripts/prerender.mjs",
+      "scripts/capture/videos.mjs",
+    ],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+      parserOptions: { ecmaVersion: "latest", sourceType: "module" },
+    },
+    plugins: { "unused-imports": pluginUnusedImports },
+    rules: {
+      "no-undef": "error",
       "no-empty": ["error", { allowEmptyCatch: false }],
       "no-unused-vars": "off",
       "unused-imports/no-unused-imports": "error",
