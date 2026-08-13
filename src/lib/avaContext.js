@@ -35,7 +35,7 @@ export async function buildWeddingContext() {
   const receptionVenue = wd.reception?.venueName || '';
 
   let user = {};
-  try { user = JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch {}
+  try { user = JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch { /* malformed oi_user — fall back to the empty default declared above */ }
 
   const daysUntil = weddingDate
     ? Math.ceil((new Date(weddingDate) - new Date()) / 86400000)

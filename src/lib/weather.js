@@ -25,12 +25,12 @@ function readCache(key, ttl) {
   try {
     const cached = JSON.parse(localStorage.getItem(key) || 'null');
     if (cached && Date.now() - cached.ts < ttl) return cached.data;
-  } catch {}
+  } catch { /* unreadable or malformed cache entry — treat as a miss and re-fetch */ }
   return undefined;
 }
 
 function writeCache(key, data) {
-  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch {}
+  try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch { /* localStorage unavailable (private mode / quota exceeded) — caching is best-effort */ }
 }
 
 // Strips a trailing "STATE 1234" / "ST 12345" / bare postcode remnant, leaving just the locality.
@@ -52,7 +52,14 @@ async function geocode(name) {
     const data = await res.json();
     const loc = data.results?.[0];
     if (loc) result = { latitude: loc.latitude, longitude: loc.longitude, timezone: loc.timezone };
-  } catch {}
+  } catch (err) {
+    // Diagnostics only — behaviour is unchanged, result stays null and the
+    // caller degrades as before. Logged because a null result is otherwise
+    // indistinguishable from "no such place", and the difference between a
+    // bad city string and a dead geocoding API is the whole question when
+    // this eventually matters. The city name is the input you need to act on.
+    console.warn(`[weather] geocoding failed for "${name}" — ${err?.message || err}`);
+  }
 
   writeCache(cacheKey, result);
   return result;
@@ -165,7 +172,16 @@ async function fetchByMode(mode, loc, target, daysUntil) {
       const data = await res.json();
       (data.daily?.temperature_2m_max || []).forEach(v => typeof v === 'number' && highs.push(v));
       (data.daily?.temperature_2m_min || []).forEach(v => typeof v === 'number' && lows.push(v));
-    } catch {}
+    } catch (err) {
+      // Diagnostics only — behaviour unchanged, this year is skipped and the
+      // averages are computed from whatever did return. Without the date
+      // range you cannot tell a single bad year from the archive API being
+      // down for all three.
+      console.warn(
+        `[weather] historical fetch failed for ${start.toISOString().slice(0, 10)}..${end.toISOString().slice(0, 10)} ` +
+        `at ${loc.latitude},${loc.longitude} — ${err?.message || err}`
+      );
+    }
   }
   if (!highs.length || !lows.length) return null;
   const avg = (arr) => arr.reduce((s, v) => s + v, 0) / arr.length;

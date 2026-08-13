@@ -13,7 +13,7 @@ export default [
   // comment in src/lib/a11y.js failed with "Definition for rule ... was not
   // found" (the react-hooks plugin was never registered for that file, so
   // its own disable comment couldn't be validated against it).
-  { ignores: ["src/lib/**/*", "src/components/ui/**/*", "dist/**"] },
+  { ignores: ["src/components/ui/**/*", "dist/**"] },
   // dist/** is build output. It is gitignored and untracked, but ESLint does
   // not read .gitignore, so without this entry it visits 238 emitted bundles.
   // prerendered/ IS tracked in git but holds only .html, which ESLint never
@@ -34,6 +34,17 @@ export default [
       "src/integrations/**/*.{js,jsx}",
       "src/pagePreload.js",
       "src/pages.config.js",
+      // src/lib was globally ignored until now — not because it is vendored
+      // (all 66 files are hand-written app code: AuthContext.jsx,
+      // resolveMyWedding.js, seatingChart.js, todoSort.js) but as a workaround
+      // for a plugin-registration gap: an inline
+      // `eslint-disable-next-line react-hooks/exhaustive-deps` in a11y.js:99
+      // could not be validated because the react-hooks plugin was never
+      // registered for that file, so the whole directory was skipped. Adding
+      // it to THIS group registers the plugins and fixes the original problem
+      // at its cause. It is browser code — 61 .js, 5 .jsx, 5 using React
+      // hooks, zero using Node globals.
+      "src/lib/**/*.{js,jsx}",
     ],
     ...pluginJs.configs.recommended,
     ...pluginReact.configs.flat.recommended,
