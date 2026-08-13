@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import { interactiveDivProps } from '@/lib/a11y';
-import { Plus, Edit, Trash2, Mic, Heart, Printer, Sparkles, Loader2, User } from 'lucide-react';
+import { Plus, Edit, Trash2, Mic, Heart, Printer, Loader2, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const VowSpeech = base44.entities.VowSpeech;
@@ -10,7 +10,6 @@ import VowSpeechEditor from '../components/vows/VowSpeechEditor';
 import AIVowsSpeechesAssistant from '../components/vows/AIVowsSpeechesAssistant';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
-import AvaModal from '@/components/layout/AvaModal';
 import CountUp from "@/components/shared/CountUp";
 
 const labelStyle = {
@@ -28,7 +27,6 @@ export default function VowsSpeechesPage() {
   const [loading, setLoading] = useState(true);
   const [showAI, setShowAI] = useState(false);
   const [aiType, setAiType] = useState('vow');
-  const [avaOpen, setAvaOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('vows');
 
   useEffect(() => { loadItems(); }, []);
@@ -113,12 +111,17 @@ export default function VowsSpeechesPage() {
 
       {/* Ava + actions bar */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-        <AvaButton label="Ask Ava to help write your vows" onClick={() => setAvaOpen(true)} />
+        {/* The page's single AI entry point. It used to open the generic
+            AvaModal chat while three other buttons opened the purpose-built
+            AIVowsSpeechesAssistant — four buttons, two destinations. This one
+            now opens the assistant, and the other three are gone. Label and
+            type both derive from the active tab, matching the assistant's own
+            wording convention ("vows" plural, "a speech" singular). */}
+        <AvaButton
+          label={activeTab === 'vows' ? 'Ask Ava to help write your vows' : 'Ask Ava to help write your speech'}
+          onClick={() => { setAiType(activeTab === 'vows' ? 'vow' : 'speech'); setShowAI(true); }}
+        />
         <div className="flex flex-wrap items-center gap-[10px]">
-          <button onClick={() => { setAiType(activeTab === 'vows' ? 'vow' : 'speech'); setShowAI(true); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
-            <Sparkles size={12} style={{ color: '#DDF762' }} />Write with AI
-          </button>
           <button onClick={() => { setSelectedItem(null); setIsEditing(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
             <Plus size={12} />Write new
           </button>
@@ -152,9 +155,6 @@ export default function VowsSpeechesPage() {
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>No {activeTab} yet</p>
                   <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 16 }}>Start writing or ask Ava for help</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <button onClick={() => { setAiType(activeTab === 'vows' ? 'vow' : 'speech'); setShowAI(true); }} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                      <Sparkles size={11} />Ask Ava to write it
-                    </button>
                     <button onClick={() => { setSelectedItem(null); setIsEditing(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                       <Plus size={11} />Write manually
                     </button>
@@ -237,9 +237,6 @@ export default function VowsSpeechesPage() {
                 <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>Ready to write your perfect words?</p>
                 <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 24 }}>Select an item from the list, or create a new one</p>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={() => { setAiType('vow'); setShowAI(true); }} className="btn-editorial-secondary" style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Sparkles size={12} />Use AI writer
-                  </button>
                   <button onClick={() => { setSelectedItem(null); setIsEditing(true); }} className="btn-primary" style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Plus size={12} />Write manually
                   </button>
@@ -253,14 +250,6 @@ export default function VowsSpeechesPage() {
       {showAI && (
         <AIVowsSpeechesAssistant isOpen={showAI} onClose={() => setShowAI(false)} onApply={handleAIApply} type={aiType} />
       )}
-
-      <AvaModal
-        isOpen={avaOpen}
-        onClose={() => setAvaOpen(false)}
-        pageTitle="Vows & speeches writing coach"
-        systemPrompt="You are Ava, a wedding speech and vows writing coach. Help write heartfelt, personal vows and speeches."
-        quickActions={["Help me write my vows", "Best man speech structure", "How long should vows be?", "Opening lines for a speech"]}
-      />
     </div>
   );
 }
