@@ -21,7 +21,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { APP_ID, api, pass, fail, login, cleanupEntity } from './_shared.mjs';
+import { APP_ID, api, pass, fail, cleanupEntity } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const envPath = resolve(__dir, '..', '..', '.env.local');

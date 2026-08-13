@@ -12,7 +12,7 @@
  */
 
 import { pass, fail } from './_shared.mjs';
-import { verifyBase44User, fetchOwnedGuestEmails, filterGuestsByOwnership } from '../../api/_lib/auth.js';
+import { verifyBase44User, filterGuestsByOwnership } from '../../api/_lib/auth.js';
 import { verifyTurnstileToken } from '../../api/_lib/security.js';
 import sendInvitesHandler from '../../api/send-invites.js';
 import sendEmailHandler from '../../api/send-email.js';
