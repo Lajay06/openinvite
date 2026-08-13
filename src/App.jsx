@@ -7,11 +7,8 @@ import VisualEditAgent from '@/lib/VisualEditAgent'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
-import PageNotFound from './lib/PageNotFound';
-import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { AuthProvider } from '@/lib/AuthContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import { base44 } from '@/api/base44Client';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import RouteLoadingFallback from '@/components/shared/RouteLoadingFallback';
 import { lazyWithReload } from '@/lib/lazyWithReload.js';

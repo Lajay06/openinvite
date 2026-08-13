@@ -38,7 +38,7 @@
  * Exits non-zero if either check finds something, so it can gate CI later.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { resolve, join, dirname, relative } from 'node:path';
+import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dir = dirname(fileURLToPath(import.meta.url));

@@ -13,12 +13,27 @@ export default [
   // comment in src/lib/a11y.js failed with "Definition for rule ... was not
   // found" (the react-hooks plugin was never registered for that file, so
   // its own disable comment couldn't be validated against it).
-  { ignores: ["src/lib/**/*", "src/components/ui/**/*"] },
+  { ignores: ["src/lib/**/*", "src/components/ui/**/*", "dist/**"] },
+  // dist/** is build output. It is gitignored and untracked, but ESLint does
+  // not read .gitignore, so without this entry it visits 238 emitted bundles.
+  // prerendered/ IS tracked in git but holds only .html, which ESLint never
+  // visits, so it needs no entry.
   {
     files: [
       "src/components/**/*.{js,mjs,cjs,jsx}",
       "src/pages/**/*.{js,mjs,cjs,jsx}",
       "src/Layout.jsx",
+      // Previously matched by no config group at all, so entirely unlinted:
+      // four dead imports had accumulated in App.jsx alone. src/api/** is the
+      // BROWSER-side base44 client (import.meta.env) — not to be confused with
+      // the top-level api/**, which is Node and is configured separately below.
+      "src/App.jsx",
+      "src/main.jsx",
+      "src/api/**/*.{js,jsx}",
+      "src/hooks/**/*.{js,jsx}",
+      "src/integrations/**/*.{js,jsx}",
+      "src/pagePreload.js",
+      "src/pages.config.js",
     ],
     ...pluginJs.configs.recommended,
     ...pluginReact.configs.flat.recommended,
@@ -78,6 +93,34 @@ export default [
         { ignore: ["cmdk-input-wrapper", "toast-close"] },
       ],
       "react-hooks/rules-of-hooks": "error",
+    },
+  },
+  {
+    // Server-side and tooling code. Node globals, not browser: api/** uses
+    // process.env in 38 files and window/localStorage in none (the few matches
+    // are prose in JSDoc). tests/persistence/** is plain Node too — no vitest,
+    // jest or mocha anywhere, every test script invokes bare `node` — so no
+    // test-runner globals are needed.
+    files: ["api/**/*.{js,mjs}", "scripts/**/*.{js,mjs}", "tests/**/*.{js,mjs}", "*.config.js"],
+    languageOptions: {
+      globals: globals.node,
+      parserOptions: {
+        // "latest", NOT a pinned year. api/verify-signup.js:68 uses an import
+        // attribute — `import x from '...json' with { type: 'json' }` — which
+        // Node 20+ and Vercel run happily but ecmaVersion 2022 cannot parse,
+        // producing a hard "Parsing error: Unexpected token with" that reads
+        // exactly like a real lint finding. Do not "tidy" this back to a year.
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
+    },
+    plugins: { "unused-imports": pluginUnusedImports },
+    rules: {
+      // No react/react-hooks rules here — this code never renders.
+      "no-empty": ["error", { allowEmptyCatch: false }],
+      "no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": ["warn", { vars: "all", varsIgnorePattern: "^_", args: "after-used", argsIgnorePattern: "^_" }],
     },
   },
 ];
