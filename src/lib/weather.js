@@ -61,7 +61,17 @@ async function geocode(name) {
     console.warn(`[weather] geocoding failed for "${name}" — ${err?.message || err}`);
   }
 
-  writeCache(cacheKey, result);
+  // Only a SUCCESSFUL lookup is cached. This key has no date component and
+  // GEOCODE_TTL_MS is 30 days, so writing `null` here meant one transient
+  // geocoding blip blanked the weather panel for a month — and unclearably,
+  // because resolveVenueLocation returns the cached null and every later call
+  // short-circuits before the weather API is even attempted. The couple could
+  // refresh, retry and wait and nothing would fix it.
+  //
+  // There is no negative-caching trade-off to weigh: geocoding results are
+  // stable — a venue's coordinates do not change — so a negative entry can
+  // only ever prolong an outage. It buys nothing and costs a month.
+  if (result) writeCache(cacheKey, result);
   return result;
 }
 
@@ -134,7 +144,12 @@ export async function getWeddingWeather(weddingDetails) {
     result = null;
   }
 
-  writeCache(dayCacheKey, result);
+  // Success only, same rule. In practice this one is currently harmless —
+  // dayCacheKey embeds today.toDateString() so it rotates at midnight and the
+  // 7-day seasonal TTL never gets to run — but "harmless because of an
+  // unrelated key design" is not a property to rely on. Someone will change
+  // that key one day and the 7 days will suddenly be real.
+  if (result) writeCache(dayCacheKey, result);
   return result;
 }
 
