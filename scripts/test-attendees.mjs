@@ -23,6 +23,7 @@ import {
   PLUS_ONE_ID_SUFFIX,
 } from '../src/lib/attendees.js';
 import { plusOneRsvpStatus, hasPlusOne } from '../src/lib/plusOne.js';
+import { isAttending, isDeclined, isPending, tallyAttendees } from '../src/lib/guestRsvpTally.js';
 
 const results = [];
 function check(label, pass, detail = '') {
@@ -101,26 +102,61 @@ check('isPlusOneId agrees with isPlusOne on every attendee',
 check('plusOneIdFor is pure', plusOneIdFor('abc') === `abc${PLUS_ONE_ID_SUFFIX}`);
 
 // ── RSVP must match plusOne.js byte for byte ────────────────────────────────
-const rsvpMismatches = plusOnes.filter(a => a.rsvpStatus !== plusOneRsvpStatus(a.guest));
+const byHost = new Map(guests.filter(g => g.id).map(g => [g.id, g]));
+const rsvpMismatches = plusOnes.filter(a => a.rsvp_status !== plusOneRsvpStatus(byHost.get(a.hostGuestId)));
 check('every plus-one RSVP equals plusOne.js plusOneRsvpStatus()',
   rsvpMismatches.length === 0,
-  rsvpMismatches.map(a => `${a.id}: ${a.rsvpStatus} vs ${plusOneRsvpStatus(a.guest)}`).join('; '));
+  rsvpMismatches.map(a => `${a.id}: ${a.rsvp_status}`).join('; '));
 check('derived status beats the flat column',
-  attendees.find(a => a.hostGuestId === oid(4))?.rsvpStatus === 'declined');
+  attendees.find(a => a.hostGuestId === oid(4))?.rsvp_status === 'declined');
 check('flat column is used when no derived status exists',
-  attendees.find(a => a.hostGuestId === oid(2))?.rsvpStatus === 'attending');
+  attendees.find(a => a.hostGuestId === oid(2))?.rsvp_status === 'attending');
 check('defaults to pending when neither exists',
-  attendees.find(a => a.hostGuestId === oid(3))?.rsvpStatus === 'pending');
+  attendees.find(a => a.hostGuestId === oid(3))?.rsvp_status === 'pending');
+
+// ── THE REGRESSION GUARD ────────────────────────────────────────────────────
+// The whole reason the Attendee is snake_case. With `.rsvpStatus` these three
+// predicates returned false for EVERY attendee, silently, and five counters
+// would have become zero without a single error.
+const predicateDrift = primaries.filter(a => {
+  const g = byHost.get(a.id);
+  return isAttending(a) !== isAttending(g)
+      || isDeclined(a)  !== isDeclined(g)
+      || isPending(a)   !== isPending(g);
+});
+check('isAttending/isDeclined/isPending agree between a primary attendee and its Guest',
+  predicateDrift.length === 0,
+  predicateDrift.map(a => `${a.id}: attendee=${a.rsvp_status} guest=${byHost.get(a.id)?.rsvp_status}`).join('; '));
+check('at least one attendee of each status is covered by that guard',
+  new Set(primaries.map(a => a.rsvp_status)).size >= 2,
+  `only ${new Set(primaries.map(a => a.rsvp_status)).size} distinct status(es) in the fixtures`);
+check('the predicates actually fire on attendees (not vacuously false)',
+  primaries.some(a => isAttending(a)) && primaries.some(a => isPending(a)));
+
+// ── guest-only fields are absent BY DESIGN ──────────────────────────────────
+check('attendees carry no guest-only fields (invite_sent_at/table_assignment/event_responses/guest)',
+  attendees.every(a => a.invite_sent_at === undefined && a.table_assignment === undefined
+    && a.event_responses === undefined && a.guest === undefined));
+
+// ── tallyAttendees ──────────────────────────────────────────────────────────
+const t = tallyAttendees(attendees);
+check('tallyAttendees halves sum to the combined total',
+  t.primaries.total + t.plusOnes.total === t.combined.total && t.combined.total === attendees.length);
+check('tallyAttendees partitions on isPlusOne',
+  t.primaries.total === primaries.length && t.plusOnes.total === plusOnes.length);
+check('tallyAttendees attending matches a manual count',
+  t.combined.attending === attendees.filter(a => a.rsvp_status === 'attending').length);
+check('tallyAttendees responded excludes pending',
+  t.combined.responded === t.combined.total - t.combined.pending);
 
 // ── carried fields ──────────────────────────────────────────────────────────
 const cara = attendees.find(a => a.hostGuestId === oid(2));
 check('plus-one carries its own meal and dietary fields',
-  cara.mealChoice === 'Beef' && cara.dietaryRestrictions === 'Gluten free');
+  cara.meal_choice === 'Beef' && cara.dietary_restrictions === 'Gluten free');
 check('plus-one with no name gets a neutral display name',
   attendees.find(a => a.hostGuestId === oid(3))?.name === 'Plus one');
 check('primary carries its own fields untouched',
-  primaries[0].name === 'Ana Reyes' && primaries[0].mealChoice === 'Fish' && primaries[0].rsvpStatus === 'attending');
-check('every attendee exposes the source guest record', attendees.every(a => a.guest && a.guest.id));
+  primaries[0].name === 'Ana Reyes' && primaries[0].meal_choice === 'Fish' && primaries[0].rsvp_status === 'attending');
 
 // ── ordering ────────────────────────────────────────────────────────────────
 check('each plus-one immediately follows its host',

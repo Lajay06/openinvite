@@ -1,5 +1,6 @@
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
-import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
+import { tallyAttendees } from '@/lib/guestRsvpTally';
+import { resolveAttendees } from '@/lib/attendees';
 import { effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
 
 export async function buildWeddingContext() {
@@ -41,9 +42,13 @@ export async function buildWeddingContext() {
     ? Math.ceil((new Date(weddingDate) - new Date()) / 86400000)
     : null;
 
+  // Counts ATTENDEES, not Guest rows. Ava was told "Total: 202" for a wedding
+  // of 242 people and answered headcount questions on that basis.
+  //
   // AUDIT_2026-07.md S21: was checking for a 'confirmed' status that does
   // not exist in the schema and could never match — always counted 0.
-  const { attending: confirmed, pending } = tallyGuestRsvp(guests);
+  const { combined } = tallyAttendees(resolveAttendees(guests));
+  const { attending: confirmed, pending, total: totalAttendees } = combined;
   const totalBudget   = budget.reduce((s, b) => s + (b.total_amount  || 0), 0);
   const spent         = budget.reduce((s, b) => s + (b.spent_amount  || 0), 0);
   const bookedVendors = vendors.map(v => v.category).join(', ');
@@ -55,6 +60,20 @@ export async function buildWeddingContext() {
   // the prompt). Capped at 400 names to keep the prompt bounded for very
   // large guest lists — plenty for real weddings, and the aggregate counts
   // above still cover anything past the cap.
+  // NOT converted to attendees, deliberately.
+  //
+  // Two of the three fields on each line have no correct attendee source yet:
+  // `table_assignment` is guest-only (a plus-one cannot hold one until the
+  // seating work), and the meal comes from effectiveMealChoice(event_responses)
+  // because `Guest.meal_choice` is a DEAD column — documented in five files
+  // under fix/vestigial-meal-choice-reads. Attendee.meal_choice mirrors that
+  // dead column, so switching this block to attendees today would quietly
+  // downgrade every primary's meal from the live per-event overlay to a value
+  // nothing writes any more.
+  //
+  // Result: the aggregate counts above include plus-ones, this per-guest list
+  // does not. A KNOWN gap, not an oversight — Ava is told 242 in the totals and
+  // sees 202 names. Closing it needs a decision on the attendee's meal source.
   const GUEST_LIST_CAP = 400;
   const guestListLines = guests.slice(0, GUEST_LIST_CAP).map(g => {
     const parts = [g.rsvp_status || 'pending'];
@@ -115,7 +134,7 @@ Location: ${city || 'Not set'}
 Style universe: ${universe || 'Not set'}${venueLines ? `\n${venueLines}` : ''}${themeBlock}
 
 ${expectedGuestLine ? expectedGuestLine + '\n' : ''}GUESTS (actual RSVPs):
-Total: ${guests.length} | Confirmed: ${confirmed} | Pending: ${pending}${guestListBlock}
+Total: ${totalAttendees} | Confirmed: ${confirmed} | Pending: ${pending}${guestListBlock}
 
 BUDGET:
 Total: $${totalBudget.toLocaleString()} | Spent: $${spent.toLocaleString()} (${totalBudget ? Math.round(spent / totalBudget * 100) : 0}%)

@@ -13,7 +13,8 @@ import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import { getMyRecords, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
-import { tallyGuestRsvp } from "@/lib/guestRsvpTally";
+import { tallyAttendees } from "@/lib/guestRsvpTally";
+import { resolveAttendees } from "@/lib/attendees";
 import { useCollaboratorContext, hasPagePermission } from "@/lib/collaboratorContext";
 import CountUp from "@/components/shared/CountUp";
 
@@ -167,16 +168,24 @@ export default function Dashboard() {
   };
 
   const stats = React.useMemo(() => {
-    const totalGuests = guests.length;
+    // Counts ATTENDEES, not Guest rows: a plus-one is a person at the wedding,
+    // and this card used to omit all 40 of them. "Total guests" here said 202
+    // while the Guests page's card said 242 — the same label, two numbers, on
+    // two pages a couple reads minutes apart.
+    //
     // AUDIT_2026-07.md S21: previously rsvp_status !== 'pending', which
     // silently counted an unset/undefined status as "responded" — every
-    // sibling tally in the app treats a falsy status as not-yet-responded,
-    // same as tallyGuestRsvp does.
-    const { responded, attending, declined } = tallyGuestRsvp(guests);
+    // sibling tally in the app treats a falsy status as not-yet-responded.
+    const { combined } = tallyAttendees(resolveAttendees(guests));
+    const { total: totalGuests, responded, attending, declined } = combined;
     const totalBudget = budget.reduce((s, i) => s + (i.budgeted_amount || 0), 0);
     const totalSpent = budget.reduce((s, i) => s + (i.actual_amount || 0), 0);
     const budgetPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
-    return { totalGuests, responded, attending, declined, responseRate: totalGuests > 0 ? (responded / totalGuests) * 100 : 0, totalBudget, totalSpent, budgetPercentage, remainingBudget: totalBudget - totalSpent };
+    // responseRate removed: computed here since forever and rendered nowhere.
+    // Dead code shaped exactly like a live downstream figure is worse than dead
+    // code that looks dead — it invites the next reader to reason about a
+    // number no one sees.
+    return { totalGuests, responded, attending, declined, totalBudget, totalSpent, budgetPercentage, remainingBudget: totalBudget - totalSpent };
   }, [guests, budget]);
 
   const STAT_CARDS = [

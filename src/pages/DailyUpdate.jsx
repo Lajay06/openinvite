@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
-import { tallyGuestRsvp, isAttending } from '@/lib/guestRsvpTally';
+import { tallyAttendees, isAttending } from '@/lib/guestRsvpTally';
+import { resolveAttendees } from '@/lib/attendees';
 import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import TipsModal from '@/components/dashboard/TipsModal';
@@ -259,7 +260,19 @@ export default function DailyUpdate() {
     // AUDIT_2026-07.md S21: 'confirmed' is not a valid rsvp_status value —
     // that half of the check could never match, harmless only because it
     // was OR'd with the correct 'attending' check.
-    const { attending: confirmedGuests, pending: pendingGuests } = tallyGuestRsvp(guests);
+    // Counts ATTENDEES: a plus-one is a head at the table and a reply the
+    // couple is waiting on. These fed the daily brief while omitting all 40.
+    const { combined } = tallyAttendees(resolveAttendees(guests));
+    const { attending: confirmedGuests, pending: pendingGuests } = combined;
+    // DELIBERATELY still counts GUESTS, not attendees, and must stay that way
+    // until the seating work (step 3 of the plus-one plan).
+    //
+    // A plus-one cannot hold a table assignment at all today —
+    // Table.assigned_guests[].guest_id requires a real Guest id, and a plus-one
+    // has none. So an attendee-based count here would report every attending
+    // plus-one as unseated, permanently, and no amount of seating work by the
+    // couple could ever clear it. That is a number that is knowably WRONG,
+    // which is worse than one that is knowably INCOMPLETE.
     const unseatedGuests  = guests.filter(g => !g.table_assignment && isAttending(g)).length;
     const totalBudget   = budgetItems.reduce((s, b) => s + (b.total_amount || b.budgeted_amount || 0), 0);
     const budgetSpent   = budgetItems.reduce((s, b) => s + (b.spent_amount || b.actual_amount || 0), 0);

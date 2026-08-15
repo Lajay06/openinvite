@@ -108,3 +108,52 @@ export function tallyGuestRsvp(guests, { includePlusOnes = false } = {}) {
 
   return { attending, declined, maybe, pending, awaiting, responded: total - pending, total };
 }
+
+/**
+ * The same tally, over a canonical ATTENDEE list, split into its two halves in
+ * a single pass.
+ *
+ * Replaces the `includePlusOnes` boolean. That flag existed because Guests.jsx
+ * needs BOTH numbers — its cards read "148" with a "121 guests, 27 plus-ones"
+ * sub-label — which it obtained by tallying twice and subtracting
+ * (`combined.attending - guestOnly.attending`). Returning both halves makes the
+ * second pass and the subtraction unnecessary, and once every caller passes
+ * attendees the flag would only ever take one value, which is a trap for the
+ * next person.
+ *
+ * `awaiting` is NOT computed here. It needs `invite_sent_at`, which is a
+ * guest-only field an Attendee deliberately does not carry — a plus-one has no
+ * invitation of its own. Callers that need it tally the guests directly.
+ *
+ * @param {Array<import('./attendees.js').Attendee>} attendees
+ * @returns {{combined:object, primaries:object, plusOnes:object}}
+ */
+export function tallyAttendees(attendees) {
+  const list = attendees || [];
+  const blank = () => ({ attending: 0, declined: 0, maybe: 0, pending: 0, total: 0 });
+  const primaries = blank();
+  const plusOnes = blank();
+
+  for (const a of list) {
+    const bucket = a?.isPlusOne ? plusOnes : primaries;
+    bucket.total += 1;
+    // Reads a.rsvp_status through the SAME predicates every page already uses.
+    // This is why the Attendee field is snake_case: see the naming note in
+    // attendees.js. With `.rsvpStatus` every branch below silently fell through
+    // to pending.
+    if (isAttending(a)) bucket.attending += 1;
+    else if (isDeclined(a)) bucket.declined += 1;
+    else if (isMaybe(a)) bucket.maybe += 1;
+    else bucket.pending += 1;
+  }
+
+  const sum = (k) => primaries[k] + plusOnes[k];
+  const combined = {
+    attending: sum('attending'), declined: sum('declined'), maybe: sum('maybe'),
+    pending: sum('pending'), total: sum('total'),
+    responded: sum('total') - sum('pending'),
+  };
+  primaries.responded = primaries.total - primaries.pending;
+  plusOnes.responded = plusOnes.total - plusOnes.pending;
+  return { combined, primaries, plusOnes };
+}
