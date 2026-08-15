@@ -27,6 +27,8 @@ import {
 } from '../src/lib/attendees.js';
 import { plusOneRsvpStatus, hasPlusOne } from '../src/lib/plusOne.js';
 import { isAttending, isDeclined, isPending, tallyAttendees } from '../src/lib/guestRsvpTally.js';
+import { DEFAULT_MEAL_OPTIONS } from '../src/lib/weddingEvents.js';
+import { readFileSync } from 'node:fs';
 
 const results = [];
 function check(label, pass, detail = '') {
@@ -281,6 +283,37 @@ check('empty input yields an empty list', resolveAttendees([]).length === 0);
 check('non-array input yields an empty list',
   resolveAttendees(null).length === 0 && resolveAttendees(undefined).length === 0);
 check('null entries are skipped', resolveAttendees([null, guests[0]]).length === 1);
+
+// ── THE MEAL ENUM CONSTRAINT ────────────────────────────────────────────────
+// Guest.meal_choice / plus_one_meal_choice are declared with a FIXED enum of
+// the six DEFAULT_MEAL_OPTIONS ids. WeddingDetails.mealOptions lets a couple
+// define custom options whose ids are `${Date.now()}-${random}`
+// (FoodBeverage.jsx:33) — ids those columns cannot hold.
+//
+// Nothing is affected today (every wedding has mealOptions: []), but the guest
+// editor now offers a dropdown sourced from mealOptions, so widening this enum
+// is a HARD PREREQUISITE for shipping custom menu options. This asserts the
+// constraint so changing the defaults fails CI instead of silently breaking a
+// write, and so the dependency is documented somewhere nobody skims past.
+//
+// Read from the schema file, never by writing to the database.
+{
+  const schema = JSON.parse(
+    readFileSync('base44/entities/Guest.jsonc', 'utf8').replace(/^\s*\/\/.*$/gm, '')
+  ).properties;
+  const customId = `${1780577525833}-0132f`;   // the real shape, fixed value (no Date.now in tests)
+
+  for (const col of ['meal_choice', 'plus_one_meal_choice']) {
+    const allowed = schema[col]?.enum;
+    check(`Guest.${col} declares an enum`, Array.isArray(allowed) && allowed.length > 0,
+      JSON.stringify(schema[col]));
+    check(`every DEFAULT_MEAL_OPTIONS id is accepted by Guest.${col}`,
+      DEFAULT_MEAL_OPTIONS.every(o => allowed?.includes(o.id)),
+      `missing: ${DEFAULT_MEAL_OPTIONS.filter(o => !allowed?.includes(o.id)).map(o => o.id).join(', ')}`);
+    check(`a custom mealOptions id is NOT accepted by Guest.${col} (the prerequisite)`,
+      !allowed?.includes(customId));
+  }
+}
 
 const passed = results.filter(Boolean).length;
 console.log(`\n  ${passed}/${results.length} ${results.every(Boolean) ? 'ALL PASS' : 'FAILURES PRESENT'}`);
