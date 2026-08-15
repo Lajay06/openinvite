@@ -59,6 +59,26 @@ export const PLUS_ONE_RSVP_STATUSES = ['pending', 'attending', 'declined'];
 /**
  * Does this guest have a plus-one at all?
  *
+ * ANSWERS: "is this guest permitted to bring someone, or has one been named?"
+ * That is a DISPLAY question. The guest table shows a plus-one status badge on
+ * this basis, and a couple who granted a +1 but does not yet know the name
+ * still wants to see it sitting there waiting to be filled in.
+ *
+ * IT IS NOT A HEAD COUNT. Its counterpart is attendsAsPlusOne() in
+ * src/lib/attendees.js, which answers "is there a PERSON here to count, seat
+ * and feed?" and additionally requires a name or an email — a permission with
+ * nobody named is not a head at a table.
+ *
+ * The two deliberately disagree on exactly one input: `plus_one: true` with no
+ * name and no email. hasPlusOne says yes, attendsAsPlusOne says no, and both
+ * are right for their own question. If you are here because you noticed the
+ * disagreement, it is intentional; do not collapse them. Guests.jsx:380 counts
+ * the bare boolean as a head, which is the bug that motivated the split.
+ *
+ * Measured 2026-08-15 against the 202 live records: the divergence is currently
+ * EMPTY — all 40 plus-ones carry the flag AND a name, so no record exercises
+ * it. It is held by assertion in scripts/test-attendees.mjs, not by luck.
+ *
  * Any of the three signals counts. In the 202 live records all 40
  * plus-ones satisfy all three simultaneously (plus_one true AND a name AND
  * a plus_one_rsvp), so the edges of this definition are currently
