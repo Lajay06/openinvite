@@ -6,7 +6,8 @@ import { hasPlusOne, plusOneRsvpStatus } from "@/lib/plusOne";
 import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
-import { tallyGuestRsvp, isAttending, isDeclined, isAwaitingPrimary } from "@/lib/guestRsvpTally";
+import { tallyAttendees, isAttending, isDeclined, isPending, isAwaitingPrimary } from "@/lib/guestRsvpTally";
+import { resolveAttendees } from "@/lib/attendees";
 const Guest = base44.entities.Guest;
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -375,33 +376,48 @@ export default function Guests() {
   };
 
   const stats = React.useMemo(() => {
+    // `total` stays a ROW count. It labels the "All (N)" filter pill, which
+    // must match how many rows the table shows, and the Total guests card adds
+    // plusOnes to it explicitly below.
     const total = guests.length;
+    // invite_sent_at is guest-only — a plus-one has no invitation of their own.
     const invited = guests.filter(g => g.invite_sent_at).length;
-    const plusOnes = guests.filter(g => g.plus_one).length;
 
-    // A plus-one with their own identity (plus_one_email) has their own
-    // rsvp_status, distinct from the primary guest's — counted in addition
-    // to the primary guest via includePlusOnes. A plus-one with no email
-    // has no separate status to count (current behaviour: the primary
-    // answers for both), so they're intentionally left out of these
-    // counts, same as before this feature.
+    // One canonical attendee list, partitioned in a single pass. This replaces
+    // two tallies plus a subtraction (`combined.attending - guestOnly.attending`)
+    // and the includePlusOnes boolean, which would only ever have taken one
+    // value once every caller passed attendees.
     //
-    // Round 8 ask #13b: "134 attending" with no indication it's folding in
-    // plus-ones read as wrong next to a 121/201-guest list. Computing the
-    // guests-only tally alongside the combined one gives each card a real
-    // breakdown (same "X · Y" pattern "Total guests" already used) instead
-    // of a bare number a couple has to guess the composition of.
-    const guestOnly = tallyGuestRsvp(guests, { includePlusOnes: false });
-    const combined = tallyGuestRsvp(guests, { includePlusOnes: true });
+    // `plusOnes` was `guests.filter(g => g.plus_one).length` — the bare
+    // permission flag. It is accidentally right today, because no guest carries
+    // `plus_one: true` without also naming someone; the first one who does
+    // inflates that count by a head who does not exist. The resolver requires a
+    // name or an email, so it is correct by construction rather than by luck.
+    //
+    // Round 8 ask #13b: "134 attending" with no indication it folds in
+    // plus-ones read as wrong next to a 121/201-guest list, so each card keeps
+    // its "X guests · Y plus-ones" breakdown.
+    const attendees = resolveAttendees(guests);
+    const { combined, primaries, plusOnes: poTally } = tallyAttendees(attendees);
+
+    // Awaiting needs invite_sent_at, which an Attendee deliberately does not
+    // carry, so it is derived here: a plus-one is "awaiting" when their HOST
+    // was invited and the plus-one has not answered. Computed over the same
+    // attendee list as everything else, so the halves cannot drift apart.
+    const guestById = new Map(guests.filter(g => g?.id).map(g => [g.id, g]));
+    const wasInvited = (a) => !!guestById.get(a.isPlusOne ? a.hostGuestId : a.id)?.invite_sent_at;
+    const awaitingAll = attendees.filter(a => wasInvited(a) && isPending(a));
+
     return {
-      total, invited, plusOnes,
+      total, invited,
+      plusOnes: poTally.total,
       attending: combined.attending,
       declined: combined.declined,
-      awaiting: combined.awaiting,
-      attendingGuestsOnly: guestOnly.attending,
-      attendingPlusOnes: combined.attending - guestOnly.attending,
-      awaitingGuestsOnly: guestOnly.awaiting,
-      awaitingPlusOnes: combined.awaiting - guestOnly.awaiting,
+      awaiting: awaitingAll.length,
+      attendingGuestsOnly: primaries.attending,
+      attendingPlusOnes: poTally.attending,
+      awaitingGuestsOnly: awaitingAll.filter(a => !a.isPlusOne).length,
+      awaitingPlusOnes: awaitingAll.filter(a => a.isPlusOne).length,
     };
   }, [guests]);
 
