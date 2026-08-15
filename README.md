@@ -107,6 +107,8 @@ Standing instructions for AI coding sessions on this repo are in
 | [DESIGN_SPEC.md](./DESIGN_SPEC.md) | The visual design system — typography, colour, spacing, components, canonical page layout |
 | [BASE44_PLATFORM_NOTES.md](./BASE44_PLATFORM_NOTES.md) | Empirically established Base44 platform behavior — what the admin key can/can't do, RLS quirks, schema drift, the User-entity auth quirk. Read before touching RLS, the admin key, or an admin-key-backed endpoint |
 | [ANONYMOUS_ACCESS_MATRIX.md](./ANONYMOUS_ACCESS_MATRIX.md) | What the published, anonymous guest-facing site (`/w/:slug`, `/rsvp/:token`) can and can't read, given Base44 permissions are entity-level, not token-scoped |
+| [docs/app-flow.md](./docs/app-flow.md) | Every real user journey (couple, guest, admin), walked through the actual routes — ends in a numbered end-to-end click-through script usable as a beta-test script |
+| [docs/treeview.md](./docs/treeview.md) | Annotated file-structure map — what each significant directory and file is for |
 | [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) | Narrow, recurring standing checks (not a one-time audit) — re-run whenever their specific trigger condition happens again. Currently: the webhook-domain check, CSP report-only rollout, and the production rollback runbook |
 | [AUDIT_2026-07.md](./AUDIT_2026-07.md) | Full codebase audit, July 2026 — blockers, should-fix, nice-to-have, with a proposed fix sequence |
 | [MARKETING_AUDIT.md](./MARKETING_AUDIT.md) | Maps the real shipped feature set against current marketing copy, so every feature has one clear home and duplicated claims are consolidated |
