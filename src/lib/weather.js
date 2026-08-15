@@ -162,12 +162,20 @@ const notFound      = ()     => ({ state: WEATHER_NOT_FOUND, data: null });
 const unavailable   = ()     => ({ state: WEATHER_UNAVAILABLE, data: null });
 
 /**
- * @param {{ mainCeremony?: { address?: string }, reception?: { address?: string }, weddingDate?: string }} weddingDetails
+ * @param {{ mainCeremony?: { address?: string, placeId?: string|null },
+ *   reception?: { address?: string, placeId?: string|null }, weddingDate?: string }} weddingDetails
  * @returns {Promise<{ state: 'ok'|'not-applicable'|'not-found'|'unavailable',
- *   data: null | { mode: 'seasonal'|'forecast'|'current', label: string, icon: string, temp?: number, high?: number, low?: number } }>}
+ *   data: null | { mode: 'seasonal'|'forecast'|'current', label?: string, icon: string, temp?: number, high?: number, low?: number } }>}
+ *   `label` is a weather-code description on current/forecast and absent on
+ *   seasonal, which is numbers only — Layout.jsx words that mode.
  */
 export async function getWeddingWeather(weddingDetails) {
-  const address = weddingDetails?.mainCeremony?.address || weddingDetails?.reception?.address;
+  // The venue OBJECT, not just its address, so placeId travels with it.
+  // Same precedence as before: ceremony first, reception as the fallback.
+  const ceremony = weddingDetails?.mainCeremony;
+  const reception = weddingDetails?.reception;
+  const venue = ceremony?.address ? ceremony : reception?.address ? reception : null;
+  const address = venue?.address;
   const weddingDate = weddingDetails?.weddingDate;
   if (!address || !weddingDate) return notApplicable();
 
@@ -207,11 +215,25 @@ export async function getWeddingWeather(weddingDetails) {
   // Geocoding matched nothing and nothing threw — the address is the problem,
   // which the couple can act on. Distinguished from a thrown fetch or an
   // empty/unusable response, which they cannot.
-  // Geocoding RAN and matched nothing — the address is the problem, which the
-  // couple can act on. A geocoder that could not be reached is `unavailable`:
-  // telling someone to correct a perfectly good address because the network
-  // was down is worse than saying nothing.
-  if (!failed && !located && !geocodeFailed) return notFound();
+  // Geocoding RAN and matched nothing. WHY decides the state, and placeId is
+  // what tells us: it is null exactly when the venue was typed by hand rather
+  // than picked from Places (VenueSearchPanel.jsx:83 sets it, :95 nulls it).
+  //
+  //   no placeId  -> NOT-APPLICABLE. Someone typed "the family farm". That is
+  //                  not an error and not a bad address; the feature simply does
+  //                  not apply, the same as having no date set. Calling it
+  //                  not-found would mean telling a couple to correct something
+  //                  they entered deliberately and correctly.
+  //   has placeId -> NOT-FOUND, the genuinely odd case: Google gave us this
+  //                  address and the geocoder still cannot place it.
+  //
+  // This runs ONLY after the attempt has already failed. It deliberately does
+  // not short-circuit the lookup: a hand-typed but perfectly ordinary address
+  // ("42 Main St, Sydney NSW 2000") geocodes fine and shows real weather today,
+  // and gating on placeId up front would silently take that away.
+  if (!failed && !located && !geocodeFailed) {
+    return venue?.placeId ? notFound() : notApplicable();
+  }
   return unavailable();
 }
 
@@ -262,9 +284,13 @@ async function fetchByMode(mode, loc, target, daysUntil) {
   }
   if (!highs.length || !lows.length) return null;
   const avg = (arr) => arr.reduce((s, v) => s + v, 0) / arr.length;
+  // No label. It used to read "Typical for this time of year", which made the
+  // rendered string 218px in a slot with ~130px to spare at 1280 next to a long
+  // couple name, so it ellipsized away to nothing useful. Seasonal wording now
+  // lives in Layout.jsx alongside the other two modes' formatting; the data
+  // stays just the numbers.
   return {
     mode: 'seasonal',
-    label: 'Typical for this time of year',
     icon: 'CloudSun',
     high: Math.round(avg(highs)),
     low: Math.round(avg(lows)),
