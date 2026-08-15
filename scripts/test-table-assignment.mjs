@@ -19,6 +19,7 @@
  */
 
 import {
+  shouldWriteTableCache,
   buildSeatAssignmentPayload,
   buildSeatRemovalPayload,
   findSeatConflict,
@@ -129,6 +130,84 @@ const conflict = findSeatConflict('g1', TABLES, 'reception', 't2', 0);
 const message = `${'Ana Reyes'} is already at ${conflict.tableName} for ${'Reception'}`;
 check('the already-seated toast is unchanged',
   message === 'Ana Reyes is already at Table 1 for Reception', message);
+
+// ── 3b: SEATING A PLUS-ONE ──────────────────────────────────────────────────
+const { resolveAttendees, plusOneIdFor, isPlusOneId } = await import('../src/lib/attendees.js');
+const { buildTablesWithGuests, buildGuestTagList, getUnresolvedAttendees, resetUnresolvedAttendees } =
+  await import('../src/lib/seatingChart.js');
+
+const HOST = '68731d183f075e406eda0001';
+const GUESTS = [
+  { id: HOST, name: 'Ida Novak', rsvp_status: 'attending',
+    plus_one: true, plus_one_name: 'Jon Novak', plus_one_rsvp: 'attending',
+    plus_one_meal_choice: 'beef', meal_choice: 'fish' },
+  { id: '68731d183f075e406eda0002', name: 'Kit Ito', rsvp_status: 'attending' },
+];
+const ATTENDEES = resolveAttendees(GUESTS);
+const PO_ID = plusOneIdFor(HOST);
+const SEATED = [{
+  id: 'tA', name: 'Table 1', capacity: 8, event_id: 'reception',
+  assigned_guests: [
+    { guest_id: HOST, seat_index: 0 },
+    { guest_id: PO_ID, seat_index: 1 },                 // the plus-one, seated
+    { guest_id: '68731d183f075e406eda0002', seat_index: 2 },
+  ],
+}];
+
+check('a synthetic id is storable and recognisable', isPlusOneId(PO_ID) && typeof PO_ID === 'string');
+
+// THE ASSERTION THAT MATTERS: the printed chart the venue works from.
+resetUnresolvedAttendees();
+const chart = buildTablesWithGuests(SEATED, ATTENDEES);
+const names = chart[0].guests.map(g => g.name);
+check('A SEATED PLUS-ONE APPEARS IN buildTablesWithGuests (the printed chart)',
+  names.includes('Jon Novak'), names.join(', '));
+check('...alongside their host and the other guests, all three seated',
+  chart[0].guests.length === 3, `${chart[0].guests.length}`);
+check('no false alarm raised on a correct resolution',
+  getUnresolvedAttendees().length === 0, JSON.stringify(getUnresolvedAttendees()));
+
+// The plus-one gets their own name tag / place card, with their OWN meal.
+const tags = buildGuestTagList(SEATED, ATTENDEES);
+const jon = tags.find(t => t.name === 'Jon Novak');
+check('a plus-one gets their own place card', !!jon);
+check("...carrying the PLUS-ONE's meal, not the host's",
+  jon && jon.meal_choice === 'beef', jon && JSON.stringify(jon));
+check('...and seated at the right table', jon && jon.table === 'Table 1');
+
+// ── 3b: the cache write decision, both directions ──────────────────────────
+check('a PRIMARY at the reception DOES get its Guest.table_assignment written',
+  shouldWriteTableCache(HOST, 'reception') === true);
+check('a PLUS-ONE at the reception NEVER does (no Guest record to write)',
+  shouldWriteTableCache(PO_ID, 'reception') === false);
+check('a primary at another event does not (reception-only cache, unchanged)',
+  shouldWriteTableCache(HOST, 'brunch-123') === false);
+check('a plus-one at another event does not either',
+  shouldWriteTableCache(PO_ID, 'brunch-123') === false);
+
+// ── THE LOUD/QUIET SPLIT ────────────────────────────────────────────────────
+// Quiet: a stale PLAIN id (a deleted guest) drops silently, as asset-system.mjs
+// fixtures deliberately.
+resetUnresolvedAttendees();
+const stale = buildTablesWithGuests(
+  [{ id: 'tB', name: 'T', capacity: 4, event_id: 'reception',
+     assigned_guests: [{ guest_id: HOST, seat_index: 0 }, { guest_id: 'g-does-not-exist', seat_index: 1 }] }],
+  ATTENDEES);
+check('QUIET: an unknown PLAIN id drops silently, and nothing is reported',
+  stale[0].guests.length === 1 && getUnresolvedAttendees().length === 0);
+
+// Loud: an unresolvable SYNTHETIC id is our own resolution bug and is reported.
+resetUnresolvedAttendees();
+const wrong = buildTablesWithGuests(SEATED, GUESTS);   // Guest records, not attendees
+const reported = getUnresolvedAttendees();
+check('LOUD: an unresolvable SYNTHETIC id IS reported, not filtered away',
+  reported.length === 1 && reported[0].id === PO_ID, JSON.stringify(reported));
+check('...naming the table so the failure is actionable',
+  reported.length === 1 && reported[0].tableName === 'Table 1');
+check('...and the render still completes rather than throwing',
+  wrong[0].guests.length === 2);
+check('the two cases are genuinely distinguishable',
+  getUnresolvedAttendees().length === 1 && stale[0].guests.length === 1);
 
 const passed = results.filter(Boolean).length;
 console.log(`\n  ${passed}/${results.length} ${results.every(Boolean) ? 'ALL PASS' : 'FAILURES PRESENT'}`);

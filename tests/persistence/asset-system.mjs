@@ -18,6 +18,7 @@
  * claim ("6 per A4 sheet").
  */
 
+import { resolveAttendees } from '../../src/lib/attendees.js';
 import { buildTablesWithGuests, buildGuestTagList } from '../../src/lib/seatingChart.js';
 import { ASSET_EXPORT_SPECS } from '../../src/lib/assetExport.js';
 import { pass, fail } from './_shared.mjs';
@@ -42,6 +43,11 @@ const GUESTS = [
   { id: 'g4', name: '__PERSISTENCE_TEST_GUEST__', event_responses: [{ event_id: 'reception', invited: true, status: 'yes', meal_choice: 'chicken' }], is_test: true },
 ];
 
+// These builders now take ATTENDEES, not Guest records — a plus-one is seated
+// by synthetic id and has no Guest record to resolve against. resolveAttendees
+// is the one place that mapping happens.
+const ATTENDEES = resolveAttendees(GUESTS);
+
 const TABLES = [
   { id: 't1', name: 'Table 1', assigned_guests: [{ seat_index: 0, guest_id: 'g1' }, { seat_index: 1, guest_id: 'g2' }] },
   { id: 't2', name: 'Table 2', assigned_guests: [] }, // no one seated yet — must not appear as an empty fake box
@@ -54,7 +60,7 @@ export async function runAssetSystem() {
   console.log('\n  Asset system — real seating data, no fake placeholders:\n');
 
   {
-    const result = buildTablesWithGuests(TABLES, GUESTS);
+    const result = buildTablesWithGuests(TABLES, ATTENDEES);
     results.push(result.length === 1 && result[0].name === 'Table 1' && result[0].guests.length === 2
       ? pass('buildTablesWithGuests — only tables with real assigned guests are included', JSON.stringify(result.map(t => t.name)))
       : fail('buildTablesWithGuests — only tables with real assigned guests are included', '["Table 1"]', JSON.stringify(result.map(t => t.name))));
@@ -63,13 +69,13 @@ export async function runAssetSystem() {
       ? pass('buildTablesWithGuests — real guest names, never a generic placeholder', result[0].guests.map(g => g.name).join(', '))
       : fail('buildTablesWithGuests — real guest names, never a generic placeholder', 'real names', JSON.stringify(result[0]?.guests)));
 
-    results.push(buildTablesWithGuests([], GUESTS).length === 0
+    results.push(buildTablesWithGuests([], ATTENDEES).length === 0
       ? pass('buildTablesWithGuests — no tables at all → empty result, not fake data', '[]')
-      : fail('buildTablesWithGuests — no tables at all → empty result, not fake data', '[]', JSON.stringify(buildTablesWithGuests([], GUESTS))));
+      : fail('buildTablesWithGuests — no tables at all → empty result, not fake data', '[]', JSON.stringify(buildTablesWithGuests([], ATTENDEES))));
   }
 
   {
-    const tagList = buildGuestTagList(TABLES, GUESTS);
+    const tagList = buildGuestTagList(TABLES, ATTENDEES);
     results.push(!tagList.some(t => t.name === 'Guest Name')
       ? pass('buildGuestTagList — never the hardcoded "Guest Name" placeholder', 'confirmed absent')
       : fail('buildGuestTagList — never the hardcoded "Guest Name" placeholder', 'absent', 'present'));
@@ -87,8 +93,8 @@ export async function runAssetSystem() {
     // event_responses (the live overlay), not a flat g.meal_choice field
     // (Alice's fixture has no such field at all, only event_responses).
     results.push(alice?.meal_choice === 'vegetarian'
-      ? pass('buildGuestTagList — meal_choice read from event_responses (live overlay), not a flat field', alice?.meal_choice)
-      : fail('buildGuestTagList — meal_choice read from event_responses (live overlay), not a flat field', 'vegetarian', alice?.meal_choice));
+      ? pass('buildGuestTagList — meal_choice comes from the resolved attendee meal (overlay first, couple-set fallback), never a raw flat read', alice?.meal_choice)
+      : fail('buildGuestTagList — meal_choice comes from the resolved attendee meal (overlay first, couple-set fallback), never a raw flat read', 'vegetarian', alice?.meal_choice));
 
     // Carla is a real guest but not assigned to any table — must still
     // appear (couples want a full guest list even before seating is done),
