@@ -32,7 +32,13 @@ globalThis.localStorage = {
 // A real Google Places formatted_address. resolveVenueLocation needs at least
 // three comma segments (it drops the venue and the country), so a bare city
 // name never reaches the geocoder at all.
+const today = new Date().toISOString().slice(0, 10);
 const ADDR = 'Sydney Opera House, Bennelong Point, Sydney NSW 2000, Australia';
+
+// placeId is what separates a venue picked from Places from one typed by hand.
+// It decides how a FAILED lookup is classified, so both shapes are needed.
+const fromPlaces = (address = ADDR) => ({ mainCeremony: { address, placeId: 'ChIJ3S-JXmauEmsRUcIaWtf4MzE' }, weddingDate: today });
+const handTyped  = (address = ADDR) => ({ mainCeremony: { address, placeId: null }, weddingDate: today });
 
 let mode = 'ok';
 const GEO_HIT = { results: [{ latitude: -33.8688, longitude: 151.2093, timezone: 'Australia/Sydney' }] };
@@ -56,7 +62,6 @@ const {
   WEATHER_UNAVAILABLE,
 } = await import('../src/lib/weather.js');
 
-const today = new Date().toISOString().slice(0, 10);
 const results = [];
 
 async function check(label, fetchMode, details, expected) {
@@ -79,17 +84,27 @@ await check('no wedding date', 'ok', { mainCeremony: { address: ADDR } }, WEATHE
 await check('unparseable date', 'ok', { mainCeremony: { address: ADDR }, weddingDate: 'not-a-date' }, WEATHER_NOT_APPLICABLE);
 
 // Real data.
-await check('happy path', 'ok', { mainCeremony: { address: ADDR }, weddingDate: today }, WEATHER_OK);
+await check('happy path', 'ok', fromPlaces(), WEATHER_OK);
 
-// The address is the problem and the couple can fix it.
-await check('geocoder matched nothing', 'nomatch', { mainCeremony: { address: ADDR }, weddingDate: today }, WEATHER_NOT_FOUND);
-await check('address too short', 'ok', { mainCeremony: { address: 'Sydney' }, weddingDate: today }, WEATHER_NOT_FOUND);
+// From Places and it still will not resolve: genuinely odd, and the address is
+// the thing to look at.
+await check('places addr, no match', 'nomatch', fromPlaces(), WEATHER_NOT_FOUND);
+await check('places addr, too short', 'ok', fromPlaces('Sydney'), WEATHER_NOT_FOUND);
+
+// Typed by hand and it will not resolve: almost always someone who meant it —
+// "the family farm" is not a mistake to be corrected. Not an error state.
+await check('typed addr, no match', 'nomatch', handTyped(), WEATHER_NOT_APPLICABLE);
+await check('typed addr, too short', 'ok', handTyped('The family farm'), WEATHER_NOT_APPLICABLE);
+
+// placeId must only ever RELABEL a failure, never skip the attempt: an ordinary
+// hand-typed address geocodes fine and must still show real weather.
+await check('typed addr that resolves', 'ok', handTyped(), WEATHER_OK);
 
 // Not the couple's problem, and not actionable. The geocoder-outage case is
 // the one that used to be misreported as not-found.
-await check('geocoder unreachable', 'geothrow', { mainCeremony: { address: ADDR }, weddingDate: today }, WEATHER_UNAVAILABLE);
-await check('all fetches throw', 'throw', { mainCeremony: { address: ADDR }, weddingDate: today }, WEATHER_UNAVAILABLE);
-await check('located, empty payload', 'emptydata', { mainCeremony: { address: ADDR }, weddingDate: today }, WEATHER_UNAVAILABLE);
+await check('geocoder unreachable', 'geothrow', fromPlaces(), WEATHER_UNAVAILABLE);
+await check('all fetches throw', 'throw', fromPlaces(), WEATHER_UNAVAILABLE);
+await check('located, empty payload', 'emptydata', fromPlaces(), WEATHER_UNAVAILABLE);
 
 // The contract itself: always shaped, never a bare null, never rejects.
 mode = 'throw';

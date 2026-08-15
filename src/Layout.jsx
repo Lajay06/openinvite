@@ -115,10 +115,18 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
   // Account → Settings only affects this display conversion, not the fetch.
   const tempUnit = storedUser.tempUnit === 'F' ? 'F' : 'C';
   const toDisplayTemp = (c) => tempUnit === 'F' ? Math.round(c * 9 / 5 + 32) : Math.round(c);
+  // Seasonal is worded here rather than in weather.js because this is where the
+  // other two modes are already worded (degree signs, separator, unit). It reads
+  // "Usually 18°/9°C" instead of the old "18°/9°C · Typical for this time of
+  // year": same information, less than half the width. The long form was 218px
+  // in a slot that has roughly 130px at 1280 beside a long couple name, so it
+  // truncated to "18…" and told the reader nothing.
   const weatherText = weather
     ? weather.mode === 'current'
       ? `${toDisplayTemp(weather.temp)}°${tempUnit}${weather.label ? ` · ${weather.label}` : ''}`
-      : `${toDisplayTemp(weather.high)}°/${toDisplayTemp(weather.low)}°${tempUnit}${weather.label ? ` · ${weather.label}` : ''}`
+      : weather.mode === 'seasonal'
+        ? `Usually ${toDisplayTemp(weather.high)}°/${toDisplayTemp(weather.low)}°${tempUnit}`
+        : `${toDisplayTemp(weather.high)}°/${toDisplayTemp(weather.low)}°${tempUnit}${weather.label ? ` · ${weather.label}` : ''}`
     : '';
 
   const handleLogout = () => {
