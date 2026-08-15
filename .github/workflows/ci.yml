@@ -125,6 +125,20 @@ jobs:
       - name: Attendee resolver guard
         run: npm run test:attendees
 
+      # No network, no credentials — proves the seating write-path refactor is
+      # payload-identical to the code it replaced (100 assignment/removal
+      # combinations compared against the pre-refactor expressions verbatim),
+      # and that the already-seated toast string is unchanged.
+      - name: Table assignment payload equivalence
+        run: npm run test:table-assignment
+
+      # Static source scan. src/lib/tableAssignment.js called itself the
+      # "single write path" while Seating.jsx wrote seats directly from three
+      # places — the comment asserting the rule is what let it rot. This makes
+      # the rule enforceable: seating writes exist in exactly one file.
+      - name: Single seating write path guard
+        run: npm run test:single-table-write-path
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live
