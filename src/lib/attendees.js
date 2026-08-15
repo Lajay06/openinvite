@@ -170,6 +170,11 @@ export function resolveAttendees(guests) {
  * So an attendee needs an identity — a name or an email — before it is a person
  * to count, seat and feed.
  *
+ * ANSWERS: "is there a PERSON here to count, seat and feed?" Its counterpart
+ * is hasPlusOne() in src/lib/plusOne.js, which answers the DISPLAY question
+ * "is this guest permitted to bring someone, or has one been named?" Both are
+ * correct for their own question and both should survive.
+ *
  * THIS IS A DELIBERATE, NARROW DIVERGENCE FROM THE GUEST TABLE, and the only
  * one. For a guest flagged `plus_one: true` with neither a name nor an email,
  * the table shows a row and this list yields no attendee. Everywhere else the
