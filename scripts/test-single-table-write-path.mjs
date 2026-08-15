@@ -73,6 +73,28 @@ for (const rule of RULES) {
 // The guard is worthless if the allowed file stopped containing the writes —
 // that would mean the pattern no longer matches reality and the scan above is
 // vacuously green.
+// ── CALL-SITE GUARD ─────────────────────────────────────────────────────────
+// The unit tests call buildTablesWithGuests directly, so they CANNOT catch a
+// caller passing Guest records where attendees are required — every assertion
+// stays green while seated plus-ones vanish from the printed chart. Only the
+// runtime loud-path notices, and only if someone is looking.
+//
+// This closes that hole the same crude way the write-path scan does: assert the
+// call sites by source text.
+const CALL_SITE_RULES = [
+  { file: 'src/pages/Seating.jsx',
+    label: 'the exported PDF passes attendees to buildTablesWithGuests',
+    re: /buildTablesWithGuests\(\s*eventTables\s*,\s*resolveAttendees\(/ },
+  { file: 'src/pages/Seating.jsx',
+    label: 'the canvas passes attendees to VisualTable',
+    re: /guests=\{eventAttendees\}/ },
+];
+for (const rule of CALL_SITE_RULES) {
+  const src = readFileSync(rule.file, 'utf8');
+  check(`${rule.file}: ${rule.label}`, rule.re.test(src),
+    'call site does not match — a caller may be passing Guest records where attendees are required');
+}
+
 const lib = readFileSync(ALLOWED, 'utf8');
 for (const rule of RULES) {
   check(`${ALLOWED} still contains ${rule.label} (guard is not vacuous)`,

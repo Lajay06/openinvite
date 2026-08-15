@@ -330,7 +330,9 @@ export default function SeatingPage() {
     for (const t of eventTables) {
       const avail = availableLabelPx(t.shape, t.capacity, renderScale);
       for (const a of (t.assigned_guests || [])) {
-        const g = guests.find(x => x.id === a.guest_id);
+        // attendees: a seated plus-one's name has to be measured too, or the
+        // label form is chosen for a subset of the names actually rendered.
+        const g = eventAttendees.find(x => x.id === a.guest_id);
         if (!g) continue;
         const idx = LABEL_FORMS.indexOf(labelForName(g.name, avail).form);
         if (idx > worst) worst = idx;
@@ -375,7 +377,30 @@ export default function SeatingPage() {
       .filter(({ response }) => !attendingOnly || response.status === 'yes');
   }, [guests, activeEvent, attendingOnly]);
 
-  const eventPoolIds = useMemo(() => new Set(eventPool.map(p => p.guest.id)), [eventPool]);
+  /**
+   * Everyone who can hold a seat at THIS event, as attendees — the one
+   * population the whole page counts, filters and seats from.
+   *
+   * Two sources, matching the precedence measured across the 202 live records:
+   * the flat Guest fields are authoritative for whether a plus-one EXISTS
+   * (resolveAttendees), and `event_responses[].plus_ones` is the per-event
+   * GRANT. Model 2 was measured to be a strict subset of model 1 — it never
+   * names someone the flat fields do not — so a plus-one appears here only at
+   * the events they were actually granted, which is what the comment on
+   * PlusOnesLine has always said: "an event can grant a +1 the couple didn't
+   * grant elsewhere, or vice versa".
+   */
+  const eventAttendees = useMemo(() => {
+    const out = [];
+    for (const { guest, response } of eventPool) {
+      const resolved = resolveAttendees([guest]);
+      const primary = resolved.find(a => !a.isPlusOne);
+      const plusOne = resolved.find(a => a.isPlusOne);
+      if (primary) out.push(primary);
+      if (plusOne && (response.plus_ones || 0) > 0) out.push(plusOne);
+    }
+    return out;
+  }, [eventPool]);
 
   /* ── Stats — scoped to this event's tables and this event's pool ── */
   const assignedGuestIds = useMemo(
@@ -385,13 +410,18 @@ export default function SeatingPage() {
 
   const stats = useMemo(() => {
     const totalSeats = eventTables.reduce((s, t) => s + (t.capacity || 0), 0);
-    const plusOnes = eventPool.reduce((s, { response }) => s + (response.plus_ones || 0), 0);
-    const total = eventPool.length + plusOnes;
-    const assigned = eventPool.filter(({ guest }) => assignedGuestIds.has(guest.id)).length;
-    const unassigned = Math.max(0, eventPool.length - assigned);
-    const pct = eventPool.length > 0 ? Math.round((assigned / eventPool.length) * 100) : 0;
+    // ONE population for all four numbers. Previously `guests` counted
+    // primaries + plus-ones while `assigned`, `unassigned` and `pct` counted
+    // primaries only — so a couple could seat everyone, read 100% complete, and
+    // still see the guest count exceed the assigned count. Plus-ones could not
+    // be seated at all then; they can now, so the denominator is the whole
+    // population.
+    const total = eventAttendees.length;
+    const assigned = eventAttendees.filter(a => assignedGuestIds.has(a.id)).length;
+    const unassigned = Math.max(0, total - assigned);
+    const pct = total > 0 ? Math.round((assigned / total) * 100) : 0;
     return { tables: eventTables.length, seats: totalSeats, guests: total, assigned, unassigned, pct };
-  }, [eventTables, eventPool, assignedGuestIds]);
+  }, [eventTables, eventAttendees, assignedGuestIds]);
 
   /* ── Drag & drop canvas ── */
   const handleItemMouseDown = (e, id, type) => {
@@ -636,7 +666,7 @@ export default function SeatingPage() {
       if (!res.ok) {
         // Same message as before the consolidation, from the lib's result.
         if (res.reason === 'already-seated-in-event') {
-          const g = guests.find(x => x.id === guestId);
+          const g = eventAttendees.find(x => x.id === guestId);
           toast.error(`${g ? g.name : 'Guest'} is already at ${res.tableName} for ${activeEvent.name}`);
         }
         return;
@@ -657,7 +687,11 @@ export default function SeatingPage() {
   };
 
   /* ── Right panel guest click ── */
-  const handleGuestPanelClick = async (guest) => {
+  // Takes an ATTENDEE. Everything below reads only .id and .name, which a
+  // plus-one has, and the two conflict checks were already pure id comparisons
+  // — so clicking a plus-one seats them with no further change.
+  const handleGuestPanelClick = async (attendee) => {
+    const guest = attendee;
     if (!selectedTableId) { toast.error('Select a table first'); return; }
     const table = tables.find(t => t.id === selectedTableId);
     if (!table) return;
@@ -714,16 +748,44 @@ export default function SeatingPage() {
   };
 
   /* ── Right panel filtered list — drawn from this event's pool, not the whole guest list ── */
+  /**
+   * The panel list, one row per ATTENDEE. Each row carries:
+   *   attendee — who the row is for, and the id written into
+   *              Table.assigned_guests when they are seated
+   *   guest    — the source Guest RECORD, which for a plus-one is their HOST's.
+   *              Host-level context only (avatar, tags, event chip); never the
+   *              plus-one's own name or dietary, which come off the attendee.
+   *   response — the host's per-event response, for the event chip
+   */
   const filteredGuests = useMemo(() => {
-    let list = eventPool;
-    if (guestFilter === 'unassigned') list = list.filter(({ guest }) => !assignedGuestIds.has(guest.id));
-    if (guestFilter === 'assigned') list = list.filter(({ guest }) => assignedGuestIds.has(guest.id));
+    const byHostId = new Map(eventPool.map(p => [p.guest.id, p]));
+    let list = eventAttendees.map(a => {
+      const src = byHostId.get(a.isPlusOne ? a.hostGuestId : a.id);
+      return { attendee: a, guest: src ? src.guest : null, response: src ? src.response : null };
+    }).filter(r => r.guest);
+    if (guestFilter === 'unassigned') list = list.filter(({ attendee }) => !assignedGuestIds.has(attendee.id));
+    if (guestFilter === 'assigned') list = list.filter(({ attendee }) => assignedGuestIds.has(attendee.id));
     if (guestSearch.trim()) {
       const q = guestSearch.toLowerCase();
-      list = list.filter(({ guest }) => guest.name?.toLowerCase().includes(q) || guest.dietary_restrictions?.toLowerCase().includes(q));
+      list = list.filter(({ attendee }) => attendee.name?.toLowerCase().includes(q)
+        || attendee.dietary_restrictions?.toLowerCase().includes(q));
     }
     return list;
-  }, [eventPool, guestFilter, guestSearch, assignedGuestIds]);
+  }, [eventAttendees, eventPool, guestFilter, guestSearch, assignedGuestIds]);
+
+  /**
+   * The same attendee+host rows the right-hand panel uses, unfiltered — the
+   * selected-table panel has its own search and assigned filter and applies
+   * them itself. Shared so the two clickable lists can never disagree about
+   * who exists.
+   */
+  const filteredForTablePanel = useMemo(() => {
+    const byHostId = new Map(eventPool.map(p => [p.guest.id, p]));
+    return eventAttendees.map(a => {
+      const src = byHostId.get(a.isPlusOne ? a.hostGuestId : a.id);
+      return { attendee: a, guest: src ? src.guest : null, response: src ? src.response : null };
+    }).filter(r => r.guest);
+  }, [eventAttendees, eventPool]);
 
   const selectedTable = eventTables.find(t => t.id === selectedTableId);
 
@@ -996,7 +1058,10 @@ export default function SeatingPage() {
                 >
                   <VisualTable
                     table={table}
-                    guests={guests}
+                    /* ATTENDEES: VisualTable resolves each seat by
+                       assigned_guests[].guest_id, and a plus-one's synthetic id
+                       has no Guest record to match. */
+                    guests={eventAttendees}
                     onSeatClick={handleSeatClick}
                     selected={selectedTableId === table.id}
                     selectedSeatIndex={selectedTableId === table.id ? selectedSeatIndex : null}
@@ -1155,18 +1220,29 @@ export default function SeatingPage() {
                     <p style={{ fontSize: 11, color: '#444444', fontFamily: PJS, padding: '4px 16px 10px', margin: 0 }}>No guests yet</p>
                   ) : (
                     (selectedTable.assigned_guests || []).map(a => {
-                      const g = guests.find(x => x.id === a.guest_id);
+                      const g = eventAttendees.find(x => x.id === a.guest_id);
                       if (!g) return null;
-                      const response = getGuestEventResponse(g, activeEvent);
+                      // Host-level context; null for a plus-one, whose own name,
+                      // dietary and seat come off the attendee.
+                      const host = g.isPlusOne ? guests.find(x => x.id === g.hostGuestId) : g;
+                      const response = host ? getGuestEventResponse(host, activeEvent) : null;
                       return (
-                        <div key={a.guest_id} title={(g.tags || []).join(', ')} style={{ display: 'flex', alignItems: 'center', padding: '6px 16px', borderBottom: '1px solid rgba(10,10,10,0.04)', gap: 8 }}>
-                          <GuestAvatar name={g.name} email={g.email} profilePictureUrl={g.profile_picture_url} size={22} />
+                        <div key={a.guest_id} title={((host && host.tags) || []).join(', ')} style={{ display: 'flex', alignItems: 'center', padding: '6px 16px', borderBottom: '1px solid rgba(10,10,10,0.04)', gap: 8 }}>
+                          <GuestAvatar name={g.name} email={g.email} profilePictureUrl={g.isPlusOne ? null : (host && host.profile_picture_url)} size={22} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <span style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {g.name}
                             </span>
-                            <PlusOnesLine response={response} />
-                            <MiniTags tags={g.tags} />
+                            {g.isPlusOne ? (
+                              <p style={{ fontSize: 9, color: '#444444', fontFamily: PJS, margin: '1px 0 0' }}>
+                                plus one of {host ? host.name : 'a guest'}
+                              </p>
+                            ) : (
+                              <>
+                                <PlusOnesLine response={response} />
+                                <MiniTags tags={host ? host.tags : []} />
+                              </>
+                            )}
                           </div>
                           {!readOnly && (
                             <button
@@ -1203,36 +1279,47 @@ export default function SeatingPage() {
 
                     {/* Unassigned guest list for adding — this event's pool only */}
                     <div style={{ flex: 1, overflowY: 'auto' }}>
-                      {eventPool
-                        .filter(({ guest }) => !assignedGuestIds.has(guest.id))
-                        .filter(({ guest }) => !tableGuestSearch || guest.name?.toLowerCase().includes(tableGuestSearch.toLowerCase()))
-                        .map(({ guest, response }) => (
-                          <div key={guest.id}
-                            onClick={() => handleGuestPanelClick(guest)}
-                            {...interactiveDivProps(() => handleGuestPanelClick(guest))}
+                      {/* ATTENDEES, so a plus-one can be added to the selected
+                          table from here too — this is the second of the two
+                          lists a couple can click to seat someone. */}
+                      {filteredForTablePanel
+                        .filter(({ attendee }) => !assignedGuestIds.has(attendee.id))
+                        .filter(({ attendee }) => !tableGuestSearch || attendee.name?.toLowerCase().includes(tableGuestSearch.toLowerCase()))
+                        .map(({ attendee, guest, response }) => (
+                          <div key={attendee.id}
+                            onClick={() => handleGuestPanelClick(attendee)}
+                            {...interactiveDivProps(() => handleGuestPanelClick(attendee))}
                             style={{ display: 'flex', alignItems: 'center', padding: '7px 16px', borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer', transition: 'background 0.12s', gap: 8 }}
                             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(224,53,83,0.04)'; }}
                             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                           >
-                            <GuestAvatar name={guest.name} email={guest.email} profilePictureUrl={guest.profile_picture_url} size={22} />
+                            <GuestAvatar name={attendee.name} email={attendee.isPlusOne ? attendee.email : guest.email} profilePictureUrl={attendee.isPlusOne ? null : guest.profile_picture_url} size={22} />
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <p style={{ fontSize: 11, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {guest.name}
+                                {attendee.name}
                               </p>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                                <EventChip event={activeEvent} response={response} />
-                              </div>
-                              <PlusOnesLine response={response} />
-                              {guest.dietary_restrictions && (
-                                <div style={{ marginTop: 2 }}><DietaryCell value={guest.dietary_restrictions} /></div>
+                              {attendee.isPlusOne ? (
+                                <p style={{ fontSize: 9, color: '#444444', fontFamily: PJS, margin: '1px 0 0' }}>
+                                  plus one of {guest.name}
+                                </p>
+                              ) : (
+                                <>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                                    <EventChip event={activeEvent} response={response} />
+                                  </div>
+                                  <PlusOnesLine response={response} />
+                                </>
                               )}
-                              <MiniTags tags={guest.tags} />
+                              {attendee.dietary_restrictions && (
+                                <div style={{ marginTop: 2 }}><DietaryCell value={attendee.dietary_restrictions} /></div>
+                              )}
+                              {!attendee.isPlusOne && <MiniTags tags={guest.tags} />}
                             </div>
                             <span style={{ fontSize: 10, color: '#E03553', fontWeight: 700, fontFamily: PJS, flexShrink: 0 }}>+</span>
                           </div>
                         ))
                       }
-                      {eventPool.filter(({ guest }) => !assignedGuestIds.has(guest.id)).length === 0 && (
+                      {filteredForTablePanel.filter(({ attendee }) => !assignedGuestIds.has(attendee.id)).length === 0 && (
                         <div style={{ padding: '24px 16px', textAlign: 'center' }}>
                           <p style={{ fontSize: 11, color: '#444444', fontFamily: PJS, margin: 0 }}>All of {activeEvent.name}'s guests are seated</p>
                         </div>
@@ -1279,37 +1366,49 @@ export default function SeatingPage() {
                       <p style={{ fontSize: 11, color: '#444444', fontFamily: PJS, margin: 0 }}>Loading…</p>
                     </div>
                   ) : (() => {
-                    const unassigned = filteredGuests.filter(({ guest }) => !assignedGuestIds.has(guest.id));
-                    const assigned = filteredGuests.filter(({ guest }) => assignedGuestIds.has(guest.id));
+                    const unassigned = filteredGuests.filter(({ attendee }) => !assignedGuestIds.has(attendee.id));
+                    const assigned = filteredGuests.filter(({ attendee }) => assignedGuestIds.has(attendee.id));
                     const showUnassigned = guestFilter !== 'assigned';
                     const showAssigned = guestFilter !== 'unassigned';
 
-                    const GuestRow = ({ guest, response, isAssigned: isAsgn }) => {
-                      const tableName = isAsgn ? getGuestTableName(guest.id, tables, activeEventId) : null;
+                    const GuestRow = ({ attendee, guest, response, isAssigned: isAsgn }) => {
+                      const isPO = attendee.isPlusOne;
+                      const tableName = isAsgn ? getGuestTableName(attendee.id, tables, activeEventId) : null;
                       return (
                         <div
-                          key={guest.id}
+                          key={attendee.id}
                           style={{
                             display: 'flex', alignItems: 'center', padding: '7px 16px', gap: 8,
                             borderBottom: '1px solid rgba(10,10,10,0.04)',
                           }}
                         >
-                          <GuestAvatar name={guest.name} email={guest.email} profilePictureUrl={guest.profile_picture_url} size={24} />
+                          <GuestAvatar name={attendee.name} email={isPO ? attendee.email : guest.email} profilePictureUrl={isPO ? null : guest.profile_picture_url} size={24} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: 11, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {guest.name}
+                              {attendee.name}
                             </p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2, flexWrap: 'wrap' }}>
-                              <EventChip event={activeEvent} response={response} />
-                            </div>
-                            <PlusOnesLine response={response} />
+                            {/* Whose plus-one this is, so a couple can tell at a
+                                glance. The event chip and the +N line are
+                                host-level facts and stay on the host's row. */}
+                            {isPO ? (
+                              <p style={{ fontSize: 9, color: '#444444', fontFamily: PJS, margin: '1px 0 0' }}>
+                                plus one of {guest.name}
+                              </p>
+                            ) : (
+                              <>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2, flexWrap: 'wrap' }}>
+                                  <EventChip event={activeEvent} response={response} />
+                                </div>
+                                <PlusOnesLine response={response} />
+                              </>
+                            )}
                             {tableName && (
                               <p style={{ fontSize: 9, color: '#444444', fontFamily: PJS, margin: '1px 0 0' }}>{tableName}</p>
                             )}
-                            {guest.dietary_restrictions && (
-                              <div style={{ marginTop: 1 }}><DietaryCell value={guest.dietary_restrictions} /></div>
+                            {attendee.dietary_restrictions && (
+                              <div style={{ marginTop: 1 }}><DietaryCell value={attendee.dietary_restrictions} /></div>
                             )}
-                            <MiniTags tags={guest.tags} />
+                            {!isPO && <MiniTags tags={guest.tags} />}
                           </div>
                           {isAsgn && (
                             <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.04em', color: '#0A1930', fontFamily: PJS, background: '#DDF762', padding: '1px 5px', borderRadius: 999, flexShrink: 0 }}>
@@ -1331,7 +1430,7 @@ export default function SeatingPage() {
                             </div>
                             {unassigned.length === 0
                               ? <p style={{ fontSize: 11, color: '#444444', fontFamily: PJS, padding: '10px 16px', margin: 0 }}>All guests seated</p>
-                              : unassigned.map(({ guest, response }) => <GuestRow key={guest.id} guest={guest} response={response} isAssigned={false} />)
+                              : unassigned.map(({ attendee, guest, response }) => <GuestRow key={attendee.id} attendee={attendee} guest={guest} response={response} isAssigned={false} />)
                             }
                           </>
                         )}
@@ -1344,7 +1443,7 @@ export default function SeatingPage() {
                             </div>
                             {assigned.length === 0
                               ? <p style={{ fontSize: 11, color: '#444444', fontFamily: PJS, padding: '10px 16px', margin: 0 }}>None yet</p>
-                              : assigned.map(({ guest, response }) => <GuestRow key={guest.id} guest={guest} response={response} isAssigned={true} />)
+                              : assigned.map(({ attendee, guest, response }) => <GuestRow key={attendee.id} attendee={attendee} guest={guest} response={response} isAssigned={true} />)
                             }
                           </>
                         )}
