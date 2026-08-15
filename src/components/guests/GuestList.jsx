@@ -6,6 +6,7 @@ import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, Chevron
 import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/lib/weddingEvents";
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
+import { hasPlusOne, plusOneRsvpStatus } from '@/lib/plusOne';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -295,8 +296,16 @@ const PLUS_ONE_STATUS_STYLES = {
 };
 
 function PlusOneCell({ guest, onUpdate, readOnly }) {
-  if (guest.plus_one_email) {
-    const style = PLUS_ONE_STATUS_STYLES[guest.plus_one_rsvp_status] || PLUS_ONE_STATUS_STYLES.pending;
+  // Gated on the plus-one EXISTING, not on them having an email. The old
+  // gate was `guest.plus_one_email`, which is why 9 of the 40 real
+  // plus-ones — named, with a plus_one_rsvp — rendered no status at all and
+  // fell through to the bare permission toggle below. An email is how a
+  // plus-one is contacted; it is not what makes them exist.
+  if (hasPlusOne(guest)) {
+    // Derived plus_one_rsvp_status first, flat Guest.plus_one_rsvp as
+    // fallback — see src/lib/plusOne.js for why the flat column is not
+    // authoritative (nothing reachable writes it).
+    const style = PLUS_ONE_STATUS_STYLES[plusOneRsvpStatus(guest)] || PLUS_ONE_STATUS_STYLES.pending;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }} title={`${guest.plus_one_name || 'Plus one'} — ${style.label}`}>
         {guest.plus_one_name && (

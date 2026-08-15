@@ -18,14 +18,22 @@
  * RsvpResponse rows / Guest.event_responses (the intentional, separate
  * per-event yes/no/pending model — untouched by this file).
  *
- * Plus-ones: a guest with a plus_one_email has an independent
- * plus_one_rsvp_status. tallyGuestRsvp only folds a plus-one in as their
+ * Plus-ones: resolved through src/lib/plusOne.js (derived
+ * plus_one_rsvp_status first, flat Guest.plus_one_rsvp as fallback), and
+ * gated on the plus-one existing rather than on them having an email.
+ * tallyGuestRsvp only folds a plus-one in as their
  * own attendee when explicitly asked (includePlusOnes: true) — Guests.jsx
  * is the one call site that already did this correctly and opts in; every
  * other site never counted plus-ones before, and totalGuests-based ratios
  * (e.g. Dashboard.jsx's response rate, computed against guests.length)
  * would silently break if plus-ones were folded in by default there too.
  */
+
+// Relative, not '@/lib/...', so this module resolves under plain Node and
+// can be asserted against real records without a bundler — the same reason
+// todoSort.js was extracted. Sibling-relative imports are already the
+// convention in src/lib (emailBrand.js, chunkReloadGuard.js).
+import { hasPlusOne, plusOneRsvpStatus } from './plusOne.js';
 
 export const RSVP_STATUSES = ['pending', 'attending', 'declined', 'maybe'];
 
@@ -49,9 +57,16 @@ export const isPending = (guestOrStatus) =>
 /** A primary guest who has been invited but hasn't responded yet. */
 export const isAwaitingPrimary = (guest) => !!guest?.invite_sent_at && isPendingStatus(guest.rsvp_status);
 
-/** The plus-one equivalent of isAwaitingPrimary — only meaningful if plus_one_email is set. */
+/**
+ * The plus-one equivalent of isAwaitingPrimary.
+ *
+ * Gated on the plus-one EXISTING, not on them having an email. The old gate
+ * was `!!guest?.plus_one_email`, which excluded 9 of the 40 real plus-ones —
+ * they have a name and an RSVP but no email, so they were counted nowhere.
+ * An email is how a plus-one is contacted, not what makes them exist.
+ */
 export const isAwaitingPlusOne = (guest) =>
-  !!guest?.plus_one_email && !!guest?.invite_sent_at && isPendingStatus(guest.plus_one_rsvp_status);
+  hasPlusOne(guest) && !!guest?.invite_sent_at && isPendingStatus(plusOneRsvpStatus(guest));
 
 /**
  * Tallies a guest list by rsvp_status. Counts every enum value, even ones
@@ -82,8 +97,12 @@ export function tallyGuestRsvp(guests, { includePlusOnes = false } = {}) {
 
   for (const g of list) {
     tallyOne(g?.rsvp_status, isAwaitingPrimary(g));
-    if (includePlusOnes && g?.plus_one_email) {
-      tallyOne(g?.plus_one_rsvp_status, isAwaitingPlusOne(g));
+    if (includePlusOnes && hasPlusOne(g)) {
+      // plusOneRsvpStatus resolves derived-then-flat — see src/lib/plusOne.js.
+      // Previously this read g.plus_one_rsvp_status directly and gated on
+      // plus_one_email, so a plus-one without an email contributed nothing
+      // to any total.
+      tallyOne(plusOneRsvpStatus(g), isAwaitingPlusOne(g));
     }
   }
 
