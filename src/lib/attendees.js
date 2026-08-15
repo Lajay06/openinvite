@@ -77,18 +77,37 @@ export function hostIdFromAttendeeId(id) {
 }
 
 /**
+ * FIELD NAMING — snake_case, matching the Guest record, NOT camelCase.
+ *
+ * Every field an existing shared helper already reads keeps that helper's exact
+ * name. This is not a style preference. `isAttending`, `isDeclined` and
+ * `isPending` in guestRsvpTally.js read `.rsvp_status`; an Attendee carrying
+ * `.rsvpStatus` instead made `isAttending(attendee)` return **false for an
+ * attendee who is attending** — no error, no warning, just five counters
+ * quietly becoming zero, through build, lint and a smoke test alike.
+ *
+ * The only camelCase fields are `isPlusOne` and `hostGuestId`, which are new
+ * concepts no Guest record has and no existing helper reads.
+ *
+ * GUEST-ONLY FIELDS ARE DELIBERATELY ABSENT: no `invite_sent_at`, no
+ * `table_assignment`, no `event_responses`, and no `guest` back-reference.
+ * A plus-one has no invitation of its own, can hold no table (Table.
+ * assigned_guests[].guest_id needs a real Guest id), and has no event responses
+ * — the host's are the HOST's. Anything reaching for one of those on an
+ * attendee gets `undefined` immediately, which is the point: undefined is
+ * loud, whereas silently serving the host's value is a wrong answer that looks
+ * right. Callers that genuinely need a guest field look it up by id from the
+ * guests array themselves, for primaries only, and say so.
+ *
  * @typedef {Object} Attendee
- * @property {string} id           real Guest id, or host id + PLUS_ONE_ID_SUFFIX
- * @property {boolean} isPlusOne
+ * @property {string} id            real Guest id, or host id + PLUS_ONE_ID_SUFFIX
+ * @property {boolean} isPlusOne    the explicit marker — never infer from the id
  * @property {string|null} hostGuestId  the primary's id when isPlusOne, else null
  * @property {string} name
- * @property {string} email             '' when unknown — a plus-one often has none
- * @property {string} rsvpStatus        'pending' | 'attending' | 'declined'
- * @property {string} mealChoice        '' when unset
- * @property {string} dietaryRestrictions '' when unset
- * @property {Object} guest             the Guest record this came from (the HOST
- *                                      record for a plus-one, since there is no
- *                                      other record to point at)
+ * @property {string} email         '' when unknown — a plus-one often has none
+ * @property {string} rsvp_status   'pending' | 'attending' | 'declined'
+ * @property {string} meal_choice   '' when unset
+ * @property {string} dietary_restrictions '' when unset
  */
 
 const str = (v) => (typeof v === 'string' ? v.trim() : v == null ? '' : String(v));
@@ -102,10 +121,9 @@ function primaryAttendee(guest) {
     email: str(guest.email),
     // Left exactly as stored. Normalising it here would silently disagree with
     // every existing consumer that reads guest.rsvp_status directly.
-    rsvpStatus: str(guest.rsvp_status) || 'pending',
-    mealChoice: str(guest.meal_choice),
-    dietaryRestrictions: str(guest.dietary_restrictions),
-    guest,
+    rsvp_status: str(guest.rsvp_status) || 'pending',
+    meal_choice: str(guest.meal_choice),
+    dietary_restrictions: str(guest.dietary_restrictions),
   };
 }
 
@@ -117,10 +135,9 @@ function plusOneAttendee(guest) {
     name: plusOneDisplayName(guest),
     email: str(guest.plus_one_email),
     // Derived-then-flat precedence, straight from plusOne.js. Not reimplemented.
-    rsvpStatus: plusOneRsvpStatus(guest),
-    mealChoice: str(guest.plus_one_meal_choice),
-    dietaryRestrictions: str(guest.plus_one_dietary_restrictions),
-    guest,
+    rsvp_status: plusOneRsvpStatus(guest),
+    meal_choice: str(guest.plus_one_meal_choice),
+    dietary_restrictions: str(guest.plus_one_dietary_restrictions),
   };
 }
 
