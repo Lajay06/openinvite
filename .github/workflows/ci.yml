@@ -115,6 +115,16 @@ jobs:
       - name: Weather state guard
         run: npm run test:weather-states
 
+      # No network, no credentials — asserts the canonical attendee resolver's
+      # invariants: synthetic plus-one ids are unique, deterministic, cannot
+      # collide with a real 24-hex Base44 id, and round-trip back to the host;
+      # a bare `plus_one: true` permission flag yields no attendee; and RSVP
+      # matches src/lib/plusOne.js exactly, so the resolver and the guest table
+      # can never disagree. Live-data facts are in verify-attendees-live.mjs,
+      # which needs credentials and is deliberately not run here.
+      - name: Attendee resolver guard
+        run: npm run test:attendees
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live
