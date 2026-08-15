@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords, getMyGuestsWithRsvp, getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { getGuestTableName, propagateTableRename } from '@/lib/tableAssignment';
+import { getGuestTableName, propagateTableRename, assignGuestToSeat, unassignSeat, applyEventSeatingPlan } from '@/lib/tableAssignment';
 import { getWeddingEvents, getGuestEventResponse, RECEPTION_EVENT_ID } from '@/lib/weddingEvents';
 import { EventChip, DietaryCell } from '@/components/guests/GuestList';
 import GuestAvatar from '@/components/shared/GuestAvatar';
-const Guest = base44.entities.Guest;
 const Table = base44.entities.Table;
 const VenueAsset = base44.entities.VenueAsset;
 import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users, Pencil, Monitor, Plus, Copy, Download } from 'lucide-react';
@@ -621,17 +620,21 @@ export default function SeatingPage() {
     }
   };
 
+  // Writes go through src/lib/tableAssignment.js — the single write path. The
+  // Table.update/Guest.update pair, the Reception-only cache scoping and the
+  // already-seated rule all live there now; this renders the outcome.
   const handleAssignGuest = async (tableId, seatIndex, guestId) => {
     const table = tables.find(t => t.id === tableId);
     if (!table) return;
     try {
-      const current = table.assigned_guests || [];
-      const updated = [...current.filter(g => g.seat_index !== seatIndex), { guest_id: guestId, seat_index: seatIndex }];
-      await Table.update(tableId, { assigned_guests: updated });
-      // Guest.table_assignment stays scoped to Reception only (decision #2)
-      // — other events' seating is visible inside this page's own tabs.
-      if (resolveEventId(table) === RECEPTION_EVENT_ID) {
-        await Guest.update(guestId, { table_assignment: table.name });
+      const res = await assignGuestToSeat({ guestId, tableId, seatIndex, tables });
+      if (!res.ok) {
+        // Same message as before the consolidation, from the lib's result.
+        if (res.reason === 'already-seated-in-event') {
+          const g = guests.find(x => x.id === guestId);
+          toast.error(`${g ? g.name : 'Guest'} is already at ${res.tableName} for ${activeEvent.name}`);
+        }
+        return;
       }
       await loadData();
       toast.success('Guest assigned');
@@ -642,11 +645,7 @@ export default function SeatingPage() {
     const table = tables.find(t => t.id === tableId);
     if (!table) return;
     try {
-      const updated = (table.assigned_guests || []).filter(g => g.seat_index !== seatIndex);
-      await Table.update(tableId, { assigned_guests: updated });
-      if (resolveEventId(table) === RECEPTION_EVENT_ID) {
-        await Guest.update(guestId, { table_assignment: '' });
-      }
+      await unassignSeat({ guestId, tableId, seatIndex, tables });
       await loadData();
       toast.success('Guest unassigned');
     } catch { toast.error('Failed to unassign guest'); }
@@ -693,24 +692,17 @@ export default function SeatingPage() {
   const handleApplyAISeating = async (plan) => {
     const tid = toast.loading("Applying Ava's seating plan…");
     try {
+      // Filtering to the event pool stays here: it is a policy about which
+      // guests this page may seat, not about how a seat is written.
       const validGuestIds = new Set(eventPool.map(({ guest }) => guest.id));
-      await Promise.all(eventTables.map(t => Table.update(t.id, { assigned_guests: [] })));
-      let ok = 0, err = 0;
-      for (const a of plan.assignments) {
-        const table = eventTables.find(t => t.id === a.tableId);
-        if (!table) { err++; continue; }
-        const valid = (a.guests || []).filter(id => validGuestIds.has(id));
-        if (valid.length === 0) continue;
-        const assigned_guests = valid.map((id, i) => ({ guest_id: id, seat_index: i }));
-        try {
-          await Table.update(a.tableId, { assigned_guests });
-          if (resolveEventId(table) === RECEPTION_EVENT_ID) {
-            for (const id of valid) { try { await Guest.update(id, { table_assignment: table.name }); ok++; } catch { err++; } }
-          } else {
-            ok += valid.length;
-          }
-        } catch { err++; }
-      }
+      const { ok, err } = await applyEventSeatingPlan({
+        assignments: plan.assignments.map(a => ({
+          tableId: a.tableId,
+          guestIds: (a.guests || []).filter(id => validGuestIds.has(id)),
+        })),
+        tables: eventTables,
+        eventId: activeEventId,
+      });
       await loadData();
       toast.success(`${ok} guests assigned${err > 0 ? `, ${err} errors` : ''}`, { id: tid, duration: 5000 });
     } catch { toast.error('Failed to apply plan', { id: tid }); throw new Error(); }

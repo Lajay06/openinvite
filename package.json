@@ -25,6 +25,8 @@
     "test:us-english-spelling": "node scripts/test-us-english-spelling.mjs",
     "test:weather-states": "node scripts/test-weather-states.mjs",
     "test:attendees": "node scripts/test-attendees.mjs",
+    "test:table-assignment": "node scripts/test-table-assignment.mjs",
+    "test:single-table-write-path": "node scripts/test-single-table-write-path.mjs",
     "capture": "node scripts/capture/run-all.mjs",
     "capture:preflight": "node scripts/capture/preflight.mjs",
     "capture:stills": "node scripts/capture/stills.mjs",
