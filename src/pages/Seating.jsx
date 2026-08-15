@@ -14,6 +14,7 @@ import { validateUploadFile } from '@/lib/uploadValidation';
 import { interactiveDivProps } from '@/lib/a11y';
 
 import { buildTablesWithGuests } from '@/lib/seatingChart';
+import { resolveAttendees } from '@/lib/attendees';
 import VisualTable, { LABEL_FORMS, labelForName, availableLabelPx } from '../components/seating/VisualTable';
 import VisualAsset from '../components/seating/VisualAsset';
 import VenueAssetLibrary from '../components/seating/VenueAssetLibrary';
@@ -540,7 +541,11 @@ export default function SeatingPage() {
 
       // Page 2 — plain text list of names + table arrangement, so the
       // layout is usable without squinting at the floor-plan image.
-      const tablesWithGuests = buildTablesWithGuests(eventTables, guests);
+      // ATTENDEES, not Guest records: this is page 2 of the exported PDF, the
+      // plain-text table arrangement the venue actually works from. A seated
+      // plus-one has a synthetic id with no Guest record, so passing `guests`
+      // here would drop them from the printed chart silently.
+      const tablesWithGuests = buildTablesWithGuests(eventTables, resolveAttendees(guests));
       pdf.addPage();
       pdf.setFontSize(16); pdf.setTextColor(10, 10, 10);
       pdf.text(`${eventLabel} — table arrangement`, 10, 14);

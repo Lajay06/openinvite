@@ -18,6 +18,7 @@
 // harness that has no Vite resolver. Same reason guestRsvpTally.js imports
 // plusOne.js relatively.
 import { RECEPTION_EVENT_ID } from './weddingEvents.js';
+import { isPlusOneId } from './attendees.js';
 
 /**
  * A row's event, defaulting to the reception when unset. Mirrors Seating.jsx's
@@ -37,6 +38,24 @@ export const resolveEventId = (row) => (row && row.event_id) || RECEPTION_EVENT_
    Separated from the awaits so the exact Table.update payloads can be asserted
    against fixtures in plain Node, with no network and no auth — the pattern
    that caught the inverted comparator in todoSort.js. */
+
+/**
+ * Should this seat write also update Guest.table_assignment?
+ *
+ * Two conditions, both necessary:
+ *   - the reception only — other events' seating is visible inside Seating's
+ *     own tabs and is deliberately never echoed into this field
+ *   - primaries only — a plus-one has NO GUEST RECORD, so there is no row to
+ *     update and no cache entry to maintain. Table.assigned_guests is the
+ *     authority for both; this cache is primaries-only by nature, not by
+ *     omission. Anything needing a plus-one's seat derives it from
+ *     Table.assigned_guests keyed by attendee id.
+ *
+ * Extracted so the decision is assertable without the base44 client.
+ */
+export function shouldWriteTableCache(guestId, eventId) {
+  return eventId === RECEPTION_EVENT_ID && !isPlusOneId(guestId);
+}
 
 /** The assigned_guests array after seating `guestId` at `seatIndex`. */
 export function buildSeatAssignmentPayload(table, guestId, seatIndex) {

@@ -11,6 +11,13 @@
  * one event's tables — a guest can be seated at different tables for
  * different events without collision.
  *
+ * PLUS-ONES: seated by SYNTHETIC id (`<hostId>::plus-one`, see attendees.js).
+ * Table.assigned_guests.guest_id is an unconstrained string and holds one
+ * without complaint. The Guest.update below is SKIPPED for them — there is no
+ * Guest record and therefore no cache row. Guest.table_assignment is a
+ * primaries-only cache by nature; anything that must reflect a plus-one's seat
+ * derives it from Table.assigned_guests keyed by attendee id.
+ *
  * Guest.table_assignment is written here as a denormalized display cache
  * (several unrelated surfaces — DailyUpdate, avaContext, the guest CSV
  * export — read that plain string without loading Table data at all, and
@@ -27,11 +34,13 @@ import { base44 } from '@/api/base44Client';
 import { RECEPTION_EVENT_ID } from '@/lib/weddingEvents';
 import {
   resolveEventId, buildSeatAssignmentPayload, buildSeatRemovalPayload, findSeatConflict,
+  shouldWriteTableCache,
 } from '@/lib/tableAssignmentPayloads';
+import { isPlusOneId } from '@/lib/attendees';
 
 // Re-exported so callers have one import site; the split exists only so the
 // pure half can be loaded without the base44 client. See that file's header.
-export { resolveEventId, buildSeatAssignmentPayload, buildSeatRemovalPayload, findSeatConflict };
+export { resolveEventId, buildSeatAssignmentPayload, buildSeatRemovalPayload, findSeatConflict, shouldWriteTableCache };
 
 const Table = base44.entities.Table;
 const Guest = base44.entities.Guest;
@@ -70,7 +79,11 @@ export async function assignGuestToSeat({ guestId, tableId, seatIndex, tables, e
   if (conflict) return { ok: false, reason: 'already-seated-in-event', tableName: conflict.tableName };
 
   await Table.update(tableId, { assigned_guests: buildSeatAssignmentPayload(table, guestId, seatIndex) });
-  if (scope === RECEPTION_EVENT_ID) {
+  // A plus-one has no Guest record, so there is no display cache to maintain —
+  // see the cache note in this file's header. Table.assigned_guests is the
+  // authority for both; Guest.table_assignment is a primaries-only convenience
+  // by nature, not by omission.
+  if (shouldWriteTableCache(guestId, scope)) {
     await Guest.update(guestId, { table_assignment: table.name });
   }
   return { ok: true, tableName: table.name };
@@ -83,7 +96,7 @@ export async function unassignSeat({ guestId, tableId, seatIndex, tables, eventI
   const scope = eventId || resolveEventId(table);
 
   await Table.update(tableId, { assigned_guests: buildSeatRemovalPayload(table, seatIndex) });
-  if (scope === RECEPTION_EVENT_ID && guestId) {
+  if (guestId && shouldWriteTableCache(guestId, scope)) {
     await Guest.update(guestId, { table_assignment: '' });
   }
   return { ok: true, tableName: table.name };
@@ -119,6 +132,8 @@ export async function applyEventSeatingPlan({ assignments, tables, eventId }) {
       await Table.update(a.tableId, { assigned_guests });
       if (resolveEventId(table) === RECEPTION_EVENT_ID) {
         for (const id of ids) {
+          // Plus-ones are seated but have no cache row; they still count as ok.
+          if (isPlusOneId(id)) { ok++; continue; }
           try { await Guest.update(id, { table_assignment: table.name }); ok++; }
           catch { err++; }
         }
