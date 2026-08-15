@@ -21,6 +21,9 @@ import {
   isPlusOneId,
   hostIdFromAttendeeId,
   PLUS_ONE_ID_SUFFIX,
+  MEAL_CHOSEN,
+  MEAL_NONE,
+  MEAL_NOT_LOADED,
 } from '../src/lib/attendees.js';
 import { plusOneRsvpStatus, hasPlusOne } from '../src/lib/plusOne.js';
 import { isAttending, isDeclined, isPending, tallyAttendees } from '../src/lib/guestRsvpTally.js';
@@ -151,12 +154,57 @@ check('tallyAttendees responded excludes pending',
 
 // ── carried fields ──────────────────────────────────────────────────────────
 const cara = attendees.find(a => a.hostGuestId === oid(2));
-check('plus-one carries its own meal and dietary fields',
-  cara.meal_choice === 'Beef' && cara.dietary_restrictions === 'Gluten free');
+check('plus-one carries its own dietary field (a real, couple-written column)',
+  cara.dietary_restrictions === 'Gluten free');
+
+// ── MEAL: discriminated, and never the host's ───────────────────────────────
+// Hydrated records, as api/my-guests-rsvp.js returns them.
+const hydrated = [{
+  id: oid(10), name: 'Ida Novak', rsvp_status: 'attending',
+  event_responses: [{ event_id: 'reception', invited: true, meal_choice: 'fish' }],
+  plus_one: true, plus_one_name: 'Jon Novak', plus_one_rsvp: 'attending',
+  plus_one_event_responses: [{ event_id: 'reception', invited: true, meal_choice: 'beef' }],
+}, {
+  id: oid(11), name: 'Kit Ito', rsvp_status: 'attending',
+  event_responses: [{ event_id: 'reception', invited: true }],   // answered, no meal
+  plus_one: true, plus_one_name: 'Lea Ito', plus_one_rsvp: 'attending',
+  plus_one_event_responses: [],
+}];
+const hy = resolveAttendees(hydrated);
+const host1 = hy.find(a => a.id === oid(10));
+const po1   = hy.find(a => a.hostGuestId === oid(10));
+
+check('primary meal resolves from its own event_responses overlay',
+  host1.meal.state === MEAL_CHOSEN && host1.meal.value === 'fish',
+  JSON.stringify(host1.meal));
+check("PLUS-ONE'S MEAL IS THE PLUS-ONE'S, NOT THE HOST'S",
+  po1.meal.state === MEAL_CHOSEN && po1.meal.value === 'beef',
+  JSON.stringify(po1.meal));
+check('and the two genuinely differ, so the assertion is not vacuous',
+  host1.meal.value !== po1.meal.value);
+check('overlay present but nothing chosen -> none, not not-loaded',
+  hy.find(a => a.id === oid(11)).meal.state === MEAL_NONE);
+check('empty overlay array is an answer (none), not a missing input',
+  hy.find(a => a.hostGuestId === oid(11)).meal.state === MEAL_NONE);
+
+// Raw entity records — no overlay attached at all.
+check('no overlay -> not-loaded, distinguishable from "chose nothing"',
+  attendees.every(a => a.meal.state === MEAL_NOT_LOADED),
+  attendees.map(a => a.meal.state).join(','));
+check('not-loaded and none are different states',  MEAL_NOT_LOADED !== MEAL_NONE);
+check('every attendee meal exposes {state, value}',
+  [...attendees, ...hy].every(a => a.meal && 'state' in a.meal && 'value' in a.meal));
+check('value is null unless the state is chosen',
+  [...attendees, ...hy].every(a => a.meal.state === MEAL_CHOSEN || a.meal.value === null));
+check('the DEAD column is never read: meal_choice on a record is ignored',
+  resolveAttendees([{ id: oid(12), name: 'M', rsvp_status: 'attending', meal_choice: 'STALE' }])[0]
+    .meal.state === MEAL_NOT_LOADED);
+check('attendees expose no meal_choice field at all',
+  [...attendees, ...hy].every(a => a.meal_choice === undefined));
 check('plus-one with no name gets a neutral display name',
   attendees.find(a => a.hostGuestId === oid(3))?.name === 'Plus one');
 check('primary carries its own fields untouched',
-  primaries[0].name === 'Ana Reyes' && primaries[0].meal_choice === 'Fish' && primaries[0].rsvp_status === 'attending');
+  primaries[0].name === 'Ana Reyes' && primaries[0].rsvp_status === 'attending');
 
 // ── ordering ────────────────────────────────────────────────────────────────
 check('each plus-one immediately follows its host',

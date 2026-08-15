@@ -46,6 +46,7 @@
  */
 
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from './plusOne.js';
+import { effectiveMealChoice } from './weddingEvents.js';
 
 /**
  * Appended to the host's Guest id to make the plus-one's id.
@@ -74,6 +75,46 @@ export function isPlusOneId(id) {
 export function hostIdFromAttendeeId(id) {
   if (!isPlusOneId(id)) return null;
   return id.slice(0, -PLUS_ONE_ID_SUFFIX.length);
+}
+
+/**
+ * MEAL — a discriminated value, not a bare string.
+ *
+ * `Guest.meal_choice` and `Guest.plus_one_meal_choice` are DEAD COLUMNS.
+ * Nothing writes them once a guest RSVPs; the live answer is the per-event
+ * overlay, `event_responses[].meal_choice` for a primary and
+ * `plus_one_event_responses[].meal_choice` for a plus-one. That is documented
+ * in five files under fix/vestigial-meal-choice-reads — and until this change
+ * THIS MODULE was the last live reader of the dead columns in dashboard code,
+ * which is worse than carrying nothing, because it looks like data.
+ *
+ * Those overlays are attached by api/my-guests-rsvp.js. A caller holding raw
+ * Guest entities (a script, a direct entity read) has no overlay at all, and
+ * "this input never carried meal data" must not be confused with "this person
+ * chose no meal". One is a gap in the input, the other is a fact about a
+ * person, and a caterer acting on the second when the first is true is how
+ * someone gets served the wrong dinner.
+ *
+ * Same discipline as the weather states: the state is explicit, and a caller
+ * that renders `.value` without checking `.state` gets null rather than a
+ * confident wrong answer.
+ */
+export const MEAL_CHOSEN     = 'chosen';      // a real selection
+export const MEAL_NONE       = 'none';        // overlay present, no meal picked
+export const MEAL_NOT_LOADED = 'not-loaded';  // this input carries no overlay
+
+const mealChosen   = (value) => ({ state: MEAL_CHOSEN, value });
+const mealNone     = ()      => ({ state: MEAL_NONE, value: null });
+const mealNotLoaded = ()     => ({ state: MEAL_NOT_LOADED, value: null });
+
+/**
+ * `undefined` means the field was never attached (raw entity, unhydrated).
+ * An empty array means the overlay ran and found nothing — a real answer.
+ */
+function resolveMeal(overlay) {
+  if (!Array.isArray(overlay)) return mealNotLoaded();
+  const choice = effectiveMealChoice(overlay);
+  return choice ? mealChosen(choice) : mealNone();
 }
 
 /**
@@ -106,8 +147,17 @@ export function hostIdFromAttendeeId(id) {
  * @property {string} name
  * @property {string} email         '' when unknown — a plus-one often has none
  * @property {string} rsvp_status   'pending' | 'attending' | 'declined'
- * @property {string} meal_choice   '' when unset
- * @property {string} dietary_restrictions '' when unset
+ * @property {{state:string, value:string|null}} meal  see the MEAL_* note above.
+ *   NOT a bare string, and there is deliberately no `meal_choice` field: the
+ *   column of that name is dead, and mirroring it made this module the last
+ *   live reader of it.
+ * @property {string} dietary_restrictions '' when unset. A PLAIN value, unlike
+ *   meal, because this one is real: the couple writes it from GuestForm.jsx
+ *   (:102/:107 primary, :120/:125 plus-one), GuestList.jsx:509 inline and
+ *   Guests.jsx:767 in bulk. api/my-guests-rsvp.js:163 overlays the guest's own
+ *   RSVP answer over the top, but writes it back into THIS SAME field name, so
+ *   reading it is correct hydrated or raw. That is exactly what meal does not
+ *   do, and the whole reason meal needs a state and this does not.
  */
 
 const str = (v) => (typeof v === 'string' ? v.trim() : v == null ? '' : String(v));
@@ -122,7 +172,7 @@ function primaryAttendee(guest) {
     // Left exactly as stored. Normalising it here would silently disagree with
     // every existing consumer that reads guest.rsvp_status directly.
     rsvp_status: str(guest.rsvp_status) || 'pending',
-    meal_choice: str(guest.meal_choice),
+    meal: resolveMeal(guest.event_responses),
     dietary_restrictions: str(guest.dietary_restrictions),
   };
 }
@@ -136,7 +186,10 @@ function plusOneAttendee(guest) {
     email: str(guest.plus_one_email),
     // Derived-then-flat precedence, straight from plusOne.js. Not reimplemented.
     rsvp_status: plusOneRsvpStatus(guest),
-    meal_choice: str(guest.plus_one_meal_choice),
+    // The PLUS-ONE's own overlay, never the host's event_responses. Reaching
+    // for the host's would tell a caterer the plus-one ate whatever the primary
+    // guest ordered.
+    meal: resolveMeal(guest.plus_one_event_responses),
     dietary_restrictions: str(guest.plus_one_dietary_restrictions),
   };
 }
