@@ -174,6 +174,8 @@ function resolveMeal(overlay, flat) {
  *   NOT a bare string. There is deliberately no `meal_choice` field on an
  *   Attendee: that column is one of TWO sources and must be read through
  *   effectiveMealChoice() so the ordering is applied, never mirrored.
+ * @property {boolean} is_test  inherited from the source Guest record; a
+ *   plus-one of a test guest is a test record too. Provenance, not data.
  * @property {string} dietary_restrictions '' when unset. A PLAIN value, unlike
  *   meal, because this one is real: the couple writes it from GuestForm.jsx
  *   (:102/:107 primary, :120/:125 plus-one), GuestList.jsx:509 inline and
@@ -196,6 +198,7 @@ function primaryAttendee(guest) {
     // every existing consumer that reads guest.rsvp_status directly.
     rsvp_status: str(guest.rsvp_status) || 'pending',
     meal: resolveMeal(guest.event_responses, guest.meal_choice),
+    is_test: guest.is_test === true,
     dietary_restrictions: str(guest.dietary_restrictions),
   };
 }
@@ -208,6 +211,10 @@ function plusOneAttendee(guest) {
     name: plusOneDisplayName(guest),
     email: str(guest.plus_one_email),
     // Derived-then-flat precedence, straight from plusOne.js. Not reimplemented.
+    // Record provenance, not guest data: a plus-one of a test record IS a
+    // test record. buildGuestTagList filters on this, so omitting it would
+    // leak __PERSISTENCE_TEST_GUEST__ rows onto printed place cards.
+    is_test: guest.is_test === true,
     rsvp_status: plusOneRsvpStatus(guest),
     // The PLUS-ONE's own overlay, never the host's event_responses. Reaching
     // for the host's would tell a caterer the plus-one ate whatever the primary

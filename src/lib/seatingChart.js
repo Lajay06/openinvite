@@ -84,9 +84,9 @@ export function buildGuestTagList(tables, people) {
   for (const t of tablesWithGuests) {
     for (const g of t.guests) tableNameByGuestId.set(g.id, t.name);
   }
-  // Attendees, so plus-ones get their own name tag and place card. is_test is a
-  // Guest column; an attendee derived from a test guest inherits it via the
-  // primary, and a plus-one of one is filtered with its host.
+  // Attendees, so plus-ones get their own name tag and place card. Attendees
+  // carry is_test through from their source Guest record, so a plus-one of a
+  // test guest is filtered out with its host.
   return (people || [])
     .filter(g => !g.is_test)
     .map(g => ({
