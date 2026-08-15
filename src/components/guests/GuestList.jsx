@@ -1052,13 +1052,12 @@ export default function GuestList({
 
               /* ── Plus one sub-row ── */
               if (guest.plus_one) {
-                // Plus-one meal choice: fix/vestigial-meal-choice-reads —
-                // guest.plus_one_meal_choice is a dead column (nothing
-                // writes it once the plus-one RSVPs; see api/rsvp-submit.js).
-                // The live source is the plus-one's own per-event RsvpResponse
-                // rows, overlaid onto plus_one_event_responses by
-                // api/my-guests-rsvp.js.
-                const plusOneMealChoice = mealOptionLabel(effectiveMealChoice(guest.plus_one_event_responses), mealOptions);
+                // Plus-one meal: effectiveMealChoice ranks the plus-one's own
+                // per-event overlay first and the flat
+                // guest.plus_one_meal_choice column last. That column is NO
+                // LONGER DEAD — the guest editor writes it — so this shows a
+                // couple-entered meal until the plus-one answers for themselves.
+                const plusOneMealChoice = mealOptionLabel(effectiveMealChoice(guest.plus_one_event_responses, guest.plus_one_meal_choice), mealOptions);
                 const hasDietOrMeal = guest.plus_one_dietary_restrictions || plusOneMealChoice;
                 rows.push(
                   <TableRow key={`${guest.id}-po`} style={{ background: 'rgba(10,10,10,0.015)', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>

@@ -80,20 +80,39 @@ export function hostIdFromAttendeeId(id) {
 /**
  * MEAL — a discriminated value, not a bare string.
  *
- * `Guest.meal_choice` and `Guest.plus_one_meal_choice` are DEAD COLUMNS.
- * Nothing writes them once a guest RSVPs; the live answer is the per-event
- * overlay, `event_responses[].meal_choice` for a primary and
- * `plus_one_event_responses[].meal_choice` for a plus-one. That is documented
- * in five files under fix/vestigial-meal-choice-reads — and until this change
- * THIS MODULE was the last live reader of the dead columns in dashboard code,
- * which is worse than carrying nothing, because it looks like data.
+ * TWO SOURCES, ranked by effectiveMealChoice():
+ *   1. the per-event overlay — `event_responses[].meal_choice` for a primary,
+ *      `plus_one_event_responses[].meal_choice` for a plus-one, i.e. what the
+ *      person themselves answered
+ *   2. the flat column — `Guest.meal_choice` / `Guest.plus_one_meal_choice`,
+ *      what the COUPLE typed in the guest editor
  *
- * Those overlays are attached by api/my-guests-rsvp.js. A caller holding raw
- * Guest entities (a script, a direct entity read) has no overlay at all, and
- * "this input never carried meal data" must not be confused with "this person
- * chose no meal". One is a gap in the input, the other is a fact about a
- * person, and a caterer acting on the second when the first is true is how
- * someone gets served the wrong dinner.
+ * The flat columns were dead for the whole period when nothing wrote them. The
+ * guest editor writes them now, so they are a real source again — but they rank
+ * second, because the person eating the meal outranks the person recording it.
+ *
+ * WHY `not-loaded` SURVIVES THE FLAT FALLBACK
+ * -------------------------------------------
+ * Adding a source readable raw or hydrated removes most of the ambiguity, and
+ * it is worth saying exactly what is left rather than keeping a state by habit.
+ *
+ * `event_responses` is a REAL Guest column, so a primary's overlay is present
+ * on any record. `plus_one_event_responses` is API-computed and exists only on
+ * hydrated records. So for a PLUS-ONE on a raw record with no flat value:
+ *
+ *   overlay absent AND flat empty -> an answer may exist that this input cannot
+ *                                    see. Not the same as "chose nothing", and
+ *                                    still not safe to report as no meal.
+ *
+ * That case is real and reachable, so the state keeps its job. What changed is
+ * that it is rarer and narrower: any flat value resolves it, and primaries
+ * effectively never hit it.
+ *
+ * (One honest edge: a plus-one with no `plus_one_email` can NEVER have an
+ * overlay — api/my-guests-rsvp.js:151, audited and correct — so for those 9
+ * records `not-loaded` slightly overstates the uncertainty. "We cannot see an
+ * answer" is still true of them; it is just permanently true. Encoding that
+ * would mean duplicating the email gate here, which is worse.)
  *
  * Same discipline as the weather states: the state is explicit, and a caller
  * that renders `.value` without checking `.state` gets null rather than a
@@ -108,13 +127,17 @@ const mealNone     = ()      => ({ state: MEAL_NONE, value: null });
 const mealNotLoaded = ()     => ({ state: MEAL_NOT_LOADED, value: null });
 
 /**
- * `undefined` means the field was never attached (raw entity, unhydrated).
- * An empty array means the overlay ran and found nothing — a real answer.
+ * @param overlay the per-event responses for THIS person, or undefined when
+ *   this input never carried them. An empty array is different: it means the
+ *   overlay ran and found nothing, which is a real answer.
+ * @param flat the couple-entered column for this person.
  */
-function resolveMeal(overlay) {
-  if (!Array.isArray(overlay)) return mealNotLoaded();
-  const choice = effectiveMealChoice(overlay);
-  return choice ? mealChosen(choice) : mealNone();
+function resolveMeal(overlay, flat) {
+  const choice = effectiveMealChoice(Array.isArray(overlay) ? overlay : [], flat);
+  if (choice) return mealChosen(choice);
+  // Nothing from either source. Whether that is a fact or a gap depends on
+  // whether the overlay was present to be read at all — see the note above.
+  return Array.isArray(overlay) ? mealNone() : mealNotLoaded();
 }
 
 /**
@@ -148,9 +171,9 @@ function resolveMeal(overlay) {
  * @property {string} email         '' when unknown — a plus-one often has none
  * @property {string} rsvp_status   'pending' | 'attending' | 'declined'
  * @property {{state:string, value:string|null}} meal  see the MEAL_* note above.
- *   NOT a bare string, and there is deliberately no `meal_choice` field: the
- *   column of that name is dead, and mirroring it made this module the last
- *   live reader of it.
+ *   NOT a bare string. There is deliberately no `meal_choice` field on an
+ *   Attendee: that column is one of TWO sources and must be read through
+ *   effectiveMealChoice() so the ordering is applied, never mirrored.
  * @property {string} dietary_restrictions '' when unset. A PLAIN value, unlike
  *   meal, because this one is real: the couple writes it from GuestForm.jsx
  *   (:102/:107 primary, :120/:125 plus-one), GuestList.jsx:509 inline and
@@ -172,7 +195,7 @@ function primaryAttendee(guest) {
     // Left exactly as stored. Normalising it here would silently disagree with
     // every existing consumer that reads guest.rsvp_status directly.
     rsvp_status: str(guest.rsvp_status) || 'pending',
-    meal: resolveMeal(guest.event_responses),
+    meal: resolveMeal(guest.event_responses, guest.meal_choice),
     dietary_restrictions: str(guest.dietary_restrictions),
   };
 }
@@ -189,7 +212,7 @@ function plusOneAttendee(guest) {
     // The PLUS-ONE's own overlay, never the host's event_responses. Reaching
     // for the host's would tell a caterer the plus-one ate whatever the primary
     // guest ordered.
-    meal: resolveMeal(guest.plus_one_event_responses),
+    meal: resolveMeal(guest.plus_one_event_responses, guest.plus_one_meal_choice),
     dietary_restrictions: str(guest.plus_one_dietary_restrictions),
   };
 }

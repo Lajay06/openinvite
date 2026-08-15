@@ -168,8 +168,10 @@ export default async function handler(req, res) {
         plus_one_rsvp_status: plusOneRsvpStatus,
         // Same shape as event_responses above, but from the plus-one's own
         // is_plus_one:true rows — lets the dashboard show the plus-one's
-        // actual per-event meal choice instead of the vestigial flat
-        // Guest.plus_one_meal_choice column (fix/vestigial-meal-choice-reads).
+        // actual per-event meal choice. Consumers rank this ABOVE the flat
+        // Guest.plus_one_meal_choice column, which the couple sets in the
+        // guest editor and which is no longer dead — see
+        // effectiveMealChoice() in src/lib/weddingEvents.js.
         plus_one_event_responses: plusOneEventResponses,
       };
     }

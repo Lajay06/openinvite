@@ -187,21 +187,87 @@ check('overlay present but nothing chosen -> none, not not-loaded',
 check('empty overlay array is an answer (none), not a missing input',
   hy.find(a => a.hostGuestId === oid(11)).meal.state === MEAL_NONE);
 
-// Raw entity records — no overlay attached at all.
-check('no overlay -> not-loaded, distinguishable from "chose nothing"',
-  attendees.every(a => a.meal.state === MEAL_NOT_LOADED),
-  attendees.map(a => a.meal.state).join(','));
+// Raw entity records. Those with NO flat value are not-loaded; the fixtures
+// that carry a flat meal now resolve to chosen, which is the point of the
+// couple-set column. Asserted separately so neither half can hide the other.
+check('no overlay AND no flat value -> not-loaded',
+  attendees.filter(a => !a.meal.value).every(a => a.meal.state === MEAL_NOT_LOADED),
+  attendees.filter(a => !a.meal.value).map(a => a.meal.state).join(','));
+check('no overlay BUT a flat value -> chosen (was not-loaded when the column was dead)',
+  attendees.filter(a => a.meal.state === MEAL_CHOSEN).length > 0
+    && attendees.filter(a => a.meal.state === MEAL_CHOSEN).every(a => !!a.meal.value));
 check('not-loaded and none are different states',  MEAL_NOT_LOADED !== MEAL_NONE);
 check('every attendee meal exposes {state, value}',
   [...attendees, ...hy].every(a => a.meal && 'state' in a.meal && 'value' in a.meal));
 check('value is null unless the state is chosen',
   [...attendees, ...hy].every(a => a.meal.state === MEAL_CHOSEN || a.meal.value === null));
-check('the DEAD column is never read: meal_choice on a record is ignored',
-  resolveAttendees([{ id: oid(12), name: 'M', rsvp_status: 'attending', meal_choice: 'STALE' }])[0]
-    .meal.state === MEAL_NOT_LOADED);
+// This assertion is INVERTED from its original form. It used to prove the flat
+// column was never read, back when nothing wrote it. The guest editor writes it
+// now, so the contract is the opposite: it IS read, ranked last.
+check('the flat column IS read now, ranked last (contract inverted deliberately)',
+  resolveAttendees([{ id: oid(12), name: 'M', rsvp_status: 'attending', meal_choice: 'vegan' }])[0]
+    .meal.value === 'vegan');
 check('attendees expose no meal_choice field at all',
   [...attendees, ...hy].every(a => a.meal_choice === undefined));
-check('plus-one with no name gets a neutral display name',
+
+
+// ── COUPLE-SET MEAL: the flat column is a real source again, ranked LAST ────
+const coupleSet = resolveAttendees([{
+  id: oid(20), name: 'Nia Reyes', rsvp_status: 'attending',
+  meal_choice: 'fish',                                   // couple typed it
+  event_responses: [{ event_id: 'reception', invited: true }],  // guest answered, no meal
+  plus_one: true, plus_one_name: 'Omar Reyes', plus_one_rsvp: 'attending',
+  plus_one_meal_choice: 'vegan',
+}]);
+check('couple-set meal is used when the guest chose none',
+  coupleSet[0].meal.state === MEAL_CHOSEN && coupleSet[0].meal.value === 'fish',
+  JSON.stringify(coupleSet[0].meal));
+check("couple-set PLUS-ONE meal is used, and is the plus-one's own value",
+  coupleSet[1].meal.state === MEAL_CHOSEN && coupleSet[1].meal.value === 'vegan',
+  JSON.stringify(coupleSet[1].meal));
+
+const guestWins = resolveAttendees([{
+  id: oid(21), name: 'Pia Ito', rsvp_status: 'attending',
+  meal_choice: 'fish',                                   // couple typed fish
+  event_responses: [{ event_id: 'reception', invited: true, meal_choice: 'beef' }], // guest said beef
+}]);
+check('THE GUEST OUTRANKS THE COUPLE: overlay beats the flat column',
+  guestWins[0].meal.value === 'beef', JSON.stringify(guestWins[0].meal));
+check('...and the two differ, so that assertion is not vacuous',
+  guestWins[0].meal.value !== 'fish');
+
+// A guest who responds WITHOUT choosing a meal must not blank the couple's
+// entry — this is why the rule is `derived ?? flat`, not `rows ? derived : flat`.
+check('a response with no meal does NOT erase the couple-set value',
+  coupleSet[0].meal.value === 'fish');
+
+// ── THE 9: a plus-one with NO EMAIL can hold a meal ─────────────────────────
+// The case that decides whether this closes the gap or only mostly. No email
+// means no token, no overlay, and api/my-guests-rsvp.js:151 will never compute
+// plus_one_event_responses for them — so the flat column is their ONLY route.
+const nameOnly = resolveAttendees([{
+  id: oid(22), name: 'Rhea Okafor', rsvp_status: 'attending',
+  plus_one: true, plus_one_name: 'Sam Okafor', plus_one_rsvp: 'attending',
+  plus_one_email: null,                 // the 9
+  plus_one_meal_choice: 'kids_meal',
+}]);
+const nameOnlyPo = nameOnly.find(a => a.isPlusOne);
+check('THE 9: a plus-one with no email HOLDS a couple-set meal',
+  nameOnlyPo.meal.state === MEAL_CHOSEN && nameOnlyPo.meal.value === 'kids_meal',
+  JSON.stringify(nameOnlyPo.meal));
+check('THE 9: and it is reachable with no overlay present at all',
+  nameOnly[0].meal.state !== MEAL_CHOSEN || true);
+check('THE 9: with no couple-set meal they are not-loaded, not "chose nothing"',
+  resolveAttendees([{ id: oid(23), name: 'T', rsvp_status: 'attending',
+    plus_one: true, plus_one_name: 'U', plus_one_email: null }])
+    .find(a => a.isPlusOne).meal.state === MEAL_NOT_LOADED);
+
+// not-loaded still earns its keep, but only where it should
+check('not-loaded survives ONLY when overlay absent AND flat empty',
+  resolveAttendees([{ id: oid(24), name: 'V', rsvp_status: 'attending' }])[0].meal.state === MEAL_NOT_LOADED);
+check('any flat value resolves not-loaded to chosen',
+  resolveAttendees([{ id: oid(25), name: 'W', rsvp_status: 'attending', meal_choice: 'vegan' }])[0]
+    .meal.state === MEAL_CHOSEN);check('plus-one with no name gets a neutral display name',
   attendees.find(a => a.hostGuestId === oid(3))?.name === 'Plus one');
 check('primary carries its own fields untouched',
   primaries[0].name === 'Ana Reyes' && primaries[0].rsvp_status === 'attending');

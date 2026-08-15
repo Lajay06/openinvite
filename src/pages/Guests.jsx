@@ -491,18 +491,19 @@ export default function Guests() {
       // dietary requirements never left the system at all: 27 meal choices
       // and 5 dietary notes sat in the data with no route to a caterer.
       ['Name', 'Email', 'Phone', 'Category', 'RSVP Status', 'Meal Choice', 'Table Assignment', 'Plus One', 'Plus One Name', 'Dietary Restrictions', 'Plus One RSVP', 'Plus One Meal', 'Plus One Dietary'].join(','),
-      // Meal Choice: fix/vestigial-meal-choice-reads — g.meal_choice is a
-      // dead column (nothing writes it once a guest RSVPs; see
-      // api/rsvp-submit.js). The live source is the per-event
-      // event_responses overlay getMyGuestsWithRsvp already attaches.
+      // Meal Choice: read through effectiveMealChoice, which ranks the
+      // per-event overlay getMyGuestsWithRsvp attaches above the flat
+      // Guest.meal_choice column. That column is NO LONGER DEAD — the guest
+      // editor writes it — so this column exports a couple-entered meal for
+      // a guest who has not RSVP'd, which is exactly what a caterer needs.
       ...guests.map(g => [
         g.name, g.email || '', g.phone || '', g.category || '',
-        g.rsvp_status || '', mealOptionLabel(effectiveMealChoice(g.event_responses), mealOptions) || '', g.table_assignment || '',
+        g.rsvp_status || '', mealOptionLabel(effectiveMealChoice(g.event_responses, g.meal_choice), mealOptions) || '', g.table_assignment || '',
         g.plus_one ? 'Yes' : 'No', g.plus_one_name || '', g.dietary_restrictions || '',
         // Blank when there is no plus-one, rather than reporting a default
         // 'pending' for someone who does not exist.
         hasPlusOne(g) ? plusOneRsvpStatus(g) : '',
-        hasPlusOne(g) ? (mealOptionLabel(effectiveMealChoice(g.plus_one_event_responses), mealOptions) || '') : '',
+        hasPlusOne(g) ? (mealOptionLabel(effectiveMealChoice(g.plus_one_event_responses, g.plus_one_meal_choice), mealOptions) || '') : '',
         hasPlusOne(g) ? (g.plus_one_dietary_restrictions || '') : ''
       ].map(f => `"${f}"`).join(','))
     ].join('\n');
@@ -822,6 +823,7 @@ export default function Guests() {
                 </DialogHeader>
                 <GuestForm
                   guest={editingGuest}
+                  mealOptions={mealOptions}
                   onSubmit={handleSubmit}
                   onCancel={() => { setShowForm(false); setEditingGuest(null); }}
                   saving={saving}
