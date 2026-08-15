@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
+import { hasPlusOne, plusOneRsvpStatus } from "@/lib/plusOne";
 import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
@@ -468,7 +469,12 @@ export default function Guests() {
 
   const exportGuestList = () => {
     const csvContent = [
-      ['Name', 'Email', 'Phone', 'Category', 'RSVP Status', 'Meal Choice', 'Table Assignment', 'Plus One', 'Plus One Name', 'Dietary Restrictions'].join(','),
+      // Existing columns keep their names AND their order — a couple may
+      // already have a sheet built on this file, so the three plus-one
+      // columns are APPENDED. Before this, a plus-one's meal choice and
+      // dietary requirements never left the system at all: 27 meal choices
+      // and 5 dietary notes sat in the data with no route to a caterer.
+      ['Name', 'Email', 'Phone', 'Category', 'RSVP Status', 'Meal Choice', 'Table Assignment', 'Plus One', 'Plus One Name', 'Dietary Restrictions', 'Plus One RSVP', 'Plus One Meal', 'Plus One Dietary'].join(','),
       // Meal Choice: fix/vestigial-meal-choice-reads — g.meal_choice is a
       // dead column (nothing writes it once a guest RSVPs; see
       // api/rsvp-submit.js). The live source is the per-event
@@ -476,7 +482,12 @@ export default function Guests() {
       ...guests.map(g => [
         g.name, g.email || '', g.phone || '', g.category || '',
         g.rsvp_status || '', mealOptionLabel(effectiveMealChoice(g.event_responses), mealOptions) || '', g.table_assignment || '',
-        g.plus_one ? 'Yes' : 'No', g.plus_one_name || '', g.dietary_restrictions || ''
+        g.plus_one ? 'Yes' : 'No', g.plus_one_name || '', g.dietary_restrictions || '',
+        // Blank when there is no plus-one, rather than reporting a default
+        // 'pending' for someone who does not exist.
+        hasPlusOne(g) ? plusOneRsvpStatus(g) : '',
+        hasPlusOne(g) ? (mealOptionLabel(effectiveMealChoice(g.plus_one_event_responses), mealOptions) || '') : '',
+        hasPlusOne(g) ? (g.plus_one_dietary_restrictions || '') : ''
       ].map(f => `"${f}"`).join(','))
     ].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
