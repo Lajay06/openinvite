@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DEFAULT_MEAL_OPTIONS } from "@/lib/weddingEvents";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -50,12 +51,13 @@ function dietaryToString(selected, other) {
 
 /* ── Component ───────────────────────────────────────────────────────────── */
 
-export default function GuestForm({ guest, onSubmit, onCancel, saving = false }) {
+export default function GuestForm({ guest, onSubmit, onCancel, saving = false, mealOptions = [] }) {
   const [formData, setFormData] = useState(guest || {
     name: '', email: '', phone: '', category: 'family',
     tags: [], table_assignment: '', dietary_restrictions: '',
     rsvp_status: 'pending', plus_one: false, plus_one_name: '', plus_one_email: '',
     plus_one_dietary_restrictions: '', notes: '',
+    meal_choice: '', plus_one_meal_choice: '',
   });
   const [tagInput, setTagInput] = useState('');
 
@@ -125,6 +127,20 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
     set('plus_one_dietary_restrictions', dietaryToString(poDietarySelected, text));
   };
 
+  // Same source of truth as every other meal consumer: the couple's own menu
+  // (WeddingDetails.mealOptions, Menu Phase 1) falling back to the six
+  // defaults. Ids are stored, labels are display-only, so renaming a label
+  // never orphans a stored value.
+  //
+  // LIMITATION worth knowing: Guest.meal_choice is declared with a hardcoded
+  // enum of the six DEFAULT_MEAL_OPTIONS ids. A couple-defined option's id is
+  // `${Date.now()}-${random}` (FoodBeverage.jsx:33) and is NOT in that enum, so
+  // it cannot be stored in this column. Every wedding currently has
+  // mealOptions: [] and therefore uses the defaults, so nothing is affected
+  // today — but widening that enum is a schema change and belongs with the
+  // schema owner before any couple defines a custom menu.
+  const mealChoices = mealOptions.length ? mealOptions : DEFAULT_MEAL_OPTIONS;
+
   const noneActive = dietarySelected.length === 0;
   const poNoneActive = poDietarySelected.length === 0;
 
@@ -177,6 +193,21 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
                 <SelectItem value="attending">Attending</SelectItem>
                 <SelectItem value="declined">Declined</SelectItem>
                 <SelectItem value="maybe">Maybe</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Label>
+              Meal choice{' '}
+              <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>
+                (the guest&apos;s own answer replaces this)
+              </span>
+            </Label>
+            <Select value={formData.meal_choice || 'none'} onValueChange={v => set('meal_choice', v === 'none' ? '' : v)}>
+              <SelectTrigger><SelectValue placeholder="Not set" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Not set</SelectItem>
+                {mealChoices.map(o => <SelectItem key={o.id} value={o.id}>{o.label || o.id}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -316,6 +347,25 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false })
                   </Label>
                   <Input id="plus_one_email" type="email" value={formData.plus_one_email} onChange={e => set('plus_one_email', e.target.value)} placeholder="plusone@example.com" />
                 </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 16 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Label>
+                    Plus one meal choice{' '}
+                    <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>
+                      (their own answer replaces this)
+                    </span>
+                  </Label>
+                  <Select value={formData.plus_one_meal_choice || 'none'} onValueChange={v => set('plus_one_meal_choice', v === 'none' ? '' : v)}>
+                    <SelectTrigger><SelectValue placeholder="Not set" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Not set</SelectItem>
+                      {mealChoices.map(o => <SelectItem key={o.id} value={o.id}>{o.label || o.id}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div style={{ flex: 1 }} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <Label>Plus one dietary restrictions</Label>

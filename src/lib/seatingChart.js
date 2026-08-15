@@ -32,8 +32,10 @@ export function buildTablesWithGuests(tables, guests) {
 /**
  * Flat, alphabetised guest+table list for name tags / place cards.
  * meal_choice is read from event_responses (the live per-event RsvpResponse
- * overlay), not the vestigial flat g.meal_choice column — nothing writes
- * that column once a guest RSVPs (fix/vestigial-meal-choice-reads).
+ * overlay) FIRST, falling back to the flat g.meal_choice column, which the
+ * couple sets in the guest editor. Both go through effectiveMealChoice so the
+ * ordering is applied once, in one place — the guest's own answer outranks
+ * the couple's entry.
  * @returns {{ name: string, table: string|null, meal_choice: string|null }[]}
  */
 export function buildGuestTagList(tables, guests) {
@@ -47,7 +49,7 @@ export function buildGuestTagList(tables, guests) {
     .map(g => ({
       name: g.name,
       table: tableNameByGuestId.get(g.id) || null,
-      meal_choice: effectiveMealChoice(g.event_responses),
+      meal_choice: effectiveMealChoice(g.event_responses, g.meal_choice),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
