@@ -23,6 +23,7 @@
     "test:marketing-hero-consistency": "node scripts/test-marketing-hero-consistency.mjs",
     "test:prerendered-freshness": "node scripts/test-prerendered-freshness.mjs",
     "test:us-english-spelling": "node scripts/test-us-english-spelling.mjs",
+    "test:weather-states": "node scripts/test-weather-states.mjs",
     "capture": "node scripts/capture/run-all.mjs",
     "capture:preflight": "node scripts/capture/preflight.mjs",
     "capture:stills": "node scripts/capture/stills.mjs",

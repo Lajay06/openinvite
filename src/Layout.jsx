@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from "react-router-dom";
 import { X, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut, Loader2, User, Bell, CreditCard, HelpCircle } from "lucide-react";
-import { getWeddingWeather } from '@/lib/weather';
+import { getWeddingWeather, WEATHER_OK } from '@/lib/weather';
 import { track, reset as analyticsReset } from '@/lib/analytics';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -62,7 +62,10 @@ function getStoredUser() {
 // ── Full-width top navigation bar ────────────────────────────────────────────
 function TopBar({ weddingDetails, user, overrideCoupleName }) {
   const navigate = useNavigate();
-  const [weather, setWeather] = useState(null);
+  // The full discriminated result. `weather` below is just its data, so every
+  // existing render path is unchanged; the state field is what a future copy
+  // change branches on.
+  const [weatherResult, setWeatherResult] = useState(null);
 
   // Derive couple name from entity fields — a collaborator session has no
   // WeddingDetails record of their own to read (it belongs to the owner),
@@ -86,15 +89,27 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
     : (storedUser.email || 'U').slice(0, 2).toUpperCase();
 
   // Wedding-day weather: seasonal summary if far out, real forecast if within
-  // range, current conditions on/near the day. Never throws — a failure at
-  // any stage (no address, geocoding miss, API error) just leaves it unset.
+  // range, current conditions on/near the day.
+  //
+  // getWeddingWeather returns a DISCRIMINATED result, never a bare null, so
+  // this can distinguish "nothing to show" from "something broke". The
+  // `.catch(() => {})` that used to sit on this call is gone: it discarded
+  // the outcome before the caller could branch on it, which would have made
+  // the discriminated return pointless. It also swallowed real errors
+  // silently — and no-empty did not flag it, because an empty ARROW body is
+  // no-empty-function, which this repo does not enable.
+  //
+  // getWeddingWeather resolves on every path and does not reject, so there is
+  // nothing left to catch; an unexpected throw should surface rather than be
+  // hidden, and the root error boundary + client-error beacon will report it.
   useEffect(() => {
     let cancelled = false;
-    getWeddingWeather(weddingDetails).then(w => { if (!cancelled) setWeather(w); }).catch(() => {});
+    getWeddingWeather(weddingDetails).then(r => { if (!cancelled) setWeatherResult(r); });
     return () => { cancelled = true; };
   }, [weddingDetails?.mainCeremony?.address, weddingDetails?.reception?.address, weddingDetails?.weddingDate]);
 
   const WEATHER_ICONS = { Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning };
+  const weather = weatherResult?.state === WEATHER_OK ? weatherResult.data : null;
   const WeatherIcon = weather ? (WEATHER_ICONS[weather.icon] || Cloud) : null;
   // weather.js always fetches Celsius (Open-Meteo default) — the °F toggle in
   // Account → Settings only affects this display conversion, not the fetch.

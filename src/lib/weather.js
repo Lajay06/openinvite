@@ -3,8 +3,9 @@
  *
  * Wedding-day weather for the top bar countdown ("John & Suzanne · 169 days
  * to go"). Free, no-key Open-Meteo APIs throughout — geocoding, forecast,
- * and historical archive. Every failure resolves to `null`; callers should
- * simply not render anything rather than show an error, per spec.
+ * and historical archive. getWeddingWeather returns a DISCRIMINATED result
+ * ({ state, data }), never a bare null, so a caller can tell "nothing to show"
+ * apart from "something broke" — see the WEATHER_* constants below.
  *
  * WeddingDetails has no dedicated city field — only mainCeremony.address /
  * reception.address, a full Google Places formatted_address string (e.g.
@@ -41,23 +42,32 @@ function stripStateAndPostcode(segment) {
     .trim();
 }
 
+/**
+ * @returns {Promise<{ loc: null | {latitude:number,longitude:number,timezone:string}, failed: boolean }>}
+ *   `failed` means the lookup could not RUN (network/parse threw). A clean
+ *   response that simply matched no place is `{ loc: null, failed: false }`.
+ *   The caller needs the difference: one is a broken service, the other is an
+ *   address the couple can correct.
+ */
 async function geocode(name) {
   const cacheKey = `oi_weather_geocode_${name.toLowerCase()}`;
   const cached = readCache(cacheKey, GEOCODE_TTL_MS);
-  if (cached !== undefined) return cached;
+  if (cached !== undefined) return { loc: cached, failed: false };
 
   let result = null;
+  let failed = false;
   try {
     const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=en&format=json`);
     const data = await res.json();
     const loc = data.results?.[0];
     if (loc) result = { latitude: loc.latitude, longitude: loc.longitude, timezone: loc.timezone };
   } catch (err) {
-    // Diagnostics only — behaviour is unchanged, result stays null and the
-    // caller degrades as before. Logged because a null result is otherwise
-    // indistinguishable from "no such place", and the difference between a
-    // bad city string and a dead geocoding API is the whole question when
-    // this eventually matters. The city name is the input you need to act on.
+    // "The difference between a bad city string and a dead geocoding API is
+    // the whole question when this eventually matters." It matters now: the
+    // not-found state is the one a couple is expected to ACT on, so a dead
+    // API must never be reported as a bad address. Hence `failed`, not just
+    // the log line. The city name is the input you need to act on.
+    failed = true;
     console.warn(`[weather] geocoding failed for "${name}" — ${err?.message || err}`);
   }
 
@@ -72,25 +82,33 @@ async function geocode(name) {
   // stable — a venue's coordinates do not change — so a negative entry can
   // only ever prolong an outage. It buys nothing and costs a month.
   if (result) writeCache(cacheKey, result);
-  return result;
+  return { loc: result, failed };
 }
 
 // Tries each candidate locality from an address string, closest to the
 // country first, returning the first that actually geocodes.
+/**
+ * @returns {Promise<{ loc: null | {latitude:number,longitude:number,timezone:string}, failed: boolean }>}
+ *   `failed` is true only when every attempt was prevented from running. An
+ *   address with too few segments to hold a locality never reaches the network
+ *   and is a genuine miss, not a failure.
+ */
 async function resolveVenueLocation(address) {
-  if (!address) return null;
+  if (!address) return { loc: null, failed: false };
   const segments = address.split(',').map(s => s.trim()).filter(Boolean);
-  if (segments.length < 2) return null;
+  if (segments.length < 2) return { loc: null, failed: false };
 
   // Drop the venue/street (first) and country (last); walk the rest backwards.
   const candidates = segments.slice(1, -1).reverse();
+  let failed = false;
   for (const raw of candidates) {
     const cleaned = stripStateAndPostcode(raw);
     if (!cleaned || /^\d+$/.test(cleaned)) continue;
-    const loc = await geocode(cleaned);
-    if (loc) return loc;
+    const attempt = await geocode(cleaned);
+    if (attempt.loc) return { loc: attempt.loc, failed: false };
+    if (attempt.failed) failed = true;
   }
-  return null;
+  return { loc: null, failed };
 }
 
 // WMO weather code → { label, icon } — icon names map to lucide-react components.
@@ -116,16 +134,45 @@ function daysBetween(a, b) {
 }
 
 /**
+ * Discriminated result. getWeddingWeather used to return bare `null` on six
+ * different paths, so the caller could not tell "there is nothing to show
+ * because there is nothing to show" from "there is nothing to show because
+ * something broke" — and Layout.jsx could not have rendered a message even
+ * if it wanted one.
+ *
+ *   ok              — real data, `data` populated
+ *   not-applicable  — no venue address, no wedding date, or an unparseable
+ *                     date. Renders NOTHING, deliberately: a couple who has
+ *                     not finished onboarding must not be told something failed.
+ *   not-found       — geocoding ran and matched nothing. Actionable: the
+ *                     couple can fix the venue address.
+ *   unavailable     — a fetch threw, returned no usable data, or the
+ *                     historical archive came back empty. Not actionable; it
+ *                     clears itself when the service returns, because failures
+ *                     are no longer cached (#415).
+ */
+export const WEATHER_OK             = 'ok';
+export const WEATHER_NOT_APPLICABLE = 'not-applicable';
+export const WEATHER_NOT_FOUND      = 'not-found';
+export const WEATHER_UNAVAILABLE    = 'unavailable';
+
+const ok            = (data) => ({ state: WEATHER_OK, data });
+const notApplicable = ()     => ({ state: WEATHER_NOT_APPLICABLE, data: null });
+const notFound      = ()     => ({ state: WEATHER_NOT_FOUND, data: null });
+const unavailable   = ()     => ({ state: WEATHER_UNAVAILABLE, data: null });
+
+/**
  * @param {{ mainCeremony?: { address?: string }, reception?: { address?: string }, weddingDate?: string }} weddingDetails
- * @returns {Promise<null | { mode: 'seasonal'|'forecast'|'current', label: string, icon: string, temp?: number, high?: number, low?: number }>}
+ * @returns {Promise<{ state: 'ok'|'not-applicable'|'not-found'|'unavailable',
+ *   data: null | { mode: 'seasonal'|'forecast'|'current', label: string, icon: string, temp?: number, high?: number, low?: number } }>}
  */
 export async function getWeddingWeather(weddingDetails) {
   const address = weddingDetails?.mainCeremony?.address || weddingDetails?.reception?.address;
   const weddingDate = weddingDetails?.weddingDate;
-  if (!address || !weddingDate) return null;
+  if (!address || !weddingDate) return notApplicable();
 
   const target = new Date(weddingDate);
-  if (Number.isNaN(target.getTime())) return null;
+  if (Number.isNaN(target.getTime())) return notApplicable();
 
   const today = new Date();
   const daysUntil = daysBetween(new Date(target.toDateString()), new Date(today.toDateString()));
@@ -134,14 +181,20 @@ export async function getWeddingWeather(weddingDetails) {
   const dayCacheKey = `oi_weather_${mode}_${address}_${weddingDate}_${today.toDateString()}`;
   const cacheTtl = mode === 'current' ? CURRENT_TTL_MS : mode === 'forecast' ? FORECAST_TTL_MS : SEASONAL_TTL_MS;
   const cached = readCache(dayCacheKey, cacheTtl);
-  if (cached !== undefined) return cached;
+  // Only successful results are ever cached (#415), so a hit is always `ok`.
+  if (cached !== undefined) return ok(cached);
 
   let result = null;
+  let failed = false;
+  let located = false;
+  let geocodeFailed = false;
   try {
-    const loc = await resolveVenueLocation(address);
-    if (loc) result = await fetchByMode(mode, loc, target, daysUntil);
+    const resolved = await resolveVenueLocation(address);
+    located = !!resolved.loc;
+    geocodeFailed = resolved.failed;
+    if (resolved.loc) result = await fetchByMode(mode, resolved.loc, target, daysUntil);
   } catch {
-    result = null;
+    failed = true;
   }
 
   // Success only, same rule. In practice this one is currently harmless —
@@ -150,7 +203,16 @@ export async function getWeddingWeather(weddingDetails) {
   // unrelated key design" is not a property to rely on. Someone will change
   // that key one day and the 7 days will suddenly be real.
   if (result) writeCache(dayCacheKey, result);
-  return result;
+  if (result) return ok(result);
+  // Geocoding matched nothing and nothing threw — the address is the problem,
+  // which the couple can act on. Distinguished from a thrown fetch or an
+  // empty/unusable response, which they cannot.
+  // Geocoding RAN and matched nothing — the address is the problem, which the
+  // couple can act on. A geocoder that could not be reached is `unavailable`:
+  // telling someone to correct a perfectly good address because the network
+  // was down is worse than saying nothing.
+  if (!failed && !located && !geocodeFailed) return notFound();
+  return unavailable();
 }
 
 async function fetchByMode(mode, loc, target, daysUntil) {

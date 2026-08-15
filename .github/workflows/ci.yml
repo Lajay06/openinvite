@@ -106,6 +106,15 @@ jobs:
       - name: Marketing hero consistency guard
         run: npm run test:marketing-hero-consistency
 
+      # No network, no credentials — stubs fetch and localStorage and asserts
+      # every state getWeddingWeather can return is reachable and correct. The
+      # one that matters is not-found vs unavailable: not-found is the only
+      # state a couple can act on, so misclassifying a geocoder outage as
+      # not-found tells someone to fix a perfectly good venue address. That
+      # defect was real and this guard is what caught it.
+      - name: Weather state guard
+        run: npm run test:weather-states
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live
