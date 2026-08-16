@@ -25,6 +25,7 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import CountUp from "@/components/shared/CountUp";
+import { color } from "@/styles/tokens";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -812,10 +813,19 @@ export default function SeatingPage() {
 
   const selectedTable = eventTables.find(t => t.id === selectedTableId);
 
+  // Bug 2 (count incoherence) labeling pass: every number on this strip is
+  // scoped to the active event (visible via the tab selector already) AND
+  // to invited, non-declined guests (eventPool's own filter — invited AND
+  // (yes OR pending); attendingOnly narrows that further to yes only). The
+  // scope itself was never wrong — it just wasn't SAID, so three correctly-
+  // filtered numbers looked like three disagreeing ones. One sub-line on
+  // Guests states the filter; Assigned/Unassigned/Complete are subsets of
+  // that same stated population, not separate ones needing their own label.
+  const guestScopeLabel = `${activeEvent.name} · ${attendingOnly ? 'attending only' : 'excludes declined'}`;
   const STAT_CARDS = [
     { label: 'Tables',     value: stats.tables },
     { label: 'Total seats',value: stats.seats },
-    { label: 'Guests',     value: stats.guests },
+    { label: 'Guests',     value: stats.guests, sub: guestScopeLabel },
     { label: 'Assigned',   value: stats.assigned },
     { label: 'Unassigned', value: stats.unassigned },
     { label: 'Complete',   value: stats.pct, suffix: '%' },
@@ -844,6 +854,9 @@ export default function SeatingPage() {
               ? <div style={{ width: 48, height: 28, background: 'rgba(10,10,10,0.06)' }} />
               : <p style={statValue}><CountUp to={s.value} suffix={s.suffix || ''} /></p>
             }
+            {!loading && s.sub && (
+              <p style={{ fontSize: 11, color: color.textMuted, fontFamily: PJS, margin: '2px 0 0' }}>{s.sub}</p>
+            )}
           </div>
         ))}
       </div>
@@ -1493,6 +1506,7 @@ export default function SeatingPage() {
           attendees={eventAttendees}
           hostsById={new Map(eventPool.map(({ guest }) => [guest.id, guest]))}
           tables={eventTables}
+          eventScopeLabel={guestScopeLabel}
           onApplySeating={handleApplyAISeating}
           onClose={() => setShowAIGenerator(false)}
         />

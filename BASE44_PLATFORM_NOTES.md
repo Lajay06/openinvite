@@ -617,6 +617,48 @@ infrastructure for yet, not an extension of the existing Vercel/admin-key
 pattern. Treat as a scoped, deliberate migration per endpoint, not a
 blanket fix.
 
+## Preview deployments share the production Base44 backend — every preview click-through writes real production data
+
+**Trap, confirmed the hard way, 2026-08-16, during the Seating count-
+incoherence investigation.** A Vercel *preview* deployment (any
+`openinvite-git-*.vercel.app` URL from an open PR) and *production*
+(`openinvite.com.au`) are two different frontends pointed at the exact
+same Base44 app/database — there is no separate preview-environment data
+store. Clicking "Apply seating plan" on a PR's preview writes real
+`Table.assigned_guests` rows for whatever real account you're logged in
+as, identical in every way to doing it on production. This is not a bug —
+it's simply how the Vercel↔Base44 wiring works here — but it is an easy
+trap for anyone *investigating* state after a mutating action, one level
+removed from the more familiar "never read state after the thing that
+mutates it" mistake: the mutating action doesn't have to be the one you
+just intentionally ran. A live click-through test on a preview (verifying
+a PR, reproducing a bug) IS a mutating action against the shared
+production account, and any investigation done afterward — on production,
+on a *different* preview, minutes or even many messages later — is
+reading state your own prior test already changed, not a clean baseline.
+
+Concretely, this produced a real false lead in this session: reload
+instability on `/Seating` (table/guest counts differing across page
+loads) looked at first like it might be caused by concurrent data churn
+from a shared test account — and on the heavily-reused `jaygalaxy23`
+account, some of it plausibly was (a "Table" `updated_date` cluster traced
+directly back to an "Apply seating plan" click made minutes earlier, on a
+*different* PR's preview, not to anything happening in real time). The
+question only got a clean answer by resetting a `+alias` account
+(`scripts/reset-test-account.mjs`) that nothing else was concurrently
+writing to and re-testing there — see the Seating investigation writeup
+for the full trace.
+
+**The practical rule**: before treating "the data looks different than I
+expected" as evidence of an app bug, ask whether *you* (via a preview
+click-through, an apply/save action, a migration script, or any other
+write) touched that same account's data since the last time you looked —
+regardless of which URL (preview or production) you used to do it. If the
+answer is yes, that's not a clean read, and the fix is to either wait out
+your own write's effects or — better, for anything needing a genuinely
+clean baseline — use a freshly-reset `+alias` account nobody else is
+concurrently exercising.
+
 ## Never encrypt a field whose writers aren't scoped first
 
 **Confirmed via a real production incident, 2026-08-16** (see gotcha #17 in
