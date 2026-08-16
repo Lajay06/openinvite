@@ -124,6 +124,7 @@ const TABS = [
 const WRITABLE_FIELDS = [
   'celebrant', 'license', 'ceremonyType', 'ceremonyMusic', 'ceremonyReadings',
   'vowsNotes', 'ringBearerDetails', 'flowerGirlDetails', 'orderOfServiceNotes',
+  'additionalNotes',
 ];
 
 export default function CeremonyDetailsPage() {
@@ -151,6 +152,7 @@ export default function CeremonyDetailsPage() {
         ringBearerDetails: r.ringBearerDetails || '',
         flowerGirlDetails: r.flowerGirlDetails || '',
         orderOfServiceNotes: r.orderOfServiceNotes || '',
+        additionalNotes: r.additionalNotes || '',
       });
       setRecordId(r.id || null);
       latestRef.current = r;
