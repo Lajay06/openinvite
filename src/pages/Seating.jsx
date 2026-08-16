@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords, getMyGuestsWithRsvp, getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { getGuestTableName, propagateTableRename, assignGuestToSeat, unassignSeat, applyEventSeatingPlan } from '@/lib/tableAssignment';
+import { getGuestTableName, propagateTableRename, assignGuestToSeat, unassignSeat, applyEventSeatingPlan, validatePlanAssignments } from '@/lib/tableAssignment';
 import { getWeddingEvents, getGuestEventResponse, RECEPTION_EVENT_ID } from '@/lib/weddingEvents';
 import { EventChip, DietaryCell } from '@/components/guests/GuestList';
 import GuestAvatar from '@/components/shared/GuestAvatar';
@@ -733,12 +733,16 @@ export default function SeatingPage() {
     try {
       // Filtering to the event pool stays here: it is a policy about which
       // guests this page may seat, not about how a seat is written.
-      const validGuestIds = new Set(eventPool.map(({ guest }) => guest.id));
+      // ATTENDEE ids, so a synthetic plus-one id in the plan survives
+      // validation. Built from eventAttendees rather than eventPool: with Guest
+      // ids only, every plus-one the AI placed was filtered out here — silently,
+      // before reaching the write path — and applying a plan left them unseated.
+      //
+      // This stays a whitelist. The AI is not trusted to invent ids; it can only
+      // seat people who are actually in this event's population.
+      const validGuestIds = new Set(eventAttendees.map(a => a.id));
       const { ok, err } = await applyEventSeatingPlan({
-        assignments: plan.assignments.map(a => ({
-          tableId: a.tableId,
-          guestIds: (a.guests || []).filter(id => validGuestIds.has(id)),
-        })),
+        assignments: validatePlanAssignments(plan.assignments, validGuestIds),
         tables: eventTables,
         eventId: activeEventId,
       });

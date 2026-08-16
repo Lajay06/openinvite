@@ -57,6 +57,25 @@ export function shouldWriteTableCache(guestId, eventId) {
   return eventId === RECEPTION_EVENT_ID && !isPlusOneId(guestId);
 }
 
+/**
+ * Validates an AI seating plan against the population that may actually be
+ * seated, returning the shape applyEventSeatingPlan expects.
+ *
+ * `validIds` must be ATTENDEE ids, not Guest ids. Built from Guest ids, this
+ * filter silently discarded every plus-one the model placed — the plan looked
+ * applied and those people were simply never seated.
+ *
+ * It remains a WHITELIST: the model cannot invent an id, only place people who
+ * are genuinely in this event's population. An id it hallucinates is dropped,
+ * which is the correct behaviour and is asserted.
+ */
+export function validatePlanAssignments(planAssignments, validIds) {
+  return (planAssignments || []).map(a => ({
+    tableId: a.tableId,
+    guestIds: (a.guests || []).filter(id => validIds.has(id)),
+  }));
+}
+
 /** The assigned_guests array after seating `guestId` at `seatIndex`. */
 export function buildSeatAssignmentPayload(table, guestId, seatIndex) {
   const current = (table && table.assigned_guests) || [];
