@@ -205,6 +205,27 @@ const DEFAULT = {
   qna: [],
 };
 
+// doSave() writes only these fields — the builder's actual edit surface —
+// instead of the whole loaded WeddingDetails record. DEFAULT above is this
+// component's own declared ceiling of what it owns, so every DEFAULT key is
+// included by construction; the rest are additional top-level fields
+// confirmed written via updateField/updateNested/setPageBlocks/
+// updateAssetContent (WBRightPanel.jsx, WBLeftPanel.jsx, this file) that
+// aren't part of the initial DEFAULT shape. Anything NOT in this list
+// (budget, contactPerson, emergencyContacts, guests, tables, ...) is owned
+// by another page and must never round-trip through this component's save —
+// a full-object write here would silently revert any field another page
+// has since moved to encrypted-at-rest storage back to stale plaintext.
+const WRITABLE_FIELDS = [
+  ...Object.keys(DEFAULT),
+  'websitePasswordEnabled',
+  'fontOverride',
+  'guestExperienceSettings',
+  'photosContent',
+  'customPages',
+  'assetContent',
+];
+
 export default function StudioWebsite({ onBack }) {
   const navigate = useNavigate();
   const [publishModalOpen, setPublishModalOpen] = useState(false);
@@ -453,7 +474,11 @@ export default function StudioWebsite({ onBack }) {
     setIsSaving(true);
     setSaveStatus('saving');
     try {
-      const payload = detailsRef.current;
+      const source = detailsRef.current || {};
+      const payload = {};
+      for (const field of WRITABLE_FIELDS) {
+        if (field in source) payload[field] = source[field];
+      }
       if (existing?.id) {
         await base44.entities.WeddingDetails.update(existing.id, payload);
       } else {
