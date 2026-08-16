@@ -3,6 +3,7 @@ import { Sparkles, CheckCircle, X } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { color } from '@/styles/tokens';
 
 const labelStyle = {
   color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -17,7 +18,7 @@ function Spinner() {
   );
 }
 
-export default function AISeatingGenerator({ attendees, hostsById, tables, onApplySeating, onClose }) {
+export default function AISeatingGenerator({ attendees, hostsById, tables, eventScopeLabel, onApplySeating, onClose }) {
   const [loading, setLoading] = useState(false);
   const [seatingPlan, setSeatingPlan] = useState(null);
   const [step, setStep] = useState('generate');
@@ -174,15 +175,20 @@ Return assignments[], unassigned[], and summary.`,
           {/* ── Generate step ── */}
           {step === 'generate' && (
             <div>
-              {/* Stats */}
+              {/* Stats — Bug 2 labeling pass: "People to seat" is the same
+                  event-scoped, non-declined population the Seating page's
+                  own "Guests" stat shows (attendees === eventAttendees,
+                  Seating.jsx:1538) — stating the scope here too so this
+                  number is never read as a different, disagreeing total. */}
               <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
                 {[
-                  { label: 'People to seat', value: attendees.length, color: '#E03553' },
+                  { label: 'People to seat', value: attendees.length, color: '#E03553', sub: eventScopeLabel },
                   { label: 'Tables available', value: tables.length, color: '#803D81' },
                 ].map(s => (
                   <div key={s.label} style={{ flex: 1, border: '1px solid rgba(10,10,10,0.08)', padding: '20px 24px', textAlign: 'center' }}>
                     <p style={{ fontSize: 36, fontWeight: 700, color: s.color, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, lineHeight: 1 }}>{s.value}</p>
                     <p style={{ ...labelStyle, margin: '8px 0 0' }}>{s.label}</p>
+                    {s.sub && <p style={{ fontSize: 11, color: color.textMuted, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>{s.sub}</p>}
                   </div>
                 ))}
               </div>
