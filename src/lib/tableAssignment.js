@@ -34,13 +34,13 @@ import { base44 } from '@/api/base44Client';
 import { RECEPTION_EVENT_ID } from '@/lib/weddingEvents';
 import {
   resolveEventId, buildSeatAssignmentPayload, buildSeatRemovalPayload, findSeatConflict,
-  shouldWriteTableCache,
+  shouldWriteTableCache, validatePlanAssignments,
 } from '@/lib/tableAssignmentPayloads';
 import { isPlusOneId } from '@/lib/attendees';
 
 // Re-exported so callers have one import site; the split exists only so the
 // pure half can be loaded without the base44 client. See that file's header.
-export { resolveEventId, buildSeatAssignmentPayload, buildSeatRemovalPayload, findSeatConflict, shouldWriteTableCache };
+export { resolveEventId, buildSeatAssignmentPayload, buildSeatRemovalPayload, findSeatConflict, shouldWriteTableCache, validatePlanAssignments };
 
 const Table = base44.entities.Table;
 const Guest = base44.entities.Guest;

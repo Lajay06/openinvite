@@ -20,6 +20,7 @@
 
 import {
   shouldWriteTableCache,
+  validatePlanAssignments,
   buildSeatAssignmentPayload,
   buildSeatRemovalPayload,
   findSeatConflict,
@@ -208,6 +209,35 @@ check('...and the render still completes rather than throwing',
   wrong[0].guests.length === 2);
 check('the two cases are genuinely distinguishable',
   getUnresolvedAttendees().length === 1 && stale[0].guests.length === 1);
+
+// ── AI PLAN VALIDATION: a synthetic id must survive and reach the write path ──
+{
+  const attendeeIds = new Set(ATTENDEES.map(a => a.id));   // the fix: attendee ids
+  const guestIds    = new Set(GUESTS.map(g => g.id));      // the bug: Guest ids only
+  const plan = [{ tableId: 'tA', guests: [HOST, PO_ID, 'hallucinated-id'] }];
+
+  const withAttendees = validatePlanAssignments(plan, attendeeIds);
+  check('AI PLAN: a synthetic plus-one id SURVIVES validation and reaches the write path',
+    withAttendees[0].guestIds.includes(PO_ID), JSON.stringify(withAttendees[0].guestIds));
+  check('AI PLAN: the host survives too',
+    withAttendees[0].guestIds.includes(HOST));
+  check('AI PLAN: it is still a WHITELIST — an invented id is dropped',
+    !withAttendees[0].guestIds.includes('hallucinated-id') && withAttendees[0].guestIds.length === 2);
+  check('AI PLAN: seat order is preserved so seat_index follows the plan',
+    JSON.stringify(withAttendees[0].guestIds) === JSON.stringify([HOST, PO_ID]));
+
+  // Negative control, inline: the pre-fix behaviour, proving the bug was real.
+  const withGuestIds = validatePlanAssignments(plan, guestIds);
+  check('NEGATIVE CONTROL: with Guest ids the plus-one WAS silently discarded',
+    !withGuestIds[0].guestIds.includes(PO_ID) && withGuestIds[0].guestIds.length === 1,
+    JSON.stringify(withGuestIds[0].guestIds));
+  check('...and that discard was silent — same shape, one fewer person',
+    withGuestIds[0].tableId === withAttendees[0].tableId
+      && withGuestIds[0].guestIds.length === withAttendees[0].guestIds.length - 1);
+
+  check('an empty plan is handled', validatePlanAssignments([], attendeeIds).length === 0
+    && validatePlanAssignments(null, attendeeIds).length === 0);
+}
 
 const passed = results.filter(Boolean).length;
 console.log(`\n  ${passed}/${results.length} ${results.every(Boolean) ? 'ALL PASS' : 'FAILURES PRESENT'}`);
