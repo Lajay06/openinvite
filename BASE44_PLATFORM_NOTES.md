@@ -564,3 +564,55 @@ No RLS change needed at all — the safety property comes entirely from the
 endpoint verifying `wedding_id` ownership before deleting, same as PR 1b.
 Needs its own scoped PR when real guests exist post-launch; not urgent
 before then.
+
+## Hosted functions — the real `asServiceRole` bypass, but only from inside Base44 itself
+
+**Confirmed via Base44 support, 2026-08-16, in response to the "can RLS
+express owner OR admin key" question this app's whole RLS-tightening pass
+kept running into.** The admin key is NOT a bypass and never will be — no
+RLS expression can match a service/admin principal (see the top of this
+file). The actual bypass Base44 offers, `base44.asServiceRole.entities.*`,
+only works **inside Base44-hosted backend functions**, called via
+`createClientFromRequest(req)` — explicitly NOT available to an external
+backend calling in over REST with the admin key, which is everything this
+app's `api/*.js` (Vercel functions) do today. This closes the door on
+"just use asServiceRole from Vercel" as a fix direction entirely — it was
+never on the table.
+
+The app's current Base44 plan (Builder) **does** support hosted functions,
+confirmed the same day:
+
+- Defined at `base44/functions/<name>/entry.ts` (new directory this repo
+  doesn't have yet — `base44/` currently only holds `entities/*.jsonc`
+  schema mirrors).
+- Deployed with `base44 functions deploy`.
+- Two invocation shapes: per-request (called like any endpoint — good fit
+  for something like `resolveGuestByToken` or `collaborator-guests.js`'s
+  Guest read, both currently blocked because the caller has no
+  `{{user.id}}` an owner-scoped RLS rule can match) and **scheduled
+  automations**, configured in `function.jsonc` (cron-style schedule) —
+  good fit for `send-weekly-digest.js`, which today is a Vercel cron
+  admin-key-iterating every `WeddingDetails` row in one run.
+- Scheduled automations are capped at a **3-minute max run** and a
+  **5-minute minimum interval**, and cost **1 credit per run**. The weekly
+  digest cron's current single-admin-key-list-then-loop shape does NOT fit
+  a 3-minute cap once there are enough weddings — a hosted-function rebuild
+  needs to paginate across multiple scheduled runs, not port the loop as-is.
+- Secrets: `base44 secrets set`, read at runtime only via
+  `secrets.get()` from `"base44:runtime"` — **must be called inside the
+  request/automation handler, not at module load time** (module-load-time
+  access doesn't have the runtime context yet). Different secret store
+  than Vercel's env vars — `BASE44_ADMIN_KEY` as Vercel knows it and
+  whatever this becomes inside a hosted function are two separate places
+  of trust, not the same value moved.
+- `asServiceRole` is available ONLY inside these hosted functions — not in
+  the Vercel `api/*.js` functions this app is built from, regardless of
+  which admin key or secret those hold.
+
+This is a genuine architecture option for the handful of endpoints whose
+own callers can never satisfy owner-scoped RLS (anonymous guests with only
+a token, collaborators reading another account's data, batch/cron jobs
+with no single caller) — but it's a new system this repo has zero
+infrastructure for yet, not an extension of the existing Vercel/admin-key
+pattern. Treat as a scoped, deliberate migration per endpoint, not a
+blanket fix.

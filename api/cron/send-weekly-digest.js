@@ -233,6 +233,24 @@ export async function buildDigestForWedding(wedding, allQuestionnaireResponses, 
 }
 
 export default async function handler(req, res) {
+  // PARKED, fix/guest-rls-step1: Guest.read is now owner-scoped
+  // ({created_by_id: "{{user.id}}"}), which the admin key below can never
+  // satisfy (see BASE44_PLATFORM_NOTES.md) — this job's per-wedding Guest
+  // reads (line ~163) would silently return empty guest counts instead of
+  // erroring, producing wrong/misleading digest emails rather than no
+  // email. Unscheduled in vercel.json; this early return is belt-and-
+  // suspenders in case of a stale/manual trigger.
+  //
+  // Rebuild path (post-launch fast-follow, not before): a Base44-hosted
+  // scheduled automation using base44.asServiceRole (see
+  // BASE44_PLATFORM_NOTES.md's "Hosted functions" section) — the only real
+  // RLS bypass Base44 offers, available only inside a hosted function, not
+  // this Vercel cron. Automations are capped at a 3-minute max run, so the
+  // current single-pass "list every WeddingDetails, loop" shape needs to
+  // become paginated across runs, not ported as-is.
+  return res.status(200).json({ ok: true, skipped: 'parked — see comment in this file' });
+
+  // eslint-disable-next-line no-unreachable
   const runAt = new Date().toISOString();
 
   if (req.method !== 'GET') {

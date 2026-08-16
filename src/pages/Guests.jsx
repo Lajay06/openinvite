@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Search, Send, Copy, CalendarCheck } from "lucide-react";
 import toast from 'react-hot-toast';
 import { useAuth } from "@/lib/AuthContext";
+import { color } from "@/styles/tokens";
 
 import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
@@ -100,6 +101,9 @@ export default function Guests() {
   const [mealOptions, setMealOptions] = useState([]);
   const [pendingSubmissions, setPendingSubmissions] = useState([]);
   const [showPendingImports, setShowPendingImports] = useState(false);
+  // fix/guest-rls-step1: collaborator guest viewing is parked (api/collaborator-guests.js
+  // returns 503) — see that file's header comment for why and the rebuild path.
+  const [collaboratorGuestsUnavailable, setCollaboratorGuestsUnavailable] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [sendModalConfig, setSendModalConfig] = useState(null); // { initialSelectedIds } | { defaultFilter }
@@ -168,7 +172,15 @@ export default function Guests() {
         const res = await fetch(`/api/collaborator-guests?ownerUserId=${encodeURIComponent(collab.ownerUserId)}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
         });
+        if (res.status === 503) {
+          setCollaboratorGuestsUnavailable(true);
+          setGuests([]);
+          setTables([]);
+          setLoading(false);
+          return;
+        }
         if (!res.ok) throw new Error('Failed to load guests');
+        setCollaboratorGuestsUnavailable(false);
         const data = await res.json();
         setGuests(data.guests || []);
         setTables([]); // table sync isn't part of the collaborator model — see handleTableAssignment's own guard
@@ -831,6 +843,15 @@ export default function Guests() {
               </DialogContent>
             </Dialog>
 
+            {isCollaborating && collaboratorGuestsUnavailable ? (
+              <div style={{
+                padding: '48px 24px', textAlign: 'center',
+                color: color.textMuted, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 14, lineHeight: 1.6,
+              }}>
+                Collaborator guest access is temporarily unavailable — check back after launch.
+              </div>
+            ) : (
             <GuestList
               guests={filteredGuests}
               onEdit={readOnly ? undefined : handleEdit}
@@ -851,6 +872,7 @@ export default function Guests() {
               highlightedGuestId={highlightedGuestId}
               readOnly={readOnly}
             />
+            )}
           </TabsContent>
 
           {!isCollaborating && (
