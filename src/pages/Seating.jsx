@@ -88,6 +88,25 @@ const CANVAS_W = 1400;
 const CANVAS_H = 900;
 
 export default function SeatingPage() {
+  // DIAGNOSTIC (diag/seating-double-mount-trace — never merges, delete this
+  // branch once the trace is captured). instanceId answers one question: do
+  // two SeatingPage instances run concurrently on one page view (the
+  // Layout.jsx hidden lg:block + lg:hidden double-mount), or is this a
+  // single-mount state-ordering bug? If two ids interleave in the console,
+  // the double-mount is the mechanism and the fix belongs to that app-wide
+  // ticket, not here.
+  const instanceId = useRef(Math.random().toString(36).slice(2, 7));
+  const diagRootRef = useRef(null);
+  useEffect(() => {
+    // Cheap tree tag — which Tailwind visibility wrapper (Layout.jsx's
+    // desktop `hidden lg:block` vs mobile `lg:hidden`) this instance is
+    // nested inside, so a two-id trace also says WHICH tree painted what.
+    const wrapper = diagRootRef.current?.closest('.hidden.lg\\:block, .lg\\:hidden');
+    const tree = wrapper?.className.includes('lg:hidden') ? 'mobile' : wrapper?.className.includes('lg:block') ? 'desktop' : 'unknown';
+    console.log(`[seating-diag] mount ${instanceId.current} tree=${tree} t=${performance.now().toFixed(1)}`);
+    return () => console.log(`[seating-diag] unmount ${instanceId.current} t=${performance.now().toFixed(1)}`);
+  }, []);
+
   const [guests, setGuests] = useState([]);
   const [tables, setTables] = useState([]);
   const [venueAssets, setVenueAssets] = useState([]);
@@ -222,6 +241,9 @@ export default function SeatingPage() {
   }, []);
 
   const loadData = async () => {
+    // DIAGNOSTIC (diag/seating-double-mount-trace) — see instanceId comment above.
+    const diagId = instanceId.current;
+    console.log(`[seating-diag] loadData START ${diagId} t=${performance.now().toFixed(1)} isCollaborating=${isCollaborating}`);
     setLoading(true);
     try {
       if (isCollaborating) {
@@ -234,6 +256,7 @@ export default function SeatingPage() {
           setTables((data.Table || []).map(t => ({ ...t, assigned_guests: t.assigned_guests || [] })));
           setVenueAssets(data.VenueAsset || []);
           setWeddingEvents(getWeddingEvents(data.WeddingDetails));
+          console.log(`[seating-diag] loadData END(collab) ${diagId} t=${performance.now().toFixed(1)} guests=${(data.Guest || []).length} tables=${(data.Table || []).length}`);
         }
         setLoading(false);
         return;
@@ -244,11 +267,17 @@ export default function SeatingPage() {
         getMyRecords('VenueAsset', '-created_date'),
         getMyWeddingDetails().catch(() => null),
       ]);
+      const seats = tableData.reduce((s, t) => s + (t.capacity || 0), 0);
+      console.log(`[seating-diag] loadData FETCHED ${diagId} t=${performance.now().toFixed(1)} guests=${guestData.length} tables=${tableData.length} seats=${seats}`);
       setGuests(guestData);
       setTables(tableData.map(t => ({ ...t, assigned_guests: t.assigned_guests || [] })));
       setVenueAssets(assetData);
       setWeddingEvents(getWeddingEvents(weddingDetails));
-    } catch { toast.error('Failed to load seating data'); }
+      console.log(`[seating-diag] loadData END ${diagId} t=${performance.now().toFixed(1)}`);
+    } catch (err) {
+      console.log(`[seating-diag] loadData ERROR ${diagId} t=${performance.now().toFixed(1)} ${err?.message}`);
+      toast.error('Failed to load seating data');
+    }
     setLoading(false);
   };
 
@@ -439,7 +468,10 @@ export default function SeatingPage() {
     const assigned = eventAttendees.filter(a => assignedGuestIds.has(a.id)).length;
     const unassigned = Math.max(0, total - assigned);
     const pct = total > 0 ? Math.round((assigned / total) * 100) : 0;
-    return { tables: eventTables.length, seats: totalSeats, guests: total, assigned, unassigned, pct };
+    const result = { tables: eventTables.length, seats: totalSeats, guests: total, assigned, unassigned, pct };
+    // DIAGNOSTIC (diag/seating-double-mount-trace) — see instanceId comment above.
+    console.log(`[seating-diag] stats RECOMPUTE ${instanceId.current} t=${performance.now().toFixed(1)} inputs(eventTables=${eventTables.length},eventAttendees=${eventAttendees.length},assignedGuestIds=${assignedGuestIds.size},guests=${guests.length},tables=${tables.length},activeEventId=${activeEventId}) result=${JSON.stringify(result)}`);
+    return result;
   }, [eventTables, eventAttendees, assignedGuestIds]);
 
   /* ── Drag & drop canvas ── */
@@ -822,7 +854,7 @@ export default function SeatingPage() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+    <div ref={diagRootRef} style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Seating" subtitle="Design your venue layout and assign guests to tables" />
 
