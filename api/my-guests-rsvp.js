@@ -24,7 +24,14 @@
  *   getMyGuestsWithRsvp did.
  * or 401 { error: 'Unauthorized' }
  *
- * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
+ * fix/guest-rls-step1: WeddingDetails and Guest reads now use the CALLER's
+ * own forwarded bearer token (callerFetch), not the admin key — Guest.read
+ * is owner-scoped as of this change, which the admin key can never satisfy
+ * (see BASE44_PLATFORM_NOTES.md). RsvpResponse stays on the admin key
+ * below; its RLS is unaffected by this change.
+ *
+ * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token
+ * (still used for the RsvpResponse read below).
  */
 
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
@@ -52,6 +59,21 @@ function unwrapList(payload) {
 async function adminFetch(path) {
   const res = await fetch(`${BASE44_API}${path}`, {
     headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
+  });
+  if (!res.ok) throw new Error(`Base44 GET ${path} failed (${res.status})`);
+  return res.json();
+}
+
+/** WeddingDetails/Guest reads with the CALLER's own token, not the admin key —
+ * fix/guest-rls-step1: Guest.read is now owner-scoped ({created_by_id:
+ * "{{user.id}}"}), which the admin key can never satisfy (no session
+ * identity of its own — see BASE44_PLATFORM_NOTES.md). The caller here is
+ * always the wedding owner querying their own records (verifyBase44User
+ * below), so their own token naturally satisfies the RLS rule, exactly as
+ * if the browser had made the call directly. */
+async function callerFetch(path, callerToken) {
+  const res = await fetch(`${BASE44_API}${path}`, {
+    headers: { Authorization: `Bearer ${callerToken}` },
   });
   if (!res.ok) throw new Error(`Base44 GET ${path} failed (${res.status})`);
   return res.json();
@@ -91,15 +113,13 @@ export default async function handler(req, res) {
   if (!caller) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  const callerToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
 
   try {
-    // WeddingDetails.read is null (unscoped), so the admin key can filter
-    // it directly by created_by_id and get a correct result — unlike an
-    // owner-scoped entity, there's no "admin key has no session identity"
-    // wall here (see BASE44_PLATFORM_NOTES.md). Most-recent non-test record
-    // wins, mirroring src/lib/resolveMyWedding.js's own mostRecent().
+    // Most-recent non-test record wins, mirroring src/lib/resolveMyWedding.js's
+    // own mostRecent(). Caller's own token — see callerFetch's header comment.
     const weddingQuery = encodeURIComponent(JSON.stringify({ created_by_id: caller.id }));
-    const weddings = unwrapList(await adminFetch(`/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`))
+    const weddings = unwrapList(await callerFetch(`/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`, callerToken))
       .filter(w => !w.is_test);
     const wedding = weddings.length > 0
       ? weddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
@@ -109,7 +129,7 @@ export default async function handler(req, res) {
     }
 
     const guestsQuery = encodeURIComponent(JSON.stringify({ created_by_id: caller.id }));
-    const guests = unwrapList(await adminFetch(`/apps/${BASE44_APP_ID}/entities/Guest?q=${guestsQuery}`))
+    const guests = unwrapList(await callerFetch(`/apps/${BASE44_APP_ID}/entities/Guest?q=${guestsQuery}`, callerToken))
       .filter(g => !g.is_test);
     if (guests.length === 0) {
       return res.status(200).json({ byGuestId: {} });

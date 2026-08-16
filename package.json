@@ -27,6 +27,7 @@
     "test:attendees": "node scripts/test-attendees.mjs",
     "test:table-assignment": "node scripts/test-table-assignment.mjs",
     "test:single-table-write-path": "node scripts/test-single-table-write-path.mjs",
+    "test:no-use-before-define-ratchet": "node scripts/test-no-use-before-define-ratchet.mjs",
     "capture": "node scripts/capture/run-all.mjs",
     "capture:preflight": "node scripts/capture/preflight.mjs",
     "capture:stills": "node scripts/capture/stills.mjs",

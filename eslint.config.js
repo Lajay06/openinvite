@@ -92,6 +92,17 @@ export default [
       // the evidence: the same linter DID catch a dead import, because
       // unused-imports is registered. One rule on, one off, same session.
       "no-undef": "error",
+      // Enabled after #429 took /Seating down in production with a temporal
+      // dead zone: activeLabelForm (a useMemo, runs during render) read
+      // eventAttendees ~60 lines above its `const` declaration. no-undef does
+      // not model TDZ — the identifier IS defined, just not yet initialised —
+      // so nothing caught it until the page crashed.
+      //
+      // functions: false deliberately. Function declarations hoist, that is a
+      // language guarantee rather than an accident, and enabling it costs 9
+      // more violations for a pattern the language explicitly supports.
+      // classes: true costs nothing — zero violations in this codebase.
+      "no-use-before-define": ["error", { "functions": false, "classes": true, "variables": true }],
       "no-empty": ["error", { allowEmptyCatch: false }],
       "no-unused-vars": "off",
       "react/jsx-uses-vars": "error",
@@ -138,6 +149,17 @@ export default [
     rules: {
       // No react/react-hooks rules here — this code never renders.
       "no-undef": "error",
+      // Enabled after #429 took /Seating down in production with a temporal
+      // dead zone: activeLabelForm (a useMemo, runs during render) read
+      // eventAttendees ~60 lines above its `const` declaration. no-undef does
+      // not model TDZ — the identifier IS defined, just not yet initialised —
+      // so nothing caught it until the page crashed.
+      //
+      // functions: false deliberately. Function declarations hoist, that is a
+      // language guarantee rather than an accident, and enabling it costs 9
+      // more violations for a pattern the language explicitly supports.
+      // classes: true costs nothing — zero violations in this codebase.
+      "no-use-before-define": ["error", { "functions": false, "classes": true, "variables": true }],
       "no-empty": ["error", { allowEmptyCatch: false }],
       "no-unused-vars": "off",
       "unused-imports/no-unused-imports": "error",
@@ -171,10 +193,112 @@ export default [
     plugins: { "unused-imports": pluginUnusedImports },
     rules: {
       "no-undef": "error",
+      // Enabled after #429 took /Seating down in production with a temporal
+      // dead zone: activeLabelForm (a useMemo, runs during render) read
+      // eventAttendees ~60 lines above its `const` declaration. no-undef does
+      // not model TDZ — the identifier IS defined, just not yet initialised —
+      // so nothing caught it until the page crashed.
+      //
+      // functions: false deliberately. Function declarations hoist, that is a
+      // language guarantee rather than an accident, and enabling it costs 9
+      // more violations for a pattern the language explicitly supports.
+      // classes: true costs nothing — zero violations in this codebase.
+      "no-use-before-define": ["error", { "functions": false, "classes": true, "variables": true }],
       "no-empty": ["error", { allowEmptyCatch: false }],
       "no-unused-vars": "off",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": ["warn", { vars: "all", varsIgnorePattern: "^_", args: "after-used", argsIgnorePattern: "^_" }],
     },
+  },
+
+  /**
+   * no-use-before-define — KNOWN-VIOLATION CARVE-OUT. 56 files, and it may only
+   * ever SHRINK.
+   *
+   * The rule is `error` everywhere else, which is the point: the next
+   * render-time read of a `const` declared further down gets caught before it
+   * ships. That is the bug that took /Seating down in production (#429) and the
+   * one nothing else models — no-undef does not, because the identifier IS
+   * defined, just not yet initialised.
+   *
+   * These 56 files violate it TODAY, and none of them is a live bug: 74 of the
+   * 76 violations are function-valued consts referenced inside callbacks that
+   * run after mount, and the other 2 are read by a hoisted function declaration
+   * called at render. They are latent, not broken — exactly as #429's was, right
+   * up until its call site started executing during render.
+   *
+   * WHY THEY ARE NOT SIMPLY REORDERED HERE: the fix is not mechanical. A trial
+   * on one file produced an IDENTICAL multiset of lines and took it from 2
+   * violations to 13, by moving a const above the multi-line import it reads.
+   * Three context-sensitive failure modes showed up in that single file —
+   * multi-line imports, dependency ordering, and statement-boundary detection —
+   * which is the argument for an AST codemod (jscodeshift) rather than a text
+   * transformation. That is scheduled as its own piece of work; see the handoff.
+   *
+   * THE LIST IS RATCHETED. scripts/test-no-use-before-define-ratchet.mjs fails
+   * if a path appears here that is not already on it, or if the count rises.
+   * Removing entries is free. Adding one means deliberately editing the guard.
+   * Without that, an exclusions list is just a list that grows.
+   */
+  {
+    files: [
+      "src/components/event-details/VenueSearch.jsx",
+      "src/components/games/GamesManager.jsx",
+      "src/components/guest-experience/HotelRecommendations.jsx",
+      "src/components/guest-experience/RestaurantRecommendations.jsx",
+      "src/components/guest-experience/ThingsToDo.jsx",
+      "src/components/guest-experience/TransportationOptions.jsx",
+      "src/components/layout/AnimatedSidebar.jsx",
+      "src/components/layout/CollaborateModal.jsx",
+      "src/components/messages/WhatsAppCompose.jsx",
+      "src/components/music/MusicSuggestionsModal.jsx",
+      "src/components/notes/SuggestionsModal.jsx",
+      "src/components/shared/AIWeddingAssistant.jsx",
+      "src/components/vendors/VendorContactSection.jsx",
+      "src/components/vendors/VendorDetailPanel.jsx",
+      "src/lib/AuthContext.jsx",
+      "src/pages/Accommodation.jsx",
+      "src/pages/Beauty.jsx",
+      "src/pages/Budget.jsx",
+      "src/pages/Calendar.jsx",
+      "src/pages/CeremonyDetails.jsx",
+      "src/pages/DailyUpdate.jsx",
+      "src/pages/Dashboard.jsx",
+      "src/pages/EmergencyContact.jsx",
+      "src/pages/EntertainmentDetails.jsx",
+      "src/pages/EventDetails.jsx",
+      "src/pages/FoodBeverage.jsx",
+      "src/pages/GuestAccommodation.jsx",
+      "src/pages/GuestExperience.jsx",
+      "src/pages/Guests.jsx",
+      "src/pages/Honeymoon.jsx",
+      "src/pages/Invitations.jsx",
+      "src/pages/LiveStreaming.jsx",
+      "src/pages/Messages.jsx",
+      "src/pages/Moodboard.jsx",
+      "src/pages/Notes.jsx",
+      "src/pages/Onboarding.jsx",
+      "src/pages/OurStory.jsx",
+      "src/pages/PhotoGallery.jsx",
+      "src/pages/Photography.jsx",
+      "src/pages/Policies.jsx",
+      "src/pages/Polls.jsx",
+      "src/pages/Registry.jsx",
+      "src/pages/Schedule.jsx",
+      "src/pages/ScheduleHub.jsx",
+      "src/pages/Seating.jsx",
+      "src/pages/StudioWebsite.jsx",
+      "src/pages/Styling.jsx",
+      "src/pages/TodoList.jsx",
+      "src/pages/Tour.jsx",
+      "src/pages/Transport.jsx",
+      "src/pages/VendorMarketplace.jsx",
+      "src/pages/Vendors.jsx",
+      "src/pages/VowsSpeeches.jsx",
+      "src/pages/WeddingFavours.jsx",
+      "src/pages/WeddingParty.jsx",
+      "src/pages/WeddingWebsite.jsx"
+    ],
+    rules: { "no-use-before-define": "off" },
   },
 ];

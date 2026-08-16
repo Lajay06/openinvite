@@ -1,6 +1,28 @@
 /**
  * /api/collaborator-guests — GET / PUT / DELETE
  *
+ * PARKED, fix/guest-rls-step1: Guest.read is now owner-scoped
+ * ({created_by_id: "{{user.id}}"}), which the admin key can never satisfy
+ * (see BASE44_PLATFORM_NOTES.md). VIEW below was the only part of this
+ * endpoint that actually worked (see the KNOWN LIMITATION comments still
+ * left in place below, for the edit/delete/create paths that were already
+ * broken before this change, for the identical reason) — with Guest.read
+ * tightened, even VIEW now 403s. Rather than ship a silently-broken
+ * feature, the handler below short-circuits with a clear 503 and the rest
+ * of the file is left intact, unreachable, as the shape to build against.
+ *
+ * Rebuild path (post-launch fast-follow, not before): a Base44-hosted
+ * function using base44.asServiceRole (see BASE44_PLATFORM_NOTES.md's
+ * "Hosted functions" section) — asServiceRole is the only real RLS bypass
+ * Base44 offers, but only from inside a hosted function
+ * (base44/functions/<name>/entry.ts, deployed via `base44 functions
+ * deploy`), never from an external Vercel function like this one. This
+ * endpoint fits the per-request invocation shape (not the scheduled-
+ * automation one) — call the hosted function from here, or replace this
+ * Vercel endpoint with a direct call to it, once that infrastructure
+ * exists in this repo.
+ *
+ * ── Original design notes, kept for the rebuild ──────────────────────────
  * Real, server-enforced Guest access for an accepted collaborator — not
  * menu-hiding. Every request is checked here regardless of what the client
  * UI would have allowed: verify the caller's own bearer token, resolve
@@ -8,9 +30,6 @@
  * (never trusting a client-claimed permission — see
  * api/_lib/collaboratorAuth.js), then check the specific view/edit
  * permission for the 'Guests' page before touching any data.
- *
- * VIEW works fully: Guest's read RLS is null, so the admin key can list
- * an owner's guests once permission is confirmed.
  *
  * KNOWN LIMITATION — edit/delete do NOT actually work, even when a
  * collaborator has been granted 'edit': confirmed empirically that the
@@ -83,6 +102,13 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
   }
 
+  // PARKED, fix/guest-rls-step1 — see file header. Guest.read is now
+  // owner-scoped; the admin key below can no longer satisfy it, so this
+  // would otherwise silently return an empty guest list instead of a real
+  // error. Short-circuit with a clear, honest response instead.
+  return res.status(503).json({ error: 'Collaborator guest access is temporarily unavailable — check back after launch.' });
+
+  // eslint-disable-next-line no-unreachable
   const caller = await verifyBase44User(req);
   if (!caller) {
     return res.status(401).json({ error: 'Authentication required.' });
