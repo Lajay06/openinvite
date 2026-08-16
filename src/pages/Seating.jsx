@@ -301,20 +301,6 @@ export default function SeatingPage() {
      these, never the full unfiltered arrays. ── */
   const eventTables = useMemo(() => tables.filter(t => resolveEventId(t) === activeEventId), [tables, activeEventId]);
 
-  // DECLARED HERE, ABOVE activeLabelForm, DELIBERATELY.
-  //
-  // activeLabelForm runs during render and reads eventAttendees. With these
-  // two blocks below it, that was a temporal dead zone: `ReferenceError:
-  // Cannot access 'D' before initialization`, a full-page ErrorBoundary on
-  // /Seating in production (#429, hotfixed by #434).
-  //
-  // It did not fire on mount, which is why it survived review and a live
-  // check: activeLabelForm only reaches the read inside
-  // `for (const a of t.assigned_guests)`, so with tables still loading the
-  // loop body never ran. It threw a few seconds later, once the fetch
-  // returned tables that had guests in them.
-  //
-  // Anything reading eventAttendees during render must stay below this point.
   /* ── Guest pool for this event (decision #1) — invited AND (yes OR
      pending); declined and not-invited are excluded outright, not just
      filtered. "Attending only" narrows to yes, for late-stage cleanup. ── */
@@ -349,6 +335,21 @@ export default function SeatingPage() {
     }
     return out;
   }, [eventPool]);
+
+  // DECLARED HERE, ABOVE activeLabelForm, DELIBERATELY.
+  //
+  // activeLabelForm runs during render and reads eventAttendees. With these
+  // two blocks below it, that was a temporal dead zone: `ReferenceError:
+  // Cannot access 'D' before initialization`, a full-page ErrorBoundary on
+  // /Seating in production (#429, hotfixed by #434).
+  //
+  // It did not fire on mount, which is why it survived review and a live
+  // check: activeLabelForm only reaches the read inside
+  // `for (const a of t.assigned_guests)`, so with tables still loading the
+  // loop body never ran. It threw a few seconds later, once the fetch
+  // returned tables that had guests in them.
+  //
+  // Anything reading eventAttendees during render must stay below this point.
 
   // Re-measure on every commit (zoom changes re-render, and an ancestor
   // transform change fires no observer), guarded so it can't loop. The
@@ -393,6 +394,7 @@ export default function SeatingPage() {
     // stale dep meant the label form did not recompute when a plus-one was
     // seated or unseated.
   }, [eventTables, eventAttendees, renderScale]);
+
   const eventAssets = useMemo(() => venueAssets.filter(a => resolveEventId(a) === activeEventId), [venueAssets, activeEventId]);
 
   /* ── Copy layout — tables only, never guest assignments (decision #3).
