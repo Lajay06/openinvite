@@ -12,7 +12,16 @@
  * live, RsvpResponse-derived attendance status — Guest.rsvp_status itself
  * is a frozen-at-creation column nothing keeps current, same reasoning
  * api/my-guests-rsvp.js documents), and limitOnePerGuest (deduped by
- * guestEmail against this wedding's existing requests).
+ * guestEmailHash against this wedding's existing requests).
+ *
+ * fix/song-request-email-hash: guestEmail used to be stored on SongRequest
+ * as plaintext. Nothing reads it back (api/song-request-review.js never
+ * displays it, confirmed via repo-wide grep) — its only real use was the
+ * limitOnePerGuest dedup check above, which only needs equality, not the
+ * plaintext value itself. Now stored as guestEmailHash (HMAC-SHA256 via
+ * api/_lib/questionnaireCrypto.js's hashId, same construction already used
+ * for guest_id_hash at the RsvpResponse lookup below). Existing plaintext
+ * rows are migrated by scripts/migrate-song-request-email-hash.mjs.
  *
  * Body: {
  *   weddingSlug: string, turnstileToken: string, guestEmail?: string,
@@ -130,6 +139,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'A valid email is required to request a song.' });
       }
     }
+    const guestEmailHash = guestEmail ? hashId(guestEmail) : null;
 
     if (music.onlyForConfirmedGuests) {
       const guests = (await adminGet(`/apps/${BASE44_APP_ID}/entities/Guest?q=${encodeURIComponent(JSON.stringify({ created_by_id: wedding.created_by_id }))}`))
@@ -155,7 +165,7 @@ export default async function handler(req, res) {
     if (music.limitOnePerGuest) {
       const existing = (await adminGet(`/apps/${BASE44_APP_ID}/entities/SongRequest?q=${encodeURIComponent(JSON.stringify({ weddingId: wedding.id }))}`))
         .filter(r => !r.is_test);
-      const alreadySubmitted = existing.some(r => typeof r.guestEmail === 'string' && r.guestEmail.toLowerCase() === guestEmail);
+      const alreadySubmitted = existing.some(r => r.guestEmailHash === guestEmailHash);
       if (alreadySubmitted) {
         return res.status(403).json({ error: "You've already submitted a song request." });
       }
@@ -172,7 +182,7 @@ export default async function handler(req, res) {
       explicit: !!req.body?.explicit,
       spotifyUrl: sanitizeString(req.body?.spotifyUrl || ''),
       submittedBy,
-      guestEmail,
+      guestEmailHash,
       guestNote: sanitizeString(req.body?.guestNote || '').slice(0, MAX_NOTE_LENGTH),
       status: music.requestsRequireApproval ? 'pending' : 'approved',
       playlist: 'general',

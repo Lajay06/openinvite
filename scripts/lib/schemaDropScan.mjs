@@ -270,7 +270,11 @@ export const SCHEMAS = {
 
   SongRequest: {
     weddingId:1, spotifyTrackId:1, title:1, artist:1, album:1, albumArt:1, duration:1,
-    explicit:1, spotifyUrl:1, submittedBy:1, guestEmail:1, guestNote:1, status:1,
+    explicit:1, spotifyUrl:1, submittedBy:1,
+    // guestEmail → guestEmailHash (fix/song-request-email-hash) — plaintext
+    // guest email replaced by an HMAC dedup hash, same pattern as
+    // RsvpResponse's guest_id_hash.
+    guestEmailHash:1, guestNote:1, status:1,
     playlist:1, aiTags:1, mustPlay:1, doNotPlay:1, _nested: {},
   },
 
