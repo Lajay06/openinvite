@@ -1,31 +1,62 @@
 # Anonymous access matrix — Openinvite
 
-Companion to `SECURITY_AUDIT.md` §1/§2. Scope: the **published, anonymous guest-facing site** only (routes matching `/w/:weddingSlug*` and `/rsvp/:token`) — not the authenticated couple's dashboard.
+Scope: the **published, anonymous guest-facing site** only (`/w/:weddingSlug*`,
+`/rsvp/:token`, and the handful of Turnstile-gated submit endpoints a guest's
+browser calls directly) — not the authenticated couple's dashboard.
 
-Base44's entity permissions are **entity-level, not row/token-scoped** (confirmed via MCP — no scoping keys in any entity schema). That means "public read: yes" on an entity doesn't mean "readable via a valid token/slug" — it means *any* caller can list *every* record of that entity across *every* wedding, regardless of what filter the app's own client code happens to apply. Several rows below are `No` even though the live UI currently depends on direct client-side access, because the fix is to move that access behind a serverless endpoint (using `BASE44_ADMIN_KEY`, never exposed to the browser) and only then lock the entity down in Base44.
+**2026-08-16: fully rewritten.** The previous version of this file referenced
+a `SECURITY_AUDIT.md` that does not exist in this repo (never committed, or
+removed before this rewrite — the reference was dangling) and an entity list
+from before several migrations (`Photographer`→`Vendor`, poll votes/comments
+off `WeddingDetails` into dedicated entities, RSVP data off `Guest` into
+`RsvpResponse`, etc. — see `git log --oneline | grep -i migrate`). This
+version reflects the live Base44 schema and the actual server-mediated
+architecture as of the 2026-08 RLS remediation pass. Companion doc:
+`BASE44_PLATFORM_NOTES.md` — the living reference for Base44 platform
+behavior (what the admin key can/can't do, the `create:null` + hashed-
+identifier pattern, hosted functions). This file is the living reference for
+*which entity is reachable from the anonymous guest site and how* — update it
+whenever that changes, the same way `BASE44_PLATFORM_NOTES.md` gets updated
+when a new platform quirk is learned.
 
-## Entities the anonymous site actually touches (8 of 39)
+Base44's entity permissions are **entity-level, not row/token-scoped** —
+"read: null" means *any* caller with *any* valid credential (including the
+server's own admin key) can list *every* record of that entity across *every*
+wedding, not just the one a slug/token happens to point at. The safe pattern
+throughout this app is: keep the entity's own RLS as tight as its readers
+allow, and for anything a genuinely anonymous caller must reach, mediate
+through a server endpoint that resolves the token/slug itself and returns
+only an explicit allowlist of fields — never let the client query the entity
+directly.
 
-| Entity | Public read | Public write | Code change required first? | Note |
-|---|---|---|---|---|
-| **WeddingDetails** | No | No (currently client-side `polls` update) | Yes | Site-render (`filter({slug})`) and RSVP's wedding-resolution (`filter({created_by_id})`) run client-side today, and the record holds `websitePassword`, `emergencyContacts`, vendor phone numbers, billing-adjacent fields, etc. Move slug-resolution to a serverless endpoint returning only an explicit guest-safe field allowlist; move poll-vote writes server-side (validate wedding, apply vote with admin key). |
-| **Guest** | No | No | Yes | Live flow: `filter({rsvp_link_id: token})` then `update(guest.id, …)` for RSVP + poll votes — both client-side today. Move token→guest lookup and the update behind a serverless endpoint (mirror `guestbook-submit.js`). A separate `Guest.create()` call exists in `RSVPSection.jsx`, but that component is dead code (imported via `GuestWebsite.jsx` → `StillTemplate.jsx` but never mounted on any live route) — no feature needs public **create**; delete the dead chain rather than fix it. |
-| **GuestbookEntry** | No, recommended | Yes for create (already server-mediated) | Read: recommended, not urgent. Create: already fixed. | Create already goes through `guestbook-submit.js` (admin key, Turnstile) — the client never calls `.create()` directly, so Base44's create permission can also be set to `No`. Read is currently a client-side `filter({wedding_id})` — an entity-level "yes" would let anyone dump every couple's guestbook; lower urgency than Guest/WeddingDetails (messages, not contact PII). |
-| **Photo** | No | No (not needed — no write path exists on the guest site) | Yes | Guest gallery + "our story" section read `Photo.list()` fully unscoped today. Move behind a serverless endpoint scoped by wedding. |
-| **Hotel** | Unclear — confirm with product | No | Maybe | `TravelSection.jsx` reads `Hotel.list()` unscoped. If `Hotel` is a shared, non-sensitive reference table (not per-couple content), blanket `public read: yes` may be fine as-is. If per-couple, treat like Photo. |
-| **SongRequest** | No (no read path needed) | No | Yes | `GuestMusic.jsx` (`/w/:weddingSlug/music`) calls `SongRequest.create()` with **no wedding-linkage field at all** today — every wedding's requests land in one unscoped table. Needs the linkage stamped server-side (from slug/token) via a Turnstile-gated serverless endpoint. |
-| **Music** | No (no read path needed) | No | Yes | Same issue as `SongRequest`: a guest music-suggestion component calls `Music.create()` with no wedding linkage. Same fix, if this path is kept live. |
-| **GuestMessage** | No | No | N/A — not currently live | Only touched by the same dead `RSVPSection.jsx` chain as the orphaned `Guest.create()`. Delete rather than fix. |
+## Entities the anonymous guest site actually touches (verified against the live `MultiPageWeddingWebsite.jsx` component tree + every guest-facing `api/*.js` endpoint)
 
-## Everything else (31 of 39) — no public read, no public write, no code change needed
+| Entity | RLS today | Anonymous read path | Status |
+|---|---|---|---|
+| **WeddingDetails** | `read: null` (open) | `api/wedding-by-slug.js`, server-mediated, admin-key. Returns only `api/_lib/guestSafeWedding.js`'s explicit allowlist — `websitePassword`/`emergencyContacts`/`dayVendorContacts`/`contactPerson`/`celebrant`/`license`/Spotify OAuth tokens are never sent, `websitePassword` is replaced by a computed boolean. | App-level filter already correct. RLS itself still open — anyone with a raw Base44 token can bypass the filter and read the full row. **Step 2 (planned, not started):** hash `websitePassword`, encrypt `emergencyContacts`/`dayVendorContacts`/`contactPerson`/`celebrant`/`license`/`budget`, null out dead Spotify OAuth tokens. |
+| **CustomGift**, **RegistryProduct** | `read: null` (open) | `api/wedding-by-slug.js`'s `fetchGuestSafeRegistry`, server-mediated, admin-key. | **Step 3 (planned, not started):** encrypt `payment_link_url` (CustomGift) and `purchased_by` (RegistryProduct) at write, decrypt only in `fetchGuestSafeRegistry`'s response. |
+| **PollComment** | `read: null` (open) | `api/wedding-poll-results.js`, server-mediated, admin-key. | **Step 4 (planned, not started):** encrypt comment text at write, decrypt server-side in the results endpoint. |
+| **Guest** | `read: null` (open) | `api/_lib/rsvpAuth.js`'s `resolveGuestByToken` — used by `api/rsvp-lookup.js`, `api/rsvp-submit.js`, `api/rsvp-poll-vote.js`, `api/questionnaire-lookup.js`, `api/questionnaire-answer-submit.js`, `api/wedding-attendees.js` — admin-key, resolves by `rsvp_link_id`/`plus_one_rsvp_link_id` token, no client-suppliable guest id. | **Not yet flipped.** This is the current launch blocker on `Guest`: the anonymous caller here has no Base44 session at all (only an opaque token), so there is no caller-token migration possible — same structural class as `SongRequest`'s anonymous-stamped rows. `Guest.read` staying `null` is required for this path regardless of what happens with the dashboard/collaborator/cron readers (Step 1). Full fix is the encrypt-at-rest project `BASE44_PLATFORM_NOTES.md`'s "`Guest`'s PII exposure is real..." section already scopes — not started. |
+| **SongRequest** | `read: null` (open) | `api/song-request-submit.js`, create-only, no anonymous read path. | **Resolved, closed.** `guestEmail` was the only real PII; hashed to `guestEmailHash` (`fix/song-request-email-hash`, 2026-08-16). Remaining exposure is track metadata + a free-text note — accepted as non-sensitive by design, same reasoning as `Questionnaire` below. No further action planned. |
+| **Questionnaire** | `read: null` (open) | `api/questionnaire-lookup.js`, admin-key. | **Resolved, closed.** Intentional — holds quiz copy, not guest PII. `QuestionnaireResponse` (the actual answers) already has `create:null/read:null` with AES-256-GCM-encrypted payloads and HMAC-hashed ids (`fix/questionnaire-response-rls`) — the sensitive half of this feature is already done. |
+| **RsvpResponse**, **PollVote**, **GuestContactSubmission**, **CollaboratorGrant** | `create: null, read: null` (open by design) | Server-mediated only; every row is admin-key-stamped `created_by_id: "anonymous"` (Base44's own behavior, not chosen) — encrypted-by-design, same pattern as `QuestionnaireResponse`. | Working as designed, out of scope for this pass. |
+| **PlanGift** | `create: null, read: null, update: null, delete: null` (open) | `api/_lib/planGift.js`, admin-key, Stripe webhook idempotency + gift-redemption lookup. | **Out of scope** — payments freeze. Sensitive fields (Stripe session/promotion-code linkage) are already opaque identifiers, not raw PII. Residual risk accepted. |
+| **Hotel** | `create`/`read`/`update`/`delete` all owner-scoped | Not read by the anonymous guest site at all — accommodation content comes from `WeddingDetails.guestSuiteAccommodation`/`accommodation`, per `CLAUDE.md`'s Guest Suite single-source-of-truth rule. | Resolved. Open `create` closed to owner-scoped, 2026-08 (Batch 1). |
 
-`Task`, `VendorBooking`, `VowSpeech`, `Invitation`, `VendorReview`, `ReceivedGift`, `RegistryProduct`, `RegistryItem`, `CustomGift`, `ThemeDetails`, `VenueAsset`, `Vendor`, `Table`, `UserPayment`, `Note`, `VendorTask`, `StreamChat`, `MoodboardItem`, `Photographer`, `Event`, `Schedule`, `Budget`, `QuoteRequest`, `VendorLog`, `Collaborator`, `User`, `Restaurant`, `StoryMilestone`, `CustomEventPage`, `WebsiteTheme`, `LiveStream`.
+## Entities flipped to owner-scoped in the 2026-08 RLS pass, confirmed NOT touched by the anonymous guest site
 
-`GuestAccommodation.jsx`, `GuestTransport.jsx`, `GuestMusic.jsx` (its wedding-resolution call), and `ExperienceGuide.jsx` are the correct reference pattern already in the codebase — they resolve the wedding via `WeddingDetails.filter({slug: weddingSlug})` and read accommodation/transport/registry/experience content from that record's own nested fields, never a separate top-level entity. `LiveStream` is only ever touched by dashboard, `ProtectedRoute`-gated pages (`GuestSuiteLiveStream.jsx` is the couple's own *preview*, not the guest's actual view) — despite the name, it needs no anonymous access at all. `RegistryItem`/`CustomGift`/`Restaurant`/`StoryMilestone`/`CustomEventPage`/`WebsiteTheme` were flagged in `SECURITY_AUDIT.md` as unscoped in `WeddingWebsite.jsx` — a separate, dashboard-gated legacy page, not part of the anonymous surface, so that's a cross-tenant bug among logged-in users (tracked in the audit's fix-first list), irrelevant here.
+Verified by grepping the entire `src/components/guest-website/**` tree (the actual `/w/:slug` component tree, not the dead `WeddingWebsite.jsx` legacy page) plus every guest-facing `api/*.js` endpoint for each name — zero hits in both passes:
 
-## Summary for applying in Base44's permissions UI
+`RegistryItem`, `LiveStream`, `GuestMessage`, `CustomEventPage`, `Music`, `Photo`, `Invitation`, `StoryMilestone`. Read RLS flipped to `{created_by_id: "{{user.id}}"}` (Batch 1). `StreamChat` locked (`read`+`create` both owner-scoped — live chat is out of launch scope, lock-and-park). None of these are reachable by an anonymous guest under any current route; the dashboard editor pages that manage some of them (`PhotoGallery.jsx`, `OurStory.jsx`, `Invitations.jsx`, `LiveStreaming.jsx`) are authenticated, reachable only via the couple's own session token, which safely satisfies the new RLS for their own records. `CustomEventPage` has zero references anywhere in `src/` — a fully orphaned entity, no UI at all.
 
-- **Safe to lock to read: No / write: No today, with zero code changes**: all 31 entities in the "everything else" list.
-- **Needs a code change before Base44 can safely be locked down**: `WeddingDetails`, `Guest`, `Photo`, `SongRequest`, `Music` — see `fix/anonymous-endpoints` for the implementation.
-- **Already has the right architecture, just tidy up the permission grant**: `GuestbookEntry` create.
-- **Needs a product decision, not just a security one**: `Hotel`.
+## Guest — the current live blocker, in detail
+
+`Guest.read` cannot simply flip to owner-scoped; three distinct admin-key/no-caller readers block it, in decreasing order of severity:
+
+1. **`resolveGuestByToken`** (above) — six anonymous guest-facing endpoints, no caller identity possible. Blocks the flip outright until Guest gets the same encrypt-at-rest treatment `RsvpResponse`/`GuestContactSubmission` already have.
+2. **`api/collaborator-guests.js`** — a collaborator (not the wedding owner) viewing the owner's guest list. Cross-account; a collaborator's own token can never satisfy `{created_by_id: owner's id}` (Base44 RLS has no OR). **Parked** 2026-08-16 (`fix/guest-rls-step1`): endpoint returns 503, UI shows a clear "temporarily unavailable" message. Rebuild path: a Base44-hosted function using `asServiceRole` (see `BASE44_PLATFORM_NOTES.md`'s "Hosted functions" section) — post-launch fast-follow.
+3. **`api/cron/send-weekly-digest.js`** — a scheduled batch job iterating every wedding, no single caller to scope to. **Parked** 2026-08-16: unscheduled in `vercel.json`, handler no-ops. Rebuild path: a Base44-hosted scheduled automation using `asServiceRole` (3-minute run cap means the current single-pass loop needs to become paginated across runs) — post-launch fast-follow.
+
+The one migratable reader, `api/my-guests-rsvp.js` (the couple's own dashboard guest list), was migrated to the caller's own forwarded bearer token 2026-08-16 — no longer admin-key-dependent. `api/guest-contact-review.js` was already caller-token for all `Guest` writes, verified, no change needed.
+
+**Net: `Guest.read` stays `null` until item 1 above gets its own encrypt-at-rest project.** Items 2 and 3 no longer block it, but item 1 alone is sufficient to keep it open — flipping it today would break RSVP submission, RSVP lookup, poll voting, questionnaire access, and the attendee display for every real guest.
