@@ -301,6 +301,55 @@ export default function SeatingPage() {
      these, never the full unfiltered arrays. ── */
   const eventTables = useMemo(() => tables.filter(t => resolveEventId(t) === activeEventId), [tables, activeEventId]);
 
+  // DECLARED HERE, ABOVE activeLabelForm, DELIBERATELY.
+  //
+  // activeLabelForm runs during render and reads eventAttendees. With these
+  // two blocks below it, that was a temporal dead zone: `ReferenceError:
+  // Cannot access 'D' before initialization`, a full-page ErrorBoundary on
+  // /Seating in production (#429, hotfixed by #434).
+  //
+  // It did not fire on mount, which is why it survived review and a live
+  // check: activeLabelForm only reaches the read inside
+  // `for (const a of t.assigned_guests)`, so with tables still loading the
+  // loop body never ran. It threw a few seconds later, once the fetch
+  // returned tables that had guests in them.
+  //
+  // Anything reading eventAttendees during render must stay below this point.
+  /* ── Guest pool for this event (decision #1) — invited AND (yes OR
+     pending); declined and not-invited are excluded outright, not just
+     filtered. "Attending only" narrows to yes, for late-stage cleanup. ── */
+  const eventPool = useMemo(() => {
+    return guests
+      .map(g => ({ guest: g, response: getGuestEventResponse(g, activeEvent) }))
+      .filter(({ response }) => response.invited && (response.status === 'yes' || response.status === 'pending'))
+      .filter(({ response }) => !attendingOnly || response.status === 'yes');
+  }, [guests, activeEvent, attendingOnly]);
+
+  /**
+   * Everyone who can hold a seat at THIS event, as attendees — the one
+   * population the whole page counts, filters and seats from.
+   *
+   * Two sources, matching the precedence measured across the 202 live records:
+   * the flat Guest fields are authoritative for whether a plus-one EXISTS
+   * (resolveAttendees), and `event_responses[].plus_ones` is the per-event
+   * GRANT. Model 2 was measured to be a strict subset of model 1 — it never
+   * names someone the flat fields do not — so a plus-one appears here only at
+   * the events they were actually granted, which is what the comment on
+   * PlusOnesLine has always said: "an event can grant a +1 the couple didn't
+   * grant elsewhere, or vice versa".
+   */
+  const eventAttendees = useMemo(() => {
+    const out = [];
+    for (const { guest, response } of eventPool) {
+      const resolved = resolveAttendees([guest]);
+      const primary = resolved.find(a => !a.isPlusOne);
+      const plusOne = resolved.find(a => a.isPlusOne);
+      if (primary) out.push(primary);
+      if (plusOne && (response.plus_ones || 0) > 0) out.push(plusOne);
+    }
+    return out;
+  }, [eventPool]);
+
   // Re-measure on every commit (zoom changes re-render, and an ancestor
   // transform change fires no observer), guarded so it can't loop. The
   // ResizeObserver covers the other direction: a viewport resize that
@@ -340,7 +389,10 @@ export default function SeatingPage() {
       }
     }
     return LABEL_FORMS[worst];
-  }, [eventTables, guests, renderScale]);
+    // eventAttendees, not guests — this memo reads the attendee list, and a
+    // stale dep meant the label form did not recompute when a plus-one was
+    // seated or unseated.
+  }, [eventTables, eventAttendees, renderScale]);
   const eventAssets = useMemo(() => venueAssets.filter(a => resolveEventId(a) === activeEventId), [venueAssets, activeEventId]);
 
   /* ── Copy layout — tables only, never guest assignments (decision #3).
@@ -366,41 +418,6 @@ export default function SeatingPage() {
       toast.success(`Copied ${created.length} table${created.length !== 1 ? 's' : ''} — add guests for ${activeEvent.name} from here`, { id: tid, duration: 5000 });
     } catch { toast.error('Failed to copy layout', { id: tid }); }
   };
-
-  /* ── Guest pool for this event (decision #1) — invited AND (yes OR
-     pending); declined and not-invited are excluded outright, not just
-     filtered. "Attending only" narrows to yes, for late-stage cleanup. ── */
-  const eventPool = useMemo(() => {
-    return guests
-      .map(g => ({ guest: g, response: getGuestEventResponse(g, activeEvent) }))
-      .filter(({ response }) => response.invited && (response.status === 'yes' || response.status === 'pending'))
-      .filter(({ response }) => !attendingOnly || response.status === 'yes');
-  }, [guests, activeEvent, attendingOnly]);
-
-  /**
-   * Everyone who can hold a seat at THIS event, as attendees — the one
-   * population the whole page counts, filters and seats from.
-   *
-   * Two sources, matching the precedence measured across the 202 live records:
-   * the flat Guest fields are authoritative for whether a plus-one EXISTS
-   * (resolveAttendees), and `event_responses[].plus_ones` is the per-event
-   * GRANT. Model 2 was measured to be a strict subset of model 1 — it never
-   * names someone the flat fields do not — so a plus-one appears here only at
-   * the events they were actually granted, which is what the comment on
-   * PlusOnesLine has always said: "an event can grant a +1 the couple didn't
-   * grant elsewhere, or vice versa".
-   */
-  const eventAttendees = useMemo(() => {
-    const out = [];
-    for (const { guest, response } of eventPool) {
-      const resolved = resolveAttendees([guest]);
-      const primary = resolved.find(a => !a.isPlusOne);
-      const plusOne = resolved.find(a => a.isPlusOne);
-      if (primary) out.push(primary);
-      if (plusOne && (response.plus_ones || 0) > 0) out.push(plusOne);
-    }
-    return out;
-  }, [eventPool]);
 
   /* ── Stats — scoped to this event's tables and this event's pool ── */
   const assignedGuestIds = useMemo(
