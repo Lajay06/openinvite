@@ -277,12 +277,26 @@ export default function AvaStudioWebsite() {
     setDetails(prev => ({ ...prev, [field]: value }));
   }, []);
 
+  // Writes only the fields this page's steps actually edit (see makeSteps
+  // above — mainCeremony/reception are shown here read-only, "Edit in
+  // Planner" links elsewhere, so they're deliberately excluded). A
+  // full-object write would silently clobber whatever another page
+  // currently holds in local state (e.g. an encrypted budget/contactPerson
+  // decrypted into this page's `details`).
+  const WRITABLE_FIELDS = [
+    'coverPhoto', 'welcomeMessage', 'coupleStory', 'rsvpContent',
+    'accommodationNotes', 'registryContent', 'musicContent', 'qna',
+  ];
   const save = async () => {
     if (!details) return;
     setSaving(true);
     try {
-      if (detailsId) await base44.entities.WeddingDetails.update(detailsId, details);
-      else { const r = await base44.entities.WeddingDetails.create(details); setDetailsId(r.id); }
+      const payload = {};
+      for (const field of WRITABLE_FIELDS) {
+        if (field in details) payload[field] = details[field];
+      }
+      if (detailsId) await base44.entities.WeddingDetails.update(detailsId, payload);
+      else { const r = await base44.entities.WeddingDetails.create(payload); setDetailsId(r.id); }
     } catch { toast.error('Save failed'); }
     setSaving(false);
   };

@@ -658,3 +658,33 @@ answer is yes, that's not a clean read, and the fix is to either wait out
 your own write's effects or — better, for anything needing a genuinely
 clean baseline — use a freshly-reset `+alias` account nobody else is
 concurrently exercising.
+
+## Never encrypt a field whose writers aren't scoped first
+
+**Confirmed via a real production incident, 2026-08-16** (see gotcha #17 in
+`claude/architecture-gotchas.md`, the canonical write-up — this section is
+the platform-fact substance only). `WeddingDetails.budget`/`.contactPerson`
+moved to AES-256-GCM ciphertext (Step 2a, PR #436). Every page reading
+`WeddingDetails` goes through one chokepoint, `getMyWeddingDetails()` →
+`/api/my-wedding-details`, which decrypts on read — so the moment 2a
+shipped, every page's local `details` state held a **decrypted plain
+object** for `budget`/`contactPerson`, even pages that have nothing to do
+with budget.
+
+Any page whose save handler spreads that whole loaded object back into a
+raw `base44.entities.WeddingDetails.update(id, wholeThing)` — a pattern
+that turned out to be nearly universal across this app's "settings page"
+components — re-writes `budget`/`contactPerson` as a plain object on every
+unrelated save. Before 2a this was silently destructive (ciphertext quietly
+reverted to plaintext). After 2a's schema was pushed live typing those
+fields as `string`, Base44 itself started **rejecting the whole write with
+HTTP 422** the moment any page tried it — so the failure mode flipped from
+"silent data loss on one field" to "every save on that page fails outright,
+edit lost" — still bad, just noisy instead of quiet.
+
+The fix is never "patch the one page that broke" — every writer of the
+entity needs its own field-scoped `WRITABLE_FIELDS` allowlist (derived from
+that page's own actual edit surface, not a shared list — a shared list
+recreates the same bug shape by granting pages fields they don't own)
+**before** any new field on that entity moves to encrypted-at-rest. Order
+matters: scope every writer first, encrypt second — never the reverse.

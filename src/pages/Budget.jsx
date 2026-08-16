@@ -20,7 +20,6 @@ import { getMyRecords, getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
 const Budget = base44.entities.Budget;
-const WeddingDetails = base44.entities.WeddingDetails;
 
 function CountUp({ to, duration = 1200, format }) {
   const [value, setValue] = useState(0);
@@ -138,11 +137,23 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
       }, {}),
     };
     try {
-      if (weddingDetailsId) {
-        await WeddingDetails.update(weddingDetailsId, { budget: payload });
-      } else {
-        const created = await WeddingDetails.create({ budget: payload });
-        onSaved?.(created.id);
+      // fix/weddingdetails-field-encryption (Step 2a): budget is AES-256-GCM
+      // ciphertext at rest — encrypting needs BASE44_ADMIN_KEY, a server-
+      // only secret, so this can no longer write WeddingDetails.budget
+      // directly. This endpoint handles both update (existing wedding) and
+      // create (first-ever save) the same way getMyWeddingDetails() did.
+      const res = await fetch('/api/my-wedding-details', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+        },
+        body: JSON.stringify({ field: 'budget', value: payload }),
+      });
+      if (!res.ok) throw new Error('Failed to save budget plan');
+      if (!weddingDetailsId) {
+        const { id } = await res.json();
+        onSaved?.(id);
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 1800);

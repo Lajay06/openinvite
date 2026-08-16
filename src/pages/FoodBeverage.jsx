@@ -121,36 +121,36 @@ export default function FoodBeveragePage() {
     }, 1200);
   };
 
+  // Every save below writes only this page's own fields (foodBeverage,
+  // menuItems, mealOptions) — a full-object write would silently clobber
+  // whatever another page currently holds in local state (e.g. an
+  // encrypted budget/contactPerson decrypted into that page's memory).
   const update = (patch) => {
     const next = { ...data, ...patch };
     setData(next);
-    const full = { ...latestRef.current, foodBeverage: next };
-    latestRef.current = full;
-    persist(full);
+    latestRef.current = { ...latestRef.current, foodBeverage: next };
+    persist({ foodBeverage: next });
   };
 
   const addMenuItem = () => {
     const updated = [...menuItems, { name: '', description: '' }];
     setMenuItems(updated);
-    const full = { ...latestRef.current, menuItems: updated };
-    latestRef.current = full;
-    persist(full);
+    latestRef.current = { ...latestRef.current, menuItems: updated };
+    persist({ menuItems: updated });
   };
 
   const removeMenuItem = (i) => {
     const updated = menuItems.filter((_, idx) => idx !== i);
     setMenuItems(updated);
-    const full = { ...latestRef.current, menuItems: updated };
-    latestRef.current = full;
-    persist(full);
+    latestRef.current = { ...latestRef.current, menuItems: updated };
+    persist({ menuItems: updated });
   };
 
   const updateMenuItem = (i, field, val) => {
     const updated = menuItems.map((item, idx) => idx === i ? { ...item, [field]: val } : item);
     setMenuItems(updated);
-    const full = { ...latestRef.current, menuItems: updated };
-    latestRef.current = full;
-    persist(full);
+    latestRef.current = { ...latestRef.current, menuItems: updated };
+    persist({ menuItems: updated });
   };
 
   // Menu Phase 1 (Ultra) — couple-defined guest meal options for the RSVP
@@ -159,25 +159,22 @@ export default function FoodBeveragePage() {
   const addMealOption = () => {
     const updated = [...mealOptions, { id: uid(), label: '' }];
     setMealOptions(updated);
-    const full = { ...latestRef.current, mealOptions: updated };
-    latestRef.current = full;
-    persist(full);
+    latestRef.current = { ...latestRef.current, mealOptions: updated };
+    persist({ mealOptions: updated });
   };
 
   const removeMealOption = (id) => {
     const updated = mealOptions.filter(o => o.id !== id);
     setMealOptions(updated);
-    const full = { ...latestRef.current, mealOptions: updated };
-    latestRef.current = full;
-    persist(full);
+    latestRef.current = { ...latestRef.current, mealOptions: updated };
+    persist({ mealOptions: updated });
   };
 
   const updateMealOptionLabel = (id, label) => {
     const updated = mealOptions.map(o => o.id === id ? { ...o, label } : o);
     setMealOptions(updated);
-    const full = { ...latestRef.current, mealOptions: updated };
-    latestRef.current = full;
-    persist(full);
+    latestRef.current = { ...latestRef.current, mealOptions: updated };
+    persist({ mealOptions: updated });
   };
 
   if (loading) return (

@@ -156,9 +156,12 @@ export default function WeddingFavoursPage() {
     setLoading(false);
   };
 
+  // Writes only this page's own fields — a full-object write would silently
+  // clobber whatever another page currently holds in local state (e.g. an
+  // encrypted budget/contactPerson decrypted into that page's memory).
   const persist = (dataOverride, itemsOverride) => {
-    const full = { ...latestRef.current, weddingFavours: dataOverride ?? data, favourItems: itemsOverride ?? favourItems };
-    latestRef.current = full;
+    const full = { weddingFavours: dataOverride ?? data, favourItems: itemsOverride ?? favourItems };
+    latestRef.current = { ...latestRef.current, ...full };
     clearTimeout(autoSaveRef.current);
     setSaveStatus('saving');
     autoSaveRef.current = setTimeout(async () => {
