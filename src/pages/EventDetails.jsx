@@ -624,6 +624,17 @@ export default function EventDetailsPage() {
     triggerAutoSave();
   };
 
+  // This page's declared edit surface across all three tabs (details,
+  // events, theme) — see doSave()/handleSaveEvent()/ThemeSection's onSave
+  // below, each of which writes only its own scoped subset of this list.
+  // Anything not listed here (budget, contactPerson, ...) is owned by
+  // another page; a full-object write would silently clobber whatever
+  // that page currently holds in local state.
+  const WRITABLE_FIELDS = [
+    'couple1Name', 'couple2Name', 'weddingDate', 'guestType', 'guestCount',
+    'mainCeremony', 'reception', 'preWeddingEvents', 'postWeddingEvents', 'theme',
+  ];
+
   const updateNested = (key, patch) => {
     if (readOnly) return;
     const curr = latestRef.current || {};
@@ -636,9 +647,13 @@ export default function EventDetailsPage() {
   const doSave = async () => {
     if (readOnly) return;
     clearTimeout(autoSaveRef.current);
-    const data = latestRef.current;
+    const source = latestRef.current;
     const id   = recordIdRef.current;
-    if (!data) return;
+    if (!source) return;
+    const data = {};
+    for (const field of WRITABLE_FIELDS) {
+      if (field in source) data[field] = source[field];
+    }
     setSaveStatus('saving');
     try {
       if (id) {
@@ -700,12 +715,15 @@ export default function EventDetailsPage() {
   const handleSaveEvent = async (saved) => {
     if (readOnly) return;
     // Compute the full next record explicitly so we save exactly what we computed,
-    // never re-reading latestRef after an async gap.
-    let nextData;
+    // never re-reading latestRef after an async gap. `changedKey` is the single
+    // field this save actually touches — the write below sends only that field,
+    // never the whole record.
+    let nextData, changedKey;
 
     if (editingFixed) {
       const key  = editingFType === 'ceremony' ? 'mainCeremony' : 'reception';
       const curr = latestRef.current || {};
+      changedKey = key;
       nextData = { ...curr, [key]: { ...(curr[key] || {}),
         venueName: saved.venueName,
         address:   saved.address,
@@ -721,11 +739,13 @@ export default function EventDetailsPage() {
       }};
     } else if (editingEvent?.id) {
       const key  = editingIsPost ? 'postWeddingEvents' : 'preWeddingEvents';
+      changedKey = key;
       const list = latestRef.current?.[key] || [];
       const next = list.map(e => e.id === editingEvent.id ? { ...e, ...saved, id: e.id, event_id: e.event_id || e.id } : e);
       nextData = { ...(latestRef.current || {}), [key]: next };
     } else {
       const key   = saved.kind === 'post' ? 'postWeddingEvents' : 'preWeddingEvents';
+      changedKey = key;
       const list  = latestRef.current?.[key] || [];
       const eid   = uid();
       const newEv = { ...saved, id: eid, event_id: eid };
@@ -739,12 +759,13 @@ export default function EventDetailsPage() {
 
     clearTimeout(autoSaveRef.current);
     const id = recordIdRef.current;
+    const scopedData = { [changedKey]: nextData[changedKey] };
     setSaveStatus('saving');
     try {
       if (id) {
-        await base44.entities.WeddingDetails.update(id, nextData);
+        await base44.entities.WeddingDetails.update(id, scopedData);
       } else {
-        const created = await base44.entities.WeddingDetails.create(nextData);
+        const created = await base44.entities.WeddingDetails.create(scopedData);
         setRecordId(created.id);
         recordIdRef.current = created.id;
       }
