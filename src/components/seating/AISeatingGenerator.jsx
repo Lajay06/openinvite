@@ -26,6 +26,22 @@ export default function AISeatingGenerator({ attendees, hostsById, tables, onApp
     setLoading(true);
     const tid = toast.loading('Ava is analyzing guest relationships…');
     try {
+      // ORDINAL TOKENS, NOT REAL IDS — the LLM is never asked to echo an
+      // opaque 24-char Mongo id (or a plus-one's `<id>::plus-one` synthetic
+      // id) back through structured generation. At 182+ attendees in one
+      // prompt this was measured to fail near-universally: the model's
+      // returned assignments[].guests/unassigned ids didn't match any real
+      // attendee id, so every `attendees.find(a => a.id === id)` lookup
+      // came back undefined — every table showed 0 assigned despite the
+      // model's own summary claiming guests were placed, and every
+      // unassigned chip rendered "Unknown". Short sequential tokens (g1,
+      // g2, …) are cheap for the model to copy correctly; the real id is
+      // never in its output to get wrong. Translated back to real ids
+      // immediately below, before the plan ever reaches state — everything
+      // downstream (review UI, onApplySeating) still deals in real ids.
+      const tokenByAttendeeId = new Map(attendees.map((a, i) => [a.id, `g${i + 1}`]));
+      const attendeeIdByToken = new Map(attendees.map((a, i) => [`g${i + 1}`, a.id]));
+
       // ONE ROW PER PERSON TO SEAT, not one per Guest record with a `+1`
       // attribute. Previously a plus-one was `plus_one: true` on their host, so
       // the model had no id it could return for them and never allocated them a
@@ -42,14 +58,14 @@ export default function AISeatingGenerator({ attendees, hostsById, tables, onApp
       // that owns it.
       const guestData = attendees.map(a => (a.isPlusOne
         ? {
-            id: a.id,
+            id: tokenByAttendeeId.get(a.id),
             name: a.name,
             isPlusOne: true,
-            plusOneOf: a.hostGuestId,
+            plusOneOf: tokenByAttendeeId.get(a.hostGuestId),
             dietary_restrictions: a.dietary_restrictions,
           }
         : {
-            id: a.id,
+            id: tokenByAttendeeId.get(a.id),
             name: a.name,
             isPlusOne: false,
             plusOneOf: null,
@@ -79,6 +95,8 @@ INSTRUCTIONS:
 2. Secondary grouping by relationship category (family, friends, colleagues)
 3. Every person listed needs their own seat, including plus-ones. A plus-one has isPlusOne: true and plusOneOf giving their host's id — seat them at the same table as their host. Respect seating preferences.
 4. Balance table sizes evenly; consider dietary restrictions
+5. In your output, refer to each guest ONLY by their exact "id" value from the GUESTS list above (e.g. "g1", "g2") — never their name, and never invent an id.
+6. For "reasoning", write one plain, specific sentence naming the actual tag, relationship, or preference that drove the grouping — no vague or generic language like "for synergy," "for balance," or "for cohesion."
 
 Return assignments[], unassigned[], and summary.`,
         add_context_from_internet: false,
@@ -103,7 +121,20 @@ Return assignments[], unassigned[], and summary.`,
         },
       });
 
-      setSeatingPlan(response);
+      // Translate tokens back to real attendee ids right away — an
+      // unrecognised token (the model inventing one, or dropping a person)
+      // is filtered out here rather than surfacing as a broken lookup
+      // later in the review UI.
+      const translated = {
+        ...response,
+        assignments: (response?.assignments || []).map(a => ({
+          ...a,
+          guests: (a.guests || []).map(tok => attendeeIdByToken.get(tok)).filter(Boolean),
+        })),
+        unassigned: (response?.unassigned || []).map(tok => attendeeIdByToken.get(tok)).filter(Boolean),
+      };
+
+      setSeatingPlan(translated);
       setStep('review');
       toast.success('Seating plan ready', { id: tid });
     } catch {
@@ -125,15 +156,15 @@ Return assignments[], unassigned[], and summary.`,
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title="Ask Ava — allocate seats" className="max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0">
 
-        {/* Header */}
-        <div style={{ background: '#0A1930', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0 }}>
+        {/* Header — same pink/purple Ava gradient every other Ava surface uses (AvaModal.jsx), not a bespoke navy */}
+        <div style={{ background: 'linear-gradient(135deg, #ec4899, #9333ea)', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Sparkles size={15} style={{ color: '#DDF762' }} />
+            <Sparkles size={15} style={{ color: '#FFFFFF' }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Ask Ava — allocate seats
             </span>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', display: 'flex', padding: 4 }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.8)', display: 'flex', padding: 4 }}>
             <X size={16} />
           </button>
         </div>
