@@ -1488,7 +1488,10 @@ export default function SeatingPage() {
 
       {showAIGenerator && (
         <AISeatingGenerator
-          guests={eventPool.map(({ guest }) => guest)}
+          // ATTENDEES: the model needs one row per person to seat, and a
+          // synthetic id it can return for a plus-one.
+          attendees={eventAttendees}
+          hostsById={new Map(eventPool.map(({ guest }) => [guest.id, guest]))}
           tables={eventTables}
           onApplySeating={handleApplyAISeating}
           onClose={() => setShowAIGenerator(false)}
