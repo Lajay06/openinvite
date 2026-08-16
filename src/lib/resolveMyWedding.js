@@ -28,27 +28,35 @@ function mostRecent(records) {
   return real.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
 }
 
-/** @returns {Promise<object|null>} the logged-in user's own WeddingDetails record, or null if they have none yet. */
+/**
+ * @returns {Promise<object|null>} the logged-in user's own WeddingDetails record, or null if they have none yet.
+ *
+ * fix/weddingdetails-field-encryption (Step 2a): now fetched via
+ * /api/my-wedding-details instead of a raw base44.entities.WeddingDetails.filter()
+ * call — budget/contactPerson (and, from Step 2b on, emergencyContacts/
+ * dayVendorContacts/celebrant/license) are AES-256-GCM ciphertext at rest,
+ * and decrypting needs BASE44_ADMIN_KEY, a server-only secret the browser
+ * never holds. The "owns more than one real record" telemetry that used to
+ * live here (the "Alex & Sam" incident) moved server-side, into that
+ * endpoint. websitePassword and every other field are unaffected and come
+ * back exactly as before.
+ */
 export async function getMyWeddingDetails() {
-  const me = await base44.auth.me().catch(() => null);
-  if (!me?.id) return null;
-  const rows = await base44.entities.WeddingDetails.filter({ created_by_id: me.id });
-  // An account should only ever own one real (non-test) WeddingDetails
-  // record. If it owns more than one, `mostRecent` still resolves
-  // silently to the newest — but that's exactly the "Alex & Sam" incident
-  // (an incomplete onboarding run against a preview, which shares this
-  // same production backend, created a second record for an account that
-  // already had a real wedding, and the newer one silently won on every
-  // surface that calls this function). Cheap telemetry: warn so the next
-  // occurrence shows up in logs instead of just looking like the wrong
-  // wedding is displaying everywhere.
-  const real = (rows || []).filter(r => !r.is_test);
-  if (real.length > 1) {
-    console.warn(
-      `[getMyWeddingDetails] user ${me.id} owns ${real.length} non-test WeddingDetails records — resolving to the most recent. ids: ${real.map(r => r.id).join(', ')}`
-    );
+  const token = localStorage.getItem('base44_access_token');
+  if (!token) return null;
+  try {
+    const res = await fetch('/api/my-wedding-details', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      console.error(`[getMyWeddingDetails] /api/my-wedding-details failed (${res.status})`);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.error('[getMyWeddingDetails] /api/my-wedding-details fetch error:', err.message);
+    return null;
   }
-  return mostRecent(rows);
 }
 
 /**
