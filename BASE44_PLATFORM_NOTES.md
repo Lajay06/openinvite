@@ -688,3 +688,54 @@ that page's own actual edit surface, not a shared list — a shared list
 recreates the same bug shape by granting pages fields they don't own)
 **before** any new field on that entity moves to encrypted-at-rest. Order
 matters: scope every writer first, encrypt second — never the reverse.
+
+## The first write after a schema push materializes every newly-declared field on that row
+
+**Confirmed empirically 2026-08-16**, verifying the seven WeddingDetails
+declarations that fixed the six-page schema-drift data loss (canonical
+gotcha #5). Declaring a new field does **not** retroactively add it to
+existing rows. The row is unchanged until something writes to it — and then
+the *first* write materializes **every** newly-declared field at once, with
+`null` (or `[]` for an array type), regardless of which single field that
+write actually touched.
+
+Concretely: a save on the Honeymoon page sent a scoped
+`{ honeymoonDetails: … }` payload, and the row diff came back with
+**fourteen** changed keys — `honeymoonDetails` plus thirteen unrelated
+newly-declared fields (`ceremonyType`, `vowsNotes`, `weddingParty`,
+`assetContent`, `foodBeverage`, `favourItems`, …) all going `(absent)` →
+`null`. Every pre-existing real value survived untouched, including nested
+ones (`transport.coupleNote`, `accommodation.coupleNote`).
+
+**Why it matters**: this is benign and one-time, but it looks exactly like
+the unscoped-full-object-write bug it was introduced to fix. Anyone diffing
+a row immediately after a schema push will see a scoped writer apparently
+touching a dozen fields it doesn't own. Do not "fix" it. The tell is that
+every unexpected key moved from *absent* to *null* — never from a real
+value to null. If a key moved from a real value to anything, that IS the
+real bug and the allowlist is wrong.
+
+Practical rule: capture the diff baseline **after** the first post-push
+write on a given row, not before, or the one-time materialization drowns
+the signal you actually care about.
+
+## `ringBearerDetails` and friends: field names containing a credential-ish substring get redacted by tooling, not by Base44
+
+**Confirmed 2026-08-16** during the same verification (canonical gotcha
+#18). `WeddingDetails.ringBearerDetails` persists and reads back perfectly
+— but agent/CLI output layers that scan for leaked secrets match the
+substring **"Bearer"** inside the field *name* and mask the value as
+`[BLOCKED: Sensitive key]`.
+
+This is a reporting artifact, not a storage or transport problem. The field
+was verified working by reading it out of the raw row's field list (where
+it rendered as `"Theo, 6, nephew"`) rather than through a key-addressed
+lookup.
+
+**Practical implication**: any automated check keying on that field name
+will see a blocked placeholder instead of the data and can silently
+conclude "empty" or "failed". When verifying it, assert on the surrounding
+field list or on a value-equality boolean computed in-page, never on the
+echoed value. The same trap applies to any future field whose name contains
+`bearer`, `token`, `secret`, `apikey`, or `password` — prefer naming that
+avoids those substrings outright.

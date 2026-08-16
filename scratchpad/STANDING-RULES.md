@@ -69,3 +69,35 @@ preview accept from the owner, quoted per RULE 1, before merge.
 A gate that is queued behind another gate stays blocked until the earlier
 one passes clean — including read-only steps like migration dry-runs.
 "Read-only" is not a reason to jump the queue.
+
+---
+
+## RULE 4 — Docs may go straight to main; code never does
+
+Standing authorization, advisor 2026-08-16, quoted verbatim:
+
+> Documentation-only changes (BASE44_PLATFORM_NOTES.md, scratchpad/*,
+> docs/*.md) may be committed straight to main with a docs: prefix —
+> standing authorization, advisor 2026-08-16. Anything touching src/, api/,
+> entity schemas, or config always goes through a PR.
+
+This is the one standing exception to RULE 1 — it is itself a quoted
+authorization, and it covers only the paths it names. A commit that touches
+a docs path *and* any `src/`, `api/`, schema, or config path is not a docs
+commit; split it, and PR the code half.
+
+---
+
+## RULE 5 — A writer fix has two halves
+
+Part of gotcha #17, learned the hard way on PR #444. Fixing a field that
+does not persist means fixing **both** the write path and the read path:
+
+- the write side — the page's `WRITABLE_FIELDS` allowlist, and
+- the read side — whatever `loadData()` destructures off the record.
+
+`CeremonyDetails.additionalNotes` was missing from both. Fixing only the
+allowlist would have saved the value correctly and still painted an empty
+box on reload, and a write-only check (raw-query after save) would have
+reported a false pass. This is why the verification standard is
+type → Saved → **reload → painted**, not merely "the value reached the row".
