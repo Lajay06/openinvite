@@ -6,6 +6,28 @@ Dates are merge dates. Generated from `gh pr list --state merged` — see
 
 ## Highlights
 
+- **2026-08-12/17 — plus-ones and seating end to end, WeddingDetails
+  encryption, and the lint ratchet**: plus-ones became first-class — a
+  canonical attendee resolver with stable synthetic ids landed ahead of any
+  consumer (#420), then Dashboard, Daily update, Ava, the Guests cards and
+  the CSV export all moved onto attendee counts (#416, #422, #423, #424),
+  and the couple gained meal entry for a guest and a plus-one, ranked below
+  the guest's own answer (#425, #426). Seating was rebuilt on top of that:
+  all three seat writers consolidated into one true write path (#427),
+  plus-ones seatable by synthetic id with an unresolvable one reported
+  rather than silently dropped (#428, #429), AI allocation taught to place
+  them (#430, #433), a production crash hotfixed (#435), and the run ended
+  at #439 with allocation verified working — #441 then labelled the scope
+  of Seating's count numbers. WeddingDetails encryption ran its full arc:
+  #436 encrypt-on-write for `budget`/`contactPerson` with a server decrypt
+  endpoint → #442/#443 writer allowlists so full-object saves stop
+  corrupting the ciphertext → #444 the read+write fix for
+  `CeremonyDetails.additionalNotes`; the Step 2a backfill was closed as
+  already-satisfied (nothing to migrate — no plaintext remained, and
+  `contactPerson` never had a writer). Also: `SongRequest.guestEmail`
+  hashed rather than stored plaintext (#432), `my-guests-rsvp` migrated to
+  the caller token (#434), ESLint tightened three notches (#412, #413,
+  #438), and two dead files deleted (#414, #437).
 - **2026-08-09/11 — universe re-theming, Ava Studio (built then parked), and
   RLS hardening**: all 8 universe asset-preview components re-themed per
   the couple's chosen universe (#384), then deepened with real
@@ -17,7 +39,8 @@ Dates are merge dates. Generated from `gh pr list --state merged` — see
   was fixed so a couple's pick actually registers (#383, #394); a
   same-session security audit found 29 entities with open (`read: null`)
   RLS and a live plaintext-chat exploit (`StreamChat`) — fix batches
-  in progress as of this changelog entry.
+  landed (#431 synced schema mirrors with the live Batch 1 flips); 10
+  entities moved to creator-only read.
 - **2026-08-05/09 — onboarding accept-passes, marketing polish, and
   Spotify token leak**: the onboarding wizard went through several
   accept-passes (light-only theme, split-shell layout, Step 5/Cultural
@@ -56,8 +79,62 @@ Dates are merge dates. Generated from `gh pr list --state merged` — see
 
 ## Full log
 
+## 2026-08-17
+
+- #444: CeremonyDetails additionalNotes: add to WRITABLE_FIELDS and loadData so the Notes tab persists
+
+## 2026-08-16
+
+- #443: WeddingDetails writers: field-scoped WRITABLE_FIELDS allowlist for the remaining 13 pages
+- #442: WeddingDetails writer allowlist: stop full-object saves from corrupting encrypted fields
+- #441: Seating: label the scope of the count numbers instead of leaving them unexplained
+- #439: Ava seating allocation uses ordinal tokens, not real ids; Ava-branded header
+- #438: Enable no-use-before-define with a ratcheted carve-out
+- #437: Delete dead WeddingWebsite.jsx and its Guest writer
+- #436: Encrypt WeddingDetails.budget/contactPerson at rest, decrypt via a new server endpoint
+- #435: HOTFIX: Seating crashed in production — eventAttendees read before initialization
+- #434: Migrate my-guests-rsvp to the caller token; park collaborator guest view + weekly digest
+- #433: AI seating: send one row per attendee so a plan can place plus-ones
+- #432: Hash SongRequest.guestEmail instead of storing plaintext
+- #431: Sync local entity schema mirrors with the live Batch 1 RLS flips
+- #430: AI seating: accept synthetic ids so a plan can seat plus-ones
+- #429: Seating: plus-ones in the panel and the canvas, and one population behind every stat
+- #428: Seating: plus-ones seated by synthetic id; an unresolvable one is reported, not silently dropped
+- #427: Seating: consolidate all three seat writers into tableAssignment.js — one true write path
+- #426: Assert the meal_choice enum constraint so widening it stays a visible prerequisite
+- #425: Meal entry: the couple can set a guest's and a plus-one's meal, ranked below the guest's own answer
+
+## 2026-08-15
+
+- #424: Plus-ones: Guests page cards count attendees; no visible number moves
+- #423: Plus-ones: derive the meal from the live overlay with an explicit not-loaded state, and move Ava's totals and guest list together
+- #422: Plus-ones: Dashboard, Daily update and Ava count attendees; snake_case the Attendee so the shared predicates work
+- #421: Plus-ones: document why hasPlusOne and attendsAsPlusOne deliberately disagree
+- #420: Plus-ones: canonical attendee resolver with stable synthetic ids (dead code, no consumers yet)
+- #419: Weather: classify a hand-typed venue as not-applicable rather than not-found, and shorten the seasonal string
+- #418: Header: three-column grid so the couple name and weather truncate at the pill instead of vanishing behind it
+- #417: Weather: return a discriminated result instead of a bare null, and stop reporting a geocoder outage as a bad address
+- #416: Plus-ones: show and count the 9 without an email, add plus-one columns to the CSV export
+- #415: Weather: never cache a failed lookup
+- #414: Delete src/lib/PageNotFound.jsx — orphaned duplicate 404
+
+## 2026-08-13
+
+- #413: Lint src/lib: register the plugins, drop the ignore, document five empty catches
+- #412: Enable no-undef, with a dual-runtime group for the three Playwright scripts
+- #411: ESLint coverage: node globals for api/scripts/tests, browser globals for the unlinted src files, ignore dist
+- #410: Vows: one AI entry point, repointed at the purpose-built assistant
+- #409: Moodboard: masonry preserving each image's natural aspect ratio
+- #407: Event details: one 640 measure, one left edge, shared SectionHeading, tightened rhythm
+
+## 2026-08-12
+
+- #408: Fix production crash: restore colTasks, done and total in TodoList
+- #406: To do: sortable table with due date, priority and actions columns
+
 ## 2026-08-11
 
+- #405: Marketplace filters: category re-runs and combines, tag from Google types, price band and price sorts removed
 - #404: Universe asset previews: wire each universe's own imageUrl into the 3 photo-bearing previews (PR B)
 - #402: Universe asset previews: deepen token wiring on the 4 thin components (PR A)
 - #401: Seating: zoom-aware dot grid, persisted seat-name labels, Add event alignment, standard Auto-allocate button
