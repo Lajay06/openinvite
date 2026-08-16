@@ -100,7 +100,6 @@ const Seating = lazyWithReload(() => import('./pages/Seating'));
 const Styling = lazyWithReload(() => import('./pages/Styling'));
 const Vendors = lazyWithReload(() => import('./pages/Vendors'));
 const VowsSpeeches = lazyWithReload(() => import('./pages/VowsSpeeches'));
-const WeddingWebsite = lazyWithReload(() => import('./pages/WeddingWebsite'));
 const VendorMarketplace = lazyWithReload(() => import('./pages/VendorMarketplace'));
 const QandA = lazyWithReload(() => import('./pages/QandA'));
 const Polls = lazyWithReload(() => import('./pages/Polls'));
@@ -153,7 +152,6 @@ export const PAGES = {
     "TodoList": TasksHub,
     "Vendors": Vendors,
     "VowsSpeeches": VowsSpeeches,
-    "WeddingWebsite": WeddingWebsite,
     "VendorMarketplace": VendorMarketplace,
     "QandA": QandA,
     "Polls": Polls,

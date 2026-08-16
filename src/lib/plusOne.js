@@ -31,12 +31,12 @@
  * it never consults the flat Guest.plus_one_rsvp column.
  *
  * The flat column is used only when the derived value is absent. It is NOT
- * authoritative, deliberately: as of this change it has exactly one writer
- * in the whole codebase — src/pages/WeddingWebsite.jsx — and that file has
- * no route in App.jsx (the public wedding site is served by
- * components/guest-website/MultiPageWeddingWebsite). So nothing a guest or
- * a couple can currently do writes it; every populated value in production
- * came from scripts/seed-demo-data.mjs.
+ * authoritative, deliberately: its one-time writer, the dead
+ * src/pages/WeddingWebsite.jsx (no route in App.jsx — the public wedding
+ * site is served by components/guest-website/MultiPageWeddingWebsite), was
+ * deleted outright rather than fixed (fix/delete-dead-weddingwebsite-guest-writes).
+ * Nothing a guest or a couple can write it now; every populated value in
+ * production came from scripts/seed-demo-data.mjs.
  *
  * Keeping it as a fallback means the records that already have a derived
  * status keep using it, so this change cannot flip a badge that is
