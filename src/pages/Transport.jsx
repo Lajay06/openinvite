@@ -122,11 +122,15 @@ export default function TransportPage() {
     }, 1200);
   };
 
+  // persist() writes only this page's own field — a full-object write would
+  // silently clobber whatever another page currently holds in local state
+  // (e.g. an encrypted budget/contactPerson decrypted into that page's
+  // memory).
   const update = (patch) => {
     const next = { ...transport, ...patch };
     setTransport(next);
-    const full = { ...latestRef.current, transport: next };
-    latestRef.current = full;
+    const full = { transport: next };
+    latestRef.current = { ...latestRef.current, transport: next };
     persist(full);
   };
 

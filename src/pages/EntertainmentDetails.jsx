@@ -172,12 +172,15 @@ export default function EntertainmentDetailsPage() {
     }, 1200);
   };
 
+  // persist() writes only this page's own field — a full-object write would
+  // silently clobber whatever another page currently holds in local state
+  // (e.g. an encrypted budget/contactPerson decrypted into that page's
+  // memory).
   const update = (patch) => {
     const next = { ...data, ...patch };
     setData(next);
-    const full = { ...latestRef.current, entertainmentDetails: next };
-    latestRef.current = full;
-    persist(full);
+    latestRef.current = { ...latestRef.current, entertainmentDetails: next };
+    persist({ entertainmentDetails: next });
   };
 
   if (loading) return (

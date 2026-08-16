@@ -349,12 +349,15 @@ export default function WeddingPartyPage() {
     }, 1200);
   };
 
+  // persist() writes only this page's own field — a full-object write would
+  // silently clobber whatever another page currently holds in local state
+  // (e.g. an encrypted budget/contactPerson decrypted into that page's
+  // memory).
   const update = (patch) => {
     const next = { ...data, ...patch };
     setData(next);
-    const full = { ...latestRef.current, weddingParty: next };
-    latestRef.current = full;
-    persist(full);
+    latestRef.current = { ...latestRef.current, weddingParty: next };
+    persist({ weddingParty: next });
   };
 
   const addMember = (roleKey) => {

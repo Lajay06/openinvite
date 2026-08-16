@@ -118,9 +118,12 @@ export default function EmergencyContactPage() {
     setLoading(false);
   };
 
+  // Writes only this page's own fields — a full-object write would silently
+  // clobber whatever another page currently holds in local state (e.g. an
+  // encrypted budget/contactPerson decrypted into that page's memory).
   const persist = (dataOverride, vendorsOverride) => {
-    const full = { ...latestRef.current, emergencyContacts: dataOverride ?? data, dayVendorContacts: vendorsOverride ?? vendorContacts };
-    latestRef.current = full;
+    const full = { emergencyContacts: dataOverride ?? data, dayVendorContacts: vendorsOverride ?? vendorContacts };
+    latestRef.current = { ...latestRef.current, ...full };
     clearTimeout(autoSaveRef.current);
     setSaveStatus('saving');
     autoSaveRef.current = setTimeout(async () => {

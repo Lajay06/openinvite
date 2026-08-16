@@ -146,12 +146,17 @@ export default function AvaStudioAssets() {
     }));
   }, []);
 
+  // Writes only assetContent — this page's sole owned field. A full-object
+  // write would silently clobber whatever another page currently holds in
+  // local state (e.g. an encrypted budget/contactPerson decrypted into
+  // this page's `details`).
   const save = async () => {
     if (!details) return;
     setSaving(true);
     try {
-      if (detailsId) await base44.entities.WeddingDetails.update(detailsId, details);
-      else { const r = await base44.entities.WeddingDetails.create(details); setDetailsId(r.id); }
+      const payload = { assetContent: details.assetContent };
+      if (detailsId) await base44.entities.WeddingDetails.update(detailsId, payload);
+      else { const r = await base44.entities.WeddingDetails.create(payload); setDetailsId(r.id); }
     } catch { toast.error('Save failed'); }
     setSaving(false);
   };
