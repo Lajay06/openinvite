@@ -6,6 +6,50 @@ Dates are merge dates. Generated from `gh pr list --state merged` — see
 
 ## Highlights
 
+- **2026-08-12/17 — plus-ones and seating end to end, WeddingDetails
+  encryption, and the lint ratchet**: plus-ones became first-class — a
+  canonical attendee resolver with stable synthetic ids landed ahead of any
+  consumer (#420), then Dashboard, Daily update, Ava, the Guests cards and
+  the CSV export all moved onto attendee counts (#416, #422, #423, #424),
+  and the couple gained meal entry for a guest and a plus-one, ranked below
+  the guest's own answer (#425, #426). Seating was rebuilt on top of that:
+  all three seat writers consolidated into one true write path (#427),
+  plus-ones seatable by synthetic id with an unresolvable one reported
+  rather than silently dropped (#428, #429), AI allocation taught to place
+  them (#430, #433), a production crash hotfixed (#435), and the run ended
+  at #439 with allocation verified working — #441 then labelled the scope
+  of Seating's count numbers. WeddingDetails encryption ran its full arc:
+  #436 encrypt-on-write for `budget`/`contactPerson` with a server decrypt
+  endpoint → #442/#443 writer allowlists so full-object saves stop
+  corrupting the ciphertext → #444 the read+write fix for
+  `CeremonyDetails.additionalNotes`; the Step 2a backfill was closed as
+  already-satisfied (nothing to migrate — no plaintext remained, and
+  `contactPerson` never had a writer). Also: `SongRequest.guestEmail`
+  hashed rather than stored plaintext (#432), `my-guests-rsvp` migrated to
+  the caller token (#434), ESLint tightened three notches (#412, #413,
+  #438), and two dead files deleted (#414, #437).
+- **2026-08-09/11 — universe re-theming, Ava Studio (built then parked), and
+  RLS hardening**: all 8 universe asset-preview components re-themed per
+  the couple's chosen universe (#384), then deepened with real
+  per-universe accent colors and destination photography instead of a
+  shared stock couple photo (#402, #404); Ava Studio's guided 7-step setup
+  journey was built, given a photography-forward experience overhaul, then
+  parked for post-launch per owner decision — code kept, entry points
+  removed (#395, #396, #398, #400); the universe picker's save/select flow
+  was fixed so a couple's pick actually registers (#383, #394); a
+  same-session security audit found 29 entities with open (`read: null`)
+  RLS and a live plaintext-chat exploit (`StreamChat`) — fix batches
+  landed (#431 synced schema mirrors with the live Batch 1 flips); 10
+  entities moved to creator-only read.
+- **2026-08-05/09 — onboarding accept-passes, marketing polish, and
+  Spotify token leak**: the onboarding wizard went through several
+  accept-passes (light-only theme, split-shell layout, Step 5/Cultural
+  accordions, real guest-list CSV import, real Places vendor search, an
+  onboardingDraft-stuck-at-true incident fix); a SECURITY FIX stopped
+  Spotify OAuth tokens leaking to anonymous guest-site visitors (#326);
+  the `/tour` product tour page shipped and iterated through 10 visual
+  passes; a cash-fund/registry public-site wiring landed with an explicit
+  no-money-through-Openinvite design (external payment link only, #304).
 - **2026-08-03 — security sweep (Sessions A–C)**: encrypted RsvpResponse
   and GuestContactSubmission PII at rest, added Turnstile to the remaining
   anonymous-write endpoints, made every cron fail closed when `CRON_SECRET`
@@ -34,6 +78,184 @@ Dates are merge dates. Generated from `gh pr list --state merged` — see
   real guest RSVP flow, and per-event ("Smart RSVP") support.
 
 ## Full log
+
+## 2026-08-17
+
+- #444: CeremonyDetails additionalNotes: add to WRITABLE_FIELDS and loadData so the Notes tab persists
+
+## 2026-08-16
+
+- #443: WeddingDetails writers: field-scoped WRITABLE_FIELDS allowlist for the remaining 13 pages
+- #442: WeddingDetails writer allowlist: stop full-object saves from corrupting encrypted fields
+- #441: Seating: label the scope of the count numbers instead of leaving them unexplained
+- #439: Ava seating allocation uses ordinal tokens, not real ids; Ava-branded header
+- #438: Enable no-use-before-define with a ratcheted carve-out
+- #437: Delete dead WeddingWebsite.jsx and its Guest writer
+- #436: Encrypt WeddingDetails.budget/contactPerson at rest, decrypt via a new server endpoint
+- #435: HOTFIX: Seating crashed in production — eventAttendees read before initialization
+- #434: Migrate my-guests-rsvp to the caller token; park collaborator guest view + weekly digest
+- #433: AI seating: send one row per attendee so a plan can place plus-ones
+- #432: Hash SongRequest.guestEmail instead of storing plaintext
+- #431: Sync local entity schema mirrors with the live Batch 1 RLS flips
+- #430: AI seating: accept synthetic ids so a plan can seat plus-ones
+- #429: Seating: plus-ones in the panel and the canvas, and one population behind every stat
+- #428: Seating: plus-ones seated by synthetic id; an unresolvable one is reported, not silently dropped
+- #427: Seating: consolidate all three seat writers into tableAssignment.js — one true write path
+- #426: Assert the meal_choice enum constraint so widening it stays a visible prerequisite
+- #425: Meal entry: the couple can set a guest's and a plus-one's meal, ranked below the guest's own answer
+
+## 2026-08-15
+
+- #424: Plus-ones: Guests page cards count attendees; no visible number moves
+- #423: Plus-ones: derive the meal from the live overlay with an explicit not-loaded state, and move Ava's totals and guest list together
+- #422: Plus-ones: Dashboard, Daily update and Ava count attendees; snake_case the Attendee so the shared predicates work
+- #421: Plus-ones: document why hasPlusOne and attendsAsPlusOne deliberately disagree
+- #420: Plus-ones: canonical attendee resolver with stable synthetic ids (dead code, no consumers yet)
+- #419: Weather: classify a hand-typed venue as not-applicable rather than not-found, and shorten the seasonal string
+- #418: Header: three-column grid so the couple name and weather truncate at the pill instead of vanishing behind it
+- #417: Weather: return a discriminated result instead of a bare null, and stop reporting a geocoder outage as a bad address
+- #416: Plus-ones: show and count the 9 without an email, add plus-one columns to the CSV export
+- #415: Weather: never cache a failed lookup
+- #414: Delete src/lib/PageNotFound.jsx — orphaned duplicate 404
+
+## 2026-08-13
+
+- #413: Lint src/lib: register the plugins, drop the ignore, document five empty catches
+- #412: Enable no-undef, with a dual-runtime group for the three Playwright scripts
+- #411: ESLint coverage: node globals for api/scripts/tests, browser globals for the unlinted src files, ignore dist
+- #410: Vows: one AI entry point, repointed at the purpose-built assistant
+- #409: Moodboard: masonry preserving each image's natural aspect ratio
+- #407: Event details: one 640 measure, one left edge, shared SectionHeading, tightened rhythm
+
+## 2026-08-12
+
+- #408: Fix production crash: restore colTasks, done and total in TodoList
+- #406: To do: sortable table with due date, priority and actions columns
+
+## 2026-08-11
+
+- #405: Marketplace filters: category re-runs and combines, tag from Google types, price band and price sorts removed
+- #404: Universe asset previews: wire each universe's own imageUrl into the 3 photo-bearing previews (PR B)
+- #402: Universe asset previews: deepen token wiring on the 4 thin components (PR A)
+- #401: Seating: zoom-aware dot grid, persisted seat-name labels, Add event alignment, standard Auto-allocate button
+
+## 2026-08-10
+
+- #400: Park Ava Studio: remove all in-app entry points, keep the code
+- #399: Schedule: split overlapping timeline blocks into lanes instead of overprinting
+- #398: Ava Studio: experience overhaul (photography-forward, plan-aware, wedding-aware)
+- #397: Marketplace: dedupe vendor adds at the write, seed added state from existing records, rename Save to Add to my vendors
+- #396: Ava Studio: next-action highlight on the 4 dashboard-owned steps (PR2)
+- #395: Ava Studio: guided 7-step setup journey (PR1 — stepper core)
+- #394: Universe step: add per-tile Explore/Select buttons so a couple's pick actually registers
+- #393: Home: serve the three Wix full-bleed photos as adaptive WebP
+- #392: UniverseMiniHero: restore the Caldo photo from its print master, and fail the build on off-CDN full-bleed images
+- #391: Tour: discrete per-section themes with a 400ms cross-fade, replacing the scroll-linked arc
+- #390: Onboarding accept-pass: match Universe grid to marketing page, remove quote bubble and dark/light toggle, standard Continue size; Vendor chips + working search
+- #389: Onboarding accept-pass: strip em dashes, collapse Step5/Cultural accordions by default, swap Cultural page image, fix shell scroll-trap
+- #388: IMAGE_MANIFEST: Tour hero tight framing needs a ~5100px master
+- #387: Step 5 accordion + faith/culture dedup: consolidate faith capture into Step 5, trim cultural page to heritage-only
+- #385: Hero and end-cap image quality: responsive delivery everywhere, ladder to 3840 for the two print masters
+- #384: Universe asset previews: re-theme all 8 preview components per selected universe's own colors/typography
+
+## 2026-08-09
+
+- #383: Universe step: on-brand light tile grid, fix dead save-the-date image, fix broken back-navigation from preview
+- #382: Tour: continuous light-to-dark background arc
+- #381: Fix onboarding resume-shortcut: restore path on draft resume so completion doesn't silently skip the final save
+- #380: Onboarding visual pass: single per-step image, left-aligned split steps, fork card redesign, completion name fix
+- #379: reset-test-account.mjs: verify empty via live re-fetch, print before/after count
+- #378: Home banner: smaller type, still exactly 5 lines
+- #377: Ava rows: align heading and description on their baselines
+- #376: Pricing: center the comparison table on the page axis
+- #375: Pricing: move the 24-months block directly above the end cap
+- #374: About: remove the end cap; page closes on the photo pair
+- #373: Swap the About and Tour hero photos, crops re-derived
+- #372: Zero-overlay default for heroes and end caps; 0.2 on Features
+- #371: Fix onboardingDraft race — completed onboarding left stuck at draft:true (Incident-1 class)
+- #370: [9] Vendor step: real Places search + fix save dropping google_place_id/rating/phone/address
+- #369: EXPERIMENT — DO NOT MERGE — all hero and end-cap overlays off
+- #367: Remove the tracked backlog file
+- #366: Tour: print hero with a copy band, and the new end cap
+- #365: Universe step: rebuild as /universes-style grid, skip entirely for Pro (Ultra-only feature)
+- #364: Nav: lowercase the Features and Pricing paths so active state matches
+- #363: US English on Features and the marketing comments
+- #362: Add Tour to the public nav
+- #361: Tour: shared hero, and a photo pair after scene 04
+- #360: Pricing hero: use the print original with responsive delivery
+- #359: Features: let the flex-col class stack the deep-dive columns under lg
+- #358: Fork step: align 'Let's do it'/'Let's go' pills across uneven card heights
+- #357: Choose-plan: tighten spacing so cards fit without scroll on common viewports
+- #356: End caps: single-line headings, new Pricing and Universes copy
+- #355: Ava: drop the stale demo-block tombstone
+- #354: Group A: onboarding split-shell layout (left/right image, coloured logo)
+- #353: Home banner: match the hero's viewport height instead of the image ratio
+- #352: US English: Personalized recommendations on Home
+- #351: End cap: add optional cta, set Features and Ava headings
+- #350: Roll the Get started CTA out across the marketing hero pages
+- #349: Ava: swap the budget deep-dive photo
+- #348: Ava: swap the Smart Budget Tips spotlight photo
+- #347: Home Ava block: keep the first sentence, set it on two lines
+- #346: Home banner: wrap the statement to 5 lines clear of the subject
+
+## 2026-08-08
+
+- #345: Ava: remove the demo block, it moves to /tour
+- #344: Onboarding inspiration step: create MoodboardItem records immediately, matching Moodboard.jsx's own upload pattern
+- #343: US English in marketing and auth code comments
+- #342: Onboarding guest-list step: reuse the dashboard's real CSV/XLSX import instead of a broken 4-line stub
+- #341: Pricing: current-plan pills on the plan cards use textMuted, not textDisabled
+- #340: Onboarding cultural/religious step: replace free-text textarea with the canonical faith/culture picker
+- #339: Pricing: make the current-plan pills legible on the end cap
+- #338: Onboarding budget step: use the shared 18-currency list, not a local 5-entry array
+- #337: Fix free trial showing as ended immediately on brand-new accounts
+- #336: US English in Home page copy: organized, optimization, analyzed
+- #335: About: reframe hero on the couple, owner copy, drop deliverables list
+- #334: End-cap: add optional scrim prop, Pricing lightens to 0.35
+- #333: Pricing end-cap: re-center the photo crop so both heads stay visible
+- #332: Design Studio world view stays full-screen for the whole exploration phase
+- #331: Pricing: put the contained sections on one 1100px alignment grid
+- #330: Fix mobile horizontal overflow in the Universes editor feature grid
+- #329: Guest song-request pipeline: working search, dashboard moderation, Music bridge
+- #328: Fix mobile horizontal overflow in the Ava spotlight row grid
+- #325: Fix the British spelling failing CI on main
+
+## 2026-08-07
+
+- #327: Spotify PR B: guard search's JSON parsing, delete dead refresh endpoint, fix the lying Connected badge
+- #326: SECURITY FIX: stop leaking Spotify OAuth tokens to anonymous guest-site visitors
+- #324: Universes CTA: add a background photo with a legibility-tested scrim
+- #323: Remove Ultra crown badge from the universe selector tiles
+- #322: Swap the Ava end-cap image
+- #321: Fix stale-chunk crash after deploys: reload-once on failed dynamic import
+- #320: Home pricing pills: equal width and height, shared baselines
+- #319: AvaSpotlight intro: match the Universes intro type, centre it between banner and first row
+- #318: Diagnostic: beacon the real client-side ErrorBoundary crash to Vercel logs
+- #317: Email branding: guest-facing from-name + reply-to
+- #316: Ava deep-dives: equal 50/50 columns, alternating image side, mobile stacking
+- #315: Email branding: owner-facing copy fixes
+- #314: Remove the Features product demo blocks and rebalance the background rhythm
+- #313: Swap the Smart Budget Tips photo on Ava
+- #312: Pricing gift block: new heading and subtext, drop eyebrow, standard button, lighter overlay
+- #311: Swap the Timeline block photo on Features
+- #310: Menu Phase 1 (Ultra) — couple-defined guest meal options
+- #309: Apply one hero rule: centered text, no CTA except home
+- #308: Fix vestigial Guest.meal_choice reads — repoint to live per-event RsvpResponse overlay
+- #307: Fix Plus 1 card subtext so every carousel heading shares one baseline
+- #306: V10: update /tour commentary copy
+
+## 2026-08-06
+
+- #305: V9: background rhythm, Features grid and frame fill, scroll-linked parallax on /tour
+
+## 2026-08-05
+
+- #304: Cash fund + registry public-site wiring (Option A: external payment link, no money through Openinvite)
+- #303: V7: restate page titles as Openinvite | Page, remove app from titles and descriptions
+- #302: V8: vertically center the home carousel cards below the fixed nav
+- #301: T2: build the product tour page at /tour with placeholder frames
+- #300: V4b: About closes on the shared marketing end-cap
+- #299: V5: swap About hero image, restore the two origin-story paragraphs
 
 ## 2026-08-03
 
