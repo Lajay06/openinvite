@@ -95,6 +95,45 @@ for (const rule of CALL_SITE_RULES) {
     'call site does not match — a caller may be passing Guest records where attendees are required');
 }
 
+// ── DECLARATION ORDER: the #429 production crash ────────────────────────────
+// `activeLabelForm` is a useMemo that RUNS DURING RENDER and reads
+// `eventAttendees`. #429 declared eventAttendees ~60 lines below it, which is a
+// temporal dead zone: `ReferenceError: Cannot access 'D' before initialization`,
+// a full-page ErrorBoundary on /Seating in production.
+//
+// It survived review, CI, and a live bundle check because it does not fire on
+// mount — the read sits inside `for (const a of t.assigned_guests)`, so with
+// tables still loading the loop body never runs. It threw seconds later, once
+// the fetch returned tables that had guests in them. No unit test reaches it and
+// no grep of the bundle shows it.
+//
+// A source-order assertion does. Crude, and it is the only thing here that would
+// have caught it.
+{
+  const src = readFileSync('src/pages/Seating.jsx', 'utf8').split('\n');
+  const lineOf = (needle) => src.findIndex(l => l.includes(needle)) + 1;
+  const decl = {
+    eventTables: lineOf('const eventTables = useMemo('),
+    eventPool: lineOf('const eventPool = useMemo('),
+    eventAttendees: lineOf('const eventAttendees = useMemo('),
+  };
+  for (const [name, line] of Object.entries(decl)) {
+    check(`Seating.jsx declares ${name}`, line > 0, `${line}`);
+  }
+  // Every render-time read of eventAttendees must come after its declaration.
+  const reads = src
+    .map((l, i) => ({ line: i + 1, l }))
+    .filter(({ l }) => l.includes('eventAttendees') && !l.includes('const eventAttendees'))
+    .filter(({ l }) => !l.trimStart().startsWith('//') && !l.trimStart().startsWith('*'));
+  const early = reads.filter(r => r.line < decl.eventAttendees);
+  check('no read of eventAttendees appears above its declaration (the #429 TDZ)',
+    early.length === 0,
+    early.map(r => `Seating.jsx:${r.line}  ${r.l.trim().slice(0, 80)}`).join('\n        '));
+  check('eventAttendees is declared after eventPool, which it depends on',
+    decl.eventAttendees > decl.eventPool && decl.eventPool > decl.eventTables,
+    JSON.stringify(decl));
+}
+
 const lib = readFileSync(ALLOWED, 'utf8');
 for (const rule of RULES) {
   check(`${ALLOWED} still contains ${rule.label} (guard is not vacuous)`,
