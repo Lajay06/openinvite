@@ -17,7 +17,7 @@ function Spinner() {
   );
 }
 
-export default function AISeatingGenerator({ guests, tables, onApplySeating, onClose }) {
+export default function AISeatingGenerator({ attendees, hostsById, tables, onApplySeating, onClose }) {
   const [loading, setLoading] = useState(false);
   const [seatingPlan, setSeatingPlan] = useState(null);
   const [step, setStep] = useState('generate');
@@ -26,14 +26,40 @@ export default function AISeatingGenerator({ guests, tables, onApplySeating, onC
     setLoading(true);
     const tid = toast.loading('Ava is analyzing guest relationships…');
     try {
-      const guestData = guests.map(g => ({
-        id: g.id, name: g.name, category: g.category, tags: g.tags || [],
-        plus_one: g.plus_one, plus_one_name: g.plus_one_name,
-        seating_preferences: g.seating_preferences || [],
-        seating_avoid: g.seating_avoid || [],
-        dietary_restrictions: g.dietary_restrictions,
-        special_requests: g.special_requests,
-      }));
+      // ONE ROW PER PERSON TO SEAT, not one per Guest record with a `+1`
+      // attribute. Previously a plus-one was `plus_one: true` on their host, so
+      // the model had no id it could return for them and never allocated them a
+      // seat — while being told to "keep plus-ones together". The capacity
+      // arithmetic was wrong by exactly the number of plus-ones at each table.
+      //
+      // A plus-one carries ONLY what is theirs: their name and their dietary
+      // requirements. category, tags, seating_preferences and seating_avoid are
+      // deliberately NOT inherited from the host — "sit with the host" is
+      // already stated once by plusOneOf plus instruction 3, and copying the
+      // host's preferences would restate the same constraint in a weaker form
+      // while inventing ones that are not true (a host's "avoid Table 3" is not
+      // the plus-one's avoidance). One statement of a constraint, in the place
+      // that owns it.
+      const guestData = attendees.map(a => (a.isPlusOne
+        ? {
+            id: a.id,
+            name: a.name,
+            isPlusOne: true,
+            plusOneOf: a.hostGuestId,
+            dietary_restrictions: a.dietary_restrictions,
+          }
+        : {
+            id: a.id,
+            name: a.name,
+            isPlusOne: false,
+            plusOneOf: null,
+            category: hostsById.get(a.id)?.category,
+            tags: hostsById.get(a.id)?.tags || [],
+            seating_preferences: hostsById.get(a.id)?.seating_preferences || [],
+            seating_avoid: hostsById.get(a.id)?.seating_avoid || [],
+            dietary_restrictions: a.dietary_restrictions,
+            special_requests: hostsById.get(a.id)?.special_requests,
+          }));
       const tableData = tables.map(t => ({
         id: t.id, name: t.name, capacity: t.capacity, shape: t.shape,
         currentlyAssigned: (t.assigned_guests || []).length,
@@ -42,7 +68,7 @@ export default function AISeatingGenerator({ guests, tables, onApplySeating, onC
       const response = await InvokeLLM({
         prompt: `You are an expert wedding planner specialising in optimal seating arrangements.
 
-Analyze these ${guestData.length} wedding guests and ${tableData.length} tables to create the perfect seating chart.
+Analyze these ${guestData.length} wedding attendees and ${tableData.length} tables to create the perfect seating chart.
 
 GUESTS: ${JSON.stringify(guestData)}
 
@@ -51,7 +77,7 @@ TABLES: ${JSON.stringify(tableData)}
 INSTRUCTIONS:
 1. PRIORITISE TAGS: group guests with matching tags together (e.g. all "College Friends" at one table)
 2. Secondary grouping by relationship category (family, friends, colleagues)
-3. Respect seating preferences; keep plus-ones together
+3. Every person listed needs their own seat, including plus-ones. A plus-one has isPlusOne: true and plusOneOf giving their host's id — seat them at the same table as their host. Respect seating preferences.
 4. Balance table sizes evenly; consider dietary restrictions
 
 Return assignments[], unassigned[], and summary.`,
@@ -93,7 +119,7 @@ Return assignments[], unassigned[], and summary.`,
     } catch { /* parent handles error */ }
   };
 
-  const getGuestName = (id) => guests.find(g => g.id === id)?.name || 'Unknown';
+  const getGuestName = (id) => attendees.find(a => a.id === id)?.name || 'Unknown';
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -120,7 +146,7 @@ Return assignments[], unassigned[], and summary.`,
               {/* Stats */}
               <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
                 {[
-                  { label: 'Guests to seat', value: guests.length, color: '#E03553' },
+                  { label: 'People to seat', value: attendees.length, color: '#E03553' },
                   { label: 'Tables available', value: tables.length, color: '#803D81' },
                 ].map(s => (
                   <div key={s.label} style={{ flex: 1, border: '1px solid rgba(10,10,10,0.08)', padding: '20px 24px', textAlign: 'center' }}>
@@ -149,9 +175,9 @@ Return assignments[], unassigned[], and summary.`,
 
               <button
                 onClick={handleGenerate}
-                disabled={loading || guests.length === 0 || tables.length === 0}
+                disabled={loading || attendees.length === 0 || tables.length === 0}
                 className="btn-primary"
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', fontSize: 14, opacity: loading || guests.length === 0 || tables.length === 0 ? 0.6 : 1 }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', fontSize: 14, opacity: loading || attendees.length === 0 || tables.length === 0 ? 0.6 : 1 }}
               >
                 {loading ? <Spinner /> : <Sparkles size={14} />}
                 {loading ? 'Asking Ava…' : 'Ask Ava for a seating plan'}
@@ -174,7 +200,7 @@ Return assignments[], unassigned[], and summary.`,
 
               {seatingPlan.assignments?.map((a, i) => {
                 const tbl = tables.find(t => t.id === a.tableId);
-                const assignedGuests = (a.guests || []).map(id => guests.find(g => g.id === id)).filter(Boolean);
+                const assignedGuests = (a.guests || []).map(id => attendees.find(x => x.id === id)).filter(Boolean);
                 return (
                   <div key={i} style={{ border: '1px solid rgba(10,10,10,0.08)', marginBottom: 12 }}>
                     <div style={{ padding: '10px 16px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -192,7 +218,7 @@ Return assignments[], unassigned[], and summary.`,
                             padding: '3px 10px', borderRadius: 999,
                             background: 'rgba(10,10,10,0.06)',
                           }}>
-                            {g.name}{g.plus_one ? ' +1' : ''}
+                            {g.name}
                           </span>
                         ))}
                       </div>
