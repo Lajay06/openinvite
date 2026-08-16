@@ -106,6 +106,47 @@ jobs:
       - name: Marketing hero consistency guard
         run: npm run test:marketing-hero-consistency
 
+      # No network, no credentials — stubs fetch and localStorage and asserts
+      # every state getWeddingWeather can return is reachable and correct. The
+      # one that matters is not-found vs unavailable: not-found is the only
+      # state a couple can act on, so misclassifying a geocoder outage as
+      # not-found tells someone to fix a perfectly good venue address. That
+      # defect was real and this guard is what caught it.
+      - name: Weather state guard
+        run: npm run test:weather-states
+
+      # No network, no credentials — asserts the canonical attendee resolver's
+      # invariants: synthetic plus-one ids are unique, deterministic, cannot
+      # collide with a real 24-hex Base44 id, and round-trip back to the host;
+      # a bare `plus_one: true` permission flag yields no attendee; and RSVP
+      # matches src/lib/plusOne.js exactly, so the resolver and the guest table
+      # can never disagree. Live-data facts are in verify-attendees-live.mjs,
+      # which needs credentials and is deliberately not run here.
+      - name: Attendee resolver guard
+        run: npm run test:attendees
+
+      # No network, no credentials — proves the seating write-path refactor is
+      # payload-identical to the code it replaced (100 assignment/removal
+      # combinations compared against the pre-refactor expressions verbatim),
+      # and that the already-seated toast string is unchanged.
+      - name: Table assignment payload equivalence
+        run: npm run test:table-assignment
+
+      # Static source scan. src/lib/tableAssignment.js called itself the
+      # "single write path" while Seating.jsx wrote seats directly from three
+      # places — the comment asserting the rule is what let it rot. This makes
+      # the rule enforceable: seating writes exist in exactly one file.
+      - name: Single seating write path guard
+        run: npm run test:single-table-write-path
+
+      # no-use-before-define is `error` repo-wide with 56 files carved out —
+      # they violated it the day it was enabled, after #429 put /Seating into a
+      # production ErrorBoundary via a temporal dead zone that no-undef cannot
+      # model. This guard makes the carve-out one-way: it fails if a path is
+      # added or the count rises. Removing entries is free.
+      - name: no-use-before-define carve-out ratchet
+        run: npm run test:no-use-before-define-ratchet
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live

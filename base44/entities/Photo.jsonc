@@ -54,7 +54,9 @@
   ],
   "rls": {
     "create": null,
-    "read": null,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
     "update": {
       "created_by_id": "{{user.id}}"
     },

@@ -92,8 +92,10 @@ export default function UniverseStudio() {
   useEffect(() => {
     // getMyGuestsWithRsvp (not the plain getMyRecords('Guest')) so guests
     // carry their live event_responses overlay — PlaceCardsPreview/
-    // SeatingChartPreview need it for meal choice, not the vestigial flat
-    // Guest.meal_choice column (fix/vestigial-meal-choice-reads).
+    // SeatingChartPreview need it for meal choice. effectiveMealChoice ranks
+    // that overlay above the flat Guest.meal_choice column, which the couple
+    // now sets in the guest editor — so both sources matter and the overlay
+    // wins. Read through effectiveMealChoice, never the column directly.
     Promise.all([getMyWeddingDetails(), getMyGuestsWithRsvp()])
       .then(([wd, g]) => {
         const details = wd || {};

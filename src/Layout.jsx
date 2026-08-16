@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from "react-router-dom";
 import { X, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut, Loader2, User, Bell, CreditCard, HelpCircle } from "lucide-react";
-import { getWeddingWeather } from '@/lib/weather';
+import { getWeddingWeather, WEATHER_OK } from '@/lib/weather';
 import { track, reset as analyticsReset } from '@/lib/analytics';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -62,7 +62,10 @@ function getStoredUser() {
 // ── Full-width top navigation bar ────────────────────────────────────────────
 function TopBar({ weddingDetails, user, overrideCoupleName }) {
   const navigate = useNavigate();
-  const [weather, setWeather] = useState(null);
+  // The full discriminated result. `weather` below is just its data, so every
+  // existing render path is unchanged; the state field is what a future copy
+  // change branches on.
+  const [weatherResult, setWeatherResult] = useState(null);
 
   // Derive couple name from entity fields — a collaborator session has no
   // WeddingDetails record of their own to read (it belongs to the owner),
@@ -86,24 +89,44 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
     : (storedUser.email || 'U').slice(0, 2).toUpperCase();
 
   // Wedding-day weather: seasonal summary if far out, real forecast if within
-  // range, current conditions on/near the day. Never throws — a failure at
-  // any stage (no address, geocoding miss, API error) just leaves it unset.
+  // range, current conditions on/near the day.
+  //
+  // getWeddingWeather returns a DISCRIMINATED result, never a bare null, so
+  // this can distinguish "nothing to show" from "something broke". The
+  // `.catch(() => {})` that used to sit on this call is gone: it discarded
+  // the outcome before the caller could branch on it, which would have made
+  // the discriminated return pointless. It also swallowed real errors
+  // silently — and no-empty did not flag it, because an empty ARROW body is
+  // no-empty-function, which this repo does not enable.
+  //
+  // getWeddingWeather resolves on every path and does not reject, so there is
+  // nothing left to catch; an unexpected throw should surface rather than be
+  // hidden, and the root error boundary + client-error beacon will report it.
   useEffect(() => {
     let cancelled = false;
-    getWeddingWeather(weddingDetails).then(w => { if (!cancelled) setWeather(w); }).catch(() => {});
+    getWeddingWeather(weddingDetails).then(r => { if (!cancelled) setWeatherResult(r); });
     return () => { cancelled = true; };
   }, [weddingDetails?.mainCeremony?.address, weddingDetails?.reception?.address, weddingDetails?.weddingDate]);
 
   const WEATHER_ICONS = { Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning };
+  const weather = weatherResult?.state === WEATHER_OK ? weatherResult.data : null;
   const WeatherIcon = weather ? (WEATHER_ICONS[weather.icon] || Cloud) : null;
   // weather.js always fetches Celsius (Open-Meteo default) — the °F toggle in
   // Account → Settings only affects this display conversion, not the fetch.
   const tempUnit = storedUser.tempUnit === 'F' ? 'F' : 'C';
   const toDisplayTemp = (c) => tempUnit === 'F' ? Math.round(c * 9 / 5 + 32) : Math.round(c);
+  // Seasonal is worded here rather than in weather.js because this is where the
+  // other two modes are already worded (degree signs, separator, unit). It reads
+  // "Usually 18°/9°C" instead of the old "18°/9°C · Typical for this time of
+  // year": same information, less than half the width. The long form was 218px
+  // in a slot that has roughly 130px at 1280 beside a long couple name, so it
+  // truncated to "18…" and told the reader nothing.
   const weatherText = weather
     ? weather.mode === 'current'
       ? `${toDisplayTemp(weather.temp)}°${tempUnit}${weather.label ? ` · ${weather.label}` : ''}`
-      : `${toDisplayTemp(weather.high)}°/${toDisplayTemp(weather.low)}°${tempUnit}${weather.label ? ` · ${weather.label}` : ''}`
+      : weather.mode === 'seasonal'
+        ? `Usually ${toDisplayTemp(weather.high)}°/${toDisplayTemp(weather.low)}°${tempUnit}`
+        : `${toDisplayTemp(weather.high)}°/${toDisplayTemp(weather.low)}°${tempUnit}${weather.label ? ` · ${weather.label}` : ''}`
     : '';
 
   const handleLogout = () => {
@@ -121,12 +144,44 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
   const pinkDot = <span style={{ color: '#ec4899', fontFamily: PJS, lineHeight: 1, flexShrink: 0 }}>·</span>;
 
   return (
+    // Three equal-ended columns, NOT flex + an absolutely positioned centre.
+    //
+    // The centre pill used to be `position:absolute; left:50%`, i.e. out of
+    // flow. That meant the left group had nothing bounding it: it grew past
+    // the pill and drew UNDERNEATH it, and because the pill paints later it
+    // simply swallowed the tail of the text. The left group's own
+    // `overflow:hidden` never engaged, so nothing ellipsized and nothing
+    // looked wrong to a bounds check — the text just vanished. Measured: with
+    // a long couple name the left group ended at 700px at every width and
+    // overlapped the pill from 1024 all the way to 1440.
+    //
+    // As a grid track, the same boundary becomes a real edge, so the existing
+    // overflow/ellipsis finally have something to act against. Equal `1fr`
+    // tracks keep the pill centred by construction rather than by arithmetic,
+    // which is why this is a grid and not a `max-width: calc(50% - 110px)`:
+    // that 110 is half the pill's intrinsic width and would rot silently the
+    // first time the pill's padding changed.
+    //
+    // minmax(0, 1fr), not 1fr: a bare `1fr` is `minmax(auto, 1fr)`, whose auto
+    // minimum refuses to shrink below the content. It would reproduce the
+    // exact overflow this change exists to remove.
+    //
+    // The two side tracks are COUPLED — they are always equal. The right group
+    // is only a bell and a 36px avatar today, so track 3 is mostly empty; if
+    // anything is ever added there, the left track shrinks by the same amount
+    // and the couple name starts truncating earlier. That is the trade for
+    // keeping the pill centred.
+    //
+    // `lg:grid`, not an inline display: the `hidden` class is what keeps this
+    // bar off mobile, and an inline `display` would beat the class and render
+    // it at every width.
     <div
-      className="hidden lg:flex"
+      className="hidden lg:grid"
       style={{
         position: 'fixed', top: 0, left: 0, right: 0, height: TOP_BAR_H,
         zIndex: 50, background: '#0A0A0A',
-        alignItems: 'center', justifyContent: 'space-between',
+        gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
+        alignItems: 'center', columnGap: 16,
         padding: '0 24px',
       }}
     >
@@ -149,23 +204,36 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
                   : 'Your wedding day has arrived!'
                 : coupleName}
             </span>
+            {/* flexShrink 1000, not 0: inside a now-BOUNDED track something
+                has to yield, and it must not be the couple's names. Shrink is
+                weighted by factor x base size, so a large factor makes the
+                weather absorb the whole deficit before the name gives up a
+                single pixel; the name only starts ellipsizing once the weather
+                has gone. With flexShrink 0 here the priority inverted and a
+                SHORT name truncated to a bare ellipsis at 1024. */}
             {weather && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.4)', fontFamily: PJS, whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.4)', fontFamily: PJS, whiteSpace: 'nowrap', flexShrink: 1000, minWidth: 0, overflow: 'hidden' }}>
                 <WeatherIcon size={12} strokeWidth={1.8} style={{ flexShrink: 0 }} />
-                {weatherText}
+                {/* Wrapped so it can ellipsize. A bare text node cannot be
+                    styled, so the weather clipped mid-word against a hard edge
+                    (111px of 218 at 1440) instead of degrading. */}
+                <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>{weatherText}</span>
               </span>
             )}
           </>
         )}
       </div>
 
-      {/* Center: search pill */}
-      <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+      {/* Center: search pill. In flow now — it is the `auto` track. No
+          overflow on this wrapper: the results panel is 320px wide and centred
+          on a 220px pill, so it deliberately overhangs 50px each side. */}
+      <div>
         <TopBarSearch />
       </div>
 
-      {/* Right: bell + avatar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      {/* Right: bell + avatar. justifySelf:end because a grid item stretches
+          to fill its track by default, where a flex child did not. */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifySelf: 'end' }}>
         {/* Bell */}
         <NotificationBell userId={user?.id} />
 

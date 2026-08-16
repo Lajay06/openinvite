@@ -11,6 +11,13 @@
  * one event's tables — a guest can be seated at different tables for
  * different events without collision.
  *
+ * PLUS-ONES: seated by SYNTHETIC id (`<hostId>::plus-one`, see attendees.js).
+ * Table.assigned_guests.guest_id is an unconstrained string and holds one
+ * without complaint. The Guest.update below is SKIPPED for them — there is no
+ * Guest record and therefore no cache row. Guest.table_assignment is a
+ * primaries-only cache by nature; anything that must reflect a plus-one's seat
+ * derives it from Table.assigned_guests keyed by attendee id.
+ *
  * Guest.table_assignment is written here as a denormalized display cache
  * (several unrelated surfaces — DailyUpdate, avaContext, the guest CSV
  * export — read that plain string without loading Table data at all, and
@@ -25,12 +32,119 @@
 
 import { base44 } from '@/api/base44Client';
 import { RECEPTION_EVENT_ID } from '@/lib/weddingEvents';
+import {
+  resolveEventId, buildSeatAssignmentPayload, buildSeatRemovalPayload, findSeatConflict,
+  shouldWriteTableCache, validatePlanAssignments,
+} from '@/lib/tableAssignmentPayloads';
+import { isPlusOneId } from '@/lib/attendees';
+
+// Re-exported so callers have one import site; the split exists only so the
+// pure half can be loaded without the base44 client. See that file's header.
+export { resolveEventId, buildSeatAssignmentPayload, buildSeatRemovalPayload, findSeatConflict, shouldWriteTableCache, validatePlanAssignments };
 
 const Table = base44.entities.Table;
 const Guest = base44.entities.Guest;
 
 export const DEFAULT_TABLE_CAPACITY = 8;
 export const DEFAULT_TABLE_SHAPE = 'round';
+
+/**
+ * Seats a guest at a SPECIFIC seat of a SPECIFIC table.
+ *
+ * WHY THIS REFUSES WHERE assignGuestToTableByName MOVES
+ * -----------------------------------------------------
+ * Two functions, two rules, both deliberate:
+ *
+ *   assignGuestToTableByName — removes the guest from their other tables first,
+ *     then seats them. That is a bulk/by-name path (the guest list's Table
+ *     column, imports), where "put them here" should just work.
+ *
+ *   assignGuestToSeat — REFUSES if the guest is already seated elsewhere in
+ *     this event, returning { ok: false, reason: 'already-seated-in-event' }.
+ *     This is a couple clicking a seat, and a silent move is a surprise. The
+ *     caller renders the same message it always has.
+ *
+ * The rule lives here rather than in the caller so the single write path
+ * actually enforces the single most important rule — a consolidation that left
+ * it outside would be consolidation in name only.
+ *
+ * @returns {Promise<{ok:true, tableName:string} | {ok:false, reason:string, tableName?:string}>}
+ */
+export async function assignGuestToSeat({ guestId, tableId, seatIndex, tables, eventId }) {
+  const table = (tables || []).find(t => t.id === tableId);
+  if (!table) return { ok: false, reason: 'table-not-found' };
+  const scope = eventId || resolveEventId(table);
+
+  const conflict = findSeatConflict(guestId, tables, scope, tableId, seatIndex);
+  if (conflict) return { ok: false, reason: 'already-seated-in-event', tableName: conflict.tableName };
+
+  await Table.update(tableId, { assigned_guests: buildSeatAssignmentPayload(table, guestId, seatIndex) });
+  // A plus-one has no Guest record, so there is no display cache to maintain —
+  // see the cache note in this file's header. Table.assigned_guests is the
+  // authority for both; Guest.table_assignment is a primaries-only convenience
+  // by nature, not by omission.
+  if (shouldWriteTableCache(guestId, scope)) {
+    await Guest.update(guestId, { table_assignment: table.name });
+  }
+  return { ok: true, tableName: table.name };
+}
+
+/** Clears one seat. Mirrors the assignment path's event scoping. */
+export async function unassignSeat({ guestId, tableId, seatIndex, tables, eventId }) {
+  const table = (tables || []).find(t => t.id === tableId);
+  if (!table) return { ok: false, reason: 'table-not-found' };
+  const scope = eventId || resolveEventId(table);
+
+  await Table.update(tableId, { assigned_guests: buildSeatRemovalPayload(table, seatIndex) });
+  if (guestId && shouldWriteTableCache(guestId, scope)) {
+    await Guest.update(guestId, { table_assignment: '' });
+  }
+  return { ok: true, tableName: table.name };
+}
+
+/**
+ * Applies a whole seating plan to one event: clears every table of that event,
+ * then seats each assignment's ids in seat order.
+ *
+ * The ok/err counting is preserved EXACTLY as the code this replaces did it,
+ * because it feeds a user-visible toast ("N guests assigned, M errors"):
+ *   - a missing table counts as ONE error
+ *   - a failed Table.update counts as ONE error
+ *   - outside the reception, every seated guest counts as ok with no cache write
+ *   - at the reception, each Guest.update is counted individually, and a failed
+ *     cache write is an error without unseating anyone
+ *
+ * @param assignments [{ tableId, guestIds: string[] }]
+ * @returns {Promise<{ok:number, err:number}>}
+ */
+export async function applyEventSeatingPlan({ assignments, tables, eventId }) {
+  const scoped = (tables || []).filter(t => resolveEventId(t) === eventId);
+  await Promise.all(scoped.map(t => Table.update(t.id, { assigned_guests: [] })));
+
+  let ok = 0, err = 0;
+  for (const a of assignments || []) {
+    const table = scoped.find(t => t.id === a.tableId);
+    if (!table) { err++; continue; }
+    const ids = a.guestIds || [];
+    if (ids.length === 0) continue;
+    const assigned_guests = ids.map((id, i) => ({ guest_id: id, seat_index: i }));
+    try {
+      await Table.update(a.tableId, { assigned_guests });
+      if (resolveEventId(table) === RECEPTION_EVENT_ID) {
+        for (const id of ids) {
+          // Plus-ones are seated but have no cache row; they still count as ok.
+          if (isPlusOneId(id)) { ok++; continue; }
+          try { await Guest.update(id, { table_assignment: table.name }); ok++; }
+          catch { err++; }
+        }
+      } else {
+        ok += ids.length;
+      }
+    } catch { err++; }
+  }
+  return { ok, err };
+}
+
 
 /** Live lookup — which table (if any) a guest is currently seated at, for one event. */
 export function getGuestTableName(guestId, tables, eventId = RECEPTION_EVENT_ID) {

@@ -1,6 +1,7 @@
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
-import { tallyGuestRsvp } from '@/lib/guestRsvpTally';
-import { effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
+import { tallyAttendees } from '@/lib/guestRsvpTally';
+import { resolveAttendees, MEAL_CHOSEN } from '@/lib/attendees';
+import { mealOptionLabel } from '@/lib/weddingEvents';
 
 export async function buildWeddingContext() {
   const [guestsResult, budgetResult, vendorsResult, scheduleResult, wdResult] = await Promise.allSettled([
@@ -35,15 +36,25 @@ export async function buildWeddingContext() {
   const receptionVenue = wd.reception?.venueName || '';
 
   let user = {};
-  try { user = JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch {}
+  try { user = JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch { /* malformed oi_user — fall back to the empty default declared above */ }
 
   const daysUntil = weddingDate
     ? Math.ceil((new Date(weddingDate) - new Date()) / 86400000)
     : null;
 
+  // ATTENDEES, not Guest rows. Ava was told "Total: 202" for a wedding of 242
+  // people and answered headcount questions on that basis.
+  //
+  // The totals and the per-guest list below MUST move together. Counting
+  // attendees while listing only guests would take Ava from consistently
+  // undercounting to contradicting herself inside a single answer, which is
+  // worse.
+  //
   // AUDIT_2026-07.md S21: was checking for a 'confirmed' status that does
   // not exist in the schema and could never match — always counted 0.
-  const { attending: confirmed, pending } = tallyGuestRsvp(guests);
+  const attendees = resolveAttendees(guests);
+  const { combined } = tallyAttendees(attendees);
+  const { attending: confirmed, pending, total: totalAttendees } = combined;
   const totalBudget   = budget.reduce((s, b) => s + (b.total_amount  || 0), 0);
   const spent         = budget.reduce((s, b) => s + (b.spent_amount  || 0), 0);
   const bookedVendors = vendors.map(v => v.category).join(', ');
@@ -56,19 +67,35 @@ export async function buildWeddingContext() {
   // large guest lists — plenty for real weddings, and the aggregate counts
   // above still cover anything past the cap.
   const GUEST_LIST_CAP = 400;
-  const guestListLines = guests.slice(0, GUEST_LIST_CAP).map(g => {
-    const parts = [g.rsvp_status || 'pending'];
-    if (g.table_assignment) parts.push(`table ${g.table_assignment}`);
-    // fix/vestigial-meal-choice-reads — g.meal_choice is a dead column;
-    // the live source is the per-event event_responses overlay. Mapped
-    // through mealOptionLabel so Ava reports a real label, not a raw
-    // couple-defined menu option id (Menu Phase 1, Ultra).
-    const mealChoice = mealOptionLabel(effectiveMealChoice(g.event_responses), wd.mealOptions);
-    if (mealChoice) parts.push(mealChoice.replace(/_/g, ' '));
-    return `${g.name} — ${parts.join(', ')}`;
+  // Guest records by id, for the ONE field an attendee deliberately does not
+  // carry. table_assignment is guest-only — a plus-one cannot hold a table
+  // (Table.assigned_guests[].guest_id needs a real Guest id) — so it is looked
+  // up explicitly, for primaries only, rather than put on the attendee where
+  // every plus-one would silently inherit the host's seat.
+  const guestById = new Map(guests.filter(g => g?.id).map(g => [g.id, g]));
+  const guestListLines = attendees.slice(0, GUEST_LIST_CAP).map(a => {
+    const parts = [a.rsvp_status || 'pending'];
+    if (!a.isPlusOne) {
+      const table = guestById.get(a.id)?.table_assignment;
+      if (table) parts.push(`table ${table}`);
+    }
+    // a.meal is DISCRIMINATED. Only a real selection is reported: `none` means
+    // they picked nothing, `not-loaded` means this input never carried the
+    // overlay, and telling Ava "no meal" for either would have her assure a
+    // couple that someone who ordered the fish has no meal. The dead
+    // Guest.meal_choice column is not consulted at all — see attendees.js.
+    if (a.meal.state === MEAL_CHOSEN) {
+      const label = mealOptionLabel(a.meal.value, wd.mealOptions);
+      if (label) parts.push(label.replace(/_/g, ' '));
+    }
+    // Named as a plus-one so Ava does not report them as a separately invited
+    // guest, and so "who is Jon coming with?" is answerable.
+    const host = a.isPlusOne ? guestById.get(a.hostGuestId)?.name : null;
+    const name = a.isPlusOne ? `${a.name} (plus-one of ${host || 'a guest'})` : a.name;
+    return `${name} — ${parts.join(', ')}`;
   });
   const guestListBlock = guestListLines.length
-    ? `\n\nGUEST LIST — individual RSVPs, for answering questions about a specific guest by name (this is the owner's own data, in their own dashboard):\n${guestListLines.join('\n')}${guests.length > GUEST_LIST_CAP ? `\n…and ${guests.length - GUEST_LIST_CAP} more (use the aggregate counts above for anything beyond named lookups)` : ''}`
+    ? `\n\nGUEST LIST — individual RSVPs, for answering questions about a specific guest by name (this is the owner's own data, in their own dashboard):\n${guestListLines.join('\n')}${attendees.length > GUEST_LIST_CAP ? `\n…and ${attendees.length - GUEST_LIST_CAP} more (use the aggregate counts above for anything beyond named lookups)` : ''}`
     : '';
 
   // Build theme block — only include non-empty fields
@@ -115,7 +142,7 @@ Location: ${city || 'Not set'}
 Style universe: ${universe || 'Not set'}${venueLines ? `\n${venueLines}` : ''}${themeBlock}
 
 ${expectedGuestLine ? expectedGuestLine + '\n' : ''}GUESTS (actual RSVPs):
-Total: ${guests.length} | Confirmed: ${confirmed} | Pending: ${pending}${guestListBlock}
+Total: ${totalAttendees} | Confirmed: ${confirmed} | Pending: ${pending}${guestListBlock}
 
 BUDGET:
 Total: $${totalBudget.toLocaleString()} | Spent: $${spent.toLocaleString()} (${totalBudget ? Math.round(spent / totalBudget * 100) : 0}%)

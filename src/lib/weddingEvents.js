@@ -159,6 +159,26 @@ export function toggleEventInvite(guest, event, invited) {
  * event_responses[] — for the flat, event-agnostic surfaces (CSV export,
  * seating chart / place card exports, Ava's context) that show one guest
  * per row and have no per-event breakdown, unlike GuestList.jsx's own
+ * PRECEDENCE, in order:
+ *   1. the reception response's meal_choice
+ *   2. any invited event's response with a meal_choice
+ *   3. `flatFallback` — Guest.meal_choice / Guest.plus_one_meal_choice, the
+ *      value the COUPLE typed in the guest editor
+ *   4. null
+ *
+ * The flat column ranks LAST on purpose: the person eating the meal outranks
+ * the person recording it. This is deliberately the `derived ?? flat` shape
+ * used for dietary_restrictions (api/my-guests-rsvp.js:163) and NOT the
+ * `eventRows ? derived : flat` shape used for rsvp_status (:160). A guest can
+ * respond without picking a meal, and the rows-presence rule would blank the
+ * couple's entry the moment that happened; value-fallback keeps it until an
+ * actual meal answer replaces it. Meal and dietary — the two caterer-facing
+ * fields — now have identical semantics.
+ *
+ * NOTE the flat column is NOT dead any more. It was, for the whole period when
+ * nothing wrote it; the guest editor writes it now. Read it through this
+ * function and never directly, so the ordering above is applied every time.
+ *
  * per-event detail row which already reads event_responses[].meal_choice
  * directly, one row per event. Prefers the reception's answer (the event
  * these surfaces are conventionally about); falls back to the first
@@ -169,12 +189,13 @@ export function toggleEventInvite(guest, event, invited) {
  *   equivalent) — may be undefined for a guest who hasn't RSVP'd yet
  * @returns {string|null}
  */
-export function effectiveMealChoice(eventResponses) {
+export function effectiveMealChoice(eventResponses, flatFallback = null) {
   const responses = eventResponses || [];
   const reception = responses.find(r => r.event_id === RECEPTION_EVENT_ID && r.meal_choice);
   if (reception) return reception.meal_choice;
   const anyAnswered = responses.find(r => r.invited && r.meal_choice);
-  return anyAnswered ? anyAnswered.meal_choice : null;
+  if (anyAnswered) return anyAnswered.meal_choice;
+  return flatFallback || null;
 }
 
 /**

@@ -55,6 +55,13 @@ function VendorThumbnail({ vendor, cfg }) {
 }
 
 export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isSaving }) {
+  // vendor.category is Google's own classification, or null when Google has
+  // none — 70% of wedding-vendor results, measured. The tag is omitted in
+  // that case rather than shown as "Other" or "Uncategorized": an absent tag
+  // reads as neutral, a placeholder one reads as broken. The thumbnail still
+  // needs a colour and icon, so it falls back to the neutral 'Other' config
+  // without the label ever being rendered.
+  const hasCategory = !!vendor.category && !!CATEGORY_CONFIG[vendor.category];
   const cfg = CATEGORY_CONFIG[vendor.category] || CATEGORY_CONFIG['Other'];
 
   return (
@@ -65,7 +72,9 @@ export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isS
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{vendor.name}</span>
-          <span style={{ fontSize: 11, fontWeight: 600, color: cfg.color, background: cfg.bg, padding: '2px 9px', borderRadius: 999, fontFamily: PJS }}>{vendor.category}</span>
+          {hasCategory && (
+            <span style={{ fontSize: 11, fontWeight: 600, color: cfg.color, background: cfg.bg, padding: '2px 9px', borderRadius: 999, fontFamily: PJS }}>{vendor.category}</span>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, flexWrap: 'wrap' }}>

@@ -11,10 +11,61 @@ import { CATEGORIES, CATEGORY_QUERIES, saveVendorFromPlaces, getSavedPlaceIds } 
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const PRICE_LABELS = { '$': 'Budget', '$$': 'Mid-range', '$$$': 'Premium', '$$$$': 'Luxury' };
 const PRICE_MAP = { 0: '$', 1: '$', 2: '$$', 3: '$$$', 4: '$$$$' };
-const PRICE_ORDER = { '$': 1, '$$': 2, '$$$': 3, '$$$$': 4 };
-const SORT_OPTIONS = ['Relevance', 'Rating', 'Price low–high', 'Price high–low'];
+// No price band filter and no price sort. Google returns price_level for
+// retail and food businesses only — measured across 6 wedding-vendor
+// searches, it was present on 5 of 48 results, all of them bakeries. A band
+// filter excluded ~90% of every result set and emptied the list; the sorts
+// tied every row against each other. Both were correct code over data that
+// does not exist. price_level is still SHOWN on a card when Google happens
+// to have it, which is honest — it just can't be filtered or sorted on.
+const SORT_OPTIONS = ['Relevance', 'Rating'];
+
+// Google's own classification of the business, mapped only where we
+// genuinely trust it. Measured over 112 results across all 14 category
+// searches: just 34 (30%) carry any non-generic type at all — the other 78
+// come back as ["establishment","point_of_interest"], because Google's
+// vocabulary has no photographer, caterer, DJ or celebrant. Photography,
+// Videography, Catering, Styling, Music & DJ and Entertainment returned
+// 0/8 usable types each.
+//
+// So the tag is shown only when there IS a trusted type, and omitted
+// otherwise. An absent tag reads as neutral; "Uncategorized" on 70% of
+// cards reads as broken, and echoing the selected pill (what this used to
+// do) is a lie — it stamped every result with whatever filter was active.
+//
+// Two types are deliberately NOT mapped, because Google applies them to
+// wedding vendors in ways that would mislead: `local_government_office`
+// lands on celebrants (3/8 of that search) and `home_goods_store` on
+// stationers (1/8). A confidently wrong tag is worse than none.
+//
+// Order matters — first match wins for a place carrying several types.
+const TRUSTED_TYPE_CATEGORY = [
+  ['florist',        'Florals'],
+  ['jewelry_store',  'Jewellery'],
+  ['bakery',         'Cake'],
+  ['hair_care',      'Hair & makeup'],
+  ['beauty_salon',   'Hair & makeup'],
+  ['spa',            'Hair & makeup'],
+  ['car_rental',     'Transport'],
+  ['taxi_stand',     'Transport'],
+  ['lodging',        'Venues'],
+  ['restaurant',     'Catering'],
+  ['cafe',           'Catering'],
+  ['bar',            'Catering'],
+  ['meal_delivery',  'Catering'],
+  ['meal_takeaway',  'Catering'],
+];
+
+/** Google's view of what this business is, or null when it hasn't got one. */
+function categoryFromTypes(types) {
+  if (!Array.isArray(types) || !types.length) return null;
+  const set = new Set(types);
+  for (const [type, label] of TRUSTED_TYPE_CATEGORY) {
+    if (set.has(type)) return label;
+  }
+  return null;
+}
 
 // Categories that can plausibly serve any location remotely — Google Places
 // has no "works online" attribute (it's an inherently location-anchored
@@ -34,7 +85,6 @@ export default function VendorMarketplace() {
   const [locationQ, setLocationQ] = useState('');
   const [category, setCategory] = useState('All');
   const [minRating, setMinRating] = useState(false);
-  const [priceFilter, setPriceFilter] = useState('');
   const [sortBy, setSortBy] = useState('Relevance');
   const [selectedVendor, setSelectedVendor] = useState(null);
 
@@ -107,7 +157,10 @@ export default function VendorMarketplace() {
     if (savedIds.has(vendor.id)) return;
     setSavingIds(prev => new Set([...prev, vendor.id]));
     try {
-      const { created } = await saveVendorFromPlaces(vendor, details);
+      const { created } = await saveVendorFromPlaces(
+        { ...vendor, category: vendor.category || vendor.searchCategory || 'Other' },
+        details,
+      );
       setSavedIds(prev => new Set([...prev, vendor.id]));
       // Distinguish the two outcomes rather than claiming an add that
       // didn't happen — "already there" is the honest result when the
@@ -125,20 +178,31 @@ export default function VendorMarketplace() {
   // own location immediately without waiting on a state update to land
   // (setLocationQ/setGeoCoords are async — reading the state back in the
   // same tick would still see the old value).
-  const runSearch = async ({ coordsOverride, locationOverride, isAutoRecommend = false } = {}) => {
+  const runSearch = async ({ coordsOverride, locationOverride, categoryOverride, isAutoRecommend = false } = {}) => {
     searchedRef.current = true;
     setIsRecommended(isAutoRecommend);
     setApiStatus('searching');
 
     const rawSearch = search.trim();
-    // Only use category keywords when there is no typed text — never combine both
-    // (mixing them over-constrains Text Search and drops exact name matches)
-    const categoryQuery = (!rawSearch && category !== 'All') ? (CATEGORY_QUERIES[category] || 'wedding vendor') : null;
-    const q = rawSearch || categoryQuery || 'wedding vendor';
+    const activeCategory = categoryOverride !== undefined ? categoryOverride : category;
+    // Typing NARROWS within the selected category — the two are combined, not
+    // one-or-the-other. The comment that used to sit here claimed combining
+    // "over-constrains Text Search and drops exact name matches". Measured
+    // against live Places, it does not:
+    //   "Salt Atelier"                      -> Salt Atelier Wedding Photography
+    //   "Salt Atelier wedding photographer" -> Salt Atelier Wedding Photography
+    //   "Smith"                             -> Windsor Smith, Myer Sydney City, Lighting by SMITH&SMITH
+    //   "Smith wedding photographer"        -> Salt Atelier, Dane Tucker Studio, Sydney Wedding Photography
+    // The exact name survives the combined query, and a generic surname goes
+    // from returning a shoe brand to returning actual wedding photographers.
+    // Combining is strictly better, so the old claim was deleted rather than
+    // left standing next to code that disproves it.
+    const categoryQuery = activeCategory !== 'All' ? (CATEGORY_QUERIES[activeCategory] || '') : '';
+    const q = [rawSearch, categoryQuery].filter(Boolean).join(' ') || 'wedding vendor';
 
     const coords = coordsOverride !== undefined ? coordsOverride : geoCoords;
     const loc = (locationOverride !== undefined ? locationOverride : locationQ).trim();
-    const onlineActive = onlineServices && REMOTE_PLAUSIBLE_CATEGORIES.includes(category);
+    const onlineActive = onlineServices && REMOTE_PLAUSIBLE_CATEGORIES.includes(activeCategory);
 
     const body = { q };
     if (onlineActive) {
@@ -168,7 +232,15 @@ export default function VendorMarketplace() {
         id: p.place_id,
         placeId: p.place_id,
         name: p.name,
-        category: category !== 'All' ? category : 'Other',
+        // Google's classification of this business, or null. Never the
+        // selected pill — that was the bug that stamped every result 'Other'.
+        category: categoryFromTypes(p.types),
+        // What the couple was shopping for when this result came back. Not
+        // shown anywhere — it exists only so saving to My vendors can still
+        // file the vendor sensibly when Google offers no type. The pill is a
+        // lie as a claim ABOUT the vendor, but it is a fair record of the
+        // couple's own intent, and My vendors' category is theirs to organise.
+        searchCategory: activeCategory !== 'All' ? activeCategory : null,
         rating: p.rating,
         reviewCount: p.user_ratings_total || 0,
         location: p.address || '',
@@ -232,16 +304,10 @@ export default function VendorMarketplace() {
 
   const filtered = useMemo(() => {
     if (!vendors) return [];
-    let list = vendors.filter(v => {
-      if (minRating && (v.rating || 0) < 4) return false;
-      if (priceFilter && v.priceRange !== priceFilter) return false;
-      return true;
-    });
+    let list = vendors.filter(v => (minRating ? (v.rating || 0) >= 4 : true));
     if (sortBy === 'Rating') list = [...list].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    else if (sortBy === 'Price low–high') list = [...list].sort((a, b) => (PRICE_ORDER[a.priceRange] || 99) - (PRICE_ORDER[b.priceRange] || 99));
-    else if (sortBy === 'Price high–low') list = [...list].sort((a, b) => (PRICE_ORDER[b.priceRange] || 0) - (PRICE_ORDER[a.priceRange] || 0));
     return list;
-  }, [vendors, minRating, priceFilter, sortBy]);
+  }, [vendors, minRating, sortBy]);
 
   const underlineInput = (extraStyle = {}) => ({
     border: 'none', borderBottom: '1px solid rgba(10,10,10,0.15)',
@@ -341,7 +407,12 @@ export default function VendorMarketplace() {
         {/* Row 2: category pills */}
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
           {CATEGORIES.map(cat => (
-            <button key={cat} onClick={() => setCategory(cat)}
+            // Re-runs the search on click. This used to only set state, so the
+            // pill highlighted and nothing else happened until Search was pressed
+            // — which is why the category filter read as dead. The value is passed
+            // through as an override because setCategory is async and runSearch
+            // would otherwise read the previous category in the same tick.
+            <button key={cat} onClick={() => { setCategory(cat); runSearch({ categoryOverride: cat }); }}
               style={{ padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, fontFamily: PJS, cursor: 'pointer', border: 'none', whiteSpace: 'nowrap', transition: 'all 0.12s',
                 background: category === cat ? '#0A0A0A' : 'rgba(10,10,10,0.06)',
                 color: category === cat ? '#FFFFFF' : '#444444' }}>
@@ -360,15 +431,7 @@ export default function VendorMarketplace() {
             4★ and above
           </button>
 
-          {Object.entries(PRICE_LABELS).map(([sym, label]) => (
-            <button key={sym} onClick={() => setPriceFilter(f => f === sym ? '' : sym)}
-              style={{ padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, fontFamily: PJS, cursor: 'pointer', border: '1.5px solid', transition: 'all 0.12s',
-                borderColor: priceFilter === sym ? '#0A0A0A' : 'rgba(10,10,10,0.15)',
-                background: priceFilter === sym ? '#0A0A0A' : 'none',
-                color: priceFilter === sym ? '#FFFFFF' : 'rgba(10,10,10,0.5)' }}>
-              {sym} · {label}
-            </button>
-          ))}
+          {/* Price band pills removed — see PRICE_MAP above for the measurement. */}
 
           {/* Online services — only meaningful for categories that can plausibly
               serve any location remotely (see REMOTE_PLAUSIBLE_CATEGORIES).

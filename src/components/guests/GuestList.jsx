@@ -6,6 +6,7 @@ import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, Chevron
 import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/lib/weddingEvents";
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
+import { hasPlusOne, plusOneRsvpStatus } from '@/lib/plusOne';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -295,8 +296,16 @@ const PLUS_ONE_STATUS_STYLES = {
 };
 
 function PlusOneCell({ guest, onUpdate, readOnly }) {
-  if (guest.plus_one_email) {
-    const style = PLUS_ONE_STATUS_STYLES[guest.plus_one_rsvp_status] || PLUS_ONE_STATUS_STYLES.pending;
+  // Gated on the plus-one EXISTING, not on them having an email. The old
+  // gate was `guest.plus_one_email`, which is why 9 of the 40 real
+  // plus-ones — named, with a plus_one_rsvp — rendered no status at all and
+  // fell through to the bare permission toggle below. An email is how a
+  // plus-one is contacted; it is not what makes them exist.
+  if (hasPlusOne(guest)) {
+    // Derived plus_one_rsvp_status first, flat Guest.plus_one_rsvp as
+    // fallback — see src/lib/plusOne.js for why the flat column is not
+    // authoritative (nothing reachable writes it).
+    const style = PLUS_ONE_STATUS_STYLES[plusOneRsvpStatus(guest)] || PLUS_ONE_STATUS_STYLES.pending;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }} title={`${guest.plus_one_name || 'Plus one'} — ${style.label}`}>
         {guest.plus_one_name && (
@@ -1043,13 +1052,12 @@ export default function GuestList({
 
               /* ── Plus one sub-row ── */
               if (guest.plus_one) {
-                // Plus-one meal choice: fix/vestigial-meal-choice-reads —
-                // guest.plus_one_meal_choice is a dead column (nothing
-                // writes it once the plus-one RSVPs; see api/rsvp-submit.js).
-                // The live source is the plus-one's own per-event RsvpResponse
-                // rows, overlaid onto plus_one_event_responses by
-                // api/my-guests-rsvp.js.
-                const plusOneMealChoice = mealOptionLabel(effectiveMealChoice(guest.plus_one_event_responses), mealOptions);
+                // Plus-one meal: effectiveMealChoice ranks the plus-one's own
+                // per-event overlay first and the flat
+                // guest.plus_one_meal_choice column last. That column is NO
+                // LONGER DEAD — the guest editor writes it — so this shows a
+                // couple-entered meal until the plus-one answers for themselves.
+                const plusOneMealChoice = mealOptionLabel(effectiveMealChoice(guest.plus_one_event_responses, guest.plus_one_meal_choice), mealOptions);
                 const hasDietOrMeal = guest.plus_one_dietary_restrictions || plusOneMealChoice;
                 rows.push(
                   <TableRow key={`${guest.id}-po`} style={{ background: 'rgba(10,10,10,0.015)', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>

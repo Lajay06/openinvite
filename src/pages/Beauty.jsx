@@ -98,12 +98,15 @@ export default function BeautyPage() {
     setLoading(false);
   };
 
+  // Writes only this page's own field — a full-object write would silently
+  // clobber whatever another page currently holds in local state (e.g. an
+  // encrypted budget/contactPerson decrypted into that page's memory).
   const persist = (nextBeauty) => {
     clearTimeout(autoSaveRef.current);
     setSaveStatus('saving');
     autoSaveRef.current = setTimeout(async () => {
       try {
-        const full = { ...latestRef.current, beauty: nextBeauty };
+        const full = { beauty: nextBeauty };
         if (recordId) {
           await WeddingDetails.update(recordId, full);
         } else {

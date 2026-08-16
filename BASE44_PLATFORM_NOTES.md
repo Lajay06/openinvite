@@ -564,3 +564,178 @@ No RLS change needed at all — the safety property comes entirely from the
 endpoint verifying `wedding_id` ownership before deleting, same as PR 1b.
 Needs its own scoped PR when real guests exist post-launch; not urgent
 before then.
+
+## Hosted functions — the real `asServiceRole` bypass, but only from inside Base44 itself
+
+**Confirmed via Base44 support, 2026-08-16, in response to the "can RLS
+express owner OR admin key" question this app's whole RLS-tightening pass
+kept running into.** The admin key is NOT a bypass and never will be — no
+RLS expression can match a service/admin principal (see the top of this
+file). The actual bypass Base44 offers, `base44.asServiceRole.entities.*`,
+only works **inside Base44-hosted backend functions**, called via
+`createClientFromRequest(req)` — explicitly NOT available to an external
+backend calling in over REST with the admin key, which is everything this
+app's `api/*.js` (Vercel functions) do today. This closes the door on
+"just use asServiceRole from Vercel" as a fix direction entirely — it was
+never on the table.
+
+The app's current Base44 plan (Builder) **does** support hosted functions,
+confirmed the same day:
+
+- Defined at `base44/functions/<name>/entry.ts` (new directory this repo
+  doesn't have yet — `base44/` currently only holds `entities/*.jsonc`
+  schema mirrors).
+- Deployed with `base44 functions deploy`.
+- Two invocation shapes: per-request (called like any endpoint — good fit
+  for something like `resolveGuestByToken` or `collaborator-guests.js`'s
+  Guest read, both currently blocked because the caller has no
+  `{{user.id}}` an owner-scoped RLS rule can match) and **scheduled
+  automations**, configured in `function.jsonc` (cron-style schedule) —
+  good fit for `send-weekly-digest.js`, which today is a Vercel cron
+  admin-key-iterating every `WeddingDetails` row in one run.
+- Scheduled automations are capped at a **3-minute max run** and a
+  **5-minute minimum interval**, and cost **1 credit per run**. The weekly
+  digest cron's current single-admin-key-list-then-loop shape does NOT fit
+  a 3-minute cap once there are enough weddings — a hosted-function rebuild
+  needs to paginate across multiple scheduled runs, not port the loop as-is.
+- Secrets: `base44 secrets set`, read at runtime only via
+  `secrets.get()` from `"base44:runtime"` — **must be called inside the
+  request/automation handler, not at module load time** (module-load-time
+  access doesn't have the runtime context yet). Different secret store
+  than Vercel's env vars — `BASE44_ADMIN_KEY` as Vercel knows it and
+  whatever this becomes inside a hosted function are two separate places
+  of trust, not the same value moved.
+- `asServiceRole` is available ONLY inside these hosted functions — not in
+  the Vercel `api/*.js` functions this app is built from, regardless of
+  which admin key or secret those hold.
+
+This is a genuine architecture option for the handful of endpoints whose
+own callers can never satisfy owner-scoped RLS (anonymous guests with only
+a token, collaborators reading another account's data, batch/cron jobs
+with no single caller) — but it's a new system this repo has zero
+infrastructure for yet, not an extension of the existing Vercel/admin-key
+pattern. Treat as a scoped, deliberate migration per endpoint, not a
+blanket fix.
+
+## Preview deployments share the production Base44 backend — every preview click-through writes real production data
+
+**Trap, confirmed the hard way, 2026-08-16, during the Seating count-
+incoherence investigation.** A Vercel *preview* deployment (any
+`openinvite-git-*.vercel.app` URL from an open PR) and *production*
+(`openinvite.com.au`) are two different frontends pointed at the exact
+same Base44 app/database — there is no separate preview-environment data
+store. Clicking "Apply seating plan" on a PR's preview writes real
+`Table.assigned_guests` rows for whatever real account you're logged in
+as, identical in every way to doing it on production. This is not a bug —
+it's simply how the Vercel↔Base44 wiring works here — but it is an easy
+trap for anyone *investigating* state after a mutating action, one level
+removed from the more familiar "never read state after the thing that
+mutates it" mistake: the mutating action doesn't have to be the one you
+just intentionally ran. A live click-through test on a preview (verifying
+a PR, reproducing a bug) IS a mutating action against the shared
+production account, and any investigation done afterward — on production,
+on a *different* preview, minutes or even many messages later — is
+reading state your own prior test already changed, not a clean baseline.
+
+Concretely, this produced a real false lead in this session: reload
+instability on `/Seating` (table/guest counts differing across page
+loads) looked at first like it might be caused by concurrent data churn
+from a shared test account — and on the heavily-reused `jaygalaxy23`
+account, some of it plausibly was (a "Table" `updated_date` cluster traced
+directly back to an "Apply seating plan" click made minutes earlier, on a
+*different* PR's preview, not to anything happening in real time). The
+question only got a clean answer by resetting a `+alias` account
+(`scripts/reset-test-account.mjs`) that nothing else was concurrently
+writing to and re-testing there — see the Seating investigation writeup
+for the full trace.
+
+**The practical rule**: before treating "the data looks different than I
+expected" as evidence of an app bug, ask whether *you* (via a preview
+click-through, an apply/save action, a migration script, or any other
+write) touched that same account's data since the last time you looked —
+regardless of which URL (preview or production) you used to do it. If the
+answer is yes, that's not a clean read, and the fix is to either wait out
+your own write's effects or — better, for anything needing a genuinely
+clean baseline — use a freshly-reset `+alias` account nobody else is
+concurrently exercising.
+
+## Never encrypt a field whose writers aren't scoped first
+
+**Confirmed via a real production incident, 2026-08-16** (see gotcha #17 in
+`claude/architecture-gotchas.md`, the canonical write-up — this section is
+the platform-fact substance only). `WeddingDetails.budget`/`.contactPerson`
+moved to AES-256-GCM ciphertext (Step 2a, PR #436). Every page reading
+`WeddingDetails` goes through one chokepoint, `getMyWeddingDetails()` →
+`/api/my-wedding-details`, which decrypts on read — so the moment 2a
+shipped, every page's local `details` state held a **decrypted plain
+object** for `budget`/`contactPerson`, even pages that have nothing to do
+with budget.
+
+Any page whose save handler spreads that whole loaded object back into a
+raw `base44.entities.WeddingDetails.update(id, wholeThing)` — a pattern
+that turned out to be nearly universal across this app's "settings page"
+components — re-writes `budget`/`contactPerson` as a plain object on every
+unrelated save. Before 2a this was silently destructive (ciphertext quietly
+reverted to plaintext). After 2a's schema was pushed live typing those
+fields as `string`, Base44 itself started **rejecting the whole write with
+HTTP 422** the moment any page tried it — so the failure mode flipped from
+"silent data loss on one field" to "every save on that page fails outright,
+edit lost" — still bad, just noisy instead of quiet.
+
+The fix is never "patch the one page that broke" — every writer of the
+entity needs its own field-scoped `WRITABLE_FIELDS` allowlist (derived from
+that page's own actual edit surface, not a shared list — a shared list
+recreates the same bug shape by granting pages fields they don't own)
+**before** any new field on that entity moves to encrypted-at-rest. Order
+matters: scope every writer first, encrypt second — never the reverse.
+
+## The first write after a schema push materializes every newly-declared field on that row
+
+**Confirmed empirically 2026-08-16**, verifying the seven WeddingDetails
+declarations that fixed the six-page schema-drift data loss (canonical
+gotcha #5). Declaring a new field does **not** retroactively add it to
+existing rows. The row is unchanged until something writes to it — and then
+the *first* write materializes **every** newly-declared field at once, with
+`null` (or `[]` for an array type), regardless of which single field that
+write actually touched.
+
+Concretely: a save on the Honeymoon page sent a scoped
+`{ honeymoonDetails: … }` payload, and the row diff came back with
+**fourteen** changed keys — `honeymoonDetails` plus thirteen unrelated
+newly-declared fields (`ceremonyType`, `vowsNotes`, `weddingParty`,
+`assetContent`, `foodBeverage`, `favourItems`, …) all going `(absent)` →
+`null`. Every pre-existing real value survived untouched, including nested
+ones (`transport.coupleNote`, `accommodation.coupleNote`).
+
+**Why it matters**: this is benign and one-time, but it looks exactly like
+the unscoped-full-object-write bug it was introduced to fix. Anyone diffing
+a row immediately after a schema push will see a scoped writer apparently
+touching a dozen fields it doesn't own. Do not "fix" it. The tell is that
+every unexpected key moved from *absent* to *null* — never from a real
+value to null. If a key moved from a real value to anything, that IS the
+real bug and the allowlist is wrong.
+
+Practical rule: capture the diff baseline **after** the first post-push
+write on a given row, not before, or the one-time materialization drowns
+the signal you actually care about.
+
+## `ringBearerDetails` and friends: field names containing a credential-ish substring get redacted by tooling, not by Base44
+
+**Confirmed 2026-08-16** during the same verification (canonical gotcha
+#18). `WeddingDetails.ringBearerDetails` persists and reads back perfectly
+— but agent/CLI output layers that scan for leaked secrets match the
+substring **"Bearer"** inside the field *name* and mask the value as
+`[BLOCKED: Sensitive key]`.
+
+This is a reporting artifact, not a storage or transport problem. The field
+was verified working by reading it out of the raw row's field list (where
+it rendered as `"Theo, 6, nephew"`) rather than through a key-addressed
+lookup.
+
+**Practical implication**: any automated check keying on that field name
+will see a blocked placeholder instead of the data and can silently
+conclude "empty" or "failed". When verifying it, assert on the surrounding
+field list or on a value-equality boolean computed in-page, never on the
+echoed value. The same trap applies to any future field whose name contains
+`bearer`, `token`, `secret`, `apikey`, or `password` — prefer naming that
+avoids those substrings outright.

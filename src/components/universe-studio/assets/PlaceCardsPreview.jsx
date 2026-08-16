@@ -45,10 +45,12 @@ export default function PlaceCardsPreview({ universe, weddingDetails, guests }) 
       {/* Card grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, width: '100%' }}>
         {cards.slice(0, 6).map((g, i) => {
-          // fix/vestigial-meal-choice-reads — g.meal_choice is a dead
-          // column; the live source is the per-event event_responses
-          // overlay (guests prop must come from getMyGuestsWithRsvp).
-          const mealChoice = effectiveMealChoice(g.event_responses);
+          // Meal comes from effectiveMealChoice, which ranks the per-event
+          // overlay first and the flat Guest.meal_choice column last. That
+          // column is NO LONGER DEAD — the guest editor writes it, so a
+          // couple-entered meal shows on a place card for a guest who has
+          // not RSVP'd. Never read g.meal_choice directly.
+          const mealChoice = effectiveMealChoice(g.event_responses, g.meal_choice);
           return (
             <div key={i} style={{
               background: cardBg, padding: '6px 5px',

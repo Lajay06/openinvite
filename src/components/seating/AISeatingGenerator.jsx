@@ -3,6 +3,7 @@ import { Sparkles, CheckCircle, X } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { color } from '@/styles/tokens';
 
 const labelStyle = {
   color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -17,7 +18,7 @@ function Spinner() {
   );
 }
 
-export default function AISeatingGenerator({ guests, tables, onApplySeating, onClose }) {
+export default function AISeatingGenerator({ attendees, hostsById, tables, eventScopeLabel, onApplySeating, onClose }) {
   const [loading, setLoading] = useState(false);
   const [seatingPlan, setSeatingPlan] = useState(null);
   const [step, setStep] = useState('generate');
@@ -26,14 +27,56 @@ export default function AISeatingGenerator({ guests, tables, onApplySeating, onC
     setLoading(true);
     const tid = toast.loading('Ava is analyzing guest relationships…');
     try {
-      const guestData = guests.map(g => ({
-        id: g.id, name: g.name, category: g.category, tags: g.tags || [],
-        plus_one: g.plus_one, plus_one_name: g.plus_one_name,
-        seating_preferences: g.seating_preferences || [],
-        seating_avoid: g.seating_avoid || [],
-        dietary_restrictions: g.dietary_restrictions,
-        special_requests: g.special_requests,
-      }));
+      // ORDINAL TOKENS, NOT REAL IDS — the LLM is never asked to echo an
+      // opaque 24-char Mongo id (or a plus-one's `<id>::plus-one` synthetic
+      // id) back through structured generation. At 182+ attendees in one
+      // prompt this was measured to fail near-universally: the model's
+      // returned assignments[].guests/unassigned ids didn't match any real
+      // attendee id, so every `attendees.find(a => a.id === id)` lookup
+      // came back undefined — every table showed 0 assigned despite the
+      // model's own summary claiming guests were placed, and every
+      // unassigned chip rendered "Unknown". Short sequential tokens (g1,
+      // g2, …) are cheap for the model to copy correctly; the real id is
+      // never in its output to get wrong. Translated back to real ids
+      // immediately below, before the plan ever reaches state — everything
+      // downstream (review UI, onApplySeating) still deals in real ids.
+      const tokenByAttendeeId = new Map(attendees.map((a, i) => [a.id, `g${i + 1}`]));
+      const attendeeIdByToken = new Map(attendees.map((a, i) => [`g${i + 1}`, a.id]));
+
+      // ONE ROW PER PERSON TO SEAT, not one per Guest record with a `+1`
+      // attribute. Previously a plus-one was `plus_one: true` on their host, so
+      // the model had no id it could return for them and never allocated them a
+      // seat — while being told to "keep plus-ones together". The capacity
+      // arithmetic was wrong by exactly the number of plus-ones at each table.
+      //
+      // A plus-one carries ONLY what is theirs: their name and their dietary
+      // requirements. category, tags, seating_preferences and seating_avoid are
+      // deliberately NOT inherited from the host — "sit with the host" is
+      // already stated once by plusOneOf plus instruction 3, and copying the
+      // host's preferences would restate the same constraint in a weaker form
+      // while inventing ones that are not true (a host's "avoid Table 3" is not
+      // the plus-one's avoidance). One statement of a constraint, in the place
+      // that owns it.
+      const guestData = attendees.map(a => (a.isPlusOne
+        ? {
+            id: tokenByAttendeeId.get(a.id),
+            name: a.name,
+            isPlusOne: true,
+            plusOneOf: tokenByAttendeeId.get(a.hostGuestId),
+            dietary_restrictions: a.dietary_restrictions,
+          }
+        : {
+            id: tokenByAttendeeId.get(a.id),
+            name: a.name,
+            isPlusOne: false,
+            plusOneOf: null,
+            category: hostsById.get(a.id)?.category,
+            tags: hostsById.get(a.id)?.tags || [],
+            seating_preferences: hostsById.get(a.id)?.seating_preferences || [],
+            seating_avoid: hostsById.get(a.id)?.seating_avoid || [],
+            dietary_restrictions: a.dietary_restrictions,
+            special_requests: hostsById.get(a.id)?.special_requests,
+          }));
       const tableData = tables.map(t => ({
         id: t.id, name: t.name, capacity: t.capacity, shape: t.shape,
         currentlyAssigned: (t.assigned_guests || []).length,
@@ -42,7 +85,7 @@ export default function AISeatingGenerator({ guests, tables, onApplySeating, onC
       const response = await InvokeLLM({
         prompt: `You are an expert wedding planner specialising in optimal seating arrangements.
 
-Analyze these ${guestData.length} wedding guests and ${tableData.length} tables to create the perfect seating chart.
+Analyze these ${guestData.length} wedding attendees and ${tableData.length} tables to create the perfect seating chart.
 
 GUESTS: ${JSON.stringify(guestData)}
 
@@ -51,8 +94,10 @@ TABLES: ${JSON.stringify(tableData)}
 INSTRUCTIONS:
 1. PRIORITISE TAGS: group guests with matching tags together (e.g. all "College Friends" at one table)
 2. Secondary grouping by relationship category (family, friends, colleagues)
-3. Respect seating preferences; keep plus-ones together
+3. Every person listed needs their own seat, including plus-ones. A plus-one has isPlusOne: true and plusOneOf giving their host's id — seat them at the same table as their host. Respect seating preferences.
 4. Balance table sizes evenly; consider dietary restrictions
+5. In your output, refer to each guest ONLY by their exact "id" value from the GUESTS list above (e.g. "g1", "g2") — never their name, and never invent an id.
+6. For "reasoning", write one plain, specific sentence naming the actual tag, relationship, or preference that drove the grouping — no vague or generic language like "for synergy," "for balance," or "for cohesion."
 
 Return assignments[], unassigned[], and summary.`,
         add_context_from_internet: false,
@@ -77,7 +122,20 @@ Return assignments[], unassigned[], and summary.`,
         },
       });
 
-      setSeatingPlan(response);
+      // Translate tokens back to real attendee ids right away — an
+      // unrecognised token (the model inventing one, or dropping a person)
+      // is filtered out here rather than surfacing as a broken lookup
+      // later in the review UI.
+      const translated = {
+        ...response,
+        assignments: (response?.assignments || []).map(a => ({
+          ...a,
+          guests: (a.guests || []).map(tok => attendeeIdByToken.get(tok)).filter(Boolean),
+        })),
+        unassigned: (response?.unassigned || []).map(tok => attendeeIdByToken.get(tok)).filter(Boolean),
+      };
+
+      setSeatingPlan(translated);
       setStep('review');
       toast.success('Seating plan ready', { id: tid });
     } catch {
@@ -93,21 +151,21 @@ Return assignments[], unassigned[], and summary.`,
     } catch { /* parent handles error */ }
   };
 
-  const getGuestName = (id) => guests.find(g => g.id === id)?.name || 'Unknown';
+  const getGuestName = (id) => attendees.find(a => a.id === id)?.name || 'Unknown';
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title="Ask Ava — allocate seats" className="max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0">
 
-        {/* Header */}
-        <div style={{ background: '#0A1930', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0 }}>
+        {/* Header — same pink/purple Ava gradient every other Ava surface uses (AvaModal.jsx), not a bespoke navy */}
+        <div style={{ background: 'linear-gradient(135deg, #ec4899, #9333ea)', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Sparkles size={15} style={{ color: '#DDF762' }} />
+            <Sparkles size={15} style={{ color: '#FFFFFF' }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               Ask Ava — allocate seats
             </span>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', display: 'flex', padding: 4 }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.8)', display: 'flex', padding: 4 }}>
             <X size={16} />
           </button>
         </div>
@@ -117,15 +175,20 @@ Return assignments[], unassigned[], and summary.`,
           {/* ── Generate step ── */}
           {step === 'generate' && (
             <div>
-              {/* Stats */}
+              {/* Stats — Bug 2 labeling pass: "People to seat" is the same
+                  event-scoped, non-declined population the Seating page's
+                  own "Guests" stat shows (attendees === eventAttendees,
+                  Seating.jsx:1538) — stating the scope here too so this
+                  number is never read as a different, disagreeing total. */}
               <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
                 {[
-                  { label: 'Guests to seat', value: guests.length, color: '#E03553' },
+                  { label: 'People to seat', value: attendees.length, color: '#E03553', sub: eventScopeLabel },
                   { label: 'Tables available', value: tables.length, color: '#803D81' },
                 ].map(s => (
                   <div key={s.label} style={{ flex: 1, border: '1px solid rgba(10,10,10,0.08)', padding: '20px 24px', textAlign: 'center' }}>
                     <p style={{ fontSize: 36, fontWeight: 700, color: s.color, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, lineHeight: 1 }}>{s.value}</p>
                     <p style={{ ...labelStyle, margin: '8px 0 0' }}>{s.label}</p>
+                    {s.sub && <p style={{ fontSize: 11, color: color.textMuted, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>{s.sub}</p>}
                   </div>
                 ))}
               </div>
@@ -149,9 +212,9 @@ Return assignments[], unassigned[], and summary.`,
 
               <button
                 onClick={handleGenerate}
-                disabled={loading || guests.length === 0 || tables.length === 0}
+                disabled={loading || attendees.length === 0 || tables.length === 0}
                 className="btn-primary"
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', fontSize: 14, opacity: loading || guests.length === 0 || tables.length === 0 ? 0.6 : 1 }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0', fontSize: 14, opacity: loading || attendees.length === 0 || tables.length === 0 ? 0.6 : 1 }}
               >
                 {loading ? <Spinner /> : <Sparkles size={14} />}
                 {loading ? 'Asking Ava…' : 'Ask Ava for a seating plan'}
@@ -174,7 +237,7 @@ Return assignments[], unassigned[], and summary.`,
 
               {seatingPlan.assignments?.map((a, i) => {
                 const tbl = tables.find(t => t.id === a.tableId);
-                const assignedGuests = (a.guests || []).map(id => guests.find(g => g.id === id)).filter(Boolean);
+                const assignedGuests = (a.guests || []).map(id => attendees.find(x => x.id === id)).filter(Boolean);
                 return (
                   <div key={i} style={{ border: '1px solid rgba(10,10,10,0.08)', marginBottom: 12 }}>
                     <div style={{ padding: '10px 16px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -192,7 +255,7 @@ Return assignments[], unassigned[], and summary.`,
                             padding: '3px 10px', borderRadius: 999,
                             background: 'rgba(10,10,10,0.06)',
                           }}>
-                            {g.name}{g.plus_one ? ' +1' : ''}
+                            {g.name}
                           </span>
                         ))}
                       </div>

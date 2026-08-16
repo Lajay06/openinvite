@@ -116,6 +116,17 @@ const TABS = [
   { key: 'notes',     label: 'Notes' },
 ];
 
+// persist() writes only these fields — this page's declared edit surface,
+// mirroring loadData()'s own destructuring below — instead of the whole
+// loaded WeddingDetails record. Anything not listed here (budget,
+// contactPerson, ...) is owned by another page; a full-object write would
+// silently clobber whatever that page currently holds in local state.
+const WRITABLE_FIELDS = [
+  'celebrant', 'license', 'ceremonyType', 'ceremonyMusic', 'ceremonyReadings',
+  'vowsNotes', 'ringBearerDetails', 'flowerGirlDetails', 'orderOfServiceNotes',
+  'additionalNotes',
+];
+
 export default function CeremonyDetailsPage() {
   const [data, setData] = useState({});
   const [recordId, setRecordId] = useState(null);
@@ -141,6 +152,7 @@ export default function CeremonyDetailsPage() {
         ringBearerDetails: r.ringBearerDetails || '',
         flowerGirlDetails: r.flowerGirlDetails || '',
         orderOfServiceNotes: r.orderOfServiceNotes || '',
+        additionalNotes: r.additionalNotes || '',
       });
       setRecordId(r.id || null);
       latestRef.current = r;
@@ -169,8 +181,12 @@ export default function CeremonyDetailsPage() {
   const update = (patch) => {
     const next = { ...data, ...patch };
     setData(next);
-    const full = { ...latestRef.current, ...next };
-    latestRef.current = full;
+    const merged = { ...latestRef.current, ...next };
+    latestRef.current = merged;
+    const full = {};
+    for (const field of WRITABLE_FIELDS) {
+      if (field in merged) full[field] = merged[field];
+    }
     persist(full);
   };
 

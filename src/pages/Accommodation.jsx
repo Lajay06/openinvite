@@ -201,12 +201,15 @@ export default function AccommodationPage() {
     }, 1200);
   };
 
+  // persist() writes only this page's own field — a full-object write would
+  // silently clobber whatever another page currently holds in local state
+  // (e.g. an encrypted budget/contactPerson decrypted into that page's
+  // memory).
   const update = (patch) => {
     const next = { ...accom, ...patch };
     setAccom(next);
-    const full = { ...latestRef.current, accommodation: next };
-    latestRef.current = full;
-    persist(full);
+    latestRef.current = { ...latestRef.current, accommodation: next };
+    persist({ accommodation: next });
   };
 
   const properties = accom.manualProperties || [];

@@ -33,8 +33,9 @@
     "submittedBy": {
       "type": "string"
     },
-    "guestEmail": {
-      "type": "string"
+    "guestEmailHash": {
+      "type": "string",
+      "description": "HMAC-SHA256 of the guest's email (api/_lib/questionnaireCrypto.js hashId) — used only for the limitOnePerGuest dedup equality check, never decrypted or displayed. Replaces the old plaintext guestEmail field (fix/song-request-email-hash)."
     },
     "guestNote": {
       "type": "string"
