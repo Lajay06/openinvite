@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { getUniverse } from '@/lib/universeCatalog';
 import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
+import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -47,7 +48,11 @@ export default function GuestCollect() {
   const tsTokenRef = useRef('');
 
   useEffect(() => {
-    fetchWeddingBySlug(weddingSlug).then(w => {
+    // Pass the cached password: this route is NOT behind the unlock screen
+    // (it is its own /w/:slug/collect route, not part of MultiPageWeddingWebsite),
+    // so without it a guest who already unlocked the site in this tab would
+    // still be served the gated response here.
+    fetchWeddingBySlug(weddingSlug, getCachedWeddingPassword(weddingSlug)).then(w => {
       setWedding(w);
       setLoading(false);
     });
@@ -86,6 +91,7 @@ export default function GuestCollect() {
           mailingAddress,
           honeypot,
           turnstileToken,
+          password: getCachedWeddingPassword(weddingSlug),
         }),
       });
       const data = await res.json().catch(() => ({}));

@@ -95,7 +95,11 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
       const res = await fetch('/api/wedding-poll-comment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ weddingSlug, pollId: poll.id, comment: text, turnstileToken }),
+        // password: replayed on a protected site so the write passes the
+        // website gate. Empty string on an unprotected one, which the
+        // server ignores.
+        body: JSON.stringify({ weddingSlug, pollId: poll.id, comment: text, turnstileToken,
+          password: getCachedWeddingPassword(weddingSlug) }),
       });
       if (res.ok) {
         setLocalComments(prev => [...prev, { text, timestamp: new Date().toISOString() }]);
@@ -354,7 +358,8 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
       await fetch('/api/wedding-poll-vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ weddingSlug: weddingDetails.slug, pollId, optionId, turnstileToken, voterId: getVoterId() }),
+        body: JSON.stringify({ weddingSlug: weddingDetails.slug, pollId, optionId, turnstileToken,
+          voterId: getVoterId(), password: getCachedWeddingPassword(weddingDetails.slug) }),
       });
     } catch {
       // Non-fatal — the visitor's own vote is already reflected optimistically

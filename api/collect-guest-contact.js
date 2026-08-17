@@ -58,6 +58,7 @@
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail, verifyTurnstileToken } from './_lib/security.js';
 import { hashId, encryptPayload } from './_lib/questionnaireCrypto.js';
+import { guestGateBlocks, GUEST_GATE_MESSAGE } from './_lib/guestSafeWedding.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -111,6 +112,9 @@ export default async function handler(req, res) {
   }
 
   const weddingSlug = sanitizeString(req.body?.weddingSlug || '');
+  // Accepted only from the POST body — never a query string (#449: access
+  // logs, browser history, referrer, shared-cache keys).
+  const candidatePassword = typeof req.body?.password === 'string' ? req.body.password : '';
   const name = sanitizeString(req.body?.name || '').slice(0, MAX_TEXT_LENGTH);
   const emailRaw = sanitizeString(req.body?.email || '').slice(0, MAX_TEXT_LENGTH);
   const email = emailRaw && isValidEmail(emailRaw) ? emailRaw.toLowerCase() : '';
@@ -149,6 +153,13 @@ export default async function handler(req, res) {
     const wedding = weddings.find(w => w.slug === weddingSlug && !w.is_test);
     if (!wedding) {
       return res.status(404).json({ error: 'Wedding not found.' });
+    }
+
+    // The website password gate, consulted before the write lands. Turnstile
+    // proves "not a bot"; this proves "allowed to be here at all". They are
+    // different questions and this endpoint needs both.
+    if (await guestGateBlocks(wedding, candidatePassword, '[collect-guest-contact]')) {
+      return res.status(403).json({ error: GUEST_GATE_MESSAGE, passwordRequired: true });
     }
 
     const submissionQuery = encodeURIComponent(JSON.stringify({ wedding_id: wedding.id }));

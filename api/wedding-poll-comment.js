@@ -25,6 +25,7 @@ import {
   sanitizeString,
   verifyTurnstileToken,
 } from './_lib/security.js';
+import { guestGateBlocks, GUEST_GATE_MESSAGE } from './_lib/guestSafeWedding.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -54,6 +55,9 @@ export default async function handler(req, res) {
   }
 
   const weddingSlug = sanitizeString(req.body?.weddingSlug || '');
+  // Accepted only from the POST body — never a query string (#449: access
+  // logs, browser history, referrer, shared-cache keys).
+  const candidatePassword = typeof req.body?.password === 'string' ? req.body.password : '';
   const pollId = sanitizeString(req.body?.pollId || '');
   const comment = sanitizeString(req.body?.comment || '').slice(0, MAX_COMMENT_LENGTH);
   const turnstileToken = req.body?.turnstileToken;
@@ -93,6 +97,13 @@ export default async function handler(req, res) {
     const wedding = unwrapList(await findRes.json()).find(w => w.slug === weddingSlug && !w.is_test);
     if (!wedding) {
       return res.status(404).json({ error: 'Wedding not found.' });
+    }
+
+    // The website password gate, consulted before the write lands. Turnstile
+    // proves "not a bot"; this proves "allowed to be here at all". They are
+    // different questions and this endpoint needs both.
+    if (await guestGateBlocks(wedding, candidatePassword, '[wedding-poll-comment]')) {
+      return res.status(403).json({ error: GUEST_GATE_MESSAGE, passwordRequired: true });
     }
 
     const createRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/PollComment`, {

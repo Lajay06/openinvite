@@ -53,11 +53,9 @@ const EXEMPT = {
  * That is the difference between a tracked gap and a suppressed one.
  */
 const PENDING_GATE = {
-  'wedding-poll-comment.js': 'write — poll comment; PR (b)',
-  'wedding-poll-vote.js': 'write — poll vote; PR (b)',
-  'song-request-submit.js': 'write — song request; PR (b)',
-  'collect-guest-contact.js': 'write — guest contact submission; PR (b)',
-  'rsvp-link-request.js': 'action — sends an RSVP-link email; PR (b)',
+  // EMPTY as of PR (b) — all seven slug-resolving endpoints now gate. The
+  // list stays because emptying it is the point: a future hole gets tracked
+  // here or fails as untracked, and it can never quietly refill.
 };
 
 /** Reads api/*.js (top level only — subdirs are crons/webhooks, not guest endpoints). */
@@ -97,20 +95,39 @@ function resolvesWeddingBySlug(code) {
 
 /** Does it consult the website password gate? */
 function consultsGate(code) {
-  return /websiteGateIsOn|verifyWeddingPassword/.test(code);
+  return /websiteGateIsOn|verifyWeddingPassword|guestGateBlocks/.test(code);
+}
+
+/**
+ * RULE 7 — an async guard called without `await` returns a truthy Promise.
+ *
+ * guestGateBlocks is deliberately named so that collapse fails CLOSED (every
+ * write refused, loudly) rather than open. That is a safety net, not a
+ * licence: a missing await is still a bug, and it is invisible in review
+ * because the code reads exactly as it did when correct. So the call shape
+ * is asserted mechanically rather than trusted.
+ */
+function gateCallsAreAwaited(code) {
+  const calls = code.match(/[^\s.]*\s*guestGateBlocks\s*\(/g) || [];
+  return calls.every(c => /await\s+guestGateBlocks\s*\($/.test(c.trim()) || c.trim().startsWith('function'));
 }
 
 export async function runGuestEndpointGate() {
   const results = [];
   const ungated = [];
   const gated = [];
+  const unawaited = [];
   let checked = 0;
 
   for (const file of apiEndpoints()) {
     const code = stripComments(fs.readFileSync(path.join(API_DIR, file), 'utf8'));
     if (!resolvesWeddingBySlug(code)) continue;
     checked++;
-    if (consultsGate(code)) { gated.push(file); continue; }
+    if (consultsGate(code)) {
+      gated.push(file);
+      if (!gateCallsAreAwaited(code)) unawaited.push(file);
+      continue;
+    }
     if (file in EXEMPT) continue;
     ungated.push(file);
   }
@@ -137,6 +154,11 @@ export async function runGuestEndpointGate() {
     ? pass('guest-endpoint gate — PENDING_GATE has no stale entries', `${Object.keys(PENDING_GATE).length} still pending`)
     : fail('guest-endpoint gate — PENDING_GATE has no stale entries', 'none',
            `${staleP.join(', ')} now gate — remove them from PENDING_GATE`));
+
+  results.push(unawaited.length === 0
+    ? pass('guest-endpoint gate — every guestGateBlocks call is awaited (RULE 7)', `${gated.length} gated endpoints`)
+    : fail('guest-endpoint gate — every guestGateBlocks call is awaited (RULE 7)', 'all awaited',
+           `${unawaited.join(', ')} — an un-awaited async guard returns a truthy Promise`));
 
   // The known-good instance, asserted by name so the two cannot both rot.
   const bySlug = stripComments(fs.readFileSync(path.join(API_DIR, 'wedding-by-slug.js'), 'utf8'));

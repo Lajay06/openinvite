@@ -33,6 +33,7 @@ import {
 } from './_lib/security.js';
 import { renderInvitationEmail } from '../src/lib/emailTemplate.js';
 import { getBase44User } from './_lib/base44Admin.js';
+import { guestGateBlocks, GUEST_GATE_MESSAGE } from './_lib/guestSafeWedding.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const SUPPORT_ADDRESS = 'hello@openinvite.com.au';
@@ -97,6 +98,9 @@ export default async function handler(req, res) {
 
   const email = sanitizeString(req.body?.email || '').toLowerCase();
   const weddingSlug = sanitizeString(req.body?.weddingSlug || '');
+  // Accepted only from the POST body — never a query string (#449: access
+  // logs, browser history, referrer, shared-cache keys).
+  const candidatePassword = typeof req.body?.password === 'string' ? req.body.password : '';
   const turnstileToken = req.body?.turnstileToken;
 
   if (!isValidEmail(email) || !weddingSlug) {
@@ -137,6 +141,17 @@ export default async function handler(req, res) {
     const allWeddings = await fetchAll('WeddingDetails');
     const wedding = allWeddings.find(w => w.slug === weddingSlug);
     if (!wedding) return res.status(200).json(NEUTRAL);
+
+    // The website password gate — decided BEFORE the guest lookup, and
+    // deliberately so. The neutral response above protects EMAIL enumeration:
+    // it must not be possible to learn which addresses are on the guest list.
+    // The gate protects something else entirely, and its answer depends only
+    // on the slug and the supplied password. Resolving it first guarantees the
+    // gate's response can never vary by email, so the two properties stay
+    // independent rather than leaking through each other.
+    if (await guestGateBlocks(wedding, candidatePassword, '[rsvp-link-request]')) {
+      return res.status(403).json({ error: GUEST_GATE_MESSAGE, passwordRequired: true });
+    }
 
     const allGuests = await fetchAll('Guest');
     const guest = allGuests.find(g =>

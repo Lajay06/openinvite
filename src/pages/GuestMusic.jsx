@@ -4,6 +4,7 @@ import { Turnstile } from '@marsidev/react-turnstile';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft, Music, Loader2 } from 'lucide-react';
 import { interactiveDivProps } from '@/lib/a11y';
+import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
@@ -40,7 +41,11 @@ export default function GuestMusic() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const wedding = await fetchWeddingBySlug(weddingSlug);
+        // Cached password: same reason as GuestCollect — /w/:slug/music is
+        // its own route, outside the unlock screen, so an already-unlocked
+        // guest would otherwise be served the gated response and shown the
+        // "requests not open" fallback.
+        const wedding = await fetchWeddingBySlug(weddingSlug, getCachedWeddingPassword(weddingSlug));
         if (wedding) setDetails(wedding);
       } finally {
         setLoading(false);
@@ -148,6 +153,7 @@ export default function GuestMusic() {
           explicit: selectedTrack.explicit || false,
           spotifyUrl: selectedTrack.spotifyUrl || '',
           submittedBy: guestName,
+          password: getCachedWeddingPassword(weddingSlug),
           guestEmail: guestEmail.trim(),
           guestNote: guestNote,
           turnstileToken: tsTokenRef.current,

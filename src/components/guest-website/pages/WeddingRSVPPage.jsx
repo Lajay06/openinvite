@@ -16,6 +16,7 @@ import CapriSectionMark from '../layouts/CapriSectionMark';
 import MykonosSectionMark from '../layouts/MykonosSectionMark';
 import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
 import VineRule from '../layouts/VineRule';
+import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 
 const STATUS = { idle: 'idle', sending: 'sending', sent: 'sent', error: 'error' };
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -48,7 +49,8 @@ export default function WeddingRSVPPage({ weddingDetails, theme, typography, uni
       const res = await fetch('/api/rsvp-link-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, weddingSlug: weddingDetails.slug, turnstileToken: tsTokenRef.current }),
+        body: JSON.stringify({ email, weddingSlug: weddingDetails.slug, turnstileToken: tsTokenRef.current,
+          password: getCachedWeddingPassword(weddingDetails.slug) }),
       });
       setStatus(res.ok ? STATUS.sent : STATUS.error);
       tsTokenRef.current = '';
