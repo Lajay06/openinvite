@@ -10,6 +10,10 @@
       "type": "string",
       "description": "Artist name"
     },
+    "sourceSongRequestId": {
+      "type": "string",
+      "description": "Back-link to the SongRequest this track was created from by api/song-request-review.js's add action. Idempotency guard (song-request review fix, 2026-08-17): before creating a Music row for a request, the endpoint checks for an existing row with this id - a failed status write can then be retried without double-adding. Empty for tracks the couple added directly."
+    },
     "spotify_track_id": {
       "type": "string",
       "description": "Spotify track ID"

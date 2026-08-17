@@ -35,6 +35,19 @@
  *               'declined'. No Music entry created.
  * Response: 200 { ok: true } or 400/401/404 { error: string }
  *
+ * KNOWN BROKEN as of this writing, and not fixed by this file's current
+ * change: both status writes below use the admin key, and SongRequest.update
+ * RLS is scoped on created_by_id, which is permanently 'anonymous' on these
+ * rows because guests submit them unauthenticated. Base44 therefore returns
+ * 403 and the endpoint 500s. The fix lands in two further steps — an
+ * ownerUserId-scoped update rule, then switching these two calls to the
+ * caller's token (the #434 pattern this file already uses for Music.create).
+ * See scratchpad/SONG-REQUEST-REVIEW-FIX.md.
+ *
+ * What IS fixed here: 'add' is now idempotent. It used to create the Music
+ * row and then write the status, so the guaranteed 403 left the track added
+ * and the request pending, and every retry added the track again.
+ *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
 
@@ -136,20 +149,44 @@ async function handlePost(req, res, caller, callerToken) {
   // action === 'add' — bridge into the couple's real Music list, using the
   // caller's own token so Base44 stamps real ownership on the new record
   // (Music.create RLS is open, same as Guest.create).
-  await callerFetch('POST', `/apps/${BASE44_APP_ID}/entities/Music`, callerToken, {
-    song_title: request.title,
-    artist: request.artist,
-    album: request.album || '',
-    spotify_track_id: request.spotifyTrackId || '',
-    source: request.spotifyTrackId ? 'spotify' : 'general',
-    image_url: request.albumArt || '',
-    preview_url: '',
-    duration: fmtDuration(request.duration),
-    category: 'general',
-    approved: true,
-    guest_suggestion: true,
-    notes: request.guestNote ? `Requested by ${request.submittedBy} — ${request.guestNote}` : `Requested by ${request.submittedBy}`,
-  });
+  //
+  // IDEMPOTENT. The Music row is created before the status write, and the two
+  // are not atomic — anything that fails in between (today, reliably: the
+  // status write 403s because SongRequest.update is still scoped on
+  // created_by_id, which is 'anonymous' on every row) leaves the track added
+  // and the request still pending. A retry would then add the track a second
+  // time. Guarding on sourceSongRequestId makes the retry find the existing
+  // row and skip straight to the status write, so ordering stops mattering.
+  //
+  // Deliberately NOT solved by writing the status first: that turns a visible
+  // duplicate into silent loss — a request marked 'added' whose track was
+  // never created.
+  const existingMusic = unwrapList(await callerFetch(
+    'GET',
+    `/apps/${BASE44_APP_ID}/entities/Music?q=${encodeURIComponent(JSON.stringify({ sourceSongRequestId: songRequestId }))}`,
+    callerToken,
+  ).catch(() => []));
+
+  if (existingMusic.length === 0) {
+    await callerFetch('POST', `/apps/${BASE44_APP_ID}/entities/Music`, callerToken, {
+      song_title: request.title,
+      artist: request.artist,
+      album: request.album || '',
+      spotify_track_id: request.spotifyTrackId || '',
+      source: request.spotifyTrackId ? 'spotify' : 'general',
+      image_url: request.albumArt || '',
+      preview_url: '',
+      duration: fmtDuration(request.duration),
+      category: 'general',
+      approved: true,
+      guest_suggestion: true,
+      sourceSongRequestId: songRequestId,
+      notes: request.guestNote ? `Requested by ${request.submittedBy} — ${request.guestNote}` : `Requested by ${request.submittedBy}`,
+    });
+  } else {
+    console.warn(`[song-request-review] Music row already exists for request ${songRequestId} — skipping create, completing the status write. This is the retry path after a failed status write.`);
+  }
+
   await adminFetch('PUT', `/apps/${BASE44_APP_ID}/entities/SongRequest/${songRequestId}`, { status: 'added' });
 
   return res.status(200).json({ ok: true });
