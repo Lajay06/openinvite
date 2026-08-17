@@ -242,3 +242,64 @@ bulk edits. Companions already in force for this class of script:
 
 See `scripts/purge-spotify-connections.mjs` for the reference implementation.
 
+
+### 6d. On a WRITE, refuse loudly — 6a does not extend to writes
+
+Ratified by the advisor 2026-08-18 from PR #459. 6a says silent-ignore.
+That is correct for reads and **wrong for writes**, and it is worth being
+precise about why, because "be consistent with 6a" is the tempting answer.
+
+6a's justification is the existence oracle. Neither half of it survives on
+a write:
+
+1. **There is no oracle left to protect.** `api/wedding-by-slug.js` already
+   answers `{ passwordProtected: true }` for any slug — by design, because
+   that is how the unlock screen knows to render. Refusing a write discloses
+   nothing that one public GET does not already disclose.
+2. **Silence is actively harmful here, in a way it never is on a read.** A
+   read served empty looks like a wedding with no activity and costs the
+   guest nothing. A write accepted and discarded tells a real guest their
+   song request, contact details or RSVP-link email went through **when it
+   did not**. The only callers reaching that branch are an attacker, who
+   learns nothing new, and a legitimate guest whose sessionStorage was
+   cleared, who needs telling to unlock again.
+
+So: `403 { error: <sentence-case message>, passwordRequired: true }`.
+Silence would trade a disclosure we do not prevent anyway for a data-loss
+bug we would never hear about.
+
+**Corollary — order the gate so its answer cannot leak a second property.**
+`api/rsvp-link-request.js` returns a deliberately neutral `{ sent: true }`
+to resist email enumeration. Its gate is consulted BEFORE the guest lookup,
+so the gate's response depends only on slug and password and can never vary
+by email. When two protections share an endpoint, resolve the one whose
+answer is already public first.
+
+---
+
+## RULE 9 — Name an async guard so a missing `await` fails CLOSED
+
+Learned building `guestGateBlocks` (PR #459), and the constructive half of
+RULE 7.
+
+RULE 7 records the collapse: `!verifyWeddingPassword(...)` became
+`!Promise` -> `false`, and the gate admitted everyone. **The direction of
+that collapse is a function of the name.** A Promise is always truthy, so:
+
+- `guestGateAllows(...)` un-awaited -> truthy -> **allow everyone**. Silent,
+  invisible, exactly RULE 7's bug.
+- `guestGateBlocks(...)` un-awaited -> truthy -> **refuse everyone**. Loud,
+  immediate, caught by the first test that exercises the happy path.
+
+Same mistake, opposite blast radius. **When a boolean guard must be async,
+name it so that truthy means DENY.**
+
+This is a safety net, not a licence — a missing `await` is still a bug, and
+it is invisible in review because the code reads exactly as it did when it
+worked. So assert the call shape mechanically:
+`tests/persistence/guest-endpoint-gate.mjs` requires every `guestGateBlocks`
+call site to be awaited.
+
+And verify the assertion fails before trusting it. That one was confirmed by
+removing an `await` and watching CI go red. **A guard that has never failed
+is unproven, not strong.**

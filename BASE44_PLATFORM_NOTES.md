@@ -573,6 +573,33 @@ endpoint verifying `wedding_id` ownership before deleting, same as PR 1b.
 Needs its own scoped PR when real guests exist post-launch; not urgent
 before then.
 
+### Known instances, and the two that are now demonstrated rather than inferred
+
+The gap is no longer hypothetical for `PollComment`. PR #459's verification
+wrote one row through `api/wedding-poll-comment.js` on the fixture and then
+tried to remove it every way available: the wedding owner's own session token
+-> `404`, the admin key -> `404`, while an admin READ of the same id returns
+the row happily. It is still there.
+
+| # | entity / source | rows | status |
+|---|---|---|---|
+| 1 | `RsvpResponse` — `rsvp-submit.js` | ~2010 orphaned test rows | confirmed undeletable (2026-08-03) |
+| 2 | `SongRequest` — `song-request-submit.js` | 231 orphaned | inferred, same shape |
+| 3 | `Guest.update` / `PlanGift.update` collaborator gap | n/a | same root cause, on the hosted-functions list |
+| 4 | `PollComment` — `wedding-poll-comment.js` | 220 orphaned + **2 fixture probe rows** | **demonstrated 2026-08-18 (PR #459)** |
+
+The two PR #459 rows are `[pr459-poll] "PR459 write-gate probe"` and
+`[pr459-prod-poll] "PR459 prod check gate-off"` on the `john-suzanne`
+fixture. Both were deliberate: proving the gate lets a correct password
+through requires a write that actually lands. Both carry a `poll_id` matching
+no existing poll, so nothing renders them. They are recorded here rather than
+quietly left, because an erasure ledger that omits the rows its own
+verification created is not a ledger.
+
+Every other probe in that verification was designed to write nothing — the
+security assertion refuses before any write, and the allowed-path probes used
+an unmatched email so no row and no email resulted.
+
 ## Hosted functions — the real `asServiceRole` bypass, but only from inside Base44 itself
 
 **Confirmed via Base44 support, 2026-08-16, in response to the "can RLS
