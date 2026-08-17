@@ -19,11 +19,15 @@ const PRIORITY_STYLES = {
 
 export default function RegistryProductList({ items, onEdit, onDelete, onPurchase, loading, readOnly = false }) {
   const [purchaseProduct, setPurchaseProduct] = useState(null);
-  const [purchaseData, setPurchaseData] = useState({ guest_name: '', guest_email: '', quantity: 1, message: '' });
+  // No guest_email. It was collected (and required) but never read anywhere —
+  // not for dedup, display or export — so it was pure collection without
+  // purpose. Removed rather than hashed: a hash would have preserved the
+  // pointlessness forever. See scratchpad/STEP-3-FOLLOWUP-AUDITS.md.
+  const [purchaseData, setPurchaseData] = useState({ guest_name: '', quantity: 1, message: '' });
 
   const openPurchase = (product) => {
     setPurchaseProduct(product);
-    setPurchaseData({ guest_name: '', guest_email: '', quantity: 1, message: '' });
+    setPurchaseData({ guest_name: '', quantity: 1, message: '' });
   };
 
   const handlePurchaseSubmit = () => {
@@ -134,10 +138,6 @@ export default function RegistryProductList({ items, onEdit, onDelete, onPurchas
                   <Input value={purchaseData.guest_name} onChange={e => setPurchaseData({ ...purchaseData, guest_name: e.target.value })} placeholder="Enter your name" />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Label>Email</Label>
-                  <Input type="email" value={purchaseData.guest_email} onChange={e => setPurchaseData({ ...purchaseData, guest_email: e.target.value })} placeholder="your@email.com" />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <Label>Quantity</Label>
                   <Input type="number" min="1" max={(purchaseProduct.quantity_requested || 1) - (purchaseProduct.quantity_purchased || 0)} value={purchaseData.quantity} onChange={e => setPurchaseData({ ...purchaseData, quantity: e.target.value })} />
                   <span style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -151,8 +151,8 @@ export default function RegistryProductList({ items, onEdit, onDelete, onPurchas
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
                 <button onClick={() => setPurchaseProduct(null)} className="btn-editorial-secondary">Cancel</button>
-                <button onClick={handlePurchaseSubmit} disabled={!purchaseData.guest_name || !purchaseData.guest_email} className="btn-primary"
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: !purchaseData.guest_name || !purchaseData.guest_email ? 0.5 : 1 }}>
+                <button onClick={handlePurchaseSubmit} disabled={!purchaseData.guest_name} className="btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: purchaseData.guest_name ? 1 : 0.5 }}>
                   <CheckCircle size={13} />Confirm purchase
                 </button>
               </div>
