@@ -334,7 +334,7 @@ const ARTICLES = {
         <li style={S.li}><strong>QR:</strong> download a QR code as PNG — print it on your Save the Dates, menus, or welcome signage</li>
       </ul>
       <h3 style={S.h3}>Password protection</h3>
-      <p style={S.p}>Enable in Publish modal → Website tab. Guests see a password entry screen before your site loads. The ?preview=true URL parameter bypasses this for your own previewing.</p>
+      <p style={S.p}>Enable in Publish modal → Website tab. Guests see a password entry screen before your site loads. The preview links in your own dashboard skip that screen for you, because you are signed in as the owner — the same link does nothing for anyone else.</p>
       <div style={S.tip}><p style={S.tipText}><strong>Privacy:</strong> Toggle "Hide from Search" to prevent Google from indexing your wedding website.</p></div>
     </div>
   ),
