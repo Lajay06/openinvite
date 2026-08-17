@@ -5,11 +5,9 @@ import { Lightbulb, Loader2, X, FileText, Check, Plus, Phone, Users, Building2 }
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
-import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails } from "@/lib/resolveMyWedding";
+import { getMyWeddingDetails, putMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import AvaButton from '@/components/shared/AvaButton';
-const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
@@ -118,9 +116,13 @@ export default function EmergencyContactPage() {
     setLoading(false);
   };
 
-  // Writes only this page's own fields — a full-object write would silently
-  // clobber whatever another page currently holds in local state (e.g. an
-  // encrypted budget/contactPerson decrypted into that page's memory).
+  // Both of this page's fields are AES-256-GCM ciphertext at rest (Step 2b),
+  // so they can only be written server-side — encrypting needs
+  // BASE44_ADMIN_KEY, which the browser never holds. putMyWeddingDetails()
+  // sends both in ONE request: two separate calls on a first-ever save would
+  // each find no record and each create one. It also creates the record when
+  // the couple has none yet, which is why there is no create branch here any
+  // more.
   const persist = (dataOverride, vendorsOverride) => {
     const full = { emergencyContacts: dataOverride ?? data, dayVendorContacts: vendorsOverride ?? vendorContacts };
     latestRef.current = { ...latestRef.current, ...full };
@@ -128,16 +130,18 @@ export default function EmergencyContactPage() {
     setSaveStatus('saving');
     autoSaveRef.current = setTimeout(async () => {
       try {
-        if (recordId) {
-          await WeddingDetails.update(recordId, full);
-        } else {
-          const c = await WeddingDetails.create(full);
-          setRecordId(c.id);
-          latestRef.current = { ...full, id: c.id };
+        const id = await putMyWeddingDetails(full);
+        if (!recordId) {
+          setRecordId(id);
+          latestRef.current = { ...latestRef.current, id };
         }
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch { setSaveStatus('idle'); toast.error('Save failed. Please try again.'); }
+      } catch (e) {
+        console.error('[EmergencyContact] save failed:', e.message);
+        setSaveStatus('idle');
+        toast.error('Save failed. Please try again.');
+      }
     }, 1200);
   };
 

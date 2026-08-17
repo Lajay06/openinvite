@@ -12,14 +12,13 @@
  * used to make can no longer return usable values for those fields.
  *
  * ENCRYPTED_FIELDS below lists every field this endpoint knows how to
- * decrypt on read / encrypt on write. Step 2a only actually WRITES
- * ciphertext for `contactPerson` and `budget` (the only two with no direct
- * client writer today outside this endpoint — see BASE44_PLATFORM_NOTES.md
- * for the others' status). `emergencyContacts`/`dayVendorContacts`/
- * `celebrant`/`license` are listed here now so Step 2b only has to update
- * their writer pages (EmergencyContact.jsx/CeremonyDetails.jsx) and flip
- * them into ciphertext at write — this endpoint's decrypt path already
- * handles them.
+ * decrypt on read / encrypt on write. Step 2a shipped `budget` and
+ * `contactPerson`; Step 2b completed the set with `emergencyContacts`,
+ * `dayVendorContacts`, `celebrant` and `license`, migrating their writer
+ * pages (EmergencyContact.jsx, CeremonyDetails.jsx) off direct
+ * base44.entities.WeddingDetails writes and onto this endpoint's PUT.
+ * WRITABLE_FIELDS now equals ENCRYPTED_FIELDS — no encrypted field has a
+ * client-side writer any more.
  *
  * Mixed-row safety (hard requirement, every encryption PR): decryptField()
  * below only ever attempts decryption when the stored value is a string —
@@ -40,15 +39,18 @@
  * GET → the full WeddingDetails record for the caller's own wedding (most
  *   recent non-test), with ENCRYPTED_FIELDS decrypted where applicable.
  *   null if the caller has no WeddingDetails yet.
- * PUT body: { field: 'budget' | 'contactPerson', value: any }
- *   → encrypts `value` and writes it to that field on the caller's own
- *   WeddingDetails record (creating one if none exists yet, via the
- *   CALLER's own token so Base44 stamps created_by_id correctly — an
- *   admin-key create always stamps "anonymous", never a chosen owner, see
- *   BASE44_PLATFORM_NOTES.md). Response: 200 { id } or 400/401/500 { error }.
- *   `field` is checked against WRITABLE_FIELDS — this endpoint only ever
- *   touches the specific encrypted fields it owns, never a generic
- *   WeddingDetails.update passthrough.
+ * PUT body: { field: <name>, value: any }        — one field, or
+ *           { fields: { <name>: any, … } }      — several, in one write
+ *   → encrypts each value and writes it to the caller's own WeddingDetails
+ *   record (creating one if none exists yet, via the CALLER's own token so
+ *   Base44 stamps created_by_id correctly — an admin-key create always
+ *   stamps "anonymous", never a chosen owner, see BASE44_PLATFORM_NOTES.md).
+ *   Response: 200 { id } or 400/401/500 { error }. Every field name is
+ *   checked against WRITABLE_FIELDS — this endpoint only ever touches the
+ *   specific encrypted fields it owns, never a generic
+ *   WeddingDetails.update passthrough. Use the batch form when one page
+ *   owns more than one encrypted field: two sequential single-field PUTs on
+ *   a first-ever save would create two records.
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token
  * (used for the GET; the PUT/create below use the caller's own forwarded
@@ -68,10 +70,11 @@ const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 // ciphertext for budget/contactPerson only — the rest are wired for
 // Step 2b's writer-page migrations.
 const ENCRYPTED_FIELDS = ['budget', 'contactPerson', 'emergencyContacts', 'dayVendorContacts', 'celebrant', 'license'];
-// Fields THIS endpoint is allowed to write. Narrower than ENCRYPTED_FIELDS
-// on purpose — grows as each writer page (Step 2b) migrates onto this
-// endpoint, never a blanket "update anything" passthrough.
-const WRITABLE_FIELDS = ['budget', 'contactPerson'];
+// Fields THIS endpoint is allowed to write. Never a blanket "update
+// anything" passthrough. Step 2b completed the set: every field in
+// ENCRYPTED_FIELDS is now written as ciphertext through here, and no page
+// writes any of them via base44.entities.WeddingDetails directly.
+const WRITABLE_FIELDS = ['budget', 'contactPerson', 'emergencyContacts', 'dayVendorContacts', 'celebrant', 'license'];
 
 function unwrapList(payload) {
   if (Array.isArray(payload)) return payload;
@@ -151,21 +154,58 @@ async function handleGet(req, res, caller) {
   return res.status(200).json(decrypted);
 }
 
-async function handlePut(req, res, caller, callerToken) {
-  const field = req.body?.field;
-  if (!WRITABLE_FIELDS.includes(field)) {
-    return res.status(400).json({ error: `field must be one of: ${WRITABLE_FIELDS.join(', ')}` });
+/**
+ * Accepts either shape:
+ *   { field: 'budget', value: … }              — single field (Budget.jsx)
+ *   { fields: { celebrant: …, license: … } }   — batch (Step 2b writer pages)
+ *
+ * The batch form exists because a page that owns two encrypted fields must
+ * write them in ONE request. Two sequential single-field PUTs on a
+ * first-ever save would each find no record and each create one, producing
+ * the duplicate-WeddingDetails shape the "Alex & Sam" telemetry in
+ * handleGet() exists to catch. One request, one create.
+ *
+ * Every key is checked against WRITABLE_FIELDS individually — the batch
+ * form widens how many fields can be written at once, never which.
+ */
+function readPutFields(body) {
+  if (body?.fields !== undefined) {
+    const { fields } = body;
+    if (!fields || typeof fields !== 'object' || Array.isArray(fields)) {
+      return { error: 'fields must be an object of { fieldName: value }' };
+    }
+    const names = Object.keys(fields);
+    if (names.length === 0) return { error: 'fields must name at least one field' };
+    const rejected = names.filter(n => !WRITABLE_FIELDS.includes(n));
+    if (rejected.length > 0) {
+      return { error: `fields may only contain: ${WRITABLE_FIELDS.join(', ')} (rejected: ${rejected.join(', ')})` };
+    }
+    return { fields };
   }
-  const value = req.body?.value;
-  const ciphertext = encryptPayload(value ?? null);
+
+  const field = body?.field;
+  if (!WRITABLE_FIELDS.includes(field)) {
+    return { error: `field must be one of: ${WRITABLE_FIELDS.join(', ')}` };
+  }
+  return { fields: { [field]: body?.value } };
+}
+
+async function handlePut(req, res, caller, callerToken) {
+  const { fields, error } = readPutFields(req.body);
+  if (error) return res.status(400).json({ error });
+
+  const payload = {};
+  for (const [name, value] of Object.entries(fields)) {
+    payload[name] = encryptPayload(value ?? null);
+  }
 
   const wedding = await getMyWedding(caller.id);
   if (wedding) {
-    await callerFetch('PUT', `/apps/${BASE44_APP_ID}/entities/WeddingDetails/${wedding.id}`, callerToken, { [field]: ciphertext });
+    await callerFetch('PUT', `/apps/${BASE44_APP_ID}/entities/WeddingDetails/${wedding.id}`, callerToken, payload);
     return res.status(200).json({ id: wedding.id });
   }
 
-  const created = await callerFetch('POST', `/apps/${BASE44_APP_ID}/entities/WeddingDetails`, callerToken, { [field]: ciphertext });
+  const created = await callerFetch('POST', `/apps/${BASE44_APP_ID}/entities/WeddingDetails`, callerToken, payload);
   return res.status(200).json({ id: created.id });
 }
 

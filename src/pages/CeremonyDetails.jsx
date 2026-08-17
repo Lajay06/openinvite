@@ -8,7 +8,7 @@ import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
 import AvaButton from '@/components/shared/AvaButton';
-import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, putMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -121,11 +121,19 @@ const TABS = [
 // loaded WeddingDetails record. Anything not listed here (budget,
 // contactPerson, ...) is owned by another page; a full-object write would
 // silently clobber whatever that page currently holds in local state.
-const WRITABLE_FIELDS = [
-  'celebrant', 'license', 'ceremonyType', 'ceremonyMusic', 'ceremonyReadings',
+//
+// Split into two lists because they take two different write paths (Step
+// 2b). ENCRYPTED_WRITABLE_FIELDS are AES-256-GCM ciphertext at rest and can
+// only be written server-side via /api/my-wedding-details; the rest are
+// plaintext and still go direct. Both halves together are this page's edit
+// surface — keep them in sync with loadData().
+const ENCRYPTED_WRITABLE_FIELDS = ['celebrant', 'license'];
+const PLAINTEXT_WRITABLE_FIELDS = [
+  'ceremonyType', 'ceremonyMusic', 'ceremonyReadings',
   'vowsNotes', 'ringBearerDetails', 'flowerGirlDetails', 'orderOfServiceNotes',
   'additionalNotes',
 ];
+const WRITABLE_FIELDS = [...ENCRYPTED_WRITABLE_FIELDS, ...PLAINTEXT_WRITABLE_FIELDS];
 
 export default function CeremonyDetailsPage() {
   const [data, setData] = useState({});
@@ -160,21 +168,51 @@ export default function CeremonyDetailsPage() {
     setLoading(false);
   };
 
+  // Two writes, deliberately ordered (Step 2b). The encrypted pair goes
+  // first through /api/my-wedding-details, because that call is what creates
+  // the WeddingDetails record when the couple has none yet — it returns the
+  // id the plaintext write then needs. Doing it the other way round on a
+  // first-ever save would create two records.
   const persist = (full) => {
     clearTimeout(autoSaveRef.current);
     setSaveStatus('saving');
     autoSaveRef.current = setTimeout(async () => {
       try {
-        if (recordId) {
-          await WeddingDetails.update(recordId, full);
-        } else {
-          const c = await WeddingDetails.create(full);
-          setRecordId(c.id);
-          latestRef.current = { ...full, id: c.id };
+        const encrypted = {};
+        for (const field of ENCRYPTED_WRITABLE_FIELDS) {
+          if (field in full) encrypted[field] = full[field];
         }
+        const plaintext = {};
+        for (const field of PLAINTEXT_WRITABLE_FIELDS) {
+          if (field in full) plaintext[field] = full[field];
+        }
+
+        let id = recordId;
+        if (Object.keys(encrypted).length > 0) {
+          id = await putMyWeddingDetails(encrypted);
+          if (!recordId) {
+            setRecordId(id);
+            latestRef.current = { ...latestRef.current, id };
+          }
+        }
+
+        if (Object.keys(plaintext).length > 0) {
+          if (id) {
+            await WeddingDetails.update(id, plaintext);
+          } else {
+            const c = await WeddingDetails.create(plaintext);
+            setRecordId(c.id);
+            latestRef.current = { ...latestRef.current, ...plaintext, id: c.id };
+          }
+        }
+
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch { setSaveStatus('idle'); toast.error('Save failed. Please try again.'); }
+      } catch (e) {
+        console.error('[CeremonyDetails] save failed:', e.message);
+        setSaveStatus('idle');
+        toast.error('Save failed. Please try again.');
+      }
     }, 1200);
   };
 

@@ -190,54 +190,16 @@
         }
       }
     },
+    // Step 2b: ciphertext at rest. Original shape kept in the description
+    // rather than in `properties`, because the stored value is now a string.
     "celebrant": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "phone": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "notes": {
-          "type": "string"
-        }
-      }
+      "type": "string",
+      "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the original {name, title, phone, email, type, notes} object, fix/weddingdetails-field-encryption Step 2b. Written only via api/my-wedding-details.js (PUT) by src/pages/CeremonyDetails.jsx, which no longer writes this field directly. Decrypted server-side only, by that same endpoint's GET. Mixed rows are expected and permanent: legacy plaintext rows are still objects and pass through that endpoint's typeof-string discriminator untouched. There is no backfill — a row converts to ciphertext the first time CeremonyDetails saves it."
     },
+    // Step 2b: ciphertext at rest — see the celebrant note above.
     "license": {
-      "type": "object",
-      "properties": {
-        "issuingOffice": {
-          "type": "string"
-        },
-        "applicationDate": {
-          "type": "string"
-        },
-        "issueDate": {
-          "type": "string"
-        },
-        "expiryDate": {
-          "type": "string"
-        },
-        "licenseNumber": {
-          "type": "string"
-        },
-        "witnessesRequired": {
-          "type": "string"
-        },
-        "notes": {
-          "type": "string"
-        }
-      }
+      "type": "string",
+      "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the original {issuingOffice, applicationDate, issueDate, expiryDate, licenseNumber, witnessesRequired, notes} object, fix/weddingdetails-field-encryption Step 2b. Written only via api/my-wedding-details.js (PUT) by src/pages/CeremonyDetails.jsx. Decrypted server-side only, by that same endpoint's GET. Mixed rows are expected and permanent: legacy plaintext rows are still objects and pass through that endpoint's typeof-string discriminator untouched. There is no backfill — a row converts to ciphertext the first time CeremonyDetails saves it."
     },
     "rehearsal": {
       "type": "object",
@@ -305,6 +267,29 @@
     "ceremonyReadings": {
       "type": "string"
     },
+    // The six below exist in the live schema but were missing from this
+    // mirror entirely (found during the Step 2b sync). All plaintext, all
+    // written by src/pages/CeremonyDetails.jsx alongside the encrypted
+    // celebrant/license pair.
+    "ceremonyType": {
+      "type": "string"
+    },
+    "vowsNotes": {
+      "type": "string"
+    },
+    "ringBearerDetails": {
+      "type": "string"
+    },
+    "flowerGirlDetails": {
+      "type": "string"
+    },
+    "orderOfServiceNotes": {
+      "type": "string"
+    },
+    "additionalNotes": {
+      "type": "string",
+      "description": "Free-text ceremony notes (CeremonyDetails Notes tab). Written by src/pages/CeremonyDetails.jsx — present in both its WRITABLE_FIELDS allowlist and its loadData() destructuring since #444. Both halves are required: with only the allowlist the value saves and reloads blank. Distinct from the nested additionalNotes on accommodation, foodBeverage, weddingFavours and entertainmentDetails, which are separate per-section notes on their own objects."
+    },
     "floristNotes": {
       "type": "string"
     },
@@ -326,16 +311,11 @@
     "accommodationNotes": {
       "type": "string"
     },
+    // Step 2a: ciphertext at rest. This mirror said "object" until Step 2b —
+    // live has been "string" since #436. Drift, now corrected.
     "contactPerson": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "phone": {
-          "type": "string"
-        }
-      }
+      "type": "string",
+      "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the original {name, phone} object, fix/weddingdetails-field-encryption Step 2a. No known writer in the app (verified via repo-wide grep) — encrypted at rest defensively regardless, which is also why no row has ever held a plaintext value. Decrypted server-side only, by api/my-wedding-details.js's GET. Mixed rows are handled by that endpoint's typeof-string discriminator; there is no backfill and none is needed (see scratchpad/DECISION-LOG.md, Step 2a closed as already-satisfied)."
     },
     "preWeddingEvents": {
       "type": "array",
@@ -729,28 +709,11 @@
         }
       }
     },
+    // Step 2a: ciphertext at rest. This mirror said "object" until Step 2b —
+    // live has been "string" since #436. Drift, now corrected.
     "budget": {
-      "type": "object",
-      "description": "The couple's overall budget plan (Budget page 'Save plan' section) — a single target total plus a rough per-category allocation, distinct from the itemized Budget entity records (individual line items) the rest of the Budget page tracks.",
-      "properties": {
-        "total": {
-          "type": "number",
-          "description": "Overall wedding budget target"
-        },
-        "categories": {
-          "type": "object",
-          "properties": {
-            "venue": { "type": "number" },
-            "catering": { "type": "number" },
-            "photography": { "type": "number" },
-            "flowers": { "type": "number" },
-            "music": { "type": "number" },
-            "attire": { "type": "number" },
-            "transportation": { "type": "number" },
-            "honeymoon": { "type": "number" }
-          }
-        }
-      }
+      "type": "string",
+      "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the couple's overall budget plan — the original {total, categories:{venue, catering, photography, flowers, music, attire, transportation, honeymoon}} object from the Budget page's 'Save plan' section, distinct from the itemized Budget entity records the rest of that page tracks. fix/weddingdetails-field-encryption Step 2a. Written only via api/my-wedding-details.js (PUT, field: 'budget') by src/pages/Budget.jsx's BudgetPlanner. Decrypted server-side only, by that same endpoint's GET. Mixed rows are handled by that endpoint's typeof-string discriminator; there is no backfill and none is needed (see scratchpad/DECISION-LOG.md, Step 2a closed as already-satisfied)."
     },
     "transport": {
       "type": "object",
@@ -868,41 +831,17 @@
         }
       }
     },
+    // Step 2b: ciphertext at rest — see the celebrant note above.
     "emergencyContacts": {
-      "type": "object",
-      "description": "Wedding day emergency contacts",
-      "properties": {
-        "primary": {
-          "type": "object"
-        },
-        "backup": {
-          "type": "object"
-        },
-        "venue": {
-          "type": "object"
-        },
-        "otherNotes": {
-          "type": "string"
-        }
-      }
+      "type": "string",
+      "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the original wedding-day emergency contacts {primary, backup, venue, otherNotes} object, fix/weddingdetails-field-encryption Step 2b. Written only via api/my-wedding-details.js (PUT) by src/pages/EmergencyContact.jsx, which no longer writes this field directly. Decrypted server-side only, by that same endpoint's GET. Never returned to a guest — also listed in NEVER_RETURN_FIELDS in api/_lib/guestSafeWedding.js. Mixed rows are expected and permanent: legacy plaintext rows are still objects and pass through that endpoint's typeof-string discriminator untouched. There is no backfill — a row converts to ciphertext the first time EmergencyContact saves it."
     },
+    // Step 2b: ciphertext at rest. Note this one's legacy plaintext shape is
+    // an ARRAY, not an object — still not a string, so the same
+    // typeof-string discriminator holds.
     "dayVendorContacts": {
-      "type": "array",
-      "description": "Key vendor contacts for the wedding day",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "phone": {
-            "type": "string"
-          },
-          "role": {
-            "type": "string"
-          }
-        }
-      }
+      "type": "string",
+      "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the original key-vendor-contacts array of {name, phone, role} objects, fix/weddingdetails-field-encryption Step 2b. Written only via api/my-wedding-details.js (PUT) by src/pages/EmergencyContact.jsx, which no longer writes this field directly. Decrypted server-side only, by that same endpoint's GET. Never returned to a guest — also listed in NEVER_RETURN_FIELDS in api/_lib/guestSafeWedding.js. Mixed rows are expected and permanent: legacy plaintext rows are still arrays and pass through that endpoint's typeof-string discriminator untouched. There is no backfill — a row converts to ciphertext the first time EmergencyContact saves it."
     },
     "polls": {
       "type": "array",

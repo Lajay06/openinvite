@@ -31,15 +31,15 @@ function mostRecent(records) {
 /**
  * @returns {Promise<object|null>} the logged-in user's own WeddingDetails record, or null if they have none yet.
  *
- * fix/weddingdetails-field-encryption (Step 2a): now fetched via
+ * fix/weddingdetails-field-encryption (Step 2a/2b): now fetched via
  * /api/my-wedding-details instead of a raw base44.entities.WeddingDetails.filter()
- * call — budget/contactPerson (and, from Step 2b on, emergencyContacts/
- * dayVendorContacts/celebrant/license) are AES-256-GCM ciphertext at rest,
- * and decrypting needs BASE44_ADMIN_KEY, a server-only secret the browser
- * never holds. The "owns more than one real record" telemetry that used to
- * live here (the "Alex & Sam" incident) moved server-side, into that
- * endpoint. websitePassword and every other field are unaffected and come
- * back exactly as before.
+ * call — budget, contactPerson, emergencyContacts, dayVendorContacts,
+ * celebrant and license are AES-256-GCM ciphertext at rest, and decrypting
+ * needs BASE44_ADMIN_KEY, a server-only secret the browser never holds. The
+ * "owns more than one real record" telemetry that used to live here (the
+ * "Alex & Sam" incident) moved server-side, into that endpoint.
+ * websitePassword and every other field are unaffected and come back
+ * exactly as before.
  */
 export async function getMyWeddingDetails() {
   const token = localStorage.getItem('base44_access_token');
@@ -57,6 +57,38 @@ export async function getMyWeddingDetails() {
     console.error('[getMyWeddingDetails] /api/my-wedding-details fetch error:', err.message);
     return null;
   }
+}
+
+/**
+ * Writes one or more AES-256-GCM-encrypted WeddingDetails fields through
+ * /api/my-wedding-details. The counterpart to getMyWeddingDetails() — the
+ * single client-side chokepoint for WRITING the encrypted fields, as that
+ * is for reading them.
+ *
+ * Pass every encrypted field a page owns in ONE call. Two sequential calls
+ * on a first-ever save would each find no record and each create one; the
+ * endpoint's batch form does a single create. Creating a record is exactly
+ * what this does when the caller has none yet, so the returned id is the
+ * page's new recordId.
+ *
+ * @param {Record<string, unknown>} fields e.g. { celebrant: {…}, license: {…} }
+ * @returns {Promise<string>} the WeddingDetails record id
+ * @throws if the write fails — callers surface this, never swallow it: a
+ *   silent failure here means the couple's data did not save.
+ */
+export async function putMyWeddingDetails(fields) {
+  const token = localStorage.getItem('base44_access_token');
+  if (!token) throw new Error('Not signed in');
+  const res = await fetch('/api/my-wedding-details', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ fields }),
+  });
+  if (!res.ok) {
+    throw new Error(`/api/my-wedding-details PUT failed (${res.status})`);
+  }
+  const { id } = await res.json();
+  return id;
 }
 
 /**
