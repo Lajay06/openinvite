@@ -64,6 +64,16 @@ import { excludeTestRecords } from './_lib/productData.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
+
+/**
+ * RSVP link fields, never writable through a passthrough update. See the PUT
+ * handler below. Kept beside the other module constants so a future field
+ * (E3, or a second token type) is added in one obvious place.
+ */
+const TOKEN_FIELDS = [
+  'rsvp_link_id', 'rsvp_link_id_hash', 'rsvp_link_id_enc',
+  'plus_one_rsvp_link_id', 'plus_one_rsvp_link_id_hash', 'plus_one_rsvp_link_id_enc',
+];
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 const PAGE = 'Guests';
 
@@ -166,7 +176,23 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const updates = req.body?.updates && typeof req.body.updates === 'object' ? req.body.updates : {};
+      const raw = req.body?.updates && typeof req.body.updates === 'object' ? req.body.updates : {};
+      // Track E: RSVP link fields are NOT writable through this passthrough.
+      //
+      // This handler forwards caller-supplied fields verbatim, so without this
+      // guard a collaborator could set rsvp_link_id directly — storing a
+      // plaintext token with no matching hash or ciphertext. That row would
+      // still resolve through the legacy fallback, look completely healthy,
+      // and then die silently the moment E3 nulls the plaintext column.
+      //
+      // A denylist rather than a full allowlist, deliberately: the invariant
+      // being protected is specific — a token may only be written together
+      // with its hash and ciphertext, by the one endpoint that holds the key
+      // (api/my-guest-links.js) — and an allowlist of Guest's ~30 fields would
+      // silently drop unrelated ones as the entity grows.
+      const updates = { ...raw };
+      for (const f of TOKEN_FIELDS) delete updates[f];
+
       const updated = await adminFetch('PUT', `/apps/${BASE44_APP_ID}/entities/Guest/${guestId}`, updates);
       return res.status(200).json({ guest: updated });
     }
