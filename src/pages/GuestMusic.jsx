@@ -16,6 +16,16 @@ export default function GuestMusic() {
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [selectedTrack, setSelectedTrack] = useState(null);
+  // Manual entry. Spotify search is the happy path, but it is not always
+  // available (the app-token search has been down for an account-level reason
+  // since before the teardown), and even when it is, a guest can want a song
+  // it does not return. Without this, submission is impossible: submitRequest
+  // requires a selectedTrack and the only other way to get one is clicking a
+  // search result. api/song-request-submit.js already treats spotifyTrackId as
+  // optional, so this needs no server or schema change.
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualTitle, setManualTitle] = useState('');
+  const [manualArtist, setManualArtist] = useState('');
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [guestNote, setGuestNote] = useState('');
@@ -97,6 +107,17 @@ export default function GuestMusic() {
         setSearchError(e.message || 'Search failed. Please try again.');
       })
       .finally(() => setSearching(false));
+  };
+
+  /** A song the guest typed themselves. Same shape as a search result minus
+   *  everything Spotify would have supplied — no id, so the request is stored
+   *  with an empty spotifyTrackId. */
+  const selectManualTrack = () => {
+    const title = manualTitle.trim();
+    const artist = manualArtist.trim();
+    if (!title || !artist) return;
+    setSelectedTrack({ id: null, title, artist, album: '', albumArt: '', duration: 0, explicit: false, spotifyUrl: '' });
+    setManualOpen(false);
   };
 
   const handleSearchChange = (e) => {
@@ -190,7 +211,7 @@ export default function GuestMusic() {
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 32 }}>
             "{selectedTrack?.title}" by {selectedTrack?.artist} has been sent to the couple.
           </p>
-          <button onClick={() => { setSubmitted(false); setSelectedTrack(null); setGuestNote(''); setGuestEmail(''); setSearchQuery(''); setSearchResults([]); }} style={{ padding: '12px 32px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={() => { setSubmitted(false); setSelectedTrack(null); setGuestNote(''); setGuestEmail(''); setSearchQuery(''); setSearchResults([]); setManualOpen(false); setManualTitle(''); setManualArtist(''); }} style={{ padding: '12px 32px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             Request another song
           </button>
         </div>
@@ -215,6 +236,51 @@ export default function GuestMusic() {
           )}
           {!searching && !searchError && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '16px 0' }}>No results. Try a different search.</p>
+          )}
+
+          {/* Manual entry. Always reachable, because search failing must never
+              be the same thing as "you cannot request a song". */}
+          {!selectedTrack && !manualOpen && (
+            <button
+              onClick={() => { setManualOpen(true); setManualTitle(searchQuery.trim()); }}
+              style={{ background: 'none', border: 'none', padding: '4px 0', marginBottom: 16, color: 'rgba(255,255,255,0.6)', fontSize: 13, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              Cannot find your song? Type it in yourself
+            </button>
+          )}
+
+          {!selectedTrack && manualOpen && (
+            <div style={{ padding: 16, marginBottom: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', margin: '0 0 12px' }}>Add a song yourself</p>
+              <input
+                value={manualTitle}
+                onChange={e => setManualTitle(e.target.value)}
+                placeholder="Song title"
+                style={{ width: '100%', padding: '12px 14px', marginBottom: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#FFFFFF', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}
+              />
+              <input
+                value={manualArtist}
+                onChange={e => setManualArtist(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') selectManualTrack(); }}
+                placeholder="Artist"
+                style={{ width: '100%', padding: '12px 14px', marginBottom: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#FFFFFF', fontSize: 15, outline: 'none', boxSizing: 'border-box' }}
+              />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={selectManualTrack}
+                  disabled={!manualTitle.trim() || !manualArtist.trim()}
+                  style={{ padding: '10px 20px', background: '#1DB954', border: 'none', color: '#0A0A0A', fontSize: 13, fontWeight: 700, cursor: (manualTitle.trim() && manualArtist.trim()) ? 'pointer' : 'not-allowed', opacity: (manualTitle.trim() && manualArtist.trim()) ? 1 : 0.4, fontFamily: 'inherit' }}
+                >
+                  Use this song
+                </button>
+                <button
+                  onClick={() => setManualOpen(false)}
+                  style={{ padding: '10px 20px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Search results */}
@@ -246,7 +312,15 @@ export default function GuestMusic() {
           {selectedTrack && (
             <div style={{ marginTop: 24 }}>
               <div style={{ display: 'flex', gap: 12, padding: '14px', background: 'rgba(29,185,84,0.08)', border: '1px solid rgba(29,185,84,0.2)', marginBottom: 20, alignItems: 'center' }}>
-                <img src={selectedTrack.albumArt} alt={`${selectedTrack.title} album art`} style={{ width: 44, height: 44, objectFit: 'cover', flexShrink: 0 }} />
+                {/* A manually typed song has no artwork — render a placeholder
+                    rather than a broken image. */}
+                {selectedTrack.albumArt ? (
+                  <img src={selectedTrack.albumArt} alt={`${selectedTrack.title} album art`} style={{ width: 44, height: 44, objectFit: 'cover', flexShrink: 0 }} />
+                ) : (
+                  <div aria-hidden="true" style={{ width: 44, height: 44, flexShrink: 0, background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Music size={18} style={{ color: 'rgba(255,255,255,0.4)' }} />
+                  </div>
+                )}
                 <div>
                   <p style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF', margin: 0 }}>{selectedTrack.title}</p>
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{selectedTrack.artist}</p>
