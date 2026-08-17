@@ -4,6 +4,60 @@ Closed decisions with their reasoning, so a restart doesn't re-litigate them.
 
 ---
 
+## Step 2b — COMPLETE END TO END, 2026-08-17
+
+All five stages shipped and verified on production. Nothing outstanding.
+
+| stage | PR | what shipped | verified |
+|---|---|---|---|
+| (a) encrypt 4 fields | #446 | `emergencyContacts`, `dayVendorContacts`, `celebrant`, `license` -> AES-256-GCM via `api/my-wedding-details` | raw query shows ciphertext strings; UI type -> Saved -> reload -> painted on both writer pages |
+| 0 (hotfix) | #447 | `?preview=true` ownership gate | production: anonymous and non-owner both GATED, owner FULL |
+| (i) sentinel cleanup | #448 | `websitePasswordEnabled` as sole source of truth; sentinels removed | PublishModal toggle persists across reload for the first time since it shipped |
+| (ii) transport | #449 | password moved to POST body; `Cache-Control: private, no-store` | query-string password now IGNORED on production |
+| (iii) hash | #450 | scrypt with versioned prefix, per-value salt, `timingSafeEqual`, set-new/clear UX | raw query shows `scrypt$…`; credential never returned to any client |
+| (c) Spotify teardown | #451, #452 | OAuth writers/readers removed; tokens purged; field undeclared | one row purged, verified by independent raw query; `music.spotifyConnection` gone from the live schema |
+
+### What the encrypted set looks like now
+
+Six fields are ciphertext at rest (`budget`, `contactPerson`,
+`emergencyContacts`, `dayVendorContacts`, `celebrant`, `license`), one is a
+one-way hash (`websitePassword`), and `WRITABLE_FIELDS` on
+`api/my-wedding-details.js` equals the full set — no encrypted or hashed field
+has a client-side writer any more.
+
+### No migrations were run, deliberately
+
+Every stage that could have had a backfill was closed the 2a way instead:
+audits found zero plaintext to migrate in every case (`budget`/`contactPerson`
+in 2a, the four 2b fields, and zero real `websitePassword` values). A no-op
+migration would have logged "migrated 0 rows" and implied a plaintext history
+that never existed. The audits are the record.
+
+### Things this programme found that were not the task
+
+- `?preview=true` was an unauthenticated bypass of the whole website password
+  feature. Found while scoping stage (b); fixed first as a hotfix.
+- `PublishModal`'s password toggle had never persisted, because it wrote an
+  undeclared field that Base44 silently dropped (gotcha #5).
+- `WeddingDetails` mirror drift: `budget`/`contactPerson` still declared
+  `object` after #436 made them `string` live, and six fields missing from the
+  mirror entirely.
+- The privacy policy described a Spotify OAuth integration receiving profile
+  data that the product no longer has.
+- Guest song requests are 100% blocked while Spotify search is down, because
+  submission requires a search result and there is no free-text path. Spotify
+  search itself is dead for a billing reason (`403: Active premium
+  subscription required for the owner of the app`), confirmed identical on
+  pre-teardown production. Free-text entry is queued as a micro-PR ahead of
+  Step 3 because it is guest-facing and currently broken.
+
+### Rules this programme produced
+
+[[standing-rules]] RULE 6 (guest-facing gate posture), RULE 7 (async guard
+gate-collapse), RULE 8 (authorized scope as an enforced precondition).
+
+---
+
 ## Website password gate — FAIL OPEN when enabled with no credential, 2026-08-17
 
 **Ratified by the advisor 2026-08-17, binding condition attached.**

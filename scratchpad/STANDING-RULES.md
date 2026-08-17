@@ -197,3 +197,48 @@ began comparing a Promise to `true` and failed. That failure was the only
 signal. Had `verifyWeddingPassword` lacked a negative-path test, the change
 would have shipped a wide-open gate with a green build.
 
+---
+
+## RULE 8 — An authorized scope is an enforced precondition, not a comment
+
+**Ratified 2026-08-17**, from the stage (c) Spotify token purge.
+
+When a script performs a data operation authorized against a **specific
+scope** — these rows, this field, this account — the script must **encode
+that scope and refuse to run outside it**. Not a comment describing the
+intent. Not a careful operator. A precondition that aborts.
+
+### Why
+
+Authorization is granted against a candidate set the owner *reviewed*, almost
+always in a dry run. Between that review and the execute, the set can change:
+a new row appears, a row is edited, someone else writes. At that moment the
+approval no longer describes what the script would do — but the script has no
+idea, and does it anyway.
+
+The purge was approved for exactly one row. Written naively it would have
+purged every candidate it found at execute time, which is a different
+operation from the one that was approved, using the same words.
+
+### The mechanic
+
+```
+node scripts/whatever.mjs --execute --expect-rows=<id,id>
+```
+
+The script compares the live candidate set to the authorized one and, on any
+difference, prints both and exits non-zero **without writing**. Re-scoping is
+possible but explicit: a fresh dry run and a fresh approval.
+
+Applies to any authorized data operation — purges, backfills, migrations,
+bulk edits. Companions already in force for this class of script:
+
+- **dry run is the default**; executing takes an explicit flag
+- **never skip silently** — a row the script cannot act on is reported loudly
+  with a non-zero exit, because "skipped" reads as "done"
+- **scope the write** to the named field; never a full-object save
+- **verify after**, by an independent read, not the script's own return value
+- **never print secret values**, not even truncated
+
+See `scripts/purge-spotify-connections.mjs` for the reference implementation.
+
