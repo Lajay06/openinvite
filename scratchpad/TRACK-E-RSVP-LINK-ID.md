@@ -173,6 +173,24 @@ for this track, and it is the one that would be easy to skip.
 
 ---
 
+## 5a. E3 BLOCKING OBLIGATIONS — this list must be empty before E3 merges
+
+Recorded 2026-08-18 after E1 shipped. These are raw-plaintext readers that E1
+deliberately did NOT touch, because E1 left storage unchanged. Each one breaks
+silently the moment E3 nulls the plaintext columns — no error, just a link that
+resolves to nothing or an empty string rendered into an email.
+
+| # | reader | what breaks at E3 | required change |
+|---|---|---|---|
+| **E3-1** | `api/rsvp-link-request.js:161-166` — reads `guest.rsvp_link_id` with the admin key and emails `${baseUrl}/rsvp/${token}` | the "email me my link" recovery flow sends a URL ending in `/rsvp/undefined` | decrypt `rsvp_link_id_enc` server-side; it already holds the key, so no endpoint hop |
+| **E3-2** | `api/_lib/rsvpAuth.js:61,66` — `resolveGuestByToken` queries the plaintext columns | **every RSVP link in every invitation stops resolving** | query `*_hash` (already dual-path from E2; E3 removes the plaintext fallback) |
+| **E3-3** | `SendInvitesModal.jsx` `previewRsvpUrl`, `EmailTemplates.jsx` `sampleRsvpUrl` | both silently fall through to the `preview-token` placeholder | **no change — this is the intended end state.** A sample email the couple is only looking at must not carry a live capability. Listed so it reads as a decision, not a regression. |
+
+E3-1 and E3-2 are hard blockers. E3-3 is a deliberate no-op, recorded so that
+nobody "fixes" it later by re-introducing a live token into a preview.
+
+---
+
 ## 6. Summary
 
 | question | answer |
@@ -183,3 +201,73 @@ for this track, and it is the one that would be easy to skip.
 | Extra scope the audit revealed | Client-side token *minting* must move server-side too; one endpoint absorbs both minting and raw reads. |
 | Open decision for you | **Which key** — dedicated `RSVP_TOKEN_KEY` (recommended) vs `BASE44_ADMIN_KEY` + rotation runbook. |
 | Migration | 202 rows, **run it**; do not assume uuid shape (1 legacy 27-char token). |
+
+---
+
+## 7. E2 field specifications — for the advisor to apply
+
+Four new fields on `Guest`. All `string`, all nullable, all default absent.
+Declare-first: these must exist in the live schema **before** any code writes
+them (gotcha #5 — the first write after a push materialises every
+newly-declared field as `null` on that row).
+
+### `rsvp_link_id_hash`
+
+- **type:** `string`
+- **nullable:** yes — null until the guest has a token (E2 dual-write) or until
+  the migration backfills an existing one.
+- **description:**
+  > HMAC-SHA256 digest of the guest's RSVP link token, keyed with
+  > RSVP_TOKEN_KEY (a dedicated server-only secret, deliberately NOT
+  > BASE44_ADMIN_KEY — RSVP links are printed in invitations and must not share
+  > a failure domain with the admin key). Computed server-side by
+  > api/_lib/rsvpAuth.js and api/my-guest-links.js; the raw token never derives
+  > from this value. This is the LOOKUP key: resolveGuestByToken hashes the
+  > token a guest presents and matches on this field, so Guest.read staying
+  > null no longer lets an unscoped lister harvest usable invitation links.
+  > Never reversible to the raw token, never an auth mechanism on its own.
+
+### `rsvp_link_id_enc`
+
+- **type:** `string`
+- **nullable:** yes — same lifecycle as the hash; the two are always written
+  together and are meaningless apart.
+- **description:**
+  > AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the guest's raw
+  > RSVP link token, keyed with RSVP_TOKEN_KEY. Exists because the token must
+  > remain RECOVERABLE: the couple copies links in bulk, resends invitations,
+  > and shares them over WhatsApp, and api/rsvp-link-request.js re-sends a
+  > guest's own link on request. Decrypted only server-side, only for the
+  > wedding's owner (api/my-guest-links.js verifies created_by_id and reads
+  > with the caller's own token). Rotating RSVP_TOKEN_KEY without a
+  > decrypt-old/re-encrypt-new migration permanently invalidates every
+  > distributed link — see BASE44_PLATFORM_NOTES.md.
+
+### `plus_one_rsvp_link_id_hash`
+
+- **type:** `string`
+- **nullable:** yes — null unless the guest has a plus-one with their own email.
+- **description:**
+  > HMAC-SHA256 digest of the PLUS-ONE's own RSVP link token, keyed with
+  > RSVP_TOKEN_KEY. Same construction and same purpose as
+  > rsvp_link_id_hash, for the separate token a plus-one receives when
+  > plus_one_email is set (feat/plus-one-identity). resolveGuestByToken falls
+  > back to matching this field when the primary hash does not match, and
+  > returns role:'plus_one'.
+
+### `plus_one_rsvp_link_id_enc`
+
+- **type:** `string`
+- **nullable:** yes — same lifecycle as the plus-one hash.
+- **description:**
+  > AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the PLUS-ONE's
+  > own raw RSVP link token, keyed with RSVP_TOKEN_KEY. Same recovery purpose
+  > and same rotation hazard as rsvp_link_id_enc.
+
+### Not declared, not yet dropped
+
+`rsvp_link_id` and `plus_one_rsvp_link_id` stay declared through E2 and the
+migration — E2 dual-writes and resolveGuestByToken falls back to them, so
+removing them early would break every unmigrated row. E3 nulls their VALUES;
+undeclaring them is a separate later cleanup, and undeclaring alone does not
+erase stored data (gotcha #5), which is exactly why E3 nulls explicitly.
