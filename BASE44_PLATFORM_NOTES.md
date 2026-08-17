@@ -120,6 +120,30 @@ onboarding emails have never sent. Not fixed as part of this session
 (out of scope for the task that found it); flagged for its own fix using
 the `?api_key=` pattern already proven in `base44Admin.js`.
 
+## `RSVP_TOKEN_KEY` — rotation permanently invalidates every distributed RSVP link unless migrated first
+
+Set 2026-08-18 (Track E). A dedicated key, deliberately NOT `BASE44_ADMIN_KEY`,
+because RSVP tokens are **externally distributed** — printed in invitations and
+sitting in guests' inboxes, beyond our control. Sharing a failure domain with
+the admin key would mean an admin-key rotation, done for any unrelated reason,
+silently killed every outstanding invitation. Same principle as
+`websitePasswordHash.js` (#450), amplified by the fact that the blast radius
+here is other people's mailboxes rather than one couple's own site.
+
+**Deliberate rotation of `RSVP_TOKEN_KEY` requires a decrypt-old/re-encrypt-new
+migration BEFORE the old key retires — rotation without it permanently
+invalidates every distributed RSVP link.**
+
+Both halves fail to the same key, which is what makes this unrecoverable rather
+than merely disruptive: the hash stops matching presented tokens AND the
+ciphertext stops decrypting, so the raw tokens cannot be recovered to re-hash
+them. There is no repair path after the fact.
+
+Set in Production, Preview and Development with the SAME value — preview
+deployments share the production Base44 backend (see the preview-writes-real-
+data note below), so a divergent key would write hashes that production could
+never match.
+
 ## `vercel dev`'s env sourcing doesn't always match `.env.local`
 
 Most env vars used by local `vercel dev` come from `.env.local` as

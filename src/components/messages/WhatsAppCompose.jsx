@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
 import { getMyInvitation } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { fetchGuestLinks } from '@/lib/guestLinks';
 
 const WHATSAPP_GREEN = "#25D366";
 
@@ -50,17 +50,17 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
       // Each guest gets their own personal /rsvp/:token link (same mechanism
       // as SendInvitesModal) — generate and persist one if this guest doesn't
       // have one yet, rather than pointing at the retired /GuestRSVP page.
-      let token = guest?.rsvp_link_id;
-      if (guest?.id && !token) {
-        token = crypto.randomUUID();
-        base44.entities.Guest.update(guest.id, { rsvp_link_id: token }).catch(() => {});
-      }
+      // Minted and read server-side (Track E) — awaited, unlike the old
+      // fire-and-forget write, so the link is never rendered before the token
+      // it points at actually exists.
+      const linkMap = guest?.id ? await fetchGuestLinks([guest.id]) : {};
+      const rsvpLink = linkMap[guest?.id]?.rsvpUrl || '';
 
       const inv = await getMyInvitation();
       if (inv) {
         setVariables({
           couple_names: inv.couple_names || "", wedding_date: inv.wedding_date || "",
-          rsvp_link: token ? `${window.location.origin}/rsvp/${token}` : '', venue: "venue TBD",
+          rsvp_link: rsvpLink, venue: "venue TBD",
           ceremony_time: "TBD", ceremony_venue: "TBD",
           reception_time: "TBD", reception_venue: "TBD",
         });
