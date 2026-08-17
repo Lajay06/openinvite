@@ -101,3 +101,52 @@ allowlist would have saved the value correctly and still painted an empty
 box on reload, and a write-only check (raw-query after save) would have
 reported a false pass. This is why the verification standard is
 type → Saved → **reload → painted**, not merely "the value reached the row".
+
+---
+
+## RULE 6 — Security posture for every guest-facing gate
+
+Ratified by the advisor 2026-08-17 from the three judgment calls in PR #447
+(the `?preview=true` ownership gate). These are standing patterns, not
+one-off choices — apply them to every future guest-facing gate.
+
+### 6a. Silent-ignore over 403 — never build an existence oracle
+
+When a caller presents a privilege they do not hold, **ignore the privilege
+and serve the response they would have got without it**. Do not reject with
+403/401, and do not return a distinguishing error.
+
+A rejection is an *oracle*: it confirms the resource exists and is
+protected. In #447, 403-ing an unauthorized `?preview=true` would have told
+an attacker "this slug is real and password-protected" — information the
+gate exists to withhold. Ignoring makes the response byte-identical to one
+where the flag was never sent, so probing yields nothing.
+
+The rule generalises past preview flags to any optional privilege on a
+public endpoint: preview/bypass flags, collaborator scopes, owner-only
+query params. **Same response, with and without the unheld privilege.**
+
+Corollary: this applies to the *shape* of the denial, not to logging. See 6c.
+
+### 6b. Pay for the auth check only when there is something to bypass
+
+Resolving a caller costs a network round-trip (`verifyBase44User` hits
+Base44). Guard it so the ordinary anonymous path never pays: check the
+privilege flag is present **and** that honoring it would actually change the
+outcome, before resolving anyone.
+
+In #447 that means `previewRequested && passwordProtected` — a preview
+request on an unprotected site has nothing to bypass, so ownership is
+irrelevant and no lookup happens.
+
+Name the two states differently. `previewRequested` (the caller asked) and
+`previewGranted` (the server agreed) are not the same variable, and
+collapsing them into one `isPreview` is precisely how #447 shipped: the
+request was treated as the grant.
+
+### 6c. Log the ignored case
+
+Silent to the caller is not silent to us. Every ignored privilege writes a
+`console.warn` naming the resource and whether the caller was
+unauthenticated or merely not the owner. Without it, 6a would make abuse
+completely invisible — the attacker learns nothing, and so do we.
