@@ -23,14 +23,23 @@
  * fields — the client shows a gate and retries with the candidate password
  * once entered.
  *
- * preview=true bypasses the password gate entirely, matching the existing
- * documented behavior (Help.jsx): the couple's own dashboard preview links
- * (FullScreenPreview.jsx, StudioGuestSuite.jsx, StudioWebsite.jsx) append
- * ?preview=true to their own /w/:slug links specifically so the couple can
- * preview a password-protected site without knowing/entering the password.
- * This mirrors the prior client-side-only gate's behavior faithfully
- * rather than introducing a stricter check the existing preview feature
- * doesn't expect.
+ * preview=true lets the couple view their own password-protected site
+ * without entering the password — the dashboard preview links
+ * (FullScreenPreview.jsx, StudioGuestSuite.jsx, StudioWebsite.jsx) append it
+ * to their own /w/:slug links.
+ *
+ * SECURITY: the flag is honored ONLY for an authenticated caller whose id
+ * matches the wedding's created_by_id. Until fix/preview-bypass it was
+ * honored for ANYONE — a bare `?preview=true` on a known slug returned the
+ * full guest-safe payload of a password-protected site, with no
+ * authentication of any kind. That was an unauthenticated bypass of the
+ * whole feature, not a faithful mirror of the old client-side gate, and the
+ * comment that used to sit here arguing otherwise was wrong.
+ *
+ * For a caller who does not own the wedding the flag is IGNORED rather than
+ * rejected: erroring would confirm to an attacker that the slug exists and
+ * is password-protected. Ignoring makes the response identical to one where
+ * the flag was never sent.
  *
  * Also returns the public registry section — cash funds (CustomGift) and
  * wishlist items (RegistryProduct) — scoped to this wedding's owner and
@@ -57,6 +66,7 @@ import {
 } from './_lib/security.js';
 import { pickGuestSafeFields, verifyWeddingPassword } from './_lib/guestSafeWedding.js';
 import { pickGuestSafeCustomGift, pickGuestSafeRegistryProduct } from './_lib/guestSafeRegistry.js';
+import { verifyBase44User } from './_lib/auth.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -114,7 +124,10 @@ export default async function handler(req, res) {
 
   const slug = sanitizeString(req.query?.slug || '');
   const candidatePassword = typeof req.query?.password === 'string' ? req.query.password : '';
-  const isPreview = req.query?.preview === 'true';
+  // NOTE: requesting preview is not the same as being granted it. This flag
+  // only says the caller ASKED; whether it is honored is decided below,
+  // after the wedding is resolved, by previewGranted.
+  const previewRequested = req.query?.preview === 'true';
 
   if (!slug) {
     return res.status(400).json({ error: 'slug is required' });
@@ -146,7 +159,29 @@ export default async function handler(req, res) {
     }
 
     const passwordProtected = !!wedding.websitePassword?.trim();
-    if (passwordProtected && !isPreview && !verifyWeddingPassword(wedding, candidatePassword)) {
+
+    // The preview flag bypasses the password gate, so it is honored ONLY for
+    // an authenticated caller who owns this wedding. For anyone else the flag
+    // is ignored entirely — not rejected with an error, which would tell an
+    // attacker the slug exists and is protected; simply treated as absent, so
+    // the gate behaves exactly as it would without it.
+    //
+    // Only resolve the caller when the flag is actually present AND would
+    // change the outcome: verifyBase44User costs a round-trip to Base44, and
+    // the ordinary anonymous guest path must not pay it.
+    let previewGranted = false;
+    if (previewRequested && passwordProtected) {
+      const caller = await verifyBase44User(req);
+      previewGranted = !!caller && caller.id === wedding.created_by_id;
+      if (!previewGranted) {
+        console.warn(`[wedding-by-slug] preview flag ignored for slug "${slug}" — ${caller ? `caller ${caller.id} does not own this wedding` : 'unauthenticated caller'}`);
+      }
+    } else if (previewRequested) {
+      // Not password-protected: nothing to bypass, so ownership is irrelevant.
+      previewGranted = true;
+    }
+
+    if (passwordProtected && !previewGranted && !verifyWeddingPassword(wedding, candidatePassword)) {
       return res.status(200).json({ passwordProtected: true });
     }
 
