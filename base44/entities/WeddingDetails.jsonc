@@ -343,7 +343,16 @@
       "default": false
     },
     "websitePassword": {
-      "type": "string"
+      "type": "string",
+      "description": "The credential for the public wedding site's password gate. NOT the on/off switch — websitePasswordEnabled is the single source of truth for that, and inferring enabled from this field being non-empty is what forced the ' ' and 'password' sentinel values removed in Step 2b stage (i). Still plaintext as of stage (i); becomes a scrypt hash in stage (iii)."
+    },
+    // Declared live 2026-08-17. PublishModal.jsx had been writing this since
+    // it shipped and Base44 silently dropped it every time (undeclared field,
+    // canonical gotcha #5) — the toggle appeared to work and forgot on reload.
+    "websitePasswordEnabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the public wedding site requires a password. The single source of truth for the gate being ON — websitePassword holds the credential and must not be used to infer enabled/disabled. Written by the Publish modal / Share tab / builder right panel, all via src/lib/websitePasswordGate.js. Gate fails OPEN if enabled=true with no stored credential (logged loudly by api/wedding-by-slug.js; the UI refuses to save that state, so it is unreachable through normal use). Reasoning in scratchpad/DECISION-LOG.md."
     },
     "websiteTheme": {
       "type": "string",

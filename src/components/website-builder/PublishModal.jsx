@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
 
 function ToggleSwitch({ value, onChange, label }) {
   return (
@@ -50,11 +51,15 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     onUpdate(next);
   };
 
-  const updateField = async (field, value) => {
-    const next = { [field]: value };
-    await base44.entities.WeddingDetails.update(details.id, next);
-    onUpdate(next);
+  /** Takes a patch rather than (field, value) so fields that must agree —
+   *  websitePassword and websitePasswordEnabled — land in ONE write and can
+   *  never be persisted apart. */
+  const updateFields = async (patch) => {
+    await base44.entities.WeddingDetails.update(details.id, patch);
+    onUpdate(patch);
   };
+
+  const passwordGate = useWebsitePasswordGate(details, updateFields);
 
   const copyLink = () => {
     if (!siteUrl) return;
@@ -155,15 +160,21 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                   <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>Password Protection</p>
                   <p style={{ margin: 0, fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>Require guests to enter a password</p>
                 </div>
-                <ToggleSwitch value={!!details?.websitePasswordEnabled} onChange={v => updateField('websitePasswordEnabled', v)} label="Password protection" />
+                <ToggleSwitch value={passwordGate.wantsProtection} onChange={passwordGate.toggle} label="Password protection" />
               </div>
-              {details?.websitePasswordEnabled && (
-                <input
-                  defaultValue={details?.websitePassword || ''}
-                  onBlur={e => updateField('websitePassword', e.target.value)}
-                  placeholder="Set password for guests..."
-                  style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
-                />
+              {passwordGate.wantsProtection && (
+                <>
+                  <input
+                    value={passwordGate.password}
+                    onChange={e => passwordGate.setPassword(e.target.value)}
+                    onBlur={passwordGate.commitPassword}
+                    placeholder="Set password for guests..."
+                    style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
+                  />
+                  {passwordGate.incomplete && (
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
+                  )}
+                </>
               )}
             </div>
           )}

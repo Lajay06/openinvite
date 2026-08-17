@@ -4,6 +4,7 @@ import { ChevronLeft, X, Trash2, Music } from 'lucide-react';
 import { ASSET_EDITOR_MAP } from './AssetEditors';
 import { TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, normalizeUniverseKey } from '@/lib/websiteThemes';
 import { CURATED_FONTS, FONT_CATALOG, UNIVERSE_DEFAULT_FONT_IDS, universePairingPresets } from '@/lib/curatedFonts';
+import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
 import toast from 'react-hot-toast';
 import { base44 } from '@/api/base44Client';
 import { validateUploadFile } from '@/lib/uploadValidation';
@@ -311,6 +312,15 @@ function DesignTab({ details, onChange, universeTheme }) {
 function SettingsTab({ details, onChange }) {
   const [copied, setCopied] = useState(false);
   const [musicUploading, setMusicUploading] = useState(false);
+
+  // Unlike the other two surfaces, onChange here only updates StudioWebsite's
+  // local draft and marks it unsaved — nothing is persisted until Save, which
+  // writes the whole scoped patch at once. So fanning a patch out into
+  // repeated onChange calls cannot persist a half-applied state.
+  const applyPatch = (patch) => {
+    for (const [field, value] of Object.entries(patch)) onChange(field, value);
+  };
+  const passwordGate = useWebsitePasswordGate(details, applyPatch);
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const siteUrl = details.slug ? `${origin}/w/${details.slug}` : '';
   const copyLink = () => {
@@ -394,9 +404,14 @@ function SettingsTab({ details, onChange }) {
       )}
       <Divider />
       <SLabel>Password protection</SLabel>
-      <Toggle label="Require password" value={!!(details.websitePassword?.trim())} onChange={v => onChange('websitePassword', v ? ' ' : '')} />
-      {details.websitePassword?.trim() && (
-        <UInput label="Password" value={details.websitePassword} onChange={v => onChange('websitePassword', v)} />
+      <Toggle label="Require password" value={passwordGate.wantsProtection} onChange={passwordGate.toggle} />
+      {passwordGate.wantsProtection && (
+        <>
+          <UInput label="Password" value={passwordGate.password} onChange={passwordGate.setPassword} onCommit={passwordGate.commitPassword} />
+          {passwordGate.incomplete && (
+            <p style={{ margin: '-4px 0 8px', fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
+          )}
+        </>
       )}
       <Divider />
       {siteUrl && (
