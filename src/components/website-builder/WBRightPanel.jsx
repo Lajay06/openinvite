@@ -313,14 +313,16 @@ function SettingsTab({ details, onChange }) {
   const [copied, setCopied] = useState(false);
   const [musicUploading, setMusicUploading] = useState(false);
 
-  // Unlike the other two surfaces, onChange here only updates StudioWebsite's
-  // local draft and marks it unsaved — nothing is persisted until Save, which
-  // writes the whole scoped patch at once. So fanning a patch out into
-  // repeated onChange calls cannot persist a half-applied state.
-  const applyPatch = (patch) => {
-    for (const [field, value] of Object.entries(patch)) onChange(field, value);
-  };
-  const passwordGate = useWebsitePasswordGate(details, applyPatch);
+  // The gate hook persists through /api/my-wedding-details immediately — the
+  // credential is hashed server-side and must never ride StudioWebsite's
+  // Save, which writes to base44 directly and would store plaintext over the
+  // hash. This callback only mirrors the result into the local draft so the
+  // panel re-renders; websitePassword/websitePasswordEnabled are excluded
+  // from that page's WRITABLE_FIELDS for the same reason.
+  const passwordGate = useWebsitePasswordGate(details, (patch) => {
+    if ('websitePasswordEnabled' in patch) onChange('websitePasswordEnabled', patch.websitePasswordEnabled);
+    if ('websitePassword' in patch) onChange('websitePasswordIsSet', !!patch.websitePassword?.trim());
+  });
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const siteUrl = details.slug ? `${origin}/w/${details.slug}` : '';
   const copyLink = () => {
@@ -407,8 +409,13 @@ function SettingsTab({ details, onChange }) {
       <Toggle label="Require password" value={passwordGate.wantsProtection} onChange={passwordGate.toggle} />
       {passwordGate.wantsProtection && (
         <>
-          <UInput label="Password" value={passwordGate.password} onChange={passwordGate.setPassword} onCommit={passwordGate.commitPassword} />
-          {passwordGate.incomplete && (
+          <UInput label={passwordGate.hasStoredPassword ? 'New password' : 'Password'} type="password" value={passwordGate.password} onChange={passwordGate.setPassword} onCommit={passwordGate.commitPassword} />
+          {passwordGate.hasStoredPassword ? (
+            <p style={{ margin: '-4px 0 8px', fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+              A password is set and can&rsquo;t be shown again. Type a new one to replace it, or{' '}
+              <button onClick={passwordGate.clearPassword} style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'rgba(255,255,255,0.85)', cursor: 'pointer', textDecoration: 'underline' }}>remove it</button>.
+            </p>
+          ) : passwordGate.incomplete && (
             <p style={{ margin: '-4px 0 8px', fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
           )}
         </>

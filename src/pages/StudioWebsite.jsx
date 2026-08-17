@@ -181,7 +181,12 @@ const DEFAULT = {
   weddingDate: '',
   slug: '',
   websiteEnabled: true,
-  websitePassword: '',
+  // websitePassword is deliberately NOT here, and websitePasswordEnabled is
+  // deliberately not in WRITABLE_FIELDS below. Both are written only through
+  // /api/my-wedding-details (src/lib/websitePasswordGate.js), because the
+  // credential is hashed server-side — this page's Save writes to base44
+  // directly, so including either would overwrite the scrypt hash with
+  // whatever plaintext the local draft happened to hold.
   activeTheme: 'still',
   activeTypography: null,
   pageTransition: 'fade',
@@ -218,7 +223,6 @@ const DEFAULT = {
 // has since moved to encrypted-at-rest storage back to stale plaintext.
 const WRITABLE_FIELDS = [
   ...Object.keys(DEFAULT),
-  'websitePasswordEnabled',
   'fontOverride',
   'guestExperienceSettings',
   'photosContent',

@@ -61,6 +61,7 @@
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { encryptPayload, decryptPayload } from './_lib/questionnaireCrypto.js';
+import { hashWebsitePassword } from './_lib/websitePasswordHash.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -70,11 +71,22 @@ const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 // ciphertext for budget/contactPerson only — the rest are wired for
 // Step 2b's writer-page migrations.
 const ENCRYPTED_FIELDS = ['budget', 'contactPerson', 'emergencyContacts', 'dayVendorContacts', 'celebrant', 'license'];
+
+// One-way HASHED on write, never decrypted, never returned (Step 2b stage
+// iii). Encryption is for values the couple must read back; the only question
+// ever asked of a website password is "does this candidate match?", so it is
+// hashed instead — see api/_lib/websitePasswordHash.js.
+const HASHED_FIELDS = ['websitePassword'];
+
+// Written verbatim — not sensitive, but it must be writable HERE so that
+// enabling the gate and setting its credential land in ONE request. Splitting
+// them across two endpoints would reintroduce the enabled-without-credential
+// window that src/lib/websitePasswordGate.js exists to prevent.
+const PLAINTEXT_WRITABLE_FIELDS = ['websitePasswordEnabled'];
+
 // Fields THIS endpoint is allowed to write. Never a blanket "update
-// anything" passthrough. Step 2b completed the set: every field in
-// ENCRYPTED_FIELDS is now written as ciphertext through here, and no page
-// writes any of them via base44.entities.WeddingDetails directly.
-const WRITABLE_FIELDS = ['budget', 'contactPerson', 'emergencyContacts', 'dayVendorContacts', 'celebrant', 'license'];
+// anything" passthrough.
+const WRITABLE_FIELDS = [...ENCRYPTED_FIELDS, ...HASHED_FIELDS, ...PLAINTEXT_WRITABLE_FIELDS];
 
 function unwrapList(payload) {
   if (Array.isArray(payload)) return payload;
@@ -151,6 +163,15 @@ async function handleGet(req, res, caller) {
   for (const field of ENCRYPTED_FIELDS) {
     if (field in decrypted) decrypted[field] = decryptField(decrypted[field]);
   }
+
+  // Hashed fields are NEVER returned, not even as the hash. Step 2b stage
+  // (iii) — a one-way digest can't be shown back to the couple the way the
+  // old plaintext was, and shipping it to the browser would only hand an
+  // attacker something to crack offline. The UI needs one bit, not the value:
+  // is a credential set? Hence websitePasswordIsSet.
+  for (const field of HASHED_FIELDS) delete decrypted[field];
+  decrypted.websitePasswordIsSet = !!wedding.websitePassword?.trim();
+
   return res.status(200).json(decrypted);
 }
 
@@ -194,9 +215,20 @@ async function handlePut(req, res, caller, callerToken) {
   const { fields, error } = readPutFields(req.body);
   if (error) return res.status(400).json({ error });
 
+  // Three transforms, chosen per field — never a single blanket one.
   const payload = {};
   for (const [name, value] of Object.entries(fields)) {
-    payload[name] = encryptPayload(value ?? null);
+    if (HASHED_FIELDS.includes(name)) {
+      // Clearing is an empty/absent value; only a real string gets hashed.
+      // hashWebsitePassword refuses an empty input rather than producing a
+      // digest of "" that would silently become a working blank password.
+      const plain = typeof value === 'string' ? value.trim() : '';
+      payload[name] = plain ? await hashWebsitePassword(plain) : null;
+    } else if (PLAINTEXT_WRITABLE_FIELDS.includes(name)) {
+      payload[name] = value ?? null;
+    } else {
+      payload[name] = encryptPayload(value ?? null);
+    }
   }
 
   const wedding = await getMyWedding(caller.id);

@@ -55,14 +55,15 @@ export default function StudioShareTab({ details: propDetails }) {
     if (detailsId) await base44.entities.WeddingDetails.update(detailsId, { [field]: value });
   };
 
-  /** Multi-field sibling of updateField — one write, so fields that must agree
-   *  (websitePassword + websitePasswordEnabled) can never be persisted apart. */
-  const updateFields = async (patch) => {
-    setDetails({ ...details, ...patch });
-    if (detailsId) await base44.entities.WeddingDetails.update(detailsId, patch);
-  };
-
-  const passwordGate = useWebsitePasswordGate(details, updateFields);
+  // The gate hook persists through /api/my-wedding-details itself (the
+  // credential is hashed server-side); this only keeps local state in step.
+  const passwordGate = useWebsitePasswordGate(details, (patch) => {
+    setDetails(prev => ({
+      ...prev,
+      websitePasswordEnabled: patch.websitePasswordEnabled ?? prev?.websitePasswordEnabled,
+      ...(('websitePassword' in patch) ? { websitePasswordIsSet: !!patch.websitePassword?.trim() } : {}),
+    }));
+  });
 
   const togglePublish = async () => {
     const next = !details?.websiteEnabled;
@@ -188,9 +189,14 @@ export default function StudioShareTab({ details: propDetails }) {
             </div>
             {passwordGate.wantsProtection && (
               <>
-                <input value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} onBlur={passwordGate.commitPassword} placeholder="Set password..." style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans, marginBottom: passwordGate.incomplete ? 4 : 12 }} />
-                {passwordGate.incomplete && (
-                  <p style={{ margin: '0 0 12px', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
+                <input type="password" value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} onBlur={passwordGate.commitPassword} placeholder={passwordGate.hasStoredPassword ? 'Set a new password…' : 'Set password...'} style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans, marginBottom: 4 }} />
+                {passwordGate.hasStoredPassword ? (
+                  <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>
+                    A password is set. It can&rsquo;t be shown again — type a new one to replace it, or{' '}
+                    <button onClick={passwordGate.clearPassword} style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#E03553', cursor: 'pointer', textDecoration: 'underline' }}>remove it</button>.
+                  </p>
+                ) : passwordGate.incomplete && (
+                  <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
                 )}
               </>
             )}
@@ -291,8 +297,13 @@ export default function StudioShareTab({ details: propDetails }) {
             </div>
             {passwordGate.wantsProtection && (
               <div style={{ marginBottom: 16 }}>
-                <input value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} onBlur={passwordGate.commitPassword} placeholder="Set password..." style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans }} />
-                {passwordGate.incomplete && (
+                <input type="password" value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} onBlur={passwordGate.commitPassword} placeholder={passwordGate.hasStoredPassword ? 'Set a new password…' : 'Set password...'} style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans }} />
+                {passwordGate.hasStoredPassword ? (
+                  <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>
+                    A password is set. It can&rsquo;t be shown again — type a new one to replace it, or{' '}
+                    <button onClick={passwordGate.clearPassword} style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#E03553', cursor: 'pointer', textDecoration: 'underline' }}>remove it</button>.
+                  </p>
+                ) : passwordGate.incomplete && (
                   <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
                 )}
               </div>

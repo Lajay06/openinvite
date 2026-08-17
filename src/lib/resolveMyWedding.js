@@ -38,8 +38,10 @@ function mostRecent(records) {
  * needs BASE44_ADMIN_KEY, a server-only secret the browser never holds. The
  * "owns more than one real record" telemetry that used to live here (the
  * "Alex & Sam" incident) moved server-side, into that endpoint.
- * websitePassword and every other field are unaffected and come back
- * exactly as before.
+ *
+ * websitePassword is NOT returned at all as of Step 2b stage (iii) — it is a
+ * one-way scrypt hash and the endpoint strips it, substituting a
+ * `websitePasswordIsSet` boolean. Every other field comes back as before.
  */
 export async function getMyWeddingDetails() {
   const token = localStorage.getItem('base44_access_token');

@@ -51,15 +51,14 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     onUpdate(next);
   };
 
-  /** Takes a patch rather than (field, value) so fields that must agree —
-   *  websitePassword and websitePasswordEnabled — land in ONE write and can
-   *  never be persisted apart. */
-  const updateFields = async (patch) => {
-    await base44.entities.WeddingDetails.update(details.id, patch);
-    onUpdate(patch);
-  };
-
-  const passwordGate = useWebsitePasswordGate(details, updateFields);
+  // The gate hook persists through /api/my-wedding-details itself (the
+  // credential is hashed server-side); this only keeps the parent in step.
+  const passwordGate = useWebsitePasswordGate(details, (patch) => {
+    onUpdate({
+      ...(('websitePasswordEnabled' in patch) ? { websitePasswordEnabled: patch.websitePasswordEnabled } : {}),
+      ...(('websitePassword' in patch) ? { websitePasswordIsSet: !!patch.websitePassword?.trim() } : {}),
+    });
+  });
 
   const copyLink = () => {
     if (!siteUrl) return;
@@ -165,13 +164,19 @@ export default function PublishModal({ onClose, details, onUpdate }) {
               {passwordGate.wantsProtection && (
                 <>
                   <input
+                    type="password"
                     value={passwordGate.password}
                     onChange={e => passwordGate.setPassword(e.target.value)}
                     onBlur={passwordGate.commitPassword}
-                    placeholder="Set password for guests..."
+                    placeholder={passwordGate.hasStoredPassword ? 'Set a new password…' : 'Set password for guests...'}
                     style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
                   />
-                  {passwordGate.incomplete && (
+                  {passwordGate.hasStoredPassword ? (
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>
+                      A password is set. It can&rsquo;t be shown again — type a new one to replace it, or{' '}
+                      <button onClick={passwordGate.clearPassword} style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#E03553', cursor: 'pointer', textDecoration: 'underline' }}>remove it</button>.
+                    </p>
+                  ) : passwordGate.incomplete && (
                     <p style={{ margin: '4px 0 0', fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
                   )}
                 </>

@@ -222,7 +222,11 @@ export default async function handler(req, res) {
       previewGranted = true;
     }
 
-    if (passwordProtected && !previewGranted && !verifyWeddingPassword(wedding, candidatePassword)) {
+    // MUST stay awaited. verifyWeddingPassword is async as of Step 2b stage
+    // (iii); an un-awaited call returns a Promise, which is truthy, so `!promise`
+    // is false and the gate would open for every candidate including none.
+    const passwordAccepted = await verifyWeddingPassword(wedding, candidatePassword);
+    if (passwordProtected && !previewGranted && !passwordAccepted) {
       return res.status(200).json({ passwordProtected: true });
     }
 

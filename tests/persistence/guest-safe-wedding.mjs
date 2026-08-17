@@ -26,6 +26,7 @@
  *   - A wedding with no music object at all doesn't crash pickGuestSafeFields.
  */
 import { pickGuestSafeFields, websiteGateIsOn, verifyWeddingPassword } from '../../api/_lib/guestSafeWedding.js';
+import { hashWebsitePassword, verifyWebsitePassword, isHashedPassword } from '../../api/_lib/websitePasswordHash.js';
 import { pass, fail } from './_shared.mjs';
 
 /** True if `value` contains any of `needles` as a substring anywhere, at any depth. */
@@ -150,14 +151,60 @@ export async function runGuestSafeWedding() {
            JSON.stringify({ failOpen, plainOff })));
 
   // ── verifyWeddingPassword: only a gate that is actually ON can reject ──
-  const onWedding = { websitePassword: 'hunter2', websitePasswordEnabled: true };
-  const verifyOk = verifyWeddingPassword(onWedding, 'hunter2') === true
-                && verifyWeddingPassword(onWedding, 'nope') === false
-                && verifyWeddingPassword({ websitePassword: 'hunter2' }, 'nope') === true
-                && verifyWeddingPassword({ websitePasswordEnabled: true }, 'anything') === true;
+  // verifyWeddingPassword is ASYNC as of Step 2b stage (iii) — scrypt. Every
+  // call must be awaited: an un-awaited call returns a Promise, which is
+  // truthy, so `!verifyWeddingPassword(...)` is always false and the gate
+  // would admit everyone. That is exactly how this test failed when the
+  // function went async, which is the reason for the explicit guard below.
+  const hashed = await hashWebsitePassword('hunter2');
+  const onWedding = { websitePassword: hashed, websitePasswordEnabled: true };
+  const verifyOk = await verifyWeddingPassword(onWedding, 'hunter2') === true
+                && await verifyWeddingPassword(onWedding, 'nope') === false
+                && await verifyWeddingPassword({ websitePassword: hashed }, 'nope') === true
+                && await verifyWeddingPassword({ websitePasswordEnabled: true }, 'anything') === true;
   results.push(verifyOk
     ? pass('verifyWeddingPassword — rejects only when the gate is on; fail-open and disabled both admit', 'correct')
     : fail('verifyWeddingPassword — rejects only when the gate is on; fail-open and disabled both admit', 'correct', 'see guestSafeWedding.js'));
+
+  results.push(typeof verifyWeddingPassword(onWedding, 'nope')?.then === 'function'
+    ? pass('verifyWeddingPassword — returns a Promise, so an un-awaited call is a bug callers must not make', 'thenable')
+    : fail('verifyWeddingPassword — returns a Promise, so an un-awaited call is a bug callers must not make', 'thenable', 'not a promise'));
+
+  // ── scrypt hashing: format, salt uniqueness, verification, legacy plaintext ──
+  const h1 = await hashWebsitePassword('same-password');
+  const h2 = await hashWebsitePassword('same-password');
+  const fmt = /^scrypt\$[0-9a-f]{32}\$[0-9a-f]{128}$/.test(h1);
+  results.push(fmt
+    ? pass('hashWebsitePassword — scrypt$<salt>$<digest>, hex, expected lengths', 'well formed')
+    : fail('hashWebsitePassword — scrypt$<salt>$<digest>, hex, expected lengths', 'scrypt$32hex$128hex', h1.slice(0, 40)));
+
+  results.push(h1 !== h2 && isHashedPassword(h1)
+    ? pass('hashWebsitePassword — same password hashes differently (per-value random salt)', 'distinct')
+    : fail('hashWebsitePassword — same password hashes differently (per-value random salt)', 'distinct digests', 'identical'));
+
+  const hv = await verifyWebsitePassword(h1, 'same-password') === true
+          && await verifyWebsitePassword(h1, 'Same-Password') === false
+          && await verifyWebsitePassword(h1, '') === false
+          && await verifyWebsitePassword(h1, '  same-password  ') === true;
+  results.push(hv
+    ? pass('verifyWebsitePassword — matches the right password, rejects wrong/empty, trims', 'correct')
+    : fail('verifyWebsitePassword — matches the right password, rejects wrong/empty, trims', 'correct', 'see websitePasswordHash.js'));
+
+  // The prefix is the migrated-vs-legacy discriminator, because unlike every
+  // other sensitive field here the legacy plaintext is ITSELF a string.
+  const legacy = await verifyWebsitePassword('plain-old-password', 'plain-old-password') === true
+              && await verifyWebsitePassword('plain-old-password', 'wrong') === false
+              && isHashedPassword('plain-old-password') === false
+              && isHashedPassword(h1) === true;
+  results.push(legacy
+    ? pass('websitePasswordHash — legacy plaintext still verifies, and is distinguishable by the scrypt$ prefix', 'correct')
+    : fail('websitePasswordHash — legacy plaintext still verifies, and is distinguishable by the scrypt$ prefix', 'correct', 'discriminator broken'));
+
+  const malformed = await verifyWebsitePassword('scrypt$notahexsalt$deadbeef', 'anything') === false
+                 && await verifyWebsitePassword('scrypt$', 'anything') === false;
+  results.push(malformed
+    ? pass('verifyWebsitePassword — a malformed stored hash returns false rather than throwing', 'false')
+    : fail('verifyWebsitePassword — a malformed stored hash returns false rather than throwing', 'false', 'threw or matched'));
 
   // ── No music object on the source record at all — must not throw ────────
   let noMusicResult;

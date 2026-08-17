@@ -28,6 +28,8 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { putMyWeddingDetails } from '@/lib/resolveMyWedding';
+import toast from 'react-hot-toast';
 
 /** Debounce for persisting the credential as it is typed. */
 const COMMIT_DELAY_MS = 500;
@@ -37,29 +39,46 @@ const COMMIT_DELAY_MS = 500;
  * websiteGateIsOn() in api/_lib/guestSafeWedding.js — keep them in step.
  */
 export function websiteGateIsOn(details) {
-  return !!details?.websitePasswordEnabled && !!details?.websitePassword?.trim();
+  // Reads websitePasswordIsSet, not websitePassword: as of Step 2b stage (iii)
+  // the credential is a one-way hash and the endpoint never sends it to the
+  // browser at all. The client gets one bit — is a credential stored — which
+  // is all it needs.
+  return !!details?.websitePasswordEnabled && !!details?.websitePasswordIsSet;
 }
 
 /**
  * Shared behaviour for every password-protection toggle + input pair.
  *
  * @param {object} details — the WeddingDetails record as the surface holds it
- * @param {(patch: object) => void} applyPatch — persists a field patch. Takes
- *   a patch rather than (field, value) so enabling and setting the credential
- *   land in ONE write; two sequential writes would briefly persist the
- *   enabled-without-password state this hook exists to prevent.
+ * @param {(patch: object) => void} [onLocalUpdate] — optional; called with the
+ *   patch after it persists, so a surface holding its own copy of `details`
+ *   can stay in step. Persistence itself is NOT the surface's job.
+ *
+ * PERSISTENCE GOES THROUGH /api/my-wedding-details, ALWAYS. The credential is
+ * hashed server-side (scrypt), so a surface writing
+ * base44.entities.WeddingDetails.update({ websitePassword }) directly would
+ * store plaintext and overwrite the hash. Routing every write through this
+ * hook is what makes that impossible rather than merely discouraged. The
+ * enabled flag rides along in the same request, so the two can never be
+ * persisted apart.
  * @returns {{
  *   wantsProtection: boolean,   // what the switch shows
  *   toggle: (v: boolean) => void,
- *   password: string,           // the draft — bind the input to this
+ *   password: string,           // the draft for a NEW credential
  *   setPassword: (v: string) => void,
  *   commitPassword: () => void, // flush immediately; wire to the input's onBlur
- *   incomplete: boolean,        // switch on, no credential yet — show a hint
+ *   incomplete: boolean,        // switch on, nothing stored, nothing typed
+ *   hasStoredPassword: boolean, // a credential exists (value unknowable here)
+ *   clearPassword: () => void,  // forget the stored credential; turns the gate off
  * }}
  */
-export function useWebsitePasswordGate(details, applyPatch) {
+export function useWebsitePasswordGate(details, onLocalUpdate) {
   const persistedEnabled = !!details?.websitePasswordEnabled;
-  const persistedPassword = details?.websitePassword || '';
+  // The stored credential is a hash the server never sends back, so the only
+  // thing knowable here is WHETHER one exists. Everything below is written in
+  // terms of that bit plus a draft for a replacement — a "set new / clear"
+  // model, because "show the couple their password" is no longer possible.
+  const hasStoredPassword = !!details?.websitePasswordIsSet;
 
   // Local intent, seeded from what is persisted. Diverges from it only in the
   // window where the couple has flipped the switch on but not yet typed a
@@ -67,20 +86,36 @@ export function useWebsitePasswordGate(details, applyPatch) {
   const [wantsProtection, setWantsProtection] = useState(persistedEnabled);
   useEffect(() => { setWantsProtection(persistedEnabled); }, [persistedEnabled]);
 
-  // The credential is edited as a LOCAL draft and persisted on a debounce.
-  // Binding the input straight to the persisted value drops keystrokes on any
-  // surface whose applyPatch awaits the network before the new value comes
-  // back down (PublishModal does exactly that) — the field would show only
-  // the first character typed. It also spared a write per keystroke.
-  const [draft, setDraft] = useState(persistedPassword);
-  useEffect(() => { setDraft(persistedPassword); }, [persistedPassword]);
+  // The draft is a NEW credential being typed. It starts empty even when one
+  // is already stored, because the stored value is unknowable — the input is
+  // "set a new password", never "here is your current password".
+  //
+  // It is also persisted on a debounce rather than per keystroke: binding an
+  // input straight to a value that only returns after an awaited network write
+  // drops keystrokes (PublishModal did exactly that), and it spared a write —
+  // and now an scrypt hash — per character.
+  const [draft, setDraft] = useState('');
 
   const timer = useRef(null);
   const clear = () => { if (timer.current) { clearTimeout(timer.current); timer.current = null; } };
   useEffect(() => clear, []);
 
   /** enabled always rides in the SAME patch as the credential, so the two can
-   *  never disagree in storage — written or cleared together, never apart. */
+   *  never disagree in storage — written or cleared together, never apart.
+   *  The server hashes `websitePassword`; what leaves here is plaintext over
+   *  HTTPS in a POST/PUT body, and it is never stored plaintext anywhere. */
+  const applyPatch = async (patch) => {
+    try {
+      await putMyWeddingDetails(patch);
+      onLocalUpdate?.(patch);
+    } catch (err) {
+      // Never swallowed: a silent failure here means the couple believes their
+      // site is locked when it is not, or vice versa.
+      console.error('[websitePasswordGate] save failed:', err.message);
+      toast.error('Could not save the password setting. Please try again.');
+    }
+  };
+
   const persist = (value, enabledIntent) => applyPatch({
     websitePassword: value,
     websitePasswordEnabled: enabledIntent && !!value.trim(),
@@ -97,8 +132,10 @@ export function useWebsitePasswordGate(details, applyPatch) {
       return;
     }
     // Turning on is deliberately NOT persisted on its own. It becomes real
-    // only once there is something to authenticate against.
+    // only once there is something to authenticate against — either a
+    // credential already stored, or one typed now.
     if (draft.trim()) persist(draft, true);
+    else if (hasStoredPassword) applyPatch({ websitePasswordEnabled: true });
   };
 
   const setPassword = (value) => {
@@ -109,7 +146,16 @@ export function useWebsitePasswordGate(details, applyPatch) {
 
   const commitPassword = () => {
     clear();
-    if (draft !== persistedPassword) persist(draft, wantsProtection);
+    if (draft.trim()) persist(draft, wantsProtection);
+  };
+
+  /** Forget the stored credential. Clears the gate with it — an enabled gate
+   *  with nothing to check is the fail-open state the UI must never produce. */
+  const clearPassword = () => {
+    clear();
+    setDraft('');
+    setWantsProtection(false);
+    applyPatch({ websitePassword: '', websitePasswordEnabled: false });
   };
 
   return {
@@ -118,6 +164,9 @@ export function useWebsitePasswordGate(details, applyPatch) {
     password: draft,
     setPassword,
     commitPassword,
-    incomplete: wantsProtection && !draft.trim(),
+    // "Nothing to authenticate against" now means: none stored AND none typed.
+    incomplete: wantsProtection && !hasStoredPassword && !draft.trim(),
+    hasStoredPassword,
+    clearPassword,
   };
 }
