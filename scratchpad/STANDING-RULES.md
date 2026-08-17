@@ -303,3 +303,34 @@ call site to be awaited.
 And verify the assertion fails before trusting it. That one was confirmed by
 removing an `await` and watching CI go red. **A guard that has never failed
 is unproven, not strong.**
+
+---
+
+## RULE 10 — `vercel env pull` only when the remote env is a superset
+
+Ratified by the advisor 2026-08-18, from the `RSVP_TOKEN_KEY` setup in E1.
+
+`vercel env pull` **overwrites** the target file. It does not merge. So the
+instruction "pull it into `.env.local` as usual" is only safe when the remote
+environment contains everything the local file does.
+
+It did not here. The Vercel **Development** environment holds ~1 variable
+while `.env.local` holds ~50, so a pull would have silently destroyed every
+other local secret — including `BASE44_ADMIN_KEY` and the test-account
+credentials this session's entire verification programme depends on.
+
+**The rule:**
+
+- **Pull** when the remote environment is the superset — a fresh clone, a new
+  machine, or after someone else added variables you do not have.
+- **Append** when the local file holds values the remote does not. One line,
+  idempotent (`grep -q '^NAME=' || printf ...`), and the rest of the file is
+  untouched.
+
+Check which case you are in before running either. `vercel env ls` against the
+environment you are about to pull is enough to tell.
+
+Corollary for secrets generally: generate, pipe straight into `vercel env add`,
+never echo. Record **that** a key was set, never its value — not in chat, not
+in a commit message, not in a log line. The verification for "is it set" is
+`vercel env ls`, which prints presence and never the secret.

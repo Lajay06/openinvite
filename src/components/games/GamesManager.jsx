@@ -5,6 +5,7 @@ import { getMyRecords } from '@/lib/resolveMyWedding';
 import { resolveRecipients } from '@/lib/questionnaireRecipients';
 import toast from 'react-hot-toast';
 import { Plus, X, ChevronLeft, Printer, Link2, Loader2, Check, Clock, Trash2 } from 'lucide-react';
+import { fetchGuestLinks } from '@/lib/guestLinks';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const genId = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
@@ -418,18 +419,16 @@ export default function GamesManager() {
   const copyLinks = async (q) => {
     const recipients = resolveRecipients(q, guests);
     if (recipients.length === 0) { toast.error("No recipients match this game's settings"); return; }
-    const withTokens = await Promise.all(recipients.map(async g => {
-      let token = g.rsvp_link_id;
-      if (!token) {
-        token = crypto.randomUUID();
-        await base44.entities.Guest.update(g.id, { rsvp_link_id: token });
-      }
-      return { name: g.name, token };
-    }));
+    // Server-side mint/read (Track E). The raw token is still needed here
+    // because a game link is /games/<token>/<gameId>, not an /rsvp/ URL.
+    const linkMap = await fetchGuestLinks(recipients.map(g => g.id));
     const base = `${window.location.origin}/games/`;
-    const lines = withTokens.map(({ name, token }) => `${name}: ${base}${token}/${q.id}`).join('\n');
-    await navigator.clipboard.writeText(lines);
-    toast.success(`${withTokens.length} game link${withTokens.length === 1 ? '' : 's'} copied`);
+    const lines = recipients
+      .filter(g => linkMap[g.id]?.token)
+      .map(g => `${g.name}: ${base}${linkMap[g.id].token}/${q.id}`);
+    if (lines.length === 0) { toast.error('Could not generate game links'); return; }
+    await navigator.clipboard.writeText(lines.join('\n'));
+    toast.success(`${lines.length} game link${lines.length === 1 ? '' : 's'} copied`);
     load();
   };
 

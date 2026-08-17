@@ -12,6 +12,7 @@ import GuestAvatar from '@/components/shared/GuestAvatar';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import { interactiveDivProps } from '@/lib/a11y';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { fetchGuestLinks } from '@/lib/guestLinks';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
@@ -297,6 +298,12 @@ export default function SendInvitesModal({
   const previewEvents = previewGuest
     ? buildGuestEvents(previewGuest)
     : weddingEvents.map(ev => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
+  // A PREVIEW, deliberately not a real link. It already falls back to a
+  // placeholder for any guest without a token, and from E3 — when the
+  // plaintext column is nulled — every guest takes that branch. That is the
+  // right outcome for a preview: rendering a live capability into a sample
+  // email the couple is only looking at would hand out a real RSVP link for
+  // no reason. Real links are fetched at send time, in ensureTokens.
   const previewRsvpUrl = previewGuest?.rsvp_link_id ? buildRsvpUrl(previewGuest.rsvp_link_id) : `${RSVP_BASE}preview-token`;
   const previewEmailHtml = renderInvitationEmail({
     universeId,
@@ -312,24 +319,23 @@ export default function SendInvitesModal({
   // separate plus_one_rsvp_link_id whenever plus_one_email is set, so the
   // plus-one gets their own invite/RSVP link distinct from the primary
   // guest's (feat/plus-one-identity).
+  //
+  // Track E: minting moved server-side (api/my-guest-links.js) because the
+  // stored token becomes an HMAC + ciphertext in E2 and the browser holds no
+  // key. The returned shape is deliberately unchanged — the same
+  // rsvp_link_id / plus_one_rsvp_link_id fields, attached to the same guest
+  // objects — so every downstream consumer below keeps working untouched.
   const ensureTokens = async (list) => {
-    const updates = [];
-    const result = list.map(g => {
-      let next = g;
-      if (!next.rsvp_link_id) {
-        const token = crypto.randomUUID();
-        updates.push(base44.entities.Guest.update(g.id, { rsvp_link_id: token }));
-        next = { ...next, rsvp_link_id: token };
-      }
-      if (next.plus_one_email && !next.plus_one_rsvp_link_id) {
-        const poToken = crypto.randomUUID();
-        updates.push(base44.entities.Guest.update(g.id, { plus_one_rsvp_link_id: poToken }));
-        next = { ...next, plus_one_rsvp_link_id: poToken };
-      }
-      return next;
+    const linkMap = await fetchGuestLinks(list.map(g => g.id), { includePlusOne: true });
+    return list.map(g => {
+      const l = linkMap[g.id];
+      if (!l) return g;
+      return {
+        ...g,
+        rsvp_link_id: l.token || g.rsvp_link_id,
+        ...(l.plusOneToken ? { plus_one_rsvp_link_id: l.plusOneToken } : {}),
+      };
     });
-    if (updates.length > 0) await Promise.all(updates);
-    return result;
   };
 
   const handleSend = async () => {

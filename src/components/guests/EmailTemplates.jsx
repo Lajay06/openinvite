@@ -52,7 +52,11 @@ export default function EmailTemplates({ guests, onUseTemplate }) {
   const sampleEvents = sampleGuest
     ? weddingEvents.filter(ev => getGuestEventResponse(sampleGuest, ev).invited).map(ev => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }))
     : weddingEvents.map(ev => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
-  const sampleRsvpUrl = sampleGuest ? `${RSVP_BASE}${sampleGuest.rsvp_link_id}` : `${RSVP_BASE}preview-token`;
+  // Same reasoning as SendInvitesModal's previewRsvpUrl: this is a template
+  // PREVIEW, so a placeholder is correct. From E3 the plaintext column is
+  // null and every render takes the placeholder branch, which is the intended
+  // end state — a sample email should never carry a live RSVP capability.
+  const sampleRsvpUrl = sampleGuest?.rsvp_link_id ? `${RSVP_BASE}${sampleGuest.rsvp_link_id}` : `${RSVP_BASE}preview-token`;
 
   const bannerPhotos = { coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl };
   const bannerChoice = getDefaultBannerChoice(bannerPhotos);

@@ -32,6 +32,7 @@ import EmailTemplates from "../components/guests/EmailTemplates";
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
 import CountUp from "@/components/shared/CountUp";
+import { fetchGuestLinks } from '@/lib/guestLinks';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
@@ -584,15 +585,13 @@ export default function Guests() {
   /* ── Copy links (bulk) ───────────────────────────────────────────────── */
   const handleCopyLinks = async () => {
     if (isPro || selectedGuests.length === 0) return;
-    const withTokens = await Promise.all(selectedGuests.map(async g => {
-      if (g.rsvp_link_id) return g.rsvp_link_id;
-      const token = crypto.randomUUID();
-      await Guest.update(g.id, { rsvp_link_id: token });
-      return token;
-    }));
-    const links = withTokens.map(t => RSVP_BASE + t).join('\n');
-    await navigator.clipboard.writeText(links);
-    toast.success(`${withTokens.length} RSVP link${withTokens.length !== 1 ? 's' : ''} copied`);
+    // Minting and reading both happen server-side now (Track E): the token
+    // becomes an HMAC + ciphertext in E2, which the browser cannot produce.
+    const linkMap = await fetchGuestLinks(selectedGuests.map(g => g.id));
+    const urls = selectedGuests.map(g => linkMap[g.id]?.rsvpUrl).filter(Boolean);
+    if (urls.length === 0) { toast.error('Could not generate RSVP links'); return; }
+    await navigator.clipboard.writeText(urls.join('\n'));
+    toast.success(`${urls.length} RSVP link${urls.length !== 1 ? 's' : ''} copied`);
     loadGuests();
   };
 
