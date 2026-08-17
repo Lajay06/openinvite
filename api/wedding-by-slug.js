@@ -64,7 +64,7 @@ import {
   getClientIp,
   sanitizeString,
 } from './_lib/security.js';
-import { pickGuestSafeFields, verifyWeddingPassword } from './_lib/guestSafeWedding.js';
+import { pickGuestSafeFields, verifyWeddingPassword, websiteGateIsOn } from './_lib/guestSafeWedding.js';
 import { pickGuestSafeCustomGift, pickGuestSafeRegistryProduct } from './_lib/guestSafeRegistry.js';
 import { verifyBase44User } from './_lib/auth.js';
 
@@ -158,7 +158,14 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Wedding not found.' });
     }
 
-    const passwordProtected = !!wedding.websitePassword?.trim();
+    const { on: passwordProtected, failedOpen } = websiteGateIsOn(wedding);
+    if (failedOpen) {
+      // Unreachable through the UI — useWebsitePasswordGate never persists
+      // websitePasswordEnabled without a credential. Loud because reaching it
+      // means something wrote the row outside that path, and the site is
+      // serving publicly while its owner believes it is locked.
+      console.error(`[wedding-by-slug] websitePasswordEnabled is true but no credential is stored for slug "${slug}" — gate FAILED OPEN, site served publicly. See scratchpad/DECISION-LOG.md.`);
+    }
 
     // The preview flag bypasses the password gate, so it is honored ONLY for
     // an authenticated caller who owns this wedding. For anyone else the flag

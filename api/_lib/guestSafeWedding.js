@@ -128,21 +128,54 @@ export function pickGuestSafeFields(wedding) {
     if (field in wedding) out[field] = wedding[field];
   }
   if (wedding.music) out.music = pickGuestSafeMusic(wedding.music);
-  out.passwordProtected = !!wedding.websitePassword?.trim();
+  // Same source of truth as the gate itself — a wedding whose gate fails open
+  // must not tell the guest it is protected, or the site reports a lock the
+  // server is not enforcing.
+  out.passwordProtected = websiteGateIsOn(wedding).on;
   return out;
 }
 
 /**
- * Server-side password comparison — the plaintext websitePassword never
- * leaves this function's scope for a caller to inspect; only the boolean
- * match result is returned.
+ * Is the website password gate actually on for this wedding?
+ *
+ * `websitePasswordEnabled` is the single source of truth for the gate;
+ * `websitePassword` is the credential and must never be used to infer
+ * enabled/disabled. Inferring it is what forced the `' '` and `'password'`
+ * sentinel values the client used to write — see
+ * src/lib/websitePasswordGate.js.
+ *
+ * FAILS OPEN when enabled is true but no credential is stored. Ratified
+ * 2026-08-17, reasoning in scratchpad/DECISION-LOG.md: failing closed would
+ * lock every guest out of a live wedding site with no self-service recovery,
+ * while failing open exposes a site whose password was never chosen and so
+ * was never given to anyone. The UI makes that state unreachable
+ * (useWebsitePasswordGate never persists enabled without a credential), so
+ * this branch is a defensive line, not a routine path — and the caller
+ * logs it precisely because it should never be reached.
+ *
+ * @param {object} wedding
+ * @returns {{ on: boolean, failedOpen: boolean }}
+ */
+export function websiteGateIsOn(wedding) {
+  const enabled = wedding?.websitePasswordEnabled === true;
+  const hasCredential = !!wedding?.websitePassword?.trim();
+  return { on: enabled && hasCredential, failedOpen: enabled && !hasCredential };
+}
+
+/**
+ * Server-side password comparison — the stored websitePassword never leaves
+ * this function's scope for a caller to inspect; only the boolean match
+ * result is returned.
+ *
+ * Returns true (access granted) whenever the gate is not on, which covers
+ * both "protection disabled" and the fail-open case above.
  *
  * @param {object} wedding
  * @param {string} candidate
  * @returns {boolean}
  */
 export function verifyWeddingPassword(wedding, candidate) {
-  const real = wedding.websitePassword?.trim();
-  if (!real) return true; // not password-protected
+  if (!websiteGateIsOn(wedding).on) return true;
+  const real = wedding.websitePassword.trim();
   return typeof candidate === 'string' && candidate.trim() === real;
 }

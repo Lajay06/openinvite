@@ -5,6 +5,7 @@ import { getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { isPending, isAttending, isDeclined } from '@/lib/guestRsvpTally';
 import toast from 'react-hot-toast';
 import { interactiveDivProps } from '@/lib/a11y';
+import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
 
 const sans = "'Plus Jakarta Sans', sans-serif";
 
@@ -53,6 +54,15 @@ export default function StudioShareTab({ details: propDetails }) {
     setDetails(updated);
     if (detailsId) await base44.entities.WeddingDetails.update(detailsId, { [field]: value });
   };
+
+  /** Multi-field sibling of updateField — one write, so fields that must agree
+   *  (websitePassword + websitePasswordEnabled) can never be persisted apart. */
+  const updateFields = async (patch) => {
+    setDetails({ ...details, ...patch });
+    if (detailsId) await base44.entities.WeddingDetails.update(detailsId, patch);
+  };
+
+  const passwordGate = useWebsitePasswordGate(details, updateFields);
 
   const togglePublish = async () => {
     const next = !details?.websiteEnabled;
@@ -174,10 +184,15 @@ export default function StudioShareTab({ details: propDetails }) {
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Password Protection</p>
                 <p style={{ margin: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>Guests must enter password</p>
               </div>
-              <ToggleSwitch value={!!(details?.websitePassword?.trim())} onChange={v => updateField('websitePassword', v ? 'password' : '')} label="Password protection" />
+              <ToggleSwitch value={passwordGate.wantsProtection} onChange={passwordGate.toggle} label="Password protection" />
             </div>
-            {details?.websitePassword?.trim() && (
-              <input value={details?.websitePassword || ''} onChange={e => updateField('websitePassword', e.target.value)} placeholder="Set password..." style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans, marginBottom: 12 }} />
+            {passwordGate.wantsProtection && (
+              <>
+                <input value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} placeholder="Set password..." style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans, marginBottom: passwordGate.incomplete ? 4 : 12 }} />
+                {passwordGate.incomplete && (
+                  <p style={{ margin: '0 0 12px', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -272,8 +287,16 @@ export default function StudioShareTab({ details: propDetails }) {
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Password Protection</p>
                 <p style={{ margin: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>Guests must enter a password</p>
               </div>
-              <ToggleSwitch value={!!(details?.websitePassword?.trim())} onChange={v => updateField('websitePassword', v ? 'password' : '')} label="Password protection" />
+              <ToggleSwitch value={passwordGate.wantsProtection} onChange={passwordGate.toggle} label="Password protection" />
             </div>
+            {passwordGate.wantsProtection && (
+              <div style={{ marginBottom: 16 }}>
+                <input value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} placeholder="Set password..." style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans }} />
+                {passwordGate.incomplete && (
+                  <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
+                )}
+              </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #F5F5F5', paddingTop: 16 }}>
               <div>
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Hide from Search</p>
