@@ -2,6 +2,10 @@
   "name": "SongRequest",
   "type": "object",
   "properties": {
+    "ownerUserId": {
+      "type": "string",
+      "description": "The wedding owner's user id, stamped at creation by api/song-request-submit.js (which runs server-side and resolves the wedding). Enables the Notification-style RLS pattern: rows are admin-key-created on behalf of anonymous guests (created_by_id: 'anonymous', permanent), so update RLS scopes on {\"data.ownerUserId\": \"{{user.id}}\"} and api/song-request-review.js uses the couple's caller token. Declared 2026-08-17 (song-request review fix, option a). 231 orphaned pre-fix test rows from deleted weddings remain unstamped by decision - post-launch dead-data cleanup."
+    },
     "weddingId": {
       "type": "string"
     },

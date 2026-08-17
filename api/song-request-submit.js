@@ -173,6 +173,13 @@ export default async function handler(req, res) {
 
     const payload = {
       weddingId: wedding.id,
+      // The wedding owner's user id, stamped server-side from the wedding we
+      // just resolved — never supplied by the guest. This row is created with
+      // the admin key on behalf of an anonymous submitter, so created_by_id is
+      // permanently 'anonymous' and can never scope the couple's own access to
+      // it. ownerUserId is what SongRequest.update RLS scopes on instead, the
+      // same shape Notification.recipient_user_id already uses in this app.
+      ownerUserId: wedding.created_by_id || '',
       spotifyTrackId: sanitizeString(req.body?.spotifyTrackId || ''),
       title,
       artist,
