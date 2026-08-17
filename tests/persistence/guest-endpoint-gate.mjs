@@ -160,6 +160,54 @@ export async function runGuestEndpointGate() {
     : fail('guest-endpoint gate — every guestGateBlocks call is awaited (RULE 7)', 'all awaited',
            `${unawaited.join(', ')} — an un-awaited async guard returns a truthy Promise`));
 
+  // ── The two-flag contract (added 2026-08-18) ───────────────────────────
+  //
+  // Between #299 and 2026-08-18 there was only `passwordProtected`, and the
+  // server and client used it to answer DIFFERENT questions: the server meant
+  // "this site has a password" (true even on a successful unlock), the client
+  // read it as "you are locked out". A correct password therefore rendered
+  // "Incorrect password", and website password protection was impossible to
+  // pass for its entire existence.
+  //
+  // Two assertions keep the halves honest, because fixing one without the
+  // other silently recreates the bug.
+
+  // (a) every gated response must carry the lockout flag, not just the
+  //     has-a-password flag.
+  const gatedBad = [];
+  for (const file of apiEndpoints()) {
+    const code = stripComments(fs.readFileSync(path.join(API_DIR, file), 'utf8'));
+    for (const m of code.matchAll(/res\.status\(200\)\.json\(\{[^}]*passwordProtected:\s*true[^}]*\}\)/g)) {
+      if (!/locked:\s*true/.test(m[0])) gatedBad.push(`${file}: ${m[0].slice(0, 60)}`);
+    }
+  }
+  results.push(gatedBad.length === 0
+    ? pass('two-flag contract — every gated response sets locked:true', 'all gated responses')
+    : fail('two-flag contract — every gated response sets locked:true', 'locked:true present',
+           `${gatedBad.join(' | ')} — passwordProtected is not a lockout signal`));
+
+  // (b) no client may branch on passwordProtected. That is the exact shape of
+  //     the original bug, and it reads as correct, which is why it survived.
+  const SRC_DIR = path.resolve(new URL('../../src/', import.meta.url).pathname);
+  const offenders = [];
+  (function walk(dir) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) { walk(full); continue; }
+      if (!/\.(js|jsx)$/.test(e.name)) continue;
+      const code = stripComments(fs.readFileSync(full, 'utf8'));
+      // a conditional read: `if (x.passwordProtected)`, `!x.passwordProtected`,
+      // `x.passwordProtected ?`, `&&`/`||` operands.
+      if (/(if\s*\(|!|\?|&&|\|\|)\s*[\w.?]*\.passwordProtected\b/.test(code)) {
+        offenders.push(path.relative(SRC_DIR, full));
+      }
+    }
+  })(SRC_DIR);
+  results.push(offenders.length === 0
+    ? pass('two-flag contract — no client branches on passwordProtected', 'branch on locked instead')
+    : fail('two-flag contract — no client branches on passwordProtected', 'none',
+           `${offenders.join(', ')} — passwordProtected is true on a successful unlock too; branch on locked`));
+
   // The known-good instance, asserted by name so the two cannot both rot.
   const bySlug = stripComments(fs.readFileSync(path.join(API_DIR, 'wedding-by-slug.js'), 'utf8'));
   results.push(consultsGate(bySlug)

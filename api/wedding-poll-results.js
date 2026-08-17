@@ -23,13 +23,16 @@
  * weddings, which is the common case and is unchanged.
  *
  * A protected wedding with a wrong or missing password returns
- * { polls: {}, passwordProtected: true } — the same shape, empty. It does not
+ * { polls: {}, passwordProtected: true, locked: true } — the same shape, empty.
+ * locked is the lockout signal; passwordProtected only ever means "this site
+ * has a password" and is true on a successful unlock too. Same two-flag
+ * contract as wedding-by-slug, which see. It does not
  * error: the gated response is deliberately indistinguishable from a wedding
  * that simply has no poll data, and it matches what wedding-by-slug already
  * discloses about a protected site.
  *
  * Response: 200 { polls: { [pollId]: { counts: { [optionId]: number }, comments: string[] } } }
- *        or 200 { polls: {}, passwordProtected: true }   (gated)
+ *        or 200 { polls: {}, passwordProtected: true, locked: true }   (gated)
  *        or 404 { error: 'Wedding not found.' }
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
@@ -106,7 +109,7 @@ export default async function handler(req, res) {
     if (passwordProtected && !(await verifyWeddingPassword(wedding, candidatePassword))) {
       // Same shape, empty. Not an error: a gated response must not be
       // distinguishable from a wedding with no poll activity.
-      return res.status(200).json({ polls: {}, passwordProtected: true });
+      return res.status(200).json({ polls: {}, passwordProtected: true, locked: true });
     }
 
     const votesQuery = encodeURIComponent(JSON.stringify({ wedding_id: wedding.id }));
@@ -146,7 +149,7 @@ export default async function handler(req, res) {
       };
     }
 
-    return res.status(200).json({ polls });
+    return res.status(200).json({ polls, locked: false });
   } catch (err) {
     console.error('[wedding-poll-results] Error:', err.message);
     return res.status(500).json({ error: 'Something went wrong — please try again.' });

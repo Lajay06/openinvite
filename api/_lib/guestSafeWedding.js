@@ -133,7 +133,12 @@ export function pickGuestSafeFields(wedding) {
   // Same source of truth as the gate itself — a wedding whose gate fails open
   // must not tell the guest it is protected, or the site reports a lock the
   // server is not enforcing.
+  // "does this site have a password" — NOT "are you locked out". This is
+  // reached only on the success path, so the caller is authorised by
+  // definition; locked is stated explicitly rather than left absent so the
+  // contract is total and no client has to infer it from a missing key.
   out.passwordProtected = websiteGateIsOn(wedding).on;
+  out.locked = false;
   return out;
 }
 

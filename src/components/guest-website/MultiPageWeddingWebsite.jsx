@@ -18,7 +18,11 @@ function PasswordGateSimple({ slug, onUnlock }) {
     setError(false);
     const result = await fetchWeddingBySlug(slug, val);
     setChecking(false);
-    if (result && !result.passwordProtected) {
+    // `locked`, not `passwordProtected`. A correct password returns the full
+    // payload with passwordProtected:true (the site does have a password —
+    // that stays true once you are inside), so branching on it here rejected
+    // every correct password. See api/wedding-by-slug.js's two-flag contract.
+    if (result && !result.locked) {
       // Kept in sessionStorage deliberately (advisor decision, 2026-08-17),
       // even though websitePassword is a scrypt hash at rest as of Step 2b
       // stage (iii): the client must still submit something hashable on every
@@ -156,10 +160,13 @@ export default function MultiPageWeddingWebsite() {
 
   if (!weddingDetails) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="text-white">Wedding not found</div></div>;
 
-  // Password gate — the endpoint returns { passwordProtected: true } with no
-  // other fields when a password is required and none (or the wrong one)
-  // was supplied; the real password never reaches the browser.
-  if (weddingDetails.passwordProtected) {
+  // Password gate — the endpoint returns { passwordProtected: true,
+  // locked: true } and no other fields when a password is required and none
+  // (or the wrong one) was supplied; the real password never reaches the
+  // browser. Branch on `locked`: passwordProtected is also true on a
+  // successful unlock, so using it here re-locked the site immediately after
+  // a correct password was accepted.
+  if (weddingDetails.locked) {
     return <PasswordGateSimple slug={weddingSlug} onUnlock={setWeddingDetails} />;
   }
 
