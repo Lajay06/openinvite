@@ -154,7 +154,11 @@ const baselines = [
   ['WeddingDetails','theme.aesthetic'], ['WeddingDetails','theme.faith'],
   ['WeddingDetails','mainCeremony.dressCode'], ['WeddingDetails','guestSuiteAccommodation.places'],
   ['WeddingDetails','polls'], ['User','onboardingCompleted'],
-  ['WeddingDetails','emergencyContacts.primary'], ['WeddingDetails','experienceGuide.categories'],
+  // Was emergencyContacts.primary until Step 2b encrypted that field — a
+  // ciphertext string has no nested paths, so the old baseline would report
+  // a false "method error". Swapped for another nested object that stays
+  // plaintext, since the point of this entry is exercising nested lookup.
+  ['WeddingDetails','weddingPolicies.dietary'], ['WeddingDetails','experienceGuide.categories'],
   ['WeddingDetails','assetContent'], ['WeddingDetails','onboardingDraft'], ['WeddingDetails','onboardingStepIndex'],
 ];
 for (const [entity, field] of baselines) {
