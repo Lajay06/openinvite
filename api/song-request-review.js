@@ -35,18 +35,21 @@
  *               'declined'. No Music entry created.
  * Response: 200 { ok: true } or 400/401/404 { error: string }
  *
- * KNOWN BROKEN as of this writing, and not fixed by this file's current
- * change: both status writes below use the admin key, and SongRequest.update
- * RLS is scoped on created_by_id, which is permanently 'anonymous' on these
- * rows because guests submit them unauthenticated. Base44 therefore returns
- * 403 and the endpoint 500s. The fix lands in two further steps — an
- * ownerUserId-scoped update rule, then switching these two calls to the
- * caller's token (the #434 pattern this file already uses for Music.create).
- * See scratchpad/SONG-REQUEST-REVIEW-FIX.md.
+ * BOTH status writes use the CALLER's own token, never the admin key. These
+ * rows are created with the admin key on behalf of anonymous guests, so
+ * created_by_id is permanently 'anonymous' — an admin-key update returns a
+ * flat 403 (BASE44_PLATFORM_NOTES.md, "the admin key is not a superuser
+ * bypass"), which is exactly what broke this endpoint until 2026-08-17.
+ * SongRequest.update RLS is scoped on {"data.ownerUserId": "{{user.id}}"}
+ * instead, and api/song-request-submit.js stamps ownerUserId at create — the
+ * same pattern Notification.recipient_user_id already uses. Do not "simplify"
+ * these back to adminFetch; it silently reinstates the 403.
  *
- * What IS fixed here: 'add' is now idempotent. It used to create the Music
- * row and then write the status, so the guaranteed 403 left the track added
- * and the request pending, and every retry added the track again.
+ * 'add' is also idempotent: it creates the Music row before the status write,
+ * and the two are not atomic, so a failure in between used to leave the track
+ * added and the request pending, with every retry adding the track again.
+ * The sourceSongRequestId guard makes the retry find the existing row and
+ * complete the status write instead. See scratchpad/SONG-REQUEST-REVIEW-FIX.md.
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
@@ -142,7 +145,7 @@ async function handlePost(req, res, caller, callerToken) {
   }
 
   if (action === 'decline') {
-    await adminFetch('PUT', `/apps/${BASE44_APP_ID}/entities/SongRequest/${songRequestId}`, { status: 'declined' });
+    await callerFetch('PUT', `/apps/${BASE44_APP_ID}/entities/SongRequest/${songRequestId}`, callerToken, { status: 'declined' });
     return res.status(200).json({ ok: true });
   }
 
@@ -187,7 +190,7 @@ async function handlePost(req, res, caller, callerToken) {
     console.warn(`[song-request-review] Music row already exists for request ${songRequestId} — skipping create, completing the status write. This is the retry path after a failed status write.`);
   }
 
-  await adminFetch('PUT', `/apps/${BASE44_APP_ID}/entities/SongRequest/${songRequestId}`, { status: 'added' });
+  await callerFetch('PUT', `/apps/${BASE44_APP_ID}/entities/SongRequest/${songRequestId}`, callerToken, { status: 'added' });
 
   return res.status(200).json({ ok: true });
 }
