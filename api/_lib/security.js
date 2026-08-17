@@ -95,11 +95,9 @@ function gcRateLimitStore() {
  *   'places-search'   — 20 req/min  (places-search.js — text search)
  *   'place-details'   — 40 req/min  (place-details.js — one call per selection)
  *   'places-photo'    — 60 req/min  (places-photo.js — several photos per page load)
- *   'spotify-search'  — 20 req/min  (spotify-search.js — search-as-you-type;
- *     also the sole token-refresh path — api/spotify-refresh.js, a second,
- *     orphaned implementation nothing ever called, was deleted)
- *   'spotify-callback'      — 10 req/min  (spotify-callback.js — OAuth callback, 2 external calls per hit)
- *   'spotify-session-fetch' — 30 req/min  (spotify-session-fetch.js — cheap cookie read, generous)
+ *   'spotify-search'  — 20 req/min  (spotify-search.js — search-as-you-type.
+ *     App-token search only; the OAuth connect endpoints it used to sit
+ *     alongside were removed in the Step 2b stage (c) teardown)
  *   'on-signup'       — 5 req/min   (on-signup.js — sends an email per call, not idempotent)
  *   'admin-stats'     — 20 req/min  (admin/stats.js — up to 200 Stripe API reads per call)
  *   'portal-session'  — 10 req/min  (create-portal-session.js — live Stripe API call per hit)
@@ -265,9 +263,9 @@ export async function verifyTurnstileToken(token, ip, logPrefix = '[turnstile]')
 // ─── Cookies ─────────────────────────────────────────────────────────────────
 
 /**
- * Parses the request's raw Cookie header into a plain object. Used for OAuth
- * state validation (api/spotify-callback.js) and short-lived server-to-
- * browser handoffs, since Vercel functions are stateless across invocations
+ * Parses the request's raw Cookie header into a plain object. Used for
+ * short-lived server-to-browser handoffs, since Vercel functions are
+ * stateless across invocations
  * — an in-memory store (like the rate-limit Map) can't reliably survive
  * from one request in a multi-step flow to the next, but a browser-held
  * cookie can.

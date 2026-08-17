@@ -131,7 +131,7 @@ export default function PrivacyPolicy() {
             ['Sentry', 'Error reports and, for a sample of sessions, a masked session replay', 'Error monitoring, to find and fix bugs'],
             ['Cloudinary', 'No personal data: hosts static marketing images only', 'Serves images on our public marketing pages'],
             ['Google Places', 'Venue and vendor search terms a couple types', 'Powers venue/vendor location search and suggestions'],
-            ['Spotify', "Couple's Spotify profile (display name, photo) and song search terms", 'Music playlist and song-request features'],
+            ['Spotify', 'Song search terms typed into track search. No Spotify account is connected and no profile data is received', 'Powers song search for playlists and guest song requests'],
             ['Cloudflare Turnstile', 'Client IP address, a bot-detection challenge token', 'Confirms a human is submitting public forms (RSVP-link requests, sign-up)'],
           ]} />
 

@@ -4,34 +4,32 @@
  * Server-side proxy for Spotify track search. Keeps all credentials
  * off the browser bundle.
  *
- * Two modes:
- *   1. User token   — pass { q, accessToken, refreshToken, expiresAt }
- *                     The server auto-refreshes if expired and returns the
- *                     new token in { newToken } so the client can persist it.
- *   2. App token    — pass only { q }; server uses client_credentials grant.
- *                     Requires SPOTIFY_CLIENT_ID + SPOTIFY_CLIENT_SECRET.
+ * ONE mode: app token. Pass { q }; the server uses a client_credentials
+ * grant from SPOTIFY_CLIENT_ID + SPOTIFY_CLIENT_SECRET. Search needs no user
+ * context, and every caller already used this path — GuestMusic.jsx and
+ * SpotifySearch.jsx always sent only { q }.
+ *
+ * The user-token mode was removed in the Step 2b stage (c) Spotify teardown.
+ * It was the only place in the app that accepted a Spotify refreshToken from
+ * a client, and it existed solely to serve WeddingDetails.music
+ * .spotifyConnection, which is being purged. Removing it deletes the last
+ * code path that reads a stored Spotify token. Guest song-request search is
+ * unaffected: it never used it.
  *
  * Response:
- *   200 { tracks: SpotifyTrack[], newToken?: { accessToken, expiresAt } }
- *   401 { error } — the presented accessToken was rejected; client should
- *     prompt to reconnect (see src/components/music/SpotifyModal.jsx, which
- *     also clears the stored connection on this specific status).
+ *   200 { tracks: SpotifyTrack[] }
  *   502 { error } — Spotify itself returned a non-200/non-JSON response
  *     (rate limit, outage, edge block, etc.) — every such status is caught
  *     before .json() is ever called on it (parseJsonResponse()), the fix
  *     for the production "'text/html' is not a valid JavaScript MIME type"
  *     crash (2026-08-02): the old code only guarded status 401.
  *
- * Required env vars (for app-token fallback):
+ * Required env vars:
  *   SPOTIFY_CLIENT_ID
  *   SPOTIFY_CLIENT_SECRET
- *   BASE44_ADMIN_KEY — used by isKnownSpotifyRefreshToken (api/_lib/
- *     spotifyAuth.js) to verify a presented refreshToken is tied to a real
- *     wedding's stored Spotify connection before silently exchanging it.
  */
 
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
-import { isKnownSpotifyRefreshToken } from './_lib/spotifyAuth.js';
 
 let cachedAppToken = null; // { token, expires }
 
@@ -74,23 +72,6 @@ async function getAppToken(clientId, clientSecret) {
   return cachedAppToken.token;
 }
 
-async function refreshUserToken(refreshToken, clientId, clientSecret) {
-  const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-    },
-    body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: refreshToken }).toString(),
-  });
-  const data = await parseJsonResponse(res, 'Spotify token-refresh request');
-  if (!data.access_token) throw new Error('Token refresh failed');
-  return {
-    accessToken: data.access_token,
-    expiresAt:   Date.now() + (data.expires_in || 3600) * 1000,
-  };
-}
-
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
 
@@ -107,45 +88,18 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
   }
 
-  const { q, accessToken, refreshToken, expiresAt } = req.body || {};
+  // Only q is read. accessToken/refreshToken/expiresAt are deliberately
+  // ignored if a stale client still sends them — the teardown removed the
+  // user-token path, and silently ignoring beats 400-ing a caller whose only
+  // sin is running yesterday's bundle.
+  const { q } = req.body || {};
   if (!q?.trim()) return res.status(400).json({ error: 'q is required' });
 
   const clientId     = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
-  let token     = null;
-  let newToken  = null;
-
-  if (accessToken) {
-    // Use the user's token; refresh silently if expired
-    const expired = expiresAt && Date.now() > expiresAt - 60_000;
-    if (expired && refreshToken && clientId && clientSecret) {
-      // A refresh token not tied to any known wedding's Spotify connection
-      // is never exchanged, even silently here. Falls through to the
-      // app-token path exactly as a failed refresh already does, so an
-      // unknown/leaked token gets no different treatment than "refresh
-      // unavailable." This inline refresh is now the ONLY refresh path in
-      // the app — api/spotify-refresh.js (a second, orphaned implementation
-      // nothing ever called) was deleted rather than kept in parallel.
-      const known = await isKnownSpotifyRefreshToken(refreshToken, '[spotify-search]');
-      if (known) {
-        try {
-          const refreshed = await refreshUserToken(refreshToken, clientId, clientSecret);
-          token    = refreshed.accessToken;
-          newToken = refreshed;
-        } catch {
-          // Refresh failed — fall through to app token
-        }
-      } else {
-        console.warn('[spotify-search] Refresh token not tied to any known wedding record — skipping silent refresh');
-      }
-    } else {
-      token = accessToken;
-    }
-  }
-
-  if (!token && clientId && clientSecret) {
-    // Fallback: client credentials (no user context needed for search)
+  let token = null;
+  if (clientId && clientSecret) {
     try {
       token = await getAppToken(clientId, clientSecret);
     } catch (err) {
@@ -192,9 +146,7 @@ export default async function handler(req, res) {
       spotify_url:  t.external_urls?.spotify || '',
     }));
 
-    const response = { tracks };
-    if (newToken) response.newToken = newToken;
-    return res.status(200).json(response);
+    return res.status(200).json({ tracks });
   } catch (err) {
     console.error('[spotify-search] Search error:', err.message);
     return res.status(500).json({ error: 'Search request failed' });

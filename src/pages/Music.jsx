@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -50,7 +50,7 @@ function ToggleRow({ label, value, onChange }) {
   );
 }
 
-function SettingsModal({ isSpotifyConnected, spotifyConnection, handleDisconnectSpotify, details, updateMusic, onClose }) {
+function SettingsModal({ details, updateMusic, onClose }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title="Song request settings" className="max-w-[440px] p-0 gap-0">
@@ -59,18 +59,6 @@ function SettingsModal({ isSpotifyConnected, spotifyConnection, handleDisconnect
           <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
         </div>
         <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {/* Spotify connection */}
-          {isSpotifyConnected && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', marginBottom: 12, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-              <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 2px' }}>Spotify connected</p>
-                <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>{spotifyConnection.displayName}</p>
-              </div>
-              <button onClick={handleDisconnectSpotify} style={{ fontSize: 12, color: '#E03553', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, padding: 0 }}>
-                Disconnect
-              </button>
-            </div>
-          )}
           <ToggleRow label="Enable guest song requests" value={details?.music?.guestRequestsEnabled} onChange={v => updateMusic('guestRequestsEnabled', v)} />
           <ToggleRow label="Require approval before adding" value={details?.music?.requestsRequireApproval} onChange={v => updateMusic('requestsRequireApproval', v)} />
           <ToggleRow label="One request per guest" value={details?.music?.limitOnePerGuest} onChange={v => updateMusic('limitOnePerGuest', v)} />
@@ -103,9 +91,6 @@ export default function MusicPage() {
   const [showSpotifyModal, setShowSpotifyModal] = useState(false);
   const [addingPlaylist, setAddingPlaylist] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
-  const [pendingSpotifyData, setPendingSpotifyData] = useState(null);
-  const [spotifyDropdownOpen, setSpotifyDropdownOpen] = useState(false);
-  const spotifyPillRef = useRef(null);
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
@@ -135,13 +120,12 @@ export default function MusicPage() {
     },
   });
 
-  const { data: ownDetails, isSuccess: ownDetailsLoaded } = useQuery({
+  const { data: ownDetails } = useQuery({
     queryKey: ['musicDetails'],
     enabled: !isCollaborating,
     queryFn: async () => await getMyWeddingDetails(),
   });
   const details = isCollaborating ? collabDataQuery.data?.weddingDetails : ownDetails;
-  const detailsLoaded = isCollaborating ? collabDataQuery.isSuccess : ownDetailsLoaded;
 
   // NOT getMyRecords('SongRequest') — SongRequest rows are written by
   // api/song-request-submit.js via the admin key, and Base44 always stamps
@@ -225,108 +209,19 @@ export default function MusicPage() {
     }
   }, [details]);
 
-  // ── Detect Spotify OAuth callback ─────────────────────────────────────────
-  // api/spotify-callback.js never puts token material in the redirect URL —
-  // only a generic ?spotify=connected flag. The actual bundle is fetched
-  // from api/spotify-session-fetch, which reads it from a short-lived
-  // HttpOnly cookie the callback set, so it never appears in the browser's
-  // address bar or history.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const connected = params.get('spotify');
-    const err = params.get('spotify_error');
+  // Step 2b stage (c): the Spotify OAuth connect flow is gone. Nothing writes
+  // WeddingDetails.music.spotifyConnection any more — the callback and
+  // session-fetch endpoints were deleted, so there is no token bundle to pick
+  // up and persist. Track search still works; it runs on the server's own app
+  // credentials and never needed a couple's account.
 
-    if (err) {
-      const message = err === 'state_mismatch'
-        ? 'Spotify connection could not be verified — please try connecting again.'
-        : 'Could not connect to Spotify. Please try again.';
-      toast.error(message);
-      const url = new URL(window.location.href);
-      url.searchParams.delete('spotify_error');
-      window.history.replaceState({}, '', url.toString());
-      return;
-    }
-    if (connected !== 'connected') return;
-
-    const url = new URL(window.location.href);
-    url.searchParams.delete('spotify');
-    window.history.replaceState({}, '', url.toString());
-
-    fetch('/api/spotify-session-fetch', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data?.connected) {
-          setPendingSpotifyData(data);
-        }
-      })
-      .catch(() => { /* non-fatal — connection just won't be saved this load */ });
-  }, []);
-
-  // ── Save pending Spotify connection once WeddingDetails have loaded ────────
-  useEffect(() => {
-    if (!pendingSpotifyData || !detailsLoaded) return;
-    updateMutation.mutate({
-      music: {
-        ...(details?.music || {}),
-        spotifyConnection: {
-          accessToken:  pendingSpotifyData.at,
-          refreshToken: pendingSpotifyData.rt,
-          expiresAt:    pendingSpotifyData.exp,
-          displayName:  pendingSpotifyData.name,
-          imageUrl:     pendingSpotifyData.img,
-        },
-      },
-    });
-    toast.success(`Spotify connected — ${pendingSpotifyData.name}`);
-    setPendingSpotifyData(null);
-  }, [pendingSpotifyData, detailsLoaded]);
-
-  useEffect(() => {
-    if (!spotifyDropdownOpen) return;
-    const handler = (e) => {
-      if (spotifyPillRef.current && !spotifyPillRef.current.contains(e.target)) {
-        setSpotifyDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [spotifyDropdownOpen]);
 
   const updateMusic = (field, value) =>
     updateMutation.mutate({ music: { ...(details?.music || {}), [field]: value } });
 
-  // ── Spotify helpers ───────────────────────────────────────────────────────
-  const spotifyConnection  = details?.music?.spotifyConnection;
-  const isSpotifyConnected = !!(spotifyConnection?.accessToken);
-
-  const handleConnectSpotify = () => {
-    const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-    if (!clientId) {
-      toast.error('Spotify is not configured — add VITE_SPOTIFY_CLIENT_ID to your environment.');
-      return;
-    }
-    const redirectUri = 'https://www.openinvite.com.au/api/spotify-callback';
-    const scope       = 'playlist-modify-public playlist-modify-private user-read-private';
-    const state       = crypto.randomUUID();
-    // A cookie, not sessionStorage — api/spotify-callback.js validates the
-    // state Spotify sends back against THIS value, and only a cookie is
-    // sent back to our server automatically on that redirect.
-    document.cookie = `spotify_oauth_state=${state}; path=/; max-age=600; samesite=lax; secure`;
-    const params = new URLSearchParams({
-      client_id:     clientId,
-      response_type: 'code',
-      redirect_uri:  redirectUri,
-      scope,
-      state,
-    });
-    window.location.href = `https://accounts.spotify.com/authorize?${params}`;
-  };
-
-  const handleDisconnectSpotify = () => {
-    if (!window.confirm('Disconnect from Spotify?')) return;
-    updateMusic('spotifyConnection', null);
-    toast.success('Disconnected from Spotify');
-  };
+  // Step 2b stage (c): connect/disconnect handlers removed with the OAuth
+  // endpoints. Spotify track SEARCH is unaffected — it runs on the server's
+  // client_credentials app token and never used a couple's account.
 
   const playlists = (details?.music?.playlists || []).filter(p => p.enabled);
   const pendingCount = (songRequests || []).filter(r => r.status === 'pending').length;
@@ -523,46 +418,6 @@ export default function MusicPage() {
                     style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
                     <Plus size={12} />Search Spotify
                   </button>
-                  {isSpotifyConnected ? (
-                    <div style={{ position: 'relative' }} ref={spotifyPillRef}>
-                      <button
-                        onClick={() => setSpotifyDropdownOpen(v => !v)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(29,185,84,0.08)', border: '1px solid rgba(29,185,84,0.25)', borderRadius: 999, padding: '5px 11px', cursor: 'pointer', fontSize: 12, fontFamily: PJS, fontWeight: 600, color: '#1DB954' }}
-                      >
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#1DB954', flexShrink: 0 }} />
-                        Connected · {spotifyConnection.displayName}
-                      </button>
-                      {spotifyDropdownOpen && (
-                        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)', zIndex: 200, minWidth: 160 }}>
-                          <button
-                            onClick={() => setShowSpotifyModal(true)}
-                            style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#0A0A0A', cursor: 'pointer' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(10,10,10,0.04)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                          >
-                            Search Spotify
-                          </button>
-                          <button
-                            onClick={() => { setSpotifyDropdownOpen(false); handleDisconnectSpotify(); }}
-                            style={{ display: 'block', width: '100%', padding: '10px 14px', background: 'none', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', textAlign: 'left', fontSize: 13, fontFamily: PJS, color: '#E03553', cursor: 'pointer' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(224,53,83,0.04)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                          >
-                            Disconnect Spotify
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleConnectSpotify}
-                      className="btn-editorial-secondary"
-                      style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}
-                    >
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.746 3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.412.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.33.366.225.48.706.257 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.624-.149-.495.13-1.016.625-1.166 3.532-1.073 9.404-.866 13.115 1.337.445.264.59.837.327 1.282-.264.444-.838.59-1.284.327z"/></svg>
-                      Connect Spotify
-                    </button>
-                  )}
                   <button onClick={() => { setShowAddLink(v => !v); setShowSearch(false); setShowAddForm(false); setEditingTrack(null); }}
                     className={showAddLink ? 'btn-primary' : 'btn-editorial-secondary'}
                     style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -725,8 +580,6 @@ export default function MusicPage() {
       {showSpotifyModal && (
         <SpotifyModal
           playlistId={activePlaylist?.id}
-          spotifyConnection={spotifyConnection}
-          onUpdateConnection={conn => updateMusic('spotifyConnection', conn)}
           onAdd={(track) => handleAddTrack({ ...track, category: activePlaylist?.id || 'general' })}
           onClose={() => setShowSpotifyModal(false)}
         />
@@ -735,9 +588,6 @@ export default function MusicPage() {
       {/* Settings modal */}
       {showSettings && (
         <SettingsModal
-          isSpotifyConnected={isSpotifyConnected}
-          spotifyConnection={spotifyConnection}
-          handleDisconnectSpotify={handleDisconnectSpotify}
           details={details}
           updateMusic={updateMusic}
           onClose={() => setShowSettings(false)}
