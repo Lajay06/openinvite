@@ -4,6 +4,64 @@ Closed decisions with their reasoning, so a restart doesn't re-litigate them.
 
 ---
 
+## Website password gate — FAIL OPEN when enabled with no credential, 2026-08-17
+
+**Ratified by the advisor 2026-08-17, binding condition attached.**
+
+`websitePasswordEnabled` (declared 2026-08-17) is the single source of truth
+for whether the public wedding site is gated. That creates a two-field
+invariant with `websitePassword`, and one combination has to be defined:
+**enabled = true, no credential stored.**
+
+### The decision
+
+The gate **fails OPEN** — the site serves publicly, and the server logs
+loudly. It does not fail closed.
+
+**Binding condition:** the same PR must make that state unreachable through
+normal use. The UI refuses to save enabled-without-password. Fail-open is a
+defensive line for a state the product cannot produce, never a routine path.
+
+### Why open and not closed
+
+Failing closed is the reflex answer and it is wrong here. A wedding site with
+the gate on and no credential that can satisfy it locks out **every guest**,
+with no self-service recovery — they cannot contact the couple through a site
+they cannot load, and the couple only finds out when someone tells them. The
+blast radius is the entire guest list, on a date that does not move.
+
+Failing open exposes a site that was never actually protected: the couple
+toggled a switch and never chose a password, so no credential was ever
+communicated to anyone, so nothing that was meant to be private is being
+revealed to someone who was meant to be excluded. It also matches the
+behaviour that already shipped, where an empty `websitePassword` simply meant
+"not protected".
+
+The asymmetry is the whole argument: closed breaks a real wedding for real
+guests; open leaves a door open that nobody had been told was locked.
+
+### What makes this safe rather than lax
+
+Three things together, and it is only defensible with all three:
+
+1. **Unreachable by construction** — UI refuses to persist the state.
+2. **Loud** — the server logs whenever it takes the fail-open branch, so the
+   unreachable state existing at all is visible rather than silent. Same
+   reasoning as [[standing-rules]] RULE 6c.
+3. **Never inferred** — `websitePassword` must not be used to derive
+   enabled/disabled. Deriving it is exactly what forced the `' '` and
+   `'password'` sentinels this field replaces.
+
+### Audit that informed it
+
+21 rows at decision time (16 real, 5 `is_test`): zero sentinels, zero real
+passwords, 16 null, 5 empty string, `websitePasswordEnabled` present on **0**
+rows. Six real rows have published sites; none is password-protected. So the
+decision was taken with no live password-protected wedding to endanger either
+way — the right time to choose it.
+
+---
+
 ## WeddingDetails.read RLS flip — REJECTED, 2026-08-17
 
 **Do not build it, do not sequence it, do not re-propose it in this form.**
