@@ -64,9 +64,6 @@
           "guest_name": {
             "type": "string"
           },
-          "guest_email": {
-            "type": "string"
-          },
           "quantity": {
             "type": "number"
           },
