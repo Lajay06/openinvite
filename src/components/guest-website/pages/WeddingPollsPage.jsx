@@ -3,6 +3,7 @@ import { Turnstile } from '@marsidev/react-turnstile';
 import { ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
+import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
@@ -306,7 +307,17 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/wedding-poll-results?weddingSlug=${encodeURIComponent(weddingDetails.slug)}`);
+        // POST with the cached password when the guest has unlocked a
+        // protected site — the endpoint honours the website password gate as
+        // of 2026-08-17, and a candidate password never rides in a URL.
+        const cachedPassword = getCachedWeddingPassword(weddingDetails.slug);
+        const res = cachedPassword
+          ? await fetch('/api/wedding-poll-results', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ weddingSlug: weddingDetails.slug, password: cachedPassword }),
+            })
+          : await fetch(`/api/wedding-poll-results?weddingSlug=${encodeURIComponent(weddingDetails.slug)}`);
         if (!res.ok) return;
         const { polls: results } = await res.json();
         if (cancelled || !results) return;

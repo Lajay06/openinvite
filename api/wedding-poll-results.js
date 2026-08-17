@@ -1,5 +1,6 @@
 /**
- * GET /api/wedding-poll-results?weddingSlug=<slug>
+ * GET  /api/wedding-poll-results?weddingSlug=<slug>
+ * POST /api/wedding-poll-results   { weddingSlug, password? }
  *
  * Public, unauthenticated endpoint backing WeddingPollsPage.jsx's results
  * display. Resolves the wedding by slug using the server-side admin key,
@@ -8,7 +9,27 @@
  * old static WeddingDetails.polls[].options[].votes/.comments[], which
  * froze the moment votes/comments moved to their own entities.
  *
+ * HONOURS THE WEBSITE PASSWORD GATE. Until 2026-08-17 it did not, and that
+ * was a real disclosure hole: this endpoint returns every poll comment's
+ * TEXT, so anyone who knew a slug could read a password-protected wedding's
+ * guest comments without the password. A slug is not a secret — it is printed
+ * in every invitation. Same class as the ?preview=true bypass fixed in #447,
+ * different door: that was a flag overriding the gate, this was an endpoint
+ * that never consulted it.
+ *
+ * The candidate password travels in a POST body, never the query string —
+ * same transport decision as #449, for the same reasons (access logs, browser
+ * history, referrer, shared-cache keys). GET remains for unprotected
+ * weddings, which is the common case and is unchanged.
+ *
+ * A protected wedding with a wrong or missing password returns
+ * { polls: {}, passwordProtected: true } — the same shape, empty. It does not
+ * error: the gated response is deliberately indistinguishable from a wedding
+ * that simply has no poll data, and it matches what wedding-by-slug already
+ * discloses about a protected site.
+ *
  * Response: 200 { polls: { [pollId]: { counts: { [optionId]: number }, comments: string[] } } }
+ *        or 200 { polls: {}, passwordProtected: true }   (gated)
  *        or 404 { error: 'Wedding not found.' }
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
@@ -16,6 +37,7 @@
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { aggregateVotes } from './_lib/pollAuth.js';
+import { websiteGateIsOn, verifyWeddingPassword } from './_lib/guestSafeWedding.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -31,9 +53,15 @@ function unwrapList(payload) {
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
 
-  if (req.method !== 'GET') {
+  // POST exists only so a candidate password never has to ride in the URL.
+  // Everything else about the two methods is identical.
+  if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // This response can carry a protected wedding's guest comments. Never let an
+  // intermediary store it.
+  res.setHeader('Cache-Control', 'private, no-store');
 
   const ip = getClientIp(req);
   // Generous limit — every poll page load fetches this once.
@@ -44,7 +72,10 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
   }
 
-  const weddingSlug = sanitizeString(req.query?.weddingSlug || '');
+  const src = req.method === 'POST' ? (req.body || {}) : (req.query || {});
+  const weddingSlug = sanitizeString(src.weddingSlug || '');
+  // Accepted ONLY from a POST body — see the transport note in the header.
+  const candidatePassword = req.method === 'POST' && typeof src.password === 'string' ? src.password : '';
   if (!weddingSlug) {
     return res.status(400).json({ error: 'weddingSlug is required' });
   }
@@ -65,6 +96,17 @@ export default async function handler(req, res) {
     const wedding = unwrapList(await findRes.json()).find(w => w.slug === weddingSlug && !w.is_test);
     if (!wedding) {
       return res.status(404).json({ error: 'Wedding not found.' });
+    }
+
+    // The gate, consulted exactly as api/wedding-by-slug.js consults it.
+    const { on: passwordProtected, failedOpen } = websiteGateIsOn(wedding);
+    if (failedOpen) {
+      console.error(`[wedding-poll-results] websitePasswordEnabled is true but no credential is stored for slug "${weddingSlug}" — gate FAILED OPEN, poll results served publicly. See scratchpad/DECISION-LOG.md.`);
+    }
+    if (passwordProtected && !(await verifyWeddingPassword(wedding, candidatePassword))) {
+      // Same shape, empty. Not an error: a gated response must not be
+      // distinguishable from a wedding with no poll activity.
+      return res.status(200).json({ polls: {}, passwordProtected: true });
     }
 
     const votesQuery = encodeURIComponent(JSON.stringify({ wedding_id: wedding.id }));
