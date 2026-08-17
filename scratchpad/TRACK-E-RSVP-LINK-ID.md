@@ -185,9 +185,12 @@ resolves to nothing or an empty string rendered into an email.
 | **E3-1** | `api/rsvp-link-request.js:161-166` — reads `guest.rsvp_link_id` with the admin key and emails `${baseUrl}/rsvp/${token}` | the "email me my link" recovery flow sends a URL ending in `/rsvp/undefined` | decrypt `rsvp_link_id_enc` server-side; it already holds the key, so no endpoint hop |
 | **E3-2** | `api/_lib/rsvpAuth.js:61,66` — `resolveGuestByToken` queries the plaintext columns | **every RSVP link in every invitation stops resolving** | query `*_hash` (already dual-path from E2; E3 removes the plaintext fallback) |
 | **E3-3** | `SendInvitesModal.jsx` `previewRsvpUrl`, `EmailTemplates.jsx` `sampleRsvpUrl` | both silently fall through to the `preview-token` placeholder | **no change — this is the intended end state.** A sample email the couple is only looking at must not carry a live capability. Listed so it reads as a decision, not a regression. |
+| **E3-4** | `GamesManager.jsx` `copyLinks` — builds `/games/<token>/<gameId>` | game links stop working if recovery is not decrypting `_enc` | **REQUIRED verification leg, advisor decision 2026-08-18.** Deferred from the E1 click-throughs because the fixture had no games. At E3: create a throwaway game on the fixture, verify links resolve after the plaintext null via decrypt, then delete the game. |
 
 E3-1 and E3-2 are hard blockers. E3-3 is a deliberate no-op, recorded so that
-nobody "fixes" it later by re-introducing a live token into a preview.
+nobody "fixes" it later by re-introducing a live token into a preview. E3-4 is
+a required verification leg rather than a code change — it is the one E1
+click-through that could not be run, and E3 is where it must be closed.
 
 ---
 

@@ -120,6 +120,28 @@ onboarding emails have never sent. Not fixed as part of this session
 (out of scope for the task that found it); flagged for its own fix using
 the `?api_key=` pattern already proven in `base44Admin.js`.
 
+## `skip` pagination is NOT stable — dedupe by id or use one large limit
+
+Found 2026-08-18 while snapshotting `Guest` before the Track E click-throughs.
+Paging with `?limit=100&skip=N` returned **200 unique ids across pages that
+should have covered 205 rows** — pages overlap and omit, so a naive
+`concat` both double-counts some rows and silently drops others. The same
+query as a single `?limit=1000` call returns all 205, every time.
+
+The failure is quiet and looks exactly like data loss: my paginated count said
+199 tokens where the real number was 202, and the obvious reading was "three
+rows lost their tokens". Nothing had changed. **Before concluding that records
+have disappeared, re-read with a single large limit.**
+
+Rules:
+- Prefer **one call with a large `limit`** for anything under a few thousand rows.
+- If you must page, **dedupe by `id`** into a Map and never trust the running
+  count; the terminating condition (`page.length < limit`) is also unreliable
+  when pages overlap.
+- Any script whose safety depends on a row count — anything with an
+  `--expect-rows` guard (STANDING-RULES RULE 8) — **must** compute that count
+  the deduped way, or the guard is protecting the wrong number.
+
 ## `RSVP_TOKEN_KEY` — rotation permanently invalidates every distributed RSVP link unless migrated first
 
 Set 2026-08-18 (Track E). A dedicated key, deliberately NOT `BASE44_ADMIN_KEY`,
