@@ -50,6 +50,7 @@
 
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
+import { decryptToken, tokenPatch } from './_lib/rsvpTokenCrypto.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -154,19 +155,25 @@ export default async function handler(req, res) {
       if (!guest || guest.created_by_id !== caller.id) continue;
 
       const patch = {};
-      let token = guest.rsvp_link_id;
+
+      // RECOVERY ORDER: ciphertext first, plaintext second. During the mixed
+      // window a row may have either; after the migration every row has the
+      // ciphertext, and after E3 only the ciphertext. Reading _enc first means
+      // this code needs no further change at E3.
+      let token = decryptToken(guest.rsvp_link_id_enc) || guest.rsvp_link_id;
       if (!token) {
         token = mintToken();
-        patch.rsvp_link_id = token;
+        // Dual-write: plaintext + hash + ciphertext, together, always.
+        Object.assign(patch, tokenPatch(token, false));
       }
 
-      let plusOneToken = guest.plus_one_rsvp_link_id;
+      let plusOneToken = decryptToken(guest.plus_one_rsvp_link_id_enc) || guest.plus_one_rsvp_link_id;
       // Only minted when the guest actually has a plus-one to invite, matching
       // SendInvitesModal's existing `plus_one_email &&` condition — a token
       // nobody will ever be sent is just more capability to leak.
       if (includePlusOne && guest.plus_one_email && !plusOneToken) {
         plusOneToken = mintToken();
-        patch.plus_one_rsvp_link_id = plusOneToken;
+        Object.assign(patch, tokenPatch(plusOneToken, true));
       }
 
       if (Object.keys(patch).length > 0) {

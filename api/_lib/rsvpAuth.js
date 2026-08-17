@@ -20,6 +20,8 @@
  * know whose perspective to render/record.
  */
 
+import { hashToken } from './rsvpTokenCrypto.js';
+
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
@@ -58,14 +60,35 @@ function unwrapList(payload) {
  *   null if no guest matches the token under either field.
  */
 export async function resolveGuestByToken(token) {
-  const guestQuery = encodeURIComponent(JSON.stringify({ rsvp_link_id: token }));
-  let guests = unwrapList(await base44Fetch('GET', `/apps/${BASE44_APP_ID}/entities/Guest?q=${guestQuery}`));
+  // Track E: the token a guest presents is unchanged — only how it is STORED
+  // changed — so a link emailed months ago still resolves. Four lookups in
+  // priority order: primary hash, plus-one hash, then the same two against the
+  // legacy plaintext columns for rows the migration has not reached yet.
+  //
+  // The hash comes first so that migrated rows never touch the plaintext path,
+  // which is what lets E3 delete the fallback without reordering anything.
+  // Nothing here inspects the token's SHAPE: one live token is a 27-character
+  // legacy value rather than a uuid, and a shape check would strand it.
+  const byField = async (field, value) => {
+    if (!value) return [];
+    const q = encodeURIComponent(JSON.stringify({ [field]: value }));
+    return unwrapList(await base44Fetch('GET', `/apps/${BASE44_APP_ID}/entities/Guest?q=${q}`));
+  };
+
+  const tokenHash = hashToken(token);
   let role = 'primary';
+  let guests = await byField('rsvp_link_id_hash', tokenHash);
 
   if (guests.length === 0) {
-    const plusOneQuery = encodeURIComponent(JSON.stringify({ plus_one_rsvp_link_id: token }));
-    guests = unwrapList(await base44Fetch('GET', `/apps/${BASE44_APP_ID}/entities/Guest?q=${plusOneQuery}`));
-    role = 'plus_one';
+    guests = await byField('plus_one_rsvp_link_id_hash', tokenHash);
+    if (guests.length > 0) role = 'plus_one';
+  }
+  if (guests.length === 0) {
+    guests = await byField('rsvp_link_id', token);           // legacy, pre-migration
+  }
+  if (guests.length === 0) {
+    guests = await byField('plus_one_rsvp_link_id', token);  // legacy, pre-migration
+    if (guests.length > 0) role = 'plus_one';
   }
 
   if (guests.length === 0) return null;

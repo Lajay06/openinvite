@@ -1,6 +1,16 @@
 /**
  * /api/collaborator-guests — GET / PUT / DELETE
  *
+ * CORRECTION, 2026-08-18 (Track E2): the premise in the next paragraph is
+ * STALE. Guest.read is `null` (open) in the LIVE schema — verified directly by
+ * listing 206 Guest rows from an unrelated authenticated account. Whether the
+ * owner-scoped read below was reverted or never applied, the stated reason for
+ * parking no longer holds. The PUT/DELETE paths remain genuinely broken for
+ * the OTHER reason given (admin key cannot satisfy owner-scoped update), and
+ * the 503 short-circuit stays until the hosted-functions rebuild — but the
+ * read half of this rationale should not be trusted as written. Same class of
+ * stale comment as api/my-guests-rsvp.js's header.
+ *
  * PARKED, fix/guest-rls-step1: Guest.read is now owner-scoped
  * ({created_by_id: "{{user.id}}"}), which the admin key can never satisfy
  * (see BASE44_PLATFORM_NOTES.md). VIEW below was the only part of this
@@ -59,11 +69,13 @@
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
+import { stripTokenFields } from './_lib/rsvpTokenCrypto.js';
 import { getCollaborationFor, hasPagePermission } from './_lib/collaboratorAuth.js';
 import { excludeTestRecords } from './_lib/productData.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
+
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 const PAGE = 'Guests';
 
@@ -166,7 +178,22 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const updates = req.body?.updates && typeof req.body.updates === 'object' ? req.body.updates : {};
+      const raw = req.body?.updates && typeof req.body.updates === 'object' ? req.body.updates : {};
+      // Track E: RSVP link fields are NOT writable through this passthrough.
+      //
+      // This handler forwards caller-supplied fields verbatim, so without this
+      // guard a collaborator could set rsvp_link_id directly — storing a
+      // plaintext token with no matching hash or ciphertext. That row would
+      // still resolve through the legacy fallback, look completely healthy,
+      // and then die silently the moment E3 nulls the plaintext column.
+      //
+      // A denylist rather than a full allowlist, deliberately: the invariant
+      // being protected is specific — a token may only be written together
+      // with its hash and ciphertext, by the one endpoint that holds the key
+      // (api/my-guest-links.js) — and an allowlist of Guest's ~30 fields would
+      // silently drop unrelated ones as the entity grows.
+      const updates = stripTokenFields(raw);
+
       const updated = await adminFetch('PUT', `/apps/${BASE44_APP_ID}/entities/Guest/${guestId}`, updates);
       return res.status(200).json({ guest: updated });
     }
