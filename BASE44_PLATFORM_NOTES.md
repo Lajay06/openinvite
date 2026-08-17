@@ -739,3 +739,83 @@ field list or on a value-equality boolean computed in-page, never on the
 echoed value. The same trap applies to any future field whose name contains
 `bearer`, `token`, `secret`, `apikey`, or `password` — prefer naming that
 avoids those substrings outright.
+
+## Turnstile's site key is domain-restricted: no guest form can be submitted on a preview host
+
+**Confirmed 2026-08-17** while verifying PR #453 (free-text song requests).
+
+The Cloudflare Turnstile site key does not cover `*.vercel.app`. On any
+preview deployment the widget refuses to issue a token and logs:
+
+```
+[Cloudflare Turnstile] Error: 110200.
+```
+
+`110200` is "domain not allowed". The server correctly rejects a submission
+with no token, so the form stops at *"Security check still loading"* and
+never posts.
+
+**This is not specific to one form.** Every guest-facing write protected by
+Turnstile — song requests, RSVP-link requests, the contact form, public
+sign-up — is unverifiable on a preview host for the same reason. A preview
+click-through can confirm that a guest form *renders* and that its client-side
+validation behaves, and nothing beyond that.
+
+**So: guest-write flows verify on PRODUCTION, against fixture / `is_test`
+data, always.** This generalises the pattern in use since #444 rather than
+introducing a new one. Plan the verification that way from the start — the
+alternative is discovering it at the end of a preview pass and having to redo
+the whole thing after merge.
+
+Companion to the note above about preview deployments sharing the production
+Base44 backend: the data layer is shared, but the bot-check layer is not.
+
+---
+
+## The couple's song-request review actions are broken in production (found 2026-08-17)
+
+Not a platform quirk — an application bug this file records because its cause
+is the platform quirk at the top ("The admin key is not a superuser bypass").
+Logged here so it is not rediscovered from scratch.
+
+`SongRequest` RLS (confirmed against the LIVE schema, not the mirror):
+
+```
+create: null      read: null
+update: {created_by_id: "{{user.id}}"}
+delete: {created_by_id: "{{user.id}}"}
+```
+
+Rows are written by anonymous guests, so every row's `created_by_id` is
+literally `"anonymous"`. `api/song-request-review.js` performs BOTH couple
+actions with `adminFetch('PUT', …)`:
+
+- `decline` -> `PUT { status: 'declined' }`  (line ~132)
+- `add`     -> creates the Music record, then `PUT { status: 'added' }` (~153)
+
+The admin key cannot satisfy an owner-scoped update, so both 403. Verified
+end to end against production 2026-08-17 — `POST /api/song-request-review`
+with `action: 'decline'` returned 500, and the runtime log shows:
+
+```
+[song-request-review] Error: Base44 PUT …/entities/SongRequest/… failed (403):
+"Permission denied for update operation on SongRequest entity"
+```
+
+**`add` is the worse of the two**: the Music record is created *before* the
+failing status write, so the track IS added, the request stays `pending`, and
+the couple sees an error. Retrying double-adds.
+
+Same class as the documented `Guest.update` gap that leaves
+`api/collaborator-guests.js`'s edit permission with no working write path.
+Any fix has to reckon with the same wall: an owner-scoped update on
+anonymous-created rows cannot be performed by the admin key or by the couple,
+so it needs either an RLS change on `SongRequest.update`, or the
+append-only pattern (a separate status/decision row aggregated at read time),
+or a Base44-hosted function with `asServiceRole`.
+
+Note for cleanup work: the Base44 **workspace MCP** (`update_entities`) CAN
+write these rows where the runtime admin key cannot — used 2026-08-17 to clear
+a test request out of the fixture's pending queue. Another instance of the
+workspace MCP having reach the runtime key lacks.
+
