@@ -403,6 +403,14 @@ being stamped `created_by_id: "anonymous"` in the first place (see the
 right-to-erasure item below), or a privileged platform-level delete
 outside the API/MCP surface entirely (Base44 support).
 
+Reproduced on a second entity 2026-08-18 (PR #459's write-gate
+verification), which is what makes it a platform behavior rather than an
+`RsvpResponse` quirk: a `PollComment` written through
+`api/wedding-poll-comment.js` read back `200` under the admin key and
+returned `404` to `DELETE` on that same id, under the same auth — and the
+wedding owner's own session token was refused identically. Same shape, same
+masking, different entity.
+
 ## Known accepted residue: ~2010 orphaned, pre-encryption `RsvpResponse` test rows — confirmed synthetic, confirmed undeletable
 
 As of 2026-08-03 (before PR 1a, fix/rsvp-response-encryption): **2,010**
