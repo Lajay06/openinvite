@@ -184,3 +184,61 @@ export async function verifyWeddingPassword(wedding, candidate) {
   // field on this entity uses.
   return verifyWebsitePassword(wedding.websitePassword, candidate);
 }
+
+/**
+ * The gate, for guest WRITE endpoints. Returns true when the write must be
+ * refused. Callers do:
+ *
+ *   if (await guestGateBlocks(wedding, password, tag)) {
+ *     return res.status(403).json({ error: GUEST_GATE_MESSAGE, passwordRequired: true });
+ *   }
+ *
+ * NAMED FOR ITS UN-AWAITED FAILURE MODE. RULE 7 exists because making
+ * verifyWeddingPassword async turned `!verifyWeddingPassword(...)` into
+ * `!Promise` -> false, and the gate admitted everyone — silently, with no
+ * error and no failing type. The direction of that collapse is a function of
+ * the name. A Promise is truthy, so a forgotten `await` here refuses EVERY
+ * write on a protected wedding: loud, immediate, caught by the first test
+ * that exercises the happy path. The same mistake against a
+ * `guestGateAllows` helper would fail open and be invisible. When a boolean
+ * guard must be async, name it so that truthy means DENY.
+ *
+ * WHY A 403 HERE AND SILENT-IGNORE ON READS (RULE 6a). 6a forbids an
+ * existence oracle: a rejection that confirms the resource exists and is
+ * protected. Two things make a write different.
+ *
+ * First, there is no oracle left to protect. api/wedding-by-slug.js already
+ * answers `{ passwordProtected: true }` for any slug, by design — that is how
+ * the unlock screen knows to render. Refusing a write discloses nothing that
+ * one public GET does not already disclose, so the 6a rationale simply does
+ * not apply.
+ *
+ * Second, silence would be actively harmful here in a way it never is on a
+ * read. A read served empty looks like a wedding with no poll activity, which
+ * costs the guest nothing. A write accepted and discarded tells a real guest
+ * their song request, contact details or RSVP-link email went through when it
+ * did not. The only people who reach this branch are an attacker, who learns
+ * nothing new, and a legitimate guest whose sessionStorage was cleared, who
+ * needs to be told to unlock the site again. Failing silently would trade a
+ * disclosure we do not prevent anyway for a data-loss bug we would never
+ * hear about.
+ *
+ * @param {object} wedding   resolved WeddingDetails row
+ * @param {string} candidate candidate password from the POST body
+ * @param {string} tag       log prefix, e.g. '[wedding-poll-vote]'
+ * @returns {Promise<boolean>} true when the write must be refused
+ */
+export async function guestGateBlocks(wedding, candidate, tag) {
+  const { on, failedOpen } = websiteGateIsOn(wedding);
+  if (failedOpen) {
+    console.error(`${tag} websitePasswordEnabled is true but no credential is stored for slug "${wedding?.slug}" — gate FAILED OPEN, write accepted. See scratchpad/DECISION-LOG.md.`);
+  }
+  if (!on) return false;
+  if (await verifyWeddingPassword(wedding, candidate)) return false;
+  // RULE 6c — silent to the caller is not silent to us.
+  console.warn(`${tag} write refused for protected wedding "${wedding?.slug}": ${candidate ? 'wrong' : 'no'} website password supplied.`);
+  return true;
+}
+
+/** Shown to a guest whose session lost the password. Sentence case, no jargon. */
+export const GUEST_GATE_MESSAGE = 'This wedding website is password protected. Please reload the page and enter the password, then try again.';

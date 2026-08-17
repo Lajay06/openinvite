@@ -46,6 +46,7 @@ import {
 } from './_lib/security.js';
 import { hashId } from './_lib/questionnaireCrypto.js';
 import { latestEventResponses, toEventResponsesShape, deriveRsvpStatus } from '../src/lib/rsvpAggregation.js';
+import { guestGateBlocks, GUEST_GATE_MESSAGE } from './_lib/guestSafeWedding.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -86,6 +87,9 @@ export default async function handler(req, res) {
   }
 
   const weddingSlug = sanitizeString(req.body?.weddingSlug || '');
+  // Accepted only from the POST body — never a query string (#449: access
+  // logs, browser history, referrer, shared-cache keys).
+  const candidatePassword = typeof req.body?.password === 'string' ? req.body.password : '';
   const title = sanitizeString(req.body?.title || '').slice(0, MAX_TEXT_LENGTH);
   const artist = sanitizeString(req.body?.artist || '').slice(0, MAX_TEXT_LENGTH);
   const submittedBy = sanitizeString(req.body?.submittedBy || '').slice(0, 80);
@@ -121,6 +125,12 @@ export default async function handler(req, res) {
       .find(w => w.slug === weddingSlug && !w.is_test);
     if (!wedding) {
       return res.status(404).json({ error: 'Wedding not found.' });
+    }
+
+    // The website password gate, before any of the song-request rules below.
+    // Turnstile proves "not a bot"; this proves "allowed to be here at all".
+    if (await guestGateBlocks(wedding, candidatePassword, '[song-request-submit]')) {
+      return res.status(403).json({ error: GUEST_GATE_MESSAGE, passwordRequired: true });
     }
 
     // Re-validate server-side — the client UI hides the form when these
