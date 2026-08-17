@@ -25,7 +25,7 @@
  *     special-case any one known-bad field, it scans everything.
  *   - A wedding with no music object at all doesn't crash pickGuestSafeFields.
  */
-import { pickGuestSafeFields } from '../../api/_lib/guestSafeWedding.js';
+import { pickGuestSafeFields, websiteGateIsOn, verifyWeddingPassword } from '../../api/_lib/guestSafeWedding.js';
 import { pass, fail } from './_shared.mjs';
 
 /** True if `value` contains any of `needles` as a substring anywhere, at any depth. */
@@ -44,6 +44,10 @@ export async function runGuestSafeWedding() {
     slug: 'alex-and-sam',
     coupleNames: 'Alex & Sam',
     websitePassword: 'super-secret-password',
+    // Step 2b stage (i): the credential alone no longer means "protected" —
+    // websitePasswordEnabled is the source of truth. The dedicated cases
+    // below cover every combination.
+    websitePasswordEnabled: true,
     music: {
       guestRequestsEnabled: true,
       requestsRequireApproval: true,
@@ -109,6 +113,51 @@ export async function runGuestSafeWedding() {
   results.push(!('websitePassword' in safe) && safe.passwordProtected === true
     ? pass('pickGuestSafeFields — websitePassword replaced by passwordProtected boolean', 'true')
     : fail('pickGuestSafeFields — websitePassword replaced by passwordProtected boolean', 'true, key absent', JSON.stringify({ passwordProtected: safe.passwordProtected, hasPassword: 'websitePassword' in safe })));
+
+  // ── Step 2b stage (i): websitePasswordEnabled is the single source of truth ──
+  // The credential must never be used to infer enabled/disabled — that
+  // inference is what forced the ' ' and 'password' sentinel values. Each
+  // combination is pinned here, including the fail-open case, so a future
+  // change back to inferring from the credential fails loudly.
+  const gateCases = [
+    ['credential + enabled  -> protected',            { websitePassword: 'pw', websitePasswordEnabled: true },  true],
+    ['credential, NOT enabled -> not protected',      { websitePassword: 'pw', websitePasswordEnabled: false }, false],
+    ['credential, enabled absent -> not protected',   { websitePassword: 'pw' },                                false],
+    ['enabled, NO credential -> not protected (fail open)', { websitePasswordEnabled: true },                   false],
+    ['enabled, empty credential -> not protected',    { websitePassword: '', websitePasswordEnabled: true },    false],
+    ['enabled, whitespace credential -> not protected', { websitePassword: '   ', websitePasswordEnabled: true }, false],
+    ['legacy sentinel \'password\', no enabled flag -> not protected', { websitePassword: 'password' },         false],
+    ['legacy sentinel \' \', no enabled flag -> not protected',        { websitePassword: ' ' },                 false],
+  ];
+  for (const [label, fields, expected] of gateCases) {
+    const out = pickGuestSafeFields({ id: 'gate', slug: 'gate-case', ...fields });
+    const leaked = 'websitePassword' in out;
+    results.push(out.passwordProtected === expected && !leaked
+      ? pass(`pickGuestSafeFields — gate: ${label}`, String(expected))
+      : fail(`pickGuestSafeFields — gate: ${label}`, `passwordProtected=${expected}, credential absent`,
+             JSON.stringify({ passwordProtected: out.passwordProtected, leaked })));
+  }
+
+  // ── websiteGateIsOn reports the fail-open case distinctly, so the endpoint
+  //    can log it. "not protected" and "misconfigured and not protected" must
+  //    stay distinguishable. ──
+  const failOpen = websiteGateIsOn({ websitePasswordEnabled: true });
+  const plainOff = websiteGateIsOn({ websitePasswordEnabled: false, websitePassword: 'pw' });
+  results.push(failOpen.on === false && failOpen.failedOpen === true
+                && plainOff.on === false && plainOff.failedOpen === false
+    ? pass('websiteGateIsOn — flags the enabled-without-credential case as failedOpen', 'distinct')
+    : fail('websiteGateIsOn — flags the enabled-without-credential case as failedOpen', 'failedOpen true only when enabled without credential',
+           JSON.stringify({ failOpen, plainOff })));
+
+  // ── verifyWeddingPassword: only a gate that is actually ON can reject ──
+  const onWedding = { websitePassword: 'hunter2', websitePasswordEnabled: true };
+  const verifyOk = verifyWeddingPassword(onWedding, 'hunter2') === true
+                && verifyWeddingPassword(onWedding, 'nope') === false
+                && verifyWeddingPassword({ websitePassword: 'hunter2' }, 'nope') === true
+                && verifyWeddingPassword({ websitePasswordEnabled: true }, 'anything') === true;
+  results.push(verifyOk
+    ? pass('verifyWeddingPassword — rejects only when the gate is on; fail-open and disabled both admit', 'correct')
+    : fail('verifyWeddingPassword — rejects only when the gate is on; fail-open and disabled both admit', 'correct', 'see guestSafeWedding.js'));
 
   // ── No music object on the source record at all — must not throw ────────
   let noMusicResult;
