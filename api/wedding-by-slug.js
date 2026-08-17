@@ -131,6 +131,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Vercel's default for functions is `public, max-age=0, must-revalidate`,
+  // which marks this storable by shared caches. For a password-protected
+  // wedding the payload IS the protected content, so it must never be stored
+  // by an intermediary. Nothing is lost: max-age=0 already forced a
+  // revalidation on every request, so this was never being served from cache.
+  res.setHeader('Cache-Control', 'private, no-store');
+
   const ip = getClientIp(req);
   // Generous limit — every page navigation on a guest site triggers a call.
   const { limited, remaining } = checkRateLimit(ip, 'wedding-by-slug', 60, 60_000);
