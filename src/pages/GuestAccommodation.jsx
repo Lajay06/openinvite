@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft } from 'lucide-react';
+import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 
 export default function GuestAccommodation() {
   const { weddingSlug } = useParams();
@@ -14,7 +15,13 @@ export default function GuestAccommodation() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const wedding = await fetchWeddingBySlug(weddingSlug);
+        // Cached password, same reason as GuestMusic/GuestCollect:
+        // /w/:slug/accommodation is its own route, outside
+        // MultiPageWeddingWebsite's unlock screen, so an already-unlocked
+        // guest would otherwise be served the gated response and shown an
+        // empty page. Missed in #459 because that PR enumerated callers of
+        // the five WRITE endpoints and this page only reads.
+        const wedding = await fetchWeddingBySlug(weddingSlug, getCachedWeddingPassword(weddingSlug));
         if (wedding) {
           setDetails(wedding);
           // Load partner results if enabled

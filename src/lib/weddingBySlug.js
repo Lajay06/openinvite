@@ -20,7 +20,10 @@
  *   this ONLY for an authenticated caller who owns the wedding, so the
  *   couple's bearer token is sent alongside it. A guest has no token; for
  *   them the flag is ignored server-side and the gate stays up.
- * @returns {Promise<{passwordProtected: boolean, [field: string]: any} | null>}
+ * @returns {Promise<{passwordProtected: boolean, locked: boolean, [field: string]: any} | null>}
+ *   Branch on `locked` to decide whether to show the unlock screen.
+ *   `passwordProtected` only answers "does this site have a password" and is
+ *   true on a successful unlock too — see api/wedding-by-slug.js.
  *   null if the wedding doesn't exist or the request failed.
  */
 export async function fetchWeddingBySlug(slug, password, preview) {

@@ -65,9 +65,23 @@
  * keeps one couple's registry from being enumerable alongside every other
  * couple's; same pattern api/wedding-attendees.js already uses for Guest.
  *
- * Response: 200 { passwordProtected: true }
- *        or 200 { passwordProtected: false, ...guestSafeFields, customGifts, registryProducts }
- *        or 200 { passwordProtected: true, ...guestSafeFields, customGifts, registryProducts }  (correct password supplied)
+ * Response: 200 { passwordProtected: true, locked: true }   (gated — no other fields)
+ *        or 200 { passwordProtected: false, locked: false, ...guestSafeFields, customGifts, registryProducts }
+ *        or 200 { passwordProtected: true,  locked: false, ...guestSafeFields, customGifts, registryProducts }  (correct password supplied)
+ *
+ * TWO FLAGS, TWO QUESTIONS — do not collapse them:
+ *   passwordProtected — "does this site have a password?"  Answered honestly
+ *                       on EVERY response, including a successful unlock.
+ *   locked            — "are you being refused right now?"  The only flag a
+ *                       client may branch on to decide whether to show the
+ *                       unlock screen.
+ *
+ * Between #299 and 2026-08-18 there was only passwordProtected, and the
+ * client read it as the second question while the server answered the first.
+ * The result: a correct password returned the full payload with
+ * passwordProtected:true, the client saw truthy, and rendered "Incorrect
+ * password". Website password protection was therefore impossible to pass
+ * for its entire existence. Nobody noticed because no real couple had it on.
  *        or 404 { error: 'Wedding not found.' }
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
@@ -227,7 +241,12 @@ export default async function handler(req, res) {
     // is false and the gate would open for every candidate including none.
     const passwordAccepted = await verifyWeddingPassword(wedding, candidatePassword);
     if (passwordProtected && !previewGranted && !passwordAccepted) {
-      return res.status(200).json({ passwordProtected: true });
+      // locked:true is the LOCKOUT signal and the only thing a client should
+      // branch on. passwordProtected says "this site has a password" — true
+      // here AND on a successful unlock — so a client that treats it as
+      // "you are locked out" rejects the correct password. That is exactly
+      // the bug this flag was introduced to end. See the header note.
+      return res.status(200).json({ passwordProtected: true, locked: true });
     }
 
     const registry = await fetchGuestSafeRegistry(wedding.created_by_id);
