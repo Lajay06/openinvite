@@ -361,3 +361,56 @@ through this path, and the 19 null rows pass through untouched. The
 way whose plaintext form is itself a string cannot use this discriminator —
 it needs a version prefix or a separate marker instead. See
 [[base44-platform-notes]] and gotcha #17.
+
+## 2026-08-18 — the website password feature worked end to end for the first time
+
+**PR #461, verified on deployed production through the real UI.** Recorded as
+a first, not as a fix, because that is what it is: from #299 until today,
+enabling website password protection made a wedding site permanently
+inaccessible to every guest, **including with the correct password**. The
+feature had shipped, been iterated on four times (#447, #448, #450, #458,
+#459), and had never once been passable.
+
+The cause was one flag answering two questions — the server's
+`passwordProtected` meant "this site has a password" (true even on a
+successful unlock) while the client read it as "you are locked out". #461
+split them: `locked` answers the second question and is the only flag a
+client branches on.
+
+### The circle, row by row, on www.openinvite.com.au
+
+| # | leg | result |
+|---|---|---|
+| 1 | enable password on the fixture | gated response `{passwordProtected:true, locked:true}` |
+| 2 | guest loads the site | unlock screen shows |
+| 3 | wrong password | stays locked, "Incorrect password", nothing cached |
+| 4 | **correct password** | **UNLOCKS — "John & Suzanne" renders, password cached (16 ch)** |
+| 5 | `/music`, `/collect`, `/accommodation` while unlocked | all three render real content, none gated |
+| 6 | poll read while unlocked | 200, `locked:false`, comments returned |
+| 6 | poll write while unlocked | **200**, row landed |
+| 7 | sessionStorage replay across navigation | survived all four full page navigations |
+| 8 | gate off, cache cleared, brand-new guest | 44 keys, `locked:false`, site renders, no unlock screen |
+| 9 | fixture restored | poll removed, `enabled=false credential=none` |
+
+Leg 4 is the one that had never passed.
+
+### What this says about the preceding work
+
+#447/#458/#459 hardened a gate that could not be passed. That hardening was
+still correct and still necessary, but it is worth recording honestly that
+"protected sites now refuse anonymous writes" and "protected sites refuse
+everyone, always" were **indistinguishable in every test run before today**,
+because both produce a refusal. Only the unlock leg separates them, and
+nothing had ever exercised it.
+
+Lesson, standing: **a gate test that only ever asserts refusal cannot tell a
+working gate from a broken one.** Always pin the admit path too.
+
+### Residue
+
+Three `PollComment` rows on the fixture, all `created_by_id: "anonymous"` and
+therefore undeletable (erasure gap, instance four — see
+BASE44_PLATFORM_NOTES.md): `"PR459 write-gate probe"`,
+`"PR459 prod check gate-off"`, `"PR461 unlocked write"`. Each was necessary:
+proving a write is admitted requires a write that actually lands. All three
+carry a `poll_id` matching no surviving poll, so nothing renders them.
