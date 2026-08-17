@@ -167,6 +167,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                   <input
                     value={passwordGate.password}
                     onChange={e => passwordGate.setPassword(e.target.value)}
+                    onBlur={passwordGate.commitPassword}
                     placeholder="Set password for guests..."
                     style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
                   />

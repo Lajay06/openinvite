@@ -12,14 +12,16 @@ export function FLabel({ children, style = {} }) {
   return <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 5, ...style }}>{children}</label>;
 }
 
-export function UInput({ label, value, onChange, type = 'text', placeholder = '' }) {
+/** onCommit (optional) fires on blur, for callers that debounce onChange and
+ *  need a guaranteed flush when the field loses focus. */
+export function UInput({ label, value, onChange, type = 'text', placeholder = '', onCommit }) {
   return (
     <div style={{ marginBottom: 14 }}>
       {label && <FLabel>{label}</FLabel>}
       <input type={type} value={value || ''} onChange={e => onChange(e.target.value)} placeholder={placeholder}
         style={{ width: '100%', border: 'none', borderBottom: '1px solid #DDD', padding: '7px 0', fontSize: 13, color: '#0A0A0A', outline: 'none', background: 'transparent', boxSizing: 'border-box', fontFamily: 'inherit' }}
         onFocus={e => e.target.style.borderBottomColor = '#E03553'}
-        onBlur={e => e.target.style.borderBottomColor = '#DDD'}
+        onBlur={e => { e.target.style.borderBottomColor = '#DDD'; onCommit?.(); }}
       />
     </div>
   );

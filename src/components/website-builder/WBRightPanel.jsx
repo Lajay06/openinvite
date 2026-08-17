@@ -407,7 +407,7 @@ function SettingsTab({ details, onChange }) {
       <Toggle label="Require password" value={passwordGate.wantsProtection} onChange={passwordGate.toggle} />
       {passwordGate.wantsProtection && (
         <>
-          <UInput label="Password" value={passwordGate.password} onChange={passwordGate.setPassword} />
+          <UInput label="Password" value={passwordGate.password} onChange={passwordGate.setPassword} onCommit={passwordGate.commitPassword} />
           {passwordGate.incomplete && (
             <p style={{ margin: '-4px 0 8px', fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
           )}

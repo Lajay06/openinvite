@@ -188,7 +188,7 @@ export default function StudioShareTab({ details: propDetails }) {
             </div>
             {passwordGate.wantsProtection && (
               <>
-                <input value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} placeholder="Set password..." style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans, marginBottom: passwordGate.incomplete ? 4 : 12 }} />
+                <input value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} onBlur={passwordGate.commitPassword} placeholder="Set password..." style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans, marginBottom: passwordGate.incomplete ? 4 : 12 }} />
                 {passwordGate.incomplete && (
                   <p style={{ margin: '0 0 12px', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
                 )}
@@ -291,7 +291,7 @@ export default function StudioShareTab({ details: propDetails }) {
             </div>
             {passwordGate.wantsProtection && (
               <div style={{ marginBottom: 16 }}>
-                <input value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} placeholder="Set password..." style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans }} />
+                <input value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} onBlur={passwordGate.commitPassword} placeholder="Set password..." style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans }} />
                 {passwordGate.incomplete && (
                   <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
                 )}

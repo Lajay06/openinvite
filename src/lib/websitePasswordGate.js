@@ -27,7 +27,10 @@
  * path normal use can take.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
+/** Debounce for persisting the credential as it is typed. */
+const COMMIT_DELAY_MS = 500;
 
 /**
  * The canonical read: is the gate actually on? Mirrors the server's
@@ -48,14 +51,15 @@ export function websiteGateIsOn(details) {
  * @returns {{
  *   wantsProtection: boolean,   // what the switch shows
  *   toggle: (v: boolean) => void,
- *   password: string,
+ *   password: string,           // the draft — bind the input to this
  *   setPassword: (v: string) => void,
+ *   commitPassword: () => void, // flush immediately; wire to the input's onBlur
  *   incomplete: boolean,        // switch on, no credential yet — show a hint
  * }}
  */
 export function useWebsitePasswordGate(details, applyPatch) {
   const persistedEnabled = !!details?.websitePasswordEnabled;
-  const password = details?.websitePassword || '';
+  const persistedPassword = details?.websitePassword || '';
 
   // Local intent, seeded from what is persisted. Diverges from it only in the
   // window where the couple has flipped the switch on but not yet typed a
@@ -63,7 +67,27 @@ export function useWebsitePasswordGate(details, applyPatch) {
   const [wantsProtection, setWantsProtection] = useState(persistedEnabled);
   useEffect(() => { setWantsProtection(persistedEnabled); }, [persistedEnabled]);
 
+  // The credential is edited as a LOCAL draft and persisted on a debounce.
+  // Binding the input straight to the persisted value drops keystrokes on any
+  // surface whose applyPatch awaits the network before the new value comes
+  // back down (PublishModal does exactly that) — the field would show only
+  // the first character typed. It also spared a write per keystroke.
+  const [draft, setDraft] = useState(persistedPassword);
+  useEffect(() => { setDraft(persistedPassword); }, [persistedPassword]);
+
+  const timer = useRef(null);
+  const clear = () => { if (timer.current) { clearTimeout(timer.current); timer.current = null; } };
+  useEffect(() => clear, []);
+
+  /** enabled always rides in the SAME patch as the credential, so the two can
+   *  never disagree in storage — written or cleared together, never apart. */
+  const persist = (value, enabledIntent) => applyPatch({
+    websitePassword: value,
+    websitePasswordEnabled: enabledIntent && !!value.trim(),
+  });
+
   const toggle = (v) => {
+    clear();
     setWantsProtection(v);
     if (!v) {
       // Turning off keeps the credential, so turning it back on later doesn't
@@ -72,25 +96,28 @@ export function useWebsitePasswordGate(details, applyPatch) {
       applyPatch({ websitePasswordEnabled: false });
       return;
     }
-    // Turning on is deliberately NOT persisted here. It becomes real in
-    // setPassword, once there is something to authenticate against.
-    if (password.trim()) applyPatch({ websitePasswordEnabled: true });
+    // Turning on is deliberately NOT persisted on its own. It becomes real
+    // only once there is something to authenticate against.
+    if (draft.trim()) persist(draft, true);
   };
 
   const setPassword = (value) => {
-    // enabled rides along in the same patch, so the two can never disagree in
-    // storage: a credential and its switch are written or cleared together.
-    applyPatch({
-      websitePassword: value,
-      websitePasswordEnabled: wantsProtection && !!value.trim(),
-    });
+    setDraft(value);
+    clear();
+    timer.current = setTimeout(() => persist(value, wantsProtection), COMMIT_DELAY_MS);
+  };
+
+  const commitPassword = () => {
+    clear();
+    if (draft !== persistedPassword) persist(draft, wantsProtection);
   };
 
   return {
     wantsProtection,
     toggle,
-    password,
+    password: draft,
     setPassword,
-    incomplete: wantsProtection && !password.trim(),
+    commitPassword,
+    incomplete: wantsProtection && !draft.trim(),
   };
 }
