@@ -42,6 +42,19 @@ const alreadySubmitted = existing.some(r => r.guestEmailHash === guestEmailHash)
 `RegistryProduct` has no equivalent line, because there is no equivalent
 feature. #432 hashed a field that was *doing a job*. This field does none.
 
+### Three different fields, three different decisions — do not conflate them
+
+| field | entity | displayed to the couple? | decision |
+|---|---|---|---|
+| `purchased_by[].guest_email` | `RegistryProduct` | **no** — nothing renders it | **stop collecting** (this decision) |
+| `giver_email` | `ReceivedGift` | **yes** (`ReceivedGifts.jsx:312`) | Guest-family **encryption candidate** — untouched here |
+| `guest_email` | `GuestMessage` | **yes** (`Messages.jsx:257`) | Guest-family **encryption candidate** — untouched here |
+
+The names are nearly identical and the entities are adjacent in the product,
+which is exactly how a later pass could apply this decision to the wrong one.
+The two that ARE displayed serve a real purpose and must not simply be dropped;
+they are separate candidates on their own merits.
+
 ### Why that changes the recommendation
 
 Hashing it would preserve, in perpetuity, a value the product collects from a

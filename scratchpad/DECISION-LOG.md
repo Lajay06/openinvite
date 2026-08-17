@@ -4,6 +4,72 @@ Closed decisions with their reasoning, so a restart doesn't re-litigate them.
 
 ---
 
+## PlanGift RLS — delete closed, update deliberately left open, 2026-08-17
+
+`delete` flipped to `{created_by_id: "{{user.id}}"}`; `create`, `read` and
+**`update` stay `null`**.
+
+### Why delete could close at zero cost
+
+Nothing in the repo deletes `PlanGift` — the full writer audit found three
+write paths, all `api/webhooks/stripe.js` via `api/_lib/planGift.js`, all
+create/update. Rows are created with the admin key, so `created_by_id` is
+`"anonymous"` and no real user can satisfy the rule. Deletion is now
+impossible for everyone, which is the correct state for a payment record, and
+no code path is affected.
+
+### Why update CANNOT close
+
+Both update paths use the admin key, and per gotcha #1 the admin key cannot
+satisfy ANY owner-scoped rule. The `data.<field>` pattern that rescued
+`SongRequest` does not apply here either:
+
+- `buyer_user_id_hash` is an **HMAC**, so `{{user.id}}` can never equal it —
+  and it is a hash precisely because `read: null` makes the table listable.
+- The buyer may not be logged in at all (that field is null in those cases),
+  so for some rows there is no user to scope to under any scheme.
+
+Scoping update would therefore mean storing a raw buyer id, undoing a
+deliberate privacy decision, or moving to a hosted function.
+
+### Residual risk, accepted knowingly
+
+With update open, anyone holding any API token can still flip `status` between
+`purchased` and `redeemed`, or overwrite `promotion_code_display`. Encryption
+does not help — those fields are plaintext because they are not secrets. This
+is an **integrity** exposure, not a confidentiality one.
+
+Currently 0 real rows (1 row, `is_test`). Accepted as a known risk rather than
+left looking accidental.
+
+### Third instance of one cause
+
+This joins the hosted-functions rebuild list as the **third** case of the
+identical root cause — an entity whose rows are written by the admin key on
+behalf of an unauthenticated actor, where no owner-scoped rule can ever be
+satisfied:
+
+1. `SongRequest` — anonymous rows nobody can delete (right-to-erasure gap)
+2. `Guest.update` — collaborator "edit" permission with no working write path
+3. `PlanGift.update` — this one
+
+A hosted function with `asServiceRole` fixes all three at once. That is now the
+main argument for prioritising the rebuild.
+
+### Correction on record
+
+My Step 3 report escalated this as *"an oversight rather than a decision"*.
+It was a decision, documented in `api/_lib/giftAuth.js:4-12` — a file I had
+not read before escalating. The exposure was real; my account of its origin
+was wrong.
+
+**Lesson: read the auth lib before escalating its entity.** An entity with
+conspicuously open RLS and carefully encrypted fields is far more likely to be
+a documented trade-off than an accident, and the reasoning usually lives in the
+`_lib` helper that owns its crypto — not in the schema descriptions.
+
+---
+
 ## Right-to-erasure gap — now a concrete instance, 2026-08-17
 
 The gap itself is documented in BASE44_PLATFORM_NOTES.md ("anonymous-guest
