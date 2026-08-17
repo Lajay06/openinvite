@@ -1,5 +1,20 @@
 /**
- * GET /api/wedding-by-slug?slug=<weddingSlug>&password=<optional>&preview=<optional>
+ * GET  /api/wedding-by-slug?slug=<weddingSlug>&preview=<optional>
+ * POST /api/wedding-by-slug   { slug, password?, preview? }
+ *
+ * TRANSPORT: the candidate password is accepted ONLY from a POST body. It
+ * used to ride in the query string, which put the credential into Vercel
+ * access logs, browser history and the Referer header — and, because
+ * Vercel's default Cache-Control for functions is
+ * `public, max-age=0, must-revalidate`, made it part of the shared-cache KEY.
+ * Nothing was serving stale (max-age=0 forces revalidation), but a
+ * credential belongs in neither a log nor a cache key. POST also can't be
+ * cached by an intermediary regardless of headers, so the default becomes
+ * moot rather than something to fight.
+ *
+ * GET is retained for password-less reads — the three guest pages that never
+ * send one (GuestCollect, GuestMusic, GuestAccommodation) and every
+ * unprotected site — so the common path is unchanged.
  *
  * Public, unauthenticated endpoint backing every page of a couple's
  * published wedding website. Resolves a wedding by its public slug using
@@ -109,7 +124,10 @@ async function fetchGuestSafeRegistry(ownerId) {
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
 
-  if (req.method !== 'GET') {
+  // POST exists ONLY so the password never has to travel in the URL. See the
+  // transport note in the header comment; everything else about the two
+  // methods is identical.
+  if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -122,12 +140,21 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
   }
 
-  const slug = sanitizeString(req.query?.slug || '');
-  const candidatePassword = typeof req.query?.password === 'string' ? req.query.password : '';
+  // Inputs come from the body on POST, the query string on GET. The password
+  // is accepted ONLY from a POST body — never from the query string, which
+  // would put the credential into Vercel access logs, browser history, the
+  // Referer header, and (because Vercel's default Cache-Control for functions
+  // is `public, max-age=0, must-revalidate`) into shared-cache keys.
+  const src = req.method === 'POST' ? (req.body || {}) : (req.query || {});
+  const slug = sanitizeString(src.slug || '');
+  const candidatePassword = req.method === 'POST' && typeof src.password === 'string' ? src.password : '';
   // NOTE: requesting preview is not the same as being granted it. This flag
   // only says the caller ASKED; whether it is honored is decided below,
   // after the wedding is resolved, by previewGranted.
-  const previewRequested = req.query?.preview === 'true';
+  // Not a secret, so it reads from whichever source this method uses. Accepts
+  // the boolean true as well as the string 'true' because a JSON body can
+  // carry a real boolean where a query string cannot.
+  const previewRequested = src.preview === 'true' || src.preview === true;
 
   if (!slug) {
     return res.status(400).json({ error: 'slug is required' });
