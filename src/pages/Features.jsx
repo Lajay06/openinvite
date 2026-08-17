@@ -41,7 +41,7 @@ const ALL_FEATURES = [
 { title: "Advanced guest management", bullets: ["Unlimited guest lists", "Real-time RSVP tracking", "Dietary preference tracking", "Smart table assignments", "Guest tagging & categories", "Centralized contact management"] },
 { title: "Smart budget tracking", bullets: ["Budget vs. actual spend tracking", "Vendor payment scheduling", "Category-based budgeting", "Visual expense analytics", "Friendly payment reminders", "Subtle cost-saving suggestions"] },
 { title: "Timeline & schedule planning", bullets: ["Visual timeline builder", "Vendor coordination made easy", "Assign tasks to your crew", "Track deadlines without drama", "Share the schedule with key players", "Create your seamless day-of rundown"] },
-{ title: "Collaborative playlists", bullets: ["Spotify integration", "Let guests submit their favorite tracks", "Organize songs by vibe or moment", "Share playlists in a click", "DJ collaboration made effortless", "Create a music timeline"] },
+{ title: "Collaborative playlists", bullets: ["Spotify track search", "Let guests submit their favorite tracks", "Organize songs by vibe or moment", "Share playlists in a click", "DJ collaboration made effortless", "Create a music timeline"] },
 { title: "Registry integration", bullets: ["One-click registry linking", "Sync with major platforms", "Share seamlessly with guests"] },
 { title: "Venue management", bullets: ["Track multiple venues", "Upload contracts & notes", "Capture must-know logistics"] }];
 

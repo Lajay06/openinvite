@@ -16,7 +16,11 @@ const SpotifyIcon = () => (
   </svg>
 );
 
-export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateConnection, onAdd, onClose }) {
+// Step 2b stage (c): no longer takes or sends a Spotify connection. Search
+// runs on the server's client_credentials app token, which is what every
+// other caller already used — the user-token path was the last reader of
+// WeddingDetails.music.spotifyConnection and went with the teardown.
+export default function SpotifyModal({ playlistId, onAdd, onClose }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -31,47 +35,19 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
     setResults([]);
     setError('');
     try {
-      const body = { q: sq };
-      if (spotifyConnection?.accessToken) {
-        body.accessToken  = spotifyConnection.accessToken;
-        body.refreshToken = spotifyConnection.refreshToken;
-        body.expiresAt    = spotifyConnection.expiresAt;
-      }
-
       const res  = await fetch('/api/spotify-search', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(body),
+        body:    JSON.stringify({ q: sq }),
       });
       const data = await res.json();
 
-      if (!res.ok) {
-        if (res.status === 401) {
-          setError('Your Spotify session has expired — please reconnect in Settings.');
-          // Stop lying to the couple: previously spotifyConnection was
-          // never cleared on a failed token, so isSpotifyConnected
-          // (Music.jsx) — a plain !!accessToken check — kept reading
-          // "Connected" forever. Clear it the same way a manual disconnect
-          // does (onUpdateConnection(null) -> updateMusic('spotifyConnection',
-          // null)) so the badge actually flips and the couple can reconnect.
-          onUpdateConnection?.(null);
-        } else {
-          throw new Error(data.error || 'Search failed');
-        }
-        setLoading(false);
-        return;
-      }
+      // No 401-reconnect branch any more: with no user token in play, a 401
+      // can only mean the server's own app credentials are wrong, which is
+      // an operator problem the couple can do nothing about.
+      if (!res.ok) throw new Error(data.error || 'Search failed');
 
       setResults(data.tracks || []);
-
-      // If the server refreshed the access token, persist the new one
-      if (data.newToken && onUpdateConnection && spotifyConnection) {
-        onUpdateConnection({
-          ...spotifyConnection,
-          accessToken: data.newToken.accessToken,
-          expiresAt:   data.newToken.expiresAt,
-        });
-      }
     } catch (e) {
       setError(e.message || 'Search failed. Check your connection and try again.');
     }
@@ -113,11 +89,6 @@ export default function SpotifyModal({ playlistId, spotifyConnection, onUpdateCo
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <SpotifyIcon />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>Search Spotify</span>
-            {spotifyConnection?.displayName && (
-              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
-                · {spotifyConnection.displayName}
-              </span>
-            )}
           </div>
           <button onClick={onClose} aria-label="Close Spotify search modal" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4 }}>
             <X size={16} />
