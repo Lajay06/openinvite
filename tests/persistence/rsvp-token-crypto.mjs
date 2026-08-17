@@ -92,6 +92,63 @@ export async function runRsvpTokenCrypto() {
     ? pass('rsvp token — patch ciphertext recovers the original (legacy token)', 'recovered')
     : fail('rsvp token — patch ciphertext recovers the original (legacy token)', LEGACY_27, 'mismatch'));
 
+  // ── THE ADMIT PATH for the collaborator forwarding guard ─────────────────
+  //
+  // A guard that also blocks lawful edits is worse than no guard: it is a lock
+  // that bricks the door. Asserting only "token fields are removed" would pass
+  // for a function that returned {} — so both halves are pinned, and the
+  // lawful half is asserted field by field rather than by count.
+  const { stripTokenFields, TOKEN_FIELDS } = mod;
+
+  const lawful = {
+    dietary_restrictions: 'vegan',
+    table_assignment: 'Table 4',
+    notes: 'allergic to shellfish',
+    name: 'Ada Lovelace',
+    email: 'ada@example.com',
+    phone: '0400 000 000',
+    tags: ['college friends'],
+    category: 'family',
+    rsvp_status: 'attending',
+    meal_choice: 'beef',
+    plus_one: true,
+    plus_one_name: 'Charles',
+    seating_preferences: ['g1', 'g2'],
+    event_responses: [{ event: 'ceremony', response: 'yes' }],
+    invitation_sent: true,
+  };
+  const mixed = { ...lawful, ...Object.fromEntries(TOKEN_FIELDS.map(f => [f, 'SHOULD-BE-STRIPPED'])) };
+  const out = stripTokenFields(mixed);
+
+  const survivors = Object.keys(lawful).filter(k => JSON.stringify(out[k]) === JSON.stringify(lawful[k]));
+  results.push(survivors.length === Object.keys(lawful).length
+    ? pass('collaborator guard — every lawful field survives the strip (ADMIT path)', `${survivors.length}/${Object.keys(lawful).length} preserved exactly`)
+    : fail('collaborator guard — every lawful field survives the strip (ADMIT path)', 'all preserved',
+           `dropped: ${Object.keys(lawful).filter(k => !survivors.includes(k)).join(', ')}`));
+
+  const leaked = TOKEN_FIELDS.filter(f => f in out);
+  results.push(leaked.length === 0
+    ? pass('collaborator guard — every token field is removed (DENY path)', `${TOKEN_FIELDS.length} stripped`)
+    : fail('collaborator guard — every token field is removed (DENY path)', 'none present', leaked.join(', ')));
+
+  // A strip that returned {} would satisfy the deny half alone — pin that the
+  // result is genuinely non-empty and shaped like the lawful input.
+  results.push(Object.keys(out).length === Object.keys(lawful).length
+    ? pass('collaborator guard — result is the lawful input exactly, not an empty object', `${Object.keys(out).length} fields`)
+    : fail('collaborator guard — result is the lawful input exactly, not an empty object', String(Object.keys(lawful).length), String(Object.keys(out).length)));
+
+  // Input must not be mutated — the caller may still need the original.
+  results.push(mixed.rsvp_link_id === 'SHOULD-BE-STRIPPED'
+    ? pass('collaborator guard — input object is not mutated', 'caller copy intact')
+    : fail('collaborator guard — input object is not mutated', 'intact', 'mutated'));
+
+  // Null/undefined input must not throw.
+  let safe = true;
+  try { stripTokenFields(undefined); stripTokenFields(null); } catch { safe = false; }
+  results.push(safe
+    ? pass('collaborator guard — null/undefined input does not throw', 'safe')
+    : fail('collaborator guard — null/undefined input does not throw', 'safe', 'threw'));
+
   if (prev === undefined) delete process.env.RSVP_TOKEN_KEY; else process.env.RSVP_TOKEN_KEY = prev;
   return results;
 }

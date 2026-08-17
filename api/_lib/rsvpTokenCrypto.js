@@ -135,3 +135,31 @@ export function tokenPatch(token, isPlusOne = false) {
     [`${prefix}_enc`]: encryptToken(token),
   };
 }
+
+/**
+ * Every field that stores an RSVP token in any form. A passthrough writer must
+ * never set these: a token written without its hash and ciphertext resolves
+ * only through the legacy fallback, looks healthy, and dies at E3.
+ */
+export const TOKEN_FIELDS = [
+  'rsvp_link_id', 'rsvp_link_id_hash', 'rsvp_link_id_enc',
+  'plus_one_rsvp_link_id', 'plus_one_rsvp_link_id_hash', 'plus_one_rsvp_link_id_enc',
+];
+
+/**
+ * Removes token fields from a caller-supplied update, leaving EVERY other
+ * field untouched.
+ *
+ * Exported and unit-tested rather than inlined, because a guard that also
+ * blocks lawful edits is worse than no guard — it is a lock that bricks the
+ * door. The test asserts both halves: token fields gone, ordinary fields
+ * (dietary_restrictions, table_assignment, notes, …) preserved exactly.
+ *
+ * @param {object} updates
+ * @returns {object} a new object; the input is not mutated
+ */
+export function stripTokenFields(updates) {
+  const out = { ...(updates || {}) };
+  for (const f of TOKEN_FIELDS) delete out[f];
+  return out;
+}
