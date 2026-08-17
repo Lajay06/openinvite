@@ -150,3 +150,50 @@ Silent to the caller is not silent to us. Every ignored privilege writes a
 `console.warn` naming the resource and whether the caller was
 unauthenticated or merely not the owner. Without it, 6a would make abuse
 completely invisible — the attacker learns nothing, and so do we.
+
+---
+
+## RULE 7 — Making a boolean guard async is a silent gate-collapse
+
+**Learned on PR #450**, converting `verifyWeddingPassword` to scrypt.
+
+An un-awaited call to a now-async guard returns a **Promise**, which is
+**truthy**, so `!check(...)` evaluates to `false` and the gate **admits
+everyone**. There is no error, no warning, no failing type — the code reads
+exactly as it did when it worked.
+
+```js
+// before: returns boolean
+if (protectedʹ && !verifyPassword(row, candidate)) return denied();
+
+// after: returns Promise<boolean>. !Promise === false. Gate is now open.
+if (protectedʹ && !verifyPassword(row, candidate)) return denied();  // ← unchanged, now broken
+```
+
+This is a general JavaScript hazard, not a Base44 one, and it applies to any
+predicate guarding access: permission checks, ownership checks, rate limits,
+feature gates.
+
+### The rule
+
+When a boolean guard becomes async:
+
+1. **Verify the `await` on every converted call site individually.** Grep for
+   the function name and read each one. A call site that still compiles and
+   still reads naturally is the dangerous case, not the obvious one.
+2. **Pin a returns-a-thenable case in the suite** —
+   `typeof fn(...)?.then === 'function'` — so the async-ness itself is a
+   tested property rather than an implementation detail a future refactor can
+   quietly reverse.
+3. **Assert the negative outcome, not just the positive.** A test that only
+   checks "correct password succeeds" passes happily while every wrong
+   password also succeeds. The wrong-credential case is the one that catches
+   this.
+
+### How it actually surfaced
+
+Not in review, and not in the browser — in the existing test suite, which
+began comparing a Promise to `true` and failed. That failure was the only
+signal. Had `verifyWeddingPassword` lacked a negative-path test, the change
+would have shipped a wide-open gate with a green build.
+
