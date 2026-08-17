@@ -4,6 +4,68 @@ Closed decisions with their reasoning, so a restart doesn't re-litigate them.
 
 ---
 
+## Right-to-erasure gap — now a concrete instance, 2026-08-17
+
+The gap itself is documented in BASE44_PLATFORM_NOTES.md ("anonymous-guest
+writes create rows nobody can ever delete through the product"). This records
+that it has stopped being theoretical.
+
+### The instance
+
+Three `SongRequest` rows on the fixture wedding, created during the PR #453 /
+#454 / #455 verification runs:
+
+```
+6a82c80c88c9d24a6834d6d6  "Idempotency Test Track"      added
+6a82c59fbd8c7367e0bbe5c0  "Owner Stamp Check"           declined
+6a82bbe7c35165a2cb55c46b  "Free Text Verification Song" declined
+```
+
+**Nobody can delete them.** Confirmed by attempt, not assumption:
+
+- admin key -> `404` (delete RLS filters the row out, so it reports not-found)
+- the wedding owner's own token -> `404`, same reason
+
+`SongRequest.delete` is scoped `{created_by_id: "{{user.id}}"}` and every row
+is `created_by: "anonymous"`, because guests submit unauthenticated. No user
+can ever match. The workspace MCP can UPDATE these rows (`update_entities`)
+but exposes no delete, so even the escape hatch only reaches half of it.
+
+Alongside them sit **231 orphaned harness rows** from deleted weddings, same
+condition. Best available cleanup is a terminal status, which leaves the
+couple's queue empty but the rows resident forever.
+
+### Why this matters beyond tidiness
+
+The legal deletion/export path is a **[CONFIRM] item on the owner's legal
+drafts**, and it cannot be written accurately as things stand. A privacy
+policy or DPA that promises erasure on request would be describing something
+the data model cannot perform for any guest-submitted row.
+
+Affected entities are every `create: null` guest-write surface —
+`SongRequest`, `RsvpResponse`, `PollVote`, `PollComment`,
+`QuestionnaireResponse`, `GuestContactSubmission`, `CollaboratorGrant`.
+Content in several of those is encrypted or hashed, which limits exposure but
+does not constitute deletion.
+
+### Designated fix
+
+The **post-launch hosted-functions rebuild**. A Base44-hosted function with
+`asServiceRole` is the only mechanism that can delete these rows, per the
+platform notes' own entry on it. Until then:
+
+- Do not draft an unqualified erasure promise. Either scope it to data the
+  product can actually delete, or defer the clause.
+- Any new guest-write entity inherits this. Weigh it at design time rather
+  than discovering it at erasure time.
+- Interim partial measures that exist today: encryption/hashing at rest, and
+  terminal-status marking so rows leave active views.
+
+Cross-reference: [[base44-platform-notes]] right-to-erasure gap, and the
+hosted-functions entry.
+
+---
+
 ## Step 2b — COMPLETE END TO END, 2026-08-17
 
 All five stages shipped and verified on production. Nothing outstanding.
