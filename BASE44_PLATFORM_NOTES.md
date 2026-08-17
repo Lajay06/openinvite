@@ -586,11 +586,13 @@ the row happily. It is still there.
 | 1 | `RsvpResponse` — `rsvp-submit.js` | ~2010 orphaned test rows | confirmed undeletable (2026-08-03) |
 | 2 | `SongRequest` — `song-request-submit.js` | 231 orphaned | inferred, same shape |
 | 3 | `Guest.update` / `PlanGift.update` collaborator gap | n/a | same root cause, on the hosted-functions list |
-| 4 | `PollComment` — `wedding-poll-comment.js` | 220 orphaned + **2 fixture probe rows** | **demonstrated 2026-08-18 (PR #459)** |
+| 4 | `PollComment` — `wedding-poll-comment.js` | 220 orphaned + **3 fixture probe rows** | **demonstrated 2026-08-18 (PR #459)** |
 
-The two PR #459 rows are `[pr459-poll] "PR459 write-gate probe"` and
-`[pr459-prod-poll] "PR459 prod check gate-off"` on the `john-suzanne`
-fixture. Both were deliberate: proving the gate lets a correct password
+The three probe rows on the `john-suzanne` fixture are
+`[pr459-poll] "PR459 write-gate probe"`,
+`[pr459-prod-poll] "PR459 prod check gate-off"` and
+`[pr459-prod-poll] "PR461 unlocked write"` (the last from #461's full-circle
+run, proving a write is ADMITTED once unlocked). Both were deliberate: proving the gate lets a correct password
 through requires a write that actually lands. Both carry a `poll_id` matching
 no existing poll, so nothing renders them. They are recorded here rather than
 quietly left, because an erasure ledger that omits the rows its own
