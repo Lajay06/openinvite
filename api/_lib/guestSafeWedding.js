@@ -18,6 +18,8 @@
  * (tests/persistence/*.mjs) can import this file directly.
  */
 
+import { verifyWebsitePassword } from './websitePasswordHash.js';
+
 export const GUEST_SAFE_WEDDING_FIELDS = [
   'id',
   'slug',
@@ -174,8 +176,11 @@ export function websiteGateIsOn(wedding) {
  * @param {string} candidate
  * @returns {boolean}
  */
-export function verifyWeddingPassword(wedding, candidate) {
+export async function verifyWeddingPassword(wedding, candidate) {
   if (!websiteGateIsOn(wedding).on) return true;
-  const real = wedding.websitePassword.trim();
-  return typeof candidate === 'string' && candidate.trim() === real;
+  // Async and constant-time as of Step 2b stage (iii): the stored value is a
+  // scrypt hash, and scrypt is deliberately slow. See websitePasswordHash.js
+  // for why a hash rather than the AES-GCM encryption every other sensitive
+  // field on this entity uses.
+  return verifyWebsitePassword(wedding.websitePassword, candidate);
 }

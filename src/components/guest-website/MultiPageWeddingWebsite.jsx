@@ -19,6 +19,13 @@ function PasswordGateSimple({ slug, onUnlock }) {
     const result = await fetchWeddingBySlug(slug, val);
     setChecking(false);
     if (result && !result.passwordProtected) {
+      // Kept in sessionStorage deliberately (advisor decision, 2026-08-17),
+      // even though websitePassword is a scrypt hash at rest as of Step 2b
+      // stage (iii): the client must still submit something hashable on every
+      // navigation, so it has to hold the plaintext somewhere. Tab-scoped and
+      // cleared on close; an XSS able to read it is already executing inside
+      // the very content the gate protects; and it is a shared event password
+      // with no reuse value elsewhere.
       sessionStorage.setItem('wb_pw_' + slug, val);
       onUnlock(result);
     } else {
