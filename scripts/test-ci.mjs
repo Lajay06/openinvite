@@ -22,6 +22,7 @@
 
 import { runEmails } from '../tests/persistence/emails.mjs';
 import { runSpotifyTeardown } from '../tests/persistence/spotify-teardown.mjs';
+import { runBase44ReadGuard } from '../tests/persistence/base44-read-guard.mjs';
 import { runUniverseStyling } from '../tests/persistence/universe-styling.mjs';
 import { runRateLimiting } from '../tests/persistence/rate-limiting.mjs';
 import { runHeroVideo } from '../tests/persistence/hero-video.mjs';
@@ -67,6 +68,7 @@ async function run() {
 
   await runModule('runEmails', () => runEmails());
   await runModule('runSpotifyTeardown', () => runSpotifyTeardown());
+  await runModule('runBase44ReadGuard', () => runBase44ReadGuard());
   await runModule('runUniverseStyling', () => runUniverseStyling());
   await runModule('runRateLimiting', () => runRateLimiting());
   await runModule('runHeroVideo', () => runHeroVideo());
