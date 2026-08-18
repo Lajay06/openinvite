@@ -45,6 +45,7 @@
  */
 
 import { hashToken, encryptToken } from '../api/_lib/rsvpTokenCrypto.js';
+import { shouldRetry, backoffMs } from './lib/retryPolicy.mjs';
 
 const BASE44 = 'https://base44.app/api';
 const APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -64,8 +65,48 @@ async function api(method, path, token, body) {
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
   const text = await res.text();
-  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${text.slice(0, 200)}`);
+  if (!res.ok) {
+    // The status rides on the error object, not just in the message. Retry
+    // logic that pattern-matched on a message string would be one wording
+    // change away from silently retrying a 403.
+    const err = new Error(`${method} ${path} -> ${res.status}: ${text.slice(0, 200)}`);
+    err.status = res.status;
+    throw err;
+  }
   return text ? JSON.parse(text) : null;
+}
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+/**
+ * Throttle + bounded retry, 429 ONLY.
+ *
+ * The first execute run migrated 200 of 202 rows and then took two HTTP 429s
+ * from Base44 — 202 sequential writes with no pacing. Hence the delay.
+ *
+ * ONLY 429 is retried, deliberately. A retry loop that catches everything is
+ * a loop that masks real rejections: a 403 from an RLS rule, a 404 from a
+ * deleted row, a 400 from a malformed patch would each be retried three times
+ * and then reported as a transient failure, which is exactly the kind of
+ * silent misdiagnosis this programme keeps finding. Every other status is
+ * re-thrown on the first attempt.
+ */
+const WRITE_DELAY_MS = 150;
+const MAX_RETRIES = 4;
+
+async function writeWithRetry(path, token, patch) {
+  let attempt = 0;
+  for (;;) {
+    try {
+      return await api('PUT', path, token, patch);
+    } catch (err) {
+      if (!shouldRetry(err, attempt, MAX_RETRIES)) throw err;
+      attempt++;
+      const backoff = backoffMs(attempt, WRITE_DELAY_MS); // 300, 600, 1200, 2400ms
+      console.log(`    429 on ${path.split('/').pop()} — retry ${attempt}/${MAX_RETRIES} in ${backoff}ms`);
+      await sleep(backoff);
+    }
+  }
 }
 const unwrap = (p) => Array.isArray(p) ? p : (p?.data || p?.results || []);
 
@@ -123,6 +164,10 @@ console.log(`  already migrated              : ${alreadyDone.length}`);
 console.log(`  no token at all (skipped)     : ${noToken.length}`);
 console.log(`  TO MIGRATE                    : ${targets.length}`);
 
+// Fingerprint of rows that are ALREADY migrated. Re-running must leave these
+// byte-identical: the script has to be idempotent, not merely resumable.
+const untouchedBefore = new Map(alreadyDone.map(g => [g.id, `${g.rsvp_link_id_hash}|${g.rsvp_link_id_enc}|${g.rsvp_link_id}`]));
+
 // Token-shape census — informational, never a filter.
 const shapes = {};
 for (const g of targets) {
@@ -159,11 +204,12 @@ for (const g of targets) {
   // The plaintext column is deliberately NOT touched here. E3 nulls it, after
   // this migration has been verified.
   try {
-    await api('PUT', `/apps/${APP_ID}/entities/Guest/${g.id}`, token, patch);
+    await writeWithRetry(`/apps/${APP_ID}/entities/Guest/${g.id}`, token, patch);
     ok++;
   } catch (err) {
     failed.push({ id: g.id, error: err.message.slice(0, 120) });
   }
+  await sleep(WRITE_DELAY_MS);
 }
 console.log(`WRITE  migrated ${ok}/${targets.length}${failed.length ? `, ${failed.length} FAILED` : ''}`);
 for (const f of failed) console.log(`  FAIL ${f.id}: ${f.error}`);
@@ -176,8 +222,15 @@ const stillNeeding = after.filter(g =>
 const mismatched = after.filter(g => g.rsvp_link_id && g.rsvp_link_id_hash !== hashToken(g.rsvp_link_id));
 const plaintextLost = after.filter(g => !g.rsvp_link_id).length - noToken.filter(g => !g.rsvp_link_id).length;
 
+const drifted = [...untouchedBefore.entries()].filter(([id, fp]) => {
+  const now = after.find(g => g.id === id);
+  return !now || `${now.rsvp_link_id_hash}|${now.rsvp_link_id_enc}|${now.rsvp_link_id}` !== fp;
+});
+
 console.log('\nVERIFY (independent re-read)');
+console.log(`  already-migrated rows untouched: ${untouchedBefore.size - drifted.length}/${untouchedBefore.size}  ${drifted.length === 0 ? 'OK (idempotent)' : 'PROBLEM — re-run mutated settled rows'}`);
 console.log(`  rows still unmigrated         : ${stillNeeding.length}  ${stillNeeding.length === 0 ? 'OK' : 'PROBLEM'}`);
 console.log(`  hash != hashToken(plaintext)  : ${mismatched.length}  ${mismatched.length === 0 ? 'OK' : 'PROBLEM'}`);
 console.log(`  plaintext tokens lost         : ${plaintextLost}  ${plaintextLost === 0 ? 'OK (E3 nulls them, not this script)' : 'PROBLEM'}`);
-process.exit(stillNeeding.length === 0 && mismatched.length === 0 && failed.length === 0 && plaintextLost === 0 ? 0 : 1);
+process.exit(stillNeeding.length === 0 && mismatched.length === 0 && failed.length === 0
+  && plaintextLost === 0 && drifted.length === 0 ? 0 : 1);
