@@ -446,3 +446,22 @@ call a PR green — but a gate that can never say green is not a gate, and the
 defect was only visible by watching it spin. It is now proven against #481
 (FAILURE -> exit 1) and #480 (all SUCCESS -> exit 0). Verifying a guard only on
 the passing case leaves the half that matters untested.
+
+
+### RULE 13d — a self-skipping step reports SKIPPED, never PASS (2026-08-18)
+
+`scripts/verify-all.mjs` counted a step as PASS whenever it exited 0. The
+diff-based guards (`test:us-english-spelling`, `test:prerendered-freshness`)
+compare against a merge base that does not exist locally, so they exit 0 after
+inspecting nothing. A local run therefore reported **13/13 while two of those
+steps had never looked at a single file** — and CI, which has a real base, then
+failed the PR on a spelling error the local run had "passed".
+
+The runner now prints SKIPPED for a step that produced no passing assertion and
+announced it had nothing to compare against, and reports `11/13 exercised, 2
+SKIPPED` rather than a flattering total.
+
+**A local verify total must never claim coverage it did not exercise.**
+`npm run pr:green` remains the only authority on diff-based steps — they only do
+real work in CI. Every "13/13" reported before this date was, in truth, 11
+exercised and 2 inert.
