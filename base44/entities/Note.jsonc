@@ -72,6 +72,24 @@
         "day_of"
       ],
       "description": "When this task should typically be done"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Ideas",
+        "In progress",
+        "Done"
+      ],
+      "default": "Ideas",
+      "description": "Kanban column, stored as the display label from KANBAN_COLS in src/pages/TodoList.jsx. Declared 2026-08-18: previously undeclared, so writes were dropped and reads withheld, which emptied the todo list (schema-scanner refresh, #483). App-defined fixed set, so an enum is correct here — but Base44 does NOT enforce enums on write (gotcha #20: an out-of-set value stores with HTTP 200), so this documents intent rather than constraining it. Adding a column means widening this enum via the advisor AND updating KANBAN_COLS."
+    },
+    "view_type": {
+      "type": "string",
+      "enum": [
+        "todo"
+      ],
+      "default": "todo",
+      "description": "Partition tag, NOT a view mode: marks a Note as a todo-list item. TodoList.jsx loads with filter(n => n.view_type === 'todo') and writes the literal 'todo' on every create. Declared 2026-08-18 alongside status, same defect. A row without it is invisible to the todo list, so the default matters."
     }
   },
   "required": [
