@@ -142,11 +142,54 @@ export async function getMyLiveStream() {
  * @returns {Promise<object[]>}  the logged-in user's own records, excluding is_test
  */
 export async function getMyRecords(entityName, sort, limit) {
+  // Guest is routed through a server endpoint rather than read directly.
+  //
+  // Guest family, Track A. Guest.read RLS is null, so the PII on those rows
+  // has to be encrypted at rest — and encryption needs BASE44_ADMIN_KEY, a
+  // server-only secret the browser can never hold. Every read therefore has to
+  // come through a server endpoint before any field can be encrypted.
+  //
+  // Routing it HERE rather than at the ~12 call sites is deliberate: this is
+  // the single chokepoint every Guest read already passes through, directly or
+  // via getMyGuestsWithRsvp, so the indirection lands in one place and no
+  // consumer changes at all. Same rows, same order, same is_test exclusion.
+  if (entityName === 'Guest') {
+    const guests = await fetchMyGuests(sort);
+    return typeof limit === 'number' ? guests.slice(0, limit) : guests;
+  }
+
   const me = await base44.auth.me().catch(() => null);
   if (!me?.id) return [];
   const rows = await base44.entities[entityName].filter({ created_by_id: me.id }, sort);
   const real = (rows || []).filter(r => !r.is_test);
   return typeof limit === 'number' ? real.slice(0, limit) : real;
+}
+
+/**
+ * Guest rows via api/my-guests.js, using the caller's own session token.
+ *
+ * Fails SOFT to an empty list, matching what getMyRecords did when
+ * base44.auth.me() returned nothing. A dashboard that renders "no guests yet"
+ * is a worse outcome than one that renders a list, but it is a much better one
+ * than a page that throws — and the failure is logged rather than swallowed.
+ */
+async function fetchMyGuests(sort) {
+  try {
+    const token = localStorage.getItem('base44_access_token');
+    const qs = sort ? `?sort=${encodeURIComponent(sort)}` : '';
+    const res = await fetch(`/api/my-guests${qs}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      console.error(`[getMyRecords] /api/my-guests failed (${res.status})`);
+      return [];
+    }
+    const data = await res.json();
+    return data?.guests || [];
+  } catch (err) {
+    console.error('[getMyRecords] /api/my-guests fetch error:', err.message);
+    return [];
+  }
 }
 
 /**

@@ -156,6 +156,16 @@ here is other people's mailboxes rather than one couple's own site.
 migration BEFORE the old key retires — rotation without it permanently
 invalidates every distributed RSVP link.**
 
+**Admin-key leak response — the companion runbook.** `BASE44_ADMIN_KEY` derives
+the ciphertext for `RsvpResponse.encrypted_guest_level`, `PlanGift`,
+`GuestContactSubmission`, and (from Guest family Track C) the `Guest`
+`encrypted_guest_pii` blob. A leak therefore means rotating that key AND
+running a re-encrypt migration across **every one** of those, not just the
+newest. Unlike `RSVP_TOKEN_KEY`, none of that data is externally distributed,
+so each migration is re-runnable and a rotation is disruptive rather than
+unrecoverable — which is precisely why the Guest blob was put under the admin
+key rather than a third secret (advisor decision, 2026-08-18).
+
 Both halves fail to the same key, which is what makes this unrecoverable rather
 than merely disruptive: the hash stops matching presented tokens AND the
 ciphertext stops decrypting, so the raw tokens cannot be recovered to re-hash

@@ -414,3 +414,42 @@ BASE44_PLATFORM_NOTES.md): `"PR459 write-gate probe"`,
 `"PR459 prod check gate-off"`, `"PR461 unlocked write"`. Each was necessary:
 proving a write is admitted requires a write that actually lands. All three
 carry a `poll_id` matching no surviving poll, so nothing renders them.
+
+## 2026-08-18 — comments asserting security properties must be verified like code
+
+**Defect class, recorded on advisor instruction during Guest family Track A.**
+
+Three files independently asserted that `Guest.read` is owner-scoped:
+
+- `api/my-guests-rsvp.js` (twice — header and inline)
+- `api/collaborator-guests.js` (corrected in #465)
+- `api/cron/send-weekly-digest.js`
+
+It was never true. `Guest.read` is `null` in the live schema, verified by
+listing 206 Guest rows from an unrelated authenticated account.
+
+**Why this is worse than an ordinary stale comment.** One of those files is the
+endpoint whose entire purpose is to be the safe read path for `Guest`, so a
+developer deciding whether direct reads were acceptable would have been misled
+by the most authoritative-looking source available. And in
+`send-weekly-digest.js` the false premise had a **consequence**: the cron was
+PARKED specifically to avoid a failure mode that the real RLS does not produce.
+A feature was disabled on the strength of a sentence nobody checked.
+
+**The rule:** a comment asserting a security property — an RLS rule, an auth
+guarantee, what a credential can or cannot do — is a claim, not documentation.
+It gets verified against the live system before it is trusted, and ideally
+pinned by a test.
+
+**Pinned:** `tests/persistence/rls-comment-claims.mjs` parses every
+`"<Entity>.read is owner-scoped"` assertion in `api/` and `src/` and checks it
+against `base44/entities/<Entity>.jsonc`. It found the third instance —
+`send-weekly-digest.js` — which I had not spotted by reading. Deliberately
+narrow: it matches the exact sentence shape that misled us rather than trying
+to parse English, because a guard that over-reaches gets disabled the first
+time it false-positives and then catches nothing.
+
+**Left open for the advisor:** whether `send-weekly-digest` should be
+un-parked. The stated reason for parking is void, but un-parking a cron that
+emails real couples is a product decision, not a comment fix. The parking
+stands until decided.

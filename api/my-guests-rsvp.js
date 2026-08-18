@@ -24,11 +24,18 @@
  *   getMyGuestsWithRsvp did.
  * or 401 { error: 'Unauthorized' }
  *
- * fix/guest-rls-step1: WeddingDetails and Guest reads now use the CALLER's
- * own forwarded bearer token (callerFetch), not the admin key — Guest.read
- * is owner-scoped as of this change, which the admin key can never satisfy
- * (see BASE44_PLATFORM_NOTES.md). RsvpResponse stays on the admin key
- * below; its RLS is unaffected by this change.
+ * WeddingDetails and Guest reads use the CALLER's own forwarded bearer token
+ * (callerFetch), not the admin key. RsvpResponse stays on the admin key below;
+ * its RLS is unaffected.
+ *
+ * CORRECTED 2026-08-18 (Guest family, Track A). This comment previously said
+ * Guest.read "is owner-scoped as of this change". THAT WAS NEVER TRUE of the
+ * live schema — Guest.read is `null`, verified by listing 206 Guest rows from
+ * an unrelated authenticated account. The caller's token is still the right
+ * credential here, but for a different reason than the one stated: it is not
+ * required by RLS, it is chosen so that this endpoint cannot serve another
+ * account's rows even if its ownership filter were wrong, and so that it keeps
+ * working unchanged if Guest.read is ever scoped later.
  *
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token
  * (still used for the RsvpResponse read below).
@@ -64,13 +71,17 @@ async function adminFetch(path) {
   return res.json();
 }
 
-/** WeddingDetails/Guest reads with the CALLER's own token, not the admin key —
- * fix/guest-rls-step1: Guest.read is now owner-scoped ({created_by_id:
- * "{{user.id}}"}), which the admin key can never satisfy (no session
- * identity of its own — see BASE44_PLATFORM_NOTES.md). The caller here is
- * always the wedding owner querying their own records (verifyBase44User
- * below), so their own token naturally satisfies the RLS rule, exactly as
- * if the browser had made the call directly. */
+/** WeddingDetails/Guest reads with the CALLER's own token, not the admin key.
+ * The caller here is always the wedding owner querying their own records
+ * (verifyBase44User below), so their own token is sufficient — and using it
+ * rather than the admin key means Base44 enforces ownership a second time,
+ * independently of this file's own filtering.
+ *
+ * CORRECTED 2026-08-18: this comment previously claimed Guest.read is
+ * owner-scoped and that the admin key "can never satisfy" it. Guest.read is
+ * `null` in the live schema and always has been — the admin key would work
+ * fine here, which is precisely the exposure the Guest family exists to close.
+ * See the header. */
 async function callerFetch(path, callerToken) {
   const res = await fetch(`${BASE44_API}${path}`, {
     headers: { Authorization: `Bearer ${callerToken}` },

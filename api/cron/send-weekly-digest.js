@@ -233,13 +233,25 @@ export async function buildDigestForWedding(wedding, allQuestionnaireResponses, 
 }
 
 export default async function handler(req, res) {
-  // PARKED, fix/guest-rls-step1: Guest.read is now owner-scoped
-  // ({created_by_id: "{{user.id}}"}), which the admin key below can never
-  // satisfy (see BASE44_PLATFORM_NOTES.md) — this job's per-wedding Guest
-  // reads (line ~163) would silently return empty guest counts instead of
-  // erroring, producing wrong/misleading digest emails rather than no
-  // email. Unscheduled in vercel.json; this early return is belt-and-
-  // suspenders in case of a stale/manual trigger.
+  // PARKED — but read the correction below before acting on the reason.
+  //
+  // CORRECTED 2026-08-18 (Guest family, Track A): the original note said
+  // Guest.read "is now owner-scoped ({created_by_id: "{{user.id}}"}), which
+  // the admin key below can never satisfy". That premise is FALSE and appears
+  // never to have been true: Guest.read is `null` in the live schema, verified
+  // by listing 206 Guest rows from an unrelated authenticated account. The
+  // admin-key reads at line ~163 would therefore work fine, and the failure
+  // this job was parked to avoid — silently empty guest counts producing
+  // misleading digest emails — does not occur for that reason.
+  //
+  // The parking is LEFT IN PLACE pending an explicit decision, because
+  // un-parking a cron that sends real email to real couples is a product call,
+  // not a comment fix. It is flagged for the advisor rather than reversed
+  // here. This is the third file found asserting the same false property; see
+  // tests/persistence/rls-comment-claims.mjs, which now fails CI on a fourth.
+  //
+  // Unscheduled in vercel.json; this early return is belt-and-suspenders in
+  // case of a stale/manual trigger.
   //
   // Rebuild path (post-launch fast-follow, not before): a Base44-hosted
   // scheduled automation using base44.asServiceRole (see
