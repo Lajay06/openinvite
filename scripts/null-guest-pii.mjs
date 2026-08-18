@@ -36,10 +36,18 @@
  *
  * ── The enumerated exception ────────────────────────────────────────────────
  * One row cannot be written by any credential — created_by_id "anonymous"
- * against an owner-scoped update rule, admin-key PUT returns 403. It has no
- * blob and can never get one, so it is skipped BY ID and REPORTED as skipped,
- * never filtered out silently. The exit gate asserts exactly this one
- * exception; if the list ever grows, the gate fails.
+ * against an owner-scoped update rule, admin-key PUT returns 403.
+ *
+ * IT IS NOT IN THIS SCRIPT'S TARGET SET AT ALL, and that is worth stating
+ * rather than relying on. The scan is scoped to created_by_id = the owner, and
+ * this row is owned by "anonymous", so it never appears — the skip-by-id list
+ * would report "0 skipped" and read as "no exceptions" while one plainly
+ * exists. So the row is checked SEPARATELY with an app-wide admin read and
+ * reported explicitly, and the id list is kept as a second line of defence in
+ * case such a row ever does land inside the owner scope.
+ *
+ * The exit gate asserts exactly this one exception; if the list ever grows,
+ * the gate fails.
  *
  * ── gotcha #18 watch ────────────────────────────────────────────────────────
  * `email` and `plus_one_email` carry format: "email" in the live schema. E3
@@ -134,14 +142,29 @@ console.log(`\nTrack D — null Guest plaintext PII — ${EXECUTE ? 'EXECUTE' : 
 console.log(`  nine columns -> null; name -> "${NAME_PLACEHOLDER}"\n`);
 
 const guests = await fetchAll(token, ownerId);
-const skipped = guests.filter(g => UNWRITABLE.includes(g.id));
+const skippedInScope = guests.filter(g => UNWRITABLE.includes(g.id));
 const candidates = guests.filter(g => !UNWRITABLE.includes(g.id));
 const targets = candidates.filter(g => PII_FIELDS.some(f => g[f] !== null && g[f] !== undefined && g[f] !== ''));
 
 console.log('SCAN');
-console.log(`  guest rows (deduped single fetch) : ${guests.length}`);
-console.log(`  unwritable, skipped BY ID         : ${skipped.length}  ${UNWRITABLE.join(', ')}`);
-console.log(`  still holding plaintext           : ${targets.length}`);
+console.log(`  guest rows in scope (owner, deduped) : ${guests.length}`);
+console.log(`  still holding plaintext              : ${targets.length}`);
+
+// The enumerated exception, checked app-wide rather than inferred from the
+// owner-scoped set it was never part of.
+console.log('\nENUMERATED EXCEPTION — checked app-wide, not inferred');
+console.log(`  skipped by id from within the owner scope : ${skippedInScope.length}`);
+for (const id of UNWRITABLE) {
+  const row = await fetchOne(id, process.env.BASE44_ADMIN_KEY);
+  if (!row) { console.log(`  ${id}  NOT FOUND app-wide — the pin is stale, remove it`); continue; }
+  const inScope = guests.some(g => g.id === id);
+  const holds = PII_FIELDS.filter(f => row[f]).length;
+  console.log(`  ${id}`);
+  console.log(`     created_by_id      : ${row.created_by_id}`);
+  console.log(`     inside owner scope : ${inScope}  ${inScope ? '(would be skipped by id)' : '(never fetched — outside the scan entirely)'}`);
+  console.log(`     has a blob         : ${!!row[BLOB_FIELD]}`);
+  console.log(`     PII fields held    : ${holds}  <- stays readable; nothing can write this row`);
+}
 
 // ── verify before destroy, every target ─────────────────────────────────────
 const unsafe = [];
@@ -218,5 +241,12 @@ console.log('\nVERIFY (independent re-read)');
 console.log(`  rows still holding a nulled column : ${leftover.length}  ${leftover.length === 0 ? 'OK' : 'PROBLEM'}`);
 console.log(`  rows whose name is not the placeholder : ${wrongName.length}  ${wrongName.length === 0 ? 'OK' : 'PROBLEM'}`);
 console.log(`  rows no longer recoverable via blob : ${unrecoverable.length}  ${unrecoverable.length === 0 ? 'OK' : 'PROBLEM'}`);
-console.log(`  enumerated exception left untouched : ${skipped.length} row(s) — ${UNWRITABLE.join(', ')}`);
+// Asserted app-wide, not from the owner-scoped set — the exception lives
+// outside that scope, so counting it there would always report zero.
+const exceptionRows = [];
+for (const id of UNWRITABLE) {
+  const row = await fetchOne(id, process.env.BASE44_ADMIN_KEY);
+  if (row) exceptionRows.push({ id, pii: PII_FIELDS.filter(f => row[f]).length });
+}
+console.log(`  enumerated exception, untouched     : ${exceptionRows.length} row(s) — ${exceptionRows.map(r => `${r.id} (${r.pii} PII field(s))`).join(', ') || 'none found'}`);
 process.exit(leftover.length === 0 && wrongName.length === 0 && unrecoverable.length === 0 && failed.length === 0 ? 0 : 1);
