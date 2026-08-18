@@ -334,3 +334,35 @@ Corollary for secrets generally: generate, pipe straight into `vercel env add`,
 never echo. Record **that** a key was set, never its value — not in chat, not
 in a commit message, not in a log line. The verification for "is it set" is
 `vercel env ls`, which prints presence and never the secret.
+
+---
+
+## RULE 11 — Probes never click UI controls that can open a browser dialog
+
+Ratified by the advisor 2026-08-18, from the Track E3 probe.
+
+`confirm()`, `alert()` and `prompt()` **freeze the tab**. Not the element, not
+the page — the whole renderer stops answering, screenshots time out, and the
+automation session is stuck until a human dismisses the dialog by hand. I hit
+this clicking a game's delete button during the E3-4 leg, and the tab stayed
+blocked for the rest of the session.
+
+**The rule:** a probe never clicks a control that might raise a dialog. In
+practice that means anything labelled Delete, Remove, Discard, Reset, Revoke,
+Leave, or Unpublish — assume a confirmation until proven otherwise.
+
+**Destructive steps in a probe go through the API instead**, with independent
+verification afterwards, exactly as the recovery here did: the game was deleted
+with the owner's token and a follow-up read confirmed zero probe rows
+remaining. That path is also *better* evidence than the click would have been,
+because it verifies the outcome rather than the gesture.
+
+Reading and creating through the UI is fine — those are the paths a probe
+exists to exercise. It is specifically the destructive click that has no upside:
+the thing being proven is that the row is gone, and an API delete plus a read
+proves that more directly than a button press ever could.
+
+Corollary: if a dialog does get triggered, say so and ask the user to dismiss
+it. Do not keep retrying — every subsequent tool call against that tab will
+time out, and the timeouts look like unrelated failures to anyone reading the
+transcript later.
