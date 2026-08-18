@@ -32,7 +32,9 @@
     "capture:preflight": "node scripts/capture/preflight.mjs",
     "capture:stills": "node scripts/capture/stills.mjs",
     "capture:videos": "node scripts/capture/videos.mjs",
-    "capture:upload": "node scripts/capture/upload.mjs"
+    "capture:upload": "node scripts/capture/upload.mjs",
+    "verify": "node scripts/verify-all.mjs",
+    "pr:green": "node scripts/pr-checks-green.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.41",

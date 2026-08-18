@@ -392,3 +392,36 @@ Read the live schema to sync from, never the previous mirror:
 `mcp__claude_ai_Base44__list_entity_schemas` returns full property definitions
 including descriptions. Copying the mirror forward propagates whatever was
 already wrong.
+
+---
+
+## RULE 13 — "CI green" means the whole workflow, not one script
+
+Learned the hard way 2026-08-18, on PR #481.
+
+`npm run test:ci` is **one step of thirteen**. Every report in this programme
+that said "CI green" on the strength of it was reporting on a fraction, and on
+#481 that fraction was misleading: `test:ci` passed 811/811 while
+`npm run test:attendees` was failing on assertions encoding the old
+`meal_choice` enum. The PR was merged with a red check.
+
+Two failures compounded:
+
+1. **The local command covered less than CI did**, and its name suggested
+   otherwise. `test:ci` reads like "the CI suite". It is not.
+2. **The merge wait-loop only guarded against `PENDING`.** Output of
+   `"FAILURE SUCCESS"` contains no `PENDING`, so the loop exited satisfied and
+   the merge proceeded. A guard that waits for "not pending" is not a guard
+   that waits for "passing".
+
+**The rule:**
+
+- Run `npm run verify` before claiming a build is green. It derives the step
+  list **from the workflow file at runtime**, so it cannot drift — a
+  hand-maintained copy would silently cover less the moment someone adds a step.
+- Before merging, assert every check is **SUCCESS**. Not "not pending", not
+  "no failures I noticed" — every conclusion equals SUCCESS, or do not merge.
+
+The second half matters more than the first. A local runner that covers
+everything still lets a red check through if the merge gate only looks for
+absence of PENDING.

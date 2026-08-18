@@ -284,19 +284,23 @@ check('non-array input yields an empty list',
   resolveAttendees(null).length === 0 && resolveAttendees(undefined).length === 0);
 check('null entries are skipped', resolveAttendees([null, guests[0]]).length === 1);
 
-// ── THE MEAL ENUM CONSTRAINT ────────────────────────────────────────────────
-// Guest.meal_choice / plus_one_meal_choice are declared with a FIXED enum of
-// the six DEFAULT_MEAL_OPTIONS ids. WeddingDetails.mealOptions lets a couple
-// define custom options whose ids are `${Date.now()}-${random}`
-// (FoodBeverage.jsx:33) — ids those columns cannot hold.
+// ── THE MEAL CONTRACT ───────────────────────────────────────────────────────
+// This block used to assert the OPPOSITE: that Guest.meal_choice and
+// plus_one_meal_choice declared a FIXED enum of the six DEFAULT_MEAL_OPTIONS
+// ids, and that a custom `${Date.now()}-${random}` id was NOT accepted — called
+// "the prerequisite", because widening that enum was the hard prerequisite for
+// shipping custom menu options.
 //
-// Nothing is affected today (every wedding has mealOptions: []), but the guest
-// editor now offers a dropdown sourced from mealOptions, so widening this enum
-// is a HARD PREREQUISITE for shipping custom menu options. This asserts the
-// constraint so changing the defaults fails CI instead of silently breaking a
-// write, and so the dependency is documented somewhere nobody skims past.
+// It worked exactly as intended. Widening the enum (2026-08-18) turned this
+// suite red, which is precisely why it was written that way — the dependency
+// was documented somewhere nobody skims past, and it caught the change.
 //
-// Read from the schema file, never by writing to the database.
+// Now that the prerequisite is met, the assertions invert. The same reasoning
+// applies in the new direction: an enum reappearing on either column would
+// silently stop custom menu ids from being stored, so it has to fail CI rather
+// than surface as a couple's menu option mysteriously not saving.
+//
+// Read from the schema mirror, never by writing to the database.
 {
   const schema = JSON.parse(
     readFileSync('base44/entities/Guest.jsonc', 'utf8').replace(/^\s*\/\/.*$/gm, '')
@@ -304,14 +308,20 @@ check('null entries are skipped', resolveAttendees([null, guests[0]]).length ===
   const customId = `${1780577525833}-0132f`;   // the real shape, fixed value (no Date.now in tests)
 
   for (const col of ['meal_choice', 'plus_one_meal_choice']) {
-    const allowed = schema[col]?.enum;
-    check(`Guest.${col} declares an enum`, Array.isArray(allowed) && allowed.length > 0,
-      JSON.stringify(schema[col]));
-    check(`every DEFAULT_MEAL_OPTIONS id is accepted by Guest.${col}`,
-      DEFAULT_MEAL_OPTIONS.every(o => allowed?.includes(o.id)),
-      `missing: ${DEFAULT_MEAL_OPTIONS.filter(o => !allowed?.includes(o.id)).map(o => o.id).join(', ')}`);
-    check(`a custom mealOptions id is NOT accepted by Guest.${col} (the prerequisite)`,
-      !allowed?.includes(customId));
+    const decl = schema[col];
+    check(`Guest.${col} declares NO enum`, !decl?.enum,
+      JSON.stringify(decl?.enum ?? null));
+    check(`Guest.${col} is a free string`, decl?.type === 'string',
+      JSON.stringify(decl?.type));
+    // The two things a free string has to allow, stated as values rather than
+    // as the absence of a constraint — an empty enum would satisfy "no enum"
+    // while storing nothing.
+    check(`every DEFAULT_MEAL_OPTIONS id is storable in Guest.${col}`,
+      DEFAULT_MEAL_OPTIONS.every(o => typeof o.id === 'string' && !decl?.enum),
+      `${DEFAULT_MEAL_OPTIONS.length} default ids`);
+    check(`a custom mealOptions id IS storable in Guest.${col} (the prerequisite, now met)`,
+      typeof customId === 'string' && !decl?.enum,
+      customId);
   }
 }
 
