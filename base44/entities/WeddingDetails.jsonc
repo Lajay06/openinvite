@@ -924,6 +924,112 @@
         "publishCelebrated": { "type": "boolean", "default": false },
         "allDoneCelebrated": { "type": "boolean", "default": false }
       }
+    },
+
+    // ── Synced from live 2026-08-18 (schema-scanner refresh) ────────────────
+    // These six were declared in Base44 but had never been mirrored here. The
+    // drop-scanner now reads this file rather than an embedded snapshot, so a
+    // mirror gap reports as a false-positive DROPPED finding — which is exactly
+    // what assetContent did until this sync.
+    "assetContent": {
+      "type": "object",
+      "description": "Ava Studio stationery content, keyed by asset type. Written by src/components/studio/guest-suite/StudioAssetsTab.jsx (the schema description still names the older AvaStudioAssets.jsx writer).",
+      "properties": {
+        "programCard": { "type": "object", "properties": {
+          "title": { "type": "string" }, "orderOfService": { "type": "string" },
+          "readingsText": { "type": "string" }, "closingNote": { "type": "string" } } },
+        "welcomeSignage": { "type": "object", "properties": {
+          "headline": { "type": "string" }, "subtext": { "type": "string" },
+          "layout": { "type": "string" }, "backgroundUrl": { "type": "string" } } },
+        "rsvpCard": { "type": "object", "properties": {
+          "headline": { "type": "string" }, "deadline": { "type": "string" },
+          "mealOptions": { "type": "string" }, "replyAddress": { "type": "string" } } },
+        "thankYouCard": { "type": "object", "properties": {
+          "headline": { "type": "string" }, "bodyText": { "type": "string" },
+          "photoUrl": { "type": "string" } } },
+        "menuCard": { "type": "object", "properties": {
+          "starterItem": { "type": "string" }, "mainItem": { "type": "string" },
+          "dessertItem": { "type": "string" }, "drinkItem": { "type": "string" },
+          "footerNote": { "type": "string" } } },
+        "saveTheDate": { "type": "object", "properties": {
+          "mainText": { "type": "string" }, "subtitle": { "type": "string" },
+          "date": { "type": "string" }, "photoUrl": { "type": "string" } } },
+        "seatingChart": { "type": "object", "properties": {
+          "headline": { "type": "string" }, "note": { "type": "string" },
+          "backgroundUrl": { "type": "string" } } },
+        "placeCard": { "type": "object", "properties": {
+          "style": { "type": "string" }, "backgroundUrl": { "type": "string" } } },
+        "mealChoice": { "type": "object", "properties": {
+          "option1": { "type": "string" }, "option2": { "type": "string" },
+          "option3": { "type": "string" }, "note": { "type": "string" } } },
+        "weddingInvitation": { "type": "object", "properties": {
+          "headline": { "type": "string" }, "bodyText": { "type": "string" },
+          "dressCode": { "type": "string" }, "photoUrl": { "type": "string" } } }
+      }
+    },
+    "favourItems": {
+      "type": "array",
+      "description": "Line items for wedding favours. Written by src/pages/WeddingFavours.jsx.",
+      "items": { "type": "object", "properties": {
+        "name": { "type": "string" }, "quantity": { "type": "string" },
+        "costPerUnit": { "type": "string" }, "notes": { "type": "string" } } }
+    },
+    "foodBeverage": {
+      "type": "object",
+      "description": "Catering and bar planning. Written by src/pages/FoodBeverage.jsx. Supersedes the unread legacy field foodAndBeverage.",
+      "properties": {
+        "serviceStyle": { "type": "string" }, "barType": { "type": "string" },
+        "barNotes": { "type": "string" }, "signatureCocktail": { "type": "string" },
+        "dietaryRequirements": { "type": "string" }, "weddingCakeDetails": { "type": "string" },
+        "vendorId": { "type": "string" }, "additionalNotes": { "type": "string" }
+      }
+    },
+    "honeymoonDetails": {
+      "type": "object",
+      "description": "Honeymoon planning — travel, accommodation, budget and notes. Written by src/pages/Honeymoon.jsx. Supersedes the unread legacy fields honeymoonDestination/honeymoonDeparture/honeymoonNotes.",
+      "properties": {
+        "destination": { "type": "string" }, "departureAirport": { "type": "string" },
+        "departureDate": { "type": "string", "format": "date" },
+        "returnDate": { "type": "string", "format": "date" },
+        "checkInDate": { "type": "string", "format": "date" },
+        "checkOutDate": { "type": "string", "format": "date" },
+        "hotelName": { "type": "string" }, "flightReference": { "type": "string" },
+        "bookingReference": { "type": "string" }, "confirmationNumber": { "type": "string" },
+        "budget": { "type": "string" }, "activitiesPlanned": { "type": "string" },
+        "packingNotes": { "type": "string" }, "notes": { "type": "string" },
+        "travelInsurance": { "type": "boolean", "default": false },
+        "travelInsuranceDetails": { "type": "string" }
+      }
+    },
+    "weddingFavours": {
+      "type": "object",
+      "description": "Guest favour planning. Written by src/pages/WeddingFavours.jsx.",
+      "properties": {
+        "concept": { "type": "string" }, "supplierName": { "type": "string" },
+        "packagingType": { "type": "string" }, "packagingSupplier": { "type": "string" },
+        "personalised": { "type": "boolean", "default": false },
+        "personalisationDetails": { "type": "string" }, "tagsNotes": { "type": "string" },
+        "displayNotes": { "type": "string" }, "totalBudget": { "type": "string" },
+        "additionalNotes": { "type": "string" },
+        "orderedStatus": { "type": "string",
+          "enum": ["not_started", "researching", "ordered", "received", "assembled"] }
+      }
+    },
+    "weddingParty": {
+      "type": "object",
+      "description": "Wedding party roster and key roles. Written by src/pages/WeddingParty.jsx. guestId links to a Guest record when picked from the guest list, null when typed free-hand. maidOfHonour/bestMan are null when cleared.",
+      "properties": {
+        "bridesmaids": { "type": "array", "items": { "type": "object" } },
+        "groomsmen": { "type": "array", "items": { "type": "object" } },
+        "flowerGirls": { "type": "array", "items": { "type": "object" } },
+        "ringBearers": { "type": "array", "items": { "type": "object" } },
+        "readers": { "type": "array", "items": { "type": "object" } },
+        "ushers": { "type": "array", "items": { "type": "object" } },
+        "other": { "type": "array", "items": { "type": "object" } },
+        "maidOfHonour": { "type": ["object", "null"] },
+        "bestMan": { "type": ["object", "null"] },
+        "keyRoleNotes": { "type": "string" }, "notes": { "type": "string" }
+      }
     }
   },
   "rls": {

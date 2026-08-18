@@ -70,21 +70,21 @@ const GUARDED_ENTITIES = ['WeddingDetails', 'Guest', 'Note', 'Music', 'Notificat
 export async function runSchemaDriftGuard() {
   const results = [];
 
-  console.log('\n  Schema-drift guard — every guarded-entity field the code writes to is registered in the embedded schema snapshot:\n');
+  console.log('\n  Schema-drift guard — every guarded-entity field the code writes to is registered in the live schema mirror:\n');
 
   const { droppedDeduped } = runSchemaDropScan();
   const guardedDrops = droppedDeduped.filter(d => GUARDED_ENTITIES.includes(d.entity));
 
   if (guardedDrops.length === 0) {
     results.push(pass(
-      `No dropped fields found for any guarded entity (static scan vs. embedded schema snapshot)`,
+      `No dropped fields found for any guarded entity (static scan vs. base44/entities/*.jsonc)`,
       '0 dropped'
     ));
   } else {
     for (const d of guardedDrops) {
       results.push(fail(
-        `${d.entity}.${d.field} is written by the app but not in the embedded schema snapshot`,
-        'registered in schema (or the snapshot needs refreshing via list_entity_schemas)',
+        `${d.entity}.${d.field} is written by the app but not declared in the live schema mirror`,
+        'declared in the entity schema (add the field in Base44, then sync base44/entities/*.jsonc)',
         `dropped — sites: ${d.allSites}`
       ));
     }
