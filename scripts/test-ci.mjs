@@ -28,6 +28,7 @@ import { runGuestLinkMinting } from '../tests/persistence/guest-link-minting.mjs
 import { runRsvpTokenCrypto } from '../tests/persistence/rsvp-token-crypto.mjs';
 import { runRetryPolicy } from '../tests/persistence/retry-policy.mjs';
 import { runRlsCommentClaims } from '../tests/persistence/rls-comment-claims.mjs';
+import { runGuestProtectedFields } from '../tests/persistence/guest-protected-fields.mjs';
 import { runUniverseStyling } from '../tests/persistence/universe-styling.mjs';
 import { runRateLimiting } from '../tests/persistence/rate-limiting.mjs';
 import { runHeroVideo } from '../tests/persistence/hero-video.mjs';
@@ -79,6 +80,7 @@ async function run() {
   await runModule('runRsvpTokenCrypto', () => runRsvpTokenCrypto());
   await runModule('runRetryPolicy', () => runRetryPolicy());
   await runModule('runRlsCommentClaims', () => runRlsCommentClaims());
+  await runModule('runGuestProtectedFields', () => runGuestProtectedFields());
   await runModule('runUniverseStyling', () => runUniverseStyling());
   await runModule('runRateLimiting', () => runRateLimiting());
   await runModule('runHeroVideo', () => runHeroVideo());

@@ -69,7 +69,7 @@
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
-import { stripTokenFields } from './_lib/rsvpTokenCrypto.js';
+import { stripProtectedFields } from './_lib/guestProtectedFields.js';
 import { getCollaborationFor, hasPagePermission } from './_lib/collaboratorAuth.js';
 import { excludeTestRecords } from './_lib/productData.js';
 
@@ -179,7 +179,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'PUT') {
       const raw = req.body?.updates && typeof req.body.updates === 'object' ? req.body.updates : {};
-      // Track E: RSVP link fields are NOT writable through this passthrough.
+      // Protected fields are NOT writable through this passthrough.
       //
       // This handler forwards caller-supplied fields verbatim, so without this
       // guard a collaborator could set rsvp_link_id directly — storing a
@@ -187,12 +187,18 @@ export default async function handler(req, res) {
       // still resolve through the legacy fallback, look completely healthy,
       // and then die silently the moment E3 nulls the plaintext column.
       //
-      // A denylist rather than a full allowlist, deliberately: the invariant
-      // being protected is specific — a token may only be written together
-      // with its hash and ciphertext, by the one endpoint that holds the key
-      // (api/my-guest-links.js) — and an allowlist of Guest's ~30 fields would
-      // silently drop unrelated ones as the entity grows.
-      const updates = stripTokenFields(raw);
+      // Widened from token fields to PROTECTED_FIELDS for the Guest PII
+      // family: once the ten PII fields live in encrypted_guest_pii, a
+      // forwarded {name: "..."} writes plaintext beside a stale ciphertext,
+      // the discriminator still reads "migrated", and every read returns the
+      // stale name. See api/_lib/guestProtectedFields.js for the full
+      // reasoning and for why this is a denylist rather than an allowlist.
+      const { updates, stripped } = stripProtectedFields(raw);
+      if (stripped.length > 0) {
+        // Silent to the caller, never silent to us — a forwarded protected
+        // field is a stale client or a probe, and both are worth knowing about.
+        console.warn(`[collaborator-guests] refused protected field(s) on guest ${guestId}: ${stripped.join(', ')}`);
+      }
 
       const updated = await adminFetch('PUT', `/apps/${BASE44_APP_ID}/entities/Guest/${guestId}`, updates);
       return res.status(200).json({ guest: updated });
