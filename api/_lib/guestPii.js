@@ -25,7 +25,7 @@
  */
 
 import { encryptPayload, decryptPayload } from './questionnaireCrypto.js';
-import { PII_FIELDS, BLOB_FIELD } from './guestProtectedFields.js';
+import { PII_FIELDS, BLOB_FIELD, NAME_PLACEHOLDER, NULLABLE_PII_FIELDS } from './guestProtectedFields.js';
 
 /**
  * Builds the blob from a complete set of PII values.
@@ -132,13 +132,23 @@ export function buildGuestWriteFields(currentPii, patch) {
     merged[f] = f in patch ? patch[f] : (currentPii?.[f] ?? null);
   }
 
-  // DUAL-WRITE through Track C and the migration: the plaintext columns stay
-  // authoritative for anything still reading them directly, and the blob
-  // becomes authoritative for everything reading through this path. Track D
-  // stops writing the plaintext half.
-  for (const f of PII_FIELDS) {
-    fields[f] = merged[f];
+  // TRACK D: the plaintext half is NOT written. The blob is the only store.
+  //
+  // This was the dual-write through Track C and the migration, and leaving it
+  // in place after the nulling run was a real defect — every edit through this
+  // endpoint silently RESURRECTED the plaintext columns Track D had just
+  // cleared, re-exposing that guest's email and phone to any authenticated
+  // account. Found by the closing probe, whose own two edits caused it.
+  //
+  // The nine are written as explicit nulls rather than simply omitted. Omitting
+  // them would leave whatever is already in the column, so a row that somehow
+  // regained plaintext would keep it forever; writing null makes every edit
+  // self-healing. `name` cannot be null (required on the entity), so it takes
+  // the shared placeholder.
+  for (const f of NULLABLE_PII_FIELDS) {
+    fields[f] = null;
   }
+  fields.name = NAME_PLACEHOLDER;
   fields[BLOB_FIELD] = buildGuestPiiBlob(merged);
   return fields;
 }

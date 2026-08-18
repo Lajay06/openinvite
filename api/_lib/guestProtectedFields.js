@@ -66,6 +66,21 @@ export const PII_FIELDS = [
 /** The encrypted blob itself — never settable by a caller. */
 export const BLOB_FIELD = 'encrypted_guest_pii';
 
+/**
+ * `name` is `required` on the entity, so unlike the other nine it cannot be
+ * null. Post-Track-D it holds this placeholder: visibly not a name, harmless to
+ * sort, not mistakable for real data in an export, and deliberately not an
+ * empty string — some UI treats "" as missing and substitutes a fallback that
+ * could itself read as a name.
+ *
+ * Shared by the write path and scripts/null-guest-pii.mjs so the two cannot
+ * drift onto different placeholders.
+ */
+export const NAME_PLACEHOLDER = '—';
+
+/** The nine that become null at Track D. `name` is placeheld instead. */
+export const NULLABLE_PII_FIELDS = PII_FIELDS.filter(f => f !== 'name');
+
 /** Everything a forwarded update may not set. */
 export const PROTECTED_FIELDS = [...TOKEN_FIELDS, ...PII_FIELDS, BLOB_FIELD];
 

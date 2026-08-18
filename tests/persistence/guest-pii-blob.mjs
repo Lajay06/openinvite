@@ -103,9 +103,36 @@ export async function runGuestPiiBlob() {
     : fail('guest pii write — the OTHER NINE fields survive a one-field patch', 'all preserved',
            PII_FIELDS.filter(f => f !== 'dietary_restrictions' && afterPatch?.[f] !== FULL[f]).join(', ')));
 
-  results.push(PII_FIELDS.every(f => patched[f] !== undefined)
-    ? pass('guest pii write — DUAL-WRITE: plaintext columns written alongside the blob', `${PII_FIELDS.length} columns`)
-    : fail('guest pii write — DUAL-WRITE: plaintext columns written alongside the blob', 'all ten', 'missing'));
+  // TRACK D CONTRACT — replaces the Track C dual-write assertion.
+  //
+  // The old assertion was `patched[f] !== undefined`, which kept passing after
+  // the dual-write was removed, because null satisfies it. A test that passes
+  // for the wrong reason is worse than no test: it looks like validation of the
+  // new behaviour while asserting the old. Now checked by VALUE.
+  const { NAME_PLACEHOLDER, NULLABLE_PII_FIELDS } = await import('../../api/_lib/guestProtectedFields.js');
+  const nulled = NULLABLE_PII_FIELDS.every(f => patched[f] === null);
+  results.push(nulled
+    ? pass('guest pii write — the nine plaintext columns are written as NULL, not data', `${NULLABLE_PII_FIELDS.length} nulled`)
+    : fail('guest pii write — the nine plaintext columns are written as NULL, not data', 'all null',
+           NULLABLE_PII_FIELDS.filter(f => patched[f] !== null).map(f => `${f}=${JSON.stringify(patched[f])}`).join(', ')));
+
+  results.push(patched.name === NAME_PLACEHOLDER
+    ? pass('guest pii write — name is the placeholder, never the real name', JSON.stringify(patched.name))
+    : fail('guest pii write — name is the placeholder, never the real name', NAME_PLACEHOLDER, JSON.stringify(patched.name)));
+
+  // The real values must still be in the blob — nulling the columns is only
+  // safe because the blob holds them.
+  const inBlob = readGuestPiiBlob(patched[BLOB_FIELD]);
+  results.push(inBlob?.name === FULL.name && inBlob?.email === FULL.email
+    ? pass('guest pii write — the real values live in the blob, not the columns', 'recoverable')
+    : fail('guest pii write — the real values live in the blob, not the columns', FULL.name, JSON.stringify(inBlob?.name)));
+
+  // An edit must never resurrect plaintext — the defect the closing probe found.
+  const resurrect = buildGuestWriteFields(current, { email: 'new@example.com' });
+  results.push(resurrect.email === null && readGuestPiiBlob(resurrect[BLOB_FIELD])?.email === 'new@example.com'
+    ? pass('guest pii write — an edit does not resurrect the plaintext column', 'column null, blob updated')
+    : fail('guest pii write — an edit does not resurrect the plaintext column', 'column null',
+           `column=${JSON.stringify(resurrect.email)}`));
 
   const noPii = buildGuestWriteFields(current, { table_assignment: 'Table 3' });
   results.push(!(BLOB_FIELD in noPii) && noPii.table_assignment === 'Table 3'
