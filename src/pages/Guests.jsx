@@ -33,6 +33,7 @@ import PageConsiderations from '../components/shared/PageConsiderations';
 import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
 import CountUp from "@/components/shared/CountUp";
 import { fetchGuestLinks } from '@/lib/guestLinks';
+import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
@@ -244,7 +245,7 @@ export default function Guests() {
     try {
       let guestId;
       if (editingGuest) {
-        await Guest.update(editingGuest.id, restGuestData);
+        await updateGuest(editingGuest.id, restGuestData);
         guestId = editingGuest.id;
         toast.success('Guest updated', { id: tid });
       } else {
@@ -254,7 +255,7 @@ export default function Guests() {
         const payload = restGuestData.event_responses
           ? restGuestData
           : { ...restGuestData, event_responses: defaultEventResponses(weddingEvents) };
-        const created = await Guest.create(payload);
+        const created = await createGuest(payload);
         guestId = created.id;
         toast.success('Guest added', { id: tid });
         setScrollToGuestId(created.id);
@@ -286,7 +287,7 @@ export default function Guests() {
     if (!window.confirm("Delete this guest?")) return;
     const tid = toast.loading('Deleting…');
     try {
-      await Guest.delete(guestId);
+      await deleteGuest(guestId);
       toast.success('Guest deleted', { id: tid });
       setSelectedIds(prev => { const next = new Set(prev); next.delete(guestId); return next; });
       loadGuests();
@@ -306,7 +307,7 @@ export default function Guests() {
     // Optimistic update so the UI feels instant
     setGuests(prev => prev.map(g => g.id === guestId ? { ...g, ...updates } : g));
     try {
-      await Guest.update(guestId, updates);
+      await updateGuest(guestId, updates);
     } catch (e) {
       toast.error('Failed to update');
       loadGuests(); // Rollback on failure
@@ -320,7 +321,7 @@ export default function Guests() {
      afterwards via inline edit or bulk edit, same as an import. */
   const handleQuickAdd = async (name) => {
     try {
-      const created = await Guest.create({ name, event_responses: defaultEventResponses(weddingEvents) });
+      const created = await createGuest({ name, event_responses: defaultEventResponses(weddingEvents) });
       setScrollToGuestId(created.id);
       loadGuests();
     } catch (e) {
@@ -338,7 +339,7 @@ export default function Guests() {
     if (ids.length === 0) return;
     setGuests(prev => prev.map(g => selectedIds.has(g.id) ? { ...g, ...updates } : g));
     try {
-      await Promise.all(ids.map(id => Guest.update(id, updates)));
+      await Promise.all(ids.map(id => updateGuest(id, updates)));
       toast.success(`Updated ${ids.length} guest${ids.length !== 1 ? 's' : ''}`);
     } catch {
       toast.error('Some updates failed');
@@ -351,7 +352,7 @@ export default function Guests() {
     if (targets.length === 0) return;
     setGuests(prev => prev.map(g => selectedIds.has(g.id) && !g.tags?.includes(tag) ? { ...g, tags: [...(g.tags || []), tag] } : g));
     try {
-      await Promise.all(targets.map(g => Guest.update(g.id, { tags: [...(g.tags || []), tag] })));
+      await Promise.all(targets.map(g => updateGuest(g.id, { tags: [...(g.tags || []), tag] })));
       toast.success(`Tagged ${targets.length} guest${targets.length !== 1 ? 's' : ''} "${tag}"`);
     } catch {
       toast.error('Failed to add tag to some guests');
@@ -364,7 +365,7 @@ export default function Guests() {
     if (targets.length === 0) return;
     setGuests(prev => prev.map(g => selectedIds.has(g.id) ? { ...g, tags: (g.tags || []).filter(t => t !== tag) } : g));
     try {
-      await Promise.all(targets.map(g => Guest.update(g.id, { tags: (g.tags || []).filter(t => t !== tag) })));
+      await Promise.all(targets.map(g => updateGuest(g.id, { tags: (g.tags || []).filter(t => t !== tag) })));
       toast.success(`Removed "${tag}" from ${targets.length} guest${targets.length !== 1 ? 's' : ''}`);
     } catch {
       toast.error('Failed to remove tag from some guests');
@@ -378,7 +379,7 @@ export default function Guests() {
     if (!window.confirm(`Delete ${ids.length} guest${ids.length !== 1 ? 's' : ''}? This can't be undone.`)) return;
     const tid = toast.loading(`Deleting ${ids.length} guest${ids.length !== 1 ? 's' : ''}…`);
     try {
-      await Promise.all(ids.map(id => Guest.delete(id)));
+      await Promise.all(ids.map(id => deleteGuest(id)));
       toast.success('Deleted', { id: tid });
       setSelectedIds(new Set());
       loadGuests();

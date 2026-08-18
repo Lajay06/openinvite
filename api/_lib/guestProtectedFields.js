@@ -87,3 +87,35 @@ export function stripProtectedFields(updates) {
   }
   return { updates: out, stripped };
 }
+
+/**
+ * Fields that are DERIVED — computed by a server path from other inputs, never
+ * supplied by a caller. The distinction from PROTECTED_FIELDS matters:
+ *
+ *   PROTECTED_FIELDS — for a PASSTHROUGH (collaborator-guests). PII is
+ *                      included, because a passthrough cannot rewrite the blob.
+ *   DERIVED_FIELDS   — for the TRUSTED write path (api/my-guests.js). PII is
+ *                      NOT included: writing PII is precisely that endpoint's
+ *                      job, and from Track C it is what produces the blob.
+ *
+ * Collapsing the two lists would either brick the couple's own guest editing
+ * or let a caller forge a token. They are different questions with different
+ * answers.
+ */
+export const DERIVED_FIELDS = [...TOKEN_FIELDS, BLOB_FIELD];
+
+/**
+ * Removes derived fields from a caller-supplied guest payload, leaving PII and
+ * every ordinary field intact.
+ *
+ * @param {object} fields
+ * @returns {{ fields: object, stripped: string[] }}
+ */
+export function stripDerivedFields(fields) {
+  const out = { ...(fields || {}) };
+  const stripped = [];
+  for (const f of DERIVED_FIELDS) {
+    if (f in out) { stripped.push(f); delete out[f]; }
+  }
+  return { fields: out, stripped };
+}
