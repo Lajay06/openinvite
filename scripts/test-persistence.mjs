@@ -59,6 +59,7 @@ import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs
 import { runAvaActionValidation } from '../tests/persistence/ava-action-validation.mjs';
 import { runDailyUpdateLoadStates } from '../tests/persistence/dailyupdate-load-states.mjs';
 import { runDashboardSources } from '../tests/persistence/dashboard-sources.mjs';
+import { runPlaylistEmbedUrls } from '../tests/persistence/playlist-embed-urls.mjs';
 import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 import { runNotifications } from '../tests/persistence/notifications.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
@@ -96,11 +97,17 @@ async function run() {
   // the root cause behind the persistence suite's production data leak: a
   // crash mid-run left later domain files' own finally blocks (and the
   // shared sentinel delete) never executed.
+  // See scripts/test-ci.mjs for why crashed modules are named in the summary:
+  // a throw already fails the run, but "one check failed" in a long log reads
+  // nothing like "this module's assertions never executed".
+  const crashed = [];
+
   async function runModule(name, fn) {
     try {
       results.push(...await fn());
     } catch (err) {
       console.error(`\n  ⚠️  UNCAUGHT ERROR in ${name} — its own cleanup may not have completed: ${err.message}\n`);
+      crashed.push(`${name}: ${err.message}`);
       results.push(false);
     }
   }
@@ -153,6 +160,7 @@ async function run() {
   await runModule('runAvaActionValidation', () => runAvaActionValidation());
   await runModule('runDailyUpdateLoadStates', () => runDailyUpdateLoadStates());
   await runModule('runDashboardSources', () => runDashboardSources());
+  await runModule('runPlaylistEmbedUrls', () => runPlaylistEmbedUrls());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
     // itself, or a bug in runModule) — this is the actual safety net the
@@ -167,6 +175,10 @@ async function run() {
 
   console.log(`\n${'─'.repeat(55)}`);
   console.log(`  Result: ${passed}/${total} fields persisted correctly`);
+  if (crashed.length) {
+    console.log(`  ⛔  ${crashed.length} MODULE(S) CRASHED — their assertions never ran:`);
+    for (const c of crashed) console.log(`        ${c}`);
+  }
   if (!allOk) {
     console.log('  ⚠️  Some fields failed — check that they are registered in');
     console.log('  the WeddingDetails / Guest entity schemas on Base44.');

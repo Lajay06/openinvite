@@ -81,7 +81,19 @@ export function parsePlaylistLink(rawUrl) {
   const yt = url.match(/(?:music\.)?youtube\.com\/playlist\?(?:[^#]*&)?list=([a-zA-Z0-9_-]+)/i)
     || url.match(/(?:music\.)?youtube\.com\/watch\?(?:[^#]*&)?list=([a-zA-Z0-9_-]+)/i);
   if (yt) {
-    return { source: 'youtube', sourceLabel: 'YouTube', embed_url: `https://www.youtube.com/embed/videoseries?list=${yt[1]}` };
+    // listType=playlist, NOT the older /embed/videoseries?list= form. Verified
+    // on production 2026-08-18: videoseries renders a blank frame for a real,
+    // public playlist, and swapping the same iframe to listType renders it
+    // immediately. YouTube retired videoseries; it fails silently rather than
+    // erroring, which is why it survived a green build and a green suite.
+    //
+    // youtube-nocookie.com matches src/lib/heroVideo.js's youtubeEmbedUrl —
+    // guests should not be tracked by a page the couple pointed them at.
+    return {
+      source: 'youtube',
+      sourceLabel: 'YouTube',
+      embed_url: `https://www.youtube-nocookie.com/embed?listType=playlist&list=${yt[1]}`,
+    };
   }
 
   return null;
