@@ -263,7 +263,16 @@ export default function MusicPage() {
     updateMutation.mutate({ music: { ...(details?.music || {}), playlists: next ? [row] : [] } });
   };
 
-  const visibleRequests = (songRequests || []).filter(r => (r.status || 'pending') === requestFilter);
+  const allRequests = songRequests || [];
+  const visibleRequests = allRequests.filter(r => (r.status || 'pending') === requestFilter);
+  // Counts derived once from the guarded list. The filter buttons previously
+  // called songRequests.filter() inline, which threw before react-query
+  // resolved and took the whole page to the error boundary.
+  const requestCounts = {
+    pending: allRequests.filter(r => (r.status || 'pending') === 'pending').length,
+    approved: allRequests.filter(r => r.status === 'approved').length,
+    declined: allRequests.filter(r => r.status === 'declined').length,
+  };
   const reviewRequest = (songRequestId, action) => reviewRequestMutation.mutate({ songRequestId, action });
 
   const pendingCount = (songRequests || []).filter(r => r.status === 'pending').length;
@@ -320,7 +329,6 @@ export default function MusicPage() {
   };
 
 
-  const filteredRequests = (songRequests || []).filter(r => r.status === requestFilter);
 
   const playlistStats = {
     totalSongs: playlistTracks.length,
@@ -442,7 +450,7 @@ export default function MusicPage() {
                     className={requestFilter === f ? 'btn-primary' : 'btn-editorial-secondary'}
                     style={{ fontSize: 12 }}>
                     {f === 'pending' ? 'Pending' : f === 'approved' ? 'Approved' : 'Declined'}
-                    {' '}({songRequests.filter(r => (r.status || 'pending') === f).length})
+                    {' '}({requestCounts[f]})
                   </button>
                 ))}
               </div>
