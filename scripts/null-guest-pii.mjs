@@ -60,7 +60,7 @@
  */
 
 import { readGuestPiiBlob } from '../api/_lib/guestPii.js';
-import { PII_FIELDS, BLOB_FIELD } from '../api/_lib/guestProtectedFields.js';
+import { PII_FIELDS, BLOB_FIELD, NAME_PLACEHOLDER, NULLABLE_PII_FIELDS } from '../api/_lib/guestProtectedFields.js';
 import { shouldRetry, backoffMs } from './lib/retryPolicy.mjs';
 
 const BASE44 = 'https://base44.app/api';
@@ -69,10 +69,8 @@ const FETCH_LIMIT = 1000;
 const WRITE_DELAY_MS = 150;
 const MAX_RETRIES = 4;
 
-/** `name` cannot be null (required). Visibly not a name; not an empty string. */
-const NAME_PLACEHOLDER = '—';
-/** The nine that become null. `name` is handled separately. */
-const NULL_FIELDS = PII_FIELDS.filter(f => f !== 'name');
+/** Shared with the write path so the two cannot drift onto different values. */
+const NULL_FIELDS = NULLABLE_PII_FIELDS;
 /** Format-constrained columns — the gotcha #18 candidates. */
 const FORMAT_EMAIL = ['email', 'plus_one_email'];
 /** Rows no credential can write. Enumerated, never a predicate. */
@@ -144,7 +142,14 @@ console.log(`  nine columns -> null; name -> "${NAME_PLACEHOLDER}"\n`);
 const guests = await fetchAll(token, ownerId);
 const skippedInScope = guests.filter(g => UNWRITABLE.includes(g.id));
 const candidates = guests.filter(g => !UNWRITABLE.includes(g.id));
-const targets = candidates.filter(g => PII_FIELDS.some(f => g[f] !== null && g[f] !== undefined && g[f] !== ''));
+// A row needs work if any of the NINE still holds a value, or if `name` is not
+// yet the placeholder. Testing PII_FIELDS wholesale was wrong on a second run:
+// `name` is "—" after a successful pass, which is non-empty, so every row
+// looked like it still held plaintext.
+const needsWork = (g) =>
+  NULL_FIELDS.some(f => g[f] !== null && g[f] !== undefined && g[f] !== '') ||
+  g.name !== NAME_PLACEHOLDER;
+const targets = candidates.filter(needsWork);
 
 console.log('SCAN');
 console.log(`  guest rows in scope (owner, deduped) : ${guests.length}`);
@@ -172,11 +177,18 @@ for (const g of targets) {
   const back = readGuestPiiBlob(g[BLOB_FIELD]);
   if (!back) { unsafe.push({ id: g.id, why: 'no blob, or blob does not decrypt' }); continue; }
   if (Object.keys(back).length !== PII_FIELDS.length) { unsafe.push({ id: g.id, why: `blob has ${Object.keys(back).length} keys, expected ${PII_FIELDS.length}` }); continue; }
-  const bad = PII_FIELDS.filter(f => (back[f] ?? null) !== (g[f] ?? null));
+  // Compare ONLY against plaintext that is still there. A column already nulled
+  // by a previous pass has nothing to verify against, and `name` legitimately
+  // differs once it holds the placeholder — comparing those would flag every
+  // partially-processed row as corrupt and abort a run that is simply
+  // finishing what an earlier one started.
+  const comparable = NULL_FIELDS.filter(f => g[f] !== null && g[f] !== undefined && g[f] !== '');
+  if (g.name !== NAME_PLACEHOLDER) comparable.push('name');
+  const bad = comparable.filter(f => (back[f] ?? null) !== (g[f] ?? null));
   if (bad.length > 0) unsafe.push({ id: g.id, why: `blob disagrees with plaintext on: ${bad.join(', ')}` });
 }
 console.log('\nPRECONDITION — recovery verified immediately before destruction');
-console.log(`  rows whose blob round-trips all ten : ${targets.length - unsafe.length}/${targets.length}`);
+console.log(`  rows whose blob matches every remaining plaintext value : ${targets.length - unsafe.length}/${targets.length}`);
 if (unsafe.length > 0) {
   for (const u of unsafe.slice(0, 10)) console.log(`    UNSAFE ${u.id}: ${u.why}`);
   die(`${unsafe.length} row(s) failed the round-trip precondition. NOTHING WRITTEN. Nulling these would destroy their only recoverable copy.`);
