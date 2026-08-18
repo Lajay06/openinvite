@@ -26,6 +26,7 @@ import { runBase44ReadGuard } from '../tests/persistence/base44-read-guard.mjs';
 import { runGuestEndpointGate } from '../tests/persistence/guest-endpoint-gate.mjs';
 import { runGuestLinkMinting } from '../tests/persistence/guest-link-minting.mjs';
 import { runRsvpTokenCrypto } from '../tests/persistence/rsvp-token-crypto.mjs';
+import { runRetryPolicy } from '../tests/persistence/retry-policy.mjs';
 import { runUniverseStyling } from '../tests/persistence/universe-styling.mjs';
 import { runRateLimiting } from '../tests/persistence/rate-limiting.mjs';
 import { runHeroVideo } from '../tests/persistence/hero-video.mjs';
@@ -75,6 +76,7 @@ async function run() {
   await runModule('runGuestEndpointGate', () => runGuestEndpointGate());
   await runModule('runGuestLinkMinting', () => runGuestLinkMinting());
   await runModule('runRsvpTokenCrypto', () => runRsvpTokenCrypto());
+  await runModule('runRetryPolicy', () => runRetryPolicy());
   await runModule('runUniverseStyling', () => runUniverseStyling());
   await runModule('runRateLimiting', () => runRateLimiting());
   await runModule('runHeroVideo', () => runHeroVideo());
