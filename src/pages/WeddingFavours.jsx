@@ -219,7 +219,7 @@ export default function WeddingFavoursPage() {
           style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 999, background: 'linear-gradient(135deg, #ec4899, #9333ea)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           <Sparkles size={13} />Ask Ava
         </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.6)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
           {saveStatus === 'saved' && <><Check size={12} />Saved</>}
         </div>

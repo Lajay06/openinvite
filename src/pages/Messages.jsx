@@ -267,26 +267,26 @@ export default function MessagesPage() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
                 <button onClick={() => toggleRead(message.id)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 6 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 6 }}
                   title={message.read ? 'Mark unread' : 'Mark read'}
                   onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}>
                   {message.read ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
                 {whatsappConnected && message.guest_phone && (
                   <button onClick={() => setComposingGuest(message)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 6 }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 6 }}
                     title="Open in WhatsApp"
                     onMouseEnter={e => e.currentTarget.style.color = '#25D366'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
+                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}>
                     <MessageSquare size={14} />
                   </button>
                 )}
                 <button onClick={() => { setReplyingTo(replyingTo === message.id ? null : message.id); setReplyText(''); }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: replyingTo === message.id ? '#E03553' : 'rgba(10,10,10,0.35)', display: 'flex', padding: 6 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: replyingTo === message.id ? '#E03553' : 'rgba(10,10,10,0.6)', display: 'flex', padding: 6 }}
                   title="Reply"
                   onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-                  onMouseLeave={e => e.currentTarget.style.color = replyingTo === message.id ? '#E03553' : 'rgba(10,10,10,0.35)'}>
+                  onMouseLeave={e => e.currentTarget.style.color = replyingTo === message.id ? '#E03553' : 'rgba(10,10,10,0.6)'}>
                   <Reply size={14} />
                 </button>
               </div>

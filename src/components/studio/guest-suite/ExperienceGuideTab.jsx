@@ -383,7 +383,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: '#E03553', fontFamily: PJS }}>
                 <Navigation size={11} /> Using your location
                 <button type="button" onClick={clearGeo}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: '0 0 0 2px', display: 'flex', alignItems: 'center' }}>
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: '0 0 0 2px', display: 'flex', alignItems: 'center' }}>
                   <X size={11} />
                 </button>
               </span>
@@ -401,7 +401,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
           </div>
 
           <div style={{ position: 'relative' }}>
-            <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+            <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
             <Input value={query} onChange={handleQueryChange} onFocus={() => results.length > 0 && setShowDropdown(true)}
               placeholder="e.g. rooftop bar, ramen…" style={{ paddingLeft: 20 }} />
             {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
@@ -942,7 +942,7 @@ function DayCard({ day, allSavedPlaces, onTitleChange, onAddActivity, onRemoveAc
     <div style={{ border: '1px solid rgba(10,10,10,0.08)', borderRadius: 8, overflow: 'hidden' }}>
       <div style={{ padding: '14px 20px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
             Day {day.day}
           </span>
           {editingTitle ? (
@@ -973,7 +973,7 @@ function DayCard({ day, allSavedPlaces, onTitleChange, onAddActivity, onRemoveAc
       <div style={{ padding: '0 20px 20px' }}>
         {TIME_BLOCKS.map((block, bi) => (
           <div key={block} style={{ paddingTop: 16, borderTop: bi > 0 ? '1px solid rgba(10,10,10,0.04)' : 'none', marginTop: bi > 0 ? 16 : 0 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS, margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Clock size={10} /> {block.charAt(0).toUpperCase() + block.slice(1)}
             </p>
             {day.blocks[block].map(activity => (
@@ -1005,7 +1005,7 @@ function ActivityRow({ activity, onRemove }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2, flexWrap: 'wrap' }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>{name}</p>
           {activity.time && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{activity.time}</span>}
-          {activity.duration && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}>{activity.duration}</span>}
+          {activity.duration && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{activity.duration}</span>}
         </div>
         {activity.category && (
           <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.5)', fontFamily: PJS, display: 'inline-block', marginBottom: 4 }}>

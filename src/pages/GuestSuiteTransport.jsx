@@ -92,7 +92,7 @@ function NoteCard({ note, onRemove, onEdit }) {
 
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '14px 16px', background: '#FFFFFF', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-      <FileText size={14} color="rgba(10,10,10,0.35)" style={{ flexShrink: 0, marginTop: 2 }} />
+      <FileText size={14} color="rgba(10,10,10,0.45)" style={{ flexShrink: 0, marginTop: 2 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         {editing ? (
           <div style={{ display: 'flex', gap: 8 }}>
@@ -439,7 +439,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
                     <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: '#E03553', fontFamily: PJS }}>
                       <Navigation size={11} /> Using your location
                       <button type="button" onClick={clearGeo}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: '0 0 0 2px', display: 'flex', alignItems: 'center' }}>
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: '0 0 0 2px', display: 'flex', alignItems: 'center' }}>
                         <X size={11} />
                       </button>
                     </span>
@@ -457,7 +457,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
                 </div>
 
                 <div style={{ position: 'relative' }}>
-                  <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                  <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
                   <Input value={query} onChange={handleQueryChange} onFocus={() => results.length > 0 && setShowDropdown(true)}
                     placeholder="e.g. Sydney Airport, Central Station…" style={{ paddingLeft: 20 }} />
                   {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}

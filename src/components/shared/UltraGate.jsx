@@ -57,7 +57,7 @@ export default function UltraGate({
           >
             Upgrade to Ultra
           </button>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', margin: 0, ...F }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>
             Already on Ultra? Make sure you're signed in with the right account.
           </p>
         </div>

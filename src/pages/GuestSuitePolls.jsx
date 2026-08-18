@@ -20,7 +20,7 @@ function PollResultCard({ poll }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
             {poll.emoji && <span style={{ fontSize: 16 }}>{poll.emoji}</span>}
-            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.08)', borderRadius: 999 }}>
+            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.08)', borderRadius: 999 }}>
               {poll.category}
             </span>
             <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: poll.isActive ? '#DDF762' : 'rgba(10,10,10,0.05)', color: poll.isActive ? '#0A1930' : 'rgba(10,10,10,0.6)' }}>
@@ -55,7 +55,7 @@ function PollResultCard({ poll }) {
                     </span>
                   )}
                 </span>
-                <span style={{ fontFamily: PJS, fontSize: 12, fontWeight: 700, color: isLeading ? '#E03553' : 'rgba(10,10,10,0.35)', marginLeft: 12, flexShrink: 0 }}>
+                <span style={{ fontFamily: PJS, fontSize: 12, fontWeight: 700, color: isLeading ? '#E03553' : 'rgba(10,10,10,0.6)', marginLeft: 12, flexShrink: 0 }}>
                   {pct}%
                 </span>
               </div>
@@ -73,7 +73,7 @@ function PollResultCard({ poll }) {
         })}
 
         {totalVotes === 0 && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', fontFamily: PJS, margin: '4px 0 0', fontStyle: 'italic' }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '4px 0 0', fontStyle: 'italic' }}>
             No votes yet
           </p>
         )}

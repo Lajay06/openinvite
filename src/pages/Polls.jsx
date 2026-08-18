@@ -15,7 +15,7 @@ const genId = () => Math.random().toString(36).slice(2, 9) + Date.now().toString
 
 const labelStyle = {
   fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
-  color: 'rgba(10,10,10,0.35)', fontFamily: PJS, margin: '0 0 10px',
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px',
 };
 
 const POLL_TEMPLATES = [
@@ -55,11 +55,11 @@ function PollCard({ poll, onEnd, onDelete, onShare, onInsightGenerated }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 18 }}>{poll.emoji}</span>
-            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.08)', borderRadius: 999 }}>
+            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.08)', borderRadius: 999 }}>
               {poll.category}
             </span>
             {!poll.isActive && (
-              <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', padding: '2px 8px', background: 'rgba(10,10,10,0.04)', borderRadius: 999 }}>
+              <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', padding: '2px 8px', background: 'rgba(10,10,10,0.04)', borderRadius: 999 }}>
                 Ended
               </span>
             )}
@@ -68,7 +68,7 @@ function PollCard({ poll, onEnd, onDelete, onShare, onInsightGenerated }) {
             {poll.title}
           </p>
         </div>
-        <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.35)', margin: 0, flexShrink: 0, paddingTop: 2 }}>
+        <p style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, flexShrink: 0, paddingTop: 2 }}>
           {totalVotes} {totalVotes === 1 ? 'vote' : 'votes'}
         </p>
       </div>

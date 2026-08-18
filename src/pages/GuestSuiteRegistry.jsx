@@ -151,7 +151,7 @@ function CashFundCard({ fund }) {
           )}
         </div>
         {fund.category && fund.category !== 'custom' && (
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}>
+          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             {CATEGORY_LABELS[fund.category] || fund.category}
           </span>
         )}
@@ -269,7 +269,7 @@ export default function GuestSuiteRegistry() {
                 {Object.entries(productsByCategory).map(([cat, catProducts]) => (
                   <div key={cat} style={{ marginBottom: 28 }}>
                     {Object.keys(productsByCategory).length > 1 && (
-                      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS, margin: '0 0 12px' }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 12px' }}>
                         {(CATEGORY_LABELS[cat] || cat).toUpperCase()}
                       </p>
                     )}

@@ -269,7 +269,7 @@ function DayChart({ items, onEdit, onTimeUpdate, readOnly }) {
             alignItems: 'center', justifyContent: 'flex-end', paddingRight: 10,
             top: i * HOUR_HEIGHT - 8 + 'px',
           }}>
-            <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(10,10,10,0.35)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {fmtHourLabel(hour)}
             </span>
           </div>

@@ -221,7 +221,7 @@ function SettingsTab({ user, refreshUser }) {
           value={user?.email || ''}
           readOnly
           className="input-editorial"
-          style={{ color: 'rgba(10,10,10,0.35)', cursor: 'not-allowed' }}
+          style={{ color: 'rgba(10,10,10,0.6)', cursor: 'not-allowed' }}
         />
         <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '6px 0 0', fontFamily: PJS }}>
           Contact support to change your email address.
@@ -429,7 +429,7 @@ function BillingTab({ user }) {
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', margin: '0 0 28px', fontFamily: PJS }}>{NO_UPSELLS}</p>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 28px', fontFamily: PJS }}>{NO_UPSELLS}</p>
         </>
       )}
 
@@ -464,7 +464,7 @@ function BillingTab({ user }) {
               Upgrade to Ultra
             </button>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', margin: '0 0 28px', fontFamily: PJS }}>{NO_UPSELLS}</p>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 28px', fontFamily: PJS }}>{NO_UPSELLS}</p>
         </>
       )}
 
@@ -509,7 +509,7 @@ function BillingTab({ user }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {(PLAN_FEATURES[plan] || PLAN_FEATURES.free).map((feature, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Check size={13} style={{ color: plan === 'ultra' ? '#7c3aed' : plan === 'pro' ? '#E03553' : 'rgba(10,10,10,0.35)', flexShrink: 0 }} />
+              <Check size={13} style={{ color: plan === 'ultra' ? '#7c3aed' : plan === 'pro' ? '#E03553' : 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
               <span style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>{feature}</span>
             </div>
           ))}
@@ -601,7 +601,7 @@ function SecurityTab({ user }) {
         >
           {changingPassword ? 'Updating…' : 'Update password'}
         </button>
-        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', margin: '10px 0 0', fontFamily: PJS, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '10px 0 0', fontFamily: PJS, lineHeight: 1.6 }}>
           Signed in with Google, Microsoft, Facebook, or Apple? You don't have a password to manage here — sign-in security is handled by that provider.
         </p>
       </form>

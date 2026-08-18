@@ -49,7 +49,7 @@ export default function ConsolidatedRegistryView({ storeItems, products, customG
       {storeItems.length > 0 && (
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <Gift size={13} style={{ color: 'rgba(10,10,10,0.35)' }} />
+            <Gift size={13} style={{ color: 'rgba(10,10,10,0.45)' }} />
             <span style={labelStyle}>Registry platforms</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 1, background: 'rgba(10,10,10,0.06)' }}>
@@ -82,7 +82,7 @@ export default function ConsolidatedRegistryView({ storeItems, products, customG
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ShoppingCart size={13} style={{ color: 'rgba(10,10,10,0.35)' }} />
+              <ShoppingCart size={13} style={{ color: 'rgba(10,10,10,0.45)' }} />
               <span style={labelStyle}>Featured products</span>
             </div>
             <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{totalPurchased}/{totalRequested} purchased</span>
@@ -132,7 +132,7 @@ export default function ConsolidatedRegistryView({ storeItems, products, customG
       {customGifts.length > 0 && (
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <DollarSign size={13} style={{ color: 'rgba(10,10,10,0.35)' }} />
+            <DollarSign size={13} style={{ color: 'rgba(10,10,10,0.45)' }} />
             <span style={labelStyle}>Cash funds</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 1, background: 'rgba(10,10,10,0.06)' }}>

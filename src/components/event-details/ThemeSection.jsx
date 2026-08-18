@@ -163,7 +163,7 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
 
         {!readOnly && (
           <div style={{ position: 'relative', maxWidth: 320, marginBottom: 16 }}>
-            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+            <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
             <Input
               value={cultureSearch}
               onChange={e => setCultureSearch(e.target.value)}

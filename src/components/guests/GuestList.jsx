@@ -54,7 +54,7 @@ const CHIP_BASE = {
 export function EventChip({ event, response }) {
   if (!response.invited) {
     return (
-      <span style={{ ...CHIP_BASE, background: 'transparent', border: '1px solid rgba(10,10,10,0.15)', color: 'rgba(10,10,10,0.35)' }}>
+      <span style={{ ...CHIP_BASE, background: 'transparent', border: '1px solid rgba(10,10,10,0.15)', color: 'rgba(10,10,10,0.6)' }}>
         {event.name} — not invited
       </span>
     );

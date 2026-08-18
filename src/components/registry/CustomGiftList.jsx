@@ -36,7 +36,7 @@ export default function CustomGiftList({ items, onEdit, onDelete, loading, readO
               </span>
               {!readOnly && (
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: 4, display: 'flex' }}><Edit size={13} /></button>
+                  <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4, display: 'flex' }}><Edit size={13} /></button>
                   <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 4, display: 'flex' }}><Trash2 size={13} /></button>
                 </div>
               )}

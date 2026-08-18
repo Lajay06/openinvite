@@ -235,7 +235,7 @@ export default function BeautyPage() {
       {/* Auto-save indicator */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '8px 32px 0', minHeight: 28 }}>
         {saveStatus === 'saving' && (
-          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 5 }}>
             <Loader2 size={11} className="animate-spin" />Saving…
           </span>
         )}

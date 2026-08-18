@@ -78,7 +78,7 @@ function GuestChip({ name, onRemove }) {
         type="button"
         onClick={onRemove}
         aria-label={`Remove ${name}`}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 0, marginLeft: 2 }}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 0, marginLeft: 2 }}
       >
         <X size={11} />
       </button>
@@ -405,7 +405,7 @@ export default function WeddingPartyPage() {
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <AvaButton label="Ask Ava about your wedding party" onClick={() => setShowAva(true)} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.35)', minWidth: 80 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.6)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
           {saveStatus === 'saved' && <><Check size={12} />Saved</>}
         </div>

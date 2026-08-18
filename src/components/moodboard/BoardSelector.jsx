@@ -25,7 +25,7 @@ export default function BoardSelector({ boards, activeBoard, onBoardChange, onCr
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Folder size={13} style={{ color: 'rgba(10,10,10,0.35)' }} />
+          <Folder size={13} style={{ color: 'rgba(10,10,10,0.45)' }} />
           <span style={labelStyle}>Boards</span>
         </div>
         {!readOnly && !showCreate && (

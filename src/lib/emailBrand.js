@@ -31,7 +31,7 @@ export const EMAIL_BG = '#F7F7F7';
 export const EMAIL_CARD_BORDER = '#E8E8E8';
 export const EMAIL_DIVIDER = '#F0F0F0';
 export const EMAIL_MUTED = 'rgba(10,10,10,0.6)';
-export const EMAIL_MUTED_LIGHT = 'rgba(10,10,10,0.35)';
+export const EMAIL_MUTED_LIGHT = 'rgba(10,10,10,0.6)';
 export const EMAIL_BODY_TEXT = 'rgba(10,10,10,0.65)';
 export const EMAIL_SUPPORT_ADDRESS = 'hello@openinvite.com.au';
 

@@ -363,15 +363,15 @@ export default function ToDoListPage() {
                     {!readOnly && (
                       <>
                         <button onClick={() => handleEditTask(task)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 4 }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}
                           onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
-                          onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
+                          onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}>
                           <Edit3 size={13} />
                         </button>
                         <button onClick={() => handleDelete(task.id)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 4 }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}
                           onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-                          onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
+                          onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}>
                           <Trash2 size={13} />
                         </button>
                       </>

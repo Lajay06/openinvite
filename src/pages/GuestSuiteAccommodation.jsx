@@ -221,7 +221,7 @@ function AddPlaceCard({ destination, onAdd }) {
             <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: '#E03553', fontFamily: PJS }}>
               <Navigation size={11} /> Using your location
               <button type="button" onClick={clearGeo}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: '0 0 0 2px', display: 'flex', alignItems: 'center' }}>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: '0 0 0 2px', display: 'flex', alignItems: 'center' }}>
                 <X size={11} />
               </button>
             </span>
@@ -239,7 +239,7 @@ function AddPlaceCard({ destination, onAdd }) {
         </div>
 
         <div style={{ position: 'relative' }}>
-          <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+          <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
           <Input value={query} onChange={handleQueryChange} onFocus={() => results.length > 0 && setShowDropdown(true)}
             placeholder="e.g. Hilton Sydney, boutique hotels…" style={{ paddingLeft: 20 }} />
           {searching && <Loader2 size={13} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', color: '#E03553', animation: 'spin 0.8s linear infinite' }} />}
