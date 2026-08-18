@@ -668,3 +668,55 @@ for ALL third-party embeds (YouTube, Spotify, Apple) — thumbnail until tapped,
 matching the tap-to-play ethos, privacy and performance together. Phase 2
 polish. The advisor holds the legal-draft action to confirm the
 embedded-content clause covers couple-chosen third-party players.
+
+
+## 2026-08-19 — ORIENTATION LAYER FAMILY CLOSED: Next up is live, variant A
+
+Per the dashboard council verdict of 2026-08-13 (orientation not motivation;
+gamification killed; inside the daily update; setupJourney-driven; progressive
+disclosure; confetti stays) and La's owner verdict of 2026-08-18 (variant A,
+the lead block).
+
+**Live on production**, commit `08af956`, bundle `index-3RcC1AiK` ->
+`index-1oBpcWBm`. Rendered for the real fixture: *Next up · Build your website ·
+Step 1 of 7 · 135 days to go*, between the headline and the editorial grid,
+with the rest of the list one click behind a summary.
+
+### What the layer refuses to do, which is the part that matters
+
+- **No data means no block.** `journey` is null whenever the wedding record
+  failed to load, and the component renders nothing without one. Completeness
+  derives entirely from that record; without it every step reads incomplete and
+  the couple would be nagged about work they have already done. That is #486's
+  empty-account lie wearing a new costume, and it is the reason the honest-states
+  work had to land first.
+- **A plan-locked step is never proposed.** Orientation must not become upsell
+  pressure. A free-plan couple is pointed at work they can action; gated steps
+  stay listed, marked once, never louder than open rows.
+- **`allDone` and `nothingProposable` are distinct.** A free-plan couple who has
+  finished everything actionable is not "done". Conflating them would produce
+  either a lie or a paywall where a closing line belongs.
+
+### Ordering
+
+`publish` requires `website`. `rsvp` requires nothing — RSVP tokens resolve at
+`/rsvp/<token>` independent of any published site, so a couple can run the whole
+flow on emailed links. That reasoning lives in the step definition, not just
+here, so nobody "fixes" it into a dependency the product does not have.
+
+### The correction this family carried
+
+I reported the budget `isComplete` as a HARD BLOCKER and put it in a mockup La
+read. It was false: `AvaStudio` passes the server-decrypted record, so the step
+completes correctly. I had evaluated the function against a record I fetched
+raw myself and never checked the wiring between them. The mockup panel was
+regenerated with a dated correction rather than quietly edited, and the real
+obligation — Next up must read through `getMyWeddingDetails()` — is now a CI
+pin whose companion assertion feeds `isComplete` actual ciphertext, so the
+reason for the pin is demonstrated rather than described.
+
+### Verification
+
+17 behavioural pins. All five states rendered before merge was requested, via a
+local harness that was removed in the same pass. Deployed behaviour re-rendered
+on production afterwards and matches.
