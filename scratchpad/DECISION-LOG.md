@@ -480,3 +480,45 @@ The distinction matters more than it looks. "No plaintext PII remains" would
 have been a false claim, and the honest version — "none except one unwritable
 harness row" — is only defensible if the exception is enumerated and enforced
 rather than described.
+
+## 2026-08-18 — Guest encryption family CLOSED
+
+Production `503e46e`. Full closing probe, three views, one build.
+
+**Standing state:** 206 Guest rows, 205 carrying `encrypted_guest_pii`, and
+**exactly one** row exposing any plaintext PII — `6a584d473aa3ab1ec180fcdc`,
+the unwritable harness row, whose `name` is the sentinel
+`__PERSISTENCE_TEST_ADMINKEY_CREATED_BY_CHECK__` and whose nine columns are
+empty.
+
+**The claim is deliberately not "no plaintext PII remains."** It is: none on any
+row the product can write, plus one unwritable harness row holding a sentinel
+string. The exception is pinned by id and asserted as exactly that — a gate
+expecting zero would fail forever on a row nothing can fix, and one tolerating
+"some exceptions" would silently accept a second.
+
+### What this family got wrong, recorded because it generalises
+
+Track D shipped incomplete: readers converted, columns nulled, but the
+dual-write left in place, so every edit re-populated the columns just cleared.
+My own Track C commit message had claimed Track D would stop it.
+
+**A deny-only probe would have passed throughout.** The attacker view was clean
+before and after the bug. What exposed it was the ADMIT path — the couple's own
+edit, followed by an independent re-read of the raw row.
+
+That is the same lesson as #461 (a gate that refuses everyone passes a
+refusal-only probe) and the E3 admit-path leg, arriving a third time in a
+different costume. **Every probe needs both halves, and the admit half needs an
+independent re-read, not the endpoint's own response.**
+
+Three smaller defects came out of the same fix, each worth its own note:
+
+- The nulling script was not re-run-safe: its predicates assumed the pre-null
+  state, so a second pass saw every row as unprocessed and then aborted
+  comparing a real name against the placeholder it had itself written.
+- A test passed for the wrong reason: `!== undefined` is satisfied by `null`,
+  so the dual-write assertion survived the deletion of the dual-write, reading
+  as validation of the new contract while asserting the old.
+- The pins covered readers; the bug was in the writer. Coverage of one side of
+  a data path says nothing about the other.
