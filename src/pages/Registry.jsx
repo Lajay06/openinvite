@@ -160,9 +160,11 @@ export default function RegistryPage() {
         ].map((s, i) => (
           <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.08)' }}>
             <p style={labelStyle}>{s.label}</p>
-            <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 }}>
-              <CountUp to={s.value} prefix={s.prefix || ''} suffix={s.suffix || ''} />
-            </p>
+            {loading
+              ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
+              : <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 }}>
+                  <CountUp to={s.value} prefix={s.prefix || ''} suffix={s.suffix || ''} />
+                </p>}
           </div>
         ))}
       </div>

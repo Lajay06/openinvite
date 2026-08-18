@@ -196,9 +196,11 @@ export default function ToDoListPage() {
         ].map((s, i, arr) => (
           <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
-            <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '8px 0 0' }}>
-              <CountUp to={s.value} />
-            </p>
+            {loading
+              ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
+              : <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '8px 0 0' }}>
+                  <CountUp to={s.value} />
+                </p>}
           </div>
         ))}
       </div>
