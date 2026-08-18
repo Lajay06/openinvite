@@ -56,6 +56,7 @@ import { runCheckoutErrorHandling } from '../tests/persistence/checkout-error-ha
 import { runGuestRsvpTally } from '../tests/persistence/guest-rsvp-tally.mjs';
 import { runPrerenderAssetRewrite } from '../tests/persistence/prerender-asset-rewrite.mjs';
 import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
+import { runAvaActionValidation } from '../tests/persistence/ava-action-validation.mjs';
 import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 import { runNotifications } from '../tests/persistence/notifications.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
@@ -147,6 +148,7 @@ async function run() {
     await runModule('runNotifications', () => runNotifications(token));
     await runModule('runOnboardingCronWindow', () => runOnboardingCronWindow());
     await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
+  await runModule('runAvaActionValidation', () => runAvaActionValidation());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
     // itself, or a bug in runModule) — this is the actual safety net the
