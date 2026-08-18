@@ -24,8 +24,14 @@ export async function runPlaylistEmbedUrls() {
     /[?&]listType=playlist\b/.test(yt?.embed_url || ''), yt?.embed_url);
   check('  NEVER the retired /embed/videoseries form (renders blank, silently)',
     !/\/embed\/videoseries/.test(yt?.embed_url || ''), yt?.embed_url);
-  check('  uses youtube-nocookie, matching heroVideo.js',
-    /youtube-nocookie\.com/.test(yt?.embed_url || ''), yt?.embed_url);
+  // NOT nocookie. Established on production: same page, same playlist id, same
+  // listType form, only the host differs — nocookie renders blank,
+  // www.youtube.com renders. heroVideo.js may keep nocookie for single videos;
+  // playlists cannot use it, and this assertion exists so nobody unifies them.
+  check('  uses www.youtube.com — nocookie does NOT serve playlist embeds',
+    /^https:\/\/www\.youtube\.com\/embed\?/.test(yt?.embed_url || ''), yt?.embed_url);
+  check('  is NOT youtube-nocookie (renders blank for playlists)',
+    !/nocookie/.test(yt?.embed_url || ''), yt?.embed_url);
   check('  carries the playlist id', /list=PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI/.test(yt?.embed_url || ''), 'id present');
 
   const music = parsePlaylistLink('https://music.youtube.com/playlist?list=PLabc123');

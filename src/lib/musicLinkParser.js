@@ -81,18 +81,27 @@ export function parsePlaylistLink(rawUrl) {
   const yt = url.match(/(?:music\.)?youtube\.com\/playlist\?(?:[^#]*&)?list=([a-zA-Z0-9_-]+)/i)
     || url.match(/(?:music\.)?youtube\.com\/watch\?(?:[^#]*&)?list=([a-zA-Z0-9_-]+)/i);
   if (yt) {
-    // listType=playlist, NOT the older /embed/videoseries?list= form. Verified
-    // on production 2026-08-18: videoseries renders a blank frame for a real,
-    // public playlist, and swapping the same iframe to listType renders it
-    // immediately. YouTube retired videoseries; it fails silently rather than
-    // erroring, which is why it survived a green build and a green suite.
+    // TWO constraints, established separately on production because changing
+    // both at once is what hid the second one:
     //
-    // youtube-nocookie.com matches src/lib/heroVideo.js's youtubeEmbedUrl —
-    // guests should not be tracked by a page the couple pointed them at.
+    // 1. listType=playlist, NOT the older /embed/videoseries?list= form.
+    //    videoseries renders a blank frame for a real public playlist and
+    //    raises nothing — no console error, no failed request.
+    //
+    // 2. www.youtube.com, NOT youtube-nocookie.com. The nocookie domain does
+    //    not serve playlist embeds: same page, same playlist id, same
+    //    listType form, only the host differs — nocookie renders blank,
+    //    www.youtube.com renders the playlist. Verified by swapping one live
+    //    iframe's host and nothing else.
+    //
+    // This is why the playlist embed CANNOT match heroVideo.js's
+    // youtubeEmbedUrl, which uses nocookie for single videos. Single-video
+    // embeds work on nocookie; playlists do not. Do not "unify" the two
+    // without re-rendering a real playlist first.
     return {
       source: 'youtube',
       sourceLabel: 'YouTube',
-      embed_url: `https://www.youtube-nocookie.com/embed?listType=playlist&list=${yt[1]}`,
+      embed_url: `https://www.youtube.com/embed?listType=playlist&list=${yt[1]}`,
     };
   }
 

@@ -582,3 +582,53 @@ field the API would not return meant zero tasks rendered. Verified on
 production post-merge: the list renders 16/16, a card moved between kanban
 columns survives a full reload, and an independent DB re-read matched the UI
 exactly. First time that feature has worked since the drift.
+
+
+## 2026-08-19 — a third direction of the same failure: trusting a probe over the call graph
+
+I reported `setupJourney`'s budget `isComplete` as a HARD BLOCKER that could
+never complete, put it in a mockup, and La read it. It was false.
+
+`AvaStudio.jsx:43` passes the record from `getMyWeddingDetails()` — the
+server-DECRYPTING endpoint — so `isComplete` receives `budget` as
+`{total: 154000}` and the step completes correctly. I had evaluated the
+function against a record **I** fetched directly from Base44, where `budget` is
+ciphertext. I checked the function, and I checked the data, and I never checked
+the wiring between them.
+
+**This is the same class as the two before it, from a new angle:**
+
+| # | What I trusted | Instead of |
+|---|---|---|
+| 1 | code reading correct | the system running (#486's green structural pins over a dead feature) |
+| 2 | a green suite | the total and exit code (four swallowed test modules) |
+| 3 | my own probe's data shape | the call graph that supplies the real one |
+
+Each time the artefact I consulted was true in isolation and wrong about the
+system. **The fix is the same in all three: follow the actual path end to end
+before reporting a defect.** For a function, that means finding its callers and
+reading what they pass — not constructing an input that seems right.
+
+The cost here was not a broken build. It was a false claim in a stakeholder's
+hands, which is more expensive to withdraw than to have never made.
+
+## 2026-08-19 — changing two variables at once hid the second one
+
+PR #493 fixed the YouTube playlist embed by changing the URL form
+(`/embed/videoseries` -> `listType=playlist`) AND the host (`www.youtube.com` ->
+`youtube-nocookie.com`) in the same edit. I verified the form change in a unit
+test and rendered a hand-swapped URL during diagnosis — but never rendered the
+URL the code would actually build.
+
+Both changes were individually reasonable. Together they did not work:
+**youtube-nocookie.com does not serve playlist embeds at all.** Same page, same
+playlist id, same form, only the host differing — nocookie blank,
+www.youtube.com renders.
+
+Two rules this yields:
+- When a fix changes more than one variable, the render must be of the BUILT
+  output, not of the thing you swapped by hand while diagnosing. A hand-swap
+  proves the diagnosis; only the built artefact proves the fix.
+- A privacy-preferred domain is not automatically substitutable. nocookie works
+  for single videos (`heroVideo.js`) and not for playlists; the two cannot be
+  unified without re-rendering a real playlist.

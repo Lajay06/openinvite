@@ -629,6 +629,40 @@ endpoint verifying `wedding_id` ownership before deleting, same as PR 1b.
 Needs its own scoped PR when real guests exist post-launch; not urgent
 before then.
 
+### Rotation hazard — the decrypt-failure fallback hands out ciphertext as data
+
+`api/my-wedding-details.js`'s `decryptField()` returns the **raw ciphertext
+string** when `decryptPayload` throws:
+
+```js
+catch (err) {
+  console.error('[my-wedding-details] Failed to decrypt field, returning as-is:', err.message);
+  return value;   // <- the ciphertext string
+}
+```
+
+Failing open keeps the endpoint serving during a partial problem, which is a
+defensible choice. The hazard is what consumers then receive: a **string** where
+an object is expected. `wedding.budget.total` on a ciphertext string is
+`undefined` — silently, with no error at the call site.
+
+That is not hypothetical shape. It is exactly the bug I mistakenly reported
+against `setupJourney`'s budget step on 2026-08-18, and the reason the mistake
+was plausible: the failure it describes is real, it is just not reachable today.
+
+**A key rotation without a re-encrypt migration produces it everywhere, at
+once, for every admin-key-encrypted field** — `budget`, `celebrant`,
+`contactPerson`, `dayVendorContacts`, `emergencyContacts`, `license`. Every
+consumer reading a sub-property gets `undefined` rather than an error, so the
+app degrades into confidently wrong state rather than failing loudly: budgets
+read as unset, emergency contacts as absent, licences as never entered.
+
+**Rotation checklist addition:** decrypt-old / re-encrypt-new must complete
+BEFORE the old key retires, and the rotation is not done until a read of each
+encrypted field returns an object rather than a string. Consider making
+`decryptField` fail LOUD (throw, or return a tagged error object) as part of
+that work — failing open is only safe while the failure is rare.
+
 ### Known instances, and the two that are now demonstrated rather than inferred
 
 The gap is no longer hypothetical for `PollComment`. PR #459's verification
