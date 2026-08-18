@@ -522,3 +522,63 @@ Three smaller defects came out of the same fix, each worth its own note:
   as validation of the new contract while asserting the old.
 - The pins covered readers; the bug was in the writer. Coverage of one side of
   a data path says nothing about the other.
+
+---
+
+## Phase 0 — the schema scanner was auditing itself into silence (#483, 2026-08-18)
+
+`scripts/lib/schemaDropScan.mjs` classified every write against a 319-line
+embedded `SCHEMAS` literal last refreshed 2026-07. It had drifted in both
+directions at once, which is what made it dangerous rather than merely stale:
+
+- **Omission** — every field added since 2026-07 was absent, so a new drop was
+  undetectable by construction.
+- **Assertion** — it listed `Note.status` and `Note.view_type` as registered,
+  with a comment calling it a *"real drop, not a snapshot omission."* They were
+  never declared in Base44. Writing that down permanently silenced the scanner
+  for the exact bug it existed to catch.
+
+The scanner now derives `SCHEMAS` from `base44/entities/*.jsonc` — the mirror
+RULE 12 already keeps synced from live — so it can no longer disagree with
+production without RULE 12 failing first. `User` short-circuits as schemaless.
+
+**DROPPED 4 → 0.** The old 4 were all `User` false positives, so the previous
+scan reported four non-bugs while staying silent on two real ones. The mirror
+was resynced to 98 properties (`assetContent`, `favourItems`, `foodBeverage`,
+`honeymoonDetails`, `weddingFavours`, `weddingParty` were declared live but
+never mirrored).
+
+### Gotcha #20 — enums are NOT enforced on write
+
+`status: 'not_a_column'` stores with HTTP 200. An enum declaration documents
+intent; it does not constrain writes. This came out of the refuse half of a
+probe that could have been skipped as a formality once the admit half passed.
+
+### Two failures of mine worth keeping
+
+**I proposed an enum without reading the constant eleven lines above the write
+site.** I derived `todo/in_progress/done` from `handleMove(task, newStatus)`'s
+signature and assumed snake_case. The actual values are
+`KANBAN_COLS = ['Ideas', 'In progress', 'Done']`, and `view_type` is not a view
+mode at all — it is a partition tag, always the literal `'todo'`, which
+`loadTasks` filters on. The first schema application had to be superseded. I
+had attached a widen-first warning to the enum and still got the values wrong:
+flagging uncertainty is not a substitute for reading the source.
+
+**Probe damage, repaired: 1 row.** `"Plan honeymoon itinerary"` had its
+`status` and `view_type` nulled by my own probe. I captured `orig` while the
+fields were undeclared and therefore unreadable, got `{null, null}`, and wrote
+that back after declaration made the write land. Restored by sensible
+inference — `view_type: "todo"` (certain, 15/15 siblings), `status: "Ideas"`
+(inferred from its seed-batch neighbours). **Not a recovered original.** The
+rule this yields: *never capture a restore baseline through a read path that
+cannot see the field you are about to write.*
+
+### The bug's real shape
+
+Undeclared fields were dropped on write **and withheld on read**. The withheld
+half is what emptied the todo list — `loadTasks` filters on `view_type`, so a
+field the API would not return meant zero tasks rendered. Verified on
+production post-merge: the list renders 16/16, a card moved between kanban
+columns survives a full reload, and an independent DB re-read matched the UI
+exactly. First time that feature has worked since the drift.
