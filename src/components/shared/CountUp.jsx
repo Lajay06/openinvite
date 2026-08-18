@@ -2,8 +2,10 @@
  * CountUp — animated 0 -> `to` stat number, used on every dashboard page's
  * stat cards. Previously copy-pasted independently into 17 different page
  * files, each with its own local `function CountUp(...)`. One of those
- * copies (Budget.jsx) was fixed for a real bug — see below — but the fix
- * was never propagated to the other 16, so they're all still broken.
+ * copies (Budget.jsx) was fixed for a real bug — see below — and this module
+ * is that fixed version, extracted so the other 16 inherit it. Budget.jsx
+ * kept its local copy through the original consolidation and was the last
+ * duplicate; it now imports this one, so there is exactly one definition.
  *
  * The bug: on every page these copies live on, the surrounding effects can
  * re-render the component several times in quick succession right after

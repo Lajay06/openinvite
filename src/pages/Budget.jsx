@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -19,48 +19,8 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { getMyRecords, getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
+import CountUp from "@/components/shared/CountUp";
 const Budget = base44.entities.Budget;
-
-function CountUp({ to, duration = 1200, format }) {
-  const [value, setValue] = useState(0);
-  const startRef = useRef(null);
-  const lastToRef = useRef(null);
-  useEffect(() => {
-    if (to === 0) { setValue(0); lastToRef.current = 0; return; }
-    // The surrounding page (Budget.jsx's two duplicate desktop/mobile
-    // trees, each with its own load effect) can re-render this component
-    // several times in quick succession even when `to` hasn't actually
-    // changed — confirmed live via instrumentation: the same 4 stat values
-    // re-fired this effect repeatedly within ~1s of each other. Restarting
-    // the animation from scratch on every one of those re-fires (the old
-    // behaviour) meant it kept getting reset before a full `duration`
-    // window could ever elapse, so it never reached its target — that,
-    // not the target value itself, is why "Total budget" sometimes settled
-    // on a wrong, stable-looking number that never changed again. Skipping
-    // the restart when `to` is unchanged from what's already in flight (or
-    // already reached) lets one animation run to completion.
-    if (lastToRef.current === to) return;
-    lastToRef.current = to;
-    startRef.current = null;
-    let raf;
-    const tick = (ts) => {
-      if (!startRef.current) startRef.current = ts;
-      const progress = Math.min((ts - startRef.current) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(eased * to));
-      if (progress < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    // Extra safety net: requestAnimationFrame is tied to the paint cycle,
-    // so a backgrounded/throttled tab can still stall the loop indefinitely
-    // partway through even with the guard above. setTimeout keeps firing
-    // in that case, so this guarantees the value snaps to the true target
-    // once the animation's nominal duration has passed either way.
-    const settle = setTimeout(() => setValue(to), duration + 50);
-    return () => { cancelAnimationFrame(raf); clearTimeout(settle); };
-  }, [to, duration]);
-  return <>{format ? format(value) : value}</>;
-}
 
 function FilterPill({ label, active, onClick }) {
   return (
