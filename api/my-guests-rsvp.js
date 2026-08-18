@@ -51,6 +51,7 @@ import {
   toEventResponsesShape,
   mergePlusOneEventResponses,
 } from '../src/lib/rsvpAggregation.js';
+import { mergeGuestPii } from './_lib/guestPii.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -140,8 +141,12 @@ export default async function handler(req, res) {
     }
 
     const guestsQuery = encodeURIComponent(JSON.stringify({ created_by_id: caller.id }));
+    // Track D: plus_one_email and dietary_restrictions live in
+    // encrypted_guest_pii. Unmerged, the plus-one overlay would silently stop
+    // and dietary would fall back to the placeholder.
     const guests = unwrapList(await callerFetch(`/apps/${BASE44_APP_ID}/entities/Guest?q=${guestsQuery}`, callerToken))
-      .filter(g => !g.is_test);
+      .filter(g => !g.is_test)
+      .map(mergeGuestPii);
     if (guests.length === 0) {
       return res.status(200).json({ byGuestId: {} });
     }

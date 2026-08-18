@@ -47,6 +47,7 @@ import {
 import { hashId } from './_lib/questionnaireCrypto.js';
 import { latestEventResponses, toEventResponsesShape, deriveRsvpStatus } from '../src/lib/rsvpAggregation.js';
 import { guestGateBlocks, GUEST_GATE_MESSAGE } from './_lib/guestSafeWedding.js';
+import { mergeGuestPii } from './_lib/guestPii.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -154,7 +155,9 @@ export default async function handler(req, res) {
     if (music.onlyForConfirmedGuests) {
       const guests = (await adminGet(`/apps/${BASE44_APP_ID}/entities/Guest?q=${encodeURIComponent(JSON.stringify({ created_by_id: wedding.created_by_id }))}`))
         .filter(g => !g.is_test);
-      const matchedGuest = guests.find(g => typeof g.email === 'string' && g.email.toLowerCase() === guestEmail);
+      // Track D: email lives in encrypted_guest_pii — match on decrypted rows.
+      const matchedGuest = guests.map(mergeGuestPii)
+        .find(g => typeof g.email === 'string' && g.email.toLowerCase() === guestEmail);
       if (!matchedGuest) {
         return res.status(403).json({ error: "We couldn't find your invitation — song requests are limited to confirmed guests." });
       }

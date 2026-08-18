@@ -36,6 +36,7 @@ import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/s
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 import { latestEventResponses, toEventResponsesShape, deriveRsvpStatus } from '../src/lib/rsvpAggregation.js';
 import { hashId } from './_lib/questionnaireCrypto.js';
+import { mergeGuestPii } from './_lib/guestPii.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -127,7 +128,9 @@ export default async function handler(req, res) {
       rsvpRowsByGuest.get(row.guest_id_hash).push(row);
     }
 
-    const attendingGuests = allGuests.filter(g => isGuestAttending(g, rsvpRowsByGuest));
+    // Track D: name lives in encrypted_guest_pii. Without this every attendee
+    // would render as the "—" placeholder rather than a name.
+    const attendingGuests = allGuests.filter(g => isGuestAttending(g, rsvpRowsByGuest)).map(mergeGuestPii);
 
     const attendees = showAttending
       ? attendingGuests.map(g => firstNameLastInitial(g.name)).filter(Boolean)
