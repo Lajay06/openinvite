@@ -58,5 +58,17 @@ export async function runDailyUpdateLoadStates() {
     ? pass('partial failure is surfaced rather than presented as complete data', 'banner guarded on failedSources')
     : fail('partial failure is invisible', 'a render branch on failedSources.length', 'absent'));
 
+  // ── Music page: async query results must be guarded before use ──────────
+  // The music rebuild shipped `songRequests.filter(...)` inline in the filter
+  // buttons. songRequests is a react-query result and is undefined until it
+  // resolves, so the page threw straight to the error boundary in production.
+  // Build, lint and 800+ CI assertions all passed — none of them render.
+  const music = readFileSync(resolve(__dir, '../../src/pages/Music.jsx'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const unguarded = (music.match(/\bsongRequests\.(filter|map|length|slice|find)\b/g) || []);
+  results.push(unguarded.length === 0
+    ? pass('Music.jsx never uses the songRequests query result unguarded', 'all uses go through (songRequests || [])')
+    : fail('Music.jsx uses an unresolved query result directly', 'guarded access only', unguarded.join(', ')));
+
   return results;
 }
