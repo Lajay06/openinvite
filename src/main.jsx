@@ -29,15 +29,18 @@ window.addEventListener('vite:preloadError', (event) => {
  * awaited, every failure mode swallowed, so the beacon itself can never be
  * the reason the fallback UI fails to render.
  *
- * layoutVariant is a best-effort signal, not a precise one: Layout.jsx
- * renders BOTH the desktop and mobile page-content trees at all times
- * (`hidden lg:block` / `lg:hidden` — CSS visibility, not a JS conditional
- * mount), so there's no true "which one is mounting" boolean to read. This
- * reports which variant is the *visible* one at the moment of the crash
- * (Tailwind's default lg breakpoint, 1024px — no custom override in
- * tailwind.config.js) as the closest available proxy — the leading
- * suspect is that double-mount, so this is still the most useful signal
- * available without changing Layout.jsx itself (out of scope for this PR).
+ * layoutVariant reports which layout the crash happened under, at Tailwind's
+ * lg breakpoint (1024px — no override in tailwind.config.js), matching the
+ * media query in index.css that drives .page-content.
+ *
+ * UPDATED 2026-08-18 (Phase 0): this comment used to say Layout.jsx "renders
+ * BOTH the desktop and mobile page-content trees at all times", making
+ * layoutVariant a proxy rather than a fact, and named that double-mount as the
+ * leading suspect for the crashes this beacon exists to catch. It no longer
+ * does — Layout.jsx renders {children} once and the breakpoint lives in CSS,
+ * so there is exactly one mounted tree and this signal is now precise rather
+ * than best-effort. If a crash still reaches this boundary, the double-mount
+ * is no longer a candidate explanation.
  */
 function beaconClientError(error, componentStack) {
   try {

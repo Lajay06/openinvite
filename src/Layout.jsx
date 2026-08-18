@@ -633,20 +633,31 @@ function LayoutShell({ children, currentPageName }) {
       </div>
 
       {/* ── Main content ─────────────────────────────────── */}
-      {/* Desktop: right of sidebar, below top bar (+ trial/collaborator banner if active) */}
-      <div
-        className="hidden lg:block page-content"
-        style={{ marginLeft: SIDEBAR_WIDTH, paddingTop: contentTopOffset, '--page-content-top': `${contentTopOffset}px` }}
-      >
-        <Suspense fallback={<ContentAreaFallback />}>
-          {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
-        </Suspense>
-      </div>
+      {/*
+        ONE tree, at every width.
 
-      {/* Mobile: full width, below mobile top bar */}
+        This used to be two: `hidden lg:block` and `lg:hidden`, each rendering
+        {children}. Both are CSS visibility, not conditional mounts, so React
+        mounted every dashboard page TWICE — two independent state trees, every
+        effect firing twice, every loadData doubled, across 94 routes. Measured
+        on the Guests page: 2 .page-content elements, 4 /api/my-guests calls,
+        406 checkboxes in the DOM for 203 guests.
+
+        The two containers were never structurally different. They rendered
+        identical children and differed only in margin-left and padding-top, so
+        the breakpoint belongs in CSS, not in a JS conditional. Doing it in JS
+        would fix the mount count and introduce a worse bug: crossing 1024px
+        would unmount and rebuild the page, losing unsaved form state and
+        scroll position and re-firing every fetch. A media query cannot do that.
+
+        The two values ride in as custom properties so JS stays the single
+        source of truth for both numbers; index.css decides which applies.
+        (`--page-content-top` used to be set here too and was never read by
+        anything — deleted with the rewrite rather than carried forward.)
+      */}
       <div
-        className="lg:hidden page-content"
-        style={{ paddingTop: 64, '--page-content-top': '64px' }}
+        className="page-content"
+        style={{ '--content-top-desktop': `${contentTopOffset}px`, '--sidebar-width': `${SIDEBAR_WIDTH}px` }}
       >
         <Suspense fallback={<ContentAreaFallback />}>
           {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
