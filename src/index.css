@@ -883,6 +883,30 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   .seating-seat-selected { animation: seatingSeatPulse 1.8s ease-in-out infinite; }
 }
 
+/* ── Page content: one tree, breakpoint in CSS ───────────────
+   Layout.jsx renders {children} ONCE. It used to render them twice, in a
+   `hidden lg:block` container and a `lg:hidden` one, which mounted every
+   dashboard page twice.
+
+   The two containers differed only in these two values, so they live here
+   now. Both numbers come from JS as custom properties — --content-top-desktop
+   is computed (top bar + any trial/collaborator banner) and --sidebar-width is
+   SIDEBAR_WIDTH — so Layout.jsx remains the single source of truth and this
+   file only decides which of them applies at which width.
+
+   1024px matches Tailwind's `lg` (no override in tailwind.config.js) and the
+   matchMedia check in main.jsx, so all three agree on one breakpoint. */
+.page-content {
+  padding-top: 64px;          /* mobile top bar */
+  margin-left: 0;
+}
+@media (min-width: 1024px) {
+  .page-content {
+    padding-top: var(--content-top-desktop, 64px);
+    margin-left: var(--sidebar-width, 200px);
+  }
+}
+
 /* ── Page fade-in ──────────────────────────────────────────── */
 .page-content {
   animation: none;
