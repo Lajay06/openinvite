@@ -635,14 +635,11 @@
     },
     "music": {
       "type": "object",
+      // spotifyConnected and spotifyUserId were UNDECLARED 2026-08-18 (music
+      // rebuild): zero readers, residue of the Step 2b/2c Spotify teardown.
+      // Per gotcha #5 any stored values are hidden rather than erased, which is
+      // the intended outcome — nothing reads them either way.
       "properties": {
-        "spotifyConnected": {
-          "type": "boolean",
-          "default": false
-        },
-        "spotifyUserId": {
-          "type": "string"
-        },
         "guestRequestsEnabled": {
           "type": "boolean",
           "default": true
@@ -678,7 +675,12 @@
               "name": {
                 "type": "string"
               },
+              "playlistUrl": {
+                "type": "string",
+                "description": "The couple's playlist link exactly as pasted — Spotify, Apple Music or YouTube. The SOURCE IS NOT STORED: src/lib/musicLinkParser.js derives it from this URL at render; a stored copy of a derivable fact is drift waiting to happen (the schema-mirror lesson applied to data modelling). Added 2026-08-18 for the music rebuild, replacing spotifyPlaylistId as the live field."
+              },
               "spotifyPlaylistId": {
+                "description": "LEGACY, superseded by playlistUrl 2026-08-18. Spotify-only by construction, which is why it could not carry an Apple Music or YouTube link. Still declared because undeclaring hides stored values rather than erasing them (gotcha #5) and rows may still carry one; no code writes it after the rebuild. Remove in a later cleanup once a read of live rows confirms none are relied on.",
                 "type": "string"
               },
               "trackCount": {
@@ -694,28 +696,13 @@
               }
             }
           }
-        },
-        "spotifyConnection": {
-          "type": "object",
-          "description": "The couple's connected Spotify OAuth tokens, written by api/spotify-callback.js after a successful connect and read by api/spotify-refresh.js / api/spotify-search.js.",
-          "properties": {
-            "accessToken": {
-              "type": "string"
-            },
-            "refreshToken": {
-              "type": "string"
-            },
-            "expiresAt": {
-              "type": "number"
-            },
-            "displayName": {
-              "type": "string"
-            },
-            "imageUrl": {
-              "type": "string"
-            }
-          }
         }
+        // spotifyConnection (the OAuth accessToken/refreshToken store) was
+        // removed from the live schema in the Step 2b/2c teardown, but stayed
+        // in this mirror until 2026-08-18 — a PHANTOM: declared here, absent
+        // live. The opposite drift direction from the six fields #483 found
+        // missing, and worse in kind, because a mirror that over-declares makes
+        // the drop-scanner blind to a real drop on that path.
       }
     },
     // Step 2a: ciphertext at rest. This mirror said "object" until Step 2b —

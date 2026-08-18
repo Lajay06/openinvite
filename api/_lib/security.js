@@ -95,14 +95,7 @@ function gcRateLimitStore() {
  *   'places-search'   — 20 req/min  (places-search.js — text search)
  *   'place-details'   — 40 req/min  (place-details.js — one call per selection)
  *   'places-photo'    — 60 req/min  (places-photo.js — several photos per page load)
- *   'spotify-search'  — 20 req/min  (spotify-search.js — search-as-you-type.
- *     App-token search only; the OAuth connect endpoints it used to sit
- *     alongside were removed in the Step 2b stage (c) teardown)
- *   'on-signup'       — 5 req/min   (on-signup.js — sends an email per call, not idempotent)
- *   'admin-stats'     — 20 req/min  (admin/stats.js — up to 200 Stripe API reads per call)
- *   'portal-session'  — 10 req/min  (create-portal-session.js — live Stripe API call per hit)
- *   'song-request'        — 10 req/min  (song-request-submit.js — public guest form)
- *   'song-request-review' — 60 req/min  (song-request-review.js — authenticated dashboard moderation, several actions per session)
+ *   (spotify-search was removed with the music rebuild, 2026-08-18)
  *
  * @param {string} ip
  * @param {string} bucket

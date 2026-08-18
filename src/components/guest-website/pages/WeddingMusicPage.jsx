@@ -1,16 +1,30 @@
 import React from 'react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
+import { parsePlaylistLink } from '@/lib/musicLinkParser';
 
+/**
+ * Music rebuild, 2026-08-18.
+ *
+ * This page used to read weddingDetails.musicContent.spotifyPlaylistUrl with
+ * its own Spotify-only regex — a THIRD field for the playlist, alongside
+ * music.playlists[] and the couple-side page's own state. It now reads the one
+ * source of truth, music.playlists[0].playlistUrl, through the shared
+ * parsePlaylistLink, so Spotify, Apple Music and YouTube all embed and the
+ * builder preview cannot disagree with what is stored.
+ *
+ * The request FORM still lives on the dedicated /w/:slug/music route
+ * (GuestMusic — Turnstile-protected, feature-complete). This page links to it
+ * rather than duplicating it; see the PR notes for why collapsing the two into
+ * one component is deferred rather than done here.
+ */
 export default function WeddingMusicPage({ weddingDetails, theme, typography, universeConfig }) {
   const content = weddingDetails.musicContent || {};
-
-  const extractSpotifyEmbedId = (url) => {
-    const match = url?.match(/spotify\.com\/playlist\/([a-zA-Z0-9]+)/);
-    return match ? match[1] : null;
-  };
-
-  const spotifyId = extractSpotifyEmbedId(content.spotifyPlaylistUrl);
+  const music = weddingDetails.music || {};
+  const playlistUrl = (music.playlists || [])[0]?.playlistUrl || '';
+  const parsed = parsePlaylistLink(playlistUrl);
+  const requestsEnabled = music.guestRequestsEnabled !== false;
+  const requestHref = weddingDetails.slug ? `/w/${weddingDetails.slug}/music` : null;
 
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
@@ -44,13 +58,14 @@ export default function WeddingMusicPage({ weddingDetails, theme, typography, un
           </SectionReveal>
         )}
 
-        {spotifyId && (
+        {parsed && (
           <SectionReveal
             universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
             style={{ marginBottom: '40px' }}
           >
             <iframe
-              src={`https://open.spotify.com/embed/playlist/${spotifyId}?utm_source=generator`}
+              title="Wedding playlist"
+              src={parsed.embed_url}
               width="100%"
               height="380"
               frameBorder="0"
@@ -62,7 +77,7 @@ export default function WeddingMusicPage({ weddingDetails, theme, typography, un
           </SectionReveal>
         )}
 
-        {content.enableGuestRequests && (
+        {requestsEnabled && requestHref && (
           <SectionReveal
             universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
             style={{
@@ -78,7 +93,10 @@ export default function WeddingMusicPage({ weddingDetails, theme, typography, un
               fontSize: '1rem',
               lineHeight: 1.8
             }}>
-              Want to suggest a song? <strong>Add it to our playlist during RSVP!</strong>
+              Want to hear something on the night?{' '}
+              <a href={requestHref} style={{ color: 'inherit', fontWeight: 700 }}>
+                Request a song
+              </a>
             </p>
           </SectionReveal>
         )}

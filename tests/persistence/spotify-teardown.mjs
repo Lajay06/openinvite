@@ -40,6 +40,10 @@ function sourceFiles() {
   return out;
 }
 
+// Comments are stripped before scanning: several files legitimately explain the
+// teardown in prose, and a prose mention is not a code path.
+const stripCommentsFrom = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+
 export async function runSpotifyTeardown() {
   const results = [];
 
@@ -50,23 +54,25 @@ export async function runSpotifyTeardown() {
       : fail(`Spotify teardown — ${gone} stays deleted`, 'absent', 'file is back'));
   }
 
-  // ── Search survives, and stays app-token only ────────────────────────────
-  results.push(exists('api/spotify-search.js')
-    ? pass('Spotify teardown — spotify-search.js is KEPT (guest song search depends on it)', 'present')
-    : fail('Spotify teardown — spotify-search.js is KEPT (guest song search depends on it)', 'present', 'deleted'));
+  // ── Search is now deleted too (music rebuild, 2026-08-18) ────────────────
+  // This assertion USED to require spotify-search.js to be KEPT, on the
+  // grounds that guest song search depended on it. It did not: measured live,
+  // 2 Music rows existed and NEITHER carried a spotify_track_id, so the search
+  // path had never produced a stored track. The rebuild is playlist-link +
+  // free-text, so the endpoint and both SPOTIFY_* env vars went with it.
+  // Inverted rather than deleted, so the file cannot quietly come back.
+  results.push(!exists('api/spotify-search.js')
+    ? pass('Spotify teardown — spotify-search.js is now DELETED too (music rebuild)', 'absent')
+    : fail('Spotify teardown — spotify-search.js is now DELETED too (music rebuild)', 'absent', 'file is back'));
 
-  const search = read('api/spotify-search.js');
-  const usesAppToken = search.includes('client_credentials');
-  const noUserTokens = !/\brefreshUserToken\b/.test(search) && !/isKnownSpotifyRefreshToken/.test(search);
-  results.push(usesAppToken && noUserTokens
-    ? pass('spotify-search.js — client_credentials only, no user-token or refresh path', 'app token only')
-    : fail('spotify-search.js — client_credentials only, no user-token or refresh path', 'app token only',
-           `client_credentials:${usesAppToken} noUserTokens:${noUserTokens}`));
+  // Nothing may reference the removed credentials either.
+  const envOffenders = sourceFiles().filter((rel) => /SPOTIFY_CLIENT_(ID|SECRET)/.test(stripCommentsFrom(read(rel))));
+  results.push(envOffenders.length === 0
+    ? pass('Spotify teardown — no code reads SPOTIFY_CLIENT_ID/SECRET (both env vars removed)', 'none')
+    : fail('Spotify teardown — no code reads SPOTIFY_CLIENT_ID/SECRET (both env vars removed)', 'none', envOffenders.join(', ')));
 
   // ── Nothing anywhere may read or write the stored connection ─────────────
-  // Comments are stripped first: several files legitimately explain the
-  // teardown in prose, and a prose mention is not a code path.
-  const stripComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const stripComments = stripCommentsFrom;
   const offenders = sourceFiles().filter((rel) => {
     if (rel === 'api/_lib/guestSafeWedding.js') return false; // nested allowlist, defence in depth
     return /spotifyConnection/.test(stripComments(read(rel)));

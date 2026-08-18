@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
-import { ChevronLeft, Music, Loader2 } from 'lucide-react';
+import { ChevronLeft, Music } from 'lucide-react';
 import { interactiveDivProps } from '@/lib/a11y';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 
@@ -79,57 +79,20 @@ export default function GuestMusic() {
   const emailRequired = !!(music?.onlyForConfirmedGuests || music?.limitOnePerGuest);
   const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.trim());
 
-  const search = (q) => {
-    const sq = q.trim();
-    if (sq.length < 2) {
-      setSearchResults([]);
-      setSearchError('');
-      return;
-    }
-    setSearching(true);
-    setSearchError('');
-    fetch('/api/spotify-search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: sq }),
-    })
-      .then(async (res) => {
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Search failed');
-        setSearchResults((data.tracks || []).map(t => ({
-          id: t.id,
-          title: t.name,
-          artist: t.artists,
-          album: t.album,
-          albumArt: t.artwork_url || t.artwork_url_small || '',
-          duration: t.duration_ms || 0,
-          explicit: !!t.explicit,
-          spotifyUrl: t.spotify_url || '',
-        })));
-      })
-      .catch((e) => {
-        setSearchResults([]);
-        setSearchError(e.message || 'Search failed. Please try again.');
-      })
-      .finally(() => setSearching(false));
-  };
+  // Spotify search was removed in the music rebuild (2026-08-18). Guests type
+  // the song themselves — the free-text path below, which was already here as
+  // the "Cannot find your song?" fallback, is now the only path. Requests are
+  // stored with an empty spotifyTrackId, exactly as that fallback always did,
+  // so api/song-request-submit.js needed no change.
 
-  /** A song the guest typed themselves. Same shape as a search result minus
-   *  everything Spotify would have supplied — no id, so the request is stored
-   *  with an empty spotifyTrackId. */
+  /** The song the guest typed. No id, so the request is stored with an empty
+   *  spotifyTrackId — the shape the manual fallback always produced. */
   const selectManualTrack = () => {
     const title = manualTitle.trim();
     const artist = manualArtist.trim();
     if (!title || !artist) return;
     setSelectedTrack({ id: null, title, artist, album: '', albumArt: '', duration: 0, explicit: false, spotifyUrl: '' });
     setManualOpen(false);
-  };
-
-  const handleSearchChange = (e) => {
-    const val = e.target.value;
-    setSearchQuery(val);
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => search(val), 300);
   };
 
   const submitRequest = async () => {
@@ -223,41 +186,13 @@ export default function GuestMusic() {
         </div>
       ) : (
         <div style={{ padding: '0 24px' }}>
-          {/* Search */}
-          <div style={{ position: 'relative', marginBottom: 16 }}>
-            {searching
-              ? <Loader2 size={16} className="animate-spin" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
-              : <svg style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            }
-            <input
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Search for a song…"
-              style={{ width: '100%', padding: '16px 16px 16px 44px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#FFFFFF', fontSize: 16, outline: 'none', boxSizing: 'border-box' }}
-            />
-          </div>
-
-          {searchError && (
-            <p style={{ fontSize: 13, color: '#E03553', marginBottom: 16 }}>{searchError}</p>
-          )}
-          {!searching && !searchError && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '16px 0' }}>No results. Try a different search.</p>
-          )}
-
-          {/* Manual entry. Always reachable, because search failing must never
-              be the same thing as "you cannot request a song". */}
-          {!selectedTrack && !manualOpen && (
-            <button
-              onClick={() => { setManualOpen(true); setManualTitle(searchQuery.trim()); }}
-              style={{ background: 'none', border: 'none', padding: '4px 0', marginBottom: 16, color: 'rgba(255,255,255,0.6)', fontSize: 13, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit' }}
-            >
-              Cannot find your song? Type it in yourself
-            </button>
-          )}
-
-          {!selectedTrack && manualOpen && (
+          {/* Free text is the only path now (music rebuild, 2026-08-18). It was
+              always here as the "Cannot find your song?" fallback; search sat
+              in front of it and had never produced a stored track. The fallback
+              is now simply the form, always open, with no toggle to discover. */}
+          {!selectedTrack && (
             <div style={{ padding: 16, marginBottom: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', margin: '0 0 12px' }}>Add a song yourself</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', margin: '0 0 12px' }}>Your song</p>
               <input
                 value={manualTitle}
                 onChange={e => setManualTitle(e.target.value)}
