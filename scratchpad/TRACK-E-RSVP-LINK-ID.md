@@ -388,3 +388,52 @@ only leg 1 is how a gate that refuses everyone passes as a gate that works.
   demanding case and the last row to migrate. This ledger records *that* it is
   held; the value appears in no commit, no PR, no report.
 - E3-1 / E3-2 / E3-3 implemented per §8; E3-4 runs as a probe leg after merge.
+
+
+---
+
+## 10. E3 CLOSED — obligations ledger empty, probe passed
+
+Nulling executed 2026-08-18 against production, `--expect-rows=202`, exit 0.
+The verify-before-destroy precondition passed on **202/202** rows before a
+single value was destroyed.
+
+```
+PRECONDITION — recovery verified immediately before destruction
+  rows whose hash + ciphertext both check out : 202/202
+WRITE  nulled 202/202
+VERIFY (independent re-read)
+  rows still holding plaintext      : 0    OK
+  rows with ciphertext but no hash  : 0    OK
+  rows still recoverable via decrypt: 202  OK
+```
+
+### Obligations — all four closed
+
+| # | obligation | status |
+|---|---|---|
+| E3-1 | `rsvp-link-request` decrypts at both read sites | **CLOSED** — proven by production log `Sent RSVP link for wedding john-suzanne`, a line reachable only after a successful decrypt |
+| E3-2 | `resolveGuestByToken` hash-only | **CLOSED** — 0 plaintext lookups remain; the held pre-migration token resolves 200 |
+| E3-3 | preview surfaces unchanged | **CLOSED** — deliberately untouched; every render now takes the `preview-token` branch, the intended end state |
+| E3-4 | GamesManager probe leg | **CLOSED** — throwaway game created, `Copy links` returned 200 and its token resolved, game deleted |
+
+**The ledger is empty.**
+
+### The probe, all five legs, plaintext gone
+
+| leg | result |
+|---|---|
+| 1. attacker view | 206 rows listable; **0 expose a plaintext token**. A harvested hash presented as a token → **404**. Harvested ciphertext → **404**. |
+| 2. couple copy-links | real button → 200; returned token resolves 200. With plaintext null, `decryptToken` is provably the only source. |
+| 3. continuity | the 27-char token held **before** the migration still resolves **200** |
+| 4. game links | created, resolved, deleted — zero residue |
+| 5. email-me-my-link | end-to-end with real Turnstile; production log confirms the send |
+
+Leg 3 is the one that mattered: a link that was already in a guest's inbox
+before any of this began still works.
+
+### Residue
+
+None. The throwaway game was deleted (Questionnaire rows owned: 0 probe games
+remaining). The pre-E3 probe token remains held in the gitignored `.env.local`
+and can be discarded now that continuity is proven.
