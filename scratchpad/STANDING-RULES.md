@@ -425,3 +425,24 @@ Two failures compounded:
 The second half matters more than the first. A local runner that covers
 everything still lets a red check through if the merge gate only looks for
 absence of PENDING.
+
+### Amendments, ratified 2026-08-18
+
+**13a. Every merge-authorization line is conditional on `npm run pr:green`
+passing against that PR at merge time.** This was always presupposed; it is now
+explicit and applies to every future line without the advisor restating it.
+
+> A line plus a red check is not authorization to merge. It is authorization to
+> fix the check and then merge.
+
+**13b. "CI green" in a report means the full verify run.** Reports state the
+verify step count (13/13), not `test:ci`'s own total. Past reports' 8xx/8xx
+figures stand as what they were — one step's total, not the suite's.
+
+**13c. A gate is verified against BOTH outcomes before it is trusted.** The
+first `pr:green` shipped broken: its jq interpolation was eaten by escaping and
+it reported STILL RUNNING forever. It failed closed, so it could never wrongly
+call a PR green — but a gate that can never say green is not a gate, and the
+defect was only visible by watching it spin. It is now proven against #481
+(FAILURE -> exit 1) and #480 (all SUCCESS -> exit 0). Verifying a guard only on
+the passing case leaves the half that matters untested.

@@ -20,12 +20,16 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runSchemaDropScan, SCHEMAS } from './lib/schemaDropScan.mjs';
+import { runSchemaDropScan, SCHEMAS, SCHEMALESS_ENTITIES } from './lib/schemaDropScan.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const SRC   = resolve(__dir, '..', 'src');
 
 function isRegistered(entity, fieldPath) {
+  // User persists arbitrary fields regardless of declaration (see
+  // SCHEMALESS_ENTITIES). Reporting its undeclared fields as data loss
+  // produced four false "LIVE BUG" findings for months.
+  if (SCHEMALESS_ENTITIES.includes(entity)) return true;
   const schema = SCHEMAS[entity];
   if (!schema) return null;
   const parts = fieldPath.split('.');

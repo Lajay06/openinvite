@@ -13,12 +13,23 @@
  * `/apps/:id/schema`, and `/apps/:id/entities/:entity/meta` all 404 against
  * the live REST API, and the `@base44/sdk` client exposes no runtime
  * schema-fetch method (only build-time codegen via the CLI's "Dynamic
- * Types" feature). The schema data below is therefore an EMBEDDED SNAPSHOT,
- * refreshed via the `mcp__claude_ai_Base44__list_entity_schemas` tool
- * whenever a real schema change is made — not a live fetch. Re-run
- * `npm run audit:schema` and update SCHEMAS below after every
- * `update_entity_schema` call, or this scanner will silently under- or
- * over-report drift against its own stale memory.
+ * Types" feature).
+ *
+ * SCHEMAS ARE NOW DERIVED FROM base44/entities/*.jsonc AT RUNTIME (2026-08-18),
+ * replacing a hand-maintained snapshot embedded in this file.
+ *
+ * The snapshot approach failed exactly as its own comment warned it would:
+ * it was last refreshed 2026-07, and by 2026-08 the Guest entry was missing
+ * all five fields added since — encrypted_guest_pii and the four Track E
+ * token columns. A scanner comparing code against its own stale memory
+ * under-reports drift silently, and nothing tells you the memory is stale.
+ *
+ * The mirror is a better source for one structural reason: RULE 12 requires
+ * it to be synced from the live schema in the same PR as any declaration
+ * change, so it is version-controlled, reviewable in a diff, and already
+ * maintained. It covers all 33 entities this scanner knows about (48 files
+ * in total). An embedded copy has none of those properties and one extra
+ * failure mode.
  */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -28,329 +39,73 @@ import { fileURLToPath } from 'node:url';
 const __dir = dirname(fileURLToPath(import.meta.url));
 const SRC   = resolve(__dir, '..', '..', 'src');
 
-// ── Embedded schemas (from mcp__claude_ai_Base44__list_entity_schemas, refreshed 2026-07) ──
+// ── Schemas, derived from the checked-in mirror ─────────────────────────────
 
-export const SCHEMAS = {
-  WeddingDetails: {
-    // Top-level registered fields (scalars + arrays)
-    couple1Name:1, couple2Name:1, coupleNames:1, weddingDate:1, guestCount:1, guestType:1,
-    weddingStyle:1, importantFeatures:1, honeymoonDestination:1, honeymoonDeparture:1,
-    honeymoonNotes:1, ceremonyMusic:1, ceremonyReadings:1, floristNotes:1, cateringNotes:1,
-    photographyNotes:1, videographyNotes:1, hairMakeupNotes:1, transportNotes:1,
-    accommodationNotes:1, preWeddingEvents:1, postWeddingEvents:1, qna:1, slug:1,
-    websiteEnabled:1, websitePassword:1, websiteTheme:1, heroVideoUrl:1, heroVideoFile:1,
-    coverPhoto:1, websiteAccentColor:1, welcomeMessage:1, coupleStory:1, activeTheme:1,
-    activeTypography:1, websiteMode:1, pageTransition:1, scrollAnimation:1, heroEffect:1,
-    enabledPages:1, activeUniverse:1, menuItems:1, welcomeSignageText:1, thankYouMessage:1,
-    homeContent:1, ourStoryContent:1, celebrationContent:1, rsvpContent:1, travelContent:1,
-    registryContent:1, musicContent:1, photosContent:1, pageSections:1, customPages:1,
-    polls:1, dayVendorContacts:1,
-    // Registered 2026-06-03 (previously silently dropped — planning page fields)
-    foodAndBeverage:1, photography:1, attire:1, flowers:1, decorations:1, beauty:1, entertainmentDetails:1,
-    // Registered 2026-07 (AUDIT_2026-07.md schema-drift re-verification —
-    // reverted at some point after an earlier fix, restored again; see
-    // BASE44_PLATFORM_NOTES.md's "Schema drift" section for the recurring
-    // pattern this is an instance of)
-    assetContent:1, onboardingDraft:1, onboardingStepIndex:1,
-    // Registered top-level OBJECT keys (also have sub-field definitions in _nested)
-    mainCeremony:1, reception:1, theme:1, celebrant:1, license:1, rehearsal:1,
-    welcomeDinner:1, dayAfterBrunch:1, contactPerson:1, experienceGuide:1,
-    accommodation:1, music:1, transport:1, guestSuiteAccommodation:1, guestSuiteTransport:1,
-    weddingPolicies:1, emergencyContacts:1,
-    // Registered round 7 (asks #15/#16 — background music + who's-coming toggles)
-    guestExperienceSettings:1,
-    // Registered — dashboard round: Budget page's "Save plan" overall
-    // target + per-category allocation, was localStorage-only before, never
-    // in the schema at all.
-    budget:1,
-    // Registered — Ava Studio experience overhaul: server-side one-time
-    // milestone-celebration guards (publish/all-done confetti fires once
-    // per wedding, not once per browser).
-    avaStudioMilestones:1,
-    // Nested objects with registered sub-fields
-    _nested: {
-      mainCeremony: ['venueName','address','placeId','mapsUrl','photoUrl','phone','website',
-        'rating','startTime','endTime','dressCode','parkingInfo','accessibilityNotes','notes'],
-      reception: ['venueName','address','placeId','mapsUrl','photoUrl','phone','website',
-        'rating','startTime','endTime','dressCode','parkingInfo','accessibilityNotes','notes'],
-      theme: ['aesthetic','faith','faithSecondary','culture','cultureOther','atmosphere',
-        'season','setting','vibes','is_religious','religious_details','is_cultural','cultural_details'],
-      celebrant: ['name','title','phone','email','type','notes'],
-      license: ['issuingOffice','applicationDate','issueDate','expiryDate','licenseNumber',
-        'witnessesRequired','notes'],
-      rehearsal: ['date','time','venue','address','attendees','notes'],
-      welcomeDinner: ['date','venue','notes'],
-      dayAfterBrunch: ['date','venue','notes'],
-      contactPerson: ['name','phone'],
-      experienceGuide: ['published','destination','heroPhotoUrl','heroVideoUrl','editorialIntro',
-        'vibes','coupleNotes','couplePicks','customGems','pinnedViator','categories','itinerary'],
-      accommodation: ['partnerRecommendationsEnabled','coupleNote','checkInDate','checkOutDate',
-        'suggestedAreas','manualProperties','hiddenProperties','pinnedProperties'],
-      music: ['spotifyConnected','spotifyUserId','guestRequestsEnabled','requestsRequireApproval',
-        'requestsClosedDate','limitOnePerGuest','onlyForConfirmedGuests','requestMessage','playlists'],
-      transport: ['coupleNote','recommendedMode','enabledModes','parking','publicTransport',
-        'walking','rideshare','carHire','shuttles','freeTextNotes','aiAnalysis'],
-      guestSuiteAccommodation: ['places'],
-      guestSuiteTransport: ['places','notes'],
-      weddingPolicies: ['photography','socialMedia','children','dietary','gifts','dressCode',
-        'lateArrival','other'],
-      emergencyContacts: ['primary','backup','venue','otherNotes'],
-      guestExperienceSettings: ['backgroundMusic','showAttending','showCircle'],
-      budget: ['total','categories'],
-      avaStudioMilestones: ['publishCelebrated','allDoneCelebrated'],
-    },
-  },
+/**
+ * Entities whose schema declaration does NOT constrain what persists.
+ *
+ * The built-in `User` entity accepts arbitrary custom fields regardless of
+ * declaration — confirmed empirically 2026-07 by writing
+ * `__persistence_probe_undeclared_field__` and reading it back through a
+ * separate GET. Every custom entity silently drops undeclared fields; User
+ * does not.
+ *
+ * Without this, the scanner reports every undeclared User field as
+ * "LIVE BUG (written+read, data loss)". It was doing exactly that for four
+ * fields — notification_prefs, plan_step_completed, trialStartedAt,
+ * tipsModalShown — all false positives, and all contradicted by a note in
+ * BASE44_PLATFORM_NOTES.md that already said a User DROPPED finding is
+ * "likely a false positive by the nature of this entity". A scanner whose
+ * loudest findings are known-wrong is a scanner people stop reading.
+ */
+export const SCHEMALESS_ENTITIES = ['User'];
 
-  Guest: {
-    name:1, email:1, phone:1, profile_picture_url:1, category:1, tags:1, table_assignment:1,
-    dietary_restrictions:1, rsvp_status:1, rsvp_date:1, meal_choice:1, plus_one:1,
-    plus_one_name:1, plus_one_email:1, plus_one_rsvp:1, plus_one_meal_choice:1,
-    plus_one_dietary_restrictions:1, special_requests:1, invitation_sent:1, rsvp_link_id:1,
-    seating_preferences:1, seating_avoid:1, notes:1, interests:1,
-    // Registered 2026-06-03 (previously silently dropped — Guest RSVP fields)
-    song_request:1, rsvp_note:1, poll_votes:1,
-    // Registered 2026-06-03 (previously silently dropped — invite-tracking fields)
-    invite_sent_at:1, invite_channel:1, reminder_sent_at:1,
-    // Registered via feat/plus-one-identity (mcp update_entity_schema)
-    plus_one_rsvp_link_id:1,
-    // Present in the live schema (confirmed via list_entity_schemas 2026-07)
-    // but missing from this embedded snapshot until now — was producing a
-    // false-positive DROPPED finding for Guests.jsx:269.
-    event_responses:1, is_test:1,
-    // Registered 2026-08 (PR B3, guest contact collector) — declared on the
-    // live Guest entity and in base44/entities/Guest.jsonc at the same time,
-    // but missed in this separate embedded snapshot.
-    mailing_address:1,
-    _nested: {},
-  },
+/** Flattens a JSON-Schema `properties` map into the flat shape the scan uses. */
+function flatten(properties) {
+  const flat = {};
+  const nested = {};
+  for (const [name, def] of Object.entries(properties || {})) {
+    flat[name] = 1;
+    // Object-valued fields: record their declared children so a dotted path
+    // like `mainCeremony.dressCode` can be resolved. A field with no declared
+    // children stays absent from `nested`, which the resolver reads as "open"
+    // — the same behaviour the embedded snapshot had.
+    const props = def?.properties || def?.items?.properties;
+    if (props && Object.keys(props).length) nested[name] = Object.keys(props);
+  }
+  return { flat, nested };
+}
 
-  User: {
-    // IMPORTANT, confirmed empirically 2026-07 (schema-drift-guard triage):
-    // Base44's built-in User entity persists ARBITRARY custom fields
-    // regardless of schema declaration — a totally undeclared probe field
-    // written via PUT /entities/User/me round-tripped correctly on a fresh
-    // GET. This is fundamentally different from every custom entity above
-    // (WeddingDetails, Guest, Note, etc.), which silently drop anything not
-    // declared in their schema. Practically: a "DROPPED" finding for User
-    // from this scanner is likely a false positive by the nature of this
-    // entity, not a real bug — treat it with much lower confidence than a
-    // DROPPED finding on a custom entity. tempUnit/deletionRequestedAt were
-    // both wrongly flagged as dropped for exactly this reason before this
-    // list was corrected; onboardingCompleted (camelCase, used everywhere
-    // in the app) and the plan/Stripe fields below are further confirmed-
-    // or-inferred examples of the same thing.
-    language:1, currency:1, onboarding_completed:1, onboardingCompleted:1, onboardingPath:1,
-    tempUnit:1, deletionRequestedAt:1,
-    // Auth-level system fields: always stored by Base44 auth, not governed by entity schema.
-    // These appear in the login response and GET /entities/User/me regardless of schema.
-    // Updating them via updateMe() DOES persist (tested) — treat as registered.
-    full_name:1, email:1, role:1, is_verified:1,
-    // plan fields: written by PaymentSuccess.jsx. planActivatedAt confirmed
-    // persisting via a live round-trip; planName/planTier/stripeCustomerId
-    // not force-tested (didn't want to write test values into billing-
-    // adjacent state on a real account) but are very likely fine given the
-    // arbitrary-field behavior confirmed above — kept in _uncertain out of
-    // caution, not because they're suspected dropped.
-    planActivatedAt:1,
-    _uncertain: ['planName', 'planTier', 'stripeCustomerId'],
-    _nested: {},
-  },
+function loadSchemasFromMirror() {
+  const dir = resolve(__dir, '..', '..', 'base44', 'entities');
+  const out = {};
+  for (const file of readdirSync(dir)) {
+    if (!file.endsWith('.jsonc')) continue;
+    const entity = file.replace(/\.jsonc$/, '');
+    let parsed;
+    try {
+      parsed = JSON.parse(readFileSync(join(dir, file), 'utf8').replace(/^\s*\/\/.*$/gm, ''));
+    } catch {
+      continue;   // an unparseable mirror file is reported by the caller, not swallowed here
+    }
+    const { flat, nested } = flatten(parsed.properties);
+    if (Object.keys(nested).length) flat._nested = nested;
+    out[entity] = flat;
+  }
+  return out;
+}
 
-  Budget: {
-    category:1, item_name:1, budgeted_amount:1, actual_amount:1, vendor:1, paid:1,
-    payment_date:1, notes:1, _nested: {},
-  },
+export const SCHEMAS = loadSchemasFromMirror();
 
-  Schedule: {
-    event_name:1, event_date:1, start_time:1, end_time:1, location:1, description:1,
-    responsible_person:1, category:1, notes:1, _nested: {},
-  },
-
-  Vendor: {
-    name:1, category:1, contact_person:1, phone:1, email:1, website:1, address:1,
-    latitude:1, longitude:1, rating:1, price_range:1, status:1, quoted_price:1,
-    contract_date:1, payment_schedule:1, notes:1, google_place_id:1, google_rating:1,
-    google_reviews_count:1, image_url:1,
-    // Present in the live schema but missing from this embedded snapshot
-    // until now (pre-existing gap, unrelated to the PR3b registration below).
-    is_favourite:1,
-    // Registered PR3b (Photographer -> Vendor consolidation) — every field
-    // Photographer.jsonc had that Vendor didn't, so a photography/
-    // videography vendor loses nothing after the migration.
-    instagram:1, reviews_count:1, starting_price:1, package_selected:1,
-    hours_booked:1, booking_date:1, start_time:1, end_time:1, meeting_date:1,
-    contract_signed:1, deposit_paid:1, deposit_amount:1, style:1, portfolio_url:1,
-    sample_work:1, services_offered:1, equipment:1, backup_equipment:1,
-    second_shooter:1, delivery_timeline:1, image_count:1, video_length:1,
-    editing_style:1, travel_fee:1, cancellation_policy:1, special_requests:1,
-    _nested: {},
-  },
-
-  Note: {
-    title:1, description:1, category:1, priority:1, completed:1, due_date:1,
-    reminder_date:1, is_suggested:1, wedding_timeline:1,
-    // Registered 2026-07 (real drop, not a snapshot omission — TodoList.jsx's
-    // kanban board writes AND reads both; see schema-drift-guard triage)
-    status:1, view_type:1,
-    _nested: {},
-  },
-
-  Task: {
-    title:1, description:1, category:1, priority:1, completed:1, due_date:1,
-    reminder_date:1, is_suggested:1, wedding_timeline:1, _nested: {},
-  },
-
-  Table: {
-    // event_id added PR6 (multi-event seating) — stable id from
-    // src/lib/weddingEvents.js's getWeddingEvents(), backfilled to
-    // RECEPTION_EVENT_ID on every pre-existing row.
-    name:1, capacity:1, shape:1, x:1, y:1, rotation:1, assigned_guests:1, event_id:1, _nested: {},
-  },
-
-  VenueAsset: {
-    // event_id added PR6 — same scoping as Table, same backfill.
-    name:1, type:1, x:1, y:1, width:1, height:1, rotation:1, event_id:1, _nested: {},
-  },
-
-  VowSpeech: {
-    title:1, type:1, author:1, content:1, notes:1, _nested: {},
-  },
-
-  RegistryItem: {
-    store_name:1, url:1, description:1, image_url:1, _nested: {},
-  },
-
-  RegistryProduct: {
-    name:1, description:1, price:1, image_url:1, product_url:1, category:1,
-    registry_platform:1, external_id:1, quantity_requested:1, quantity_purchased:1,
-    purchased_by:1, priority:1, notes:1, _nested: {},
-  },
-
-  CustomGift: {
-    title:1, description:1, category:1, requested_amount:1, image_url:1, _nested: {},
-  },
-
-  ReceivedGift: {
-    item_name:1, giver_guest_id:1, giver_name:1, giver_email:1, delivery_status:1,
-    received_date:1, thank_you_sent:1, thank_you_date:1, thank_you_note:1,
-    estimated_value:1, category:1, notes:1, _nested: {},
-  },
-
-  VendorLog: {
-    vendor_id:1, type:1, subject:1, body:1, document_url:1, document_name:1,
-    document_type:1, logged_at:1, _nested: {},
-  },
-
-  VendorTask: {
-    vendor_id:1, title:1, due_date:1, completed:1, priority:1, notes:1, _nested: {},
-  },
-
-  Collaborator: {
-    name:1, email:1, permissions:1, _nested: {},
-  },
-
-  Music: {
-    song_title:1, artist:1, spotify_track_id:1, album:1, duration:1, preview_url:1,
-    image_url:1, category:1, added_by:1, guest_suggestion:1, approved:1, notes:1,
-    // Present in the live schema (confirmed via list_entity_schemas 2026-07)
-    // but missing from this embedded snapshot until now — was producing a
-    // false-positive DROPPED finding for Music.jsx:162. Not a real drift
-    // incident, unlike Note.status/view_type below.
-    source:1, embed_url:1,
-    _nested: {},
-  },
-
-  GuestMessage: {
-    guest_name:1, guest_email:1, guest_id:1, guest_phone:1, message:1, reply:1,
-    replied:1, read:1, channel:1, whatsapp_contacted:1, whatsapp_contact_date:1,
-    // Registered PR4b — the reply-delivery timestamp (api/send-guest-reply.js).
-    reply_sent_at:1,
-    _nested: {},
-  },
-
-  SongRequest: {
-    weddingId:1, spotifyTrackId:1, title:1, artist:1, album:1, albumArt:1, duration:1,
-    explicit:1, spotifyUrl:1, submittedBy:1,
-    // guestEmail → guestEmailHash (fix/song-request-email-hash) — plaintext
-    // guest email replaced by an HMAC dedup hash, same pattern as
-    // RsvpResponse's guest_id_hash.
-    guestEmailHash:1, guestNote:1, status:1,
-    playlist:1, aiTags:1, mustPlay:1, doNotPlay:1, _nested: {},
-  },
-
-  StoryMilestone: {
-    title:1, date:1, story:1, image_url:1, order:1, _nested: {},
-  },
-
-  Photo: {
-    title:1, image_url:1, category:1, description:1, photographer_credit:1,
-    date_taken:1, order:1, visible_to_guests:1, _nested: {},
-  },
-
-  LiveStream: {
-    title:1, stream_url:1, stream_type:1, embed_code:1, scheduled_start:1,
-    is_live:1, chat_enabled:1, password:1, _nested: {},
-  },
-
-  StreamChat: {
-    stream_id:1, guest_name:1, message:1, is_visible:1, _nested: {},
-  },
-
-  WebsiteTheme: {
-    primary_color:1, secondary_color:1, background_color:1, text_color:1,
-    accent_color:1, font_family:1, heading_font:1, hero_image_url:1, _nested: {},
-  },
-
-  CustomEventPage: {
-    title:1, slug:1, event_type:1, date:1, venue_name:1, venue_address:1,
-    description:1, dress_code:1, rsvp_required:1, visible_to_guests:1, order:1,
-    _nested: {},
-  },
-
-  MoodboardItem: {
-    title:1, image_url:1, source_url:1, category:1, tags:1, notes:1,
-    board_name:1, position_x:1, position_y:1, pinterest_id:1, _nested: {},
-  },
-
-  Invitation: {
-    couple_names:1, wedding_date:1, rsvp_deadline:1, custom_message:1,
-    personalized_messages:1, design:1, enabled_sections:1, _nested: {},
-  },
-
-  ThemeDetails: {
-    vibes:1, is_religious:1, religious_details:1, is_cultural:1, cultural_details:1,
-    season:1, setting:1, _nested: {},
-  },
-
-  Notification: {
-    recipient_user_id:1, type:1, title:1, body:1, link:1, read:1, is_test:1,
-    _nested: {},
-  },
-
-  // Added PR6 completeness pass (schema-drift-guard audit) — Hotel was
-  // completely invisible to this scanner before: its writes use the
-  // `const Hotel = base44.entities.Hotel;` then bare `Hotel.create(...)`
-  // form, which only ENTITY_PATTERNS' fixed-name regex catches, and
-  // "Hotel" wasn't in that list. Confirmed 2026-07 against Hotel.jsonc.
-  Hotel: {
-    name:1, address:1, phone:1, website:1, rating:1, priceRange:1, distance:1,
-    description:1, amenities:1, whyGood:1, imageUrl:1, reviewCount:1, isRecommended:1,
-    _nested: {},
-  },
-
-  // Added PR6 completeness pass — Questionnaire writes (GamesManager.jsx)
-  // were already caught by the generic base44.entities.X pattern, but had
-  // no schema entry, so every field showed as "entity schema unknown"
-  // instead of a real pass/fail. Confirmed 2026-07 against Questionnaire.jsonc.
-  Questionnaire: {
-    title:1, intro:1, questions:1, recipient_mode:1, recipient_tags:1,
-    recipient_guest_ids:1, is_active:1, is_test:1, _nested: {},
-  },
-};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function isRegistered(entity, fieldPath) {
+  // The built-in User entity persists arbitrary fields regardless of what its
+  // schema declares (BASE44_PLATFORM_NOTES.md), so a DROPPED verdict against it
+  // is always a false positive. Short-circuit before the schema lookup — its
+  // mirror file is a partial stub and would otherwise fail every field.
+  if (SCHEMALESS_ENTITIES.includes(entity)) return true;
   const schema = SCHEMAS[entity];
   if (!schema) return null; // unknown entity
   const parts = fieldPath.split('.');
