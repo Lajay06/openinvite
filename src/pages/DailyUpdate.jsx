@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { loadDashboardSources, formatSourceList } from '@/lib/dashboardSources';
+import NextUp from '@/components/dashboard/NextUp';
+import { getJourneyProgress } from '@/lib/setupJourney';
 import { tallyAttendees, isAttending } from '@/lib/guestRsvpTally';
 import { resolveAttendees } from '@/lib/attendees';
 import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
@@ -153,6 +156,7 @@ function numeralizeBriefing(value) {
 let tipsModalClaimedThisPageLoad = false;
 
 export default function DailyUpdate() {
+  const navigate = useNavigate();
   const [phase, setPhase] = useState('loading');
   // Which of the six data sources failed to load, by name. The page used to
   // swallow every failure with .catch(() => []), so a total backend outage and
@@ -160,6 +164,9 @@ export default function DailyUpdate() {
   // here yet" on the page couples land on first. Empty is a claim about the
   // couple's wedding; it must only be made when the data actually arrived.
   const [failedSources, setFailedSources] = useState([]);
+  // Journey for the orientation layer. null means "we could not read the
+  // wedding record", which renders NO block — never a nag built on nothing.
+  const [journey, setJourney] = useState(null);
   const [briefing, setBriefing] = useState(null);
   const [daysUntil, setDaysUntil] = useState(null);
   const [coupleName, setCoupleName] = useState('');
@@ -253,6 +260,24 @@ export default function DailyUpdate() {
     const vendors = data.vendors || [];
     const todos = data.tasks || [];
     const weddingRows = data['wedding details'] || [];
+
+    // Orientation layer. Computed ONLY when the wedding record actually
+    // arrived: journey completeness derives entirely from it, so without it
+    // every step reads incomplete and the couple would be nagged about work
+    // they have already done. `data['wedding details']` comes from
+    // getMyWeddingDetails() — the server-DECRYPTING reader — which is what
+    // makes the budget step evaluate against {total} rather than ciphertext.
+    if (failed.includes('wedding details') || !weddingRows[0]) {
+      setJourney(null);
+    } else {
+      let plan = 'free';
+      try { plan = JSON.parse(localStorage.getItem('oi_user') || '{}')?.plan || 'free'; } catch { /* default free */ }
+      setJourney(getJourneyProgress(weddingRows[0], {
+        guestCount: guests.length,
+        vendorCount: vendors.length,
+        scheduleCount: (data.schedule || []).length,
+      }, { plan }));
+    }
 
     const wd = weddingRows[0] || {};
     const couple = wd.coupleNames
@@ -506,6 +531,19 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
           </>
         )}
       </div>
+
+      {/* Orientation layer, variant A — the lead block, between the headline
+          and the editorial grid. Rendered only in the 'ready' phase and only
+          when a journey exists: on error, or when the wedding record failed
+          to load, there is no block at all rather than advice computed from
+          nothing. */}
+      {phase === 'ready' && journey && (
+        <NextUp
+          journey={journey}
+          daysUntil={daysUntil}
+          onGo={(step) => navigate(step.route)}
+        />
+      )}
 
       {/* Some sources loaded and some did not. The briefing below is built from
           partial data, so the numbers in it are not a complete picture — say
