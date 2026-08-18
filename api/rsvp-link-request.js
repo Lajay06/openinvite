@@ -40,6 +40,8 @@ const SUPPORT_ADDRESS = 'hello@openinvite.com.au';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
+import { decryptToken } from './_lib/rsvpTokenCrypto.js';
+
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
 
 const KNOWN_ORIGINS = new Set([
@@ -154,16 +156,31 @@ export default async function handler(req, res) {
     }
 
     const allGuests = await fetchAll('Guest');
+    // TWO reads of the token here, not one — the filter as well as the URL.
+    // Track E3 nulls the plaintext column, so both must come from the
+    // ciphertext. The filter is the easy one to miss: left on rsvp_link_id it
+    // would silently match no guest at all, and this endpoint's deliberately
+    // neutral response would report "sent" for every request forever.
     const guest = allGuests.find(g =>
       g.created_by_id === wedding.created_by_id &&
       typeof g.email === 'string' &&
       g.email.toLowerCase() === email &&
-      g.rsvp_link_id
+      g.rsvp_link_id_enc
     );
 
     if (guest) {
       const baseUrl = resolveBaseUrl(req.headers.origin);
-      const rsvpUrl = `${baseUrl}/rsvp/${guest.rsvp_link_id}`;
+      // Server-side decrypt: this endpoint already holds RSVP_TOKEN_KEY, so no
+      // hop through api/my-guest-links.js is needed.
+      const rsvpToken = decryptToken(guest.rsvp_link_id_enc);
+      if (!rsvpToken) {
+        // A row whose ciphertext will not decrypt has lost its token — there is
+        // no other copy after E3. Log loudly and fall through to the neutral
+        // response rather than emailing a broken link.
+        console.error(`[rsvp-link-request] rsvp_link_id_enc failed to decrypt for guest ${guest.id} — cannot send a link.`);
+        return res.status(200).json(NEUTRAL);
+      }
+      const rsvpUrl = `${baseUrl}/rsvp/${rsvpToken}`;
       const coupleName = wedding.coupleNames
         || [wedding.couple1Name, wedding.couple2Name].filter(Boolean).join(' & ');
 
