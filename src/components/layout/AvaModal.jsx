@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Sparkles, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { InvokeLLM } from '@/integrations/Core';
+import { validateAvaAction } from '@/lib/avaActionValidation';
 import { base44 } from '@/api/base44Client';
 import { buildWeddingContext } from '@/lib/avaContext';
 import toast from 'react-hot-toast';
@@ -13,12 +14,28 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const ACTION_INSTRUCTIONS = `You can perform actions in the app. When the user asks you to do something, include an ACTION block AND explain what you are about to do first. Use this exact format (one action per line):
 
 ACTION:{"type":"create_guest","data":{"name":"John Smith","email":"john@example.com","rsvp_status":"pending"}}
-ACTION:{"type":"create_budget_item","data":{"category":"Catering","total_amount":8000}}
+ACTION:{"type":"create_budget_item","data":{"category":"catering","item_name":"Wedding breakfast","budgeted_amount":8000}}
 ACTION:{"type":"create_vendor","data":{"name":"Golden Hour Photography","category":"photography","status":"researching"}}
-ACTION:{"type":"create_schedule","data":{"title":"Wedding ceremony","time":"15:00"}}
+ACTION:{"type":"create_schedule","data":{"event_name":"Wedding ceremony","event_date":"2027-06-12","start_time":"15:00"}}
 ACTION:{"type":"navigate","data":{"path":"/Guests"}}
-ACTION:{"type":"update_guest","data":{"id":"GUEST_ID","rsvp_status":"confirmed"}}
+ACTION:{"type":"update_guest","data":{"id":"GUEST_ID","rsvp_status":"attending"}}
 ACTION:{"type":"update_vendor","data":{"id":"VENDOR_ID","status":"booked"}}
+
+Use these field names exactly — they are the only ones that persist. Required:
+create_guest needs name; create_budget_item needs category, item_name and
+budgeted_amount; create_vendor needs name and category; create_schedule needs
+event_name, event_date and start_time.
+
+Allowed values, which must match exactly:
+  rsvp_status      pending | attending | declined | maybe   (never "confirmed")
+  budget category  venue | catering | photography | flowers | music | attire |
+                   transportation | decorations | rings | stationery | beauty |
+                   honeymoon | miscellaneous
+  vendor category  venue | catering | photography | videography | flowers |
+                   music | bakery | transportation | beauty | attire |
+                   planning | decorations | entertainment | other
+  vendor status    researching | contacted | meeting_scheduled | quoted |
+                   booked | rejected
 
 Always describe what you will do before the ACTION block. The user must confirm before anything executes.`;
 
@@ -150,13 +167,37 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
         onClose();
         return;
       }
+      // Every write is validated against the schema mirror FIRST. Base44
+      // answers 200 for a write of undeclared fields and discards them, so
+      // without this the toast below reports success over a dropped write.
+      const ACTION_ENTITY = {
+        create_guest: 'Guest', create_budget_item: 'Budget',
+        create_vendor: 'Vendor', create_schedule: 'Schedule',
+        update_guest: 'Guest', update_vendor: 'Vendor',
+      };
+      const entity = ACTION_ENTITY[action.type];
+      if (!entity) {
+        updateAction(msgIndex, actionId, { status: 'error' });
+        toast.error(`Ava tried an action I don't recognize (${action.type}).`);
+        return;
+      }
+      const isUpdate = action.type.startsWith('update_');
+      const { ok, cleaned, error } = validateAvaAction(entity, action.data, { isUpdate });
+      if (!ok) {
+        // RULE 6d: refuse loudly. The old code would have written a row of
+        // nothing but defaults and called it done.
+        updateAction(msgIndex, actionId, { status: 'error' });
+        toast.error(error);
+        return;
+      }
+
       const entityMap = {
-        create_guest:       () => createGuest(action.data),
-        create_budget_item: () => base44.entities.Budget.create(action.data),
-        create_vendor:      () => base44.entities.Vendor.create(action.data),
-        create_schedule:    () => base44.entities.Schedule.create(action.data),
-        update_guest:       () => updateGuest(action.data.id, action.data),
-        update_vendor:      () => base44.entities.Vendor.update(action.data.id, action.data),
+        create_guest:       () => createGuest(cleaned),
+        create_budget_item: () => base44.entities.Budget.create(cleaned),
+        create_vendor:      () => base44.entities.Vendor.create(cleaned),
+        create_schedule:    () => base44.entities.Schedule.create(cleaned),
+        update_guest:       () => updateGuest(action.data.id, cleaned),
+        update_vendor:      () => base44.entities.Vendor.update(action.data.id, cleaned),
       };
       const fn = entityMap[action.type];
       if (fn) await fn();

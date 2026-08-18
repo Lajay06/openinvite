@@ -44,6 +44,11 @@ const OUT_OF_SCOPE_PATTERNS = [
   /^src\/components\/marketing\//,
   /^src\/components\/home\//,
   /^src\/components\/public\//,
+  // *.generated.js is machine-emitted from the Base44 schema mirror, so its
+  // strings are stored ENUM VALUES ("cancelled" on VendorBooking.status), not
+  // copy anyone wrote or a user ever reads. Allowlisting the word instead would
+  // blunt the guard against that spelling in real prose everywhere else.
+  /\.generated\.js$/,
 ];
 
 // Exact inflected forms only — deliberately NOT open-ended prefix+wildcard
