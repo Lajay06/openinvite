@@ -6,7 +6,7 @@ import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, Chevron
 import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/lib/weddingEvents";
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
-import { hasPlusOne, plusOneRsvpStatus } from '@/lib/plusOne';
+import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -306,13 +306,20 @@ function PlusOneCell({ guest, onUpdate, readOnly }) {
     // fallback — see src/lib/plusOne.js for why the flat column is not
     // authoritative (nothing reachable writes it).
     const style = PLUS_ONE_STATUS_STYLES[plusOneRsvpStatus(guest)] || PLUS_ONE_STATUS_STYLES.pending;
+    // Name via plusOneDisplayName(), not raw plus_one_name. Two differences
+    // that both showed up in the table: it trims, so a whitespace-only name
+    // no longer renders an empty line above the pill; and it falls back to
+    // "Plus one", so a guest granted a +1 whose name the couple has not
+    // entered yet shows a labelled row waiting to be filled rather than a
+    // bare status pill with nothing attached to it. hasPlusOne() admits that
+    // record on purpose (see src/lib/plusOne.js) — this makes the cell agree
+    // with the gate that let it in.
+    const displayName = plusOneDisplayName(guest);
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }} title={`${guest.plus_one_name || 'Plus one'} — ${style.label}`}>
-        {guest.plus_one_name && (
-          <span style={{ fontSize: 11, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 100 }}>
-            {guest.plus_one_name}
-          </span>
-        )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }} title={`${displayName} — ${style.label}`}>
+        <span style={{ fontSize: 11, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 100 }}>
+          {displayName}
+        </span>
         <span style={{ ...dietaryPillStyle, background: style.background, color: style.color, alignSelf: 'flex-start' }}>
           {style.label}
         </span>
