@@ -132,13 +132,20 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
   // defaults. Ids are stored, labels are display-only, so renaming a label
   // never orphans a stored value.
   //
-  // LIMITATION worth knowing: Guest.meal_choice is declared with a hardcoded
-  // enum of the six DEFAULT_MEAL_OPTIONS ids. A couple-defined option's id is
-  // `${Date.now()}-${random}` (FoodBeverage.jsx:33) and is NOT in that enum, so
-  // it cannot be stored in this column. Every wedding currently has
-  // mealOptions: [] and therefore uses the defaults, so nothing is affected
-  // today — but widening that enum is a schema change and belongs with the
-  // schema owner before any couple defines a custom menu.
+  // RESOLVED 2026-08-18: Guest.meal_choice and plus_one_meal_choice used to be
+  // declared as a hardcoded enum of the six DEFAULT_MEAL_OPTIONS ids, so a
+  // couple-defined option's id — `${Date.now()}-${random}` from
+  // FoodBeverage.jsx:33 — could not be stored here at all. Both columns are now
+  // free strings, matching event_responses[].meal_choice and
+  // RsvpResponse.meal_choice, which always were. Verified against the live
+  // schema: a custom-shaped id writes and reads back where it was rejected
+  // before.
+  //
+  // The enum is not replaced by a looser check here, deliberately. Validation
+  // is this Select: its options come from THIS wedding's menu, so a couple can
+  // only ever pick a real option — which is a stronger guarantee than a fixed
+  // enum could give, because the schema cannot know one wedding's menu from
+  // another's.
   const mealChoices = mealOptions.length ? mealOptions : DEFAULT_MEAL_OPTIONS;
 
   const noneActive = dietarySelected.length === 0;
