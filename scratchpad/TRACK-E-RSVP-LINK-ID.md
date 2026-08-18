@@ -373,3 +373,18 @@ only leg 1 is how a gate that refuses everyone passes as a gate that works.
 2. #467 (throttle/retry) merged, so completing it is a normal run.
 3. A pre-E3 token captured and held for probe leg 3.
 4. `RSVP_TOKEN_KEY` present in all three Vercel environments — already true.
+
+
+---
+
+## 9. E3 build record
+
+- **Migration complete 2026-08-18: 202/202**, verified by independent re-read —
+  hash correct on 202/202, ciphertext round-trips on 202/202, plus-one row
+  1/1, and the 200 previously-settled rows byte-identical (idempotence proven,
+  not assumed).
+- **Pre-E3 probe token: HELD.** Captured before any nulling, stored only in the
+  gitignored `.env.local`. The 27-character legacy token was chosen — the most
+  demanding case and the last row to migrate. This ledger records *that* it is
+  held; the value appears in no commit, no PR, no report.
+- E3-1 / E3-2 / E3-3 implemented per §8; E3-4 runs as a probe leg after merge.

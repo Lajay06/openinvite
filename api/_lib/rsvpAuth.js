@@ -61,12 +61,8 @@ function unwrapList(payload) {
  */
 export async function resolveGuestByToken(token) {
   // Track E: the token a guest presents is unchanged — only how it is STORED
-  // changed — so a link emailed months ago still resolves. Four lookups in
-  // priority order: primary hash, plus-one hash, then the same two against the
-  // legacy plaintext columns for rows the migration has not reached yet.
-  //
-  // The hash comes first so that migrated rows never touch the plaintext path,
-  // which is what lets E3 delete the fallback without reordering anything.
+  // changed — so a link emailed months ago still resolves. Two lookups:
+  // primary hash, then plus-one hash.
   // Nothing here inspects the token's SHAPE: one live token is a 27-character
   // legacy value rather than a uuid, and a shape check would strand it.
   const byField = async (field, value) => {
@@ -83,13 +79,13 @@ export async function resolveGuestByToken(token) {
     guests = await byField('plus_one_rsvp_link_id_hash', tokenHash);
     if (guests.length > 0) role = 'plus_one';
   }
-  if (guests.length === 0) {
-    guests = await byField('rsvp_link_id', token);           // legacy, pre-migration
-  }
-  if (guests.length === 0) {
-    guests = await byField('plus_one_rsvp_link_id', token);  // legacy, pre-migration
-    if (guests.length > 0) role = 'plus_one';
-  }
+  // The plaintext fallback is GONE as of E3: the columns are null, so those
+  // two lookups could only ever match nothing. Removing them is a deletion
+  // rather than a reordering precisely because E2 put the hash first.
+  //
+  // Deleting this while any row was unmigrated would have permanently orphaned
+  // that guest's link, so it was gated on the migration reaching 202/202 —
+  // which it did, verified by independent re-read, before this line was cut.
 
   if (guests.length === 0) return null;
   const guest = guests[0];
