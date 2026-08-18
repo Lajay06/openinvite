@@ -274,3 +274,102 @@ migration — E2 dual-writes and resolveGuestByToken falls back to them, so
 removing them early would break every unmigrated row. E3 nulls their VALUES;
 undeclaring them is a separate later cleanup, and undeclaring alone does not
 erase stored data (gotcha #5), which is exactly why E3 nulls explicitly.
+
+---
+
+## 8. E3 scoping report — null the plaintext
+
+Drafted 2026-08-18, after E2 shipped and the migration ran to 200/202.
+**Report only. No code, no rows.**
+
+E3 is the step that makes Track E worth doing. Until the plaintext column is
+null, `Guest.read: null` still means anyone with any API token can list every
+row and harvest every outstanding invitation link — the hash and ciphertext
+sitting beside it change nothing while the raw value is still there.
+
+### 8.1 The four ledgered obligations
+
+**E3-1 — `api/rsvp-link-request.js` must decrypt.**
+Today it reads `guest.rsvp_link_id` twice: once as a *filter* (`&& g.rsvp_link_id`,
+to skip guests with no link) and once to *build* the URL. Both break at E3 —
+the filter would match nothing and the URL would end `/rsvp/undefined`. The
+endpoint already holds `RSVP_TOKEN_KEY`, so this is a local change with no
+endpoint hop: filter on `g.rsvp_link_id_enc`, and build from
+`decryptToken(guest.rsvp_link_id_enc)`. **Both sites, not just the obvious
+one** — the filter is the one a reviewer skims past.
+
+**E3-2 — `resolveGuestByToken` drops the plaintext fallback.**
+The resolver already tries hash first, so removing lookups 3 and 4 is a
+deletion, not a reordering. Precondition: **the migration must be complete**.
+Deleting the fallback while two rows are unmigrated permanently orphans those
+two guests' links — which is exactly the state the tree is in right now, and
+precisely why E3 cannot start until the remaining 2 rows are done.
+
+**E3-3 — the preview surfaces change nothing, on purpose.**
+`SendInvitesModal.previewRsvpUrl` and `EmailTemplates.sampleRsvpUrl` already
+fall back to a `preview-token` placeholder for any guest without a token; at E3
+every render takes that branch. That is the intended end state: a sample email
+the couple is merely looking at must never carry a live capability. Recorded so
+nobody later "fixes" it by wiring a real token back in.
+
+**E3-4 — the GamesManager probe leg.**
+The one E1 click-through that could not run, because the fixture has no games.
+At E3: create a throwaway game, confirm `copyLinks` produces working
+`/games/<token>/<gameId>` links **with plaintext nulled** (so the token can only
+have come from `decryptToken`), then delete the game. Residue is a Questionnaire
+row owned by a real user, so it is genuinely deletable — unlike the
+anonymous-write entities.
+
+### 8.2 The nulling approach
+
+A second script, `scripts/null-rsvp-plaintext.mjs`, not a flag on the migration
+script. Different operation, different blast radius, different authorization —
+folding a destructive step into the tool that also does the safe step is how a
+`--execute` gets typed with the wrong intent.
+
+Its own `--expect-rows` guard, computed the gotcha #19 way (single large-limit
+fetch, deduped by id), and one additional precondition the migration script does
+not need:
+
+> **Refuse to null any row that is not fully migrated.** For every target row,
+> assert `rsvp_link_id_hash === hashToken(rsvp_link_id)` **and**
+> `decryptToken(rsvp_link_id_enc) === rsvp_link_id` before writing. If a single
+> row fails, abort the whole run without writing anything.
+
+That check is the difference between a reversible step and an unrecoverable
+one. Once plaintext is gone, a row whose ciphertext does not round-trip has
+lost its token forever — there is no other copy. Verifying the recovery path
+*immediately before* destroying the original is the only moment that check is
+worth anything.
+
+Dry run default, `--execute` + `--expect-rows`, verification by independent
+re-read: plaintext null everywhere, hash and ciphertext present everywhere,
+and a sample decrypt matching what the pre-null snapshot recorded.
+
+### 8.3 The three-way probe — the exit gate
+
+All three legs run **with plaintext nulled**, on production, against the
+fixture. Any one failing reverts E3.
+
+| # | leg | assertion |
+|---|---|---|
+| **1. Attacker sees empty** | list `Guest` as an unrelated authenticated account | `rsvp_link_id` and `plus_one_rsvp_link_id` are null on every row; `_hash`/`_enc` present but useless without the key |
+| **2. Couple still works** | bulk copy-links through the real dashboard | returns working URLs — proving `decryptToken` is the only source, since no plaintext exists |
+| **3. Pre-migration emailed link resolves** | present a token captured **before** the migration | resolves 200 via the hash path |
+| **3b. GamesManager (E3-4)** | throwaway game, copy links | game links carry correct tokens post-null; game deleted |
+
+**Leg 3 is the one that would be easiest to skip and the one that matters
+most.** It is the whole promise of Track E: that changing the storage did not
+invalidate links already sitting in guests' inboxes. I will capture a token
+before E3 runs and hold it specifically for this, rather than reading one
+afterwards — a token read after the fact proves nothing about continuity.
+
+Leg 1 is the security assertion, leg 2 and leg 3 are the admit path. Proving
+only leg 1 is how a gate that refuses everyone passes as a gate that works.
+
+### 8.4 Preconditions before E3 may start
+
+1. The migration is **complete** — 202/202, not 200/202.
+2. #467 (throttle/retry) merged, so completing it is a normal run.
+3. A pre-E3 token captured and held for probe leg 3.
+4. `RSVP_TOKEN_KEY` present in all three Vercel environments — already true.
