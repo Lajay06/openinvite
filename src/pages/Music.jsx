@@ -221,7 +221,7 @@ export default function MusicPage() {
     onSuccess: (_data, { action }) => {
       queryClient.invalidateQueries(['songRequests']);
       if (action === 'add') queryClient.invalidateQueries(['musicTracks']);
-      toast.success(action === 'add' ? 'Added to your list' : 'Request declined');
+      toast.success(action === 'decline' ? 'Request declined' : 'Request approved');
     },
     onError: (err) => toast.error(err.message || 'Something went wrong.'),
   });
@@ -474,8 +474,8 @@ export default function MusicPage() {
                       </div>
                       {!readOnly && (req.status || 'pending') === 'pending' && (
                         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                          <button onClick={() => reviewRequest(req.id, 'approved')} className="btn-primary" style={{ fontSize: 11 }}>Approve</button>
-                          <button onClick={() => reviewRequest(req.id, 'declined')} className="btn-editorial-secondary" style={{ fontSize: 11 }}>Decline</button>
+                          <button onClick={() => reviewRequest(req.id, 'approve')} className="btn-primary" style={{ fontSize: 11 }}>Approve</button>
+                          <button onClick={() => reviewRequest(req.id, 'decline')} className="btn-editorial-secondary" style={{ fontSize: 11 }}>Decline</button>
                         </div>
                       )}
                     </div>

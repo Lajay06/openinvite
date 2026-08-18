@@ -70,5 +70,22 @@ export async function runDailyUpdateLoadStates() {
     ? pass('Music.jsx never uses the songRequests query result unguarded', 'all uses go through (songRequests || [])')
     : fail('Music.jsx uses an unresolved query result directly', 'guarded access only', unguarded.join(', ')));
 
+  // ── Music review: the UI may only send actions the endpoint accepts ─────
+  // The rebuild's Approve/Decline buttons sent 'approved'/'declined'; the
+  // endpoint accepts 'approve' | 'add' | 'decline'. Both buttons were dead on
+  // arrival and returned 400 — the couple could see a request and not act on
+  // it. Neither build, lint nor 800+ assertions cross-check a client string
+  // against a server allowlist, so this pin does.
+  const api = readFileSync(resolve(__dir, '../../api/song-request-review.js'), 'utf8');
+  const allowed = (api.match(/!\[([^\]]*)\]\.includes\(action\)/) || [])[1] || '';
+  const serverActions = [...allowed.matchAll(/'([a-z]+)'/g)].map((m) => m[1]);
+  const uiActions = [...music.matchAll(/reviewRequest\([^,]+,\s*'([a-z]+)'\)/g)].map((m) => m[1]);
+  const unknown = uiActions.filter((a) => !serverActions.includes(a));
+  results.push(serverActions.length > 0 && uiActions.length > 0 && unknown.length === 0
+    ? pass('Music.jsx only sends review actions the endpoint accepts',
+        `ui=[${uiActions.join(', ')}] server=[${serverActions.join(', ')}]`)
+    : fail('Music.jsx sends a review action the endpoint rejects',
+        `one of [${serverActions.join(', ')}]`, `unknown: [${unknown.join(', ')}]`));
+
   return results;
 }
