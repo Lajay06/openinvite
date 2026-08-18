@@ -453,3 +453,30 @@ time it false-positives and then catches nothing.
 un-parked. The stated reason for parking is void, but un-parking a cron that
 emails real couples is a product decision, not a comment fix. The parking
 stands until decided.
+
+## 2026-08-18 — Guest PII migration: three decisions recorded
+
+**1. The three `is_test` rows are migrated.** They are excluded from the read
+endpoint but not from the table, so an attacker listing `Guest` sees them like
+any other row. Leaving them unmigrated would make "migrated" mean two different
+things depending on which query you asked, which is exactly the ambiguity the
+derived discriminator was chosen to avoid. 205 owned rows migrated, not 202.
+
+**2. The anonymous-created row is on the erasure ledger by id.**
+`6a584d473aa3ab1ec180fcdc` — the first demonstrated `Guest` instance of the
+erasure-gap class. Admin-key PUT returns 403, probed directly. It can never
+receive a blob and its plaintext can never be nulled. Added to
+BASE44_PLATFORM_NOTES.md's ledger as instance 5 and to the hosted-functions
+rebuild list.
+
+**3. Track D's exit gate asserts an ENUMERATED exception, not zero and not
+"some".** The assertion is: zero plaintext PII on every row *except* the pinned
+id(s). A gate that expected zero would fail forever on a row nothing can fix; a
+gate that tolerated "some exceptions" would silently accept a second, third,
+tenth unwritable row. Pinning by id means the exception list growing is itself
+a failure.
+
+The distinction matters more than it looks. "No plaintext PII remains" would
+have been a false claim, and the honest version — "none except one unwritable
+harness row" — is only defensible if the exception is enumerated and enforced
+rather than described.

@@ -643,6 +643,7 @@ the row happily. It is still there.
 | 2 | `SongRequest` — `song-request-submit.js` | 231 orphaned | inferred, same shape |
 | 3 | `Guest.update` / `PlanGift.update` collaborator gap | n/a | same root cause, on the hosted-functions list |
 | 4 | `PollComment` — `wedding-poll-comment.js` | 220 orphaned + **3 fixture probe rows** | **demonstrated 2026-08-18 (PR #459)** |
+| 5 | `Guest` — created anonymously | **1 row, id `6a584d473aa3ab1ec180fcdc`** | **demonstrated 2026-08-18 (Guest PII migration)** |
 
 The three probe rows on the `john-suzanne` fixture are
 `[pr459-poll] "PR459 write-gate probe"`,
@@ -653,6 +654,25 @@ through requires a write that actually lands. Both carry a `poll_id` matching
 no existing poll, so nothing renders them. They are recorded here rather than
 quietly left, because an erasure ledger that omits the rows its own
 verification created is not a ledger.
+
+### Instance 5 — the first Guest row nobody can write
+
+`6a584d473aa3ab1ec180fcdc` (`created_by_id: "anonymous"`, `is_test: true`,
+carries a name) is the first demonstrated **Guest** instance of this class.
+`Guest.update` is owner-scoped, so no credential satisfies it: an admin-key PUT
+returns **403**, probed directly 2026-08-18.
+
+The consequence is specific and permanent. This row **cannot receive an
+`encrypted_guest_pii` blob and its plaintext can never be nulled**, so its PII
+stays readable to any authenticated account for as long as `Guest.read` is
+`null`. The Guest PII migration skipped it as unwritable rather than silently
+omitting it, and Track D's exit gate pins it by id — the assertion is "zero
+plaintext PII except this enumerated row", never a loose "some exceptions", so
+the gate fails if the exception list ever grows.
+
+It joins the hosted-functions rebuild list: `asServiceRole` from inside a
+Base44 hosted function is the only thing that will ever make it writable or
+erasable.
 
 Every other probe in that verification was designed to write nothing — the
 security assertion refuses before any write, and the allowed-path probes used
