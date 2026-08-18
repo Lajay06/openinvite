@@ -20,7 +20,7 @@
  *   wedding, is_test excluded. All statuses; the dashboard groups/filters
  *   client-side same as it already did.
  *
- * POST body: { songRequestId: string, action: 'add' | 'decline' }
+ * POST body: { songRequestId: string, action: 'approve' | 'add' | 'decline' }
  *   'add'     — valid from status pending or approved. Creates a real
  *               Music entry (via the CALLER's own token, so Base44 stamps
  *               ownership correctly — Music.create is open RLS, exactly
@@ -126,7 +126,7 @@ async function handlePost(req, res, caller, callerToken) {
   const songRequestId = typeof req.body?.songRequestId === 'string' ? req.body.songRequestId : '';
   const action = req.body?.action;
 
-  if (!songRequestId || !['add', 'decline'].includes(action)) {
+  if (!songRequestId || !['approve', 'add', 'decline'].includes(action)) {
     return res.status(400).json({ error: 'songRequestId and a valid action are required' });
   }
 
@@ -142,6 +142,15 @@ async function handlePost(req, res, caller, callerToken) {
   }
   if (!['pending', 'approved'].includes(request.status)) {
     return res.status(400).json({ error: `This request is already ${request.status}.` });
+  }
+
+  // 'approve' — say yes without bridging into a track list. The music rebuild
+  // (2026-08-18) removed per-track curation, so there is no Music list left to
+  // add to; approving now means only "we will play this". 'add' is kept for the
+  // Ava/Music-entity path and for any older surface that still bridges.
+  if (action === 'approve') {
+    await callerFetch('PUT', `/apps/${BASE44_APP_ID}/entities/SongRequest/${songRequestId}`, callerToken, { status: 'approved' });
+    return res.status(200).json({ ok: true });
   }
 
   if (action === 'decline') {
