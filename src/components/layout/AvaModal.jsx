@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { buildWeddingContext } from '@/lib/avaContext';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { createGuest, updateGuest } from '@/lib/guestWrites';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -150,11 +151,11 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
         return;
       }
       const entityMap = {
-        create_guest:       () => base44.entities.Guest.create(action.data),
+        create_guest:       () => createGuest(action.data),
         create_budget_item: () => base44.entities.Budget.create(action.data),
         create_vendor:      () => base44.entities.Vendor.create(action.data),
         create_schedule:    () => base44.entities.Schedule.create(action.data),
-        update_guest:       () => base44.entities.Guest.update(action.data.id, action.data),
+        update_guest:       () => updateGuest(action.data.id, action.data),
         update_vendor:      () => base44.entities.Vendor.update(action.data.id, action.data),
       };
       const fn = entityMap[action.type];

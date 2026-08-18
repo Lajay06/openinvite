@@ -5,6 +5,7 @@ import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { downloadGuestTemplate, parseGuestFile } from '@/lib/guestImport';
+import { createGuest } from '@/lib/guestWrites';
 
 const Guest = base44.entities.Guest;
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -62,7 +63,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
     await Promise.all(toImport.map(async (row) => {
       const { _rowIndex, _error, ...guestData } = row;
       try {
-        await Guest.create(guestData);
+        await createGuest(guestData);
       } catch (err) {
         failed.push(_rowIndex);
       }
