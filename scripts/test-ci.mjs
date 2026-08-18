@@ -55,6 +55,7 @@ import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-wi
 import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
 import { runAvaActionValidation } from '../tests/persistence/ava-action-validation.mjs';
 import { runDailyUpdateLoadStates } from '../tests/persistence/dailyupdate-load-states.mjs';
+import { runDashboardSources } from '../tests/persistence/dashboard-sources.mjs';
 import { runIcsExport } from '../tests/persistence/ics-export.mjs';
 import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
 import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
@@ -112,6 +113,7 @@ async function run() {
   await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
   await runModule('runAvaActionValidation', () => runAvaActionValidation());
   await runModule('runDailyUpdateLoadStates', () => runDailyUpdateLoadStates());
+  await runModule('runDashboardSources', () => runDashboardSources());
   await runModule('runIcsExport', () => runIcsExport());
   await runModule('runGiftCheckout', () => runGiftCheckout());
   await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());

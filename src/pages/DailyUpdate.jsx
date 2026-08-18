@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
+import { loadDashboardSources } from '@/lib/dashboardSources';
 import { tallyAttendees, isAttending } from '@/lib/guestRsvpTally';
 import { resolveAttendees } from '@/lib/attendees';
 import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
@@ -225,35 +226,33 @@ export default function DailyUpdate() {
       } catch {}
     }
 
-    let guests = [], budgetItems = [], vendors = [], todos = [], weddingRows = [];
-    // Each source still degrades to [] so one failure cannot blank the page —
-    // but the failure is now RECORDED rather than discarded, so the render can
-    // tell "you have no vendors" apart from "we could not read your vendors".
-    const failed = [];
-    const src = (name, p) => p.catch((err) => {
-      console.warn(`[DailyUpdate] ${name} failed to load:`, err);
-      failed.push(name);
-      return [];
+    // strict: true is what makes this work at all. resolveMyWedding's loaders
+    // default to returning []/null on failure — that soft default is the
+    // contract every other page relies on, and it is exactly why the first
+    // version of this fix silently did nothing: the promises it was catching
+    // never rejected. Only this page opts into rejections.
+    const { data, failed, status } = await loadDashboardSources({
+      guests:            () => getMyGuestsWithRsvp(undefined, undefined, { strict: true }),
+      budget:            () => getMyRecords('Budget', undefined, undefined, { strict: true }),
+      vendors:           () => getMyRecords('Vendor', undefined, undefined, { strict: true }),
+      schedule:          () => getMyRecords('Schedule', undefined, undefined, { strict: true }),
+      tasks:             () => getMyRecords('Note', undefined, undefined, { strict: true }),
+      'wedding details': () => getMyWeddingDetails({ strict: true }).then(d => (d ? [d] : [])),
     });
-    try {
-      [guests, budgetItems, vendors,, todos, weddingRows] = await Promise.all([
-        src('guests', getMyGuestsWithRsvp()),
-        src('budget', getMyRecords('Budget')),
-        src('vendors', getMyRecords('Vendor')),
-        src('schedule', getMyRecords('Schedule')),
-        src('tasks', getMyRecords('Note')),
-        src('wedding details', getMyWeddingDetails().then(d => d ? [d] : [])),
-      ]);
-      // eslint-disable-next-line no-empty -- belt-and-braces: every entry above already records its own failure, this only guards Promise.all itself
-    } catch {}
     setFailedSources(failed);
 
     // Every source down is an outage, not an empty account. Refuse to render a
     // briefing at all rather than narrate a wedding we could not read.
-    if (failed.length === 6) {
+    if (status === 'error') {
       setPhase('error');
       return;
     }
+
+    const guests = data.guests || [];
+    const budgetItems = data.budget || [];
+    const vendors = data.vendors || [];
+    const todos = data.tasks || [];
+    const weddingRows = data['wedding details'] || [];
 
     const wd = weddingRows[0] || {};
     const couple = wd.coupleNames

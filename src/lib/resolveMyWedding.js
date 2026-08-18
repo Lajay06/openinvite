@@ -43,20 +43,25 @@ function mostRecent(records) {
  * one-way scrypt hash and the endpoint strips it, substituting a
  * `websitePasswordIsSet` boolean. Every other field comes back as before.
  */
-export async function getMyWeddingDetails() {
+export async function getMyWeddingDetails({ strict = false } = {}) {
   const token = localStorage.getItem('base44_access_token');
-  if (!token) return null;
+  if (!token) {
+    if (strict) throw new Error('getMyWeddingDetails: no access token');
+    return null;
+  }
   try {
     const res = await fetch('/api/my-wedding-details', {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) {
       console.error(`[getMyWeddingDetails] /api/my-wedding-details failed (${res.status})`);
+      if (strict) throw new Error(`/api/my-wedding-details failed (${res.status})`);
       return null;
     }
     return await res.json();
   } catch (err) {
     console.error('[getMyWeddingDetails] /api/my-wedding-details fetch error:', err.message);
+    if (strict) throw err;
     return null;
   }
 }
@@ -141,7 +146,7 @@ export async function getMyLiveStream() {
  *                                the underlying .filter() call has no reliable limit arg
  * @returns {Promise<object[]>}  the logged-in user's own records, excluding is_test
  */
-export async function getMyRecords(entityName, sort, limit) {
+export async function getMyRecords(entityName, sort, limit, { strict = false } = {}) {
   // Guest is routed through a server endpoint rather than read directly.
   //
   // Guest family, Track A. Guest.read RLS is null, so the PII on those rows
@@ -154,12 +159,19 @@ export async function getMyRecords(entityName, sort, limit) {
   // via getMyGuestsWithRsvp, so the indirection lands in one place and no
   // consumer changes at all. Same rows, same order, same is_test exclusion.
   if (entityName === 'Guest') {
-    const guests = await fetchMyGuests(sort);
+    const guests = await fetchMyGuests(sort, { strict });
     return typeof limit === 'number' ? guests.slice(0, limit) : guests;
   }
 
-  const me = await base44.auth.me().catch(() => null);
-  if (!me?.id) return [];
+  // strict callers need to know the difference between "you own nothing" and
+  // "we could not find out who you are" — the soft default collapses both to [].
+  const me = strict
+    ? await base44.auth.me()
+    : await base44.auth.me().catch(() => null);
+  if (!me?.id) {
+    if (strict) throw new Error(`getMyRecords(${entityName}): could not resolve the current user`);
+    return [];
+  }
   const rows = await base44.entities[entityName].filter({ created_by_id: me.id }, sort);
   const real = (rows || []).filter(r => !r.is_test);
   return typeof limit === 'number' ? real.slice(0, limit) : real;
@@ -173,7 +185,7 @@ export async function getMyRecords(entityName, sort, limit) {
  * is a worse outcome than one that renders a list, but it is a much better one
  * than a page that throws — and the failure is logged rather than swallowed.
  */
-async function fetchMyGuests(sort) {
+async function fetchMyGuests(sort, { strict = false } = {}) {
   try {
     const token = localStorage.getItem('base44_access_token');
     const qs = sort ? `?sort=${encodeURIComponent(sort)}` : '';
@@ -182,12 +194,14 @@ async function fetchMyGuests(sort) {
     });
     if (!res.ok) {
       console.error(`[getMyRecords] /api/my-guests failed (${res.status})`);
+      if (strict) throw new Error(`/api/my-guests failed (${res.status})`);
       return [];
     }
     const data = await res.json();
     return data?.guests || [];
   } catch (err) {
     console.error('[getMyRecords] /api/my-guests fetch error:', err.message);
+    if (strict) throw err;
     return [];
   }
 }
@@ -230,8 +244,8 @@ async function fetchMyGuests(sort) {
  * inline. On any fetch failure this fails soft (returns the unenriched
  * guest list) rather than breaking the whole dashboard.
  */
-export async function getMyGuestsWithRsvp(sort, limit) {
-  const guests = await getMyRecords('Guest', sort, limit);
+export async function getMyGuestsWithRsvp(sort, limit, { strict = false } = {}) {
+  const guests = await getMyRecords('Guest', sort, limit, { strict });
   if (guests.length === 0) return guests;
 
   let overlayByGuestId = {};
