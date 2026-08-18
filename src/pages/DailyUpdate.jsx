@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
-import { loadDashboardSources } from '@/lib/dashboardSources';
+import { loadDashboardSources, formatSourceList } from '@/lib/dashboardSources';
 import { tallyAttendees, isAttending } from '@/lib/guestRsvpTally';
 import { resolveAttendees } from '@/lib/attendees';
 import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
@@ -517,7 +517,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
           display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
         }}>
           <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>
-            Your {failedSources.join(', ')} could not be loaded, so today's numbers are incomplete.
+            Your {formatSourceList(failedSources)} could not be loaded, so today's numbers are incomplete.
           </span>
           <button
             onClick={handleRefresh}

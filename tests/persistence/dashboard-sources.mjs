@@ -12,7 +12,7 @@
  * distinguishing an outage from an empty account, these fail.
  */
 import { pass, fail } from './_shared.mjs';
-import { loadDashboardSources } from '../../src/lib/dashboardSources.js';
+import { loadDashboardSources, formatSourceList } from '../../src/lib/dashboardSources.js';
 
 const boom = (msg = 'simulated transport failure') => () => Promise.reject(new Error(msg));
 const ok = (value) => () => Promise.resolve(value);
@@ -92,6 +92,23 @@ export async function runDashboardSources() {
   check('only DailyUpdate opts into strict loaders; the soft default is untouched elsewhere',
     strictCallers.length === 1 && strictCallers[0] === 'pages/DailyUpdate.jsx',
     strictCallers.join(', ') || 'none');
+
+  // ── user-facing copy: the source list must read as English ──────────────
+  // "Your vendors, tasks could not be loaded" shipped in #487 — a bare comma
+  // list, correct for one name and wrong for two.
+  const JOINS = [
+    [['vendors'], 'vendors'],
+    [['vendors', 'tasks'], 'vendors and tasks'],
+    [['vendors', 'tasks', 'schedule'], 'vendors, tasks and schedule'],
+    [[], ''],
+  ];
+  for (const [input, expected] of JOINS) {
+    const got = formatSourceList(input);
+    check(`formatSourceList(${JSON.stringify(input)}) reads naturally`,
+      got === expected, `"Your ${got} could not be loaded"`);
+  }
+  check('the two-source case is joined with "and", not a bare comma',
+    !formatSourceList(['vendors', 'tasks']).includes(','), formatSourceList(['vendors', 'tasks']));
 
   return results;
 }

@@ -57,3 +57,29 @@ export async function loadDashboardSources(loaders) {
 
   return { data, failed, status };
 }
+
+/**
+ * Joins source names into natural-language English for user-facing copy.
+ *
+ * The banner read "Your vendors, tasks could not be loaded" — a bare comma
+ * list, which is fine for one name and wrong for two. Lives here rather than in
+ * the page because this module is what guarantees the ORDER of that list, and
+ * the two decisions belong together: a stable order and a readable join are the
+ * same requirement seen from two sides.
+ *
+ * No Oxford comma, matching the app's existing copy voice.
+ *
+ *   []                          -> ''
+ *   ['vendors']                 -> 'vendors'
+ *   ['vendors','tasks']         -> 'vendors and tasks'
+ *   ['vendors','tasks','budget']-> 'vendors, tasks and budget'
+ *
+ * @param {string[]} names
+ * @returns {string}
+ */
+export function formatSourceList(names) {
+  const list = (names || []).filter(Boolean);
+  if (list.length === 0) return '';
+  if (list.length === 1) return list[0];
+  return `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`;
+}
