@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { parsePlaylistLink } from '@/lib/musicLinkParser';
 import { useParams, Link } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
@@ -71,6 +72,10 @@ export default function GuestMusic() {
   );
 
   const music = details?.music;
+  // First enabled playlist with a parseable link. parsePlaylistLink derives the
+  // platform from the URL — nothing about the source is stored, so Spotify,
+  // Apple Music and YouTube all work from the same single field.
+  const playlistEmbed = parsePlaylistLink((music?.playlists || [])[0]?.playlistUrl || '');
   const isOpen = !music?.requestsClosedDate || new Date(music.requestsClosedDate) > new Date();
   // The couple's own dashboard enforces these server-side regardless (see
   // api/song-request-submit.js) — asking for email up front here just
@@ -166,6 +171,30 @@ export default function GuestMusic() {
           </p>
         )}
       </div>
+
+      {/* The couple's playlist, on the page guests actually reach.
+          The rebuild stored playlistUrl and rendered it only on
+          WeddingMusicPage, which this route shadows — so the saved link was
+          invisible to every guest. Nothing renders when no playlist is set;
+          this block is absent, not an empty frame. */}
+      {playlistEmbed && (
+        <div style={{ padding: '0 24px 32px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.4)', margin: '0 0 12px' }}>
+            OUR PLAYLIST
+          </p>
+          <iframe
+            title="Our wedding playlist"
+            src={playlistEmbed.embed_url}
+            width="100%"
+            height="352"
+            frameBorder="0"
+            allowFullScreen
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            style={{ border: '1px solid rgba(255,255,255,0.08)', display: 'block' }}
+          />
+        </div>
+      )}
 
       {!isOpen ? (
         <div style={{ padding: '40px 24px', textAlign: 'center' }}>
