@@ -69,15 +69,7 @@
     },
     "meal_choice": {
       "type": "string",
-      "enum": [
-        "beef",
-        "chicken",
-        "fish",
-        "vegetarian",
-        "vegan",
-        "kids_meal"
-      ],
-      "description": "Main guest's meal selection"
+      "description": "Main guest's meal selection \u2014 stores the meal option ID, never the display label, so renaming a menu option never orphans a stored answer. Either one of the six default option ids (beef, chicken, fish, vegetarian, vegan, kids_meal) or a couple-defined custom option id from WeddingDetails.mealOptions (runtime-generated shape, e.g. '<timestamp>-<random>'). Deliberately a free string, not an enum (advisor decision 2026-08-18): custom menu ids are per-wedding and cannot be enumerated in a schema; validation belongs to the GuestForm Select, which is built from this wedding's own menu. Display resolution via mealOptionLabel() with its fallback chain. Keep consistent with event_responses[].meal_choice and RsvpResponse.meal_choice, which have always been free strings."
     },
     "plus_one": {
       "type": "boolean",
@@ -108,15 +100,7 @@
     },
     "plus_one_meal_choice": {
       "type": "string",
-      "enum": [
-        "beef",
-        "chicken",
-        "fish",
-        "vegetarian",
-        "vegan",
-        "kids_meal"
-      ],
-      "description": "Plus one's meal selection"
+      "description": "Plus one's meal selection \u2014 stores the meal option ID, never the display label, so renaming a menu option never orphans a stored answer. Same free-string contract as meal_choice (advisor decision 2026-08-18): default ids or couple-defined custom ids from WeddingDetails.mealOptions; validated by the GuestForm Select against this wedding's menu; resolved for display via mealOptionLabel()."
     },
     "plus_one_dietary_restrictions": {
       "type": "string",
