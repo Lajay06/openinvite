@@ -244,10 +244,16 @@ export default async function handler(req, res) {
   // this job was parked to avoid — silently empty guest counts producing
   // misleading digest emails — does not occur for that reason.
   //
-  // The parking is LEFT IN PLACE pending an explicit decision, because
-  // un-parking a cron that sends real email to real couples is a product call,
-  // not a comment fix. It is flagged for the advisor rather than reversed
-  // here. This is the third file found asserting the same false property; see
+  // THE REAL REASON THIS IS PARKED (advisor decision, 2026-08-18): product
+  // timing, not RLS. A cron that emails real couples does not come on before
+  // launch. The collaborator digest is on the post-launch restore list and
+  // this job restores with it — there is no code defect to fix first.
+  //
+  // Both facts are recorded deliberately. The original note gave a technical
+  // reason that was false, which is worse than no note: anyone auditing this
+  // job would have gone looking for an RLS problem that does not exist, and
+  // anyone wanting the digest back would have thought it was blocked on one.
+  // This is the third file found asserting that same false property; see
   // tests/persistence/rls-comment-claims.mjs, which now fails CI on a fourth.
   //
   // Unscheduled in vercel.json; this early return is belt-and-suspenders in
