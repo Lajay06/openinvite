@@ -178,7 +178,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
       const entity = ACTION_ENTITY[action.type];
       if (!entity) {
         updateAction(msgIndex, actionId, { status: 'error' });
-        toast.error(`Ava tried an action I don't recognise (${action.type}).`);
+        toast.error(`Ava tried an action I don't recognize (${action.type}).`);
         return;
       }
       const isUpdate = action.type.startsWith('update_');
