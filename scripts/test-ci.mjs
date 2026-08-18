@@ -56,6 +56,7 @@ import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs
 import { runAvaActionValidation } from '../tests/persistence/ava-action-validation.mjs';
 import { runDailyUpdateLoadStates } from '../tests/persistence/dailyupdate-load-states.mjs';
 import { runDashboardSources } from '../tests/persistence/dashboard-sources.mjs';
+import { runPlaylistEmbedUrls } from '../tests/persistence/playlist-embed-urls.mjs';
 import { runIcsExport } from '../tests/persistence/ics-export.mjs';
 import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
 import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
@@ -69,11 +70,20 @@ async function run() {
 
   const results = [];
 
+  // Modules that died mid-run rather than returning results. A throw already
+  // fails the suite (results.push(false) -> non-zero exit), but the UNCAUGHT
+  // line prints hundreds of lines above the summary, so a dead module reads as
+  // "one check failed somewhere" in a 861-check log. Named here so the summary
+  // says WHICH module never ran — the difference between a failing assertion
+  // and a file whose assertions did not execute at all.
+  const crashed = [];
+
   async function runModule(name, fn) {
     try {
       results.push(...await fn());
     } catch (err) {
       console.error(`\n  ⚠️  UNCAUGHT ERROR in ${name}: ${err.message}\n`);
+      crashed.push(`${name}: ${err.message}`);
       results.push(false);
     }
   }
@@ -114,6 +124,7 @@ async function run() {
   await runModule('runAvaActionValidation', () => runAvaActionValidation());
   await runModule('runDailyUpdateLoadStates', () => runDailyUpdateLoadStates());
   await runModule('runDashboardSources', () => runDashboardSources());
+  await runModule('runPlaylistEmbedUrls', () => runPlaylistEmbedUrls());
   await runModule('runIcsExport', () => runIcsExport());
   await runModule('runGiftCheckout', () => runGiftCheckout());
   await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());
@@ -125,6 +136,10 @@ async function run() {
 
   console.log(`\n${'─'.repeat(55)}`);
   console.log(`  Result: ${passed}/${total} checks passed`);
+  if (crashed.length) {
+    console.log(`  ⛔  ${crashed.length} MODULE(S) CRASHED — their assertions never ran:`);
+    for (const c of crashed) console.log(`        ${c}`);
+  }
   if (!allOk) {
     console.log('  ⚠️  Some checks failed — see output above.');
   }

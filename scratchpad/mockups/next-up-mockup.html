@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Next up — orientation layer mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A0A0A; --primary:#E03553;
+    --muted:rgba(10,10,10,0.6);      /* textMuted — AA */
+    --icon:rgba(10,10,10,0.45);      /* iconMuted */
+    --disabled:rgba(10,10,10,0.3);   /* disabled only */
+    --rule:rgba(10,10,10,0.08);
+    --wash:rgba(10,10,10,0.04);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fff;color:var(--ink);
+       font-family:'Plus Jakarta Sans',sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 40px 96px}
+
+  .banner{background:var(--ink);color:#fff;padding:14px 40px;font-size:13px}
+  .banner strong{color:#fff}
+  .banner span{color:rgba(255,255,255,0.6)}
+
+  h1,h2,h3,h4{margin:0}
+  .kicker{font-size:10px;font-weight:700;letter-spacing:.15em;color:var(--primary);margin:0 0 16px}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted)}
+
+  /* ── the daily update shell, as it exists post-#486/#487 ── */
+  .paper{border-bottom:1px solid var(--rule);padding:24px 0;display:flex;
+         justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+  .paper .mid{text-align:center}
+  .paper .mid b{display:block;color:var(--ink);font-size:14px}
+  .pill{border-radius:999px;padding:5px 14px;font-size:12px;font-weight:600;
+        background:var(--primary);color:#fff}
+
+  .hero{padding:48px 0 40px;border-bottom:1px solid var(--rule)}
+  .hero h1{font-size:42px;font-weight:800;letter-spacing:-.03em;line-height:1.15;max-width:800px}
+  .hero p{font-size:16px;color:#444;line-height:1.6;max-width:680px;margin:16px 0 0}
+
+  .grid{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;gap:0;border-bottom:1px solid var(--rule)}
+  .col{padding:32px 32px 32px 0}
+  .col:not(:first-child){padding-left:32px}
+  .vr{background:var(--rule)}
+  .colhead{border-top:3px solid var(--ink);padding-top:16px;margin-bottom:24px}
+  .item{padding-bottom:20px;margin-bottom:20px;border-bottom:1px solid var(--rule)}
+  .item:last-child{border:0;margin:0;padding:0}
+  .item h4{font-size:15px;font-weight:700;margin-bottom:6px}
+  .item p{margin:0;font-size:13px;color:var(--muted);line-height:1.55}
+  .tag{display:inline-block;border-radius:999px;padding:3px 10px;font-size:10px;
+       font-weight:700;letter-spacing:.04em;margin-bottom:8px}
+  .tag.now{background:var(--primary);color:#fff}
+  .tag.soon{background:var(--wash);color:var(--muted)}
+  .num{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .numlabel{font-size:12px;color:var(--muted);margin-top:4px}
+
+  /* ── Next up ── */
+  .nextup{border:1px solid var(--rule);padding:28px 32px;margin:0 0 4px}
+  .nextup.lead{border-left:3px solid var(--primary)}
+  .nu-top{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+  .nu-title{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:10px 0 6px}
+  .nu-why{font-size:14px;color:var(--muted);line-height:1.6;max-width:560px;margin:0}
+  .nu-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;align-items:center}
+  .btn{border-radius:999px;padding:10px 20px;font-size:13px;font-weight:600;
+       font-family:inherit;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .btn.link{background:none;border:none;color:var(--muted);padding:10px 4px;text-decoration:underline}
+
+  details.more{margin-top:22px;border-top:1px solid var(--rule);padding-top:18px}
+  details.more summary{cursor:pointer;font-size:13px;color:var(--muted);list-style:none}
+  details.more summary::-webkit-details-marker{display:none}
+  details.more summary::after{content:" ↓"}
+  details.more[open] summary::after{content:" ↑"}
+  .rest{margin-top:18px;display:flex;flex-direction:column;gap:2px}
+  .row{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--rule);font-size:14px}
+  .row:last-child{border:0}
+  .dot{width:9px;height:9px;border-radius:999px;flex:0 0 9px}
+  .dot.done{background:var(--ink)}
+  .dot.open{background:transparent;border:1.5px solid var(--icon)}
+  .row .rt{flex:1;min-width:0}
+  .row .meta{font-size:12px;color:var(--muted)}
+  .locked{font-size:11px;border-radius:999px;padding:3px 9px;border:1px solid var(--rule);color:var(--muted)}
+
+  .note{background:var(--wash);border-left:3px solid var(--icon);padding:18px 22px;margin:14px 0 0}
+  .note p{margin:0;font-size:13px;color:var(--muted);line-height:1.6}
+  .note b{color:var(--ink)}
+
+  section.variant{padding:56px 0 0}
+  .vhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .vhead h2{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .vtag{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--primary)}
+  .vsub{font-size:14px;color:var(--muted);max-width:720px;line-height:1.6;margin:0 0 26px}
+
+  .divider{height:1px;background:var(--rule);margin:64px 0 0}
+  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:14px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:700}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:var(--wash);padding:1px 5px}
+  .ask{border:1px solid var(--ink);padding:26px 30px;margin-top:16px}
+  .ask h3{font-size:19px;font-weight:800;margin-bottom:8px}
+  .ask p{margin:0;font-size:14px;color:var(--muted);line-height:1.65}
+  @media (max-width:900px){
+    .grid{grid-template-columns:1fr}.vr{display:none}
+    .col{padding:28px 0;border-bottom:1px solid var(--rule)}
+    .wrap{padding:0 20px 72px}.banner{padding:14px 20px}
+    .hero h1{font-size:32px}
+  }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <strong>Next up — orientation layer mockup</strong>
+  <span>&nbsp;·&nbsp; Not shipped code. Fixture data: John &amp; Suzanne, 135 days out.
+  Two variants of the same idea; the page below each is the daily update as it exists today.</span>
+</div>
+
+<div class="wrap">
+
+<!-- ══════════════ VARIANT A ══════════════ -->
+<section class="variant">
+  <div class="vhead"><h2>Variant A — the lead block</h2><span class="vtag">ONE THING, ABOVE THE FOLD</span></div>
+  <p class="vsub">Next up sits between the headline and the editorial grid. It answers “what do I do now?”
+  before the couple reads anything else, then gets out of the way. Everything else is one click behind a summary line.</p>
+
+  <div class="paper">
+    <span>Openinvite daily</span>
+    <span class="mid"><b>John &amp; Suzanne</b>Tuesday 18 August 2026</span>
+    <span class="pill">135 days to go</span>
+  </div>
+
+  <div class="hero">
+    <p class="kicker">Today's edition</p>
+    <h1>135 days remain. 61 guests still to reply.</h1>
+    <p>Good morning John and Suzanne. 121 guests confirmed, 151 seated, and 5 of your 9 vendors booked.</p>
+  </div>
+
+  <div class="nextup lead">
+    <div class="nu-top">
+      <span class="eyebrow">Next up</span>
+      <span class="eyebrow" style="color:var(--icon)">Step 3 of 7 · nothing overdue</span>
+    </div>
+    <h3 class="nu-title">Turn on RSVP</h3>
+    <p class="nu-why">Set meal options, plus-ones and your reply deadline. Your website is live and
+    61 guests haven't replied yet — they've nowhere to reply to until this is on.</p>
+    <div class="nu-actions">
+      <button class="btn">Set up RSVP</button>
+      <button class="btn ghost">Not now</button>
+      <button class="btn link">Why this one?</button>
+    </div>
+
+    <details class="more">
+      <summary>Everything else on your list</summary>
+      <div class="rest">
+        <div class="row"><span class="dot done"></span><span class="rt">Add your guests</span><span class="meta">202 added</span></div>
+        <div class="row"><span class="dot done"></span><span class="rt">Add your vendors</span><span class="meta">9 added, 5 booked</span></div>
+        <div class="row"><span class="dot done"></span><span class="rt">Plan the day</span><span class="meta">Crown Sydney</span></div>
+        <div class="row"><span class="dot done"></span><span class="rt">Publish your website</span><span class="meta">live</span></div>
+        <div class="row"><span class="dot open"></span><span class="rt">Turn on RSVP</span><span class="locked">Ultra</span></div>
+        <div class="row"><span class="dot open"></span><span class="rt">Build your website</span><span class="meta">2 of 3 pages empty</span><span class="locked">Ultra</span></div>
+        <div class="row"><span class="dot open"></span><span class="rt">Set your budget</span><span class="meta">$154,000 set — see note</span></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="grid" style="margin-top:32px">
+    <div class="col">
+      <div class="colhead"><span class="eyebrow">This week</span></div>
+      <div class="item"><span class="tag now">Urgent</span><h4>Follow up with 61 pending guests</h4><p>Tracking replies early keeps catering counts honest.</p></div>
+      <div class="item"><span class="tag soon">This week</span><h4>Secure 4 remaining vendors</h4><p>Popular dates fill quickly this close in.</p></div>
+    </div>
+    <div class="vr"></div>
+    <div class="col">
+      <div class="colhead"><span class="eyebrow" style="color:var(--primary)">Ava's briefing</span></div>
+      <div class="item"><h4>51 guests still unseated</h4><p>151 of 202 have a table.</p></div>
+      <div class="item"><h4>5 of 9 vendors are confirmed</h4><p>Photographer and entertainment are still open.</p></div>
+    </div>
+    <div class="vr"></div>
+    <div class="col">
+      <div class="colhead"><span class="eyebrow">Your numbers</span></div>
+      <div class="item"><div class="num">121</div><div class="numlabel">Guests confirmed</div></div>
+      <div class="item"><div class="num">61</div><div class="numlabel">RSVP pending</div></div>
+      <div class="item"><div class="num">20</div><div class="numlabel">Declined</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ VARIANT B ══════════════ -->
+<section class="variant">
+  <div class="vhead"><h2>Variant B — the first column</h2><span class="vtag">ORIENTATION AS EDITORIAL</span></div>
+  <p class="vsub">Next up becomes the leading column of the grid instead of a block above it. The page keeps one
+  rhythm, and “what do I do now?” reads as part of the briefing rather than an instruction bar bolted on top.
+  Costs prominence; gains calm.</p>
+
+  <div class="paper">
+    <span>Openinvite daily</span>
+    <span class="mid"><b>John &amp; Suzanne</b>Tuesday 18 August 2026</span>
+    <span class="pill">135 days to go</span>
+  </div>
+
+  <div class="hero">
+    <p class="kicker">Today's edition</p>
+    <h1>135 days remain. 61 guests still to reply.</h1>
+    <p>Good morning John and Suzanne. 121 guests confirmed, 151 seated, and 5 of your 9 vendors booked.</p>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="colhead" style="border-top-color:var(--primary)"><span class="eyebrow" style="color:var(--primary)">Next up</span></div>
+      <div class="item">
+        <h4 style="font-size:19px">Turn on RSVP</h4>
+        <p>Set meal options, plus-ones and your reply deadline. 61 guests have nowhere to reply to until this is on.</p>
+        <div class="nu-actions"><button class="btn">Set up RSVP</button><button class="btn link">Why this one?</button></div>
+      </div>
+      <div class="item">
+        <details class="more" style="margin:0;border:0;padding:0">
+          <summary>Everything else (4 done, 3 open)</summary>
+          <div class="rest">
+            <div class="row"><span class="dot open"></span><span class="rt">Build your website</span><span class="locked">Ultra</span></div>
+            <div class="row"><span class="dot open"></span><span class="rt">Set your budget</span></div>
+            <div class="row"><span class="dot done"></span><span class="rt">Add your guests</span></div>
+            <div class="row"><span class="dot done"></span><span class="rt">Add your vendors</span></div>
+            <div class="row"><span class="dot done"></span><span class="rt">Plan the day</span></div>
+            <div class="row"><span class="dot done"></span><span class="rt">Publish your website</span></div>
+          </div>
+        </details>
+      </div>
+    </div>
+    <div class="vr"></div>
+    <div class="col">
+      <div class="colhead"><span class="eyebrow" style="color:var(--primary)">Ava's briefing</span></div>
+      <div class="item"><h4>51 guests still unseated</h4><p>151 of 202 have a table.</p></div>
+      <div class="item"><h4>5 of 9 vendors are confirmed</h4><p>Photographer and entertainment are still open.</p></div>
+      <div class="item"><h4>61 replies outstanding</h4><p>Of 202 invited.</p></div>
+    </div>
+    <div class="vr"></div>
+    <div class="col">
+      <div class="colhead"><span class="eyebrow">Your numbers</span></div>
+      <div class="item"><div class="num">121</div><div class="numlabel">Guests confirmed</div></div>
+      <div class="item"><div class="num">61</div><div class="numlabel">RSVP pending</div></div>
+      <div class="item"><div class="num">20</div><div class="numlabel">Declined</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ WHAT'S HONEST ══════════════ -->
+<section class="variant">
+  <div class="vhead"><h2>What the mockup is not hiding</h2><span class="vtag">CONSTRAINTS, NOT DECORATION</span></div>
+  <p class="vsub">Three things are true about the journey data today. A mockup that smoothed them over would
+  be selling a layer that cannot be built as drawn.</p>
+
+  <div class="note">
+    <p><b>1. “Set your budget” can never complete.</b> <code>isComplete</code> reads
+    <code>wedding.budget.total</code>, but <code>budget</code> became an AES ciphertext <em>string</em> in the
+    Step 2a encryption work — so <code>.total</code> is <code>undefined</code> for every couple, forever.
+    John &amp; Suzanne have $154,000 set and the step still reads open. <b>This is a live bug, found while
+    building this mockup</b>, not a design choice. Any Next-up shipped before it is fixed will nag every
+    couple about a budget they have already set.</p>
+  </div>
+
+  <div class="note">
+    <p><b>2. Three of seven steps are Ultra-only</b> — build website, turn on RSVP, publish website. A
+    free-plan couple sees Next up point at something they cannot do. The mockup marks them
+    <span class="locked">Ultra</span> rather than hiding them, but the real decision is whether Next up
+    should ever surface a gated step as <em>the</em> next thing, or route around it and say why.</p>
+  </div>
+
+  <div class="note">
+    <p><b>3. The journey reaches 5 of 44 planner pages.</b> Moodboard, styling, beauty, food &amp; beverage,
+    photography, vows, favours, honeymoon, registry, transport, accommodation and the whole Guest Suite have
+    no orientation story at all. Next up will answer “what now?” for the launch path and stay silent
+    everywhere else — which is honest, but it is not the same as orienting the product.</p>
+  </div>
+
+  <div class="note">
+    <p><b>Also visible above:</b> “Publish your website” reads complete while “Build your website” does not —
+    the fixture has a live site with two of three core pages empty. The steps have no ordering constraint
+    between them, so Next up can legitimately propose publishing something unbuilt.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ SPEC ══════════════ -->
+<section class="variant">
+  <div class="vhead"><h2>Against the council verdict</h2></div>
+  <table>
+    <tr><th style="width:230px">Verdict</th><th>How it is met</th></tr>
+    <tr><td>Orientation, not motivation</td><td>One step, its reason, and a way in. No praise, no nudging language, no “you're doing great”.</td></tr>
+    <tr><td>Gamification killed</td><td>No streaks, no points, no percentage complete, no progress bar. The only count is <code>Step 3 of 7</code>, which is a position, not a score. “4 done, 3 open” appears once, inside a collapsed summary.</td></tr>
+    <tr><td>Timeline-scoped framing only</td><td>Everything is anchored to <em>135 days to go</em> and “nothing overdue”. No feature-scoped completeness anywhere.</td></tr>
+    <tr><td>Inside the daily update</td><td>Both variants render within the real page — masthead, headline, editorial grid — as it exists after #486/#487.</td></tr>
+    <tr><td>Honest states preserved</td><td>The daily update can now tell loading from error from genuinely-new. Next up inherits that: with no data it shows nothing rather than “you have 7 things to do”, which would be the empty-account lie in a new costume.</td></tr>
+    <tr><td>Driven by <code>setupJourney.js</code></td><td>All seven steps, their titles, purposes and <code>isComplete</code> logic are the real ones. Completion here is what the live fixture actually evaluates to.</td></tr>
+    <tr><td>Progressive disclosure</td><td>One step visible. The other six behind a single summary line. Nothing expands on load.</td></tr>
+    <tr><td>Confetti stays</td><td>Untouched — <code>avaStudioMilestones</code> still guards its one-per-wedding celebration server-side. Next up does not celebrate; it points.</td></tr>
+  </table>
+</section>
+
+<div class="ask">
+  <h3>The one question</h3>
+  <p>Does this fix the “what do I do now?” feeling — and if it does, is it Variant A (a lead block that
+  answers before anything else) or Variant B (a first column that answers as part of the briefing)?
+  Everything else here is detail that can move.</p>
+</div>
+
+</div>
+</body>
+</html>
