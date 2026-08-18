@@ -329,6 +329,13 @@ export default async function handler(req, res) {
     } catch {
       user = null;
     }
+    // NOT a Guest-PII reader — do not "fix" this with mergeGuestPii.
+    // Every .email in this file is user.email — the COUPLE'S own address, from
+    // a User row, used to send them the digest. Guest rows are read here only
+    // for counts and tallies, never for a guest's contact details. Flagged by
+    // the reader guard because the file both reads Guest rows and dereferences
+    // .email; allowlisted in tests/persistence/guest-plaintext-readers.mjs
+    // with the reason recorded here rather than only in the test.
     if (!user?.email) {
       tally.skipped_no_email++;
       continue;

@@ -112,6 +112,11 @@ async function handleGet(req, res, caller) {
     const decrypted = safeDecrypt(s.encrypted_contact_details) || {};
     return {
       id: s.id,
+      // NOT a Guest-PII reader — do not "fix" this with mergeGuestPii.
+      // `decrypted` is a GuestContactSubmission payload, decrypted above by
+      // questionnaireCrypto; it is not a Guest row and has no
+      // encrypted_guest_pii blob. Unaffected by Track D. Allowlisted in
+      // tests/persistence/guest-plaintext-readers.mjs.
       name: decrypted.name || '',
       email: decrypted.email || '',
       phone: decrypted.phone || '',

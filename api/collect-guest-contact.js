@@ -115,6 +115,13 @@ export default async function handler(req, res) {
   // Accepted only from the POST body — never a query string (#449: access
   // logs, browser history, referrer, shared-cache keys).
   const candidatePassword = typeof req.body?.password === 'string' ? req.body.password : '';
+  // NOT a Guest-PII reader — do not "fix" this with mergeGuestPii.
+  // These read the SUBMITTING GUEST'S OWN form input from req.body, not a
+  // stored Guest row, so Track D nulling the plaintext columns does not affect
+  // them. Recorded because a grep for PII field names lands here, and the
+  // defect class this programme keeps meeting is a later sweep "correcting"
+  // something that was already right. Allowlisted in
+  // tests/persistence/guest-plaintext-readers.mjs.
   const name = sanitizeString(req.body?.name || '').slice(0, MAX_TEXT_LENGTH);
   const emailRaw = sanitizeString(req.body?.email || '').slice(0, MAX_TEXT_LENGTH);
   const email = emailRaw && isValidEmail(emailRaw) ? emailRaw.toLowerCase() : '';

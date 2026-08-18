@@ -51,6 +51,7 @@
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { decryptToken, tokenPatch } from './_lib/rsvpTokenCrypto.js';
+import { mergeGuestPii } from './_lib/guestPii.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -142,7 +143,10 @@ export default async function handler(req, res) {
     // round trips.
     const query = encodeURIComponent(JSON.stringify({ created_by_id: caller.id }));
     const mine = unwrapList(await callerFetch('GET', `/apps/${BASE44_APP_ID}/entities/Guest?q=${query}&limit=1000`, callerToken));
-    const byId = new Map(mine.map(g => [g.id, g]));
+    // Track D: plus_one_email gates plus-one token minting and lives in
+    // encrypted_guest_pii — unmerged, no plus-one token would ever be minted
+    // again, silently.
+    const byId = new Map(mine.map(mergeGuestPii).map(g => [g.id, g]));
 
     const links = {};
     const writes = [];

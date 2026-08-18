@@ -41,6 +41,7 @@ const SUPPORT_ADDRESS = 'hello@openinvite.com.au';
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 import { decryptToken } from './_lib/rsvpTokenCrypto.js';
+import { mergeGuestPii } from './_lib/guestPii.js';
 
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
 
@@ -155,7 +156,14 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: GUEST_GATE_MESSAGE, passwordRequired: true });
     }
 
-    const allGuests = await fetchAll('Guest');
+    // Track D: email lives in encrypted_guest_pii, so the match below has to
+    // run against decrypted rows. This is the reader that most needs saying
+    // out loud: the neutral {sent:true} response above is deliberate
+    // anti-enumeration design, so a match that silently stops working is
+    // INDISTINGUISHABLE from "that address isn't a guest". Exactly the shape
+    // that hid for a whole track in E3-1. Hence the log line on the matched
+    // branch below — the production log is the evidence, never the UI.
+    const allGuests = (await fetchAll('Guest')).map(mergeGuestPii);
     // TWO reads of the token here, not one — the filter as well as the URL.
     // Track E3 nulls the plaintext column, so both must come from the
     // ciphertext. The filter is the easy one to miss: left on rsvp_link_id it

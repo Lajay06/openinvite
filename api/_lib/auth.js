@@ -8,6 +8,8 @@
  * rather than one hardcoded admin email.
  */
 
+import { mergeGuestPii } from './guestPii.js';
+
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 
@@ -66,7 +68,11 @@ export async function fetchOwnedGuestEmails(userId, adminKey) {
     headers: { Authorization: `Bearer ${adminKey}` },
   });
   if (!res.ok) return new Set();
-  const guests = unwrapList(await res.json());
+  // Track D: email and plus_one_email live in encrypted_guest_pii. Reading
+  // them off the raw row returns null once the plaintext columns are nulled,
+  // and this set silently becomes empty — which would make
+  // filterGuestsByOwnership drop every recipient rather than error.
+  const guests = unwrapList(await res.json()).map(mergeGuestPii);
   const emails = guests.map(g => g.email?.trim().toLowerCase()).filter(Boolean);
   const plusOneEmails = guests.map(g => g.plus_one_email?.trim().toLowerCase()).filter(Boolean);
   return new Set([...emails, ...plusOneEmails]);
