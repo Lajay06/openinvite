@@ -253,16 +253,26 @@
 <!-- ══════════════ WHAT'S HONEST ══════════════ -->
 <section class="variant">
   <div class="vhead"><h2>What the mockup is not hiding</h2><span class="vtag">CONSTRAINTS, NOT DECORATION</span></div>
-  <p class="vsub">Three things are true about the journey data today. A mockup that smoothed them over would
-  be selling a layer that cannot be built as drawn.</p>
+  <p class="vsub">Four things about the journey data, including one correction to an earlier version of this
+  page. A mockup that smoothed these over would be selling a layer that cannot be built as drawn.</p>
 
   <div class="note">
-    <p><b>1. “Set your budget” can never complete.</b> <code>isComplete</code> reads
-    <code>wedding.budget.total</code>, but <code>budget</code> became an AES ciphertext <em>string</em> in the
-    Step 2a encryption work — so <code>.total</code> is <code>undefined</code> for every couple, forever.
-    John &amp; Suzanne have $154,000 set and the step still reads open. <b>This is a live bug, found while
-    building this mockup</b>, not a design choice. Any Next-up shipped before it is fixed will nag every
-    couple about a budget they have already set.</p>
+    <p><b>1. Corrected 19 August — “Set your budget” works today.</b> An earlier version of this
+    mockup said this step could never complete, because <code>isComplete</code> reads
+    <code>wedding.budget.total</code> while <code>budget</code> is AES ciphertext at rest. <b>That claim
+    was wrong.</b> <code>AvaStudio</code> passes the record from <code>getMyWeddingDetails()</code> — the
+    server-decrypting endpoint — so the step receives <code>{total: 154000}</code> and completes
+    correctly. The false reading came from evaluating the function against a record fetched raw from
+    Base44, which is not what the function is given.</p>
+  </div>
+
+  <div class="note">
+    <p><b>1b. What the audit did establish.</b> Of 55 places that read the wedding record, <b>53</b> use
+    the decrypting reader and <b>2</b> read <code>WeddingDetails</code> raw. Next up must use the
+    decrypting one, and that will be <b>pinned in CI</b> — because a raw read makes the budget step
+    report incomplete forever, silently, and it looks exactly like a couple who has not set a budget.
+    The daily update already loads correctly, so this variant inherits the right source; the pin exists
+    to stop a later refactor breaking it.</p>
   </div>
 
   <div class="note">
