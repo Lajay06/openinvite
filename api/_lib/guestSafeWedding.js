@@ -107,11 +107,41 @@ export const NEVER_RETURN_FIELDS = [
  */
 const MUSIC_SAFE_FIELDS = ['guestRequestsEnabled', 'requestsClosedDate', 'requestMessage'];
 
+/**
+ * playlists[] joined the guest-safe set on 2026-08-18. The note above said it
+ * stayed out "until a real guest-facing read site needs one" — the music
+ * rebuild created exactly that: the couple pastes a playlist link and guests
+ * are meant to hear it, which they could not, because this picker dropped the
+ * field before it ever reached the page.
+ *
+ * Each entry is reduced to the two fields the guest page renders. The stored
+ * item also carries id/enabled/trackCount/coverImage and the legacy
+ * spotifyPlaylistId; none is sensitive, but the whole point of this file is
+ * that "not sensitive today" is not the test — a guest gets what a guest
+ * needs. Disabled playlists are dropped entirely rather than sent with a flag.
+ */
+const PLAYLIST_SAFE_FIELDS = ['playlistUrl', 'name'];
+
+function pickGuestSafePlaylists(playlists) {
+  if (!Array.isArray(playlists)) return [];
+  return playlists
+    .filter((p) => p && p.enabled !== false && p.playlistUrl)
+    .map((p) => {
+      const out = {};
+      for (const field of PLAYLIST_SAFE_FIELDS) {
+        if (field in p) out[field] = p[field];
+      }
+      return out;
+    });
+}
+
 function pickGuestSafeMusic(music) {
   const out = {};
   for (const field of MUSIC_SAFE_FIELDS) {
     if (field in music) out[field] = music[field];
   }
+  const playlists = pickGuestSafePlaylists(music.playlists);
+  if (playlists.length) out.playlists = playlists;
   return out;
 }
 

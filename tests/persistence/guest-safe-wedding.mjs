@@ -92,9 +92,43 @@ export async function runGuestSafeWedding() {
     ? pass('pickGuestSafeFields — music.spotifyUserId is NEVER present', 'key absent')
     : fail('pickGuestSafeFields — music.spotifyUserId is NEVER present', 'key absent', safe.music.spotifyUserId));
 
-  results.push(!('spotifyConnected' in (safe.music || {})) && !('requestsRequireApproval' in (safe.music || {})) && !('playlists' in (safe.music || {}))
+  results.push(!('spotifyConnected' in (safe.music || {})) && !('requestsRequireApproval' in (safe.music || {}))
     ? pass('pickGuestSafeFields — no unlisted music field leaks through (allowlist, not denylist)', 'all absent')
     : fail('pickGuestSafeFields — no unlisted music field leaks through (allowlist, not denylist)', 'all absent', JSON.stringify(safe.music)));
+
+  // playlists JOINED the allowlist 2026-08-18. It was excluded on the grounds
+  // that no guest-facing reader existed; the music rebuild created one, and
+  // until this change the couple's saved playlist link was filtered out here
+  // and never reached the page. Reduced to the two fields the guest renders.
+  const withPlaylists = pickGuestSafeFields({
+    id: 'wed-playlists', slug: 'playlist-case',
+    music: {
+      guestRequestsEnabled: true,
+      playlists: [
+        { id: 'primary', name: 'Wedding playlist', playlistUrl: 'https://open.spotify.com/playlist/abc123',
+          enabled: true, trackCount: 12, coverImage: 'https://example.com/x.jpg', spotifyPlaylistId: 'legacy123' },
+        { id: 'off', name: 'Disabled', playlistUrl: 'https://open.spotify.com/playlist/off', enabled: false },
+        { id: 'nolink', name: 'No link yet', enabled: true },
+      ],
+    },
+  });
+  const pls = withPlaylists.music?.playlists || [];
+
+  results.push(pls.length === 1 && pls[0].playlistUrl === 'https://open.spotify.com/playlist/abc123'
+    ? pass('pickGuestSafeFields — an enabled playlist with a link reaches the guest', pls[0].playlistUrl)
+    : fail('pickGuestSafeFields — an enabled playlist with a link reaches the guest', '1 entry', JSON.stringify(pls)));
+
+  results.push(pls.every((p) => Object.keys(p).every((k) => ['playlistUrl', 'name'].includes(k)))
+    ? pass('pickGuestSafeFields — playlist entries carry ONLY playlistUrl and name', JSON.stringify(Object.keys(pls[0] || {})))
+    : fail('pickGuestSafeFields — playlist entries carry ONLY playlistUrl and name', 'playlistUrl, name', JSON.stringify(pls)));
+
+  results.push(!JSON.stringify(pls).includes('legacy123') && !JSON.stringify(pls).includes('trackCount')
+    ? pass('pickGuestSafeFields — legacy spotifyPlaylistId and internals never reach the guest', 'absent')
+    : fail('pickGuestSafeFields — legacy spotifyPlaylistId and internals never reach the guest', 'absent', JSON.stringify(pls)));
+
+  results.push(!JSON.stringify(pls).includes('/playlist/off') && !pls.some((p) => p.name === 'No link yet')
+    ? pass('pickGuestSafeFields — disabled and link-less playlists are dropped entirely', 'both dropped')
+    : fail('pickGuestSafeFields — disabled and link-less playlists are dropped entirely', 'both dropped', JSON.stringify(pls)));
 
   // ── Deep scan: the token VALUES themselves never appear anywhere in the
   //    payload, and neither does the literal key name — catches a future
