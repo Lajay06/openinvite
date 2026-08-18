@@ -44,3 +44,45 @@ export function parseMusicLink(rawUrl) {
 
   return null;
 }
+
+/**
+ * parsePlaylistLink — the PLAYLIST counterpart to parseMusicLink.
+ *
+ * parseMusicLink matches /track/<id>; a playlist URL is /playlist/<id> and does
+ * not match it, so the music rebuild (2026-08-18) needed its own parser rather
+ * than a looser regex on the existing one — widening that would have made a
+ * track link parse as a playlist and embed the wrong thing.
+ *
+ * Returns { source, sourceLabel, embed_url } or null. sourceLabel is for
+ * display; it is DERIVED here on every call and never stored, which is the
+ * whole reason WeddingDetails.music.playlists[].playlistUrl holds the raw URL
+ * and no source field (advisor ruling, 2026-08-18).
+ */
+export function parsePlaylistLink(rawUrl) {
+  const url = (rawUrl || '').trim();
+  if (!url) return null;
+
+  const spotify = url.match(/spotify\.com\/(?:intl-[a-z]{2}\/)?playlist\/([a-zA-Z0-9]+)/i)
+    || url.match(/spotify:playlist:([a-zA-Z0-9]+)/i);
+  if (spotify) {
+    return { source: 'spotify', sourceLabel: 'Spotify', embed_url: `https://open.spotify.com/embed/playlist/${spotify[1]}` };
+  }
+
+  if (/music\.apple\.com/i.test(url) && /\/playlist\//i.test(url)) {
+    try {
+      const u = new URL(url);
+      u.hostname = 'embed.music.apple.com';
+      return { source: 'apple', sourceLabel: 'Apple Music', embed_url: u.toString() };
+    } catch {
+      return null;
+    }
+  }
+
+  const yt = url.match(/(?:music\.)?youtube\.com\/playlist\?(?:[^#]*&)?list=([a-zA-Z0-9_-]+)/i)
+    || url.match(/(?:music\.)?youtube\.com\/watch\?(?:[^#]*&)?list=([a-zA-Z0-9_-]+)/i);
+  if (yt) {
+    return { source: 'youtube', sourceLabel: 'YouTube', embed_url: `https://www.youtube.com/embed/videoseries?list=${yt[1]}` };
+  }
+
+  return null;
+}

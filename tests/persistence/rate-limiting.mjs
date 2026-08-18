@@ -33,7 +33,6 @@ import placesHandler from '../../api/places.js';
 import placesSearchHandler from '../../api/places-search.js';
 import placeDetailsHandler from '../../api/place-details.js';
 import placesPhotoHandler from '../../api/places-photo.js';
-import spotifySearchHandler from '../../api/spotify-search.js';
 
 // on-signup.js / admin/stats.js / create-portal-session.js construct
 // Resend/Stripe clients at module scope, which throw synchronously if
@@ -130,14 +129,10 @@ export async function runRateLimiting() {
       : fail('places-photo.js — 61st request in a minute is rate limited', 429, status));
   }
 
-  {
-    const status = await assertRateLimited(spotifySearchHandler, {
-      limit: 20, ip: '203.0.113.14', reqShape: { method: 'POST', body: {} },
-    });
-    results.push(status === 429
-      ? pass('spotify-search.js — 21st request in a minute is rate limited', '429')
-      : fail('spotify-search.js — 21st request in a minute is rate limited', 429, status));
-  }
+  // spotify-search.js had a 20/min case here. The endpoint was DELETED in the
+  // music rebuild (2026-08-18) — track search never stored a track and the
+  // rebuild is playlist-link + free-text — so there is no longer a handler to
+  // rate limit. See tests/persistence/spotify-teardown.mjs.
 
   // ── Confirm limits are per-IP, not global — a fresh IP is never blocked
   //    by another IP's exhausted bucket. ──

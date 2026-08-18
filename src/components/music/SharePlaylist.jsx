@@ -1,23 +1,47 @@
 import React, { useState } from 'react';
-import { X, Copy, CheckCircle, Share2, Users, Music } from 'lucide-react';
+import { Copy, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+
+/**
+ * Share panel for the guest song-request page (music rebuild, 2026-08-18).
+ *
+ * Was a modal pointing at `/playlist/contribute` — a route that does not exist
+ * in App.jsx. The real guest page has always been /w/:slug/music, so the share
+ * link never worked. Now inline on the Music page's Share block, built from the
+ * wedding's own slug.
+ *
+ * QR follows the house pattern (api.qrserver.com), matching PublishModal and
+ * StudioShareTab. Swapping all four sites to local generation is a logged
+ * backlog ticket and deliberately NOT done here.
+ */
+const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
-
 const underlineInput = {
   flex: 1, border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)',
   background: 'none', fontSize: 13, color: '#0A0A0A',
-  fontFamily: "'Plus Jakarta Sans', sans-serif", outline: 'none', padding: '6px 0',
+  fontFamily: PJS, outline: 'none', padding: '6px 0', minWidth: 0,
 };
 
-export default function SharePlaylist({ onClose, playlistStats }) {
+export default function SharePlaylist({ slug }) {
   const [copied, setCopied] = useState(false);
-  const shareUrl = `${window.location.origin}/playlist/contribute`;
+
+  // No slug means the couple has not published a site yet, so there is no guest
+  // URL to share. Say that rather than offering a link that 404s.
+  if (!slug) {
+    return (
+      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '14px 0 0', maxWidth: 560 }}>
+        Publish your wedding site first — the song-request page lives on it, so
+        there is no link to share until then.
+      </p>
+    );
+  }
+
+  const shareUrl = `${window.location.origin}/w/${slug}/music`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}&color=0A0A0A&bgcolor=FFFFFF`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -26,106 +50,30 @@ export default function SharePlaylist({ onClose, playlistStats }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const shareMessage = `Help us create the perfect wedding playlist! Add your favorite songs: ${shareUrl}`;
-  const handleEmail = () => window.open(`mailto:?subject=${encodeURIComponent('Help create our wedding playlist!')}&body=${encodeURIComponent(`Hi!\n\nWe're creating a collaborative playlist and would love your song suggestions!\n\n${shareUrl}\n\nThanks!`)}`, '_blank');
-  const handleSMS = () => window.open(`sms:?body=${encodeURIComponent(shareMessage)}`, '_blank');
-
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title="Share playlist" className="max-w-[520px] p-0 gap-0">
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Share2 size={14} style={{ color: 'rgba(10,10,10,0.6)' }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Share playlist</span>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
-        </div>
+    <div style={{ marginTop: 16, maxWidth: 560 }}>
+      <p style={{ ...labelStyle, marginBottom: 10 }}>Guest link</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <input value={shareUrl} readOnly style={underlineInput} />
+        <button onClick={handleCopy} className="btn-primary"
+          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, flexShrink: 0 }}>
+          {copied ? <><CheckCircle size={12} />Copied</> : <><Copy size={12} />Copy</>}
+        </button>
+      </div>
 
-        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {/* Stats */}
-          <div>
-            <p style={{ ...labelStyle, marginBottom: 10 }}>Playlist summary</p>
-            <div style={{ display: 'flex' }}>
-              {[
-                { label: 'Total songs', value: playlistStats.totalSongs },
-                { label: 'Approved', value: playlistStats.approvedSongs },
-                { label: 'From guests', value: playlistStats.guestSuggestions },
-              ].map((s, i, arr) => (
-                <div key={i} style={{ flex: 1, padding: '16px 20px', border: '1px solid rgba(10,10,10,0.08)', borderRight: i < arr.length - 1 ? 'none' : '1px solid rgba(10,10,10,0.08)', textAlign: 'center' }}>
-                  <p style={{ fontSize: 24, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{s.value}</p>
-                  <p style={labelStyle}>{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Shareable link */}
-          <div>
-            <p style={{ ...labelStyle, marginBottom: 10 }}>Shareable link</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <input value={shareUrl} readOnly style={underlineInput} />
-              <button onClick={handleCopy} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, flexShrink: 0 }}>
-                {copied ? <><CheckCircle size={12} />Copied</> : <><Copy size={12} />Copy</>}
-              </button>
-            </div>
-            <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginTop: 6 }}>
-              Share this link with guests so they can add song suggestions.
-            </p>
-          </div>
-
-          {/* Share via */}
-          <div>
-            <p style={{ ...labelStyle, marginBottom: 10 }}>Share via</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {[
-                { label: 'Email', fn: handleEmail, color: '#E03553' },
-                { label: 'SMS', fn: handleSMS, color: '#6b7700' },
-              ].map(s => (
-                <button key={s.label} onClick={s.fn} className="btn-editorial-secondary"
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 13 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* How it works */}
-          <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <Users size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
-              <span style={labelStyle}>How it works</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {['Guests click the link to access the song suggestion form', 'They add songs with artist, title, and category', 'All suggestions appear in your playlist for approval', 'Approve or decline each suggestion'].map((text, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8 }}>
-                  <span style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginTop: 2 }}>—</span>
-                  <span style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Coming soon */}
-          <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 16, background: '#0A1930' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Music size={13} style={{ color: '#DDF762' }} />
-              <span style={{ ...labelStyle, color: 'rgba(255,255,255,0.5)' }}>Coming soon — Spotify integration</span>
-            </div>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
-              Direct Spotify playlist creation and sharing is on the way.
-            </p>
-          </div>
-        </div>
-
-        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Close</button>
-          <button onClick={handleCopy} className="btn-primary" style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Copy size={12} />Copy link
-          </button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      <div style={{ marginTop: 28 }}>
+        <p style={{ ...labelStyle, marginBottom: 10 }}>QR code</p>
+        <img
+          src={qrUrl}
+          alt={`QR code linking to ${shareUrl}`}
+          width={180}
+          height={180}
+          style={{ display: 'block', border: '1px solid rgba(10,10,10,0.08)' }}
+        />
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginTop: 10 }}>
+          Print it for the tables so guests can request a song from their seat.
+        </p>
+      </div>
+    </div>
   );
 }
