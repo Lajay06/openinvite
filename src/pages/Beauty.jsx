@@ -203,9 +203,11 @@ export default function BeautyPage() {
         {STAT_CARDS.map((s, i) => (
           <div key={s.label} style={{ flex: 1, padding: '20px 32px', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : undefined }}>
             <p style={{ ...labelStyle, marginBottom: 8 }}>{s.label}</p>
-            <p style={{ fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, lineHeight: 1, margin: 0 }}>
-              <CountUp to={s.value} format={s.format} />
-            </p>
+            {loading
+              ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
+              : <p style={{ fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, lineHeight: 1, margin: 0 }}>
+                  <CountUp to={s.value} format={s.format} />
+                </p>}
           </div>
         ))}
       </div>
