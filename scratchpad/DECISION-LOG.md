@@ -632,3 +632,39 @@ Two rules this yields:
 - A privacy-preferred domain is not automatically substitutable. nocookie works
   for single videos (`heroVideo.js`) and not for playlists; the two cannot be
   unified without re-rendering a real playlist.
+
+
+## 2026-08-19 — music rebuild CLOSED, 4 of 4 legs green
+
+| Leg | Result |
+|---|---|
+| 1. Couple pastes a playlist link; guests see it embedded | ✅ YouTube link renders on `/w/john-suzanne/music` in production |
+| 2. Guest free-text request with real Turnstile; couple reviews it | ✅ submitted, stored (`ownerUserId` stamped, `spotifyTrackId` empty), couple saw it Pending and could act |
+| 3. Share link resolves to the real page | ✅ `/w/<slug>/music` + QR (was `/playlist/contribute`, a route that never existed) |
+| 4. Fixture restored | ✅ playlist cleared, settings preserved, pending queue back to 0 |
+
+**Six defects, and every one was found by running the thing, not by CI:**
+
+1. `/Music` crashed on load — unguarded `songRequests.filter` (#490)
+2. Approve/Decline sent action strings the endpoint rejected (#491)
+3. The playlist was invisible to guests — the guest-safe allowlist filtered
+   `playlists` out server-side, one layer below the missing markup (#492)
+4. The YouTube embed used `/embed/videoseries`, retired and silently blank (#493)
+5. `youtube-nocookie.com` does not serve playlist embeds at all (#494)
+6. The share link pointed at a route absent from `App.jsx` (#492)
+
+Build, lint and 860+ assertions were green through all six. **None of them
+render a component or load a URL.** The rebuild's real verification was four
+legs on production and it caught what the suite structurally cannot.
+
+Two of the six were introduced by the fix for the one before it, both because
+I changed more than one thing between renders. The rule that came out of it:
+render the BUILT output, not the artefact you swapped by hand while diagnosing.
+
+**Privacy decision recorded (advisor):** `www.youtube.com` embed accepted —
+refusing YouTube while embedding Spotify's player would be inconsistent
+protection, and the couple chose the platform. Backlog: a click-to-load facade
+for ALL third-party embeds (YouTube, Spotify, Apple) — thumbnail until tapped,
+matching the tap-to-play ethos, privacy and performance together. Phase 2
+polish. The advisor holds the legal-draft action to confirm the
+embedded-content clause covers couple-chosen third-party players.
