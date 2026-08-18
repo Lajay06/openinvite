@@ -1,0 +1,121 @@
+/**
+ * GET /api/my-guests?sort=<field>
+ *
+ * Authenticated (the couple's own Base44 session). Returns the caller's own
+ * Guest rows.
+ *
+ * WHY THIS EXISTS — Guest family, Track A.
+ *
+ * `Guest.read` RLS is `null`, so any authenticated account can list every
+ * Guest row in the app. Verified, not inferred: an unrelated test account
+ * reads 206 rows carrying name, email and phone. Scoping that read is not
+ * available to us — six server readers use the admin key, and the anonymous
+ * ones (a guest clicking an invitation link, a cron) have no caller session to
+ * switch to, so an owner-scoped rule would answer them 200-with-empty-array
+ * and break silently (gotcha #1). Encryption at rest is the only lever, and
+ * encryption needs a server-side key the browser can never hold.
+ *
+ * So every read of Guest has to come through a server endpoint first. This is
+ * that endpoint, shipped ALONE and with NO CRYPTO, so that if anything breaks
+ * it is unambiguously the indirection rather than the encryption:
+ *
+ *   A (this PR) — every client read routes through here. Same rows, same
+ *                 shape, same order. Nothing is encrypted yet.
+ *   B           — the three PII-touching client writers move server-side, and
+ *                 the forwarding-endpoint guard widens to PROTECTED_FIELDS.
+ *   C           — declare encrypted_guest_pii, dual-write, prefer the blob.
+ *   migration   — 206 rows, per-row write-verify-null.
+ *   D           — drop the dual-write and the plaintext fallback.
+ *
+ * Reads use the CALLER's own forwarded bearer token, never the admin key. With
+ * `Guest.read` open the admin key would work — that is exactly the problem —
+ * but using it here would mean this endpoint could serve any account's rows if
+ * the ownership filter were ever wrong. The caller's token makes Base44 itself
+ * the second check, and it is what keeps working unchanged if `Guest.read` is
+ * ever scoped later.
+ *
+ * Response: 200 { guests: [...] }   — is_test rows excluded, as getMyRecords did
+ *        or 401 { error: 'Unauthorized' }
+ */
+
+import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
+import { verifyBase44User } from './_lib/auth.js';
+
+const BASE44_API = 'https://base44.app/api';
+const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
+
+/**
+ * One fetch, no skip paging. Base44's skip pagination overlaps and omits —
+ * 205 rows once returned 200 unique ids across pages, which read as data loss
+ * and was not (gotcha #19). A guest list that silently drops rows is worse
+ * than one that fails.
+ */
+const FETCH_LIMIT = 1000;
+
+function unwrapList(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.results)) return payload.results;
+  return [];
+}
+
+export default async function handler(req, res) {
+  if (applyCors(req, res)) return;
+
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // A guest list is the couple's private data. Never let an intermediary
+  // store it.
+  res.setHeader('Cache-Control', 'private, no-store');
+
+  const ip = getClientIp(req);
+  // Generous: several dashboard pages load the guest list on mount.
+  const { limited, remaining } = checkRateLimit(ip, 'my-guests', 120, 60_000);
+  res.setHeader('X-RateLimit-Limit', '120');
+  res.setHeader('X-RateLimit-Remaining', String(remaining));
+  if (limited) {
+    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+  }
+
+  const caller = await verifyBase44User(req);
+  if (!caller) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const callerToken = (req.headers.authorization || '').slice(7);
+
+  // Passed straight through to Base44's own sort, exactly as
+  // base44.entities.Guest.filter(query, sort) did.
+  const sort = sanitizeString(req.query?.sort || '');
+
+  try {
+    const query = encodeURIComponent(JSON.stringify({ created_by_id: caller.id }));
+    const sortParam = sort ? `&sort=${encodeURIComponent(sort)}` : '';
+    const payload = await fetch(
+      `${BASE44_API}/apps/${BASE44_APP_ID}/entities/Guest?q=${query}${sortParam}&limit=${FETCH_LIMIT}`,
+      { headers: { Authorization: `Bearer ${callerToken}` } },
+    );
+    if (!payload.ok) {
+      const body = await payload.text().catch(() => '');
+      throw new Error(`Base44 Guest read failed (${payload.status}): ${body.slice(0, 200)}`);
+    }
+    const rows = unwrapList(await payload.json());
+
+    if (rows.length >= FETCH_LIMIT) {
+      // Loud rather than silently truncated: a couple with 1000+ guests would
+      // otherwise see a short list with no indication anything was missing.
+      console.error(`[my-guests] caller ${caller.id} hit the ${FETCH_LIMIT}-row fetch limit — the list is TRUNCATED. Raise FETCH_LIMIT.`);
+    }
+
+    // Ownership is filtered by the query and enforced again by Base44 against
+    // the caller's own token; is_test is excluded here exactly as
+    // getMyRecords did, so test-harness rows can never surface in product UI.
+    const guests = rows.filter(g => g.created_by_id === caller.id && !g.is_test);
+
+    return res.status(200).json({ guests });
+  } catch (err) {
+    console.error('[my-guests] Error:', err.message);
+    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+  }
+}

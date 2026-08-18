@@ -233,13 +233,31 @@ export async function buildDigestForWedding(wedding, allQuestionnaireResponses, 
 }
 
 export default async function handler(req, res) {
-  // PARKED, fix/guest-rls-step1: Guest.read is now owner-scoped
-  // ({created_by_id: "{{user.id}}"}), which the admin key below can never
-  // satisfy (see BASE44_PLATFORM_NOTES.md) — this job's per-wedding Guest
-  // reads (line ~163) would silently return empty guest counts instead of
-  // erroring, producing wrong/misleading digest emails rather than no
-  // email. Unscheduled in vercel.json; this early return is belt-and-
-  // suspenders in case of a stale/manual trigger.
+  // PARKED — but read the correction below before acting on the reason.
+  //
+  // CORRECTED 2026-08-18 (Guest family, Track A): the original note said
+  // Guest.read "is now owner-scoped ({created_by_id: "{{user.id}}"}), which
+  // the admin key below can never satisfy". That premise is FALSE and appears
+  // never to have been true: Guest.read is `null` in the live schema, verified
+  // by listing 206 Guest rows from an unrelated authenticated account. The
+  // admin-key reads at line ~163 would therefore work fine, and the failure
+  // this job was parked to avoid — silently empty guest counts producing
+  // misleading digest emails — does not occur for that reason.
+  //
+  // THE REAL REASON THIS IS PARKED (advisor decision, 2026-08-18): product
+  // timing, not RLS. A cron that emails real couples does not come on before
+  // launch. The collaborator digest is on the post-launch restore list and
+  // this job restores with it — there is no code defect to fix first.
+  //
+  // Both facts are recorded deliberately. The original note gave a technical
+  // reason that was false, which is worse than no note: anyone auditing this
+  // job would have gone looking for an RLS problem that does not exist, and
+  // anyone wanting the digest back would have thought it was blocked on one.
+  // This is the third file found asserting that same false property; see
+  // tests/persistence/rls-comment-claims.mjs, which now fails CI on a fourth.
+  //
+  // Unscheduled in vercel.json; this early return is belt-and-suspenders in
+  // case of a stale/manual trigger.
   //
   // Rebuild path (post-launch fast-follow, not before): a Base44-hosted
   // scheduled automation using base44.asServiceRole (see
