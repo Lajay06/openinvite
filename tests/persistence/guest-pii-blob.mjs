@@ -145,6 +145,46 @@ export async function runGuestPiiBlob() {
     : fail('guest pii write — an explicit null clears that field and keeps the rest', 'null + others intact',
            JSON.stringify(explicitNull?.notes)));
 
+  // ── WRITER-SIDE PIN ──────────────────────────────────────────────────────
+  //
+  // The #476 pins covered READERS. This bug lived in the writer: every edit
+  // through api/my-guests.js re-populated the plaintext columns Track D had
+  // just cleared, and no reader test could have seen it.
+  //
+  // Three assertions, because the function being right is not enough — the
+  // endpoint has to actually use it, and the outgoing patch has to contain no
+  // real PII anywhere, not merely nulls in the nine named keys.
+
+  // (a) No real PII value appears ANYWHERE in the outgoing patch. Stronger
+  //     than "the nine are null": a future field, or a typo'd key, would slip
+  //     past a name-by-name check.
+  const outgoing = buildGuestWriteFields(current, { dietary_restrictions: 'vegan' });
+  const serialised = JSON.stringify(outgoing);
+  const realValues = PII_FIELDS.map(f => FULL[f]).filter(v => typeof v === 'string' && v.length > 3);
+  const leaked = realValues.filter(v => serialised.includes(v));
+  results.push(leaked.length === 0
+    ? pass('WRITER PIN — no real PII value appears in the outgoing patch', `${realValues.length} values checked`)
+    : fail('WRITER PIN — no real PII value appears in the outgoing patch', 'none present',
+           `${leaked.length} leaked (e.g. ${JSON.stringify(leaked[0])})`));
+
+  // (b) The endpoint actually routes both writes through it. A correct
+  //     function the endpoint bypasses protects nothing.
+  const fsMod = await import('fs');
+  const pathMod = await import('path');
+  const endpoint = fsMod.readFileSync(
+    pathMod.resolve(new URL('../../api/my-guests.js', import.meta.url).pathname), 'utf8');
+  const routed = (endpoint.match(/buildGuestWriteFields\(/g) || []).length;
+  results.push(routed >= 2
+    ? pass('WRITER PIN — api/my-guests.js routes both POST and PUT through buildGuestWriteFields', `${routed} call sites`)
+    : fail('WRITER PIN — api/my-guests.js routes both POST and PUT through buildGuestWriteFields', '>=2', String(routed)));
+
+  // (c) And it never sends a raw caller field bag straight to Base44.
+  const rawBody = /body:\s*JSON\.stringify\(fields\)/.test(endpoint);
+  results.push(!rawBody
+    ? pass('WRITER PIN — the endpoint never sends the caller bag unprocessed', 'always via buildGuestWriteFields')
+    : fail('WRITER PIN — the endpoint never sends the caller bag unprocessed', 'no raw fields body',
+           'found JSON.stringify(fields) — plaintext would reach Base44'));
+
   if (prev === undefined) delete process.env.BASE44_ADMIN_KEY; else process.env.BASE44_ADMIN_KEY = prev;
   return results;
 }
