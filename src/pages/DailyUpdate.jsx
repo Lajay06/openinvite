@@ -153,6 +153,12 @@ let tipsModalClaimedThisPageLoad = false;
 
 export default function DailyUpdate() {
   const [phase, setPhase] = useState('loading');
+  // Which of the six data sources failed to load, by name. The page used to
+  // swallow every failure with .catch(() => []), so a total backend outage and
+  // a brand-new account rendered byte-identical UI — a calm, complete "nothing
+  // here yet" on the page couples land on first. Empty is a claim about the
+  // couple's wedding; it must only be made when the data actually arrived.
+  const [failedSources, setFailedSources] = useState([]);
   const [briefing, setBriefing] = useState(null);
   const [daysUntil, setDaysUntil] = useState(null);
   const [coupleName, setCoupleName] = useState('');
@@ -220,17 +226,34 @@ export default function DailyUpdate() {
     }
 
     let guests = [], budgetItems = [], vendors = [], todos = [], weddingRows = [];
+    // Each source still degrades to [] so one failure cannot blank the page —
+    // but the failure is now RECORDED rather than discarded, so the render can
+    // tell "you have no vendors" apart from "we could not read your vendors".
+    const failed = [];
+    const src = (name, p) => p.catch((err) => {
+      console.warn(`[DailyUpdate] ${name} failed to load:`, err);
+      failed.push(name);
+      return [];
+    });
     try {
       [guests, budgetItems, vendors,, todos, weddingRows] = await Promise.all([
-        getMyGuestsWithRsvp().catch(() => []),
-        getMyRecords('Budget').catch(() => []),
-        getMyRecords('Vendor').catch(() => []),
-        getMyRecords('Schedule').catch(() => []),
-        getMyRecords('Note').catch(() => []),
-        getMyWeddingDetails().then(d => d ? [d] : []).catch(() => []),
+        src('guests', getMyGuestsWithRsvp()),
+        src('budget', getMyRecords('Budget')),
+        src('vendors', getMyRecords('Vendor')),
+        src('schedule', getMyRecords('Schedule')),
+        src('tasks', getMyRecords('Note')),
+        src('wedding details', getMyWeddingDetails().then(d => d ? [d] : [])),
       ]);
-      // eslint-disable-next-line no-empty -- belt-and-braces: every entry above already has its own .catch(() => []), this only guards Promise.all itself
+      // eslint-disable-next-line no-empty -- belt-and-braces: every entry above already records its own failure, this only guards Promise.all itself
     } catch {}
+    setFailedSources(failed);
+
+    // Every source down is an outage, not an empty account. Refuse to render a
+    // briefing at all rather than narrate a wedding we could not read.
+    if (failed.length === 6) {
+      setPhase('error');
+      return;
+    }
 
     const wd = weddingRows[0] || {};
     const couple = wd.coupleNames
@@ -429,6 +452,37 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
               Ava is preparing your briefing...
             </span>
           </div>
+        ) : phase === 'error' ? (
+          /* Every source failed. Say so plainly and offer a retry, rather than
+             rendering an empty briefing that reads as "you have nothing". */
+          <div style={{ minHeight: 100 }}>
+            <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', color: '#E03553', margin: '0 0 16px' }}>
+              Today's edition
+            </p>
+            <h1 style={{
+              fontFamily: PJS, fontSize: 42, fontWeight: 800,
+              color: '#0A0A0A', letterSpacing: '-0.03em',
+              lineHeight: 1.15, maxWidth: 800, margin: 0,
+            }}>
+              We could not load your wedding
+            </h1>
+            <p style={{
+              fontFamily: PJS, fontSize: 16, color: 'rgba(10,10,10,0.6)',
+              lineHeight: 1.6, maxWidth: 680, marginTop: 16, marginBottom: 0,
+            }}>
+              This is a problem on our side, not a change to your plans — nothing has been lost.
+            </p>
+            <button
+              onClick={handleRefresh}
+              style={{
+                marginTop: 24, border: '1px solid #0A0A0A', background: '#0A0A0A',
+                color: '#FFFFFF', borderRadius: 999, padding: '10px 20px',
+                fontFamily: PJS, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              Try again
+            </button>
+          </div>
         ) : (
           <>
             <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', color: '#E03553', margin: '0 0 16px' }}>
@@ -453,6 +507,31 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
           </>
         )}
       </div>
+
+      {/* Some sources loaded and some did not. The briefing below is built from
+          partial data, so the numbers in it are not a complete picture — say
+          that rather than letting them read as fact. */}
+      {phase === 'ready' && failedSources.length > 0 && (
+        <div style={{
+          background: '#FFFFFF', padding: '16px 40px',
+          borderBottom: '1px solid #E8E8E5',
+          display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
+        }}>
+          <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>
+            Your {failedSources.join(', ')} could not be loaded, so today's numbers are incomplete.
+          </span>
+          <button
+            onClick={handleRefresh}
+            style={{
+              border: '1px solid rgba(10,10,10,0.45)', background: 'transparent',
+              color: '#0A0A0A', borderRadius: 999, padding: '6px 14px',
+              fontFamily: PJS, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Try again
+          </button>
+        </div>
+      )}
 
       {/* ── SECTION 3: Editorial grid ── */}
       {phase === 'ready' && briefing && (
