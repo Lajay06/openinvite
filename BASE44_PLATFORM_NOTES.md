@@ -644,6 +644,7 @@ the row happily. It is still there.
 | 3 | `Guest.update` / `PlanGift.update` collaborator gap | n/a | same root cause, on the hosted-functions list |
 | 4 | `PollComment` — `wedding-poll-comment.js` | 220 orphaned + **3 fixture probe rows** | **demonstrated 2026-08-18 (PR #459)** |
 | 5 | `Guest` — created anonymously | **1 row, id `6a584d473aa3ab1ec180fcdc`** | **demonstrated 2026-08-18 (Guest PII migration)** |
+| 6 | `SongRequest` — music rebuild verification | **1 row, id `6a843992…`** | **demonstrated 2026-08-18 (PR #489 leg 2), neutralized as `declined`** |
 
 The three probe rows on the `john-suzanne` fixture are
 `[pr459-poll] "PR459 write-gate probe"`,
@@ -654,6 +655,32 @@ through requires a write that actually lands. Both carry a `poll_id` matching
 no existing poll, so nothing renders them. They are recorded here rather than
 quietly left, because an erasure ledger that omits the rows its own
 verification created is not a ledger.
+
+### Instance 6 — self-inflicted, through the guarded path, and it still could not be undone
+
+`6a843992` — `SongRequest` "Rebuild Verification Waltz" by "The Post-Merge
+Ensemble", submitted by "Rebuild Probe Guest" on the `john-suzanne` fixture
+during PR #489's verification leg 2 (a real guest song request through the real
+form, with real Turnstile).
+
+Deleting it afterwards was part of the authorized cleanup. It failed: the
+caller token returns `404`, because `SongRequest.delete` RLS is scoped on
+`created_by_id` and Base44 stamps every guest-submitted row `anonymous`. This
+is instance 2's shape (`SongRequest` orphans), but *demonstrated* rather than
+inferred, and on a row created deliberately, minutes earlier, by the person
+trying to delete it.
+
+**Neutralized, not erased.** It was set to `declined` through
+`api/song-request-review.js` — the couple's own path, which works because
+`update` RLS scopes on `data.ownerUserId` rather than `created_by_id`. It is
+therefore out of the pending queue and renders nowhere the couple will look,
+alongside the two pre-existing declined rows. The row itself remains.
+
+What this instance adds to the ledger: the gap is not confined to legacy or
+orphaned data. A row created **today**, through the **current** guarded flow,
+by an **authenticated owner**, is already unerasable at the moment it is
+written. Any erasure promise has to account for that, not just for the ~2,240
+historical orphans.
 
 ### Instance 5 — the first Guest row nobody can write
 
