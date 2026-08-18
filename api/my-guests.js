@@ -64,6 +64,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { stripDerivedFields } from './_lib/guestProtectedFields.js';
+import { mergeGuestPii, buildGuestWriteFields } from './_lib/guestPii.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -139,7 +140,14 @@ export default async function handler(req, res) {
     // Ownership is filtered by the query and enforced again by Base44 against
     // the caller's own token; is_test is excluded here exactly as
     // getMyRecords did, so test-harness rows can never surface in product UI.
-    const guests = rows.filter(g => g.created_by_id === caller.id && !g.is_test);
+    const guests = rows
+      .filter(g => g.created_by_id === caller.id && !g.is_test)
+      // Blob preferred, plaintext fallback for rows the migration has not
+      // reached. This is THE chokepoint every client read passes through
+      // (Track A), so resolving PII here means no consumer knows encryption
+      // happened — and it needs no change at Track D, when the fallback simply
+      // stops having anything to fall back to.
+      .map(mergeGuestPii);
 
     return res.status(200).json({ guests });
   } catch (err) {
@@ -178,36 +186,45 @@ async function handleWrite(req, res, caller, callerToken) {
   try {
     if (req.method === 'POST') {
       if (!raw) return res.status(400).json({ error: 'fields is required.' });
+      // A new guest has no current PII, so the blob is built from the payload
+      // alone.
       const created = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/Guest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${callerToken}` },
-        body: JSON.stringify(fields),
+        body: JSON.stringify(buildGuestWriteFields({}, fields)),
       });
       if (!created.ok) {
         const body = await created.text().catch(() => '');
         throw new Error(`Base44 Guest create failed (${created.status}): ${body.slice(0, 200)}`);
       }
-      return res.status(200).json({ guest: await created.json() });
+      return res.status(200).json({ guest: mergeGuestPii(await created.json()) });
     }
 
     if (!guestId) return res.status(400).json({ error: 'id is required.' });
-    // 404 for both "missing" and "not yours" — no existence oracle.
-    if (!(await assertOwned(guestId, caller, callerToken))) {
+    // 404 for both "missing" and "not yours" — no existence oracle. The row is
+    // kept: PUT needs it to rebuild the blob from current values.
+    const owned = await assertOwned(guestId, caller, callerToken);
+    if (!owned) {
       return res.status(404).json({ error: 'Guest not found' });
     }
 
     if (req.method === 'PUT') {
       if (!raw) return res.status(400).json({ error: 'fields is required.' });
+      // Rebuild the blob from the row's CURRENT resolved PII plus this patch.
+      // Building it from the patch alone would blank the nine fields the
+      // caller did not send — a couple editing a meal preference would watch
+      // that guest's name and email vanish.
+      const body = buildGuestWriteFields(mergeGuestPii(owned), fields);
       const updated = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/Guest/${guestId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${callerToken}` },
-        body: JSON.stringify(fields),
+        body: JSON.stringify(body),
       });
       if (!updated.ok) {
         const body = await updated.text().catch(() => '');
         throw new Error(`Base44 Guest update failed (${updated.status}): ${body.slice(0, 200)}`);
       }
-      return res.status(200).json({ guest: await updated.json() });
+      return res.status(200).json({ guest: mergeGuestPii(await updated.json()) });
     }
 
     // DELETE

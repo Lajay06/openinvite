@@ -4,20 +4,20 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Guest's full name"
+      "description": "Guest's full name LEGACY PLAINTEXT (Guest PII family): dual-written alongside encrypted_guest_pii through Track C and the migration; values are nulled at Track D, after which the blob is authoritative. Do not remove this declaration until the separate post-D cleanup \u2014 undeclaring drops stored data (gotcha #5). name remains required and non-null at the schema level; at Track D its value becomes a stable placeholder rather than the guest's real name, which lives in the blob. Any surface reading name directly rather than through api/my-guests.js will show that placeholder \u2014 the Track A chokepoint exists so there are none. Verified 2026-08-18: no Base44 query sorts or filters Guest by name; all name matching is in-memory on decrypted results."
     },
     "email": {
       "type": "string",
       "format": "email",
-      "description": "Guest's email address"
+      "description": "Guest's email address LEGACY PLAINTEXT (Guest PII family): dual-written alongside encrypted_guest_pii through Track C and the migration; values are nulled at Track D, after which the blob is authoritative. Do not remove this declaration until the separate post-D cleanup \u2014 undeclaring drops stored data (gotcha #5)."
     },
     "phone": {
       "type": "string",
-      "description": "Guest's phone number"
+      "description": "Guest's phone number LEGACY PLAINTEXT (Guest PII family): dual-written alongside encrypted_guest_pii through Track C and the migration; values are nulled at Track D, after which the blob is authoritative. Do not remove this declaration until the separate post-D cleanup \u2014 undeclaring drops stored data (gotcha #5)."
     },
     "mailing_address": {
       "type": "string",
-      "description": "Guest's mailing address, free-text (same convention as venue addresses elsewhere in the app — not broken into street/city/zip fields). Populated manually or via an approved Contact Collector submission (PR B3)."
+      "description": "Guest's mailing address, free-text (same convention as venue addresses elsewhere in the app \u2014 not broken into street/city/zip fields). Populated manually or via an approved Contact Collector submission (PR B3). LEGACY PLAINTEXT (Guest PII family): dual-written alongside encrypted_guest_pii through Track C and the migration; values are nulled at Track D, after which the blob is authoritative. Do not remove this declaration until the separate post-D cleanup \u2014 undeclaring drops stored data (gotcha #5)."
     },
     "profile_picture_url": {
       "type": "string",
@@ -49,7 +49,7 @@
     },
     "dietary_restrictions": {
       "type": "string",
-      "description": "Any dietary requirements"
+      "description": "Any dietary requirements LEGACY PLAINTEXT (Guest PII family): dual-written alongside encrypted_guest_pii through Track C and the migration; values are nulled at Track D, after which the blob is authoritative. Do not remove this declaration until the separate post-D cleanup \u2014 undeclaring drops stored data (gotcha #5)."
     },
     "rsvp_status": {
       "type": "string",
@@ -86,16 +86,16 @@
     },
     "plus_one_name": {
       "type": "string",
-      "description": "Name of plus one if applicable"
+      "description": "Name of plus one if applicable LEGACY PLAINTEXT (Guest PII family): dual-written alongside encrypted_guest_pii through Track C and the migration; values are nulled at Track D, after which the blob is authoritative. Do not remove this declaration until the separate post-D cleanup \u2014 undeclaring drops stored data (gotcha #5)."
     },
     "plus_one_email": {
       "type": "string",
       "format": "email",
-      "description": "Plus one's email address"
+      "description": "Plus one's email address LEGACY PLAINTEXT (Guest PII family): dual-written alongside encrypted_guest_pii through Track C and the migration; values are nulled at Track D, after which the blob is authoritative. Do not remove this declaration until the separate post-D cleanup \u2014 undeclaring drops stored data (gotcha #5)."
     },
     "plus_one_rsvp_link_id": {
       "type": "string",
-      "description": "Unique RSVP token for the plus-one's own invite link, set only when plus_one_email is present. Resolves via the same /rsvp/:token route as rsvp_link_id, but as the plus-one's own identity (see api/_lib/rsvpAuth.js)."
+      "description": "Unique RSVP token for the plus-one's own invite link, set only when plus_one_email is present. Resolves via the same /rsvp/:token route as rsvp_link_id, but as the plus-one's own identity (see api/_lib/rsvpAuth.js). LEGACY PLAINTEXT (Track E): dual-written alongside hash/_enc through E2 and the migration; values are nulled at E3, after which hash/enc are authoritative. Do not remove this declaration until the separate post-E3 cleanup \u2014 undeclaring drops stored data."
     },
     "plus_one_rsvp": {
       "type": "string",
@@ -120,11 +120,11 @@
     },
     "plus_one_dietary_restrictions": {
       "type": "string",
-      "description": "Plus one's dietary requirements"
+      "description": "Plus one's dietary requirements LEGACY PLAINTEXT (Guest PII family): dual-written alongside encrypted_guest_pii through Track C and the migration; values are nulled at Track D, after which the blob is authoritative. Do not remove this declaration until the separate post-D cleanup \u2014 undeclaring drops stored data (gotcha #5)."
     },
     "special_requests": {
       "type": "string",
-      "description": "Special requests or needs (accessibility, seating preferences, etc.)"
+      "description": "Special requests or needs (accessibility, seating preferences, etc.) LEGACY PLAINTEXT (Guest PII family): dual-written alongside encrypted_guest_pii through Track C and the migration; values are nulled at Track D, after which the blob is authoritative. Do not remove this declaration until the separate post-D cleanup \u2014 undeclaring drops stored data (gotcha #5)."
     },
     "invitation_sent": {
       "type": "boolean",
@@ -133,7 +133,7 @@
     },
     "rsvp_link_id": {
       "type": "string",
-      "description": "Unique ID for RSVP link"
+      "description": "Unique ID for RSVP link LEGACY PLAINTEXT (Track E): dual-written alongside hash/_enc through E2 and the migration; values are nulled at E3, after which hash/enc are authoritative. Do not remove this declaration until the separate post-E3 cleanup \u2014 undeclaring drops stored data."
     },
     "seating_preferences": {
       "type": "array",
@@ -151,7 +151,7 @@
     },
     "notes": {
       "type": "string",
-      "description": "Additional notes about guest"
+      "description": "Additional notes about guest LEGACY PLAINTEXT (Guest PII family): dual-written alongside encrypted_guest_pii through Track C and the migration; values are nulled at Track D, after which the blob is authoritative. Do not remove this declaration until the separate post-D cleanup \u2014 undeclaring drops stored data (gotcha #5)."
     },
     "interests": {
       "type": "array",
@@ -252,6 +252,41 @@
       "type": "boolean",
       "default": false,
       "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
+    },
+    "encrypted_guest_pii": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "AES-256-GCM ciphertext of this guest's ten PII fields as one JSON object, base64(iv + authTag + ciphertext). Key derived from BASE44_ADMIN_KEY via SHA-256, same construction as api/_lib/questionnaireCrypto.js \u2014 deliberately the admin key and NOT a dedicated secret, because unlike RSVP tokens this data is never externally distributed, so a key rotation is a re-runnable re-encrypt migration rather than an unrecoverable break (advisor decision, 2026-08-18). Contains exactly, in this order: name, email, phone, mailing_address, dietary_restrictions, special_requests, notes, plus_one_name, plus_one_email, plus_one_dietary_restrictions \u2014 the canonical list is api/_lib/guestProtectedFields.js PII_FIELDS. NULL IS THE DISCRIMINATOR: a row with null here is unmigrated and its plaintext columns are authoritative; a row with a value here is migrated and this blob is authoritative. Written only by api/my-guests.js; refused from callers via DERIVED_FIELDS and PROTECTED_FIELDS. ROTATION: leaking BASE44_ADMIN_KEY requires re-encrypting this blob along with every other admin-key-derived ciphertext \u2014 see BASE44_PLATFORM_NOTES.md."
+    },
+    "rsvp_link_id_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "HMAC-SHA256 (hex) of the guest's RSVP token, keyed with RSVP_TOKEN_KEY \u2014 deliberately NOT the Base44 admin key, so this external bearer capability does not share the admin key's failure domain. This is the lookup key: after migration E3, /rsvp/:token resolution queries this field instead of plaintext rsvp_link_id. ROTATION HAZARD: rotating RSVP_TOKEN_KEY invalidates every stored hash; a re-hash/re-encrypt migration must run under the old key before it retires. Written by E2 dual-write; null on unmigrated rows."
+    },
+    "rsvp_link_id_enc": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "AES-256-GCM ciphertext of the guest's RSVP token, base64(iv + authTag + ciphertext), keyed with RSVP_TOKEN_KEY (same deliberate key separation as rsvp_link_id_hash). Recovery path for surfaces that must present the raw token: bulk copy-links, resend/send-invites, WhatsApp compose, GamesManager links, and api/rsvp-link-request.js email (E3-1). ROTATION HAZARD: rotating RSVP_TOKEN_KEY requires a decrypt-old/re-encrypt-new migration before the old key retires. Written by E2 dual-write; null on unmigrated rows."
+    },
+    "plus_one_rsvp_link_id_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "HMAC-SHA256 (hex) of the plus-one's own RSVP token, keyed with RSVP_TOKEN_KEY. Same construction, contract, and rotation hazard as rsvp_link_id_hash; lookup key for the plus-one's /rsvp/:token resolution after E3. Written by E2 dual-write; null on unmigrated rows or when no plus-one token exists."
+    },
+    "plus_one_rsvp_link_id_enc": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "AES-256-GCM ciphertext of the plus-one's own RSVP token, base64(iv + authTag + ciphertext), keyed with RSVP_TOKEN_KEY. Same construction, contract, and rotation hazard as rsvp_link_id_enc. Written by E2 dual-write; null on unmigrated rows or when no plus-one token exists."
     }
   },
   "required": [

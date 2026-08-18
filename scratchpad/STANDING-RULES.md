@@ -366,3 +366,29 @@ Corollary: if a dialog does get triggered, say so and ask the user to dismiss
 it. Do not keep retrying — every subsequent tool call against that tab will
 time out, and the timeouts look like unrelated failures to anyone reading the
 transcript later.
+
+---
+
+## RULE 12 — A PR building against an advisor-applied declaration syncs the mirror
+
+Ratified by the advisor 2026-08-18, from the Guest family Track C.
+
+Schema declarations are applied live by the advisor. `base44/entities/*.jsonc`
+is a **mirror** of that, and mirrors drift: at Track C the Guest mirror still
+carried `"rsvp_link_id_hash": null` and `"rsvp_link_id_enc": null` as
+placeholders and lacked the Track E lifecycle clauses, two whole tracks after
+those fields went live.
+
+That stopped being cosmetic when `tests/persistence/rls-comment-claims.mjs`
+started reading the mirror as its source of truth for RLS. **A drifting mirror
+turns a working guard into a guard checking the wrong thing** — it still passes,
+which is the worst failure mode available.
+
+**The rule:** any PR that builds against a newly applied declaration syncs the
+mirror for that entity in the same PR. Not a follow-up, not a cleanup task —
+the same PR, so the code and its reference land together.
+
+Read the live schema to sync from, never the previous mirror:
+`mcp__claude_ai_Base44__list_entity_schemas` returns full property definitions
+including descriptions. Copying the mirror forward propagates whatever was
+already wrong.
