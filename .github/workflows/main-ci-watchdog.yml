@@ -1,0 +1,50 @@
+# Announces any CI run on main that does not end in success.
+#
+# WHY THIS EXISTS. The gap this closes was never "main can go unverified" — it
+# was that nothing SAID SO. On 2026-08-19 a merge shipped to production while
+# its main CI run had been cancelled, and it was noticed only because someone
+# happened to look. A gate that can be skipped silently is worse than one that
+# fails, because failure announces itself and silence does not.
+#
+# Deliberately fires on EVERY non-success conclusion — cancelled, failure,
+# timed_out, skipped, action_required — rather than just failure. The original
+# incident was a cancellation, which a failure-only check would have missed.
+#
+# This does not gate anything. It cannot: it runs after the fact. Its whole job
+# is to make the after-the-fact state loud.
+name: Main CI watchdog
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    # Only main, and only when CI did not succeed.
+    if: >
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.conclusion != 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Announce the unverified commit
+        env:
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          echo "::error title=main CI did not succeed::CI on main concluded '$CONCLUSION' for ${SHA:0:7} — main is UNVERIFIED. Run: $RUN_URL"
+          echo "### main is unverified" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| | |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| commit | \`${SHA:0:7}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| conclusion | \`$CONCLUSION\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| run | $RUN_URL |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Re-run that workflow, or push a fix. Production may already be serving this commit." >> "$GITHUB_STEP_SUMMARY"
+          exit 1

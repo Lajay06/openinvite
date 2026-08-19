@@ -5,9 +5,28 @@ on:
   push:
     branches: [main]
 
+# cancel-in-progress is deliberately NOT applied to main.
+#
+# Every push shares one ref per branch, so on main the next push cancelled the
+# previous run mid-flight — and because docs commits often follow a merge within
+# seconds, main runs were being killed by the very next commit. Measured
+# 2026-08-19: two main runs cancelled, each ending within ~20s of the following
+# run starting (f5d3d72 and ea22f30). Nothing was wrong with the runner; the
+# config was doing exactly what it said.
+#
+# The consequence was that a merge could land on main with its verification
+# silently discarded. pr:green gates the MERGE correctly and always did, but
+# nothing watched main afterwards.
+#
+# PRs keep the cancellation, which is where it earns its keep: force-pushing a
+# branch should not leave a stale run burning minutes.
+#
+# INTENDED BEHAVIOUR CHANGE: two main runs can now overlap when merges land
+# close together. They are different commits and both deserve verifying, so
+# that is the point rather than a side effect.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
