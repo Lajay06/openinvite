@@ -29,7 +29,7 @@ function WhatsAppQRModal({ phoneNumber, onClose }) {
           Guests can scan this QR code to message you on WhatsApp
         </p>
 
-        <div style={{ background: '#FFFFFF', padding: 16, border: '1px solid rgba(10,10,10,0.08)', marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ background: '#FFFFFF', padding: 16, border: '1px solid rgba(10,10,10,0.12)', marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
           <img src={qrUrl} alt="WhatsApp QR Code" style={{ width: 200, height: 200 }} />
         </div>
 

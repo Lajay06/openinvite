@@ -835,7 +835,7 @@ export default function Help() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <div style={{
-        width: '100%', height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)',
+        width: '100%', height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.12)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         paddingLeft: 32, paddingRight: 32, boxSizing: 'border-box', position: 'relative',
       }}>

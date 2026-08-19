@@ -98,7 +98,7 @@ export default function VendorContactSection({ category, vendorId, onVendorIdCha
   return (
     <div>
       {selectedVendor ? (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 20 }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 20 }}>
           <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>
             {selectedVendor.name}
           </p>
@@ -144,7 +144,7 @@ export default function VendorContactSection({ category, vendorId, onVendorIdCha
       )}
 
       {mode === 'choose' && (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 20, marginTop: selectedVendor ? 16 : 0 }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 20, marginTop: selectedVendor ? 16 : 0 }}>
           <p style={{ ...labelStyle, marginBottom: 14 }}>Add vendor</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>

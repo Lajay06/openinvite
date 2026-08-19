@@ -217,9 +217,9 @@ export default function MoodboardPage() {
       <DashboardPageHeader title="Moodboard" subtitle="Collect and organize inspiration images for your wedding vision" />
 
       {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {stats.map((s, i) => (
-          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
@@ -231,7 +231,7 @@ export default function MoodboardPage() {
       </div>
 
       {/* Ava + actions bar */}
-      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to find inspiration" onClick={() => setAvaOpen(true)} />
         {!readOnly && (
           <div className="flex flex-wrap items-center gap-[10px]">

@@ -846,9 +846,9 @@ export default function SeatingPage() {
       </div>
 
       {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {STAT_CARDS.map((s, i) => (
-          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             <p style={statLabel}>{s.label}</p>
             {loading
               ? <div style={{ width: 48, height: 28, background: 'rgba(10,10,10,0.06)' }} />
@@ -864,7 +864,7 @@ export default function SeatingPage() {
       {/* Event tabs (PR6) — Reception is always first and can't be removed;
           other tabs appear once they have layout, or once added below. */}
       {visibleEventTabs.length > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(10,10,10,0.08)', padding: '0 32px', position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '0 32px', position: 'relative' }}>
           {visibleEventTabs.map(ev => (
             <button
               key={ev.event_id}
@@ -915,7 +915,7 @@ export default function SeatingPage() {
       )}
 
       {/* Ava button + copy layout */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <AvaButton label="Ask Ava to arrange your seating plan" onClick={() => setAvaOpen(true)} />
         {!readOnly && (
           <div style={{ position: 'relative' }} title={!canCopyLayout && eventTables.length > 0 ? `${activeEvent.name} already has tables — copy layout is only offered into an empty event` : undefined}>
@@ -954,7 +954,7 @@ export default function SeatingPage() {
       <div style={{ padding: '24px 32px 48px' }}>
 
         {/* Toolbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           {/* Zoom controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <button
@@ -1039,10 +1039,10 @@ export default function SeatingPage() {
         </div>
 
         {/* ── Three-panel layout ── */}
-        <div style={{ display: 'flex', border: '1px solid rgba(10,10,10,0.08)', height: 650 }}>
+        <div style={{ display: 'flex', border: '1px solid rgba(10,10,10,0.12)', height: 650 }}>
 
           {/* Left: Layout items */}
-          <div style={{ width: 200, borderRight: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
+          <div style={{ width: 200, borderRight: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
             <VenueAssetLibrary
               onAddTable={() => setShowAddTable(true)}
               onAddAsset={handleAddAsset}
@@ -1178,13 +1178,13 @@ export default function SeatingPage() {
           </div>
 
           {/* Right: Guest panel */}
-          <div style={{ width: 260, borderLeft: '1px solid rgba(10,10,10,0.08)', flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ width: 260, borderLeft: '1px solid rgba(10,10,10,0.12)', flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
             {selectedTable ? (
               /* ── TABLE DETAIL MODE ── */
               <>
                 {/* Table header */}
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
                     {readOnly ? (
                       <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1246,7 +1246,7 @@ export default function SeatingPage() {
                 </div>
 
                 {/* Assigned guests list */}
-                <div style={{ flexShrink: 0, maxHeight: 200, overflowY: 'auto', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                <div style={{ flexShrink: 0, maxHeight: 200, overflowY: 'auto', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
                   <div style={{ padding: '8px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                       Assigned ({(selectedTable.assigned_guests || []).length})
@@ -1368,7 +1368,7 @@ export default function SeatingPage() {
               /* ── ALL GUESTS MODE ── */
               <>
                 {/* Filter pills */}
-                <div style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
+                <div style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
                   <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                     {['all', 'unassigned', 'assigned'].map(f => (
                       <Pill key={f} label={f} active={guestFilter === f} onClick={() => setGuestFilter(f)} />

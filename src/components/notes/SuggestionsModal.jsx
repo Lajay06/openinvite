@@ -47,7 +47,7 @@ function SuggestionItem({ suggestion, onAdd, added }) {
   const priColor = PRIORITY_COLORS[suggestion.priority] || PRIORITY_COLORS.medium;
 
   return (
-    <div style={{ background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.08)', padding: '12px 14px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+    <div style={{ background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)', padding: '12px 14px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{suggestion.title}</span>
@@ -193,7 +193,7 @@ export default function SuggestionsModal({ isOpen, onClose, onAddSuggestion }) {
         </div>
 
         {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
           {[{ key: 'general', label: 'General' }, { key: 'themed', label: 'Themed' }].map(tab => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
               style={{ flex: 1, padding: '12px 0', fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer', color: activeTab === tab.key ? '#0A0A0A' : '#444444', borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent' }}>
@@ -224,7 +224,7 @@ export default function SuggestionsModal({ isOpen, onClose, onAddSuggestion }) {
           )}
         </div>
 
-        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
           <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Close</button>
         </div>
       </DialogContent>

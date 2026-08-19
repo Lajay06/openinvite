@@ -286,7 +286,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
         </div>
 
         {/* ── Extra fields ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
 
           {/* Dietary restrictions — pill buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -418,7 +418,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
         </div>
 
         {/* Footer */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <button type="button" onClick={onCancel} className="btn-editorial-secondary" disabled={saving}>
             Cancel
           </button>

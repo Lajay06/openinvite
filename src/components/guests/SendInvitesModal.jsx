@@ -460,9 +460,9 @@ export default function SendInvitesModal({
   const previewPane = (
     <div style={{
       width: 400, flexShrink: 0, display: 'flex', flexDirection: 'column',
-      borderLeft: '1px solid rgba(10,10,10,0.08)', background: '#FAFAFA',
+      borderLeft: '1px solid rgba(10,10,10,0.12)', background: '#FAFAFA',
     }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 4px', ...F }}>
           LIVE PREVIEW
         </p>
@@ -490,7 +490,7 @@ export default function SendInvitesModal({
         {previewGuest ? `Showing: ${previewGuest.name}` : 'Select a guest to preview their exact events — showing all wedding events for now.'}
       </p>
 
-      <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
         <button
           onClick={handleSendTest}
           disabled={sendingTest}
@@ -586,7 +586,7 @@ export default function SendInvitesModal({
                 </div>
 
                 {/* Filter tabs */}
-                <div style={{ display: 'flex', gap: 0, flexWrap: 'wrap', borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 16 }}>
+                <div style={{ display: 'flex', gap: 0, flexWrap: 'wrap', borderBottom: '1px solid rgba(10,10,10,0.12)', marginBottom: 16 }}>
                   {FILTER_TABS.map(opt => (
                     <button key={opt.val} onClick={() => setFilter(opt.val)} style={{
                       padding: '8px 16px', border: 'none', background: 'none', cursor: 'pointer',
@@ -861,7 +861,7 @@ export default function SendInvitesModal({
                   </div>
 
                   {/* Guest list */}
-                  <div style={{ padding: '12px 20px 16px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+                  <div style={{ padding: '12px 20px 16px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
                     <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 8px', ...F }}>SENDING TO</p>
                     <div style={{ maxHeight: 220, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {selectedGuests.map(g => (
@@ -904,7 +904,7 @@ export default function SendInvitesModal({
 
         {/* Footer navigation */}
         <div style={{
-          padding: '16px 32px', borderTop: '1px solid rgba(10,10,10,0.08)',
+          padding: '16px 32px', borderTop: '1px solid rgba(10,10,10,0.12)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexShrink: 0, background: '#FFFFFF',
         }}>

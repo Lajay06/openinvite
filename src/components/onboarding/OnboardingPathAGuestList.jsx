@@ -114,11 +114,11 @@ export default function OnboardingPathAGuestList({ onNext }) {
                 Change file
               </button>
             </div>
-            <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
+            <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
               <div style={{ overflowX: 'auto', maxHeight: 240, overflowY: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: PJS }}>
                   <thead style={{ position: 'sticky', top: 0 }}>
-                    <tr style={{ background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+                    <tr style={{ background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
                       {['Name', 'Email', 'Phone', '+1', 'Status'].map(h => (
                         <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 700, fontSize: 11, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', whiteSpace: 'nowrap' }}>{h}</th>
                       ))}

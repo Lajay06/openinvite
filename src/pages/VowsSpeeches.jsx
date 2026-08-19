@@ -98,9 +98,9 @@ export default function VowsSpeechesPage() {
       <DashboardPageHeader title="Vows & speeches" subtitle="Write, store and polish your vows and wedding-day speeches" />
 
       {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {stats.map((s, i) => (
-          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < stats.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
@@ -112,7 +112,7 @@ export default function VowsSpeechesPage() {
       </div>
 
       {/* Ava + actions bar */}
-      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {/* The page's single AI entry point. It used to open the generic
             AvaModal chat while three other buttons opened the purpose-built
             AIVowsSpeechesAssistant — four buttons, two destinations. This one
@@ -138,9 +138,9 @@ export default function VowsSpeechesPage() {
       ) : (
         <div className="overflow-x-auto" style={{ display: 'flex', height: 'calc(100vh - 260px)', minHeight: 500 }}>
           {/* Left panel — list */}
-          <div style={{ width: 280, borderRight: '1px solid rgba(10,10,10,0.08)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+          <div style={{ width: 280, borderRight: '1px solid rgba(10,10,10,0.12)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
             {/* Tab bar */}
-            <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
               {[{ value: 'vows', label: 'Vows', icon: Heart }, { value: 'speeches', label: 'Speeches', icon: Mic }].map(t => (
                 <button key={t.value} onClick={() => setActiveTab(t.value)}
                   style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: activeTab === t.value ? '#E03553' : '#444444', borderBottom: `2px solid ${activeTab === t.value ? '#E03553' : 'transparent'}`, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: -1 }}>
@@ -204,7 +204,7 @@ export default function VowsSpeechesPage() {
             ) : selectedItem ? (
               <>
                 {/* Viewer header */}
-                <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                   <div>
                     <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{selectedItem.title}</p>
                     <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -226,7 +226,7 @@ export default function VowsSpeechesPage() {
                     {selectedItem.content || <span style={{ color: '#444444', fontStyle: 'italic' }}>No content yet.</span>}
                   </div>
                   {selectedItem.notes && (
-                    <div style={{ maxWidth: 680, marginTop: 32, padding: 16, border: '1px solid rgba(10,10,10,0.08)', background: '#F5F5F5' }}>
+                    <div style={{ maxWidth: 680, marginTop: 32, padding: 16, border: '1px solid rgba(10,10,10,0.12)', background: '#F5F5F5' }}>
                       <p style={{ ...labelStyle, marginBottom: 8 }}>Private notes</p>
                       <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: 'pre-wrap', margin: 0 }}>{selectedItem.notes}</p>
                     </div>

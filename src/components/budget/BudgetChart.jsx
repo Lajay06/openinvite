@@ -76,7 +76,7 @@ export default function BudgetChart({ budgetItems }) {
 
   if (budgetItems.length === 0) {
     return (
-      <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
+      <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
         <DollarSign size={28} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px', display: 'block' }} />
         <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
           Add expenses to see your spending breakdown.
@@ -89,7 +89,7 @@ export default function BudgetChart({ budgetItems }) {
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
 
       {/* Spending by category — donut */}
-      <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '24px' }}>
+      <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
           <DollarSign size={15} style={{ color: '#E03553' }} />
           <p style={sectionTitleStyle}>Spending by category</p>
@@ -146,7 +146,7 @@ export default function BudgetChart({ budgetItems }) {
       </div>
 
       {/* Budget vs actual — bar chart */}
-      <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '24px' }}>
+      <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
           <TrendingUp size={15} style={{ color: '#E03553' }} />
           <p style={sectionTitleStyle}>Budget vs actual</p>

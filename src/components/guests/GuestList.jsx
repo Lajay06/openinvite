@@ -558,11 +558,11 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly,
         {weddingEvents.length === 0 ? (
           <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No events set up for this wedding yet.</span>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid rgba(10,10,10,0.08)', maxWidth: 720 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid rgba(10,10,10,0.12)', maxWidth: 720 }}>
             <div style={{
               display: 'grid', gridTemplateColumns: '1.3fr 0.8fr 0.8fr 0.7fr 1.1fr 0.9fr',
               gap: 8, padding: '8px 12px', background: 'rgba(10,10,10,0.02)',
-              borderBottom: '1px solid rgba(10,10,10,0.08)', alignItems: 'center',
+              borderBottom: '1px solid rgba(10,10,10,0.12)', alignItems: 'center',
             }}>
               {['Event', 'Invited', 'Status', 'Meal', 'Plus-one', 'Responded'].map(h => (
                 <span key={h} style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{h}</span>
@@ -874,7 +874,7 @@ export default function GuestList({
   // add row IS "add your first guest", not a separate empty state.
   if (!loading && guests.length === 0 && !onQuickAdd) {
     return (
-      <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
+      <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
         <Users size={28} style={{ color: '#803D81', margin: '0 auto 12px' }} />
         <p style={{ fontSize: 13, color: '#444444', fontFamily: PJS, margin: 0 }}>
           {readOnly ? 'No guests yet.' : 'No guests yet — add your first.'}
@@ -886,7 +886,7 @@ export default function GuestList({
   const allVisibleSelected = guests.length > 0 && guests.every(g => selectedIds?.has(g.id));
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
       <div style={{ overflowX: 'auto' }}>
         <Table>
           <TableHeader>

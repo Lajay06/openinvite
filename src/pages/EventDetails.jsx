@@ -278,7 +278,7 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
       <DialogContent hideClose title={modalTitle} className="max-w-[640px] max-h-[90vh] overflow-y-auto p-0 gap-0">
 
         {/* Header — mirrors VendorForm */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', position: 'sticky', top: 0, background: '#FFFFFF', zIndex: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)', position: 'sticky', top: 0, background: '#FFFFFF', zIndex: 10 }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
             {modalTitle}
           </span>
@@ -354,7 +354,7 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
           </div>
 
           {/* Details */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <Label htmlFor="ev-dress">Dress code</Label>
               <Input id="ev-dress" value={form.dressCode} onChange={e => set('dressCode', e.target.value)} placeholder="e.g. Black tie, smart casual" />
@@ -375,7 +375,7 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
         </div>
 
         {/* Footer — mirrors VendorForm */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <button type="button" onClick={onCancel} className="btn-editorial-secondary">Cancel</button>
           <button type="button" onClick={handleSave} className="btn-primary">
             {!isFixed && !event?.id ? 'Add event' : 'Save'}
@@ -838,7 +838,7 @@ export default function EventDetailsPage() {
       <DashboardPageHeader title="Event details" subtitle="Manage your wedding event information" />
 
       {/* Ava + actions bar — Add event button appears on Events tab */}
-      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to help plan your event details" />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {!readOnly && tab === 'events' && (
@@ -850,7 +850,7 @@ export default function EventDetailsPage() {
       </div>
 
       {/* Tab bar */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px', overflowX: 'auto' }}>
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', padding: '0 32px', overflowX: 'auto' }}>
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             style={{ padding: '12px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: tab === t.key ? '#0A0A0A' : 'rgba(10,10,10,0.6)', borderBottom: tab === t.key ? '2px solid #0A0A0A' : '2px solid transparent', fontFamily: PJS, transition: 'color 0.15s', whiteSpace: 'nowrap' }}>

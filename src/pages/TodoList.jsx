@@ -291,7 +291,7 @@ export default function TodoList({ embedded = false }) {
             {/* Add task row */}
             <div style={{
               display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24,
-              paddingBottom: 24, borderBottom: '1px solid rgba(10,10,10,0.08)',
+              paddingBottom: 24, borderBottom: '1px solid rgba(10,10,10,0.12)',
             }}>
               <input
                 type="text"
@@ -347,7 +347,7 @@ export default function TodoList({ embedded = false }) {
             </div>
 
             {/* Filter tabs */}
-            <div style={{ display: 'flex', marginBottom: 0, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+            <div style={{ display: 'flex', marginBottom: 0, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
               {['All', 'Active', 'Completed'].map(f => (
                 <button
                   key={f}
@@ -461,7 +461,7 @@ export default function TodoList({ embedded = false }) {
                         onChange={e => setKanbanAdd(p => ({ ...p, desc: e.target.value }))}
                         style={{
                           width: '100%', border: 'none',
-                          borderBottom: '1px solid rgba(10,10,10,0.08)',
+                          borderBottom: '1px solid rgba(10,10,10,0.12)',
                           background: 'none', fontSize: 11, fontFamily: PJS,
                           outline: 'none', padding: '4px 0', marginBottom: 8,
                           boxSizing: 'border-box',
@@ -474,7 +474,7 @@ export default function TodoList({ embedded = false }) {
                         title="Deadline"
                         style={{
                           width: '100%', border: 'none',
-                          borderBottom: '1px solid rgba(10,10,10,0.08)',
+                          borderBottom: '1px solid rgba(10,10,10,0.12)',
                           background: 'none', fontSize: 11,
                           color: kanbanAdd.dueDate ? '#0A0A0A' : 'rgba(10,10,10,0.58)',
                           fontFamily: PJS, outline: 'none', padding: '4px 0', marginBottom: 12,
@@ -757,7 +757,7 @@ function KanbanCard({ task, currentCol, allCols, onMove, onDelete, onSave }) {
           value={description}
           onChange={e => setDescription(e.target.value)}
           style={{
-            width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.08)',
+            width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.12)',
             background: 'none', fontSize: 11, fontFamily: PJS,
             outline: 'none', padding: '4px 0', marginBottom: 8, boxSizing: 'border-box',
           }}
@@ -768,7 +768,7 @@ function KanbanCard({ task, currentCol, allCols, onMove, onDelete, onSave }) {
           onChange={e => setDueDate(e.target.value)}
           title="Deadline"
           style={{
-            width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.08)',
+            width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.12)',
             background: 'none', fontSize: 11, color: dueDate ? '#0A0A0A' : 'rgba(10,10,10,0.58)',
             fontFamily: PJS, outline: 'none', padding: '4px 0', marginBottom: 12, boxSizing: 'border-box',
           }}
@@ -784,7 +784,7 @@ function KanbanCard({ task, currentCol, allCols, onMove, onDelete, onSave }) {
   return (
     <div style={{
       background: '#FFFFFF', padding: '12px 14px', marginBottom: 8,
-      border: '1px solid rgba(10,10,10,0.08)',
+      border: '1px solid rgba(10,10,10,0.12)',
     }}>
       <p
         onClick={() => setEditing(true)}

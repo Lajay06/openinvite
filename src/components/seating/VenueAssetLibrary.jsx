@@ -50,7 +50,7 @@ export default function VenueAssetLibrary({ onAddTable, onAddAsset, onImportLayo
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
 
       {/* Header */}
-      <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+      <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
         <LayoutGrid size={13} style={{ color: 'rgba(10,10,10,0.45)' }} />
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Layout items

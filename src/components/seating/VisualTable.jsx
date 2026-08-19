@@ -121,7 +121,7 @@ function SeatTooltip({ guest, rect }) {
       transform: 'translate(-50%, -100%)',
       background: '#FFFFFF', color: '#0A0A0A', padding: '6px 10px', borderRadius: 6,
       fontSize: 11, fontFamily: PJS, whiteSpace: 'nowrap', pointerEvents: 'none',
-      zIndex: 9999, boxShadow: '0 4px 16px rgba(10,10,10,0.18)', border: '1px solid rgba(10,10,10,0.08)',
+      zIndex: 9999, boxShadow: '0 4px 16px rgba(10,10,10,0.18)', border: '1px solid rgba(10,10,10,0.12)',
     }}>
       <div style={{ fontWeight: 700 }}>{guest ? guest.name : 'Empty seat'}</div>
       {guest?.tags?.length > 0 && (

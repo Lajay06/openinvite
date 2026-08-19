@@ -86,7 +86,7 @@ const [activeTab, setActiveTab] = useState("attire");
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-        <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)' }} />
+        <div style={{ height: 48, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.12)' }} />
         <div style={{ background: '#F5F5F5', height: 44 }} />
         <div style={{ padding: '32px 32px 48px' }}>
           {[120, 80, 80, 60].map((w, i) => (
@@ -102,14 +102,14 @@ const [activeTab, setActiveTab] = useState("attire");
       <DashboardPageHeader title="Styling" subtitle="Attire, flowers and decorations for your big day" />
 
       {/* Ava button */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to help with your wedding style" onClick={() => setAvaOpen(true)} />
       </div>
 
       <div style={{ padding: '32px 32px 48px' }}>
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="bg-transparent border-b border-[rgba(10,10,10,0.08)] h-12 rounded-none px-0 w-full justify-start">
+          <TabsList className="bg-transparent border-b border-[rgba(10,10,10,0.12)] h-12 rounded-none px-0 w-full justify-start">
             <TabsTrigger
               value="attire"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#E03553] data-[state=active]:text-[#E03553] rounded-none pb-3 px-4"

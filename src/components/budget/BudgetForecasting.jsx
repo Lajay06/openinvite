@@ -173,7 +173,7 @@ Be concise, specific, and use dollar figures.`,
 
   if (budgetItems.length === 0) {
     return (
-      <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
+      <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
         <Info size={24} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px', display: 'block' }} />
         <p style={{ fontSize: 13, color: '#444444', ...bodyFont, margin: '0 0 4px' }}>No budget data yet</p>
         <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', ...bodyFont, margin: 0 }}>Add expenses first to see forecasting analysis</p>
@@ -218,7 +218,7 @@ Be concise, specific, and use dollar figures.`,
 
       {/* ── AI results ─────────────────────────────────────────────────────── */}
       {aiInsights && !loadingAI && (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 24 }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 24 }}>
           {/* Health score */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '16px 20px', background: '#F5F5F5', marginBottom: 20 }}>
             <div style={{ textAlign: 'center', flexShrink: 0 }}>
@@ -263,7 +263,7 @@ Be concise, specific, and use dollar figures.`,
       )}
 
       {/* ── Balance projection chart ───────────────────────────────────────── */}
-      <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 24 }}>
+      <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 24 }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', ...bodyFont }}>
           Remaining balance projection
         </p>
@@ -329,7 +329,7 @@ Be concise, specific, and use dollar figures.`,
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
 
         {/* Risk flags */}
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 24 }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
               <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', ...bodyFont }}>Risk flags</p>
@@ -391,7 +391,7 @@ Be concise, specific, and use dollar figures.`,
         </div>
 
         {/* Cost-saving suggestions */}
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 24 }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 24 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', ...bodyFont }}>
             Cost-saving opportunities
           </p>

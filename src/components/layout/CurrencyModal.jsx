@@ -43,7 +43,7 @@ export default function CurrencyModal({ onClose }) {
           />
         </div>
 
-        <div style={{ maxHeight: 280, overflowY: 'auto', border: '1px solid rgba(10,10,10,0.08)', marginBottom: 24 }}>
+        <div style={{ maxHeight: 280, overflowY: 'auto', border: '1px solid rgba(10,10,10,0.12)', marginBottom: 24 }}>
           {filtered.map(c => (
             <button
               key={c.code}

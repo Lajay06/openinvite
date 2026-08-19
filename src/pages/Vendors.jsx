@@ -186,11 +186,11 @@ export default function VendorsPage() {
       <DashboardPageHeader title="My vendors" subtitle="Research, track and manage all your wedding service providers" />
 
       {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {STAT_CARDS.map((s, i) => (
           <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{
             padding: '20px 32px',
-            borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none',
+            borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none',
           }}>
             <p style={statLabelStyle}>{s.label}</p>
             {loading

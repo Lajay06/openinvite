@@ -124,8 +124,8 @@ export default function EmailTemplates({ guests, onUseTemplate }) {
           const sendingTest = sendingTestType === type;
 
           return (
-            <div key={type} style={{ border: '1px solid rgba(10,10,10,0.08)', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+            <div key={type} style={{ border: '1px solid rgba(10,10,10,0.12)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '14px 16px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
                 <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 3px', ...F }}>{TYPE_LABELS[type]}</p>
                 <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0, lineHeight: 1.4, ...F }}>{TYPE_DESCRIPTIONS[type]}</p>
               </div>

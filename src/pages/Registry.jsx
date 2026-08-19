@@ -151,14 +151,14 @@ export default function RegistryPage() {
       <DashboardPageHeader title="Registry" subtitle="Manage your gift registry, products and cash funds" />
 
       {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {[
           { label: 'Total items', value: stats.totalRequested },
           { label: 'Purchased', value: stats.totalPurchased },
           { label: 'Complete', value: stats.completionRate, suffix: '%' },
           { label: 'Total value', value: stats.totalValue, prefix: '$', last: true },
         ].map((s, i) => (
-          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.08)' }}>
+          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.12)' }}>
             <p style={labelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
@@ -177,7 +177,7 @@ export default function RegistryPage() {
       </div>
 
       {/* Ava + actions bar */}
-      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to suggest registry items" onClick={() => setAvaOpen(true)} />
         <div className="flex flex-wrap items-center gap-[10px]">
           <button onClick={() => setShowShareModal(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>

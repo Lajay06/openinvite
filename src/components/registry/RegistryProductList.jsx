@@ -42,7 +42,7 @@ export default function RegistryProductList({ items, onEdit, onDelete, onPurchas
 
   if (items.length === 0) {
     return (
-      <div style={{ padding: '48px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '48px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
         <ShoppingCart size={32} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px' }} />
         <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>No products added yet</p>
         <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add individual products to track purchases.</p>
@@ -125,7 +125,7 @@ export default function RegistryProductList({ items, onEdit, onDelete, onPurchas
         <DialogContent hideClose title="Mark as purchased" className="max-w-[400px] p-0 gap-0">
           {purchaseProduct && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
                 <div>
                   <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Mark as purchased</span>
                   <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>{purchaseProduct.name}</p>
@@ -149,7 +149,7 @@ export default function RegistryProductList({ items, onEdit, onDelete, onPurchas
                   <Textarea value={purchaseData.message} onChange={e => setPurchaseData({ ...purchaseData, message: e.target.value })} placeholder="Add a personal message…" />
                 </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
                 <button onClick={() => setPurchaseProduct(null)} className="btn-editorial-secondary">Cancel</button>
                 <button onClick={handlePurchaseSubmit} disabled={!purchaseData.guest_name} className="btn-primary"
                   style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: purchaseData.guest_name ? 1 : 0.5 }}>

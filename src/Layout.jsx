@@ -569,7 +569,7 @@ function LayoutShell({ children, currentPageName }) {
           zIndex: 50,
           height: 64,
           background: '#FFFFFF',
-          borderBottom: '1px solid rgba(10,10,10,0.08)',
+          borderBottom: '1px solid rgba(10,10,10,0.12)',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 24px',

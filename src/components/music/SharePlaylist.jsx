@@ -68,7 +68,7 @@ export default function SharePlaylist({ slug }) {
           alt={`QR code linking to ${shareUrl}`}
           width={180}
           height={180}
-          style={{ display: 'block', border: '1px solid rgba(10,10,10,0.08)' }}
+          style={{ display: 'block', border: '1px solid rgba(10,10,10,0.12)' }}
         />
         <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginTop: 10 }}>
           Print it for the tables so guests can request a song from their seat.

@@ -257,7 +257,7 @@ export default function LiveStreamingPage() {
 
         {/* Go live toggle — shown once stream is saved */}
         {streamId && (
-          <div style={{ marginTop: 36, padding: '16px 20px', border: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ marginTop: 36, padding: '16px 20px', border: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <div>
               <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 2px' }}>
                 Stream status

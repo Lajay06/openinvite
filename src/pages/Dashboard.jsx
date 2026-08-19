@@ -37,7 +37,7 @@ function QuickLink({ label, url, isLast, collabSuffix }) {
         display: 'flex',
         alignItems: 'center',
         padding: '10px 20px',
-        borderRight: !isLast ? '1px solid rgba(10,10,10,0.08)' : 'none',
+        borderRight: !isLast ? '1px solid rgba(10,10,10,0.12)' : 'none',
         textDecoration: 'none',
         background: hovered ? '#0A0A0A' : 'transparent',
         transition: 'background 0.15s',
@@ -208,7 +208,7 @@ export default function Dashboard() {
       <DashboardPageHeader title="Overall" subtitle="Your wedding planning at a glance" />
 
       {/* Stat cards — 2-col on mobile, 4-col on desktop */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {STAT_CARDS.map((s, i) => (
           <StatCard
             key={i}
@@ -233,7 +233,7 @@ export default function Dashboard() {
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
-          border: '1px solid rgba(10,10,10,0.08)',
+          border: '1px solid rgba(10,10,10,0.12)',
           marginBottom: 24,
         }}>
           {visibleQuickLinks.map((l, i) => (
@@ -253,7 +253,7 @@ export default function Dashboard() {
         </div>
 
         {/* Right: grey panel */}
-        <div className="flex flex-col gap-6 min-w-0 border-t border-[rgba(10,10,10,0.08)] lg:border-t-0 lg:border-l lg:flex-[1_1_0]" style={{ background: '#F7F7F7', padding: '24px 20px 32px' }}>
+        <div className="flex flex-col gap-6 min-w-0 border-t border-[rgba(10,10,10,0.12)] lg:border-t-0 lg:border-l lg:flex-[1_1_0]" style={{ background: '#F7F7F7', padding: '24px 20px 32px' }}>
           <UpcomingTasks schedule={schedule} />
           <RecentActivity guests={guests} budget={budget} schedule={schedule} vendors={vendors} moodboardItems={moodboardItems} tasks={tasks} notes={notes} questionnaireResponses={questionnaireResponses} />
         </div>
@@ -281,7 +281,7 @@ function StatCard({ label, value, suffix, url, collabSuffix = '', isLast, loadin
       style={{
         padding: '24px 32px',
         minHeight: 80,
-        borderRight: !isLast ? '1px solid rgba(10,10,10,0.08)' : 'none',
+        borderRight: !isLast ? '1px solid rgba(10,10,10,0.12)' : 'none',
         borderRadius: 0,
         boxShadow: 'none',
         textDecoration: 'none',

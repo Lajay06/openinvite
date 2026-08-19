@@ -144,7 +144,7 @@ function PropertyModal({ property, onSave, onClose }) {
           ))}
         </div>
 
-        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', gap: 10, flexShrink: 0 }}>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', gap: 10, flexShrink: 0 }}>
           <button onClick={onClose} className="btn-editorial-secondary" style={{ flex: 1, fontSize: 13 }}>Cancel</button>
           <button onClick={() => onSave(form)} className="btn-primary" style={{ flex: 2, fontSize: 13 }}>Save property</button>
         </div>
@@ -238,7 +238,7 @@ export default function AccommodationPage() {
       <DashboardPageHeader title="Accommodation" subtitle="Plan and organize accommodation options for your wedding weekend" />
 
       {/* Ava button + save indicator */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <AvaButton label="Ask Ava about guest accommodation" onClick={() => setAvaOpen(true)} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.6)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
@@ -247,7 +247,7 @@ export default function AccommodationPage() {
       </div>
 
       {/* Tab bar */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', padding: '0 32px' }}>
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer',
@@ -272,7 +272,7 @@ export default function AccommodationPage() {
                   </div>
                 )}
                 {properties.map(property => (
-                  <div key={property.id} style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '14px 16px', display: 'flex', gap: 14 }}>
+                  <div key={property.id} style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '14px 16px', display: 'flex', gap: 14 }}>
                     {property.photoUrl && (
                       <img src={property.photoUrl} alt={property.name} style={{ width: 80, height: 80, objectFit: 'cover', flexShrink: 0 }} onError={e => e.target.style.display = 'none'} />
                     )}

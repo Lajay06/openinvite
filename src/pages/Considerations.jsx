@@ -892,7 +892,7 @@ export default function Considerations() {
       </div>
 
       {/* Tab bar */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', background: '#FFFFFF', overflowX: 'auto', marginTop: 20 }}>
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', background: '#FFFFFF', overflowX: 'auto', marginTop: 20 }}>
         <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 32px', display: 'flex' }}>
           {TABS.map(t => (
             <button

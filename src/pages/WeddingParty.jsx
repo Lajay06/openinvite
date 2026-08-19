@@ -61,7 +61,7 @@ function GuestChip({ name, onRemove }) {
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       background: '#F5F4F0', borderRadius: 999, padding: '4px 8px 4px 4px',
-      border: '1px solid rgba(10,10,10,0.08)',
+      border: '1px solid rgba(10,10,10,0.12)',
     }}>
       <span style={{
         width: 22, height: 22, borderRadius: '50%', background: '#E03553',
@@ -389,13 +389,13 @@ export default function WeddingPartyPage() {
       <DashboardPageHeader title="Wedding party" subtitle="Manage your wedding party members and their details" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', borderTop: '1px solid rgba(10,10,10,0.08)', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ display: 'flex', borderTop: '1px solid rgba(10,10,10,0.12)', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {[
           { label: 'Total members', value: totalMembers },
           { label: 'Bridesmaids', value: (data.bridesmaids || []).length },
           { label: 'Groomsmen', value: (data.groomsmen || []).length },
         ].map((stat, i, arr) => (
-          <div key={stat.label} style={{ flex: 1, padding: '20px 24px', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={stat.label} style={{ flex: 1, padding: '20px 24px', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             <div style={labelStyle}>{stat.label}</div>
             <div style={{ fontSize: 28, fontWeight: 700, color: '#0A0A0A', marginTop: 4, fontFamily: PJS }}>{stat.value}</div>
           </div>
@@ -403,7 +403,7 @@ export default function WeddingPartyPage() {
       </div>
 
       {/* Ava button + save indicator */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <AvaButton label="Ask Ava about your wedding party" onClick={() => setShowAva(true)} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.6)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
@@ -412,7 +412,7 @@ export default function WeddingPartyPage() {
       </div>
 
       {/* Tab bar */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', padding: '0 32px' }}>
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer',

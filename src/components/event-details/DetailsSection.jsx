@@ -11,7 +11,7 @@ export default function DetailsSection({ title, icon: Icon, children, sectionKey
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+    <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', background: 'none', border: 'none', cursor: 'pointer' }}>

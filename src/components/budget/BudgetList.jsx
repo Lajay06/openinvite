@@ -62,7 +62,7 @@ export default function BudgetList({ items, onEdit, onDelete, readOnly = false, 
   if (loading) return null;
   if (items.length === 0) {
     return (
-      <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
+      <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
         <DollarSign size={28} style={{ color: '#DDF762', margin: '0 auto 12px', display: 'block' }} />
         <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
           No expenses yet — add your first.
@@ -72,7 +72,7 @@ export default function BudgetList({ items, onEdit, onDelete, readOnly = false, 
   }
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
       <div style={{ overflowX: 'auto' }}>
         <Table>
           <TableHeader>

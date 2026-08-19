@@ -233,14 +233,14 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
           includes those extra sources the Hub's own CSV/ics export doesn't,
           so it isn't purely redundant. */}
       {!hideChrome && (
-        <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           {[
             { label: 'Total events', value: stats.totalEvents },
             { label: 'Upcoming', value: stats.upcomingEvents },
             { label: 'This month', value: stats.thisMonthEvents },
             { label: 'Past events', value: stats.pastEvents },
           ].map((s, i, arr) => (
-            <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+            <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
               <p style={labelStyle}>{s.label}</p>
               {loading
                 ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
@@ -253,7 +253,7 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
       )}
 
       {/* Ava button + toolbar row */}
-      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to plan your wedding calendar" onClick={() => setAvaOpen(true)} />
         <div className="flex flex-wrap items-center gap-[10px]">
           <button onClick={exportToICalendar} disabled={events.length === 0}
@@ -273,7 +273,7 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
 
         {/* Add Event Form */}
         {!readOnly && showEventForm && (
-          <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '20px 24px' }}>
+          <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '20px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add new event</span>
               <button onClick={() => setShowEventForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={14} /></button>
@@ -317,7 +317,7 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
                 />
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
               <button onClick={() => setShowEventForm(false)} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
               <button onClick={handleAddEvent} className="btn-primary" style={{ fontSize: 13 }}>Add event</button>
             </div>
@@ -325,7 +325,7 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
         )}
 
         {/* Calendar Navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '16px 0', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '16px 0', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <button
             onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
             style={{ width: 32, height: 32, padding: 0, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999, background: 'rgba(10,10,10,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -342,9 +342,9 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
         </div>
 
         {/* Calendar Grid */}
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)' }}>
           {/* Day Headers */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
               <div key={day} style={{ padding: '10px 0', textAlign: 'center', ...labelStyle }}>
                 {day}
@@ -388,7 +388,7 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
 
         {/* Selected Date Panel */}
         {selectedDate && selectedDate.events.length > 0 && (
-          <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '16px 20px' }}>
+          <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '16px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 {selectedDate.date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}

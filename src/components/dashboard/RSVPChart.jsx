@@ -40,8 +40,8 @@ export default function RSVPChart({ guests }) {
   }, [guests]);
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#fff' }}>
-      <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#fff' }}>
+      <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <p style={labelStyle}>Guest response</p>
         <p style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.03em', marginTop: 4 }}>{guests.length} total</p>
       </div>
@@ -86,7 +86,7 @@ export default function RSVPChart({ guests }) {
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div style={{ borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           {rsvpData.map((d) => (
             <div key={d.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(10,10,10,0.05)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

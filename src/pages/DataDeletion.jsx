@@ -19,7 +19,7 @@ export default function DataDeletion() {
             We're sorry to see you go. Your data belongs to you — here's exactly how to remove it.
           </p>
 
-          <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '28px 32px' }}>
+          <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '28px 32px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS }}>1</div>
               <div style={{ flex: 1 }}>
@@ -35,7 +35,7 @@ export default function DataDeletion() {
             </div>
           </div>
 
-          <div style={{ marginTop: 16, border: '1px solid rgba(10,10,10,0.08)', padding: '28px 32px' }}>
+          <div style={{ marginTop: 16, border: '1px solid rgba(10,10,10,0.12)', padding: '28px 32px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 13, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS }}>2</div>
               <div style={{ flex: 1 }}>

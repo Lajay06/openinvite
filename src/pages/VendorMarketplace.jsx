@@ -422,7 +422,7 @@ export default function VendorMarketplace() {
         </div>
 
         {/* Row 3: rating toggle + price pills + sort */}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', paddingBottom: 4, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', paddingBottom: 4, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <button onClick={() => setMinRating(v => !v)}
             style={{ padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, fontFamily: PJS, cursor: 'pointer', border: '1.5px solid', transition: 'all 0.12s',
               borderColor: minRating ? '#F59E0B' : 'rgba(10,10,10,0.15)',

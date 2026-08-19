@@ -42,7 +42,7 @@ function TransportPlaceCard({ place, onRemove }) {
   const [hovered, setHovered] = useState(false);
   const typeLabel = TRANSPORT_TYPES.find(t => t.key === place.type)?.label || 'Transport';
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden', background: '#FFFFFF', position: 'relative' }}
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden', background: '#FFFFFF', position: 'relative' }}
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <div style={{ height: 140, background: '#F5F5F5', position: 'relative', overflow: 'hidden' }}>
         {place.photo_url ? (
@@ -91,7 +91,7 @@ function NoteCard({ note, onRemove, onEdit }) {
   const [draft, setDraft] = useState(note);
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '14px 16px', background: '#FFFFFF', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '14px 16px', background: '#FFFFFF', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
       <FileText size={14} color="rgba(10,10,10,0.45)" style={{ flexShrink: 0, marginTop: 2 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         {editing ? (
@@ -387,7 +387,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {avaSuggestions.map(s => (
-                    <div key={s._avaId} style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '14px 16px', background: '#FAFAFA', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    <div key={s._avaId} style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '14px 16px', background: '#FAFAFA', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                       <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <TransportIcon type={s.type} size={15} />
                       </div>
@@ -506,7 +506,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
 
               {/* Manual entry form */}
               {!selectedPlace && showManual && (
-                <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '16px 16px 18px' }}>
+                <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, padding: '16px 16px 18px' }}>
                   <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
                     <div>
@@ -614,7 +614,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
               )}
 
               {/* Add note inline */}
-              <div style={{ border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '14px 16px' }}>
+              <div style={{ border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, padding: '14px 16px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr auto', gap: '0 12px', alignItems: 'flex-end' }}>
                   <div>
                     <label style={sectionLabel}>Title <span style={{ fontWeight: 400, letterSpacing: 0 }}>(optional)</span></label>

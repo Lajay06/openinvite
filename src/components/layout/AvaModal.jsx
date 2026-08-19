@@ -251,7 +251,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
 
         {/* Quick actions */}
         {quickActions.length > 0 && messages.length === 0 && (
-          <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
+          <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8 }}>Quick actions</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {quickActions.map(action => (
@@ -323,7 +323,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
         </div>
 
         {/* Input */}
-        <div style={{ padding: '12px 20px 16px', borderTop: '1px solid rgba(10,10,10,0.08)', flexShrink: 0, display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+        <div style={{ padding: '12px 20px 16px', borderTop: '1px solid rgba(10,10,10,0.12)', flexShrink: 0, display: 'flex', gap: 10, alignItems: 'flex-end' }}>
           <input
             value={input}
             onChange={e => setInput(e.target.value)}

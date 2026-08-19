@@ -36,7 +36,7 @@ export default function ShareRegistryModal({ onClose, registryData }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title="Share your registry" className="max-w-[520px] max-h-[90vh] overflow-y-auto p-0 gap-0">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Share2 size={14} style={{ color: 'rgba(10,10,10,0.6)' }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Share your registry</span>
@@ -65,7 +65,7 @@ export default function ShareRegistryModal({ onClose, registryData }) {
                 { label: 'Products', value: registryData.products.length },
                 { label: 'Cash funds', value: registryData.customGifts.length },
               ].map((s, i, arr) => (
-                <div key={i} style={{ flex: 1, padding: '16px 20px', border: '1px solid rgba(10,10,10,0.08)', borderRight: i < arr.length - 1 ? 'none' : '1px solid rgba(10,10,10,0.08)', textAlign: 'center' }}>
+                <div key={i} style={{ flex: 1, padding: '16px 20px', border: '1px solid rgba(10,10,10,0.12)', borderRight: i < arr.length - 1 ? 'none' : '1px solid rgba(10,10,10,0.12)', textAlign: 'center' }}>
                   <p style={{ fontSize: 24, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</p>
                   <p style={labelStyle}>{s.label}</p>
                 </div>
@@ -96,7 +96,7 @@ export default function ShareRegistryModal({ onClose, registryData }) {
           {registryData.storeItems.length > 0 && (
             <div>
               <p style={{ ...labelStyle, marginBottom: 10 }}>Registry platforms</p>
-              <div style={{ border: '1px solid rgba(10,10,10,0.08)' }}>
+              <div style={{ border: '1px solid rgba(10,10,10,0.12)' }}>
                 {registryData.storeItems.map((store, i, arr) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.06)' : 'none' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

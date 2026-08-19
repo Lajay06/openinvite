@@ -30,7 +30,7 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title="Add inspiration" className="max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0">
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <ImageIcon size={14} style={{ color: 'rgba(10,10,10,0.6)' }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add inspiration</span>
@@ -75,7 +75,7 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
           {/* Right: preview */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label style={labelStyle}>Preview</Label>
-            <div style={{ aspectRatio: '1/1', border: '1px solid rgba(10,10,10,0.08)', background: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <div style={{ aspectRatio: '1/1', border: '1px solid rgba(10,10,10,0.12)', background: '#F5F5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               {preview
                 ? <img src={preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={() => setPreview('')} />
                 : <div style={{ textAlign: 'center', color: 'rgba(10,10,10,0.6)' }}>
@@ -87,7 +87,7 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
           </div>
         </div>
 
-        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
           <button onClick={handleSubmit} disabled={!formData.title || !formData.image_url} className="btn-primary"
             style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, opacity: !formData.title || !formData.image_url ? 0.5 : 1 }}>

@@ -26,18 +26,18 @@ export default function BudgetSummary({ budget, stats }) {
   }, [budget]);
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#fff' }}>
-      <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#fff' }}>
+      <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <p style={labelStyle}>Budget overview</p>
         <p style={{ ...valueStyle, marginTop: 4 }}>${stats.totalBudget.toLocaleString()}</p>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {[
           { label: 'Total', val: `$${stats.totalBudget.toLocaleString()}` },
           { label: 'Spent', val: `$${stats.totalSpent.toLocaleString()}` },
           { label: 'Remaining', val: `$${Math.abs(stats.remainingBudget).toLocaleString()}` },
         ].map((s, i) => (
-          <div key={s.label} style={{ padding: '16px 24px', borderRight: i < 2 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={s.label} style={{ padding: '16px 24px', borderRight: i < 2 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             <p style={{ ...valueStyle, fontSize: 20, marginTop: 2 }}>{s.val}</p>
           </div>

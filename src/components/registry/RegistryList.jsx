@@ -12,7 +12,7 @@ export default function RegistryList({ items, onEdit, onDelete, loading, readOnl
 
   if (items.length === 0) {
     return (
-      <div style={{ padding: '48px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '48px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
         <Gift size={32} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px' }} />
         <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>No platforms added yet</p>
         <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add your first registry platform link above.</p>
@@ -21,8 +21,8 @@ export default function RegistryList({ items, onEdit, onDelete, loading, readOnl
   }
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)' }}>
-      <div style={{ display: 'flex', padding: '10px 20px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)' }}>
+      <div style={{ display: 'flex', padding: '10px 20px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <span style={{ ...labelStyle, flex: 2 }}>Store</span>
         <span style={{ ...labelStyle, flex: 3 }}>Description</span>
         <span style={{ ...labelStyle, flex: 1, textAlign: 'right' }}>Actions</span>
@@ -30,7 +30,7 @@ export default function RegistryList({ items, onEdit, onDelete, loading, readOnl
       {items.map((item, i) => (
         <div key={item.id} style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', borderBottom: i < items.length - 1 ? '1px solid rgba(10,10,10,0.06)' : 'none' }}>
           <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 40, height: 40, border: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: 40, height: 40, border: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {item.image_url
                 ? <img src={item.image_url} alt={item.store_name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 4 }} />
                 : <Gift size={18} style={{ color: 'rgba(10,10,10,0.25)' }} />

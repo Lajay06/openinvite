@@ -14,13 +14,13 @@ function PollResultCard({ poll }) {
   const maxVotes = Math.max(...poll.options.map(o => o.votes || 0), 1);
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#FFFFFF', marginBottom: 16 }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#FFFFFF', marginBottom: 16 }}>
       {/* Header */}
       <div style={{ padding: '18px 20px 14px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
             {poll.emoji && <span style={{ fontSize: 16 }}>{poll.emoji}</span>}
-            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.08)', borderRadius: 999 }}>
+            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999 }}>
               {poll.category}
             </span>
             <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: poll.isActive ? '#DDF762' : 'rgba(10,10,10,0.05)', color: poll.isActive ? '#0A1930' : 'rgba(10,10,10,0.6)' }}>
@@ -152,14 +152,14 @@ export default function GuestSuitePolls() {
 
       {/* Summary stats strip */}
       {!loading && polls.length > 0 && (
-        <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           {[
             { label: 'Total polls', value: polls.length },
             { label: 'Active polls', value: activePolls.length },
             { label: 'Ended polls', value: endedPolls.length },
             { label: 'Total votes', value: totalVotesAll, last: true },
           ].map((s, i) => (
-            <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '16px 32px', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.08)' }}>
+            <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '16px 32px', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.12)' }}>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 4px' }}>{s.label}</p>
               <p style={{ fontSize: 24, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0, lineHeight: 1 }}>{s.value}</p>
             </div>

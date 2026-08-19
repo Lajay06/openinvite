@@ -205,7 +205,7 @@ export default function UniverseStudio() {
               + venue/date + Ava button — matching the single toolbar-row
               pattern every other dashboard page already uses (Guests/
               Budget's "Ava button left, actions right" row). */}
-          <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+          <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
                 You're in {active.name}

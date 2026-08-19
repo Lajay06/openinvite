@@ -21,7 +21,7 @@ export default function VowSpeechEditor({ initialData, onSave, onCancel }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           {initialData?.id ? 'Edit' : 'New'} {data.type === 'vow' ? 'vow' : 'speech'}
         </span>
@@ -72,7 +72,7 @@ export default function VowSpeechEditor({ initialData, onSave, onCancel }) {
       </div>
 
       {/* Footer */}
-      <div style={{ padding: '16px 32px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
+      <div style={{ padding: '16px 32px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
         <button type="button" onClick={onCancel} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
         <button type="button" onClick={() => onSave(data)} disabled={!data.title || !data.author} className="btn-primary"
           style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, opacity: !data.title || !data.author ? 0.5 : 1 }}>

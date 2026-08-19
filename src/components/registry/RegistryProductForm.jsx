@@ -39,7 +39,7 @@ export default function RegistryProductForm({ item, onSubmit, onClose }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title={item ? 'Edit product' : 'Add product'} className="max-w-[560px] max-h-[90vh] overflow-y-auto p-0 gap-0">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', position: 'sticky', top: 0, background: '#FFFFFF', zIndex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)', position: 'sticky', top: 0, background: '#FFFFFF', zIndex: 1 }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {item ? 'Edit product' : 'Add product'}
           </span>
@@ -111,7 +111,7 @@ export default function RegistryProductForm({ item, onSubmit, onClose }) {
               <Textarea id="notes" value={formData.notes} onChange={e => set('notes', e.target.value)} placeholder="Internal notes (not visible to guests)" />
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', position: 'sticky', bottom: 0, background: '#FFFFFF' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', position: 'sticky', bottom: 0, background: '#FFFFFF' }}>
             <button type="button" onClick={onClose} className="btn-editorial-secondary">Cancel</button>
             <button type="submit" className="btn-primary">{item ? 'Update product' : 'Add product'}</button>
           </div>

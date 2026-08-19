@@ -49,13 +49,13 @@ function PollCard({ poll, onEnd, onDelete, onShare, onInsightGenerated }) {
   const maxVotes = Math.max(...poll.options.map(o => o.votes || 0), 1);
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', marginBottom: 16, background: '#FFFFFF' }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', marginBottom: 16, background: '#FFFFFF' }}>
       {/* Header */}
       <div style={{ padding: '18px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 18 }}>{poll.emoji}</span>
-            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.08)', borderRadius: 999 }}>
+            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999 }}>
               {poll.category}
             </span>
             {!poll.isActive && (
@@ -155,7 +155,7 @@ function TemplateCard({ tpl, onClick }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       {...interactiveDivProps(onClick)}
-      style={{ border: `1px solid ${hov ? 'rgba(10,10,10,0.18)' : 'rgba(10,10,10,0.08)'}`, padding: '16px', cursor: 'pointer', background: hov ? 'rgba(10,10,10,0.02)' : 'transparent', transition: 'all 0.15s' }}
+      style={{ border: `1px solid ${hov ? 'rgba(10,10,10,0.18)' : 'rgba(10,10,10,0.12)'}`, padding: '16px', cursor: 'pointer', background: hov ? 'rgba(10,10,10,0.02)' : 'transparent', transition: 'all 0.15s' }}
     >
       <div style={{ fontSize: 22, marginBottom: 8 }}>{tpl.emoji}</div>
       <p style={{ fontFamily: PJS, fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px' }}>{tpl.category}</p>
@@ -435,7 +435,7 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
       <DashboardPageHeader title="Polls & games" subtitle="Involve your guests in the planning, and run private games only you can see the answers to" />
 
       {/* Section tabs: Polls | Games */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <div style={{ padding: '0 32px', display: 'flex' }}>
           {SECTIONS.map(s => (
             <button key={s.key} onClick={() => setSection(s.key)} style={{
@@ -471,7 +471,7 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
       </div>
 
       {/* Tab bar */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', marginTop: 16 }}>
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', marginTop: 16 }}>
         <div style={{ padding: '0 32px', display: 'flex' }}>
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{

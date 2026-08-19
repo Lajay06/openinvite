@@ -83,7 +83,7 @@ export default function PendingImportsPanel({ submissions, guests, onClose, onCh
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent style={{ maxWidth: 640, padding: 0 }}>
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>Pending imports</p>
             <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0', fontFamily: PJS }}>

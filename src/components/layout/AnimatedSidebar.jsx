@@ -287,7 +287,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
         width: 200,
         zIndex: 40,
         background: "#FFFFFF",
-        borderRight: "1px solid rgba(10,10,10,0.08)",
+        borderRight: "1px solid rgba(10,10,10,0.12)",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -354,7 +354,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
       </div>
 
       {/* Bottom static actions */}
-      <div style={{ borderTop: "1px solid rgba(10,10,10,0.08)", paddingTop: 4, paddingBottom: 4, flexShrink: 0 }}>
+      <div style={{ borderTop: "1px solid rgba(10,10,10,0.12)", paddingTop: 4, paddingBottom: 4, flexShrink: 0 }}>
 
         {/* Quick tips */}
         {!isCollaborator && onOpenTips && (
@@ -480,7 +480,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#FFFFFF" }}>
       {/* Logo */}
-      <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(10,10,10,0.08)", flexShrink: 0 }}>
+      <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(10,10,10,0.12)", flexShrink: 0 }}>
         <img
           src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
           alt="Openinvite"
@@ -640,7 +640,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
       </div>
 
       {/* User + account section */}
-      <div style={{ borderTop: "1px solid rgba(10,10,10,0.08)", flexShrink: 0 }}>
+      <div style={{ borderTop: "1px solid rgba(10,10,10,0.12)", flexShrink: 0 }}>
         {/* Avatar + name/email */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px 10px" }}>
           <div style={{
