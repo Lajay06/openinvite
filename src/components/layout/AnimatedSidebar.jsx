@@ -663,7 +663,11 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
             )}
           </div>
         </div>
-        <div style={{ height: 1, background: "rgba(10,10,10,0.08)", margin: "0 16px" }} />
+        {/* Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
+            regardless of implementation. This one is a background fill, not a
+            border, so the feel-pass property guard skipped it; the guard is
+            unchanged and this exemption lives here at the site. */}
+        <div style={{ height: 1, background: "rgba(10,10,10,0.12)", margin: "0 16px" }} />
         {/* Account + Collaborate */}
         {[
           { icon: CreditCard, label: "Account",      action: () => { onClose?.(); navigate("/account"); } },
@@ -684,7 +688,11 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
             </span>
           </div>
         ))}
-        <div style={{ height: 1, background: "rgba(10,10,10,0.08)", margin: "2px 16px" }} />
+        {/* Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
+            regardless of implementation. This one is a background fill, not a
+            border, so the feel-pass property guard skipped it; the guard is
+            unchanged and this exemption lives here at the site. */}
+        <div style={{ height: 1, background: "rgba(10,10,10,0.12)", margin: "2px 16px" }} />
         {/* Log out */}
         <div
           onClick={mobileLogout}

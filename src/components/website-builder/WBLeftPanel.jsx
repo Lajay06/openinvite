@@ -77,7 +77,9 @@ function SLabel({ children, onClick, isOpen }) {
 }
 
 function Divider() {
-  return <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '8px 0' }} />;
+  // Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE
+  // value regardless of implementation (background, not border).
+  return <div style={{ height: 1, background: 'rgba(255,255,255,0.12)', margin: '8px 0' }} />;
 }
 
 export default function WBLeftPanel({ details, onChange, currentPage, onPageChange, selectedAsset, onAssetSelect }) {
@@ -277,7 +279,11 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
       </div>{/* end design collapsible */}
 
       {/* ── Assets ── */}
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 0 0' }} />
+      {/* Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
+          regardless of implementation. This one is a background fill, not a
+          border, so the feel-pass property guard skipped it; the guard is
+          unchanged and this exemption lives here at the site. */}
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.12)', margin: '4px 0 0' }} />
       <SLabel onClick={() => setAssetsOpen(o => !o)} isOpen={assetsOpen}>Assets</SLabel>
       <div style={{ overflow: 'hidden', maxHeight: assetsOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
       {ASSETS.map(({ id, name, icon: Icon }) => {

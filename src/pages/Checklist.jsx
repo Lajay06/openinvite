@@ -224,7 +224,11 @@ function PlanningOverview() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 <span style={labelStyle}>{group.group}</span>
                 <span style={{ fontSize: 11, color: '#444444', fontFamily: PJS }}>({groupDone}/{group.items.length})</span>
-                <div style={{ flex: 1, height: 1, background: 'rgba(10,10,10,0.08)' }} />
+                {/* Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
+                    regardless of implementation. This one is a background fill, not a
+                    border, so the feel-pass property guard skipped it; the guard is
+                    unchanged and this exemption lives here at the site. */}
+                <div style={{ flex: 1, height: 1, background: 'rgba(10,10,10,0.12)' }} />
               </div>
               <div style={{ border: '1px solid rgba(10,10,10,0.12)' }}>
                 {group.items.map((item, idx) => {
