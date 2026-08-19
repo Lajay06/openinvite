@@ -44,7 +44,7 @@ function PlatformCard({ item }) {
           {item.store_name}
         </p>
         {item.description && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, lineHeight: 1.5 }}>
             {item.description}
           </p>
         )}
@@ -94,7 +94,7 @@ function ProductCard({ product }) {
           </p>
         )}
         {product.description && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, lineHeight: 1.5 }}>
             {product.description}
           </p>
         )}
@@ -156,7 +156,7 @@ function CashFundCard({ fund }) {
           </span>
         )}
         {fund.description && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, margin: '4px 0 0', lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '4px 0 0', lineHeight: 1.5 }}>
             {fund.description}
           </p>
         )}
@@ -230,7 +230,7 @@ export default function GuestSuiteRegistry() {
             <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 8px' }}>
               No registry items added yet
             </p>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: '0 0 24px', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 24px', lineHeight: 1.6 }}>
               Add gifts, platforms, and cash funds in Finances → Registry and they'll appear here for guests.
             </p>
             <button

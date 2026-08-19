@@ -70,7 +70,7 @@ function PlaceCard({ place, onRemove }) {
           )}
         </div>
         {place.note && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 8px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.5 }}>"{place.note}"</p>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 8px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.5 }}>"{place.note}"</p>
         )}
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           {place.maps_url && (
@@ -230,7 +230,7 @@ function AddPlaceCard({ destination, onAdd }) {
             <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
               Couldn't get location —{' '}
               <button type="button" onClick={handleUseLocation}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.6)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
             </span>
           )}
           {geoState === 'unavailable' && (

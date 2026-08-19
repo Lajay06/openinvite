@@ -101,7 +101,7 @@ function PollResultCard({ poll }) {
           {showComments && (
             <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
               {poll.comments.slice(-8).map((c, i) => (
-                <p key={i} style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.5)', fontStyle: 'italic', margin: 0, lineHeight: 1.5 }}>
+                <p key={i} style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', fontStyle: 'italic', margin: 0, lineHeight: 1.5 }}>
                   "{c.text}"
                 </p>
               ))}
@@ -180,7 +180,7 @@ export default function GuestSuitePolls() {
             <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 8px' }}>
               No polls created yet
             </p>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: '0 0 24px', lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 24px', lineHeight: 1.6 }}>
               Create polls in Guests → Polls & games to involve your guests in the planning. Results will appear here live.
             </p>
             <button

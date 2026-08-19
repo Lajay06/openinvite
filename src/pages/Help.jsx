@@ -844,7 +844,7 @@ export default function Help() {
         </span>
       </div>
       <div style={{ background: '#F5F5F5', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Guides, tutorials, and FAQs</span>
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Guides, tutorials, and FAQs</span>
       </div>
 
       <div style={{ padding: '40px 40px 80px', maxWidth: 1100, margin: '0 auto', boxSizing: 'border-box' }}>

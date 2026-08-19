@@ -463,11 +463,11 @@ export default function SendInvitesModal({
       borderLeft: '1px solid rgba(10,10,10,0.08)', background: '#FAFAFA',
     }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.5)', letterSpacing: '0.08em', margin: '0 0 4px', ...F }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 4px', ...F }}>
           LIVE PREVIEW
         </p>
         {channel !== 'whatsapp' && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.5)', margin: 0, ...F }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>
             <strong style={{ color: '#0A0A0A' }}>Subject:</strong> {previewSubject || '—'}
           </p>
         )}
@@ -566,7 +566,7 @@ export default function SendInvitesModal({
                 <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
                   Who are you sending to?
                 </h3>
-                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '0 0 20px' }}>
+                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>
                   Choose the email type, then select guests.
                 </p>
 
@@ -577,7 +577,7 @@ export default function SendInvitesModal({
                       padding: '7px 16px', border: '1px solid',
                       borderColor: type === t ? '#E03553' : 'rgba(10,10,10,0.12)',
                       background: type === t ? '#FFF0F3' : '#FFFFFF',
-                      color: type === t ? '#E03553' : 'rgba(10,10,10,0.55)',
+                      color: type === t ? '#E03553' : 'rgba(10,10,10,0.6)',
                       fontSize: 13, fontWeight: 600, cursor: 'pointer', borderRadius: 999, ...F,
                     }}>
                       {TYPE_LABELS[t]}
@@ -681,7 +681,7 @@ export default function SendInvitesModal({
                 <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
                   Compose your message
                 </h3>
-                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '0 0 24px' }}>
+                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
                   Personalize the message — the preview on the right updates as you type.
                 </p>
 
@@ -694,7 +694,7 @@ export default function SendInvitesModal({
                 </div>
 
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.5)', letterSpacing: '0.08em', marginBottom: 6 }}>SUBJECT LINE</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>SUBJECT LINE</label>
                   <input
                     type="text"
                     value={subject}
@@ -707,7 +707,7 @@ export default function SendInvitesModal({
                   />
                 </div>
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.5)', letterSpacing: '0.08em', marginBottom: 6 }}>MESSAGE BODY</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>MESSAGE BODY</label>
                   <textarea
                     value={messageBody}
                     onChange={e => { setMessageBody(e.target.value); setBodyEdited(true); }}
@@ -722,7 +722,7 @@ export default function SendInvitesModal({
 
                 {/* Banner image control */}
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.5)', letterSpacing: '0.08em', marginBottom: 6 }}>BANNER IMAGE</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>BANNER IMAGE</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {[
                       { val: 'wedding', label: 'Wedding photo', disabled: !hasWeddingPhoto },
@@ -739,7 +739,7 @@ export default function SendInvitesModal({
                           padding: '7px 14px', border: '1px solid',
                           borderColor: bannerChoice === opt.val ? '#E03553' : 'rgba(10,10,10,0.12)',
                           background: bannerChoice === opt.val ? '#FFF0F3' : '#FFFFFF',
-                          color: opt.disabled ? 'rgba(10,10,10,0.25)' : bannerChoice === opt.val ? '#E03553' : 'rgba(10,10,10,0.55)',
+                          color: opt.disabled ? 'rgba(10,10,10,0.25)' : bannerChoice === opt.val ? '#E03553' : 'rgba(10,10,10,0.6)',
                           fontSize: 12, fontWeight: 600, cursor: opt.disabled ? 'not-allowed' : 'pointer', borderRadius: 999, ...F,
                         }}
                       >
@@ -757,7 +757,7 @@ export default function SendInvitesModal({
                 <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
                   How would you like to send?
                 </h3>
-                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '0 0 28px' }}>
+                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 28px' }}>
                   Choose one or more channels — the preview updates to match.
                 </p>
 
@@ -811,7 +811,7 @@ export default function SendInvitesModal({
                               <span style={{ fontSize: 10, fontWeight: 700, color: '#E03553', background: '#FFF0F3', padding: '2px 8px', borderRadius: 999 }}>RECOMMENDED</span>
                             )}
                           </div>
-                          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', margin: '0 0 4px', ...F }}>{opt.desc}</p>
+                          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 4px', ...F }}>{opt.desc}</p>
                           <p style={{ fontSize: 12, fontWeight: 600, color: active ? '#E03553' : 'rgba(10,10,10,0.6)', margin: 0, ...F }}>{opt.countLabel}</p>
                         </div>
                         {opt.skip && (
@@ -841,7 +841,7 @@ export default function SendInvitesModal({
                 <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
                   Ready to send?
                 </h3>
-                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '0 0 24px' }}>
+                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
                   Review the details before sending.
                 </p>
 
@@ -879,7 +879,7 @@ export default function SendInvitesModal({
 
                 {/* What happens next */}
                 <div style={{ background: '#F7F7F7', borderRadius: 10, padding: '16px 20px' }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.5)', letterSpacing: '0.08em', margin: '0 0 12px', ...F }}>WHAT HAPPENS NEXT</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 12px', ...F }}>WHAT HAPPENS NEXT</p>
                   {[
                     'Each guest gets a unique personal RSVP link',
                     'RSVPs will appear in your guest list automatically',
@@ -911,7 +911,7 @@ export default function SendInvitesModal({
           {/* Left: selected count or back button */}
           <div>
             {step === 1 ? (
-              <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.5)', margin: 0, ...F }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>
                 {selected.size > 0
                   ? <><strong style={{ color: '#0A0A0A' }}>{selected.size}</strong> guest{selected.size !== 1 ? 's' : ''} selected</>
                   : 'Select at least one guest'

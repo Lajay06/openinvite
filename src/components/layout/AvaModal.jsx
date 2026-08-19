@@ -101,7 +101,7 @@ function ActionCard({ action, onConfirm, onCancel }) {
       {action.status === 'pending' && (
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={onCancel}
-            style={{ padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: '1px solid rgba(10,10,10,0.15)', background: 'none', color: 'rgba(10,10,10,0.5)' }}>
+            style={{ padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: '1px solid rgba(10,10,10,0.15)', background: 'none', color: 'rgba(10,10,10,0.6)' }}>
             Cancel
           </button>
           <button onClick={onConfirm}

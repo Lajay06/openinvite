@@ -28,7 +28,7 @@ function CookieTable({ rows }) {
             <tr key={i} style={{ borderBottom: '1px solid rgba(10,10,10,0.06)', background: i % 2 === 0 ? 'rgba(10,10,10,0.02)' : 'transparent' }}>
               <td style={{ padding: '10px 12px', fontWeight: 600, color: '#0A0A0A', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>{row[0]}</td>
               <td style={{ padding: '10px 12px', color: 'rgba(10,10,10,0.7)' }}>{row[1]}</td>
-              <td style={{ padding: '10px 12px', color: 'rgba(10,10,10,0.5)', whiteSpace: 'nowrap' }}>{row[2]}</td>
+              <td style={{ padding: '10px 12px', color: 'rgba(10,10,10,0.6)', whiteSpace: 'nowrap' }}>{row[2]}</td>
             </tr>
           ))}
         </tbody>

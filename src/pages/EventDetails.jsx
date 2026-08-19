@@ -299,7 +299,7 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
                   <div style={{ display: 'flex', gap: 0, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999, overflow: 'hidden', width: 'fit-content' }}>
                     {[['pre', 'Pre-wedding'], ['post', 'Post-wedding']].map(([k, lbl]) => (
                       <button key={k} type="button" onClick={() => handleKindChange(k)}
-                        style={{ padding: '6px 18px', background: kind === k ? '#0A0A0A' : '#FFF', color: kind === k ? '#FFF' : 'rgba(10,10,10,0.55)', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: PJS, transition: 'all 0.15s' }}>
+                        style={{ padding: '6px 18px', background: kind === k ? '#0A0A0A' : '#FFF', color: kind === k ? '#FFF' : 'rgba(10,10,10,0.6)', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: PJS, transition: 'all 0.15s' }}>
                         {lbl}
                       </button>
                     ))}
@@ -431,7 +431,7 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
         {/* Date · time */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 8 }}>
           <Calendar size={13} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0, marginTop: 1 }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, lineHeight: 1.3 }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, lineHeight: 1.3 }}>
             {dateTimeStr || 'Date to be confirmed'}
           </span>
         </div>
@@ -439,7 +439,7 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
         {/* Location */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7 }}>
           <MapPin size={13} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0, marginTop: 1 }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, lineHeight: 1.3 }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, lineHeight: 1.3 }}>
             {locationLine || 'Location to be confirmed'}
           </span>
         </div>

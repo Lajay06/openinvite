@@ -78,7 +78,7 @@ export default function DevReset() {
         <h1 style={{ fontSize: 28, fontWeight: 800, color: '#0A0A0A', margin: '0 0 8px' }}>
           Reset account data
         </h1>
-        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '0 0 32px', lineHeight: 1.6 }}>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 32px', lineHeight: 1.6 }}>
           Deletes all guests, budget items, schedule events, vendors, moodboard items, and notes from your account,
           and resets the onboarding flag so you can run onboarding fresh.
         </p>
@@ -125,7 +125,7 @@ export default function DevReset() {
 
         {status === 'done' && (
           <div style={{ marginTop: 24 }}>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', marginBottom: 16 }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 16 }}>
               All done. You can now go through onboarding with a clean account.
             </p>
             <div style={{ display: 'flex', gap: 12 }}>

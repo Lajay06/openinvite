@@ -370,7 +370,7 @@ Be concise, specific, and use dollar figures.`,
                       ...(flag.spent > 0 ? [{ l: 'Spent', v: fmt(flag.spent) }] : []),
                       { l: 'Benchmark', v: fmt(flag.benchmark) },
                     ].map(({ l, v }) => (
-                      <span key={l} style={{ fontSize: 10, color: 'rgba(10,10,10,0.5)', ...bodyFont }}>
+                      <span key={l} style={{ fontSize: 10, color: 'rgba(10,10,10,0.6)', ...bodyFont }}>
                         {l}: <strong style={{ color: '#0A0A0A' }}>{v}</strong>
                       </span>
                     ))}

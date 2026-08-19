@@ -1071,7 +1071,7 @@ export default function GuestList({
                     <TableCell colSpan={2} style={{ paddingTop: 5, paddingBottom: 5, paddingLeft: 52 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', userSelect: 'none', lineHeight: 1 }}>↳</span>
-                        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, fontStyle: 'italic' }}>
+                        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, fontStyle: 'italic' }}>
                           {guest.plus_one_name || 'Plus one'}
                         </span>
                       </div>

@@ -48,7 +48,7 @@ export default function UltraGate({
           <h2 style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', margin: '0 0 12px', letterSpacing: '-0.02em', lineHeight: 1.2, ...F }}>
             {heading}
           </h2>
-          <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.55)', lineHeight: 1.7, margin: '0 0 32px', ...F }}>
+          <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.7, margin: '0 0 32px', ...F }}>
             {description}
           </p>
           <button

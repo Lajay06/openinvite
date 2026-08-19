@@ -226,7 +226,7 @@ export default function ExperienceGuideTab({ details }) {
 function CategoriesTab({ guide, onToggleCategory }) {
   return (
     <div>
-      <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: '0 0 28px', lineHeight: 1.6, maxWidth: 560 }}>
+      <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 28px', lineHeight: 1.6, maxWidth: 560 }}>
         Toggle which sections appear in your guest guide.
       </p>
       <div style={{ borderTop: '1px solid rgba(10,10,10,0.08)' }}>
@@ -392,7 +392,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
               <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                 Couldn't get location —{' '}
                 <button type="button" onClick={handleUseLocation}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.6)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
               </span>
             )}
             {geoState === 'unavailable' && (
@@ -653,7 +653,7 @@ function SavedPlaceCard({ place, onRemove }) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
           {/* Category badge */}
-          <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>
+          <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             {place.categoryLabel}
           </span>
           {place.rating && (
@@ -667,7 +667,7 @@ function SavedPlaceCard({ place, onRemove }) {
         </div>
 
         {place.note && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.5)', margin: '0 0 6px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.4 }}>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.4 }}>
             "{place.note}"
           </p>
         )}
@@ -912,7 +912,7 @@ Rules:
 
       {allSavedPlaces.length === 0 && (
         <div style={{ padding: '12px 16px', background: 'rgba(10,10,10,0.03)', borderRadius: 6, marginBottom: 24, border: '1px solid rgba(10,10,10,0.06)' }}>
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: 0 }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
             Tip: Add places in the Places tab first — Ava will use them to build a personalized itinerary.
           </p>
         </div>
@@ -1008,12 +1008,12 @@ function ActivityRow({ activity, onRemove }) {
           {activity.duration && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{activity.duration}</span>}
         </div>
         {activity.category && (
-          <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.5)', fontFamily: PJS, display: 'inline-block', marginBottom: 4 }}>
+          <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'inline-block', marginBottom: 4 }}>
             {activity.category}
           </span>
         )}
         {activity.description && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: 0, fontFamily: PJS, lineHeight: 1.5 }}>{activity.description}</p>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, lineHeight: 1.5 }}>{activity.description}</p>
         )}
         {!activity.description && (activity.note) && (
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS, fontStyle: 'italic' }}>{activity.note}</p>
@@ -1066,7 +1066,7 @@ function AddActivityInline({ block, allSavedPlaces, onAdd }) {
         {[['place', 'From saved places'], ['custom', 'Custom activity']].map(([val, label]) => (
           <button key={val} onClick={() => setType(val)} style={{
             padding: '5px 12px', border: 'none', fontSize: 11, fontWeight: 600, fontFamily: PJS, cursor: 'pointer',
-            background: type === val ? '#0A0A0A' : '#FFFFFF', color: type === val ? '#FFFFFF' : 'rgba(10,10,10,0.5)',
+            background: type === val ? '#0A0A0A' : '#FFFFFF', color: type === val ? '#FFFFFF' : 'rgba(10,10,10,0.6)',
             borderRight: val === 'place' ? '1px solid rgba(10,10,10,0.1)' : 'none',
           }}>{label}</button>
         ))}
@@ -1166,7 +1166,7 @@ function PublishTab({ details, guide, destination, onSaveField, onGenerateIntro,
             <h3 style={{ fontSize: 17, fontWeight: 600, color: '#0A0A0A', margin: '0 0 8px', fontFamily: PJS }}>
               Your guide is hidden
             </h3>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '0 0 24px', fontFamily: PJS, lineHeight: 1.6, maxWidth: 380, marginLeft: 'auto', marginRight: 'auto' }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px', fontFamily: PJS, lineHeight: 1.6, maxWidth: 380, marginLeft: 'auto', marginRight: 'auto' }}>
               When published, a "Guide" link appears in your wedding website navigation.
             </p>
             <button onClick={() => onSaveField('published', true)} className="btn-primary" style={{ fontSize: 14, padding: '10px 28px' }}>

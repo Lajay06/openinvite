@@ -275,7 +275,7 @@ function UltraCluster({ steps, navigate }) {
     <div style={{ marginTop: 40, paddingTop: 32, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
         <Crown size={14} style={{ color: '#F59E0B' }} />
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.5)', textTransform: 'uppercase', margin: 0 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', margin: 0 }}>
           What Ultra adds
         </p>
       </div>
@@ -286,7 +286,7 @@ function UltraCluster({ steps, navigate }) {
             <Lock size={13} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0, marginTop: 2 }} />
             <div>
               <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px' }}>{s.title}</p>
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: 0, lineHeight: 1.5 }}>{s.purpose}</p>
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, lineHeight: 1.5 }}>{s.purpose}</p>
             </div>
           </div>
         ))}

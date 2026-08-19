@@ -52,7 +52,7 @@ export default function RSVPChart({ guests }) {
               <CartesianGrid vertical={false} stroke="#E5E5E5" strokeDasharray="0" />
               <XAxis
                 dataKey="name"
-                tick={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, fill: 'rgba(10,10,10,0.5)' }}
+                tick={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, fill: 'rgba(10,10,10,0.6)' }}
                 axisLine={false}
                 tickLine={false}
               />

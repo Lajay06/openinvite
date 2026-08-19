@@ -80,7 +80,7 @@ function ErrorFallback() {
       <h1 className="text-2xl font-bold text-[#0A0A0A] tracking-tight mb-3">
         Something went wrong.
       </h1>
-      <p className="text-sm text-[rgba(10,10,10,0.5)] leading-relaxed mb-8 max-w-xs">
+      <p className="text-sm text-[rgba(10,10,10,0.6)] leading-relaxed mb-8 max-w-xs">
         An unexpected error occurred. Please refresh the page to continue.
       </p>
       <button

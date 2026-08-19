@@ -59,7 +59,7 @@ export default function DataDeletion() {
               <li>Your published wedding website, if you created one</li>
               <li>Your AI assistant conversation history</li>
             </ul>
-            <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(10,10,10,0.5)', fontFamily: PJS }}>
+            <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
               Backup copies are purged within 90 days of deletion. Some transaction records may be retained longer where required by law. See our <Link to="/privacy-policy" style={LK}>Privacy policy</Link> for full detail.
             </p>
           </div>

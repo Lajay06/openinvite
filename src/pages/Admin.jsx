@@ -346,7 +346,7 @@ export default function Admin() {
                         fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
                         padding: '3px 10px', borderRadius: 999, fontFamily: PJS,
                         background: p.status === 'paid' ? 'rgba(34,197,94,0.12)' : 'rgba(10,10,10,0.06)',
-                        color: p.status === 'paid' ? '#16a34a' : 'rgba(10,10,10,0.5)',
+                        color: p.status === 'paid' ? '#16a34a' : 'rgba(10,10,10,0.6)',
                       }}>
                         {p.status}
                       </span>

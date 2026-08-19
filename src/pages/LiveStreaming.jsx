@@ -262,7 +262,7 @@ export default function LiveStreamingPage() {
               <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 2px' }}>
                 Stream status
               </p>
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: 0 }}>
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
                 Mark as live when your stream starts — guests will see a live indicator
               </p>
             </div>
