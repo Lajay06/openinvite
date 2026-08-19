@@ -125,7 +125,7 @@ function ContactTab({ vendor, details, onSave, isSaved }) {
         )}
       </div>
 
-      <div style={{ borderTop: '1px solid rgba(10,10,10,0.08)', paddingTop: 20 }}>
+      <div style={{ borderTop: '1px solid rgba(10,10,10,0.12)', paddingTop: 20 }}>
         <button
           onClick={() => onSave(vendor, details)}
           disabled={isSaved}
@@ -218,7 +218,7 @@ export default function VendorProfileModal({ vendor, onClose, onSave, isSaved })
           </div>
 
           {/* Tab bar */}
-          <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+          <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
             {TABS.map(t => (
               <button key={t} onClick={() => setTab(t)}
                 style={{ padding: '10px 16px', fontSize: 13, fontWeight: tab === t ? 700 : 500, fontFamily: PJS, cursor: 'pointer', border: 'none', background: 'none', color: tab === t ? '#0A0A0A' : 'rgba(10,10,10,0.45)', borderBottom: tab === t ? '2px solid #0A0A0A' : '2px solid transparent', marginBottom: -1 }}>

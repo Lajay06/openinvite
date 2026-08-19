@@ -272,7 +272,7 @@ export default function AvaStudio() {
 
 function UltraCluster({ steps, navigate }) {
   return (
-    <div style={{ marginTop: 40, paddingTop: 32, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+    <div style={{ marginTop: 40, paddingTop: 32, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
         <Crown size={14} style={{ color: '#F59E0B' }} />
         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', margin: 0 }}>

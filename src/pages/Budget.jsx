@@ -177,7 +177,7 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
   };
 
   return (
-    <div data-ava-focus="budget" style={{ marginBottom: 32, border: '1px solid rgba(10,10,10,0.08)', padding: '24px 32px' }}>
+    <div data-ava-focus="budget" style={{ marginBottom: 32, border: '1px solid rgba(10,10,10,0.12)', padding: '24px 32px' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
         <button onClick={save} disabled={saving} className="btn-primary" style={{ padding: '7px 20px', fontSize: 13, opacity: saving ? 0.7 : 1 }}>
           {saved ? 'Saved ✓' : saving ? 'Saving…' : 'Save plan'}
@@ -225,7 +225,7 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
           closely, so it is the worst moment to render money oddly. */}
       {/* Allocation summary */}
       {total > 0 && (
-        <div style={{ marginTop: 20, display: 'flex', gap: 24, borderTop: '1px solid rgba(10,10,10,0.08)', paddingTop: 16, flexWrap: 'wrap' }}>
+        <div style={{ marginTop: 20, display: 'flex', gap: 24, borderTop: '1px solid rgba(10,10,10,0.12)', paddingTop: 16, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, color: '#444444', fontFamily: PJS }}>
             Allocated: <strong style={{ color: '#0A0A0A' }}>{money(allocated)}</strong>
           </span>
@@ -430,9 +430,9 @@ export default function BudgetPage() {
       <DashboardPageHeader title="Budget" subtitle="Plan, track and forecast your wedding spending" />
 
       {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {STAT_CARDS.map((s, i) => (
-          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none', borderRadius: 0, boxShadow: 'none' }}>
+          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none', borderRadius: 0, boxShadow: 'none' }}>
             <p style={statLabelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 80, height: 32, background: 'rgba(10,10,10,0.06)' }} />
@@ -450,7 +450,7 @@ export default function BudgetPage() {
       </div>
 
       {/* Toolbar row: Ava button left, actions right */}
-      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava for budget advice" onClick={() => setAvaOpen(true)} />
         <div className="flex flex-wrap gap-[10px]">
           <button

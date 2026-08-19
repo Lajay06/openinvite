@@ -199,9 +199,9 @@ export default function BeautyPage() {
       <DashboardPageHeader title="Beauty" subtitle="Hair, makeup and beauty planning for your wedding day" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {STAT_CARDS.map((s, i) => (
-          <div key={s.label} style={{ flex: 1, padding: '20px 32px', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : undefined }}>
+          <div key={s.label} style={{ flex: 1, padding: '20px 32px', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.12)' : undefined }}>
             <p style={{ ...labelStyle, marginBottom: 8 }}>{s.label}</p>
             {loading
               ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
@@ -213,12 +213,12 @@ export default function BeautyPage() {
       </div>
 
       {/* Ava button */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to help plan your beauty day" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* Tab bar */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', padding: '0 32px' }}>
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             style={{
@@ -314,7 +314,7 @@ export default function BeautyPage() {
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {/* Header row */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 90px 28px', gap: 10, padding: '0 0 8px', borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 8 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 90px 28px', gap: 10, padding: '0 0 8px', borderBottom: '1px solid rgba(10,10,10,0.12)', marginBottom: 8 }}>
                       {['Name', 'Role', 'Service', ''].map(h => (
                         <span key={h} style={{ ...labelStyle, fontSize: 10 }}>{h}</span>
                       ))}
@@ -398,7 +398,7 @@ export default function BeautyPage() {
 
             {/* Header */}
             {skincareTimeline.length > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 60px', gap: 16, padding: '0 0 10px', borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 4 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 60px', gap: 16, padding: '0 0 10px', borderBottom: '1px solid rgba(10,10,10,0.12)', marginBottom: 4 }}>
                 {['Timeframe', 'Treatment', 'Notes', 'Done'].map(h => (
                   <span key={h} style={labelStyle}>{h}</span>
                 ))}
@@ -467,7 +467,7 @@ export default function BeautyPage() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 {trials.map(t => (
-                  <div key={t.id} style={{ padding: '18px 0', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div key={t.id} style={{ padding: '18px 0', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{t.artist || 'Trial'}</span>
@@ -533,7 +533,7 @@ function TrialForm({ onSubmit, onCancel }) {
   const [data, setData] = useState({ date: '', artist: '', lookDescription: '', rating: 0, notes: '' });
   const set = (k, v) => setData(prev => ({ ...prev, [k]: v }));
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 24, marginBottom: 8 }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 24, marginBottom: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>Schedule a trial</span>
         <button onClick={onCancel} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={15} /></button>

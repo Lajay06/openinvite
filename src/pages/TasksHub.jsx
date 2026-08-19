@@ -27,7 +27,7 @@ export default function TasksHub() {
 
       {/* Outer tab bar */}
       <div style={{
-        borderBottom: "1px solid rgba(10,10,10,0.08)",
+        borderBottom: "1px solid rgba(10,10,10,0.12)",
         padding: "0 32px",
         display: "flex",
       }}>

@@ -33,7 +33,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const INK = '#0A0A0A';
 const MUTED = 'rgba(10,10,10,0.6)';
 const ICON = 'rgba(10,10,10,0.45)';
-const RULE = 'rgba(10,10,10,0.08)';
+const RULE = 'rgba(10,10,10,0.12)';
 
 const wrapStyle = {
   borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`,

@@ -314,7 +314,7 @@ export default function PoliciesPage() {
       <DashboardPageHeader title="Policies" subtitle="Set and communicate your wedding policies to guests" />
 
       {/* Tab bar */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', overflowX: 'auto' }}>
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', overflowX: 'auto' }}>
         <div style={{ display: 'flex', gap: 0, padding: '0 32px', minWidth: 'max-content' }}>
           {TABS.map(tab => {
             const Icon = tab.icon;

@@ -185,7 +185,7 @@ Return assignments[], unassigned[], and summary.`,
                   { label: 'People to seat', value: attendees.length, color: '#E03553', sub: eventScopeLabel },
                   { label: 'Tables available', value: tables.length, color: '#803D81' },
                 ].map(s => (
-                  <div key={s.label} style={{ flex: 1, border: '1px solid rgba(10,10,10,0.08)', padding: '20px 24px', textAlign: 'center' }}>
+                  <div key={s.label} style={{ flex: 1, border: '1px solid rgba(10,10,10,0.12)', padding: '20px 24px', textAlign: 'center' }}>
                     <p style={{ fontSize: 36, fontWeight: 700, color: s.color, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, lineHeight: 1 }}>{s.value}</p>
                     <p style={{ ...labelStyle, margin: '8px 0 0' }}>{s.label}</p>
                     {s.sub && <p style={{ fontSize: 11, color: color.textMuted, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>{s.sub}</p>}
@@ -239,7 +239,7 @@ Return assignments[], unassigned[], and summary.`,
                 const tbl = tables.find(t => t.id === a.tableId);
                 const assignedGuests = (a.guests || []).map(id => attendees.find(x => x.id === id)).filter(Boolean);
                 return (
-                  <div key={i} style={{ border: '1px solid rgba(10,10,10,0.08)', marginBottom: 12 }}>
+                  <div key={i} style={{ border: '1px solid rgba(10,10,10,0.12)', marginBottom: 12 }}>
                     <div style={{ padding: '10px 16px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{a.tableName}</span>
                       <span style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>

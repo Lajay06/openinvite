@@ -118,7 +118,7 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
     return (
       <div style={{ marginBottom: 20 }}>
         <span style={sLabel}>{label}</span>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, background: '#FAFAFA' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, background: '#FAFAFA' }}>
           {venue.photoUrl ? (
             <img src={venue.photoUrl} alt={venue.name} style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
           ) : (
@@ -223,7 +223,7 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
           </div>
         </div>
       ) : (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '14px 16px' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, padding: '14px 16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, letterSpacing: '0.06em' }}>Add venue manually</span>
             <button type="button" onClick={() => setShowManual(false)}

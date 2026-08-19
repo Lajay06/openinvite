@@ -207,7 +207,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label htmlFor="payment_schedule">Payment schedule</Label>
             <Input id="payment_schedule" value={formData.payment_schedule} onChange={e => set('payment_schedule', e.target.value)} placeholder="e.g. 50% deposit, 50% on wedding day" />
@@ -219,7 +219,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
         </div>
 
         {isPhotoOrVideo && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
             <Label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)' }}>
               Photography &amp; videography details
             </Label>
@@ -364,7 +364,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <button type="button" onClick={onCancel} className="btn-editorial-secondary">Cancel</button>
           <button type="submit" className="btn-primary">{vendor?.id ? 'Update vendor' : 'Add vendor'}</button>
         </div>

@@ -229,9 +229,9 @@ export default function SchedulePage({
 
       {/* Stat strip — hidden when hub owns it above the tab row */}
       {!hideChrome && (
-        <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           {STAT_CARDS.map((s, i) => (
-            <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+            <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
               <p style={statLabelStyle}>{s.label}</p>
               {loading
                 ? <div style={{ width: 60, height: 32, background: 'rgba(10,10,10,0.06)' }} />
@@ -253,7 +253,7 @@ export default function SchedulePage({
 
       {/* Ava + actions bar — hidden when hub owns it */}
       {!hideChrome && (
-        <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <AvaButton label="Ask Ava to build your wedding timeline" onClick={() => setAvaOpen(true)} />
           <div className="flex flex-wrap items-center gap-[10px]">
             <button

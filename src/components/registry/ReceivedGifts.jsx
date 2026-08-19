@@ -157,7 +157,7 @@ export default function ReceivedGifts() {
           { label: 'Thank-yous pending', value: stats.pending },
           { label: 'Total value', value: `$${stats.totalValue.toLocaleString()}`, last: true },
         ].map((s, i) => (
-          <div key={i} style={{ flex: 1, padding: '20px 24px', border: '1px solid rgba(10,10,10,0.08)', borderRight: s.last ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} style={{ flex: 1, padding: '20px 24px', border: '1px solid rgba(10,10,10,0.12)', borderRight: s.last ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             <p style={{ fontSize: 28, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginTop: 6 }}>{s.value}</p>
           </div>
@@ -190,7 +190,7 @@ export default function ReceivedGifts() {
 
       {/* Add/Edit Form */}
       {showForm && (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 24, background: '#FAFAFA' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 24, background: '#FAFAFA' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {editingGift ? 'Edit gift' : 'Add received gift'}
@@ -279,16 +279,16 @@ export default function ReceivedGifts() {
 
       {/* Gift list */}
       {filtered.length === 0 ? (
-        <div style={{ padding: '48px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.08)', background: '#FAFAFA' }}>
+        <div style={{ padding: '48px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)', background: '#FAFAFA' }}>
           <Package size={32} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px' }} />
           <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>No gifts recorded yet</p>
           <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Click "Add gift" to start tracking</p>
         </div>
       ) : (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+              <tr style={{ background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
                 <th style={{ ...labelStyle, textAlign: 'left', padding: '10px 16px' }}>Gift</th>
                 <th style={{ ...labelStyle, textAlign: 'left', padding: '10px 16px' }}>Giver</th>
                 <th style={{ ...labelStyle, textAlign: 'left', padding: '10px 16px' }}>Status</th>

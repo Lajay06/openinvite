@@ -139,7 +139,7 @@ export default function MockUniverseB() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
       {/* ── Header: neutral chrome, bold statement ── */}
-      <div style={{ padding: '28px 32px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '28px 32px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 6px' }}>
           Design Studio — mock B · Tile + world page
         </p>

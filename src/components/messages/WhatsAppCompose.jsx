@@ -94,7 +94,7 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
       <SheetContent side="right" hideClose title="Open in WhatsApp" className="max-w-[480px] p-0 gap-0 flex flex-col">
 
       {/* Header */}
-      <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Open in WhatsApp</span>
           <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>{guest?.name || 'Guest'}</p>
@@ -150,7 +150,7 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
       </div>
 
       {/* Footer */}
-      <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', gap: 10, flexShrink: 0 }}>
+      <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', gap: 10, flexShrink: 0 }}>
         <button onClick={onClose} className="btn-editorial-secondary" style={{ flex: 1, fontSize: 13 }}>Cancel</button>
         <button onClick={handleSend} disabled={loading || !message.trim() || !phone.trim()}
           style={{ flex: 1, padding: '9px 16px', background: WHATSAPP_GREEN, color: '#FFFFFF', border: 'none', borderRadius: 999, cursor: loading || !message.trim() || !phone.trim() ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", opacity: loading || !message.trim() || !phone.trim() ? 0.5 : 1, transition: 'opacity 0.15s' }}>

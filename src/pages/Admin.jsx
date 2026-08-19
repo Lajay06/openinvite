@@ -23,7 +23,7 @@ function StatCell({ label, value, isLast }) {
       className="grow shrink basis-1/2 min-w-0 lg:flex-1"
       style={{
         padding: '24px 32px', minHeight: 80,
-        borderRight: isLast ? 'none' : '1px solid rgba(10,10,10,0.08)',
+        borderRight: isLast ? 'none' : '1px solid rgba(10,10,10,0.12)',
       }}
     >
       <p style={statLabelStyle}>{label}</p>
@@ -145,7 +145,7 @@ export default function Admin() {
       <DashboardPageHeader title="Admin" subtitle={subtitleText} />
 
       {/* Stats strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <StatCell label="Total paid users" value={stats?.totalPaidUsers ?? '—'} />
         <StatCell label="Paid this week" value={stats?.paidThisWeek ?? '—'} />
         <StatCell label="Total revenue (AUD)" value={stats ? formatAUD(stats.totalRevenue) : '—'} />
@@ -155,7 +155,7 @@ export default function Admin() {
       {/* Toolbar */}
       <div
         className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4"
-        style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}
+        style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}
       >
         {/* Search */}
         <div style={{ position: 'relative', maxWidth: 280, width: '100%' }}>
@@ -212,7 +212,7 @@ export default function Admin() {
           )}
         </div>
 
-        <div style={{ overflowX: 'auto', border: '1px solid rgba(10,10,10,0.08)', marginBottom: 16 }}>
+        <div style={{ overflowX: 'auto', border: '1px solid rgba(10,10,10,0.12)', marginBottom: 16 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 520 }}>
             <thead>
               <tr style={{ background: 'rgba(10,10,10,0.02)' }}>
@@ -221,7 +221,7 @@ export default function Admin() {
                     padding: '10px 16px', textAlign: 'left',
                     fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
                     color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
-                    borderBottom: '1px solid rgba(10,10,10,0.08)',
+                    borderBottom: '1px solid rgba(10,10,10,0.12)',
                     whiteSpace: 'nowrap',
                   }}>
                     {h}
@@ -301,7 +301,7 @@ export default function Admin() {
           Recent payments
         </p>
 
-        <div style={{ overflowX: 'auto', border: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ overflowX: 'auto', border: '1px solid rgba(10,10,10,0.12)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 520 }}>
             <thead>
               <tr style={{ background: 'rgba(10,10,10,0.02)' }}>
@@ -310,7 +310,7 @@ export default function Admin() {
                     padding: '10px 16px', textAlign: 'left',
                     fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
                     color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
-                    borderBottom: '1px solid rgba(10,10,10,0.08)',
+                    borderBottom: '1px solid rgba(10,10,10,0.12)',
                     whiteSpace: 'nowrap',
                   }}>
                     {h}

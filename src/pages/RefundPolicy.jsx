@@ -13,7 +13,7 @@ const DIV = { borderTop: '1px solid rgba(10,10,10,0.06)', marginTop: 48 };
 
 function PolicyCard({ icon, title, children }) {
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '24px 28px', marginBottom: 12 }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '24px 28px', marginBottom: 12 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
         <div style={{ fontSize: 22, flexShrink: 0, lineHeight: 1 }}>{icon}</div>
         <div>

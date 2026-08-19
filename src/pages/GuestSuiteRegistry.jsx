@@ -30,7 +30,7 @@ function fmtPrice(price) {
 // ── Platform registry card ────────────────────────────────────────────────────
 function PlatformCard({ item }) {
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
       {item.image_url && (
         <img
           src={item.image_url}
@@ -68,7 +68,7 @@ function ProductCard({ product }) {
   const remaining = (product.quantity_requested || 1) - (product.quantity_purchased || 0);
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       {product.image_url && (
         <div style={{ height: 160, overflow: 'hidden', background: 'rgba(10,10,10,0.03)' }}>
           <img
@@ -130,7 +130,7 @@ function ProductCard({ product }) {
 // ── Cash fund card ────────────────────────────────────────────────────────────
 function CashFundCard({ fund }) {
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '16px 20px', display: 'flex', gap: 14 }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '16px 20px', display: 'flex', gap: 14 }}>
       {fund.image_url && (
         <img
           src={fund.image_url}

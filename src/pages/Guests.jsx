@@ -653,9 +653,9 @@ export default function Guests() {
       <DashboardPageHeader title="Guests" subtitle="Manage your guest list, invitations and RSVPs" />
 
       {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {STAT_CARDS.map((s, i) => (
-          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none', borderRadius: 0, boxShadow: 'none' }}>
+          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none', borderRadius: 0, boxShadow: 'none' }}>
             <p style={statLabelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
@@ -669,7 +669,7 @@ export default function Guests() {
       </div>
 
       {/* Ava + toolbar row */}
-      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {!isCollaborating && <AvaButton label="Ask Ava to help manage your guest list" onClick={() => setAvaOpen(true)} />}
         {isCollaborating && <div />}
         <div className="flex flex-wrap items-center gap-[10px]">
@@ -782,7 +782,7 @@ export default function Guests() {
             {selectionBarVisible && (
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
-                border: '1px solid rgba(10,10,10,0.08)', background: 'rgba(224,53,83,0.03)',
+                border: '1px solid rgba(10,10,10,0.12)', background: 'rgba(224,53,83,0.03)',
                 padding: '10px 16px',
               }}>
                 <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>

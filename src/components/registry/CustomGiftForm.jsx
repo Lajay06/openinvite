@@ -46,7 +46,7 @@ export default function CustomGiftForm({ item, onSubmit, onClose }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title={item ? 'Edit cash fund' : 'Create cash fund'} className="max-w-[480px] p-0 gap-0">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {item ? 'Edit cash fund' : 'Create cash fund'}
           </span>
@@ -102,7 +102,7 @@ export default function CustomGiftForm({ item, onSubmit, onClose }) {
               <Textarea id="description" value={formData.description} onChange={e => set('description', e.target.value)} placeholder="Tell guests about this fund" />
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
             <button type="button" onClick={onClose} className="btn-editorial-secondary">Cancel</button>
             <button type="submit" className="btn-primary">{item ? 'Update fund' : 'Create fund'}</button>
           </div>

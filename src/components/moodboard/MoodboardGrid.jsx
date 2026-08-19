@@ -31,7 +31,7 @@ function EditItemModal({ item, editData, setEditData, onSave, onClose }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title={`Edit item — ${item.title}`} className="max-w-[440px] p-0 gap-0">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Edit item</span>
           <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={14} /></button>
         </div>
@@ -49,7 +49,7 @@ function EditItemModal({ item, editData, setEditData, onSave, onClose }) {
             <Textarea value={editData.notes} onChange={e => setEditData(p => ({ ...p, notes: e.target.value }))} placeholder="What you love about this…" />
           </div>
         </div>
-        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
           <button onClick={onSave} className="btn-primary" style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
             <Save size={13} />Save
@@ -218,7 +218,7 @@ export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem, readO
 
   if (items.length === 0) {
     return (
-      <div style={{ padding: '80px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '80px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
         <ImageIcon size={40} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 16px' }} />
         <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>Your moodboard is empty</p>
         <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Start adding inspiration images to bring your wedding vision to life</p>

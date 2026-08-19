@@ -707,12 +707,12 @@ export default function AccountPage() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
       <DashboardPageHeader title="Account" subtitle="Manage your profile, plan, and security" />
 
-      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava about your account or plan" />
       </div>
 
       {/* Tab bar */}
-      <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(10,10,10,0.08)', padding: '0 32px' }}>
+      <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '0 32px' }}>
         {TABS.map(t => (
           <button
             key={t.id}

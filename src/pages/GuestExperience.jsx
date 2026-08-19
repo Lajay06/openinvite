@@ -148,7 +148,7 @@ export default function GuestExperiencePage() {
           </div>
 
           {/* Tab bar */}
-          <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)', marginBottom: 32 }}>
+          <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.12)', marginBottom: 32 }}>
             {TABS.map(tab => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;
@@ -183,7 +183,7 @@ export default function GuestExperiencePage() {
         </div>
 
         {/* Quick Book sidebar */}
-        <div style={{ display: 'none', width: 304, borderLeft: '1px solid rgba(10,10,10,0.08)', background: '#F5F5F5', padding: 24, position: 'sticky', top: 64, height: 'calc(100vh - 64px)', overflowY: 'auto' }} className="lg:block">
+        <div style={{ display: 'none', width: 304, borderLeft: '1px solid rgba(10,10,10,0.12)', background: '#F5F5F5', padding: 24, position: 'sticky', top: 64, height: 'calc(100vh - 64px)', overflowY: 'auto' }} className="lg:block">
           <div style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', marginBottom: 4 }}>Quick book</p>
             <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>Pre-filled with wedding dates</p>
@@ -191,7 +191,7 @@ export default function GuestExperiencePage() {
 
           {/* Booking.com */}
           {bookingComUrl ? (
-            <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#fff', marginBottom: 12 }}>
+            <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#fff', marginBottom: 12 }}>
               <div style={{ background: '#003580', padding: '12px 16px' }}>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0 }}>Booking.com</p>
                 <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', margin: '2px 0 0' }}>Find your perfect hotel</p>
@@ -227,7 +227,7 @@ export default function GuestExperiencePage() {
               </div>
             </div>
           ) : (
-            <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#fff', padding: '16px', marginBottom: 12 }}>
+            <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#fff', padding: '16px', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <Hotel size={16} style={{ color: 'rgba(10,10,10,0.6)' }} />
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0 }}>Booking.com</p>
@@ -238,7 +238,7 @@ export default function GuestExperiencePage() {
 
           {/* Hertz */}
           {hertzUrl ? (
-            <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#fff', marginBottom: 12 }}>
+            <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#fff', marginBottom: 12 }}>
               <div style={{ background: '#FFCC00', padding: '12px 16px' }}>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>Hertz car rental</p>
                 <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0' }}>Reserve your vehicle</p>
@@ -274,7 +274,7 @@ export default function GuestExperiencePage() {
               </div>
             </div>
           ) : (
-            <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#fff', padding: '16px', marginBottom: 12 }}>
+            <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#fff', padding: '16px', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <Car size={16} style={{ color: 'rgba(10,10,10,0.6)' }} />
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0 }}>Hertz car rental</p>
@@ -284,7 +284,7 @@ export default function GuestExperiencePage() {
           )}
 
           {/* Tips */}
-          <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#fff', padding: '16px' }}>
+          <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#fff', padding: '16px' }}>
             <p style={{ ...labelStyle, marginBottom: 12 }}>Booking tips</p>
             {['Book 3–6 months ahead for best rates', 'Check free cancellation policies', 'Compare prices across platforms', 'Look for group / wedding discounts'].map((tip, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 0', borderBottom: i < 3 ? '1px solid rgba(10,10,10,0.05)' : 'none' }}>

@@ -133,7 +133,7 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
         </div>
 
         {local.faith === 'Interfaith' && (
-          <div style={{ marginTop: 16, padding: '14px 16px', border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, background: '#FAFAFA' }}>
+          <div style={{ marginTop: 16, padding: '14px 16px', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, background: '#FAFAFA' }}>
             <span style={subLabelStyle}>
               Select the two faiths — {interfaithPicks.length}/2 selected
             </span>
@@ -293,7 +293,7 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
       {/* Save — hidden entirely while read-only, not just disabled, since
           there is nothing for it to do (onSave's writes 403/no-op upstream). */}
       {!readOnly && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <button type="button" onClick={handleSave} className="btn-primary" style={{ fontSize: 13, padding: '9px 24px' }}>
             Save theme
           </button>

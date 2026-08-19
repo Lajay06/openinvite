@@ -175,14 +175,14 @@ export default function MessagesPage() {
       <DashboardPageHeader title="Messages" subtitle="Read and reply to messages from your guests" />
 
       {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {[
           { label: 'Total', value: stats.total },
           { label: 'Unread', value: stats.unread },
           { label: 'Replied', value: stats.replied },
           { label: 'Unreplied', value: stats.unreplied },
         ].map((s, i, arr) => (
-          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
@@ -194,12 +194,12 @@ export default function MessagesPage() {
       </div>
 
       {/* Ava button */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to draft a message" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* WhatsApp banner */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <WhatsAppConnect
           isConnected={whatsappConnected}
           connectedPhone={whatsappPhone}
@@ -208,7 +208,7 @@ export default function MessagesPage() {
       </div>
 
       {/* Search + filter pills toolbar */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
           <Search size={14} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.6)' }} />
           <input
@@ -338,7 +338,7 @@ export default function MessagesPage() {
             )}
           </div>
         )) : (
-          <div style={{ padding: '64px 0', textAlign: 'center', border: '1px solid rgba(10,10,10,0.08)' }}>
+          <div style={{ padding: '64px 0', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
             <MessageCircle size={36} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 16px' }} />
             <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>
               {searchTerm || filterStatus !== 'all' ? 'No messages found' : 'No messages yet'}
@@ -354,7 +354,7 @@ export default function MessagesPage() {
 
       {/* WhatsApp QR section */}
       {whatsappConnected && (
-        <div style={{ padding: '24px 32px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ padding: '24px 32px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'center' }}>
           <WhatsAppQRCode phoneNumber={whatsappPhone} />
         </div>
       )}

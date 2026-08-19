@@ -106,7 +106,7 @@ Return the improved version as plain text only — no markdown.`;
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title="AI vows & speech writer" className="max-w-[760px] max-h-[92vh] p-0 gap-0 flex flex-col">
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0, background: '#0A1930' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0, background: '#0A1930' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Sparkles size={16} style={{ color: '#DDF762' }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>AI vows &amp; speech writer</span>
@@ -115,7 +115,7 @@ Return the improved version as plain text only — no markdown.`;
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
           {TABS.map(t => (
             <button key={t.value} onClick={() => !t.disabled && setTab(t.value)} disabled={t.disabled}
               style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '11px 0', border: 'none', background: 'none', cursor: t.disabled ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700, color: tab === t.value ? '#E03553' : t.disabled ? 'rgba(10,10,10,0.2)' : '#444444', borderBottom: `2px solid ${tab === t.value ? '#E03553' : 'transparent'}`, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: -1 }}>
@@ -248,7 +248,7 @@ Return the improved version as plain text only — no markdown.`;
           {/* Preview tab */}
           {tab === 'preview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 24, background: '#FAFAFA' }}>
+              <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 24, background: '#FAFAFA' }}>
                 <p style={{ fontSize: 15, lineHeight: 1.8, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: 'pre-wrap', margin: 0 }}>{generated}</p>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>

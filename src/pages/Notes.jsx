@@ -187,14 +187,14 @@ export default function ToDoListPage() {
       <DashboardPageHeader title="To do list" subtitle="Stay organized with personal notes and to-do items" />
 
       {/* Stat strip */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {[
           { label: 'Total tasks', value: stats.total },
           { label: 'Completed', value: stats.completed },
           { label: 'Pending', value: stats.pending },
           { label: 'Urgent', value: stats.urgent },
         ].map((s, i, arr) => (
-          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} style={{ flex: 1, padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
@@ -207,7 +207,7 @@ export default function ToDoListPage() {
 
       {/* Toolbar */}
       {!readOnly && (
-        <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', gap: 10 }}>
           <button onClick={() => setShowSuggestionsModal(true)}
             style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#0A1930', color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '9px 16px', fontSize: 12, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", cursor: 'pointer' }}>
             <Lightbulb size={12} style={{ color: '#DDF762' }} />AI suggestions
@@ -262,7 +262,7 @@ export default function ToDoListPage() {
 
         {/* Task Form */}
         {showTaskForm && (
-          <div style={{ border: '1px solid rgba(10,10,10,0.08)', background: '#FFFFFF', padding: '20px 24px' }}>
+          <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#FFFFFF', padding: '20px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 {editingTask?.id ? 'Edit task' : 'Add new task'}
@@ -321,7 +321,7 @@ export default function ToDoListPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 12, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 12, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
                 <button type="button" onClick={resetTaskForm} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
                 <button type="submit" disabled={!taskFormData.title} className="btn-primary"
                   style={{ fontSize: 13, opacity: !taskFormData.title ? 0.5 : 1 }}>
@@ -399,7 +399,7 @@ export default function ToDoListPage() {
         </div>
 
         {filteredTasks.length === 0 && (
-          <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '48px 32px', textAlign: 'center' }}>
+          <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '48px 32px', textAlign: 'center' }}>
             <ListTodo size={32} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 16px' }} />
             <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {searchTerm ? "No tasks match your search." : "No tasks yet — add your first."}

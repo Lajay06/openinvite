@@ -109,7 +109,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
       <DialogContent hideClose title={vendor.name} aria-label="Vendor details" className="max-w-[640px] max-h-[90vh] p-0 gap-0 flex flex-col">
 
         {/* Header */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{vendor.name}</span>
@@ -157,7 +157,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
         </div>
 
         {/* Tab bar */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)', paddingLeft: 20 }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.12)', paddingLeft: 20 }}>
           {TABS.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -188,7 +188,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
               </div>
 
               {showLogForm && (
-                <div style={{ background: '#FAFAFA', border: '1px solid rgba(10,10,10,0.08)', padding: 16, marginBottom: 16 }}>
+                <div style={{ background: '#FAFAFA', border: '1px solid rgba(10,10,10,0.12)', padding: 16, marginBottom: 16 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 20px', marginBottom: 12 }}>
                     <div>
                       <label style={labelStyle}>Type</label>
@@ -267,7 +267,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
               </div>
 
               {showLogForm && logForm.document_url && (
-                <div style={{ background: '#FAFAFA', border: '1px solid rgba(10,10,10,0.08)', padding: 16, marginBottom: 16 }}>
+                <div style={{ background: '#FAFAFA', border: '1px solid rgba(10,10,10,0.12)', padding: 16, marginBottom: 16 }}>
                   <p style={{ fontSize: 12, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 12px' }}>
                     📄 {logForm.document_name}
                   </p>
@@ -345,7 +345,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
               </div>
 
               {showTaskForm && (
-                <div style={{ background: '#FAFAFA', border: '1px solid rgba(10,10,10,0.08)', padding: 16, marginBottom: 16 }}>
+                <div style={{ background: '#FAFAFA', border: '1px solid rgba(10,10,10,0.12)', padding: 16, marginBottom: 16 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 20px', marginBottom: 12 }}>
                     <div style={{ gridColumn: '1 / -1' }}>
                       <label style={labelStyle}>Task title</label>

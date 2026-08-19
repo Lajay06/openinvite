@@ -14,7 +14,7 @@ export default function RegistryForm({ item, onSubmit, onClose }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title={item ? 'Edit platform link' : 'Add platform link'} className="max-w-[480px] p-0 gap-0">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {item ? 'Edit platform link' : 'Add platform link'}
           </span>
@@ -39,7 +39,7 @@ export default function RegistryForm({ item, onSubmit, onClose }) {
               <Textarea id="description" value={formData.description} onChange={e => set('description', e.target.value)} placeholder="A short note for your guests" />
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
             <button type="button" onClick={onClose} className="btn-editorial-secondary">Cancel</button>
             <button type="submit" className="btn-primary">{item ? 'Update link' : 'Add link'}</button>
           </div>

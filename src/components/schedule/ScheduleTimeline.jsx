@@ -34,7 +34,7 @@ const fmtDate = (d) => {
 export default function ScheduleTimeline({ items, onEdit, onDelete, readOnly = false }) {
   if (items.length === 0) {
     return (
-      <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
+      <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
         <Calendar size={28} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px', display: 'block' }} />
         <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
           No events scheduled yet.
@@ -103,7 +103,7 @@ export default function ScheduleTimeline({ items, onEdit, onDelete, readOnly = f
                   }} />
 
                   {/* Event card */}
-                  <div style={{ border: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                  <div style={{ border: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                     {/* Left colour strip */}
                     <div style={{ width: 4, alignSelf: 'stretch', flexShrink: 0, background: cfg.bg, minHeight: 52 }} />
 

@@ -33,7 +33,7 @@ export default function ScheduleForm({ item, onSubmit, onCancel }) {
   return (
     <div>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           {item?.id ? 'Edit event' : 'Add event'}
         </span>
@@ -86,7 +86,7 @@ export default function ScheduleForm({ item, onSubmit, onCancel }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label htmlFor="description">Description</Label>
             <Textarea id="description" value={formData.description} onChange={e => set('description', e.target.value)} placeholder="What happens during this event" />
@@ -97,7 +97,7 @@ export default function ScheduleForm({ item, onSubmit, onCancel }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <button type="button" onClick={onCancel} className="btn-editorial-secondary">Cancel</button>
           <button type="submit" className="btn-primary">{item?.id ? 'Update event' : 'Add event'}</button>
         </div>

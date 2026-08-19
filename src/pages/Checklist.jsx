@@ -193,7 +193,7 @@ function PlanningOverview() {
   if (loading) {
     return (
       <div style={{ padding: '48px 32px', textAlign: 'center' }}>
-        <div style={{ width: 32, height: 32, border: '2px solid rgba(10,10,10,0.08)', borderTopColor: '#E03553', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
+        <div style={{ width: 32, height: 32, border: '2px solid rgba(10,10,10,0.12)', borderTopColor: '#E03553', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
         <p style={{ fontSize: 13, color: '#444444', fontFamily: PJS, marginTop: 16 }}>Scanning your planning data…</p>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -226,7 +226,7 @@ function PlanningOverview() {
                 <span style={{ fontSize: 11, color: '#444444', fontFamily: PJS }}>({groupDone}/{group.items.length})</span>
                 <div style={{ flex: 1, height: 1, background: 'rgba(10,10,10,0.08)' }} />
               </div>
-              <div style={{ border: '1px solid rgba(10,10,10,0.08)' }}>
+              <div style={{ border: '1px solid rgba(10,10,10,0.12)' }}>
                 {group.items.map((item, idx) => {
                   const done = !!status?.[item.key];
                   return (
@@ -314,13 +314,13 @@ export default function ChecklistPage({ embedded = false }) {
       {!embedded && <DashboardPageHeader title="Checklist" subtitle="Track every task from first steps to big day" />}
 
       {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {[
           { label: 'Overall progress', value: overallProgress, suffix: '%' },
           { label: 'Essentials done', value: essentialsDone },
           { label: 'Nice-to-haves done', value: niceDone },
         ].map((s, i, arr) => (
-          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             <p style={{ ...labelStyle, margin: 0, marginBottom: 10 }}>{s.label}</p>
             <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, lineHeight: 1, margin: 0 }}>
               <CountUp to={s.value} suffix={s.suffix || ''} />
@@ -330,12 +330,12 @@ export default function ChecklistPage({ embedded = false }) {
       </div>
 
       {/* Ava button */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to review your checklist" onClick={() => setAvaOpen(true)} />
       </div>
 
       {/* Tab bar */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.08)', padding: '0 32px' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '0 32px' }}>
         {TABS.map(tab => (
           <button
             key={tab.key}
@@ -378,7 +378,7 @@ export default function ChecklistPage({ embedded = false }) {
           ) : (
             <>
               {/* Overall progress bar */}
-              <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+              <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <span style={labelStyle}>Overall completion</span>
                   <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>

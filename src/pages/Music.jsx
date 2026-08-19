@@ -42,7 +42,7 @@ const pillStyle = {
 };
 const requestRowStyle = {
   display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 0',
-  borderBottom: '1px solid rgba(10,10,10,0.08)',
+  borderBottom: '1px solid rgba(10,10,10,0.12)',
 };
 const requestTitleStyle = {
   fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0,
@@ -78,7 +78,7 @@ function SettingsModal({ details, updateMusic, onClose }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent hideClose title="Song request settings" className="max-w-[440px] p-0 gap-0">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Song request settings</span>
           <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
         </div>
@@ -91,7 +91,7 @@ function SettingsModal({ details, updateMusic, onClose }) {
             <Textarea value={details?.music?.requestMessage || ''} onChange={e => updateMusic('requestMessage', e.target.value)} placeholder="Tell guests about your song request policy…" />
           </div>
         </div>
-        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'flex-end' }}>
           <button onClick={onClose} className="btn-primary" style={{ fontSize: 13 }}>Done</button>
         </div>
       </DialogContent>
@@ -341,7 +341,7 @@ export default function MusicPage() {
       <DashboardPageHeader title="Music" subtitle="Plan playlists, add songs and manage guest song requests" />
 
       {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {[
           // Track curation is gone with the Spotify search teardown, so the
           // stats now describe what this page actually holds: one playlist link
@@ -351,7 +351,7 @@ export default function MusicPage() {
           { label: 'Approved', value: approvedCount },
           { label: 'Pending approval', value: pendingCount, last: true },
         ].map((s, i) => (
-          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.08)' }}>
+          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRadius: 0, boxShadow: 'none', borderRight: s.last ? 'none' : '1px solid rgba(10,10,10,0.12)' }}>
             <p style={labelStyle}>{s.label}</p>
             <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1, margin: 0 }}>
               <CountUp to={s.value} />
@@ -361,7 +361,7 @@ export default function MusicPage() {
       </div>
 
       {/* Ava + toolbar row */}
-      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to curate your playlist" onClick={() => setAvaOpen(true)} />
         <div className="flex flex-wrap items-center gap-[10px]">
           <button onClick={() => setShowShare(true)} className="btn-editorial-secondary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -379,7 +379,7 @@ export default function MusicPage() {
       </div>
 
       {/* Tab bar — Vendor hidden while collaborating, see readOnly's own comment above */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', padding: '0 32px' }}>
         {TABS.filter(tab => !isCollaborating || tab.key !== 'vendor').map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             style={{
@@ -462,7 +462,7 @@ export default function MusicPage() {
                     : `No ${requestFilter} requests yet.`}
                 </p>
               ) : (
-                <div style={{ borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+                <div style={{ borderTop: '1px solid rgba(10,10,10,0.12)' }}>
                   {visibleRequests.map(req => (
                     <div key={req.id} style={requestRowStyle}>
                       <div style={{ flex: 1, minWidth: 0 }}>

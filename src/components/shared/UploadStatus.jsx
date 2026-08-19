@@ -35,7 +35,7 @@ export default function UploadStatus({ status, error, onRetry, height = 120, sty
           height, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 10,
           background: dark ? 'rgba(255,255,255,0.04)' : 'rgba(10,10,10,0.03)',
-          border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(10,10,10,0.08)',
+          border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(10,10,10,0.12)',
           ...style,
         }}
       >

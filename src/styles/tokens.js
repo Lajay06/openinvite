@@ -51,7 +51,7 @@ export const color = {
   iconMuted:       'rgba(10,10,10,0.45)',
 
   // Borders
-  border:       'rgba(10,10,10,0.08)',
+  border:       'rgba(10,10,10,0.12)',
   borderStrong: 'rgba(10,10,10,0.18)',
   borderDark:   '#222222',
 

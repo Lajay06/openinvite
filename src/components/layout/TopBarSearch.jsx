@@ -156,7 +156,7 @@ export default function TopBarSearch() {
           style={{
             position: 'absolute', top: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)',
             width: 320, maxHeight: 400, overflowY: 'auto',
-            background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.08)',
+            background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)',
             boxShadow: '0 8px 24px rgba(10,10,10,0.18)', zIndex: 200,
           }}
         >

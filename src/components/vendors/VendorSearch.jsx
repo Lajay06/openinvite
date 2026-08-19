@@ -190,7 +190,7 @@ export default function VendorSearch({ onAddVendor }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
       {/* ── Search form ─────────────────────────────────────────────────── */}
-      <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 24 }}>
+      <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 24 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {/* Row 1: keyword + category + location */}
@@ -261,7 +261,7 @@ export default function VendorSearch({ onAddVendor }) {
 
       {/* ── Comparison panel ────────────────────────────────────────────── */}
       {compareList.length >= 2 && (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
           <div style={{ background: '#0A1930', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Scale size={14} style={{ color: '#DDF762' }} />
@@ -275,7 +275,7 @@ export default function VendorSearch({ onAddVendor }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${compareList.length}, 1fr)` }}>
             {compareList.map((v, i) => (
-              <div key={v.place_id} style={{ padding: 20, borderRight: i < compareList.length - 1 ? '1px solid rgba(10,10,10,0.08)' : 'none' }}>
+              <div key={v.place_id} style={{ padding: 20, borderRight: i < compareList.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
                 {v.photo_url && (
                   <img src={v.photo_url} alt={v.name} onError={e => { e.target.style.display = 'none'; }}
                     style={{ width: '100%', height: 100, objectFit: 'cover', marginBottom: 12 }} />
@@ -295,7 +295,7 @@ export default function VendorSearch({ onAddVendor }) {
 
       {/* ── Results ─────────────────────────────────────────────────────── */}
       {loading && (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '48px 32px', textAlign: 'center' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '48px 32px', textAlign: 'center' }}>
           <div style={{ width: 20, height: 20, border: '2px solid rgba(10,10,10,0.1)', borderTopColor: '#E03553', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
           <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Searching for vendors…</p>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -303,7 +303,7 @@ export default function VendorSearch({ onAddVendor }) {
       )}
 
       {!loading && !hasSearched && (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
           <Search size={28} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px', display: 'block' }} />
           <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 6px' }}>
             Find your perfect wedding vendors
@@ -315,7 +315,7 @@ export default function VendorSearch({ onAddVendor }) {
       )}
 
       {!loading && hasSearched && searchResults.length === 0 && (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
           <Search size={28} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px', display: 'block' }} />
           <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>No vendors found — try adjusting your filters.</p>
         </div>
@@ -375,7 +375,7 @@ function VendorResultCard({ result, onAdd, onToggleCompare, inCompare, canCompar
   const [hovered, setHovered] = useState(false);
   return (
     <div
-      style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 20, display: 'flex', gap: 16, transition: 'border-color 0.15s', borderColor: hovered ? 'rgba(10,10,10,0.18)' : 'rgba(10,10,10,0.08)' }}
+      style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 20, display: 'flex', gap: 16, transition: 'border-color 0.15s', borderColor: hovered ? 'rgba(10,10,10,0.18)' : 'rgba(10,10,10,0.12)' }}
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
     >
       {result.photo_url && (

@@ -83,7 +83,7 @@ export default function CollaboratorAccept() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA', padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 440, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.08)', padding: 40 }}>
+      <div style={{ width: '100%', maxWidth: 440, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)', padding: 40 }}>
         <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(224,53,83,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
           <Users size={22} style={{ color: '#E03553' }} />
         </div>

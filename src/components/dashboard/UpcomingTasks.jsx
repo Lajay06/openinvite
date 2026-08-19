@@ -33,7 +33,7 @@ export default function UpcomingTasks({ schedule }) {
 
   return (
     <div>
-      <div style={{ padding: '4px 0 12px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '4px 0 12px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <p style={labelStyle}>Upcoming events</p>
         <Link to={createPageUrl("Schedule")} style={{ ...labelStyle, fontSize: 9, color: 'rgba(10,10,10,0.6)', textDecoration: 'none' }}>View all</Link>
       </div>

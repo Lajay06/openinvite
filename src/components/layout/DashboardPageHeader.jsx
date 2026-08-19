@@ -8,7 +8,7 @@ export default function DashboardPageHeader({ title, subtitle, actions }) {
       className="flex items-center justify-between gap-4 px-4 md:px-8"
       style={{
         background: '#FFFFFF',
-        borderBottom: '1px solid rgba(10,10,10,0.08)',
+        borderBottom: '1px solid rgba(10,10,10,0.12)',
         paddingTop: 10,
         paddingBottom: 10,
       }}

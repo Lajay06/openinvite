@@ -187,12 +187,12 @@ export default function ScheduleHub() {
       />
 
       {/* 2 ── Stat strip — identical wrapper to Budget */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: "1px solid rgba(10,10,10,0.08)" }}>
+      <div className="flex flex-wrap w-full" style={{ borderBottom: "1px solid rgba(10,10,10,0.12)" }}>
         {STAT_CARDS.map((s, i) => (
           <div
             key={s.label}
             className="grow shrink basis-1/2 min-w-0 lg:flex-1"
-            style={{ padding: "24px 32px", minHeight: 80, borderRadius: 0, boxShadow: "none", borderRight: i < STAT_CARDS.length - 1 ? "1px solid rgba(10,10,10,0.08)" : "none" }}
+            style={{ padding: "24px 32px", minHeight: 80, borderRadius: 0, boxShadow: "none", borderRight: i < STAT_CARDS.length - 1 ? "1px solid rgba(10,10,10,0.12)" : "none" }}
           >
             <p style={statLabelStyle}>{s.label}</p>
             {loadingStats
@@ -206,7 +206,7 @@ export default function ScheduleHub() {
       {/* 3 ── Action bar — identical wrapper to Budget */}
       <div
         className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4"
-        style={{ borderBottom: "1px solid rgba(10,10,10,0.08)" }}
+        style={{ borderBottom: "1px solid rgba(10,10,10,0.12)" }}
       >
         {/* Left: Ava button + Guest Suite notice */}
         <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
@@ -243,7 +243,7 @@ export default function ScheduleHub() {
       </div>
 
       {/* 4 ── Tab bar */}
-      <div style={{ borderBottom: "1px solid rgba(10,10,10,0.08)", padding: "0 32px", display: "flex" }}>
+      <div style={{ borderBottom: "1px solid rgba(10,10,10,0.12)", padding: "0 32px", display: "flex" }}>
         {TABS.map(t => (
           <button
             key={t.key}

@@ -429,7 +429,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   .ds-subheader {
     height: 48px;
     background: #FFFFFF;
-    border-bottom: 1px solid rgba(10,10,10,0.08);
+    border-bottom: 1px solid rgba(10,10,10,0.12);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -488,14 +488,14 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   .ds-stat-strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    border: 1px solid rgba(10,10,10,0.08);
+    border: 1px solid rgba(10,10,10,0.12);
   }
 
   /* Individual stat cell */
   .ds-stat-cell {
     background: #FFFFFF;
     padding: 24px 32px;
-    border-right: 1px solid rgba(10,10,10,0.08);
+    border-right: 1px solid rgba(10,10,10,0.12);
   }
   .ds-stat-cell:last-child {
     border-right: none;
@@ -648,7 +648,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   }
   .card {
     background: #fff;
-    border: 1px solid rgba(10,10,10,0.08);
+    border: 1px solid rgba(10,10,10,0.12);
     padding: 20px;
   }
 }
@@ -1118,7 +1118,7 @@ body {
 .stat-card-user {
   background: #FFFFFF;
   border: none;
-  border-right: 1px solid rgba(10,10,10,0.08);
+  border-right: 1px solid rgba(10,10,10,0.12);
   border-radius: 0;
   box-shadow: none;
 }

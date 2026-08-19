@@ -16,7 +16,7 @@ export default function ConsolidatedRegistryView({ storeItems, products, customG
 
   if (storeItems.length === 0 && products.length === 0 && customGifts.length === 0) {
     return (
-      <div style={{ padding: '64px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ padding: '64px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
         <Gift size={40} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 16px' }} />
         <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>No registry items yet</p>
         <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add platforms, products, or cash funds to get started.</p>
@@ -56,7 +56,7 @@ export default function ConsolidatedRegistryView({ storeItems, products, customG
             {storeItems.map(store => (
               <div key={store.id} style={{ background: '#FFFFFF', padding: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 40, height: 40, border: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 40, height: 40, border: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {store.image_url
                       ? <img src={store.image_url} alt={store.store_name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 4 }} />
                       : <Gift size={18} style={{ color: 'rgba(10,10,10,0.2)' }} />

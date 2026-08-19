@@ -74,7 +74,7 @@ function SummaryChip({ label }) {
 
 function AccordionSection({ title, isOpen, onToggle, summary, children }) {
   return (
-    <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+    <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
       <button
         type="button"
         onClick={onToggle}
@@ -217,7 +217,7 @@ export default function OnboardingStep5WeddingType({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        style={{ marginBottom: 32, borderTop: '1px solid rgba(10,10,10,0.08)' }}
+        style={{ marginBottom: 32, borderTop: '1px solid rgba(10,10,10,0.12)' }}
       >
         {/* Style */}
         <AccordionSection
@@ -250,7 +250,7 @@ export default function OnboardingStep5WeddingType({ onNext, data }) {
             ))}
           </div>
           {faith === 'Interfaith' && (
-            <div style={{ marginTop: 14, padding: '12px 14px', border: '1px solid rgba(10,10,10,0.08)', background: '#FAFAFA' }}>
+            <div style={{ marginTop: 14, padding: '12px 14px', border: '1px solid rgba(10,10,10,0.12)', background: '#FAFAFA' }}>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 8px' }}>
                 Select the two faiths ({interfaithPicks.length}/2 selected)
               </p>

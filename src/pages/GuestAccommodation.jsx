@@ -102,7 +102,7 @@ export default function GuestAccommodation() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
             {curatedPlaces.map((place, i) => (
-              <div key={place.id || place.place_id || i} style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden', background: '#FFFFFF' }}>
+              <div key={place.id || place.place_id || i} style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden', background: '#FFFFFF' }}>
                 <div style={{ height: 170, background: '#F5F5F5', position: 'relative', overflow: 'hidden' }}>
                   {place.photo_url ? (
                     <img src={place.photo_url} alt={place.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { e.target.style.display = 'none'; }} />

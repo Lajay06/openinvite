@@ -51,7 +51,7 @@ function SummaryChip({ label }) {
 // different pattern one screen later.
 function AccordionSection({ title, isOpen, onToggle, summary, children }) {
   return (
-    <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)' }}>
+    <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
       <button
         type="button"
         onClick={onToggle}
@@ -162,7 +162,7 @@ export default function OnboardingPathACultural({ onNext, data }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="text-left mb-10"
-        style={{ borderTop: '1px solid rgba(10,10,10,0.08)' }}
+        style={{ borderTop: '1px solid rgba(10,10,10,0.12)' }}
       >
         {CULTURE_REGIONS.map(r => (
           <AccordionSection

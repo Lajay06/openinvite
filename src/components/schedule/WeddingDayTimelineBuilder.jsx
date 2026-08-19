@@ -502,7 +502,7 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
 
       {/* Timeline chart(s) — one per day */}
       {sorted.length === 0 ? (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '64px 32px', textAlign: 'center' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
           <Clock size={28} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px', display: 'block' }} />
           <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 16px' }}>
             No events yet — add one to build your timeline.
@@ -514,8 +514,8 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
       ) : (
         <div ref={printRef} style={{ display: 'flex', flexDirection: 'column', gap: multiDay ? 28 : 0 }}>
           {dayGroups.map(([date, items]) => (
-            <div key={date} style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
-              <div style={{ padding: '12px 20px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div key={date} style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
+              <div style={{ padding: '12px 20px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <p style={labelStyle}>{multiDay ? fmtDateHeading(date === '__nodate__' ? null : date) : 'Wedding day timeline'}</p>
                 {multiDay && (
                   <p style={labelStyle}>{items.length} {items.length === 1 ? 'event' : 'events'}</p>
@@ -529,8 +529,8 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
 
       {/* Compact ordered list below the chart(s) */}
       {sorted.length > 0 && (
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
-          <div style={{ padding: '12px 20px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
+          <div style={{ padding: '12px 20px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <p style={labelStyle}>Event list</p>
             <p style={labelStyle}>{sorted.length} {sorted.length === 1 ? 'event' : 'events'}</p>
           </div>

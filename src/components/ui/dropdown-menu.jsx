@@ -30,7 +30,7 @@ const DropdownMenuSubContent = React.forwardRef(({ className, ...props }, ref) =
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-none border border-[rgba(10,10,10,0.08)] bg-white p-1 text-[#0A0A0A] shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      "z-50 min-w-[8rem] overflow-hidden rounded-none border border-[rgba(10,10,10,0.12)] bg-white p-1 text-[#0A0A0A] shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className
     )}
     {...props} />
@@ -43,7 +43,7 @@ const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...pr
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "z-50 min-w-[8rem] overflow-hidden rounded-none border border-[rgba(10,10,10,0.08)] bg-white p-1 text-[#0A0A0A] shadow-md",
+        "z-50 min-w-[8rem] overflow-hidden rounded-none border border-[rgba(10,10,10,0.12)] bg-white p-1 text-[#0A0A0A] shadow-md",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         className
       )}
@@ -112,7 +112,15 @@ DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName
 const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-[rgba(10,10,10,0.08)]", className)}
+    // Advisor exemption (feel-pass 1), scoped to this site only. The property
+    // guard on that pass changed borders and never backgrounds — but this is a
+    // 1px-high separator drawn as a background fill, so it is a divider by role
+    // and a background only by implementation. The guard's exclusion exists to
+    // protect fills whose role is fill; that role was verified here and is not
+    // one. Left at 0.08 it would have been the only divider in the product
+    // still on the old value. The guard itself is unchanged — the exemption
+    // lives at the site, not in the rule.
+    className={cn("-mx-1 my-1 h-px bg-[rgba(10,10,10,0.12)]", className)}
     {...props} />
 ))
 DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName

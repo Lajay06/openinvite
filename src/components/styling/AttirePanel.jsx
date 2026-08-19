@@ -83,7 +83,7 @@ function OutfitCard({ outfit, onUpdate, onRemove, uploadState, onPhotoUpload, on
   const uploading = status === 'uploading';
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 16 }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 16 }}>
 
       {/* Row 1: role + name + remove */}
       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', marginBottom: 14 }}>
@@ -207,7 +207,7 @@ function OutfitCard({ outfit, onUpdate, onRemove, uploadState, onPhotoUpload, on
             <img
               src={outfit.photoUrl}
               alt="Outfit"
-              style={{ width: 64, height: 64, objectFit: 'cover', border: '1px solid rgba(10,10,10,0.08)', flexShrink: 0 }}
+              style={{ width: 64, height: 64, objectFit: 'cover', border: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}
             />
             <button
               onClick={() => fileRefs.current[outfit.id]?.click()}
@@ -584,7 +584,7 @@ export default function AttirePanel() {
       </Accordion>
 
       {/* ── Save bar ─────────────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 28, marginTop: 16, borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 28, marginTop: 16, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
         <button
           onClick={handleSave}
           disabled={saving}

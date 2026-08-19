@@ -215,7 +215,7 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage, onTogg
   }
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden' }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
       <div style={{ overflowX: 'auto' }}>
         <Table>
           <TableHeader>

@@ -95,7 +95,7 @@ function GameCreateForm({ guests, onSave, onCancel, saving }) {
       <div style={{ marginBottom: 24 }}>
         <div style={labelStyle}>Questions</div>
         {questions.map((q, i) => (
-          <div key={q.id} style={{ border: '1px solid rgba(10,10,10,0.08)', padding: 14, marginBottom: 10 }}>
+          <div key={q.id} style={{ border: '1px solid rgba(10,10,10,0.12)', padding: 14, marginBottom: 10 }}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 10 }}>
               <input
                 value={q.text}
@@ -173,7 +173,7 @@ function GameCreateForm({ guests, onSave, onCancel, saving }) {
         )}
 
         {recipientMode === 'individual' && (
-          <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid rgba(10,10,10,0.08)' }}>
+          <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid rgba(10,10,10,0.12)' }}>
             {guests.map(g => (
               <label key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderBottom: '1px solid rgba(10,10,10,0.05)', cursor: 'pointer', fontSize: 13, fontFamily: PJS, color: '#0A0A0A' }}>
                 <input type="checkbox" checked={recipientGuestIds.includes(g.id)} onChange={() => toggleGuest(g.id)} />
@@ -205,7 +205,7 @@ function GamePrintView({ questionnaire, recipients, responses, onClose }) {
 
   return createPortal(
     <div className="games-print-overlay" style={{ position: 'fixed', inset: 0, zIndex: 9200, background: '#FFFFFF', overflowY: 'auto', fontFamily: PJS }}>
-      <div className="no-print" style={{ position: 'sticky', top: 0, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.08)', padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="no-print" style={{ position: 'sticky', top: 0, background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A' }}>Print / export</span>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={() => window.print()} style={{ padding: '7px 16px', borderRadius: 999, background: '#E03553', color: '#FFFFFF', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -280,7 +280,7 @@ function GameResponses({ questionnaire, guests, responses, onBack, onCopyLinks, 
       {/* Response tracker */}
       <div style={{ marginTop: 24, marginBottom: 32 }}>
         <div style={labelStyle}>Who's answered</div>
-        <div style={{ border: '1px solid rgba(10,10,10,0.08)' }}>
+        <div style={{ border: '1px solid rgba(10,10,10,0.12)' }}>
           {recipients.length === 0 ? (
             <p style={{ padding: 16, fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>No recipients match this game's settings.</p>
           ) : recipients.map((g, i) => {
@@ -326,7 +326,7 @@ function GameResponses({ questionnaire, guests, responses, onBack, onCopyLinks, 
         })}
       </div>
 
-      <div style={{ marginTop: 32, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.08)', display: 'flex', gap: 10 }}>
+      <div style={{ marginTop: 32, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', gap: 10 }}>
         <button onClick={onToggleActive} style={{ padding: '6px 14px', borderRadius: 999, background: 'transparent', border: '1px solid rgba(10,10,10,0.12)', cursor: 'pointer', fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)' }}>
           {questionnaire.is_active === false ? 'Reopen game' : 'Close game'}
         </button>
@@ -480,7 +480,7 @@ export default function GamesManager() {
             const recipients = resolveRecipients(q, guests);
             const answeredCount = responses.filter(r => r.questionnaire_id === q.id).length;
             return (
-              <div key={q.id} style={{ border: '1px solid rgba(10,10,10,0.08)', marginBottom: 12, padding: '16px 18px' }}>
+              <div key={q.id} style={{ border: '1px solid rgba(10,10,10,0.12)', marginBottom: 12, padding: '16px 18px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>

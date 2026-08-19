@@ -229,7 +229,7 @@ function CategoriesTab({ guide, onToggleCategory }) {
       <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 28px', lineHeight: 1.6, maxWidth: 560 }}>
         Toggle which sections appear in your guest guide.
       </p>
-      <div style={{ borderTop: '1px solid rgba(10,10,10,0.08)' }}>
+      <div style={{ borderTop: '1px solid rgba(10,10,10,0.12)' }}>
         {CATEGORIES.map(cat => {
           const isEnabled = guide.categories?.[cat.key]?.enabled !== false;
           const count = guide.categories?.[cat.key]?.places?.length || 0;
@@ -460,7 +460,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
 
         {/* Manual entry form */}
         {!selectedPlace && showManual && (
-          <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '16px 16px 18px' }}>
+          <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, padding: '16px 16px 18px' }}>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
               <div>
@@ -607,7 +607,7 @@ function SavedPlaceCard({ place, onRemove }) {
 
   return (
     <div
-      style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden', background: '#FFFFFF', position: 'relative' }}
+      style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden', background: '#FFFFFF', position: 'relative' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -939,7 +939,7 @@ function DayCard({ day, allSavedPlaces, onTitleChange, onAddActivity, onRemoveAc
   const [titleDraft, setTitleDraft] = useState(day.title);
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.08)', borderRadius: 8, overflow: 'hidden' }}>
+    <div style={{ border: '1px solid rgba(10,10,10,0.12)', borderRadius: 8, overflow: 'hidden' }}>
       <div style={{ padding: '14px 20px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
@@ -1157,7 +1157,7 @@ function PublishTab({ details, guide, destination, onSaveField, onGenerateIntro,
       </div>
 
       {/* Publish toggle */}
-      <div style={{ borderTop: '1px solid rgba(10,10,10,0.08)', paddingTop: 28 }}>
+      <div style={{ borderTop: '1px solid rgba(10,10,10,0.12)', paddingTop: 28 }}>
         {!isPublished ? (
           <div style={{ textAlign: 'center', padding: '32px 24px' }}>
             <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>

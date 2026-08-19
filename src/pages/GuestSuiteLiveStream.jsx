@@ -149,7 +149,7 @@ export default function GuestSuiteLiveStream() {
 
             {/* Password */}
             {stream.password && (
-              <div style={{ padding: '14px 18px', border: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ padding: '14px 18px', border: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Lock size={14} strokeWidth={1.8} style={{ color: 'rgba(10,10,10,0.6)', flexShrink: 0 }} />
                 <div>
                   <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'block', marginBottom: 2 }}>

@@ -28,7 +28,7 @@ function PlaceCard({ place, onRemove }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
-      style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden', background: '#FFFFFF', position: 'relative' }}
+      style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden', background: '#FFFFFF', position: 'relative' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -290,7 +290,7 @@ function AddPlaceCard({ destination, onAdd }) {
 
       {/* Manual entry form */}
       {!selected && showManual && (
-        <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.08)', borderRadius: 6, padding: '16px 16px 18px' }}>
+        <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, padding: '16px 16px 18px' }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
             <div>
@@ -526,7 +526,7 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
                   {avaSuggestions.map(s => (
-                    <div key={s._avaId} style={{ border: '1px solid rgba(10,10,10,0.08)', overflow: 'hidden', background: '#FAFAFA' }}>
+                    <div key={s._avaId} style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden', background: '#FAFAFA' }}>
                       <div style={{ padding: '16px 16px 4px' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
                           <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS, lineHeight: 1.3 }}>{s.name}</p>

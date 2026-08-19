@@ -168,7 +168,7 @@ export default function TransportPage() {
       <DashboardPageHeader title="Transport" subtitle="Organize transport for your wedding party on the day" />
 
       {/* Ava button + save indicator */}
-      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <AvaButton label="Ask Ava about wedding party transport" onClick={() => setAvaOpen(true)} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.6)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
@@ -177,7 +177,7 @@ export default function TransportPage() {
       </div>
 
       {/* Tab bar */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.08)', display: 'flex', padding: '0 32px' }}>
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', padding: '0 32px' }}>
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer',
@@ -236,7 +236,7 @@ export default function TransportPage() {
                   </button>
                 </div>
                 {carParks.map((cp, i) => (
-                  <div key={i} style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div key={i} style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                       <input value={cp.name || ''} onChange={e => updateCarPark(i, 'name', e.target.value)} placeholder="Car park name" style={inputStyle} />
                       <input value={cp.address || ''} onChange={e => updateCarPark(i, 'address', e.target.value)} placeholder="Address" style={inputStyle} />
@@ -266,7 +266,7 @@ export default function TransportPage() {
                   </button>
                 </div>
                 {routes.map((route, i) => (
-                  <div key={i} style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div key={i} style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 100px', gap: 12, alignItems: 'flex-end' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                         <label style={labelStyle}>Type</label>
@@ -312,7 +312,7 @@ export default function TransportPage() {
             <DetailsSection title="Couple-arranged transport" icon={Truck} defaultOpen>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {shuttles.map((shuttle, i) => (
-                  <div key={shuttle.id} style={{ border: '1px solid rgba(10,10,10,0.08)', padding: '16px 18px' }}>
+                  <div key={shuttle.id} style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '16px 18px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{shuttle.name || `Transport ${i + 1}`}</span>
                       <button onClick={() => removeShuttle(shuttle.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', display: 'flex', padding: 4 }}><X size={14} /></button>
