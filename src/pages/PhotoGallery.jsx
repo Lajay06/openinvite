@@ -22,6 +22,7 @@ import toast from 'react-hot-toast';
 import AIWeddingAssistant from "../components/shared/AIWeddingAssistant";
 import { useFileUpload } from '@/hooks/useFileUpload';
 import UploadStatus from '@/components/shared/UploadStatus';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { color } from '@/styles/tokens';
 
 export default function PhotoGalleryPage() {
@@ -181,23 +182,18 @@ export default function PhotoGalleryPage() {
   return (
     <div className="min-h-screen bg-white">
 
-      <div className="p-6 lg:p-8 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">Photo Gallery</h1>
-            <p className="text-sm" style={{ color: color.textMuted }}>
-              Upload and manage your wedding photos
-            </p>
-          </div>
-          <Button 
-            onClick={() => setShowUploadForm(!showUploadForm)}
-            className="bg-gray-900 hover:bg-gray-800"
-          >
+      <DashboardPageHeader
+        title="Photo gallery"
+        subtitle="Upload and manage your wedding photos"
+        actions={(
+          <Button onClick={() => setShowUploadForm(!showUploadForm)} className="bg-gray-900 hover:bg-gray-800">
             <Upload className="w-4 h-4 mr-2" />
-            Upload Photos
+            Upload photos
           </Button>
-        </div>
+        )}
+      />
+
+      <div className="p-6 lg:p-8 space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

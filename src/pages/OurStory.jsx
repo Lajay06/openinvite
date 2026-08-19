@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import { Button } from '@/components/ui/button';
+import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -175,14 +176,12 @@ export default function OurStoryPage() {
   return (
     <div className="min-h-screen bg-white">
 
+      <DashboardPageHeader
+        title="Our story"
+        subtitle="Create a beautiful timeline of your relationship journey"
+      />
+
       <div className="p-6 lg:p-8 space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-5xl font-bold text-gray-900 mb-2">Our Story</h1>
-          <p className="text-base" style={{ color: color.textMuted }}>
-            Create a beautiful timeline of your relationship journey
-          </p>
-        </div>
 
         {/* Add/Edit Form */}
         <Card className="border-0 shadow-sm">
