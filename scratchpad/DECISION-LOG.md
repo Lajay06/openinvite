@@ -720,3 +720,39 @@ reason for the pin is demonstrated rather than described.
 17 behavioural pins. All five states rendered before merge was requested, via a
 local harness that was removed in the same pass. Deployed behaviour re-rendered
 on production afterwards and matches.
+
+
+## 2026-08-19 — correction: the CI runner was never degraded
+
+I filed a ticket asserting "CI runner degradation" from three cancelled runs I
+never opened. It was wrong.
+
+**Every cancellation was `concurrency: cancel-in-progress: true` firing on a ref
+I had just pushed to again.** The two main-branch cases each ended within ~20
+seconds of my own following docs commit starting its run (`f5d3d72` /
+`1ec55f9`, `ea22f30` / `5acbc0c`). The PR case was my own force-push; the fourth
+was my own re-run. Four cancellations, four me-shaped causes, zero
+infrastructure faults.
+
+The evidence that disproved it was **inside the table I put in the ticket**:
+durations of 68s, 206s, 521s and 1218s. An 18x spread cannot come from a fixed
+cause. I quoted the numbers and did not read them.
+
+**Environmental note, worth keeping for the next "slow CI" reading:** the
+~20-25 minute runs were GitHub runner QUEUE time, not slow work. Step timings on
+the slowest run total ~145 seconds; normal runs execute in ~100s with 3-25s of
+queue. `timeout-minutes: 20` measures execution, not queue, so it was never
+approached. Slow wall-clock on this repo's CI means "waiting for a runner"
+until proven otherwise — check step timings before filing anything.
+
+`scratchpad/CI-RUNNER-TICKET-INVESTIGATION.md` supersedes the degradation
+report. The fix shipped in #500: main is exempt from cancellation, and a
+`workflow_run` watchdog announces any non-success conclusion on main, because
+the real gap was never that main could go unverified — it was that nothing said
+so.
+
+**The pattern, now four for four this session:** I had the artefact, drew the
+conclusion from its surface, and did not follow it to the mechanism. Code
+reading correct over the system running; a green suite over its exit code; a
+probe's data shape over the call graph; and now a run's status over its
+duration. Each artefact was true in isolation and wrong about the system.
