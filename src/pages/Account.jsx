@@ -228,7 +228,11 @@ function SettingsTab({ user, refreshUser }) {
         </p>
       </div>
 
-      <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', margin: '32px 0' }} />
+      {/* Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
+          regardless of implementation. This one is a background fill, not a
+          border, so the feel-pass property guard skipped it; the guard is
+          unchanged and this exemption lives here at the site. */}
+      <div style={{ height: 1, background: 'rgba(10,10,10,0.12)', margin: '32px 0' }} />
 
       {/* Preferences */}
       <p style={sectionTitleStyle}>Preferences</p>
@@ -606,7 +610,11 @@ function SecurityTab({ user }) {
         </p>
       </form>
 
-      <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', margin: '32px 0' }} />
+      {/* Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
+          regardless of implementation. This one is a background fill, not a
+          border, so the feel-pass property guard skipped it; the guard is
+          unchanged and this exemption lives here at the site. */}
+      <div style={{ height: 1, background: 'rgba(10,10,10,0.12)', margin: '32px 0' }} />
 
       <p style={sectionTitleStyle}>Delete account</p>
       {deletionRequested ? (

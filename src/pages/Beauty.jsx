@@ -364,7 +364,11 @@ export default function BeautyPage() {
                         <span>Makeup ({makeupCount} {makeupCount === 1 ? 'person' : 'people'} × 45 min)</span>
                         <span style={{ fontWeight: 600 }}>{makeupCount * 45} min</span>
                       </div>
-                      <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', margin: '4px 0' }} />
+                      {/* Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
+                          regardless of implementation. This one is a background fill, not a
+                          border, so the feel-pass property guard skipped it; the guard is
+                          unchanged and this exemption lives here at the site. */}
+                      <div style={{ height: 1, background: 'rgba(10,10,10,0.12)', margin: '4px 0' }} />
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontFamily: PJS, fontWeight: 700, color: '#0A0A0A' }}>
                         <span>Total getting ready time</span>
                         <span>{Math.floor(totalMins / 60)}h {totalMins % 60 > 0 ? `${totalMins % 60}m` : ''}</span>

@@ -101,14 +101,13 @@ SelectItem.displayName = SelectPrimitive.Item.displayName
 const SelectSeparator = React.forwardRef(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    // Advisor exemption (feel-pass 1), scoped to this site only. The property
-    // guard on that pass changed borders and never backgrounds — but this is a
-    // 1px-high separator drawn as a background fill, so it is a divider by role
-    // and a background only by implementation. The guard's exclusion exists to
-    // protect fills whose role is fill; that role was verified here and is not
-    // one. Left at 0.08 it would have been the only divider in the product
-    // still on the old value. The guard itself is unchanged — the exemption
-    // lives at the site, not in the rule.
+    // Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
+    // regardless of implementation. This is a 1px-high separator drawn as a
+    // background fill, so it is a divider by role and a background only by
+    // implementation. It was first granted a site-scoped exemption during
+    // feel-pass 1; that exemption was superseded by the general ruling once
+    // 14 more of the same species were found in the shipped bundle. The
+    // property guard is unchanged — exemptions live at sites, never in it.
     className={cn("-mx-1 my-1 h-px bg-[rgba(10,10,10,0.12)]", className)}
     {...props} />
 ))
