@@ -617,7 +617,7 @@ function SavedPlaceCard({ place, onRemove }) {
           <img src={photo} alt={place.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { e.target.style.display = 'none'; }} />
         ) : (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <MapPin size={24} color="rgba(10,10,10,0.12)" />
+            <MapPin size={24} color="rgba(10,10,10,0.3)" />
           </div>
         )}
 

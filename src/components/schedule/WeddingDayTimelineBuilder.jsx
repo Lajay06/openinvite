@@ -503,7 +503,7 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
       {/* Timeline chart(s) — one per day */}
       {sorted.length === 0 ? (
         <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
-          <Clock size={28} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px', display: 'block' }} />
+          <Clock size={28} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px', display: 'block' }} />
           <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 16px' }}>
             No events yet — add one to build your timeline.
           </p>

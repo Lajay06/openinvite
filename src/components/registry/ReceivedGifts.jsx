@@ -280,7 +280,7 @@ export default function ReceivedGifts() {
       {/* Gift list */}
       {filtered.length === 0 ? (
         <div style={{ padding: '48px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)', background: '#FAFAFA' }}>
-          <Package size={32} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px' }} />
+          <Package size={32} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px' }} />
           <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>No gifts recorded yet</p>
           <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Click "Add gift" to start tracking</p>
         </div>

@@ -117,7 +117,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
               </div>
               {restaurant.distance && (
                 <>
-                  <span className="text-gray-300">•</span>
+                  <span className="text-[rgba(10,10,10,0.3)]">•</span>
                   <div className="flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
                     <span>{restaurant.distance}</span>
@@ -126,7 +126,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
               )}
               {restaurant.priceRange && (
                 <>
-                  <span className="text-gray-300">•</span>
+                  <span className="text-[rgba(10,10,10,0.3)]">•</span>
                   <span className="font-medium text-gray-900">{restaurant.priceRange}</span>
                 </>
               )}

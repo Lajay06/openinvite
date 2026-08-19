@@ -116,7 +116,7 @@ export default function InspirationSearch({ onClose, onAddItems, activeBoard }) 
           )}
           {!loading && results.length === 0 && (
             <div style={{ padding: '64px 0', textAlign: 'center' }}>
-              <Search size={40} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 16px' }} />
+              <Search size={40} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 16px' }} />
               <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>Enter search terms to find wedding inspiration</p>
               <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Try "dress", "flowers", "venue", or "decor"</p>
             </div>

@@ -217,7 +217,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                 : logs.filter(l => l.type !== 'document').length === 0
                   ? (
                     <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                      <MessageSquare size={24} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 8px', display: 'block' }} />
+                      <MessageSquare size={24} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 8px', display: 'block' }} />
                       <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>No communication logged yet</p>
                     </div>
                   ) : (
@@ -295,7 +295,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                 : logs.filter(l => l.type === 'document').length === 0
                   ? (
                     <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                      <FileText size={24} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 8px', display: 'block' }} />
+                      <FileText size={24} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 8px', display: 'block' }} />
                       <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>No documents uploaded yet</p>
                     </div>
                   ) : (
@@ -376,7 +376,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                 : tasks.length === 0
                   ? (
                     <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                      <CheckSquare size={24} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 8px', display: 'block' }} />
+                      <CheckSquare size={24} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 8px', display: 'block' }} />
                       <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>No tasks yet — add one to track follow-ups</p>
                     </div>
                   ) : (

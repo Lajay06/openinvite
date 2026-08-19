@@ -339,7 +339,7 @@ export default function MessagesPage() {
           </div>
         )) : (
           <div style={{ padding: '64px 0', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
-            <MessageCircle size={36} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 16px' }} />
+            <MessageCircle size={36} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 16px' }} />
             <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>
               {searchTerm || filterStatus !== 'all' ? 'No messages found' : 'No messages yet'}
             </p>

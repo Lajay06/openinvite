@@ -349,7 +349,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                 {design.sections.map((section, index) => (
                   <div
                     key={section.id}
-                    className="group flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all duration-200"
+                    className="group flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-[rgba(10,10,10,0.18)] hover:shadow-sm transition-all duration-200"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm font-medium text-gray-600">

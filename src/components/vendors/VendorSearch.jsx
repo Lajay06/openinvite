@@ -304,7 +304,7 @@ export default function VendorSearch({ onAddVendor }) {
 
       {!loading && !hasSearched && (
         <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
-          <Search size={28} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px', display: 'block' }} />
+          <Search size={28} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px', display: 'block' }} />
           <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 6px' }}>
             Find your perfect wedding vendors
           </p>
@@ -316,7 +316,7 @@ export default function VendorSearch({ onAddVendor }) {
 
       {!loading && hasSearched && searchResults.length === 0 && (
         <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
-          <Search size={28} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px', display: 'block' }} />
+          <Search size={28} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px', display: 'block' }} />
           <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>No vendors found — try adjusting your filters.</p>
         </div>
       )}

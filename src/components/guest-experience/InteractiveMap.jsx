@@ -160,7 +160,7 @@ export default function InteractiveMap({
   if (locations.length === 0) {
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center">
-        <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+        <MapPin className="w-12 h-12 mx-auto mb-4 text-[rgba(10,10,10,0.3)]" />
         <p className="text-gray-600">No location data available</p>
       </div>
     );

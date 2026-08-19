@@ -153,7 +153,7 @@ export default function VowsSpeechesPage() {
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {listItems.length === 0 ? (
                 <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-                  {activeTab === 'vows' ? <Heart size={32} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px' }} /> : <Mic size={32} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 12px' }} />}
+                  {activeTab === 'vows' ? <Heart size={32} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px' }} /> : <Mic size={32} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px' }} />}
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>No {activeTab} yet</p>
                   <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 16 }}>Start writing or ask Ava for help</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -235,7 +235,7 @@ export default function VowsSpeechesPage() {
               </>
             ) : (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center' }}>
-                <Mic size={48} style={{ color: 'rgba(10,10,10,0.12)', marginBottom: 16 }} />
+                <Mic size={48} style={{ color: 'rgba(10,10,10,0.3)', marginBottom: 16 }} />
                 <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>Ready to write your perfect words?</p>
                 <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 24 }}>Select an item from the list, or create a new one</p>
                 <div style={{ display: 'flex', gap: 10 }}>

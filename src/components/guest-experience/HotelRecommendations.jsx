@@ -162,7 +162,7 @@ export default function HotelRecommendations({ weddingLocation, weddingCity }) {
               </div>
               {hotel.distance && (
                 <>
-                  <span className="text-gray-300">•</span>
+                  <span className="text-[rgba(10,10,10,0.3)]">•</span>
                   <div className="flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
                     <span>{hotel.distance}</span>
