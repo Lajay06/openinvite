@@ -157,7 +157,7 @@ export function RealAssetsSection({ universe, weddingDetails, guests }) {
 export function MockDataNotice({ loading, weddingDetails }) {
   if (loading) return null;
   return (
-    <p style={{ fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.35)', margin: 0 }}>
+    <p style={{ fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
       Showing live data for {weddingDetails?.coupleNames || 'your wedding'} — a design mock, read-only: nothing here writes back.
     </p>
   );

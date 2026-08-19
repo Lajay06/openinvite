@@ -331,7 +331,7 @@ export default function VendorMarketplace() {
         {/* Row 1: search + location + search button */}
         <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
           <div style={{ position: 'relative', flex: 1 }}>
-            <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+            <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
             <input
               value={search} onChange={e => setSearch(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
@@ -344,7 +344,7 @@ export default function VendorMarketplace() {
           <div style={{ position: 'relative', width: 200 }}>
             {geoCoords ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid rgba(10,10,10,0.15)', padding: '8px 0' }}>
-                <MapPin size={13} style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0 }} />
+                <MapPin size={13} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
                 <span style={{ fontSize: 14, color: '#0A0A0A', fontFamily: PJS, flex: 1 }}>Current location</span>
                 <button
                   type="button"
@@ -357,7 +357,7 @@ export default function VendorMarketplace() {
               </div>
             ) : (
               <>
-                <MapPin size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                <MapPin size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
                 <input
                   value={locationQ} onChange={e => setLocationQ(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSearch()}
@@ -427,7 +427,7 @@ export default function VendorMarketplace() {
             style={{ padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, fontFamily: PJS, cursor: 'pointer', border: '1.5px solid', transition: 'all 0.12s',
               borderColor: minRating ? '#F59E0B' : 'rgba(10,10,10,0.15)',
               background: minRating ? 'rgba(245,158,11,0.08)' : 'none',
-              color: minRating ? '#92400e' : 'rgba(10,10,10,0.5)' }}>
+              color: minRating ? '#92400e' : 'rgba(10,10,10,0.6)' }}>
             4★ and above
           </button>
 
@@ -450,7 +450,7 @@ export default function VendorMarketplace() {
                   onChange={e => setOnlineServices(e.target.checked)}
                   style={{ width: 14, height: 14, accentColor: '#E03553', cursor: 'inherit' }}
                 />
-                <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: onlineEnabled ? 'rgba(10,10,10,0.55)' : 'rgba(10,10,10,0.35)' }}>
+                <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: onlineEnabled ? 'rgba(10,10,10,0.6)' : 'rgba(10,10,10,0.6)' }}>
                   Online services
                 </span>
               </label>

@@ -200,7 +200,7 @@ export default function MockUniverseA() {
               </div>
               <div style={{ flex: 1, minWidth: 220 }}>
                 <p style={{ fontFamily: PJS, fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px' }}>{u.name} is part of Ultra</p>
-                <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.5)', margin: 0 }}>Upgrade to unlock the full palette, type, motifs and asset previews for this world.</p>
+                <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Upgrade to unlock the full palette, type, motifs and asset previews for this world.</p>
               </div>
               <button onClick={() => navigate('/account')} style={{ padding: '9px 20px', borderRadius: 999, border: 'none', background: '#E03553', color: '#FFFFFF', fontFamily: PJS, fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
                 Upgrade to Ultra

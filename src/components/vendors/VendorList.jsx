@@ -31,7 +31,7 @@ const CATEGORY_STYLES = {
   planning:      { color: '#803D81', border: '1px solid rgba(128,61,129,0.35)' },
   decorations:   { color: '#E03553', border: '1px solid rgba(224,53,83,0.35)' },
   entertainment: { color: '#0A1930', border: '1px solid rgba(10,25,48,0.35)' },
-  other:         { color: 'rgba(10,10,10,0.5)', border: '1px solid rgba(10,10,10,0.2)' },
+  other:         { color: 'rgba(10,10,10,0.6)', border: '1px solid rgba(10,10,10,0.2)' },
 };
 
 const CATEGORY_LABELS = {
@@ -116,7 +116,7 @@ function VendorLogo({ vendor }) {
         width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
         background: 'rgba(10,10,10,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(10,10,10,0.5)', fontFamily: PJS }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
           {vendor.name?.[0]?.toUpperCase() || '?'}
         </span>
       </div>
@@ -283,13 +283,13 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage, onTogg
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       {vendor.phone && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                          <Phone size={11} style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0 }} />
+                          <Phone size={11} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
                           <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap' }}>{vendor.phone}</span>
                         </div>
                       )}
                       {vendor.email && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                          <Mail size={11} style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0 }} />
+                          <Mail size={11} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
                           <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap' }}>{vendor.email}</span>
                         </div>
                       )}
@@ -313,7 +313,7 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage, onTogg
                 <TableCell className="align-middle">
                   {vendor.quoted_price ? (
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                      <DollarSign size={11} style={{ color: 'rgba(10,10,10,0.35)' }} />
+                      <DollarSign size={11} style={{ color: 'rgba(10,10,10,0.45)' }} />
                       <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
                         {Number(vendor.quoted_price).toLocaleString()}
                       </span>

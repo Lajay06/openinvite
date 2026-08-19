@@ -224,12 +224,12 @@ export default function UniverseStudio() {
                     </div>
                   )}
                   {weddingDateStr && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
                       <Calendar size={13} style={{ color: 'rgba(10,10,10,0.6)' }} /> {weddingDateStr}
                     </span>
                   )}
                   {venueName && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
                       <MapPin size={13} style={{ color: 'rgba(10,10,10,0.6)' }} /> {venueName}
                     </span>
                   )}

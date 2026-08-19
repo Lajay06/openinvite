@@ -160,7 +160,7 @@ export default function GuestExperiencePage() {
                     display: 'inline-flex', alignItems: 'center', gap: 6,
                     padding: '10px 16px', background: 'none', border: 'none',
                     borderBottom: active ? '2px solid #E03553' : '2px solid transparent',
-                    color: active ? '#E03553' : 'rgba(10,10,10,0.5)',
+                    color: active ? '#E03553' : 'rgba(10,10,10,0.6)',
                     fontSize: 13, fontWeight: active ? 700 : 500, cursor: 'pointer',
                     fontFamily: "'Plus Jakarta Sans', sans-serif",
                     marginBottom: -1, transition: 'color 0.15s',
@@ -186,7 +186,7 @@ export default function GuestExperiencePage() {
         <div style={{ display: 'none', width: 304, borderLeft: '1px solid rgba(10,10,10,0.08)', background: '#F5F5F5', padding: 24, position: 'sticky', top: 64, height: 'calc(100vh - 64px)', overflowY: 'auto' }} className="lg:block">
           <div style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', marginBottom: 4 }}>Quick book</p>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)' }}>Pre-filled with wedding dates</p>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>Pre-filled with wedding dates</p>
           </div>
 
           {/* Booking.com */}

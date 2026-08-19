@@ -227,7 +227,7 @@ export default function VendorsPage() {
           <TabsContent value="vendors" className="mt-6">
             {/* Search */}
             <div style={{ position: 'relative', maxWidth: 400, marginBottom: 14 }}>
-              <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+              <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
               <Input
                 placeholder="Search vendors…"
                 value={searchTerm}
