@@ -47,6 +47,18 @@ const CATEGORIES = [
   "beauty", "honeymoon", "miscellaneous",
 ];
 
+// The plan's categories, widened 2026-08-19 from 8 to the ledger's full 13.
+//
+// WHY. The Budget entity accepts 13 categories; the plan accepted 8. The five
+// it could not represent — decorations, rings, stationery, beauty,
+// miscellaneous — held $27,500 of real allocations on the live fixture, money
+// the planning half of the page simply could not see. Worse, the plan then
+// reported that same $27,500 as "Remaining", so the page told a couple who had
+// allocated every dollar that they had a spare $27,500. Closing the category
+// gap is what makes that number honest; renaming it (below) is only the label.
+//
+// This list must stay a superset-match with CATEGORIES above (minus "all").
+// Pinned by tests/persistence/budget-clarity.mjs.
 const BUDGET_CATEGORIES = [
   { key: 'venue', label: 'Venue' },
   { key: 'catering', label: 'Catering' },
@@ -55,7 +67,12 @@ const BUDGET_CATEGORIES = [
   { key: 'music', label: 'Music' },
   { key: 'attire', label: 'Attire' },
   { key: 'transportation', label: 'Transport' },
+  { key: 'decorations', label: 'Decorations' },
+  { key: 'rings', label: 'Rings' },
+  { key: 'stationery', label: 'Stationery' },
+  { key: 'beauty', label: 'Beauty' },
   { key: 'honeymoon', label: 'Honeymoon' },
+  { key: 'miscellaneous', label: 'Miscellaneous' },
 ];
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -69,7 +86,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // (`defaultTotal`/`defaultCategories`, computed by the parent from the same
 // `budgetItems` the stat cards use) so the form shows real numbers instead
 // of empty inputs on first view.
-function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategories, weddingDetailsId, onSaved }) {
+function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategories, committedTotal = 0, weddingDetailsId, onSaved }) {
   const initialPlan = () => savedBudget
     ? { total: savedBudget.total ?? '', categories: { ...savedBudget.categories } }
     : { total: defaultTotal || '', categories: { ...defaultCategories } };
@@ -90,6 +107,8 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
     setSaving(true);
     const payload = {
       total: plan.total === '' ? null : parseFloat(plan.total) || 0,
+      // Writes all 13 keys. An older plan that decrypted with 8 is upgraded here,
+      // on the couple's next save, rather than by a migration over live money.
       categories: BUDGET_CATEGORIES.reduce((acc, c) => {
         const v = plan.categories[c.key];
         acc[c.key] = v === '' || v == null ? null : (parseFloat(v) || 0);
@@ -127,8 +146,28 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
   const setCat = (key, v) => setPlan(p => ({ ...p, categories: { ...p.categories, [key]: v } }));
 
   const total = parseFloat(plan.total) || 0;
-  const allocated = BUDGET_CATEGORIES.reduce((s, c) => s + (parseFloat(plan.categories[c.key]) || 0), 0);
-  const remaining = total - allocated;
+
+  // EXPLICIT zero for a category the stored plan does not carry.
+  //
+  // budget is AES ciphertext of {total, categories}; the JSON inside is an
+  // application contract Base44 never validates, so widening it from 8 keys to
+  // 13 needed no schema change — but every plan saved BEFORE 2026-08-19 still
+  // decrypts to the 8-key shape. Those five missing keys must read as 0, and
+  // must do so where a reader can see it happening. `parseFloat(undefined) || 0`
+  // would reach the same number by accident; this reaches it on purpose, so
+  // nobody later "simplifies" the fallback away without meeting the reason.
+  //
+  // There is deliberately NO re-encryption migration: an old row stays 8-key
+  // until the couple's next save, at which point the write path below emits all
+  // 13. Same mixed-shape tolerance the encrypted fields use one level up.
+  const planCategoryValue = (key) => {
+    const stored = plan.categories?.[key];
+    if (stored === undefined || stored === null || stored === '') return 0;   // absent in an older 8-key plan
+    return parseFloat(stored) || 0;
+  };
+  const allocated = BUDGET_CATEGORIES.reduce((s, c) => s + planCategoryValue(c.key), 0);
+  const unallocated = total - allocated;
+  const money = (n) => `${n < 0 ? '-' : ''}${symbol}${Math.abs(n).toLocaleString()}`;
 
   const inputStyle = {
     background: 'transparent', border: 'none',
@@ -181,15 +220,33 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
         ))}
       </div>
 
+      {/* A negative belongs OUTSIDE the symbol: -$54,000, not $-54,000.
+          Over-allocating is exactly when a couple is reading this line
+          closely, so it is the worst moment to render money oddly. */}
       {/* Allocation summary */}
       {total > 0 && (
-        <div style={{ marginTop: 20, display: 'flex', gap: 24, borderTop: '1px solid rgba(10,10,10,0.08)', paddingTop: 16 }}>
+        <div style={{ marginTop: 20, display: 'flex', gap: 24, borderTop: '1px solid rgba(10,10,10,0.08)', paddingTop: 16, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, color: '#444444', fontFamily: PJS }}>
-            Allocated: <strong style={{ color: '#0A0A0A' }}>{symbol}{allocated.toLocaleString()}</strong>
+            Allocated: <strong style={{ color: '#0A0A0A' }}>{money(allocated)}</strong>
           </span>
-          <span style={{ fontSize: 13, color: remaining < 0 ? '#E03553' : '#444444', fontFamily: PJS }}>
-            Remaining: <strong>{symbol}{remaining.toLocaleString()}</strong>
+          {/* "Unallocated", not "Remaining". The stat strip 40px below uses
+              "Remaining" for money not yet SPENT; this is money not yet
+              ASSIGNED TO A CATEGORY. Two different quantities that shared one
+              word. Shown even at zero — zero unallocated is a true statement
+              about the plan, not a reason to hide the label. */}
+          <span style={{ fontSize: 13, color: unallocated < 0 ? '#E03553' : '#444444', fontFamily: PJS }}>
+            Unallocated: <strong>{money(unallocated)}</strong>
           </span>
+          {/* Reconciliation, shown ONLY on divergence (advisor default: calm).
+              The plan and the ledger are two stores that nothing syncs — see
+              scratchpad/BUDGET-CLARITY-DECISIONS.md ruling 1. When they agree,
+              saying so adds noise; when they disagree, silence is the bug. */}
+          {committedTotal > 0 && total > 0 && Math.round(committedTotal) !== Math.round(total) && (
+            <span style={{ fontSize: 13, color: '#444444', fontFamily: PJS }}>
+              Committed in expenses: <strong style={{ color: '#0A0A0A' }}>{money(committedTotal)}</strong>
+              {' '}<span style={{ color: 'rgba(10,10,10,0.6)' }}>(differs from your plan)</span>
+            </span>
+          )}
         </div>
       )}
     </div>
@@ -313,6 +370,8 @@ export default function BudgetPage() {
   // grouped by the plan's (smaller) category set, so the form shows real
   // numbers instead of blank inputs on first view.
   const defaultCategories = React.useMemo(() => {
+    // Seeded with an explicit 0 for every one of the 13, so a category with no
+    // ledger rows is a real zero rather than an absent key.
     const sums = {};
     for (const c of BUDGET_CATEGORIES) sums[c.key] = 0;
     for (const item of budgetItems) {
@@ -345,11 +404,24 @@ export default function BudgetPage() {
     toast.success('Budget exported');
   };
 
+  // "Budget used" keeps its percentage (advisor default) but never appears
+  // unqualified again: the denominator is named beneath it. An unlabelled
+  // percentage was the defect, not the arithmetic — it is spent/committed, and
+  // a couple reading it had no way to know that was not their stated plan.
   const STAT_CARDS = [
     { label: 'Total budget',  value: stats.totalBudgeted,           format: formatCurrency },
     { label: 'Total spent',   value: stats.totalSpent,               format: formatCurrency },
-    { label: 'Remaining',     value: Math.abs(stats.remaining),      format: formatCurrency },
-    { label: 'Budget used',   value: Math.round(stats.percentageUsed), format: v => `${v}%` },
+    { label: 'Remaining',     value: Math.abs(stats.remaining),      format: formatCurrency,
+      // Math.abs() strips the sign, so the label has to carry it. Without
+      // this a couple $10k over budget reads "Remaining $10,000 left to
+      // spend" — the number is right and the sentence is the opposite of true.
+      sub: stats.remaining < 0 ? 'over budget' : 'left to spend' },
+    { label: 'Budget used',   value: Math.round(stats.percentageUsed), format: v => `${v}%`,
+      // Naming a zero denominator is worse than naming none: "$0 of $0"
+      // reads as a broken number to a couple who simply has not started.
+      sub: stats.totalBudgeted > 0
+        ? `${formatCurrency(stats.totalSpent)} of ${formatCurrency(stats.totalBudgeted)} committed`
+        : null },
   ];
 
   return (
@@ -364,7 +436,14 @@ export default function BudgetPage() {
             <p style={statLabelStyle}>{s.label}</p>
             {loading
               ? <div style={{ width: 80, height: 32, background: 'rgba(10,10,10,0.06)' }} />
-              : <p style={statValueStyle}><CountUp to={s.value} format={s.format} /></p>
+              : <>
+                  <p style={statValueStyle}><CountUp to={s.value} format={s.format} /></p>
+                  {/* Names what the number is measured against. A percentage
+                      without its denominator was the defect this fixes. */}
+                  {s.sub && (
+                    <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '4px 0 0' }}>{s.sub}</p>
+                  )}
+                </>
             }
           </div>
         ))}
@@ -411,6 +490,7 @@ export default function BudgetPage() {
                 savedBudget={savedBudget}
                 defaultTotal={stats.totalBudgeted || ''}
                 defaultCategories={defaultCategories}
+                committedTotal={stats.totalBudgeted || 0}
                 weddingDetailsId={weddingDetailsId}
                 onSaved={setWeddingDetailsId}
               />

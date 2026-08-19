@@ -58,6 +58,7 @@ import { runDailyUpdateLoadStates } from '../tests/persistence/dailyupdate-load-
 import { runDashboardSources } from '../tests/persistence/dashboard-sources.mjs';
 import { runPlaylistEmbedUrls } from '../tests/persistence/playlist-embed-urls.mjs';
 import { runNextUp } from '../tests/persistence/next-up.mjs';
+import { runBudgetClarity } from '../tests/persistence/budget-clarity.mjs';
 import { runIcsExport } from '../tests/persistence/ics-export.mjs';
 import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
 import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
@@ -127,6 +128,7 @@ async function run() {
   await runModule('runDashboardSources', () => runDashboardSources());
   await runModule('runPlaylistEmbedUrls', () => runPlaylistEmbedUrls());
   await runModule('runNextUp', () => runNextUp());
+  await runModule('runBudgetClarity', () => runBudgetClarity());
   await runModule('runIcsExport', () => runIcsExport());
   await runModule('runGiftCheckout', () => runGiftCheckout());
   await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());
