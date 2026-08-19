@@ -34,7 +34,7 @@ export default function CurrencyModal({ onClose }) {
         </div>
 
         <div style={{ position: 'relative', marginBottom: 16 }}>
-          <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+          <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
           <input
             placeholder="Search currency…"
             value={query}

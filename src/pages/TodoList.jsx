@@ -417,7 +417,7 @@ export default function TodoList({ embedded = false }) {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                     <span style={labelStyle}>{col}</span>
                     <span style={{
-                      fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.35)',
+                      fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)',
                       background: 'rgba(10,10,10,0.07)', borderRadius: 999, padding: '1px 8px',
                       fontFamily: PJS,
                     }}>

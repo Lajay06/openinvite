@@ -410,9 +410,9 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
                     </div>
                     {!readOnly && event.type === 'custom' && (
                       <button onClick={() => handleDeleteEvent(event)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', display: 'flex', padding: 4 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}
                         onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-                        onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
+                        onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}>
                         <X size={14} />
                       </button>
                     )}

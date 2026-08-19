@@ -611,7 +611,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
                   );
                 })
               ) : (
-                <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.35)', margin: 0 }}>
+                <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
                   Nothing urgent this week.
                 </p>
               )}
@@ -664,7 +664,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
               })}
 
               {briefing.smartSuggestions?.length === 0 && alertItems.length === 0 && (
-                <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.35)', margin: 0 }}>
+                <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
                   No alerts right now.
                 </p>
               )}
@@ -691,7 +691,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
                     <div style={{ fontFamily: PJS, fontSize: 48, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.04em', lineHeight: 1 }}>
                       {card.value}
                     </div>
-                    <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', marginTop: 4 }}>
+                    <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', marginTop: 4 }}>
                       {card.label}
                     </div>
                   </div>

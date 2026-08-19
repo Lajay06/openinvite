@@ -189,7 +189,7 @@ export default function LiveStreamingPage() {
 
           {form.stream_url && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                 Platform detected:
               </span>
               <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.06)', color: '#444444', fontFamily: PJS }}>
@@ -199,9 +199,9 @@ export default function LiveStreamingPage() {
                 })()}
               </span>
               <a href={form.stream_url} target="_blank" rel="noopener noreferrer"
-                style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'rgba(10,10,10,0.35)', fontFamily: PJS, textDecoration: 'none' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textDecoration: 'none' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-                onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.35)'}>
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}>
                 <ExternalLink size={11} /> Test link
               </a>
             </div>

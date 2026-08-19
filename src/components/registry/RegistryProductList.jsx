@@ -109,7 +109,7 @@ export default function RegistryProductList({ items, onEdit, onDelete, onPurchas
                     )}
                     {!readOnly && (
                       <>
-                        <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: 6, display: 'flex' }}><Edit size={14} /></button>
+                        <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 6, display: 'flex' }}><Edit size={14} /></button>
                         <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 6, display: 'flex' }}><Trash2 size={14} /></button>
                       </>
                     )}

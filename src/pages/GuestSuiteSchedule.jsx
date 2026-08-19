@@ -139,7 +139,7 @@ export default function GuestSuiteSchedule() {
                     {fmtDateHeading(date)}
                   </span>
                   <div style={{ flex: 1, height: 1, background: 'rgba(10,10,10,0.08)' }} />
-                  <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
                     {dateItems.length} {dateItems.length === 1 ? 'event' : 'events'}
                   </span>
                 </div>

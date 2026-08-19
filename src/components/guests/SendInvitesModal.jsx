@@ -86,14 +86,14 @@ function StepIndicator({ current }) {
               <div style={{
                 width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: done ? '#22C55E' : active ? '#E03553' : 'rgba(10,10,10,0.08)',
-                color: done || active ? '#FFFFFF' : 'rgba(10,10,10,0.35)',
+                color: done || active ? '#FFFFFF' : 'rgba(10,10,10,0.6)',
                 fontSize: 12, fontWeight: 700, transition: 'all 0.2s ease',
               }}>
                 {done ? <Check size={13} /> : num}
               </div>
               <span style={{
                 fontSize: 10, fontWeight: active ? 700 : 500,
-                color: active ? '#0A0A0A' : done ? '#22C55E' : 'rgba(10,10,10,0.35)',
+                color: active ? '#0A0A0A' : done ? '#22C55E' : 'rgba(10,10,10,0.6)',
                 letterSpacing: '0.02em', whiteSpace: 'nowrap',
                 transition: 'color 0.2s ease',
               }}>
@@ -486,7 +486,7 @@ export default function SendInvitesModal({
         )}
       </div>
 
-      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', padding: '0 20px', margin: '10px 0', ...F }}>
+      <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', padding: '0 20px', margin: '10px 0', ...F }}>
         {previewGuest ? `Showing: ${previewGuest.name}` : 'Select a guest to preview their exact events — showing all wedding events for now.'}
       </p>
 

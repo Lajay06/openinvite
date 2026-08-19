@@ -935,7 +935,7 @@ export default function EventDetailsPage() {
           {/* Empty custom events state */}
           {sortedCustom.length === 0 && (
             <div style={{ padding: '32px', textAlign: 'center', border: '1px dashed rgba(10,10,10,0.12)', marginTop: 24 }}>
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.35)', margin: '0 0 12px', fontFamily: PJS }}>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: PJS }}>
                 {readOnly ? 'No additional events yet.' : 'No additional events yet — add an engagement party, rehearsal dinner, and more.'}
               </p>
               {!readOnly && (

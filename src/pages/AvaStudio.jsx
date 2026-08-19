@@ -283,7 +283,7 @@ function UltraCluster({ steps, navigate }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 22, maxWidth: 480 }}>
         {steps.map((s) => (
           <div key={s.key} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <Lock size={13} style={{ color: 'rgba(10,10,10,0.35)', flexShrink: 0, marginTop: 2 }} />
+            <Lock size={13} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0, marginTop: 2 }} />
             <div>
               <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px' }}>{s.title}</p>
               <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: 0, lineHeight: 1.5 }}>{s.purpose}</p>

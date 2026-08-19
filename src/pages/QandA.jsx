@@ -66,7 +66,7 @@ function QnaAccordionItem({ item, id, onDelete }) {
           <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, lineHeight: 1.4 }}>
             {item.question}
           </span>
-          <span style={{ flexShrink: 0, color: 'rgba(10,10,10,0.35)', display: 'flex' }}>
+          <span style={{ flexShrink: 0, color: 'rgba(10,10,10,0.6)', display: 'flex' }}>
             {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </span>
         </button>

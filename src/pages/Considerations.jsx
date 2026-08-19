@@ -786,8 +786,8 @@ function AccordionItem({ item }) {
           {item._relevance === 'HIGH' && <RelevancePill />}
           <TagPill tag={item.tag} />
           {open
-            ? <ChevronUp size={15} style={{ color: 'rgba(10,10,10,0.35)' }} />
-            : <ChevronDown size={15} style={{ color: 'rgba(10,10,10,0.35)' }} />
+            ? <ChevronUp size={15} style={{ color: 'rgba(10,10,10,0.45)' }} />
+            : <ChevronDown size={15} style={{ color: 'rgba(10,10,10,0.45)' }} />
           }
         </div>
       </button>

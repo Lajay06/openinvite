@@ -390,7 +390,7 @@ export default function VenueSearch({
             size={14}
             style={{
               position: 'absolute', right: 4, top: '50%', marginTop: -7,
-              color: 'rgba(10,10,10,0.35)', animation: 'oi-spin 0.8s linear infinite',
+              color: 'rgba(10,10,10,0.6)', animation: 'oi-spin 0.8s linear infinite',
             }}
           />
         )}

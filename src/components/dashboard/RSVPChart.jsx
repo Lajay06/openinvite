@@ -57,7 +57,7 @@ export default function RSVPChart({ guests }) {
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontFamily: PJS, fontSize: 10, fill: 'rgba(10,10,10,0.35)' }}
+                tick={{ fontFamily: PJS, fontSize: 10, fill: 'rgba(10,10,10,0.6)' }}
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}

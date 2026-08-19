@@ -662,7 +662,7 @@ export default function Guests() {
               : <p style={statValueStyle}><CountUp to={s.value} /></p>
             }
             {s.sub && !loading && (
-              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '4px 0 0' }}>{s.sub}</p>
+              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '4px 0 0' }}>{s.sub}</p>
             )}
           </div>
         ))}
@@ -747,7 +747,7 @@ export default function Guests() {
             {/* Search + filter row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <div style={{ position: 'relative', flex: '1 1 240px', maxWidth: 360 }}>
-                <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
                 <Input
                   placeholder="Search by name or email…"
                   value={searchTerm}

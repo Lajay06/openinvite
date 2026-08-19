@@ -543,7 +543,7 @@ export default function AttirePanel() {
                   style={{
                     ...inputStyle, flex: 2,
                     textDecoration: a.done ? 'line-through' : 'none',
-                    color: a.done ? 'rgba(10,10,10,0.35)' : '#0A0A0A',
+                    color: a.done ? 'rgba(10,10,10,0.6)' : '#0A0A0A',
                   }}
                   placeholder="Item (e.g. veil, cufflinks, garter)"
                 />

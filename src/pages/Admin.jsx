@@ -232,7 +232,7 @@ export default function Admin() {
             <tbody>
               {pagedUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} style={{ padding: '40px 16px', textAlign: 'center', fontSize: 13, color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}>
+                  <td colSpan={4} style={{ padding: '40px 16px', textAlign: 'center', fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                     {search ? 'No users match your search.' : 'No paid users yet.'}
                   </td>
                 </tr>
@@ -321,7 +321,7 @@ export default function Admin() {
             <tbody>
               {recentPayments.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ padding: '40px 16px', textAlign: 'center', fontSize: 13, color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}>
+                  <td colSpan={5} style={{ padding: '40px 16px', textAlign: 'center', fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                     No recent payments.
                   </td>
                 </tr>

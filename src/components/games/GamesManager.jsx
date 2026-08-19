@@ -10,7 +10,7 @@ import { fetchGuestLinks } from '@/lib/guestLinks';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const genId = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
 
-const labelStyle = { fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(10,10,10,0.35)', fontFamily: PJS, margin: '0 0 10px' };
+const labelStyle = { fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px' };
 const inputStyle = { width: '100%', boxSizing: 'border-box', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.15)', background: 'transparent', fontFamily: PJS, fontSize: 14, color: '#0A0A0A', padding: '6px 0', outline: 'none' };
 
 function recipientSummary(q, guestCount) {
@@ -291,7 +291,7 @@ function GameResponses({ questionnaire, guests, responses, onBack, onCopyLinks, 
                 {answered ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#6b7700', fontFamily: PJS }}><Check size={11} />Answered</span>
                 ) : (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}><Clock size={11} />Pending</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}><Clock size={11} />Pending</span>
                 )}
               </div>
             );

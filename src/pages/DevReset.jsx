@@ -72,7 +72,7 @@ export default function DevReset() {
       fontFamily: PJS,
     }}>
       <div style={{ width: '100%', maxWidth: 480 }}>
-        <p style={{ fontSize: 11, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.35)', marginBottom: 8, textTransform: 'none' }}>
+        <p style={{ fontSize: 11, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', marginBottom: 8, textTransform: 'none' }}>
           Developer utility
         </p>
         <h1 style={{ fontSize: 28, fontWeight: 800, color: '#0A0A0A', margin: '0 0 8px' }}>

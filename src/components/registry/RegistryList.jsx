@@ -48,7 +48,7 @@ export default function RegistryList({ items, onEdit, onDelete, loading, readOnl
             </a>
             {!readOnly && (
               <>
-                <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: 6, display: 'flex' }}>
+                <button onClick={() => onEdit(item)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 6, display: 'flex' }}>
                   <Edit size={14} />
                 </button>
                 <button onClick={() => onDelete(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', padding: 6, display: 'flex' }}>

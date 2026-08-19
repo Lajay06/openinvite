@@ -178,7 +178,7 @@ export default function VowsSpeechesPage() {
                       </div>
                       <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
                         <button onClick={e => { e.stopPropagation(); setSelectedItem(item); setIsEditing(true); }} aria-label="Edit"
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.35)', padding: 4, display: 'flex' }}>
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4, display: 'flex' }}>
                           <Edit size={13} />
                         </button>
                         <button onClick={e => { e.stopPropagation(); handleDelete(item.id); }} aria-label="Delete"
