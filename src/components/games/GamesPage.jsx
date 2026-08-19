@@ -173,7 +173,7 @@ export default function GamesPage() {
     <Shell>
       <p style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', lineHeight: 1.3 }}>{data.title}</p>
       {data.intro && (
-        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.55)', margin: '0 0 20px', lineHeight: 1.5 }}>{data.intro}</p>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', lineHeight: 1.5 }}>{data.intro}</p>
       )}
 
       {/* Privacy banner — the whole point of this feature, stated plainly */}

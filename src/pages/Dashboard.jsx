@@ -49,7 +49,7 @@ function QuickLink({ label, url, isLast, collabSuffix }) {
         fontSize: 11,
         fontWeight: 700,
         letterSpacing: '0.08em',
-        color: hovered ? '#FFFFFF' : 'rgba(10,10,10,0.5)',
+        color: hovered ? '#FFFFFF' : 'rgba(10,10,10,0.6)',
         fontFamily: "'Plus Jakarta Sans', sans-serif",
         transition: 'color 0.15s',
         whiteSpace: 'nowrap',

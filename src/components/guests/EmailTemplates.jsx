@@ -106,7 +106,7 @@ export default function EmailTemplates({ guests, onUseTemplate }) {
 
   return (
     <div>
-      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', margin: '0 0 24px', maxWidth: 640, ...F }}>
+      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px', maxWidth: 640, ...F }}>
         Every email type below is the same template, styled to your wedding's universe. "Use this" opens the send
         drawer with that type preselected; "Send test to me" emails you exactly what a guest would see.
       </p>

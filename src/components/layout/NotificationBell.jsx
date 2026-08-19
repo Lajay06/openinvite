@@ -37,7 +37,7 @@ function NotificationRow({ notification, onOpen }) {
       <div style={{
         width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.55)',
+        background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.6)',
       }}>
         <Icon size={15} />
       </div>
@@ -50,7 +50,7 @@ function NotificationRow({ notification, onOpen }) {
         </p>
         {notification.body && (
           <p style={{
-            fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 3px', fontFamily: PJS,
+            fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 3px', fontFamily: PJS,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {notification.body}
@@ -115,12 +115,12 @@ function NotificationDropdown({ userId, notifications, onClose, triggerRef }) {
             disabled={markAllRead.isPending}
             style={{
               background: 'none', border: 'none', cursor: markAllRead.isPending ? 'not-allowed' : 'pointer',
-              fontSize: 12, fontWeight: 500, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, padding: 0,
+              fontSize: 12, fontWeight: 500, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: 0,
               display: 'flex', alignItems: 'center', gap: 4, opacity: markAllRead.isPending ? 0.5 : 1,
               transition: 'color 0.12s',
             }}
             onMouseEnter={e => { if (!markAllRead.isPending) { e.currentTarget.style.color = '#0A0A0A'; e.currentTarget.style.textDecoration = 'underline'; } }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.5)'; e.currentTarget.style.textDecoration = 'none'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.6)'; e.currentTarget.style.textDecoration = 'none'; }}
           >
             {markAllRead.isPending && <Loader2 size={11} style={{ animation: 'spin 0.8s linear infinite' }} />}
             Mark all read

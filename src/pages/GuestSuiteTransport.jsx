@@ -64,7 +64,7 @@ function TransportPlaceCard({ place, onRemove }) {
       <div style={{ padding: '12px 14px' }}>
         <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px', fontFamily: PJS }}>{place.name}</p>
         {place.address && <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: PJS }}>{place.address}</p>}
-        {place.note && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 6px', fontFamily: PJS, fontStyle: 'italic' }}>"{place.note}"</p>}
+        {place.note && <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: PJS, fontStyle: 'italic' }}>"{place.note}"</p>}
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           {place.maps_url && (
             <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
@@ -105,7 +105,7 @@ function NoteCard({ note, onRemove, onEdit }) {
           </div>
         ) : (
           <>
-            {note.title && <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: '0 0 3px', letterSpacing: '0.05em' }}>{note.title}</p>}
+            {note.title && <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 3px', letterSpacing: '0.05em' }}>{note.title}</p>}
             <p style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>{note.text}</p>
           </>
         )}
@@ -393,7 +393,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 3px', fontFamily: PJS }}>{s.name}</p>
-                        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: 0, fontFamily: PJS, lineHeight: 1.5 }}>{s.description}</p>
+                        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, lineHeight: 1.5 }}>{s.description}</p>
                       </div>
                       <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                         {s.isPlace ? (
@@ -448,7 +448,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
                     <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                       Couldn't get location —{' '}
                       <button type="button" onClick={handleUseLocation}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.6)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
                     </span>
                   )}
                   {geoState === 'unavailable' && (

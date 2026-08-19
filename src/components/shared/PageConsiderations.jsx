@@ -696,7 +696,7 @@ function TagPill({ tag }) {
   return (
     <span style={{
       display: 'inline-block', padding: '2px 8px', borderRadius: 999,
-      background: 'rgba(10,10,10,0.05)', color: 'rgba(10,10,10,0.5)',
+      background: 'rgba(10,10,10,0.05)', color: 'rgba(10,10,10,0.6)',
       fontSize: 11, fontWeight: 600, fontFamily: PJS, flexShrink: 0,
     }}>
       {tag}

@@ -103,7 +103,7 @@ export default function GuestSuiteQandA() {
             <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 8px' }}>
               No questions added yet
             </p>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>
               Questions added in the Q&A planning page will appear here automatically.
             </p>
           </div>

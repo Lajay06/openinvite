@@ -82,7 +82,7 @@ const BRIEFING_SCHEMA = {
 const PRIORITY_CONFIG = {
   high:   { bg: '#E03553',            color: 'white',                   label: 'Urgent' },
   medium: { bg: '#F59E0B',            color: 'white',                   label: 'This week' },
-  low:    { bg: 'rgba(10,10,10,0.08)', color: 'rgba(10,10,10,0.5)',     label: 'When ready' },
+  low:    { bg: 'rgba(10,10,10,0.08)', color: 'rgba(10,10,10,0.6)',     label: 'When ready' },
 };
 
 function getTimeOfDay() {
@@ -656,7 +656,7 @@ Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation
                     display: 'flex', gap: 10, alignItems: 'flex-start',
                   }}>
                     <Icon size={13} color="rgba(10,10,10,0.3)" style={{ flexShrink: 0, marginTop: 2 }} />
-                    <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.55)', lineHeight: 1.5 }}>
+                    <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.5 }}>
                       {chip.text}
                     </span>
                   </div>

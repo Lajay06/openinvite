@@ -108,7 +108,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
             <X size={18} />
           </button>
         </div>
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: '0 0 24px' }}>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 24px' }}>
           Upload an Excel (.xlsx) or CSV file to add guests in bulk.
         </p>
 

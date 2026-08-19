@@ -8,7 +8,7 @@ const labelStyle = {
 };
 
 const CATEGORY_LABELS = { honeymoon: 'Honeymoon', home_fund: 'Home fund', charity: 'Charity', experience: 'Experience', custom: 'Custom' };
-const CATEGORY_COLORS = { honeymoon: '#803D81', home_fund: '#0A1930', charity: '#E03553', experience: '#6b7700', custom: 'rgba(10,10,10,0.5)' };
+const CATEGORY_COLORS = { honeymoon: '#803D81', home_fund: '#0A1930', charity: '#E03553', experience: '#6b7700', custom: 'rgba(10,10,10,0.6)' };
 
 export default function CustomGiftList({ items, onEdit, onDelete, loading, readOnly = false }) {
   if (loading) return <div style={{ padding: 40, textAlign: 'center', color: '#444444', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Loading…</div>;

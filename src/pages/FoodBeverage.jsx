@@ -48,7 +48,7 @@ function MealOptionsUltraGate() {
       <div>
         <p style={{ fontSize: 11, fontWeight: 800, color: '#F59E0B', letterSpacing: '0.06em', margin: '0 0 8px', fontFamily: PJS }}>Ultra feature</p>
         <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: PJS }}>Guest meal options is an Ultra feature</p>
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, margin: '0 auto', fontFamily: PJS, maxWidth: 380 }}>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: '0 auto', fontFamily: PJS, maxWidth: 380 }}>
           Define your own menu choices and guests pick from your list on the RSVP form, instead of a generic default.
         </p>
       </div>

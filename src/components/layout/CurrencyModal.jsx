@@ -57,7 +57,7 @@ export default function CurrencyModal({ onClose }) {
               }}
             >
               <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', minWidth: 52 }}>{c.symbol} {c.code}</span>
-              <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.5)', flex: 1 }}>{c.name}</span>
+              <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', flex: 1 }}>{c.name}</span>
               {selected === c.code && <Check size={13} style={{ color: '#E03553', flexShrink: 0 }} />}
             </button>
           ))}

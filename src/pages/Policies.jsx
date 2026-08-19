@@ -47,7 +47,7 @@ function AiButton({ onClick, disabled }) {
       style={{
         padding: '6px 10px', borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)',
         background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
-        fontSize: 12, fontWeight: 600, color: 'rgba(10,10,10,0.5)', fontFamily: PJS,
+        fontSize: 12, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
         opacity: disabled ? 0.5 : 1, marginTop: 22, flexShrink: 0,
       }}
     >

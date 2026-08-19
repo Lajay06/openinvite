@@ -93,7 +93,7 @@ function TempUnitToggle({ value, onChange, saving }) {
             cursor: saving ? 'not-allowed' : 'pointer',
             border: `1.5px solid ${value === u ? '#0A0A0A' : 'rgba(10,10,10,0.15)'}`,
             background: value === u ? '#0A0A0A' : 'none',
-            color: value === u ? '#FFFFFF' : 'rgba(10,10,10,0.5)',
+            color: value === u ? '#FFFFFF' : 'rgba(10,10,10,0.6)',
           }}
         >
           °{u}
@@ -383,7 +383,7 @@ function BillingTab({ user }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
         <span style={{
           fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', fontFamily: PJS,
-          color: plan === 'free' ? 'rgba(10,10,10,0.55)' : '#FFFFFF',
+          color: plan === 'free' ? 'rgba(10,10,10,0.6)' : '#FFFFFF',
           background: plan === 'ultra' ? 'linear-gradient(135deg, #FBBF24, #F59E0B)' : plan === 'pro' ? '#0A0A0A' : 'rgba(10,10,10,0.08)',
           padding: '4px 12px', borderRadius: 999,
         }}>
@@ -440,7 +440,7 @@ function BillingTab({ user }) {
               <Crown size={13} style={{ color: '#F59E0B', flexShrink: 0 }} />
               <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>Ultra</p>
             </div>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', margin: '0 0 6px', fontFamily: PJS, lineHeight: 1.5 }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: PJS, lineHeight: 1.5 }}>
               Add the digital suite: wedding website, invitations, online RSVP, and premium themes.
             </p>
             <p style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', fontFamily: PJS }}>
@@ -610,12 +610,12 @@ function SecurityTab({ user }) {
 
       <p style={sectionTitleStyle}>Delete account</p>
       {deletionRequested ? (
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, lineHeight: 1.7, maxWidth: 480 }}>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, lineHeight: 1.7, maxWidth: 480 }}>
           Deletion requested. We verify every request by email before removing anything — you'll hear from us at <strong>{user?.email}</strong> within 7 business days.
         </p>
       ) : (
         <>
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', fontFamily: PJS, lineHeight: 1.7, maxWidth: 480, marginBottom: 16 }}>
+          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, lineHeight: 1.7, maxWidth: 480, marginBottom: 16 }}>
             We can't delete your account instantly from here — deletion is verified by our team first, per our{' '}
             <a href="/data-deletion" target="_blank" rel="noreferrer" style={{ color: '#E03553' }}>data deletion policy</a>.
             Submitting a request below emails hello@openinvite.com.au on your behalf; we'll confirm and process it within 7 business days.

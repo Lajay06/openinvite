@@ -72,7 +72,7 @@ export default function CollaboratorAccept() {
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: '#E03553', letterSpacing: '0.1em', marginBottom: 12, fontFamily: PJS }}>invite not found</p>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 12, letterSpacing: '-0.02em', fontFamily: PJS }}>This invite has expired or is invalid</h1>
-          <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, fontFamily: PJS }}>Please ask the couple to send you a new invite.</p>
+          <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, fontFamily: PJS }}>Please ask the couple to send you a new invite.</p>
         </div>
       </div>
     );
@@ -110,7 +110,7 @@ export default function CollaboratorAccept() {
 
         {isAuthenticated ? (
           <>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', marginBottom: 16, fontFamily: PJS }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', marginBottom: 16, fontFamily: PJS }}>
               Signed in as <strong style={{ color: '#0A0A0A' }}>{user?.email}</strong>
             </p>
             <button

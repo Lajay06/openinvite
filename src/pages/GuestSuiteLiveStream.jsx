@@ -87,7 +87,7 @@ export default function GuestSuiteLiveStream() {
             <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 8px' }}>
               Live stream details coming soon
             </p>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>
               Check back closer to the wedding day.
             </p>
           </div>
@@ -108,7 +108,7 @@ export default function GuestSuiteLiveStream() {
                 {stream.title || 'Watch live'}
               </h2>
               {dateTimeStr && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: 'rgba(10,10,10,0.55)', fontFamily: PJS }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                   <Calendar size={14} strokeWidth={1.8} />
                   {dateTimeStr}
                 </div>

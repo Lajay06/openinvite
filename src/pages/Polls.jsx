@@ -115,7 +115,7 @@ function PollCard({ poll, onEnd, onDelete, onShare, onInsightGenerated }) {
           {expanded && (
             <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
               {poll.comments.slice(-5).map((c, i) => (
-                <p key={i} style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.5)', fontStyle: 'italic', margin: 0, lineHeight: 1.5 }}>
+                <p key={i} style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', fontStyle: 'italic', margin: 0, lineHeight: 1.5 }}>
                   "{c.text}"
                 </p>
               ))}
@@ -130,7 +130,7 @@ function PollCard({ poll, onEnd, onDelete, onShare, onInsightGenerated }) {
           <Share2 size={11} /> Share
         </button>
         {poll.isActive && (
-          <button onClick={onEnd} style={{ padding: '6px 12px', borderRadius: 999, background: 'transparent', border: '1px solid rgba(10,10,10,0.12)', cursor: 'pointer', fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.5)' }}>
+          <button onClick={onEnd} style={{ padding: '6px 12px', borderRadius: 999, background: 'transparent', border: '1px solid rgba(10,10,10,0.12)', cursor: 'pointer', fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)' }}>
             End poll
           </button>
         )}

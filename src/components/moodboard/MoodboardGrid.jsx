@@ -19,7 +19,7 @@ const CATEGORY_COLORS = {
   cake:         { color: '#FFFFFF', bg: '#8a9a00' },
   colors:       { color: '#FFFFFF', bg: '#0A1930' },
   invitations:  { color: '#FFFFFF', bg: '#3a7a96' },
-  photography:  { color: '#FFFFFF', bg: 'rgba(10,10,10,0.55)' },
+  photography:  { color: '#FFFFFF', bg: 'rgba(10,10,10,0.6)' },
   hairstyle:    { color: '#FFFFFF', bg: '#6B2CAE' },
   makeup:       { color: '#FFFFFF', bg: '#803D81' },
   centerpieces: { color: '#FFFFFF', bg: '#6b7700' },

@@ -171,7 +171,7 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
         {geoState === 'error' && (
           <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             Couldn't get location —{' '}
-            <button type="button" onClick={handleUseLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.55)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
+            <button type="button" onClick={handleUseLocation} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.6)', fontWeight: 600, padding: 0, textDecoration: 'underline' }}>retry</button>
           </span>
         )}
         {geoState === 'unavailable' && <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Location not available</span>}

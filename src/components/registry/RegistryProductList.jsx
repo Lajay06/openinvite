@@ -14,7 +14,7 @@ const labelStyle = {
 const PRIORITY_STYLES = {
   high:   { color: '#E03553', bg: 'rgba(224,53,83,0.08)', label: 'High' },
   medium: { color: '#803D81', bg: 'rgba(128,61,129,0.08)', label: 'Medium' },
-  low:    { color: 'rgba(10,10,10,0.5)', bg: 'rgba(10,10,10,0.06)', label: 'Low' },
+  low:    { color: 'rgba(10,10,10,0.6)', bg: 'rgba(10,10,10,0.06)', label: 'Low' },
 };
 
 export default function RegistryProductList({ items, onEdit, onDelete, onPurchase, loading, readOnly = false }) {
