@@ -61,6 +61,7 @@ import { runDailyUpdateLoadStates } from '../tests/persistence/dailyupdate-load-
 import { runDashboardSources } from '../tests/persistence/dashboard-sources.mjs';
 import { runPlaylistEmbedUrls } from '../tests/persistence/playlist-embed-urls.mjs';
 import { runNextUp } from '../tests/persistence/next-up.mjs';
+import { runBudgetClarity } from '../tests/persistence/budget-clarity.mjs';
 import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 import { runNotifications } from '../tests/persistence/notifications.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
@@ -163,6 +164,7 @@ async function run() {
   await runModule('runDashboardSources', () => runDashboardSources());
   await runModule('runPlaylistEmbedUrls', () => runPlaylistEmbedUrls());
   await runModule('runNextUp', () => runNextUp());
+  await runModule('runBudgetClarity', () => runBudgetClarity());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
     // itself, or a bug in runModule) — this is the actual safety net the
