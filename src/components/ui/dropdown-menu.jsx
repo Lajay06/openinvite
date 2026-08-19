@@ -112,7 +112,15 @@ DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName
 const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-[rgba(10,10,10,0.08)]", className)}
+    // Advisor exemption (feel-pass 1), scoped to this site only. The property
+    // guard on that pass changed borders and never backgrounds — but this is a
+    // 1px-high separator drawn as a background fill, so it is a divider by role
+    // and a background only by implementation. The guard's exclusion exists to
+    // protect fills whose role is fill; that role was verified here and is not
+    // one. Left at 0.08 it would have been the only divider in the product
+    // still on the old value. The guard itself is unchanged — the exemption
+    // lives at the site, not in the rule.
+    className={cn("-mx-1 my-1 h-px bg-[rgba(10,10,10,0.12)]", className)}
     {...props} />
 ))
 DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName
