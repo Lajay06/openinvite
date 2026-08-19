@@ -37,7 +37,7 @@ function PlaceCard({ place, onRemove }) {
           <img src={place.photo_url} alt={place.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { e.target.style.display = 'none'; }} />
         ) : (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Hotel size={28} color="rgba(10,10,10,0.12)" />
+            <Hotel size={28} color="rgba(10,10,10,0.3)" />
           </div>
         )}
         {place.badge && (
@@ -568,7 +568,7 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
             ) : (
               <div style={{ textAlign: 'center', padding: '48px 24px', borderTop: '1px solid rgba(10,10,10,0.06)' }}>
                 <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(10,10,10,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                  <Hotel size={22} color="rgba(10,10,10,0.2)" />
+                  <Hotel size={22} color="rgba(10,10,10,0.3)" />
                 </div>
                 <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>
                   No accommodation added yet

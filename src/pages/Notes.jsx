@@ -400,7 +400,7 @@ export default function ToDoListPage() {
 
         {filteredTasks.length === 0 && (
           <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '48px 32px', textAlign: 'center' }}>
-            <ListTodo size={32} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 16px' }} />
+            <ListTodo size={32} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 16px' }} />
             <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {searchTerm ? "No tasks match your search." : "No tasks yet — add your first."}
             </p>

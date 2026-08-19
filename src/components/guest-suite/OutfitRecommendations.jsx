@@ -70,7 +70,7 @@ const OutfitRecommendations = ({ recommendations, theme, onRetake }) => {
                             <div className="grid grid-cols-2 gap-3">
                                 {safeRecommendations.colors.map((color, index) => (
                                     <div key={index} className="flex items-center gap-2 p-2 bg-white rounded border">
-                                        <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                                        <div className="w-4 h-4 rounded-full bg-[rgba(10,10,10,0.3)]"></div>
                                         <span className="text-sm font-medium">{color}</span>
                                     </div>
                                 ))}

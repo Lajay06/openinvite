@@ -135,7 +135,7 @@ export default function ScheduleList({ items, onEdit, onDelete, readOnly = false
   if (items.length === 0) {
     return (
       <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '64px 32px', textAlign: 'center' }}>
-        <Calendar size={28} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px', display: 'block' }} />
+        <Calendar size={28} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px', display: 'block' }} />
         <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
           No events scheduled yet.
         </p>

@@ -261,7 +261,7 @@ export default function AIWeddingAssistant() {
                         </div>
                         
                         {message.type === 'user' && (
-                          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0 order-1">
+                          <div className="w-8 h-8 bg-[rgba(10,10,10,0.3)] rounded-full flex items-center justify-center flex-shrink-0 order-1">
                             <User className="w-4 h-4 text-gray-600" />
                           </div>
                         )}

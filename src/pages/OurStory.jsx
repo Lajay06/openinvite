@@ -266,7 +266,7 @@ export default function OurStoryPage() {
                       </Button>
                     </div>
                   ) : imageUpload.status === 'uploading' || imageUpload.status === 'error' ? null : (
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-[rgba(10,10,10,0.18)] border-dashed rounded-lg cursor-pointer hover:bg-gray-50">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <ImageIcon className="w-8 h-8 mb-2" style={{ color: color.iconMuted }} />
                         <p className="text-sm" style={{ color: color.textMuted }}>Click to upload photo</p>

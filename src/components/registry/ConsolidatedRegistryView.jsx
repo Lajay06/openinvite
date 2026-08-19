@@ -17,7 +17,7 @@ export default function ConsolidatedRegistryView({ storeItems, products, customG
   if (storeItems.length === 0 && products.length === 0 && customGifts.length === 0) {
     return (
       <div style={{ padding: '64px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
-        <Gift size={40} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 16px' }} />
+        <Gift size={40} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 16px' }} />
         <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>No registry items yet</p>
         <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add platforms, products, or cash funds to get started.</p>
       </div>

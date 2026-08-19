@@ -266,7 +266,7 @@ export default function VendorsPage() {
             {loading ? null : vendors.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px solid rgba(10,10,10,0.06)' }}>
                 <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                  <Search size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                  <Search size={20} style={{ color: 'rgba(10,10,10,0.3)' }} />
                 </div>
                 <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>No vendors added yet</p>
                 {!readOnly && (
@@ -295,7 +295,7 @@ export default function VendorsPage() {
             {loading ? null : favouriteVendors.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px solid rgba(10,10,10,0.06)' }}>
                 <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                  <Star size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                  <Star size={20} style={{ color: 'rgba(10,10,10,0.3)' }} />
                 </div>
                 <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>No favorites yet</p>
                 <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Star a vendor from the Vendors tab to pin it here</p>

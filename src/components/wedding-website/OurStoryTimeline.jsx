@@ -7,7 +7,7 @@ export default function OurStoryTimeline({ milestones = [] }) {
   if (!milestones || milestones.length === 0) {
     return (
       <div className="text-center py-16">
-        <Heart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+        <Heart className="w-12 h-12 mx-auto mb-4 text-[rgba(10,10,10,0.3)]" />
         <p style={{ color: color.textMuted }}>Our story is being written...</p>
       </div>
     );

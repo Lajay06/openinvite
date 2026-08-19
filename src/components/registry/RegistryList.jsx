@@ -13,7 +13,7 @@ export default function RegistryList({ items, onEdit, onDelete, loading, readOnl
   if (items.length === 0) {
     return (
       <div style={{ padding: '48px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
-        <Gift size={32} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px' }} />
+        <Gift size={32} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px' }} />
         <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>No platforms added yet</p>
         <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add your first registry platform link above.</p>
       </div>

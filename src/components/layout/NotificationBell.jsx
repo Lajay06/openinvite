@@ -131,7 +131,7 @@ function NotificationDropdown({ userId, notifications, onClose, triggerRef }) {
       <div style={{ overflowY: 'auto', flex: 1 }}>
         {notifications.length === 0 ? (
           <div style={{ padding: '40px 16px', textAlign: 'center' }}>
-            <Bell size={20} style={{ color: 'rgba(10,10,10,0.2)', marginBottom: 8 }} />
+            <Bell size={20} style={{ color: 'rgba(10,10,10,0.3)', marginBottom: 8 }} />
             <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS }}>No notifications yet</p>
           </div>
         ) : (

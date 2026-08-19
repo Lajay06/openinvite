@@ -371,7 +371,7 @@ export default function TodoList({ embedded = false }) {
                 </div>
               ) : sorted.length === 0 ? (
                 <div style={{ padding: '64px 0', textAlign: 'center' }}>
-                  <CheckSquare size={32} style={{ color: 'rgba(10,10,10,0.1)', margin: '0 auto 12px', display: 'block' }} />
+                  <CheckSquare size={32} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px', display: 'block' }} />
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
                     No tasks yet. Add one above.
                   </p>

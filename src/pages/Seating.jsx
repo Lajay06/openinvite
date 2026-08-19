@@ -1166,7 +1166,7 @@ export default function SeatingPage() {
               {eventTables.length === 0 && eventAssets.length === 0 && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
                   <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                    <Users size={20} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                    <Users size={20} style={{ color: 'rgba(10,10,10,0.3)' }} />
                   </div>
                   <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Add tables from the left panel</p>
                   <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.2)', fontFamily: PJS, margin: '4px 0 0' }}>

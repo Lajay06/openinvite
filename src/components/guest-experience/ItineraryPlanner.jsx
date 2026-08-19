@@ -125,7 +125,7 @@ export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
               <Clock className="w-3 h-3" />
               <span>{activity.duration}</span>
             </div>
-            <span className="text-gray-300">•</span>
+            <span className="text-[rgba(10,10,10,0.3)]">•</span>
             <div className="flex items-center gap-1">
               <DollarSign className="w-3 h-3" />
               <span>{activity.cost}</span>

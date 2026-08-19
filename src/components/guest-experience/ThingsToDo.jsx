@@ -133,7 +133,7 @@ export default function ThingsToDo({ weddingLocation, weddingCity }) {
                     )}
                     {activity.cost && (
                       <>
-                        <span className="text-gray-300">•</span>
+                        <span className="text-[rgba(10,10,10,0.3)]">•</span>
                         <span className="font-medium text-gray-900">{activity.cost}</span>
                       </>
                     )}

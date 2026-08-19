@@ -219,7 +219,7 @@ export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem, readO
   if (items.length === 0) {
     return (
       <div style={{ padding: '80px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
-        <ImageIcon size={40} style={{ color: 'rgba(10,10,10,0.15)', margin: '0 auto 16px' }} />
+        <ImageIcon size={40} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 16px' }} />
         <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>Your moodboard is empty</p>
         <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Start adding inspiration images to bring your wedding vision to life</p>
       </div>

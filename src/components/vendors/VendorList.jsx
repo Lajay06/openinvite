@@ -206,7 +206,7 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage, onTogg
   if (vendors.length === 0) {
     return (
       <div style={{ padding: '64px 32px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.06)' }}>
-        <Briefcase size={24} style={{ color: 'rgba(10,10,10,0.2)', margin: '0 auto 12px', display: 'block' }} />
+        <Briefcase size={24} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px', display: 'block' }} />
         <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
           No vendors match your filters.
         </p>

@@ -123,7 +123,7 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
             <img src={venue.photoUrl} alt={venue.name} style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
           ) : (
             <div style={{ width: 52, height: 52, background: 'rgba(10,10,10,0.05)', borderRadius: 4, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <MapPin size={20} color="rgba(10,10,10,0.2)" />
+              <MapPin size={20} color="rgba(10,10,10,0.3)" />
             </div>
           )}
           <div style={{ flex: 1, minWidth: 0 }}>

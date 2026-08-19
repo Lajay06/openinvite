@@ -103,7 +103,7 @@ export default function HotelForm({ hotel, onSubmit, onCancel }) {
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   placeholder="Contact number"
-                  className="border-gray-300"
+                  className="border-[rgba(10,10,10,0.18)]"
                 />
               </div>
 
@@ -115,7 +115,7 @@ export default function HotelForm({ hotel, onSubmit, onCancel }) {
                   value={formData.website}
                   onChange={(e) => handleInputChange('website', e.target.value)}
                   placeholder="https://..."
-                  className="border-gray-300"
+                  className="border-[rgba(10,10,10,0.18)]"
                 />
               </div>
 
@@ -130,7 +130,7 @@ export default function HotelForm({ hotel, onSubmit, onCancel }) {
                   value={formData.rating}
                   onChange={(e) => handleInputChange('rating', e.target.value)}
                   placeholder="4.5"
-                  className="border-gray-300"
+                  className="border-[rgba(10,10,10,0.18)]"
                 />
               </div>
 
@@ -140,7 +140,7 @@ export default function HotelForm({ hotel, onSubmit, onCancel }) {
                   value={formData.priceRange}
                   onValueChange={(value) => handleInputChange('priceRange', value)}
                 >
-                  <SelectTrigger className="border-gray-300">
+                  <SelectTrigger className="border-[rgba(10,10,10,0.18)]">
                     <SelectValue placeholder="Select price range" />
                   </SelectTrigger>
                   <SelectContent>
@@ -160,7 +160,7 @@ export default function HotelForm({ hotel, onSubmit, onCancel }) {
                   value={formData.distance}
                   onChange={(e) => handleInputChange('distance', e.target.value)}
                   placeholder="e.g., 0.5 mi from destination"
-                  className="border-gray-300"
+                  className="border-[rgba(10,10,10,0.18)]"
                 />
               </div>
 
@@ -172,7 +172,7 @@ export default function HotelForm({ hotel, onSubmit, onCancel }) {
                   value={formData.imageUrl}
                   onChange={(e) => handleInputChange('imageUrl', e.target.value)}
                   placeholder="https://..."
-                  className="border-gray-300"
+                  className="border-[rgba(10,10,10,0.18)]"
                 />
               </div>
 
@@ -183,7 +183,7 @@ export default function HotelForm({ hotel, onSubmit, onCancel }) {
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   placeholder="Brief description of the hotel..."
-                  className="border-gray-300 h-20"
+                  className="border-[rgba(10,10,10,0.18)] h-20"
                 />
               </div>
 
@@ -194,7 +194,7 @@ export default function HotelForm({ hotel, onSubmit, onCancel }) {
                   value={formData.whyGood}
                   onChange={(e) => handleInputChange('whyGood', e.target.value)}
                   placeholder="What makes this hotel special for your guests..."
-                  className="border-gray-300 h-20"
+                  className="border-[rgba(10,10,10,0.18)] h-20"
                 />
               </div>
 
@@ -205,7 +205,7 @@ export default function HotelForm({ hotel, onSubmit, onCancel }) {
                   value={formData.amenities.join(', ')}
                   onChange={handleAmenitiesChange}
                   placeholder="Free WiFi, Pool, Parking, Breakfast"
-                  className="border-gray-300"
+                  className="border-[rgba(10,10,10,0.18)]"
                 />
               </div>
             </div>

@@ -47,7 +47,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
 
     return (
       <div
-        className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md hover:border-gray-300 transition-all duration-300 cursor-pointer group"
+        className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md hover:border-[rgba(10,10,10,0.18)] transition-all duration-300 cursor-pointer group"
         onClick={handleHotelClick}
         {...interactiveDivProps(handleHotelClick)}
       >
@@ -98,18 +98,18 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
             <input
               type="text"
               placeholder="Your name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+              className="w-full px-4 py-3 border border-[rgba(10,10,10,0.18)] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
             />
           </div>
           <div>
             <input
               type="email"
               placeholder="Your email"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+              className="w-full px-4 py-3 border border-[rgba(10,10,10,0.18)] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
             />
           </div>
           <div>
-            <select className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none bg-white">
+            <select className="w-full px-4 py-3 border border-[rgba(10,10,10,0.18)] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none bg-white">
               <option value="">Will you be attending?</option>
               <option value="yes">Yes, I'll be there</option>
               <option value="no">Sorry, can't make it</option>
@@ -119,7 +119,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
             <textarea
               placeholder="Dietary restrictions or special requests"
               rows={3}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none resize-none"
+              className="w-full px-4 py-3 border border-[rgba(10,10,10,0.18)] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none resize-none"
             />
           </div>
           <Button 
@@ -184,7 +184,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
         return (
           <div
             style={{ ...baseStyles, color: color.textMuted }}
-            className="border border-dashed border-gray-300 p-4 rounded-lg text-center"
+            className="border border-dashed border-[rgba(10,10,10,0.18)] p-4 rounded-lg text-center"
             onClick={() => onElementSelect?.(component.id)}
             {...interactiveDivProps(() => onElementSelect?.(component.id))}
           >
