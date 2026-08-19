@@ -1303,7 +1303,7 @@ export default function SeatingPage() {
                         Add guest
                       </span>
                       <div style={{ position: 'relative' }}>
-                        <Search size={11} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                        <Search size={11} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
                         <Input
                           placeholder="Search unassigned…"
                           value={tableGuestSearch}
@@ -1386,7 +1386,7 @@ export default function SeatingPage() {
 
                 {/* Search */}
                 <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(10,10,10,0.06)', flexShrink: 0, position: 'relative' }}>
-                  <Search size={11} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                  <Search size={11} style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
                   <Input
                     placeholder="Search guests…"
                     value={guestSearch}

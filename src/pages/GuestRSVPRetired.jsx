@@ -16,7 +16,7 @@ export default function GuestRSVPRetired() {
         <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', marginBottom: 12, letterSpacing: '-0.02em' }}>
           This RSVP link has moved
         </h1>
-        <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6 }}>
+        <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6 }}>
           Each guest now has their own personal RSVP link. Please check the invitation
           email you received for a link that looks like <strong>openinvite.com.au/rsvp/…</strong>,
           or contact the couple directly and they can resend it to you.

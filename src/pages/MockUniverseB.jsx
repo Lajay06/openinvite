@@ -61,7 +61,7 @@ function WorldPage({ universe, isCurrent, weddingDetails, guests, onBack, naviga
           </div>
           <div style={{ flex: 1, minWidth: 240 }}>
             <p style={{ fontFamily: PJS, fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px' }}>{universe.name} is part of Ultra</p>
-            <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.5)', margin: 0, maxWidth: 480 }}>
+            <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, maxWidth: 480 }}>
               Upgrade to unlock this world's full palette, type pairing, signature motif and asset previews — plus every other Ultra-only universe.
             </p>
           </div>
@@ -75,7 +75,7 @@ function WorldPage({ universe, isCurrent, weddingDetails, guests, onBack, naviga
             <PaletteSwatches colors={universe.colors} />
             <TypeSpecimen typography={universe.typography} />
           </div>
-          <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.55)', margin: 0, maxWidth: 640 }}>
+          <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, maxWidth: 640 }}>
             <strong style={{ color: '#0A0A0A' }}>Signature motif — </strong>{MOTIF_NOTES[universe.id]}
           </p>
           <div>
@@ -146,7 +146,7 @@ export default function MockUniverseB() {
         <h1 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: 800, color: '#0A0A0A', margin: 0, letterSpacing: '-0.01em' }}>
           10 worlds, one wedding
         </h1>
-        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '8px 0 0', maxWidth: 560 }}>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '8px 0 0', maxWidth: 560 }}>
           Every universe restyles your invitations, website, RSVP and print pieces at once. Open one to see its full world — switching is never destructive.
         </p>
         <MockDataNotice loading={loading} weddingDetails={weddingDetails} />

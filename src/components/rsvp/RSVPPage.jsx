@@ -45,8 +45,8 @@ function PageShell({ coupleName, dateStr, venue, theme, typography, universeConf
             }}>
               {coupleName || 'A Wedding'}
             </h1>
-            {dateStr && <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.55)', marginBottom: 3, ...F }}>{dateStr}</p>}
-            {venue && <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.55)', margin: 0, ...F }}>{venue}</p>}
+            {dateStr && <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 3, ...F }}>{dateStr}</p>}
+            {venue && <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>{venue}</p>}
           </div>
         </SectionReveal>
         <div style={{ height: 1, background: 'rgba(10,10,10,0.08)', marginBottom: 36 }} />
@@ -113,7 +113,7 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices, theme, typ
         {event.name}
       </p>
       {(dateStr || event.startTime) && (
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.5)', margin: '0 0 16px', ...F }}>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', ...F }}>
           {[dateStr, event.startTime].filter(Boolean).join(' · ')}
         </p>
       )}
@@ -480,7 +480,7 @@ export default function RSVPPage() {
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em', marginBottom: 12 }}>INVITATION NOT FOUND</p>
           <h1 style={{ fontSize: 24, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, marginBottom: 12, letterSpacing: '-0.02em' }}>This link has expired or is invalid</h1>
-          <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6 }}>Please contact the couple directly for a new invitation link.</p>
+          <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6 }}>Please contact the couple directly for a new invitation link.</p>
         </div>
       </div>
     );
@@ -502,12 +502,12 @@ export default function RSVPPage() {
               {anyAttending ? `We can't wait to celebrate with you!` : 'Thank you for letting us know'}
             </h2>
             {anyAttending && dateStr && (
-              <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, ...F }}>
+              <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, ...F }}>
                 Mark your calendar — {dateStr}.{venue ? ` We'll see you at ${venue}.` : ''}
               </p>
             )}
             {!anyAttending && (
-              <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, ...F }}>
+              <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, ...F }}>
                 You'll be missed. Thank you for taking the time to respond.
               </p>
             )}
@@ -519,7 +519,7 @@ export default function RSVPPage() {
                   </p>
                 )}
                 {attendees.length > 0 && (
-                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.55)', lineHeight: 1.6, ...F }}>
+                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, ...F }}>
                     Also attending: {attendees.join(', ')}
                   </p>
                 )}
@@ -551,7 +551,7 @@ export default function RSVPPage() {
             <h2 style={{ fontSize: 22, fontWeight: typography.headingWeight, color: theme.lightText, letterSpacing: '-0.02em', lineHeight: 1.2, marginBottom: 8, fontFamily: typography.headingFont }}>
               {coupleName ? `A few questions from ${coupleName}` : 'A few questions'}
             </h2>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', lineHeight: 1.6, margin: 0, ...F }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: 0, ...F }}>
               Help them plan your experience — takes less than a minute.
             </p>
           </div>
@@ -621,8 +621,8 @@ export default function RSVPPage() {
             <h1 style={{ fontSize: 32, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 12 }}>
               {coupleName || 'A Wedding'}
             </h1>
-            {dateStr && <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)', marginBottom: 4 }}>{dateStr}</p>}
-            {venue && <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.55)' }}>{venue}</p>}
+            {dateStr && <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', marginBottom: 4 }}>{dateStr}</p>}
+            {venue && <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)' }}>{venue}</p>}
           </div>
         </SectionReveal>
 
@@ -641,7 +641,7 @@ export default function RSVPPage() {
         <form onSubmit={handleSubmit}>
 
           {invitedEvents.length === 0 ? (
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', marginBottom: 28 }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 28 }}>
               No events found for this invitation yet — please check back soon or contact the couple.
             </p>
           ) : (

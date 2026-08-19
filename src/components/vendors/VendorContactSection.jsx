@@ -169,7 +169,7 @@ export default function VendorContactSection({ category, vendorId, onVendorIdCha
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ flex: 1, height: 1, background: 'rgba(10,10,10,0.08)' }} />
-              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.35)', fontFamily: PJS }}>or</span>
+              <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>or</span>
               <div style={{ flex: 1, height: 1, background: 'rgba(10,10,10,0.08)' }} />
             </div>
             <button onClick={() => setFormModal('new')} className="btn-editorial-secondary" style={{ fontSize: 12, alignSelf: 'flex-start' }}>

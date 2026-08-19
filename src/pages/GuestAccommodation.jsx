@@ -133,7 +133,7 @@ export default function GuestAccommodation() {
                     )}
                   </div>
                   {place.note && (
-                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.55)', margin: '0 0 8px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.5 }}>"{place.note}"</p>
+                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 8px', fontFamily: PJS, fontStyle: 'italic', lineHeight: 1.5 }}>"{place.note}"</p>
                   )}
                   {place.maps_url && (
                     <a href={place.maps_url} target="_blank" rel="noopener noreferrer"

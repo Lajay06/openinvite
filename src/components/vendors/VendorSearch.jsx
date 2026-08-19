@@ -196,7 +196,7 @@ export default function VendorSearch({ onAddVendor }) {
           {/* Row 1: keyword + category + location */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
             <div style={{ position: 'relative' }}>
-              <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+              <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
               <Input placeholder="e.g. rustic barn, rose garden…" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ paddingLeft: 20 }} onKeyDown={e => e.key === 'Enter' && handleSearch()} />
             </div>
             <Select value={category} onValueChange={setCategory}>
@@ -207,7 +207,7 @@ export default function VendorSearch({ onAddVendor }) {
             </Select>
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ flex: 1, position: 'relative' }}>
-                <MapPin size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.35)', pointerEvents: 'none' }} />
+                <MapPin size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
                 <Input
                   placeholder="City or address"
                   value={useMyLocation ? 'Using your location' : location}

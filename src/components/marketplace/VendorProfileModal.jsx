@@ -41,7 +41,7 @@ function AboutTab({ vendor, details }) {
           </div>
         </div>
       )}
-      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', fontFamily: PJS, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, lineHeight: 1.6 }}>
         Details sourced from Google Places. Reach out directly to discuss availability and pricing for your wedding.
       </p>
     </div>
@@ -197,7 +197,7 @@ export default function VendorProfileModal({ vendor, onClose, onSave, isSaved })
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: '#E03553', background: 'rgba(224,53,83,0.1)', padding: '2px 9px', borderRadius: 999 }}>{vendor.category}</span>
                 {vendor.location && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgba(10,10,10,0.5)' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>
                     <MapPin size={11} />
                     {vendor.location}
                   </span>

@@ -94,8 +94,8 @@ export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isS
           {vendor.location && (
             <>
               <span style={{ color: 'rgba(10,10,10,0.2)', fontSize: 11 }}>·</span>
-              <MapPin size={11} style={{ color: 'rgba(10,10,10,0.35)' }} />
-              <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.5)', fontFamily: PJS }}>{vendor.location}</span>
+              <MapPin size={11} style={{ color: 'rgba(10,10,10,0.45)' }} />
+              <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{vendor.location}</span>
             </>
           )}
         </div>

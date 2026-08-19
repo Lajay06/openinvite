@@ -101,7 +101,7 @@ function AccordionSection({ title, isOpen, onToggle, summary, children }) {
         </div>
       )}
       {!isOpen && summary.length === 0 && (
-        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.35)', fontFamily: PJS, margin: '0 0 16px' }}>
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
           Nothing selected yet
         </p>
       )}

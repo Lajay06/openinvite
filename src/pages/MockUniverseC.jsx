@@ -178,7 +178,7 @@ export default function MockUniverseC() {
             <h1 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: 800, color: '#0A0A0A', margin: 0, letterSpacing: '-0.01em' }}>
               Step into your universe
             </h1>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.5)', margin: '8px 0 0', maxWidth: 560 }}>
+            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '8px 0 0', maxWidth: 560 }}>
               Choose a world to preview it — each one takes over the screen briefly with its own motion, then lands you inside. Switching is never destructive.
             </p>
             <MockDataNotice loading={loading} weddingDetails={weddingDetails} />
@@ -214,7 +214,7 @@ export default function MockUniverseC() {
             <DetailMasthead universe={opened} />
           </div>
           <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
-            <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.55)', margin: 0, maxWidth: 640 }}>
+            <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, maxWidth: 640 }}>
               <strong style={{ color: '#0A0A0A' }}>Signature motif — </strong>{MOTIF_NOTES[opened.id]}
             </p>
             <div style={{ display: 'flex', gap: 48, flexWrap: 'wrap' }}>
@@ -259,7 +259,7 @@ export default function MockUniverseC() {
             </div>
             <div style={{ flex: 1, minWidth: 240 }}>
               <p style={{ fontFamily: PJS, fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px' }}>{opened.name} is part of Ultra</p>
-              <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.5)', margin: 0, maxWidth: 460 }}>
+              <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, maxWidth: 460 }}>
                 We took you inside for a moment so you could feel the world — upgrading unlocks it fully, palette to print pieces.
               </p>
             </div>
