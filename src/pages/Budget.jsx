@@ -409,7 +409,16 @@ export default function BudgetPage() {
   // percentage was the defect, not the arithmetic — it is spent/committed, and
   // a couple reading it had no way to know that was not their stated plan.
   const STAT_CARDS = [
-    { label: 'Total budget',  value: stats.totalBudgeted,           format: formatCurrency },
+    // "Committed", not "Total budget". This tile sums budgeted_amount across
+    // the couple's expense lines (Store B, the ledger) — it has never shown the
+    // total they typed into "Total wedding budget" one screen below (Store A,
+    // the encrypted plan). Two different numbers both called "budget" was the
+    // conflation #501 separated everywhere else; this was the last surface
+    // still saying "budget" for the ledger. The word matches what the strip
+    // already tells the user in "Budget used"'s sub-line ("$X of $Y committed")
+    // and what the plan's reconciliation line calls it ("Committed in
+    // expenses"), so all three now name the same quantity the same way.
+    { label: 'Committed',     value: stats.totalBudgeted,           format: formatCurrency },
     { label: 'Total spent',   value: stats.totalSpent,               format: formatCurrency },
     { label: 'Remaining',     value: Math.abs(stats.remaining),      format: formatCurrency,
       // Math.abs() strips the sign, so the label has to carry it. Without
