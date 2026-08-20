@@ -41,7 +41,7 @@ const SECTION_MAX = 1100;
 const FAQS = [
   {
     q: "Is this really a one-time payment?",
-    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is US$49 total. Ultra is US$99 total.",
+    a: "Yes. Pay once and plan your entire wedding. One payment covers 24 months of planning access, with no monthly fees and no subscriptions. Pro is US$49 total. Ultra is US$99 total.",
   },
   {
     q: "What's included in the 14-day free trial?",
@@ -65,7 +65,7 @@ const FAQS = [
   },
   {
     q: "What happens to my data after 24 months?",
-    a: "Your wedding is done, congratulations. After 24 months, your account moves to archive mode. Add an archive plan for $49 to keep permanent access to your wedding story.",
+    a: "Your wedding is done, congratulations. Planning access runs for 24 months, and after that everything you created is still yours. Viewing and exporting your data stays free, forever. There is nothing further to pay, ever.",
   },
 ];
 
@@ -442,12 +442,12 @@ export default function Pricing() {
             What happens after 24 months?
           </p>
           <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(10,10,10,0.6)", marginBottom: 10, fontFamily: PJS }}>
-            Your wedding is done, congratulations. After 24 months, your account moves to archive mode.
-            Your data and memories stay safe. To keep full access to your wedding story,
-            add an archive plan for a single $49 payment. No recurring fees, ever.
+            Your wedding is done, congratulations. Planning access runs for 24 months.
+            After that your data and memories stay safe and they stay yours: you can view
+            and export everything, free, forever. There is nothing further to pay, ever.
           </p>
           <p style={{ fontSize: 12, color: "rgba(10,10,10,0.6)", margin: 0, fontFamily: PJS }}>
-            Archive access covers your guest list, messages, and wedding website permanently.
+            That covers your guest list, budget, notes, photos, and wedding website.
           </p>
         </div>
       </section>
