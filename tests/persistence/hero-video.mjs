@@ -7,7 +7,8 @@
  * Pure-function tests — no Base44 API calls, no auth needed.
  */
 
-import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '../../src/lib/heroVideo.js';
+import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl,
+         youtubeInlineEmbedUrl, vimeoInlineEmbedUrl } from '../../src/lib/heroVideo.js';
 import { pass, fail } from './_shared.mjs';
 
 export async function runHeroVideo() {
@@ -81,6 +82,46 @@ export async function runHeroVideo() {
     results.push(valid
       ? pass('vimeoEmbedUrl — dnt=1 (do not track), autoplay/muted/loop/background mode', href)
       : fail('vimeoEmbedUrl — dnt=1 (do not track), autoplay/muted/loop/background mode', 'player.vimeo.com with autoplay/muted/loop/dnt=1', href));
+  }
+
+  // ── INLINE vs BACKGROUND ────────────────────────────────────────────────
+  // The bug: VideoBlock built body-video embeds with the HERO BACKGROUND
+  // builders, so a couple's pasted link played silent, looping and with no
+  // controls for every guest. These four assertions pin both directions —
+  // the inline variants must NOT be backgrounds, and the background
+  // variants must STILL be backgrounds, so a future edit cannot quietly
+  // converge them.
+  {
+    const yt = youtubeInlineEmbedUrl('abc123');
+    const ok = yt.startsWith('https://www.youtube-nocookie.com/embed/abc123')
+      && yt.includes('controls=1') && yt.includes('modestbranding=1')
+      && yt.includes('playsinline=1') && yt.includes('rel=0')
+      && !yt.includes('autoplay') && !yt.includes('mute') && !yt.includes('loop');
+    results.push(ok
+      ? pass('youtubeInlineEmbedUrl — controls on, no autoplay/mute/loop', yt)
+      : fail('youtubeInlineEmbedUrl — controls on, no autoplay/mute/loop', 'controls=1 and none of autoplay/mute/loop', yt));
+  }
+  {
+    const v = vimeoInlineEmbedUrl('123456789');
+    const ok = v === 'https://player.vimeo.com/video/123456789?dnt=1'
+      && !v.includes('background=1') && !v.includes('autoplay') && !v.includes('muted');
+    results.push(ok
+      ? pass('vimeoInlineEmbedUrl — dnt=1 only, never background=1', v)
+      : fail('vimeoInlineEmbedUrl — dnt=1 only, never background=1', 'player.vimeo.com/video/<id>?dnt=1', v));
+  }
+  {
+    // negative control: the background builders must be unchanged
+    const yb = youtubeEmbedUrl('abc123');
+    const ok = yb.includes('autoplay=1') && yb.includes('mute=1') && yb.includes('loop=1') && yb.includes('controls=0');
+    results.push(ok
+      ? pass('background YouTube builder still autoplays muted and looped', 'unchanged')
+      : fail('background YouTube builder still autoplays muted and looped', 'autoplay/mute/loop/controls=0', yb));
+  }
+  {
+    const vb = vimeoEmbedUrl('123456789');
+    results.push(vb.includes('background=1')
+      ? pass('background Vimeo builder still uses background=1', 'unchanged')
+      : fail('background Vimeo builder still uses background=1', 'background=1', vb));
   }
 
   return results;
