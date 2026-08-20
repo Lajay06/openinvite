@@ -341,7 +341,7 @@ export default function ToDoListPage() {
                 <span style={{ padding: 0, marginTop: 2, flexShrink: 0, display: 'flex' }}>
                   {task.completed
                     ? <CheckCircle2 size={16} style={{ color: '#E03553' }} />
-                    : <Circle size={16} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                    : <Circle size={16} style={{ color: 'rgba(10,10,10,0.45)' }} />
                   }
                 </span>
               ) : (
@@ -349,7 +349,7 @@ export default function ToDoListPage() {
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2, flexShrink: 0 }}>
                   {task.completed
                     ? <CheckCircle2 size={16} style={{ color: '#E03553' }} />
-                    : <Circle size={16} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                    : <Circle size={16} style={{ color: 'rgba(10,10,10,0.45)' }} />
                   }
                 </button>
               )}

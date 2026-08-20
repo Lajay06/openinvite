@@ -338,6 +338,11 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
             aria-label="Send message"
             style={{ width: 32, height: 32, borderRadius: 999, border: 'none', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', background: loading || !input.trim() ? 'rgba(10,10,10,0.1)' : 'linear-gradient(135deg, #ec4899, #9333ea)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}
           >
+            {/* 0.3 here is textDisabled and is correct: this branch only
+                renders while the button is disabled, and WCAG 1.4.11 exempts
+                disabled controls from the 3:1 non-text minimum. Ticket C
+                raised ENABLED icon-only controls to iconMuted 0.45 and
+                deliberately left this one — do not "fix" it to 0.45. */}
             <Send size={13} style={{ color: loading || !input.trim() ? 'rgba(10,10,10,0.3)' : '#fff' }} />
           </button>
         </div>

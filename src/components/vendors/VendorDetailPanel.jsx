@@ -390,7 +390,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                           <button onClick={() => toggleTask(task)} style={{ background: 'none', border: 'none', cursor: 'pointer', marginTop: 1, padding: 0, flexShrink: 0, display: 'flex' }}>
                             {task.completed
                               ? <CheckCircle2 size={16} style={{ color: '#6b7700' }} />
-                              : <Circle size={16} style={{ color: 'rgba(10,10,10,0.25)' }} />
+                              : <Circle size={16} style={{ color: 'rgba(10,10,10,0.45)' }} />
                             }
                           </button>
                           <div style={{ flex: 1, minWidth: 0 }}>

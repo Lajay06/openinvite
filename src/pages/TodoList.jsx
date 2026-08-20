@@ -640,7 +640,7 @@ function TaskRow({ task, onToggle, onDelete, onSave, highlighted, innerRef }) {
         >
           {task.completed
             ? <CheckSquare size={18} style={{ color: '#E03553' }} />
-            : <Square size={18} style={{ color: 'rgba(10,10,10,0.2)' }} />
+            : <Square size={18} style={{ color: 'rgba(10,10,10,0.45)' }} />
           }
         </button>
       </td>

@@ -45,7 +45,7 @@ function StarRating({ value, onChange }) {
           <Star
             size={16}
             fill={n <= value ? '#E03553' : 'none'}
-            style={{ color: n <= value ? '#E03553' : 'rgba(10,10,10,0.25)' }}
+            style={{ color: n <= value ? '#E03553' : 'rgba(10,10,10,0.45)' }}
           />
         </button>
       ))}
