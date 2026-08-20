@@ -365,7 +365,7 @@ function VideoBlock({ content, theme, typography, editable }) {
   const embedUrl = video.type === 'youtube' ? youtubeInlineEmbedUrl(video.id) : vimeoInlineEmbedUrl(video.id);
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', aspectRatio: '16/9', position: 'relative' }}>
-      <iframe src={embedUrl} title="Video" allow="autoplay; encrypted-media" allowFullScreen style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} />
+      <iframe src={embedUrl} title="Video" allow="encrypted-media; fullscreen; picture-in-picture" allowFullScreen style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} />
     </div>
   );
 }

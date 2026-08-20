@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroVideo';
+import { useSoundPreference, isIOS } from '@/lib/useSoundPreference';
 import UniverseBlocks from '../blocks/UniverseBlocks';
 import EditorialMasthead from '../layouts/EditorialMasthead';
 import EditorialGridFooter from '../layouts/EditorialGridFooter';
@@ -76,12 +77,18 @@ const IFRAME_COVER_STYLE = {
  * masthead/footer content every universe lays over this background.
  */
 function UnmuteButton({ unmuted, onToggle }) {
+  // On iOS the hardware ring/silent switch overrides a gesture-unmute and
+  // nothing in JS can see it, so the label says so rather than leaving the
+  // guest to conclude the site is broken.
+  const label = unmuted
+    ? 'Mute video'
+    : (isIOS() ? 'Unmute video - check your ring/silent switch' : 'Unmute video');
   return (
     <button
       type="button"
       onClick={onToggle}
-      aria-label={unmuted ? 'Mute video' : 'Unmute video'}
-      title={unmuted ? 'Mute video' : 'Unmute video'}
+      aria-label={label}
+      title={label}
       style={{
         position: 'absolute', bottom: 24, right: 24, zIndex: 5,
         width: 40, height: 40, borderRadius: '50%',
@@ -106,7 +113,9 @@ function UnmuteButton({ unmuted, onToggle }) {
  */
 function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
   const [videoFailed, setVideoFailed] = useState(false);
-  const [unmuted, setUnmuted] = useState(false);
+  // Per-visit, per-wedding: an unmute on the home page still holds on the
+  // story, schedule and RSVP pages. See src/lib/useSoundPreference.js.
+  const [unmuted, setUnmuted] = useSoundPreference();
   const videoRef = useRef(null);
   const video = useMemo(() => detectHeroVideoType(heroVideoUrl), [heroVideoUrl]);
 
