@@ -73,7 +73,7 @@ function CheckItem({ item, onToggle }) {
     >
       {item.done
         ? <CheckCircle2 size={16} style={{ color: '#E03553', flexShrink: 0 }} />
-        : <Circle size={16} style={{ color: 'rgba(10,10,10,0.2)', flexShrink: 0 }} />
+        : <Circle size={16} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
       }
       <span style={{
         fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS,

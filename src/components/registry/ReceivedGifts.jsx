@@ -321,7 +321,7 @@ export default function ReceivedGifts() {
                         title={gift.thank_you_sent ? `Sent ${gift.thank_you_date || ''}` : 'Mark as sent'}>
                         {gift.thank_you_sent
                           ? <CheckCircle2 size={18} style={{ color: '#6b7700' }} />
-                          : <Circle size={18} style={{ color: 'rgba(10,10,10,0.2)' }} />
+                          : <Circle size={18} style={{ color: 'rgba(10,10,10,0.45)' }} />
                         }
                       </button>
                     </td>

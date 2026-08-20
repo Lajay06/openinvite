@@ -168,7 +168,7 @@ function FavouriteStar({ vendor, onToggle }) {
       <Star
         size={15}
         style={{
-          color: vendor.is_favourite ? '#F59E0B' : 'rgba(10,10,10,0.25)',
+          color: vendor.is_favourite ? '#F59E0B' : 'rgba(10,10,10,0.45)',
           fill: vendor.is_favourite ? '#F59E0B' : 'none',
           transition: 'color 0.15s, fill 0.15s',
         }}
