@@ -172,7 +172,8 @@ function PricingSection() {
         opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
         transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
       }}>
-        Two plans, no subscriptions, ever. Pick the one that fits.
+        Two plans, no subscriptions, ever. One payment covers 24 months of planning access.
+        Pick the one that fits.
       </p>
       <style>{`
         /* Below 640px the two-up grid would force a max-content width wider
