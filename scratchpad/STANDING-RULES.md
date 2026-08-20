@@ -465,3 +465,20 @@ SKIPPED` rather than a flattering total.
 `npm run pr:green` remains the only authority on diff-based steps — they only do
 real work in CI. Every "13/13" reported before this date was, in truth, 11
 exercised and 2 inert.
+
+---
+
+## A push is verified against the remote, never trusted from local exit status
+
+`git push` on a branch with no upstream fails with "no upstream branch" and a
+non-zero status. Chaining `&& echo "pushed"` on the next line — a separate
+command — prints success anyway, and a subsequent `pr:green` then reports on
+the *previous* commit. This has now bitten twice: once on the hairline PR and
+once on window-truth, where the merge line was explicitly conditional on an
+amendment being in the merged commit.
+
+**Confirm the commit is on the remote before merging: `git log --oneline -1
+origin/<branch>`, or read the changed line back with `git show
+origin/<branch>:<path>`.** Local exit status is not evidence that a push
+landed. (`push.autoSetupRemote true` is now set repo-locally, which removes
+the common cause but not the class.)

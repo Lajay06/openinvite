@@ -39,7 +39,7 @@ import React, { useState } from 'react';
 import { Plus, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
-import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroVideo';
+import { detectHeroVideoType, youtubeInlineEmbedUrl, vimeoInlineEmbedUrl } from '@/lib/heroVideo';
 import { blockLabel } from './blockTypes';
 import { interactiveDivProps } from '@/lib/a11y';
 
@@ -359,7 +359,10 @@ function VideoBlock({ content, theme, typography, editable }) {
       </video>
     );
   }
-  const embedUrl = video.type === 'youtube' ? youtubeEmbedUrl(video.id) : vimeoEmbedUrl(video.id);
+  // INLINE builders, never the hero-background ones. A body video is
+  // content a guest chooses to play: controls on, no autoplay, no mute,
+  // no loop. HeroBackground keeps the background builders.
+  const embedUrl = video.type === 'youtube' ? youtubeInlineEmbedUrl(video.id) : vimeoInlineEmbedUrl(video.id);
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', aspectRatio: '16/9', position: 'relative' }}>
       <iframe src={embedUrl} title="Video" allow="autoplay; encrypted-media" allowFullScreen style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} />

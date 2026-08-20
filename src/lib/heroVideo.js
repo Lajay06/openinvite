@@ -49,3 +49,27 @@ export function youtubeEmbedUrl(id) {
 export function vimeoEmbedUrl(id) {
   return `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&loop=1&background=1&dnt=1`;
 }
+
+/**
+ * INLINE variants, for a body video block — content a guest chooses to play,
+ * not wallpaper. Deliberately the opposite of the background builders above:
+ * controls on, no autoplay, no mute, no loop.
+ *
+ * The bug these fix: VideoBlock reused the background builders, so every
+ * embed link a couple pasted into a body block rendered silent, looping and
+ * uncontrollable for every guest, permanently. The type === 'file' branch
+ * beside it was always correct, which is why it went unnoticed.
+ *
+ * nocookie is right here. The #493/#494 finding was PLAYLIST-specific —
+ * youtube-nocookie.com does not serve playlist embeds. These are
+ * single-video embeds, which it serves normally.
+ */
+export function youtubeInlineEmbedUrl(id) {
+  return `https://www.youtube-nocookie.com/embed/${id}?controls=1&modestbranding=1&playsinline=1&rel=0`;
+}
+
+/** dnt=1 only. NO background=1: that is Vimeo's chrome-less mode, which
+ *  strips controls and forces mute and loop — the exact bug being fixed. */
+export function vimeoInlineEmbedUrl(id) {
+  return `https://player.vimeo.com/video/${id}?dnt=1`;
+}
