@@ -447,7 +447,7 @@ export default function Pricing() {
             and export everything, free, forever. There is nothing further to pay, ever.
           </p>
           <p style={{ fontSize: 12, color: "rgba(10,10,10,0.6)", margin: 0, fontFamily: PJS }}>
-            That covers your guest list, budget, notes, photos, and wedding website.
+            That covers your guest list, budget, addresses, notes, and photos.
           </p>
         </div>
       </section>
