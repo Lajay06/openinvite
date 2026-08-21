@@ -2,17 +2,9 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Sparkles, ChevronLeft, Check, Copy } from 'lucide-react';
 import RulesBasedStyleQuestionnaire from './RulesBasedStyleQuestionnaire';
+import { deriveSeason } from '@/lib/weddingSeason';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function deriveSeason(weddingDate) {
-  if (!weddingDate) return null;
-  const month = new Date(weddingDate).getMonth() + 1;
-  if (month >= 3 && month <= 5) return 'Spring';
-  if (month >= 6 && month <= 8) return 'Summer';
-  if (month >= 9 && month <= 11) return 'Autumn';
-  return 'Winter';
-}
 
 function getCoupleNames(wd) {
   if (wd.coupleNames) return wd.coupleNames;
@@ -123,7 +115,10 @@ function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
   const [copied, setCopied] = useState(false);
 
   const coupleNames = getCoupleNames(weddingDetails);
-  const season = deriveSeason(weddingDetails.weddingDate);
+  // The venue address carries the country, which decides the hemisphere.
+  // Without it deriveSeason returns null and every surface below omits
+  // the season rather than guessing at one.
+  const season = deriveSeason(weddingDetails.weddingDate, weddingDetails.mainCeremony?.address);
   const dressCode = weddingDetails.mainCeremony?.dressCode;
   const weddingStyle = Array.isArray(weddingDetails.weddingStyle) ? weddingDetails.weddingStyle[0] : null;
 
@@ -145,7 +140,6 @@ function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
 
   const handleSubmit = async () => {
     setPhase('loading');
-    const derivedSeason = season || 'not specified';
     const prompt = `You are a wedding outfit stylist. Generate outfit recommendations for a wedding guest.
 
 WEDDING DETAILS:
@@ -154,8 +148,7 @@ WEDDING DETAILS:
 - Style: ${weddingStyle || 'elegant'}
 - Dress code: ${dressCode || 'smart casual'}
 - Venue: ${weddingDetails.mainCeremony?.venueName || weddingDetails.venueType || 'not specified'}
-- Season: ${derivedSeason}
-
+${season ? `- Season: ${season}\n` : ''}
 GUEST PREFERENCES:
 - Gender identity: ${answers.gender}
 - Style vibe: ${answers.style}

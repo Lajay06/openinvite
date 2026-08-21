@@ -12,12 +12,15 @@ import {
     RefreshCw
 } from 'lucide-react';
 
-const OutfitRecommendations = ({ recommendations, theme, onRetake }) => {
+const OutfitRecommendations = ({ recommendations, theme, onRetake, derivedSeason = null }) => {
     // Safely extract theme information with proper defaults
     const safeRecommendations = {
         theme: {
             vibes: Array.isArray(recommendations?.theme?.vibes) ? recommendations.theme.vibes : ['romantic', 'elegant'],
-            season: recommendations?.theme?.season || 'Summer',
+            // Precedence: the couple's own pick wins, then a hemisphere-aware
+      // derivation, then NOTHING. The old 'Summer' fallback stated a season
+      // for weddings whose season was simply unknown.
+      season: recommendations?.theme?.season || derivedSeason || null,
             setting: recommendations?.theme?.setting || 'Both'
         },
         style: recommendations?.style || 'classic',
@@ -39,7 +42,8 @@ const OutfitRecommendations = ({ recommendations, theme, onRetake }) => {
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Your Perfect Wedding Guest Look</h2>
                 <p className="text-gray-600 mb-4">
-                    Curated specifically for a {themeVibes} {safeRecommendations.theme.season.toLowerCase()} wedding
+                    Curated specifically for a {themeVibes}{safeRecommendations.theme.season
+              ? ` ${safeRecommendations.theme.season.toLowerCase()}` : ''} wedding
                 </p>
                 <Button
                     variant="outline"

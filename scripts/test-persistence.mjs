@@ -63,6 +63,7 @@ import { runPlaylistEmbedUrls } from '../tests/persistence/playlist-embed-urls.m
 import { runNextUp } from '../tests/persistence/next-up.mjs';
 import { runBudgetClarity } from '../tests/persistence/budget-clarity.mjs';
 import { runSoundPreference } from '../tests/persistence/sound-preference.mjs';
+import { runWeddingSeason } from '../tests/persistence/wedding-season.mjs';
 import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 import { runNotifications } from '../tests/persistence/notifications.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
@@ -167,6 +168,7 @@ async function run() {
   await runModule('runNextUp', () => runNextUp());
   await runModule('runBudgetClarity', () => runBudgetClarity());
   await runModule('runSoundPreference', () => runSoundPreference());
+  await runModule('runWeddingSeason', () => runWeddingSeason());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
     // itself, or a bug in runModule) — this is the actual safety net the
