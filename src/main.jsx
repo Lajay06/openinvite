@@ -1,3 +1,34 @@
+/**
+ * Plus Jakarta Sans, self-hosted (L1a).
+ *
+ * Previously loaded from fonts.googleapis.com in index.html, which meant every
+ * visitor's IP reached Google on every page load -- including guests on a
+ * couple's wedding site who never signed up for anything. Self-hosting removes
+ * Google as a processor for the app's own typeface.
+ *
+ * These are @fontsource packages, which ship Google's OWN subset files with the
+ * same unicode-range boundaries (cyrillic-ext / latin / latin-ext / vietnamese),
+ * so the browser still downloads only the ranges a page actually needs. Nothing
+ * is hand-trimmed and no glyph coverage changes.
+ *
+ * The twelve faces below are exactly what index.html requested:
+ * weights 300-800, normal and italic. Listed explicitly rather than globbed --
+ * a missing weight would silently fall back to a synthesised one.
+ *
+ * Licence: Plus Jakarta Sans is OFL, so self-hosting is licence-clean.
+ */
+import '@fontsource/plus-jakarta-sans/300.css';
+import '@fontsource/plus-jakarta-sans/400.css';
+import '@fontsource/plus-jakarta-sans/500.css';
+import '@fontsource/plus-jakarta-sans/600.css';
+import '@fontsource/plus-jakarta-sans/700.css';
+import '@fontsource/plus-jakarta-sans/800.css';
+import '@fontsource/plus-jakarta-sans/300-italic.css';
+import '@fontsource/plus-jakarta-sans/400-italic.css';
+import '@fontsource/plus-jakarta-sans/500-italic.css';
+import '@fontsource/plus-jakarta-sans/600-italic.css';
+import '@fontsource/plus-jakarta-sans/700-italic.css';
+import '@fontsource/plus-jakarta-sans/800-italic.css';
 import '@/lib/sentry.js'   // must be first — initialises Sentry before any other code
 import React from 'react'
 import ReactDOM from 'react-dom/client'
