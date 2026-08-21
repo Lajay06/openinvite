@@ -17,6 +17,18 @@ import { blockLabel } from '@/components/guest-website/blocks/blockTypes';
 import { TEXT_COLOR_OPTIONS, BACKGROUND_OPTIONS, SPACING_OPTIONS, JUSTIFY_CAPABLE_TYPES } from '@/components/guest-website/blocks/UniverseBlocks';
 import { interactiveDivProps } from '@/lib/a11y';
 
+// Background music: writing surface HIDDEN (owner decision, video-sound batch).
+// guestExperienceSettings.backgroundMusic had two sources: 'curated' (the mood
+// loops, dropped -- Openinvite licenses no music) and 'upload' (couple-supplied
+// audio, also declined). Both were declined, so the control writes a field
+// nothing should set. Sound on the guest site now comes only from the couple's
+// own uploaded or linked video.
+//
+// A flag rather than a deletion: UI only, the schema field stays declared and
+// stored values are untouched (undeclaring is on the post-launch list), and the
+// markup stays reviewable if the decision is ever revisited.
+const SHOW_BACKGROUND_MUSIC_UI = false;
+
 // ── Extra primitives used only here ───────────────────────────
 function SLabel({ children, onClick, isOpen }) {
   const collapsible = typeof isOpen === 'boolean';
@@ -378,6 +390,7 @@ function SettingsTab({ details, onChange }) {
       <SLabel>Status</SLabel>
       <Toggle label={`Website is ${details.websiteEnabled ? 'Live' : 'Hidden'}`} value={details.websiteEnabled} onChange={v => onChange('websiteEnabled', v)} />
       <Divider />
+      {SHOW_BACKGROUND_MUSIC_UI && (<>
       <SLabel>Background music</SLabel>
       <Toggle label="Play music on your invite/website" value={backgroundMusic.enabled} onChange={v => setBGMusic({ enabled: v })} />
       {backgroundMusic.enabled && (
@@ -404,6 +417,7 @@ function SettingsTab({ details, onChange }) {
           )}
         </div>
       )}
+      </>)}
       <Divider />
       <SLabel>Password protection</SLabel>
       <Toggle label="Require password" value={passwordGate.wantsProtection} onChange={passwordGate.toggle} />
@@ -783,6 +797,7 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
 // here — it now also needs to wrap the on-canvas block editor
 // (feat/component-library), which lives outside this panel, so ownership
 // moved up to the one place both can share it.
+
 export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock }) {
   const AssetEditorComp = selectedAsset ? ASSET_EDITOR_MAP[selectedAsset] : null;
 
