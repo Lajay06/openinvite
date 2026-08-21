@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Play } from 'lucide-react';
 import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroVideo';
 import { useSoundPreference, isIOS } from '@/lib/useSoundPreference';
 import UniverseBlocks from '../blocks/UniverseBlocks';
@@ -76,6 +76,35 @@ const IFRAME_COVER_STYLE = {
  * sound on (round 7 ask #14). Bottom-right, out of the way of the
  * masthead/footer content every universe lays over this background.
  */
+/**
+ * Shown to reduced-motion and data-saver guests in place of an autoplaying
+ * hero. Deliberately large and centred: this is the only affordance telling
+ * them a film exists at all.
+ */
+function PlayButton({ onActivate }) {
+  return (
+    <button
+      type="button"
+      onClick={onActivate}
+      aria-label="Play video"
+      title="Play video"
+      style={{
+        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+        width: 64, height: 64, borderRadius: 999, cursor: 'pointer',
+        background: 'rgba(10,10,10,0.55)', border: '1px solid rgba(255,255,255,0.5)',
+        color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        // Hero copy renders at zIndex 10. At 3 this button was visible but
+        // NOT clickable: the masthead's own text intercepted the pointer,
+        // caught in the render pass. It is the only affordance telling a
+        // reduced-motion guest a film exists, so it sits above the copy.
+        zIndex: 11, padding: 0,
+      }}
+    >
+      <Play size={26} fill="currentColor" />
+    </button>
+  );
+}
+
 function UnmuteButton({ unmuted, onToggle }) {
   // On iOS the hardware ring/silent switch overrides a gesture-unmute and
   // nothing in JS can see it, so the label says so rather than leaving the
@@ -106,10 +135,16 @@ function UnmuteButton({ unmuted, onToggle }) {
 /**
  * Renders the hero's background media: a real video (direct file or
  * YouTube/Vimeo embed) when the couple has set one, falling back to the
- * existing static cover-photo image otherwise — or if the video fails to
- * load, or the visitor has data-saver/prefers-reduced-motion enabled, in
- * which case autoplaying video is skipped entirely in favour of the image
- * (never a broken player).
+ * existing static cover-photo image otherwise, or if the video fails to load.
+ *
+ * Reduced-motion and data-saver visitors do NOT lose the video. They used to:
+ * the gate skipped it entirely in favour of the image. That was right when the
+ * hero video was decoration, but it is the couple's own film now, and silently
+ * withholding it from exactly the guests who asked for less motion is not what
+ * either setting asks for. Reduced motion means nothing moves unprompted, not
+ * hide the content; data-saver means do not spend my bandwidth without asking.
+ * Both are answered by the same thing: the poster frame, a visible play button,
+ * and preload="none" so not a byte of video is fetched until the guest taps.
  */
 function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
   const [videoFailed, setVideoFailed] = useState(false);
@@ -123,7 +158,12 @@ function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
   // this signal is skipped, not that data-saver mode is assumed off.
   const saveData = typeof navigator !== 'undefined' && navigator.connection?.saveData === true;
 
-  const showVideo = !!video && !videoFailed && !prefersReduced && !saveData;
+  // The guest asked for less motion or less data, so the video waits for a tap
+  // rather than disappearing. Once they tap, `activated` puts them on the
+  // normal path — same player, same sound preference.
+  const [activated, setActivated] = useState(false);
+  const holdForConsent = (prefersReduced || saveData) && !activated;
+  const showVideo = !!video && !videoFailed;
 
   const imageFallback = (
     <div
@@ -137,6 +177,26 @@ function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
   );
 
   if (!showVideo) return imageFallback;
+
+  if (holdForConsent) {
+    // preload="none" is the whole point for data-saver: the poster is an
+    // image the page was loading anyway, and no video bytes are requested.
+    return (
+      <>
+        {imageFallback}
+        {video.type === 'file' && (
+          <video
+            preload="none"
+            poster={coverPhoto || undefined}
+            playsInline
+            onError={() => setVideoFailed(true)}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        )}
+        <PlayButton onActivate={() => setActivated(true)} />
+      </>
+    );
+  }
 
   if (video.type === 'file') {
     const toggleMute = () => {
