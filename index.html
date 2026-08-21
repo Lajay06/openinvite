@@ -26,9 +26,14 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet" />
+    <!-- Plus Jakarta Sans is self-hosted (L1a): see src/main.jsx.
+         The Google stylesheet and its two preconnects were removed here so no
+         page opens a connection to Google just to render the app's own type.
+         A preconnect is not free of disclosure: it performs DNS + TCP + TLS to
+         the host, so leaving it would have kept every visitor's IP reaching
+         Google even with the stylesheet gone.
+         Universe display faces are still Google-loaded at runtime until L1b,
+         and those call sites add their own preconnect when they need it. -->
   </head>
   <body>
     <div id="root"></div>

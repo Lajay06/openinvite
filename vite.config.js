@@ -26,6 +26,14 @@ export default defineConfig({
     }),
   ],
   build: {
+    // Never inline font files. Vite's default assetsInlineLimit (4 KB) was
+    // base64-ing the smaller subset faces (cyrillic-ext) straight into the
+    // render-blocking CSS. That defeats the whole point of unicode-range
+    // slicing -- an inlined subset is downloaded by every visitor whether
+    // their page contains a single Cyrillic character or not -- and it cannot
+    // be cached separately from the CSS. Fonts ship as static assets.
+    assetsInlineLimit: (filePath) => !/\.(woff2?|ttf|otf|eot)$/i.test(filePath),
+
     // Source maps are required for Sentry to map minified errors back to source
     sourcemap: true,
     rollupOptions: {
