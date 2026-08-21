@@ -75,6 +75,18 @@ import WeddingStayPage from './pages/WeddingStayPage';
 import WeddingTransportPage from './pages/WeddingTransportPage';
 import WeddingExperiencePage from './pages/WeddingExperiencePage';
 
+// Background music: reader gated OFF (owner decision, video-sound batch 4b).
+// The same SHOW_BACKGROUND_MUSIC_UI flag that hides the two writing surfaces
+// (GuestSuitePolicies.jsx, WBRightPanel.jsx). Hiding the writers does not
+// silence rows that already had it enabled, and the decision is that sound on
+// the guest site comes only from the couple's own uploaded or linked video --
+// couple-uploaded audio included. Reader and writers turn off together, and
+// would turn back on together.
+//
+// Verified before landing: 0 wedding rows had backgroundMusic.enabled === true
+// and 0 had a track url, so no live guest site changed audibly.
+const SHOW_BACKGROUND_MUSIC_UI = false;
+
 const PAGE_COMPONENTS = {
   home: WeddingHomePage,
   'our-story': WeddingOurStoryPage,
@@ -235,11 +247,13 @@ export default function MultiPageWeddingWebsite() {
       {/* Top-level sibling of the page-transition area below, not inside
           it — so the track keeps playing across page navigation instead
           of restarting on every click. */}
-      <BackgroundMusicPlayer
-        weddingSlug={weddingSlug}
-        musicSettings={weddingDetails?.guestExperienceSettings?.backgroundMusic}
-        accentColor={theme?.accent}
-      />
+      {SHOW_BACKGROUND_MUSIC_UI && (
+        <BackgroundMusicPlayer
+          weddingSlug={weddingSlug}
+          musicSettings={weddingDetails?.guestExperienceSettings?.backgroundMusic}
+          accentColor={theme?.accent}
+        />
+      )}
 
       {/* Site-wide texture overlay — one instance covers every page (not just
           the home hero), switches with the active universe, single paint
