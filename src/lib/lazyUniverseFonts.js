@@ -28,19 +28,15 @@
  * rendered text — the same mechanism that makes requesting a huge CJK
  * family safe for a Latin-only page in the first place.
  */
-import { googleFontsHref } from './universeStyling';
+import { loadFontFamilies, familiesFromGoogleSpec } from './selfHostedFonts';
 
-const loadedHrefs = new Set();
-
+// Self-hosted (L1b): the family set is loaded from our own origin via
+// @fontsource, so no visitor IP reaches Google to render a universe face.
+// Caching now lives in selfHostedFonts.js, which loads each family once.
 export function loadUniverseFont(universe) {
-  const href = googleFontsHref(universe?.typography);
-  if (!href || loadedHrefs.has(href) || typeof document === 'undefined') return;
-  loadedHrefs.add(href);
-
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = href;
-  document.head.appendChild(link);
+  const spec = universe?.typography?.googleFonts;
+  if (!spec) return;
+  loadFontFamilies(familiesFromGoogleSpec(spec));
 }
 
 /**

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { getWeddingEvents, getGuestEventResponse, DEFAULT_MEAL_OPTIONS } from '@/lib/weddingEvents';
-import { resolveColors, resolveTypography, resolveUniverseConfig, googleFontsHref, isMotionEnabled } from '@/lib/universeStyling';
+import { resolveColors, resolveTypography, resolveUniverseConfig, isMotionEnabled } from '@/lib/universeStyling';
+import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 import SectionReveal from '@/components/guest-website/SectionReveal';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -238,32 +239,11 @@ export default function RSVPPage() {
   // MultiPageWeddingWebsite.jsx's render tree, so it must inject its own
   // Google Fonts stylesheet for the resolved typography — same mechanism
   // MultiPageWeddingWebsite.jsx uses (one swappable <link>, display=swap).
+  // Self-hosted (L1b) -- same reasoning as MultiPageWeddingWebsite: our own
+  // origin, lazy per family, and no preconnect to Google.
   useEffect(() => {
-    const href = googleFontsHref(typography);
-    if (!href) return;
-
-    const ensurePreconnect = (url, crossOrigin) => {
-      if (document.querySelector(`link[rel="preconnect"][href="${url}"]`)) return;
-      const l = document.createElement('link');
-      l.rel = 'preconnect';
-      l.href = url;
-      if (crossOrigin) l.crossOrigin = 'anonymous';
-      document.head.appendChild(l);
-    };
-    ensurePreconnect('https://fonts.googleapis.com');
-    ensurePreconnect('https://fonts.gstatic.com', true);
-
-    let link = document.getElementById('wf-typo-pairing');
-    if (link) {
-      if (link.href !== href) link.href = href;
-      return;
-    }
-    link = document.createElement('link');
-    link.id = 'wf-typo-pairing';
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.appendChild(link);
-  }, [typography.googleFonts]);
+    loadFontFamilies(familiesFromGoogleSpec(typography?.googleFonts));
+  }, [typography]);
 
   // Derive active polls from loaded wedding data
   const activePolls = useMemo(

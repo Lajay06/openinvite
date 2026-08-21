@@ -386,9 +386,10 @@ export const TYPOGRAPHY_PAIRINGS = [
   headingWeight: 400,
   headingStyle: 'normal',
   bodyWeight: 400,
-  headingImport: t.googleFonts
-    ? `@import url('https://fonts.googleapis.com/css2?family=${t.googleFonts}&display=swap');`
-    : '',
+  // Self-hosted (L1b): faces load through selfHostedFonts.js, so this legacy
+  // CSS @import is now empty. Kept as a field so consumers that interpolate
+  // it keep working -- an empty string injects nothing.
+  headingImport: '',
   bodyImport: '',
 }));
 

@@ -15,6 +15,7 @@ import AssetGrid from '@/components/universe-studio/AssetGrid';
 import SaveTheDatePreview from '@/components/universe-studio/assets/SaveTheDatePreview';
 import MenuCardPreview from '@/components/universe-studio/assets/MenuCardPreview';
 import SeatingChartPreview from '@/components/universe-studio/assets/SeatingChartPreview';
+import { loadFontFamilies } from '@/lib/selfHostedFonts';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -95,7 +96,8 @@ export function useGoogleFontsFor(universes) {
       link.rel = 'stylesheet';
       document.head.appendChild(link);
     }
-    link.href = `https://fonts.googleapis.com/css2?${families.map(f => `family=${f}`).join('&')}&display=swap`;
+    // Self-hosted (L1b): design mocks load their faces from our own origin.
+    loadFontFamilies(families.map(f => decodeURIComponent(String(f).split(':')[0]).replace(/\+/g, ' ').trim()));
   }, [universes]);
 }
 

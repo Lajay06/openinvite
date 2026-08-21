@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
 import { resolveUniverseConfig } from '@/lib/websiteThemes';
-import { resolveTypography, resolveColors, googleFontsHref } from '@/lib/universeStyling';
+import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
+import { resolveTypography, resolveColors } from '@/lib/universeStyling';
 import TextureOverlay from './TextureOverlay';
 import EntranceMoment from './EntranceMoment';
 import BackgroundMusicPlayer from './BackgroundMusicPlayer';
@@ -128,34 +129,15 @@ export default function MultiPageWeddingWebsite() {
   // trade-off of display=swap — there is no zero-shift way to use a real
   // custom font without either FOIT or a metrics-matched fallback font per
   // pairing, which is out of scope here.
+  // Self-hosted (L1b): the universe's faces come from our own origin via
+  // @fontsource, loaded lazily so only the active universe's families are
+  // fetched. No <link> to Google, and no preconnect either -- a preconnect
+  // still performs DNS + TCP + TLS, so it would have kept every guest's IP
+  // reaching Google even with the stylesheet gone.
   useEffect(() => {
     const typography = resolveTypography(weddingDetails);
-    const href = googleFontsHref(typography);
-
-    const ensurePreconnect = (url, crossOrigin) => {
-      if (document.querySelector(`link[rel="preconnect"][href="${url}"]`)) return;
-      const l = document.createElement('link');
-      l.rel = 'preconnect';
-      l.href = url;
-      if (crossOrigin) l.crossOrigin = 'anonymous';
-      document.head.appendChild(l);
-    };
-
-    if (!href) return;
-    ensurePreconnect('https://fonts.googleapis.com');
-    ensurePreconnect('https://fonts.gstatic.com', true);
-
-    let link = document.getElementById('wf-typo-pairing');
-    if (link) {
-      if (link.href !== href) link.href = href;
-      return;
-    }
-    link = document.createElement('link');
-    link.id = 'wf-typo-pairing';
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.appendChild(link);
-  }, [weddingDetails?.activeTypography, weddingDetails?.activeUniverse]);
+    loadFontFamilies(familiesFromGoogleSpec(typography?.googleFonts));
+  }, [weddingDetails]);
 
   useEffect(() => {
     const loadWeddingDetails = async () => {

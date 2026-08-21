@@ -9,7 +9,8 @@ import WBRightPanel from '@/components/website-builder/WBRightPanel';
 import WBLeftPanel from '@/components/website-builder/WBLeftPanel';
 import FullScreenPreview from '@/components/website-builder/FullScreenPreview';
 import { FONT_OPTIONS, WEDDING_PAGES, UNIVERSE_CONFIGS, normalizeUniverseKey } from '@/lib/websiteThemes';
-import { resolveColors, resolveTypography, googleFontsHref } from '@/lib/universeStyling';
+import { resolveColors, resolveTypography } from '@/lib/universeStyling';
+import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 import RealWebsitePreview from '@/components/website-builder/RealWebsitePreview';
 import PublishModal from '@/components/website-builder/PublishModal';
 import { MediaLibraryContext } from '@/components/website-builder/SectionEditorFields';
@@ -759,48 +760,20 @@ function PreviewContent({ universeTheme, details, currentPage, onPageChange, edi
   // active pairing — since it only ever has one real visitor-facing config;
   // the builder preloads everything because a couple actively comparing
   // universes/pairings should see instant switching, not a fetch each time.)
+  // Self-hosted (L1b). The builder preloads every universe pairing and every
+  // picker option so a couple comparing them sees instant switching -- that
+  // behaviour is unchanged, only the source is: families now come from our
+  // own origin via @fontsource instead of a stylesheet link per family to
+  // Google, and the two preconnects to Google are gone with them.
   useEffect(() => {
-    const needed = new Set();
-
-    // Preload every universe's font pairing
+    const families = new Set();
     Object.values(UNIVERSE_CONFIGS).forEach(cfg => {
-      const href = googleFontsHref(cfg.typography);
-      if (href) needed.add(href);
+      familiesFromGoogleSpec(cfg.typography?.googleFonts).forEach(f => families.add(f));
     });
-
-    // Preload every font option so switching is instant
     FONT_OPTIONS.forEach(f => {
-      if (f.google) needed.add(`https://fonts.googleapis.com/css2?family=${f.google}&display=swap`);
+      familiesFromGoogleSpec(f.google || f.googleFonts).forEach(n => families.add(n));
     });
-
-    // Preconnect once — shaves the DNS/TLS handshake off every font request
-    // below, whether it's 1 or 25 stylesheet links.
-    if (!document.querySelector('link[rel="preconnect"][href="https://fonts.googleapis.com"]')) {
-      const p1 = document.createElement('link');
-      p1.rel = 'preconnect';
-      p1.href = 'https://fonts.googleapis.com';
-      document.head.appendChild(p1);
-    }
-    if (!document.querySelector('link[rel="preconnect"][href="https://fonts.gstatic.com"]')) {
-      const p2 = document.createElement('link');
-      p2.rel = 'preconnect';
-      p2.href = 'https://fonts.gstatic.com';
-      p2.crossOrigin = 'anonymous';
-      document.head.appendChild(p2);
-    }
-
-    // Remove previously injected font links
-    document.head.querySelectorAll('link[data-wf-font]').forEach(el => el.remove());
-
-    // Inject fresh links
-    needed.forEach(href => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      link.setAttribute('data-wf-font', '1');
-      document.head.appendChild(link);
-    });
-    console.log('[fonts] preloaded', needed.size, 'font URLs');
+    loadFontFamilies([...families]);
   }, [universeTheme?.fontDisplay, details?.displayFont, details?.bodyFont]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // RealWebsitePreview is the single shared "render the real guest site off
