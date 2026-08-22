@@ -16,6 +16,7 @@ import { BlockFields } from './BlockFields';
 import { blockLabel } from '@/components/guest-website/blocks/blockTypes';
 import { TEXT_COLOR_OPTIONS, BACKGROUND_OPTIONS, SPACING_OPTIONS, JUSTIFY_CAPABLE_TYPES } from '@/components/guest-website/blocks/UniverseBlocks';
 import { interactiveDivProps } from '@/lib/a11y';
+import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 
 // Background music: writing surface HIDDEN (owner decision, video-sound batch).
 // guestExperienceSettings.backgroundMusic had two sources: 'curated' (the mood
@@ -117,11 +118,8 @@ function loadCatalogFontsOnce() {
   FONT_CATALOG.forEach(font => {
     if (!font.googleFonts || seen.has(font.googleFonts)) return;
     seen.add(font.googleFonts);
-    const href = `https://fonts.googleapis.com/css2?family=${font.googleFonts}&display=swap`;
-    if (document.head.querySelector(`link[href="${href}"]`)) return;
-    const link = document.createElement('link');
-    link.rel = 'stylesheet'; link.href = href;
-    document.head.appendChild(link);
+    // Self-hosted (L1b): the picker's preview faces load from our own origin.
+    loadFontFamilies(familiesFromGoogleSpec(font.googleFonts));
   });
 }
 
@@ -223,11 +221,8 @@ function DesignTab({ details, onChange, universeTheme }) {
     [activeHeadingId, activeBodyId].forEach(id => {
       const gf = CURATED_FONTS[id]?.googleFonts;
       if (!gf) return;
-      const href = `https://fonts.googleapis.com/css2?family=${gf}&display=swap`;
-      if (document.head.querySelector(`link[href="${href}"]`)) return;
-      const link = document.createElement('link');
-      link.rel = 'stylesheet'; link.href = href;
-      document.head.appendChild(link);
+        // Self-hosted (L1b).
+      loadFontFamilies(familiesFromGoogleSpec(gf));
     });
   }, [activeHeadingId, activeBodyId]);
 

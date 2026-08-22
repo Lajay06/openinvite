@@ -100,9 +100,12 @@ export function resolveColors(weddingDetails) {
  * @param {{ googleFonts?: string }} typography
  * @returns {string|null}
  */
-export function googleFontsHref(typography) {
-  if (!typography?.googleFonts) return null;
-  return `https://fonts.googleapis.com/css2?family=${typography.googleFonts}&display=swap`;
+export function googleFontsHref() {
+  // RETIRED (L1b). Fonts are self-hosted via src/lib/selfHostedFonts.js, so
+  // there is no Google stylesheet to build. Kept as a null-returning stub for
+  // one release so any missed caller degrades to "no external stylesheet"
+  // rather than throwing; callers have all been migrated.
+  return null;
 }
 
 /**

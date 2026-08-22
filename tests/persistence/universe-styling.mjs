@@ -186,11 +186,33 @@ export async function runUniverseStyling() {
   console.log('\n  Google Fonts URL construction:\n');
 
   {
+    // RETIRED (L1b). googleFontsHref used to build a fonts.googleapis.com
+    // stylesheet URL. Fonts are now self-hosted via src/lib/selfHostedFonts.js,
+    // so this must return null for EVERY input -- if it ever returns a URL
+    // again, something is injecting a Google stylesheet and every visitor's IP
+    // reaches Google to render type. That is the regression this now guards.
     const href = googleFontsHref({ googleFonts: 'Test+Font:wght@400' });
-    const isValid = href === 'https://fonts.googleapis.com/css2?family=Test+Font:wght@400&display=swap';
-    results.push(isValid
-      ? pass('googleFontsHref — builds a valid CSS2 URL with display=swap', href)
-      : fail('googleFontsHref — builds a valid CSS2 URL with display=swap', 'https://fonts.googleapis.com/css2?family=Test+Font:wght@400&display=swap', href));
+    results.push(href === null
+      ? pass('googleFontsHref — RETIRED: returns null even with a spec (no Google stylesheet)', 'null')
+      : fail('googleFontsHref — RETIRED: returns null even with a spec (no Google stylesheet)', 'null', String(href)));
+  }
+  {
+    // The replacement path must actually cover every family the catalog asks
+    // for. A family missing from the loader would silently render in a
+    // fallback stack -- visible only to someone who knows the universe.
+    const { SELF_HOSTED_FAMILIES, familiesFromGoogleSpec } = await import('../../src/lib/selfHostedFonts.js');
+    const { UNIVERSE_CATALOG } = await import('../../src/lib/universeCatalog.js');
+    const cat = Array.isArray(UNIVERSE_CATALOG) ? UNIVERSE_CATALOG : Object.values(UNIVERSE_CATALOG);
+    const CJK = ['Noto Sans KR', 'Noto Sans SC', 'Zen Kaku Gothic New'];
+    const wanted = new Set();
+    cat.forEach(u => familiesFromGoogleSpec(u.typography?.googleFonts).forEach(f => wanted.add(f)));
+    const missing = [...wanted].filter(f => !CJK.includes(f) && !SELF_HOSTED_FAMILIES.includes(f));
+    results.push(missing.length === 0
+      ? pass('every non-CJK universe family is self-hosted', `${wanted.size - CJK.length} families covered`)
+      : fail('every non-CJK universe family is self-hosted', 'none missing', missing.join(', ')));
+    results.push(CJK.every(f => !SELF_HOSTED_FAMILIES.includes(f))
+      ? pass('CJK families are deliberately absent (they are L1c)', 'absent')
+      : fail('CJK families are deliberately absent (they are L1c)', 'absent', 'present'));
   }
 
   results.push(googleFontsHref({}) === null
