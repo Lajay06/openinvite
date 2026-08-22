@@ -3,29 +3,77 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
-    { "source": "/api/apps/:path*", "destination": "https://base44.app/api/apps/:path*" },
-    { "source": "/((?!api/)(?!\\.well-known/)(?!assets/).*)","destination": "/index.html" }
+    {
+      "source": "/api/apps/:path*",
+      "destination": "https://base44.app/api/apps/:path*"
+    },
+    {
+      "source": "/((?!api/)(?!\\.well-known/)(?!assets/).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" },
-        { "key": "Content-Security-Policy", "value": "frame-ancestors 'none'; img-src 'self' data: blob: https://i.scdn.co https://mosaic.scdn.co https://lineup-images.scdn.co https://*.scdn.co https:" },
-        { "key": "Content-Security-Policy-Report-Only", "value": "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://challenges.cloudflare.com https://*.posthog.com https://*.sentry.io; frame-src https://challenges.cloudflare.com https://www.youtube-nocookie.com https://player.vimeo.com https://open.spotify.com; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'; manifest-src 'self'; report-uri /api/csp-report" },
-        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
-        { "key": "Cross-Origin-Resource-Policy", "value": "same-site" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'none'; img-src 'self' data: blob: https://i.scdn.co https://mosaic.scdn.co https://lineup-images.scdn.co https://*.scdn.co https:"
+        },
+        {
+          "key": "Content-Security-Policy-Report-Only",
+          "value": "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://challenges.cloudflare.com https://*.posthog.com https://*.sentry.io; frame-src https://challenges.cloudflare.com https://www.youtube-nocookie.com https://player.vimeo.com https://open.spotify.com; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'; manifest-src 'self'; report-uri /api/csp-report"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "same-site"
+        }
       ]
     },
     {
       "source": "/.well-known/apple-developer-merchantid-domain-association",
       "headers": [
-        { "key": "Content-Type", "value": "text/plain" }
+        {
+          "key": "Content-Type",
+          "value": "text/plain"
+        }
       ]
     }
   ],
