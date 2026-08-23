@@ -46,7 +46,11 @@ const GEO_MISS = { results: [] };
 const CURRENT = { current_weather: { weathercode: 0, temperature: 21 } };
 
 globalThis.fetch = async (url) => {
-  const isGeo = url.includes('geocoding-api');
+  // The client now calls our own /api/weather proxy (L2) instead of
+  // open-meteo.com directly, so a geocode request is identified by the
+  // proxy's mode parameter. Matching the old upstream host made every
+  // geocode look like a forecast and collapsed 9 of 13 states.
+  const isGeo = url.includes('mode=geocode');
   if (mode === 'throw') throw new Error('network down');
   if (isGeo && mode === 'geothrow') throw new Error('geocoder unreachable');
   if (isGeo) return { ok: true, json: async () => (mode === 'nomatch' ? GEO_MISS : GEO_HIT) };
