@@ -119,8 +119,13 @@ export const JOURNEY_STEPS = [
   },
 ];
 
-export function getJourneyProgress(wedding, counts, { plan = 'ultra' } = {}) {
-  const hasUltra = plan === 'ultra';
+export function getJourneyProgress(wedding, counts, { plan = 'ultra', trialActive = false } = {}) {
+  // Same rule as the sidebar (src/lib/trialStatus.js): an ACTIVE trial has
+  // Ultra, an expired one does not. This read `plan === 'ultra'` alone, which
+  // was the mirror image of the sidebar's bug -- the sidebar handed an expired
+  // account Ultra, while this told a couple mid-trial their Ultra steps were
+  // plan-locked. Both are now the same expression.
+  const hasUltra = plan === 'ultra' || trialActive;
   const byKey = {};
   const steps = JOURNEY_STEPS.map((s) => {
     const done = s.isComplete(wedding, counts);

@@ -16,7 +16,7 @@ import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolv
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'react-hot-toast';
 import { CollaboratorProvider, useCollaboratorContext, permissionKeyForPageName, hasPagePermission } from '@/lib/collaboratorContext';
-import { parseBase44Date } from '@/lib/base44Date';
+import { getTrialStatus } from '@/lib/trialStatus';
 import TopBarSearch from './components/layout/TopBarSearch';
 
 const SIDEBAR_WIDTH = 200;
@@ -419,18 +419,14 @@ function LayoutShell({ children, currentPageName }) {
   // confusing) to show while borrowing someone else's wedding as a collaborator.
   const trialBanner = React.useMemo(() => {
     if (!user || isCollaborating) return null;
-    const plan = user.plan;
-    if (plan === 'pro' || plan === 'ultra') return null; // paid — no banner
-
-    const trialStart = user.trialStartedAt ? parseBase44Date(user.trialStartedAt) : null;
-    const trialStartFallback = user.created_date ? parseBase44Date(user.created_date) : new Date();
-    const start = trialStart || trialStartFallback;
-    const trialEnd = new Date(start.getTime() + 14 * 24 * 60 * 60 * 1000);
-    const daysLeft = Math.max(0, Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)));
-
-    if (daysLeft === 0) return { expired: true, daysLeft: 0 };
-    return { expired: false, daysLeft };
-  }, [user]);
+    // Shared with the access gates (src/lib/trialStatus.js). The maths used to
+    // live here and drive only this banner, while the gates read the plan
+    // string alone -- so the banner could say the trial had ended beside
+    // features that still worked.
+    const { isPaid, trialExpired, daysLeft } = getTrialStatus(user);
+    if (isPaid) return null;
+    return trialExpired ? { expired: true, daysLeft: 0 } : { expired: false, daysLeft };
+  }, [user, isCollaborating]);
 
   // Resolving whether this is a real, accepted collaboration — brief, but
   // avoids a flash of the wrong sidebar/topbar before the real permission

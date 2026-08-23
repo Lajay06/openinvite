@@ -5,6 +5,7 @@ import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/re
 import { loadDashboardSources, formatSourceList } from '@/lib/dashboardSources';
 import NextUp from '@/components/dashboard/NextUp';
 import { getJourneyProgress } from '@/lib/setupJourney';
+import { getTrialStatus } from '@/lib/trialStatus';
 import { tallyAttendees, isAttending } from '@/lib/guestRsvpTally';
 import { resolveAttendees } from '@/lib/attendees';
 import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
@@ -270,13 +271,17 @@ export default function DailyUpdate() {
     if (failed.includes('wedding details') || !weddingRows[0]) {
       setJourney(null);
     } else {
-      let plan = 'free';
-      try { plan = JSON.parse(localStorage.getItem('oi_user') || '{}')?.plan || 'free'; } catch { /* default free */ }
+      // Read the whole stored user, not just the plan string: Ultra access
+      // depends on whether the trial is still ACTIVE, not on plan === 'free'.
+      let storedUser = {};
+      try { storedUser = JSON.parse(localStorage.getItem('oi_user') || '{}'); } catch { /* defaults below */ }
+      const plan = storedUser?.plan || 'free';
+      const { trialActive } = getTrialStatus(storedUser);
       setJourney(getJourneyProgress(weddingRows[0], {
         guestCount: guests.length,
         vendorCount: vendors.length,
         scheduleCount: (data.schedule || []).length,
-      }, { plan }));
+      }, { plan, trialActive }));
     }
 
     const wd = weddingRows[0] || {};

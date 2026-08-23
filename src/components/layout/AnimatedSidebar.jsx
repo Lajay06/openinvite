@@ -4,6 +4,7 @@ import { createPageUrl } from "@/utils";
 import { useAuth } from "@/lib/AuthContext";
 import { hasPagePermission } from "@/lib/collaboratorContext";
 import { COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS } from "@/lib/collaboratorPageMap";
+import { canAccessUltra as canAccessUltraFor } from "@/lib/trialStatus";
 import { preloadPageChunk } from "@/pagePreload";
 
 /**
@@ -247,8 +248,12 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  // Ultra access follows the TRIAL, not the plan string. `plan === 'free'`
+  // covers both an active trial and a long-expired one; gating on it alone
+  // meant an expired account kept Ultra while a paying Pro customer had less.
+  // See src/lib/trialStatus.js.
   const _plan = user?.plan || 'free';
-  const canAccessUltra = _plan === 'ultra' || _plan === 'free';
+  const canAccessUltra = canAccessUltraFor(user);
   const isProPlan = _plan === 'pro';
 
   // Collaborator sessions see only the pages they were granted, built
@@ -436,8 +441,10 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  // Same rule as the desktop nav above -- one shared source so the two can
+  // never drift apart.
   const _planM = user?.plan || 'free';
-  const canAccessUltraMobile = _planM === 'ultra' || _planM === 'free';
+  const canAccessUltraMobile = canAccessUltraFor(user);
   const isProPlanMobile = _planM === 'pro';
 
   const isCollaboratorMobile = !!collaboratorPermissions;
