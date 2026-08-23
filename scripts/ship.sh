@@ -25,14 +25,26 @@ echo ""
 echo "Branch: ${BRANCH}"
 echo ""
 
-# ── 1. Build check ────────────────────────────────────────────
-echo "→ Running npm run build…"
-if ! npm run build --silent; then
+# ── 1. Full verify ────────────────────────────────────────────
+# Gates on `npm run verify`, NOT `npm run build` alone.
+#
+# Why: this script used to push whenever the build compiled. It shipped a PR
+# with a FAILING test:ci — the suite was red, the build was green, and the
+# script pushed anyway. That is the green-suite-over-exit-code failure turned
+# into tooling: the gate reported on the wrong signal, so the human had to
+# notice. A ship script must refuse exactly when CI would.
+#
+# `npm run verify` runs every step ci.yml runs (build, lint, and the whole
+# test suite), reporting diff-based steps as SKIPPED rather than PASS. It is
+# the local mirror of pr:green.
+echo "→ Running npm run verify (build + lint + full test suite)…"
+if ! npm run verify; then
   echo ""
-  echo "✗ Build failed. Fix errors before shipping."
+  echo "✗ verify failed. Fix it before shipping — CI will fail on the same thing."
+  echo "  (This gate is deliberately the full suite: a green build is not a green PR.)"
   exit 1
 fi
-echo "✓ Build passed."
+echo "✓ verify passed."
 echo ""
 
 # ── 2. Stage and commit ───────────────────────────────────────
