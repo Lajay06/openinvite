@@ -1,5 +1,6 @@
 import { createClient } from '@base44/sdk';
 import { appParams } from '@/lib/app-params';
+import { guardEntityWrites } from '@/lib/trialWriteGuard';
 
 const { token, functionsVersion } = appParams;
 const APP_ID = import.meta.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -10,7 +11,7 @@ const APP_ID = import.meta.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 // for localhost by base44).
 const serverUrl = import.meta.env.PROD ? '' : undefined;
 
-export const base44 = createClient({
+const client = createClient({
   appId: APP_ID,
   token,
   functionsVersion,
@@ -18,3 +19,13 @@ export const base44 = createClient({
   appBaseUrl: 'https://base44.app',
   serverUrl,
 });
+
+// One guard for every direct entity write in the app (~174 call sites). Reads
+// pass through untouched, so exports keep working for an expired couple.
+//
+// This is a UX boundary, NOT enforcement -- it runs in the browser. Real
+// enforcement is the server checks in api/_lib/trialGuard.js, and the rest
+// arrives with the hosted-functions rebuild. See src/lib/trialWriteGuard.js.
+client.entities = guardEntityWrites(client.entities);
+
+export const base44 = client;
