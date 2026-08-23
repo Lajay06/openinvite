@@ -65,6 +65,7 @@ import { runIndexingPosture } from '../tests/persistence/indexing-posture.mjs';
 import { runWeatherProxy } from '../tests/persistence/weather-proxy.mjs';
 import { runGuestCsvExport } from '../tests/persistence/guest-csv-export.mjs';
 import { runBudgetPlanExport } from '../tests/persistence/budget-plan-export.mjs';
+import { runNotesExport } from '../tests/persistence/notes-export.mjs';
 import { runIcsExport } from '../tests/persistence/ics-export.mjs';
 import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
 import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
@@ -141,6 +142,7 @@ async function run() {
   await runModule('runWeatherProxy', () => runWeatherProxy());
   await runModule('runGuestCsvExport', () => runGuestCsvExport());
   await runModule('runBudgetPlanExport', () => runBudgetPlanExport());
+  await runModule('runNotesExport', () => runNotesExport());
   await runModule('runIcsExport', () => runIcsExport());
   await runModule('runGiftCheckout', () => runGiftCheckout());
   await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());
