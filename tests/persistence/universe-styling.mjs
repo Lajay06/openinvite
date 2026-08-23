@@ -210,9 +210,18 @@ export async function runUniverseStyling() {
     results.push(missing.length === 0
       ? pass('every non-CJK universe family is self-hosted', `${wanted.size - CJK.length} families covered`)
       : fail('every non-CJK universe family is self-hosted', 'none missing', missing.join(', ')));
-    results.push(CJK.every(f => !SELF_HOSTED_FAMILIES.includes(f))
-      ? pass('CJK families are deliberately absent (they are L1c)', 'absent')
-      : fail('CJK families are deliberately absent (they are L1c)', 'absent', 'present'));
+    // L1c: the CJK families are now self-hosted too, sliced. This assertion
+    // was the inverse until L1c landed -- it pinned "absent until ruled", and
+    // flipped when the ruling shipped.
+    results.push(CJK.every(f => SELF_HOSTED_FAMILIES.includes(f))
+      ? pass('CJK families are self-hosted too (L1c, sliced)', CJK.join(', '))
+      : fail('CJK families are self-hosted too (L1c, sliced)', 'all present',
+             CJK.filter(f => !SELF_HOSTED_FAMILIES.includes(f)).join(', ') || 'none missing'));
+    // Every family the catalog names, with no CJK carve-out any more.
+    const allMissing = [...wanted].filter(f => !SELF_HOSTED_FAMILIES.includes(f));
+    results.push(allMissing.length === 0
+      ? pass('EVERY universe family is self-hosted, CJK included', `${wanted.size} families`)
+      : fail('EVERY universe family is self-hosted, CJK included', 'none missing', allMissing.join(', ')));
   }
 
   results.push(googleFontsHref({}) === null

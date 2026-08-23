@@ -4,9 +4,35 @@ import { defineConfig } from 'vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 // https://vite.dev/config/
+/**
+ * Strips the legacy .woff fallback from every @fontsource stylesheet.
+ *
+ * @fontsource ships each face as `url(x.woff2) format('woff2'), url(x.woff)
+ * format('woff')`. The .woff half was 54% of the font weight on disk (23.4 MB
+ * at L1b) and is dead payload: woff2 has been supported by every browser this
+ * app targets since 2016, so the fallback can never be selected by a client we
+ * serve. Removing the reference also stops the files being emitted at all,
+ * because nothing points at them any more.
+ *
+ * Applied at transform time rather than by hand-editing node_modules, so it
+ * survives reinstalls and covers every family automatically.
+ */
+function dropLegacyWoff() {
+  return {
+    name: 'openinvite:drop-legacy-woff',
+    enforce: 'pre',
+    transform(code, id) {
+      if (!id.includes('@fontsource') || !id.split('?')[0].endsWith('.css')) return null;
+      const out = code.replace(/,\s*url\([^)]*\.woff\)\s*format\(['"]woff['"]\)/g, '');
+      return out === code ? null : { code: out, map: null };
+    },
+  };
+}
+
 export default defineConfig({
   logLevel: 'error', // Suppress warnings, only show errors
   plugins: [
+    dropLegacyWoff(),
     base44({
       // Support for legacy code that imports the base44 SDK with @/integrations, @/entities, etc.
       // can be removed if the code has been updated to use the new SDK imports from @base44/sdk
