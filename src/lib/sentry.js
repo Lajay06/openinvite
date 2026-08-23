@@ -9,6 +9,7 @@
  */
 
 import * as Sentry from '@sentry/react';
+import { isGuestRoute } from './isGuestRoute';
 
 const dsn = import.meta.env.VITE_SENTRY_DSN;
 
@@ -24,12 +25,26 @@ if (dsn) {
       Sentry.replayIntegration({
         maskAllText: true,
         blockAllMedia: true,
+        // Pinned rather than inherited, for the same reason the two above
+        // are: the SDK masks inputs by default TODAY, and this file already
+        // says relying on that is upgrade-fragile. An unmasked input in a
+        // replay is a guest's RSVP answers or a couple's guest list.
+        maskAllInputs: true,
       }),
     ],
     // Performance: capture 20% of transactions
     tracesSampleRate: 0.2,
     // Session Replay: 10% of sessions, 100% when an error occurs
-    replaysSessionSampleRate: 0.1,
+    // Session Replay. 10% of sessions on couple-facing pages; ZERO on guest
+    // pages. Recording one in ten guests browsing a couple's wedding site --
+    // people who never signed up for anything -- is not proportionate, and a
+    // replay carries the DOM: the couple's names, date, venue, and a guest's
+    // own RSVP form state.
+    //
+    // Error-triggered replay stays at 100% everywhere, guest routes included:
+    // a guest hitting a broken RSVP form is exactly what we need to diagnose,
+    // it is proportionate, and it is disclosable.
+    replaysSessionSampleRate: isGuestRoute() ? 0 : 0.1,
     replaysOnErrorSampleRate: 1.0,
     sendDefaultPii: false,
     // Don't send errors in local dev even if DSN is somehow present

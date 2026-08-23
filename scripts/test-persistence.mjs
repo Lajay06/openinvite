@@ -70,6 +70,7 @@ import { runGuestCsvExport } from '../tests/persistence/guest-csv-export.mjs';
 import { runBudgetPlanExport } from '../tests/persistence/budget-plan-export.mjs';
 import { runNotesExport } from '../tests/persistence/notes-export.mjs';
 import { runPhotoExport } from '../tests/persistence/photo-export.mjs';
+import { runGuestTelemetry } from '../tests/persistence/guest-telemetry.mjs';
 import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 import { runNotifications } from '../tests/persistence/notifications.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
@@ -181,6 +182,7 @@ async function run() {
   await runModule('runBudgetPlanExport', () => runBudgetPlanExport());
   await runModule('runNotesExport', () => runNotesExport());
   await runModule('runPhotoExport', () => runPhotoExport());
+  await runModule('runGuestTelemetry', () => runGuestTelemetry());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
     // itself, or a bug in runModule) — this is the actual safety net the
