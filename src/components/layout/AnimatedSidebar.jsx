@@ -476,7 +476,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
       {/* Logo */}
       <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(10,10,10,0.12)", flexShrink: 0 }}>
         <img
-          src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
+          src="/openinvite-logo.png"
           alt="Openinvite"
           style={{ height: 20, width: "auto", objectFit: "contain", objectPosition: "left", display: "block" }}
         />

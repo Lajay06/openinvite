@@ -18,7 +18,7 @@ export default function GiftPurchaseSuccess() {
     >
       <div style={{ width: "100%", maxWidth: 480, textAlign: "center" }}>
         <img
-          src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
+          src="/openinvite-logo.png"
           alt="Openinvite"
           style={{ height: 20, width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)", marginBottom: 64 }}
         />

@@ -25,7 +25,7 @@ export default function PublicFooter() {
                   width: 41,
                   height: 48,
                   flexShrink: 0,
-                  backgroundImage: "url(https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png)",
+                  backgroundImage: "url(/openinvite-logo.png)",
                   backgroundSize: "208px 48px",
                   backgroundPosition: "0 0",
                   backgroundRepeat: "no-repeat",

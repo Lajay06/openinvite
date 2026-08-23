@@ -119,7 +119,7 @@ export default function AuthLayout({ title, subtitle, footer, children, showNav 
             <div className="w-full max-w-md my-auto">
               <div className="text-center mb-3">
                 <img
-                  src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
+                  src="/openinvite-logo.png"
                   alt="Openinvite"
                   className="h-6 w-auto mx-auto mb-4"
                   style={{ filter: "brightness(0)" }}

@@ -41,7 +41,9 @@ export function CurrencyProvider({ children }) {
       const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
       if (cached && Date.now() - cached.ts < TTL) { setRates(cached.rates); return; }
     } catch {}
-    fetch('https://open.er-api.com/v6/latest/USD')
+    // Server-proxied (L3): see api/rates.js. Called direct from the browser
+    // this leaked every visitor's IP to a third party, guests included.
+    fetch('/api/rates?base=USD')
       .then(r => r.json())
       .then(data => {
         if (data.result === 'success') {

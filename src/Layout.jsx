@@ -189,7 +189,7 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, overflow: 'hidden' }}>
         {/* Logo */}
         <img
-          src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
+          src="/openinvite-logo.png"
           alt="Openinvite"
           onClick={() => navigate('/DailyUpdate')}
           style={{ height: 18, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', cursor: 'pointer', flexShrink: 0 }}
@@ -584,7 +584,7 @@ function LayoutShell({ children, currentPageName }) {
         }}
       >
         <img
-          src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
+          src="/openinvite-logo.png"
           alt="Openinvite"
           style={{ height: 20, width: 'auto', objectFit: 'contain' }}
         />

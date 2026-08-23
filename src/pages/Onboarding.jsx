@@ -56,7 +56,7 @@ const PATH_A_STEPS = [
   'pathA-inspiration',
 ];
 
-const LOGO_URL = 'https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png';
+const LOGO_URL = '/openinvite-logo.png';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 // Core steps counted in the progress indicator (excludes welcome, pathA, and completion)
