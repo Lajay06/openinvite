@@ -29,8 +29,12 @@ export async function runBudgetPlanExport() {
 
   check('a plan export exists', /const exportBudgetPlan = \(\) =>/.test(CODE), 'exportBudgetPlan');
   check('it is a DIFFERENT file from the expenses CSV',
-    /wedding-budget-plan\.csv/.test(CODE) && /wedding-budget\.csv/.test(CODE),
-    'wedding-budget-plan.csv vs wedding-budget.csv');
+    /wedding-budget-plan\.csv/.test(CODE) && /wedding-expenses\.csv/.test(CODE),
+    'wedding-budget-plan.csv vs wedding-expenses.csv');
+  // The rename was deliberate and pre-launch. If the old name comes back, the
+  // two downloads become indistinguishable again.
+  check('  the expenses export is no longer called "budget"',
+    !/'wedding-budget\.csv'/.test(CODE), 'wedding-budget.csv gone');
   check('  its headers are distinct from the expenses headers',
     /\['Plan item', 'Planned amount'\]/.test(CODE) && /'Category', 'Item Name'/.test(CODE),
     "Plan item/Planned amount vs Category/Item Name");

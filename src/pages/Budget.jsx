@@ -424,9 +424,12 @@ export default function BudgetPage() {
     toast.success('Plan exported');
   };
 
-  // ── Store B: the EXPENSES ledger (unchanged filename: couples may have
-  // sheets built on wedding-budget.csv). Its headers already differ from
-  // the plan's entirely.
+  // ── Store B: the EXPENSES ledger -> wedding-expenses.csv.
+  // Renamed from wedding-budget.csv deliberately pre-launch: once the plan
+  // export existed, "budget" no longer distinguished the two files, and a
+  // couple with both in a downloads folder could not tell which was which.
+  // Safe now, breaking later -- after real couples build sheets on the old
+  // name it can never be changed.
   const exportBudget = () => {
     const csvContent = [
       ['Category', 'Item Name', 'Vendor', 'Budgeted Amount', 'Actual Amount', 'Paid', 'Payment Date', 'Notes'].join(','),
@@ -439,7 +442,7 @@ export default function BudgetPage() {
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = url; link.download = 'wedding-budget.csv'; link.click();
+    link.href = url; link.download = 'wedding-expenses.csv'; link.click();
     URL.revokeObjectURL(url);
     toast.success('Budget exported');
   };
