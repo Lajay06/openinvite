@@ -53,6 +53,15 @@ export async function runGuestTelemetry() {
     /tracesSampleRate: isGuestRoute\(\) \? 0 : 0\.2/.test(SENTRY), '0 on /w/, 0.2 elsewhere');
   check('  dashboard tracing is unchanged at 0.2', /: 0\.2/.test(SENTRY), '0.2 retained');
 
+  // session envelopes: the last thing a plain guest visit emitted
+  check('BrowserSession is removed on guest routes',
+    /defaults\.filter\(i => !\(isGuestRoute\(\) && i\.name === 'BrowserSession'\)\)/.test(SENTRY),
+    'filtered out of the defaults');
+  check('  integrations use the CALLBACK form (an array merges with defaults)',
+    /integrations: \(defaults\) => \[/.test(SENTRY), 'callback form');
+  check('  the dashboard keeps session tracking',
+    /isGuestRoute\(\) && i\.name === 'BrowserSession'/.test(SENTRY), 'gated, not global');
+
   // masking, pinned not inherited
   for (const opt of ['maskAllText', 'blockAllMedia', 'maskAllInputs']) {
     check(`  ${opt} is pinned explicitly`, new RegExp(`${opt}: true`).test(SENTRY), 'true');

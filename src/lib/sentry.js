@@ -16,7 +16,16 @@ const dsn = import.meta.env.VITE_SENTRY_DSN;
 if (dsn) {
   Sentry.init({
     dsn,
-    integrations: [
+    // Callback form, not an array: an array MERGES with the SDK defaults, and
+    // BrowserSession is a default. Removing it is the only way to stop the
+    // session envelopes -- three ~510 B pings a plain guest visit sent even
+    // with analytics, tracing and replay all off. They carry no page content,
+    // but the trust page's sentence has to survive devtools rather than
+    // survive interpretation, so a guest route emits literally nothing unless
+    // something breaks. Error delivery is untouched: BrowserSession reports
+    // session health only, it is not on the error path.
+    integrations: (defaults) => [
+      ...defaults.filter(i => !(isGuestRoute() && i.name === 'BrowserSession')),
       Sentry.browserTracingIntegration(),
       // Explicit rather than relying on SDK defaults (which mask/block by
       // default today, but that's an upgrade-fragile assumption) — the

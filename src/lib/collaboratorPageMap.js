@@ -102,10 +102,18 @@ export const COLLABORATOR_PAGE_MAP = {
       'couple1Name', 'couple2Name', 'weddingDate', 'guestType', 'guestCount',
     ],
   },
-  'Notes': {
-    pageName: 'Notes', route: '/Notes', navLabel: 'Notes', navSection: 'Planning', icon: 'StickyNote',
-    entities: ['Task'], notInOwnerNav: true,
-  },
+  // 'Notes' RETIRED. It routed to Notes.jsx, which read the Task entity --
+  // zero rows across every account, ever -- while the linked "To do" page
+  // (TodoList.jsx, the Note entity with the kanban) is the real surface. Two
+  // routes both titled "To do list", one of them permanently empty.
+  //
+  // Removing the key removes the permission from CollaborateModal and the
+  // collaborator nav. Stored permissions that still name it are inert: both
+  // consumers iterate COLLABORATOR_PERMISSION_KEYS (derived from this map)
+  // and look it up here, so an orphaned stored key is never dereferenced.
+  // Checked before removal -- neither existing collaborator had it granted,
+  // and both keep 10+ other keys, so nobody is left with zero permissions
+  // (which WOULD crash CollaboratorAccept's landing-route lookup).
 };
 
 /** Every permission key CollaborateModal.jsx should offer — derived, not hand-kept in sync. */
