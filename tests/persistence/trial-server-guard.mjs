@@ -29,6 +29,14 @@ function mockRes() {
   return r;
 }
 
+// my-wedding-details returns 500 "Server not configured" when
+// BASE44_ADMIN_KEY is absent, BEFORE it reaches the trial guard -- correct
+// behaviour (a misconfigured server is a 500 regardless of trial state), but
+// it means the credential-free CI run never exercised the guard while a local
+// run with the key set did. Caught by CI, not locally. A placeholder value is
+// enough: nothing here makes a real Base44 call.
+process.env.BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY || 'test-placeholder-not-a-real-key';
+
 /** Stubs the User/me lookup verifyBase44User performs, and nothing else. */
 async function callHandler(modPath, user, method) {
   const realFetch = globalThis.fetch;
