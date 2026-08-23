@@ -69,6 +69,7 @@ import { runNotesExport } from '../tests/persistence/notes-export.mjs';
 import { runPhotoExport } from '../tests/persistence/photo-export.mjs';
 import { runGuestTelemetry } from '../tests/persistence/guest-telemetry.mjs';
 import { runStripImageGps } from '../tests/persistence/strip-image-gps.mjs';
+import { runTrialStatus } from '../tests/persistence/trial-status.mjs';
 import { runIcsExport } from '../tests/persistence/ics-export.mjs';
 import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
 import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
@@ -149,6 +150,7 @@ async function run() {
   await runModule('runPhotoExport', () => runPhotoExport());
   await runModule('runGuestTelemetry', () => runGuestTelemetry());
   await runModule('runStripImageGps', () => runStripImageGps());
+  await runModule('runTrialStatus', () => runTrialStatus());
   await runModule('runIcsExport', () => runIcsExport());
   await runModule('runGiftCheckout', () => runGiftCheckout());
   await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());
