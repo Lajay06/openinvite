@@ -1,15 +1,23 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { getMyRecords } from '@/lib/resolveMyWedding';
+import { getMyRecords, getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { collectPhotoItems, buildManifestCsv, ZIP_BYTE_LIMIT } from '@/lib/photoExport';
 import { UploadFile } from '@/integrations/Core';
 import { validateUploadFile } from '@/lib/uploadValidation';
-import { Plus, Search, Upload, Loader2 } from 'lucide-react';
+import { Plus, Search, Upload, Loader2, Download } from 'lucide-react';
 import MoodboardGrid from '../components/moodboard/MoodboardGrid';
 import AddItemModal from '../components/moodboard/AddItemModal';
 import InspirationSearch from '../components/moodboard/InspirationSearch';
 import BoardSelector from '../components/moodboard/BoardSelector';
 import toast from 'react-hot-toast';
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = filename; link.click();
+  URL.revokeObjectURL(url);
+}
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
@@ -159,6 +167,70 @@ export default function MoodboardPage() {
     items.forEach(uploadOne);
   };
 
+  // ── Photo export (E4) ───────────────────────────────────────────────
+  // Exports the UNION of photo-bearing surfaces -- moodboard, the photo
+  // gallery, and the cover photo -- so it is written once and stays true as
+  // surfaces fill. It ships BYTES, not a link list: every photo URL belongs
+  // to us (media.base44.com for uploads, our Cloudinary for curated images),
+  // so a manifest of links stops resolving the moment the hosting does.
+  const [exporting, setExporting] = useState(false);
+  const exportPhotos = async () => {
+    setExporting(true);
+    const tid = toast.loading('Collecting your photos…');
+    try {
+      const [photos, wd] = await Promise.all([
+        getMyRecords('Photo', '-created_date').catch(() => []),
+        getMyWeddingDetails().catch(() => null),
+      ]);
+      const list = collectPhotoItems({ photos, moodboard: items, coverPhoto: wd?.coverPhoto });
+      if (list.length === 0) { toast.error('No photos to export yet', { id: tid }); return; }
+
+      const manifest = buildManifestCsv(list);
+      // Measure BEFORE downloading: originals are full-resolution, and a large
+      // set would exhaust the tab partway through with no catchable error.
+      const sizes = await Promise.all(list.map(async (i) => {
+        try { const r = await fetch(i.url, { method: 'HEAD' }); return Number(r.headers.get('content-length') || 0); }
+        catch { return 0; }
+      }));
+      const total = sizes.reduce((a, b) => a + b, 0);
+
+      if (total > ZIP_BYTE_LIMIT) {
+        // Honest degradation: say what happened, then give them what fits.
+        downloadBlob(new Blob([manifest], { type: 'text/csv' }), 'wedding-photos-list.csv');
+        toast.success(
+          `Your photos total ${(total / 1024 / 1024).toFixed(0)} MB, too large to zip in the browser. `
+          + 'Downloaded the list with every original link instead.',
+          { id: tid, duration: 9000 },
+        );
+        return;
+      }
+
+      const { default: JSZip } = await import('jszip');
+      const zip = new JSZip();
+      zip.file('photos.csv', manifest);
+      let failed = 0;
+      for (const item of list) {
+        try {
+          const res = await fetch(item.url);
+          if (!res.ok) { failed++; continue; }
+          zip.file(item.filename, await res.blob());
+        } catch { failed++; }
+      }
+      downloadBlob(await zip.generateAsync({ type: 'blob' }), 'wedding-photos.zip');
+      toast.success(
+        failed === 0
+          ? `Exported ${list.length} photo${list.length === 1 ? '' : 's'}`
+          : `Exported ${list.length - failed} of ${list.length}; ${failed} could not be fetched (still listed in photos.csv)`,
+        { id: tid },
+      );
+    } catch {
+      toast.error('Export failed — please try again', { id: tid });
+    } finally {
+      setExporting(false);
+    }
+  };
+
+
   const retryUpload = useCallback((id) => {
     setUploadQueue(q => {
       const item = q.find(i => i.id === id);
@@ -242,6 +314,15 @@ export default function MoodboardPage() {
             >
               {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
               {uploading ? 'Uploading…' : 'Upload'}
+            </button>
+            <button
+              onClick={exportPhotos}
+              disabled={exporting}
+              className="btn-editorial-secondary"
+              style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: exporting ? 0.5 : 1 }}
+            >
+              {exporting ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+              {exporting ? 'Exporting…' : 'Export photos'}
             </button>
             <button onClick={() => setShowAddModal(true)} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
               <Plus size={12} />Add inspiration
