@@ -53,21 +53,7 @@ function buildCollaboratorNav(permissions) {
   }
   return { topLevel, sections: [...sections.entries()].map(([label, items]) => ({ label, items })) };
 }
-import {
-  LayoutDashboard, Calendar, ListTodo,
-  Users, UserCheck, LayoutGrid, MessageCircle,
-  Wallet, Gift, Package,
-  Palette, Music2, Image, FileText, Camera,
-  Store, ShoppingBag,
-  Clock, Heart, Radio, UtensilsCrossed,
-  Plane, Hotel, Car, Phone, Globe,
-  UserPlus, LogOut, HelpCircle, Lightbulb, CreditCard,
-  Sparkles,
-  BarChart2,
-  MapPin,
-  ScrollText,
-  Send, StickyNote,
-} from "lucide-react";
+import { BarChart2, Calendar, Camera, Car, Clock, CreditCard, FileText, Gift, Globe, Heart, HelpCircle, Hotel, Image, ImagePlus, LayoutDashboard, LayoutGrid, Lightbulb, ListTodo, LogOut, MapPin, MessageCircle, Music2, Package, Palette, Phone, Plane, Radio, ScrollText, Send, ShoppingBag, Sparkles, StickyNote, Store, UserCheck, UserPlus, Users, UtensilsCrossed, Wallet } from 'lucide-react';
 
 // Maps collaboratorPageMap.js's icon name strings to the actual lucide
 // components — kept out of that shared file so it stays framework-neutral
@@ -105,6 +91,7 @@ export const NAV_SECTIONS = [
     label: "Style & experience",
     items: [
       { icon: Image,           label: "Moodboard",       url: createPageUrl("Moodboard") },
+      { icon: ImagePlus,       label: "Photos",          url: createPageUrl("PhotoGallery") },
       { icon: Palette,         label: "Styling",         url: createPageUrl("Styling") },
       { icon: Sparkles,        label: "Beauty",          url: createPageUrl("Beauty") },
       { icon: UtensilsCrossed, label: "Food & beverage", url: createPageUrl("FoodBeverage") },
