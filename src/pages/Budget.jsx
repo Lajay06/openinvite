@@ -387,6 +387,46 @@ export default function BudgetPage() {
     return matchesSearch && item.category === activeCategory;
   });
 
+  // ── Store A: the PLAN ────────────────────────────────────────────────
+  // Deliberately a SEPARATE file from the expenses CSV below. #501 separated
+  // these two stores in the UI ("Committed" vs "Total wedding budget"); a
+  // single download called "budget" would re-merge them in the one place the
+  // couple looks later. Filename and headers both say plan.
+  //
+  // savedBudget arrives from getMyWeddingDetails() -> /api/my-wedding-details,
+  // which decrypts `budget` server-side. WeddingDetails.budget is AES
+  // ciphertext at rest, so reading the raw column would export an unreadable
+  // base64 string.
+  const exportBudgetPlan = () => {
+    if (!savedBudget) { toast.error('No saved plan to export yet'); return; }
+    const total = parseFloat(savedBudget.total) || 0;
+    // Same explicit-zero reader as the planner: a plan saved before the
+    // 8 -> 13 category widening has no key for the newer five, and an
+    // undefined would export as "NaN".
+    const value = (key) => {
+      const stored = savedBudget.categories?.[key];
+      if (stored === undefined || stored === null || stored === '') return 0;
+      return parseFloat(stored) || 0;
+    };
+    const allocated = BUDGET_CATEGORIES.reduce((sum, c) => sum + value(c.key), 0);
+    const rows = [
+      ['Plan item', 'Planned amount'].join(','),
+      ['Total wedding budget', total].map(f => `"${f}"`).join(','),
+      ...BUDGET_CATEGORIES.map(c => [c.label, value(c.key)].map(f => `"${f}"`).join(',')),
+      ['Allocated to categories', allocated].map(f => `"${f}"`).join(','),
+      ['Unallocated', total - allocated].map(f => `"${f}"`).join(','),
+    ];
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = 'wedding-budget-plan.csv'; link.click();
+    URL.revokeObjectURL(url);
+    toast.success('Plan exported');
+  };
+
+  // ── Store B: the EXPENSES ledger (unchanged filename: couples may have
+  // sheets built on wedding-budget.csv). Its headers already differ from
+  // the plan's entirely.
   const exportBudget = () => {
     const csvContent = [
       ['Category', 'Item Name', 'Vendor', 'Budgeted Amount', 'Actual Amount', 'Paid', 'Payment Date', 'Notes'].join(','),
@@ -469,6 +509,17 @@ export default function BudgetPage() {
             style={{ opacity: budgetItems.length === 0 ? 0.4 : 1 }}
           >
             Export CSV
+          </button>
+          {/* Store A, the plan. Its own button because it is its own file:
+              a couple who exported "budget" and got only expenses would
+              reasonably think the plan had not saved. Label names the store. */}
+          <button
+            onClick={exportBudgetPlan}
+            disabled={!savedBudget}
+            className="btn-editorial-secondary"
+            style={{ opacity: !savedBudget ? 0.4 : 1 }}
+          >
+            Export plan
           </button>
           {!readOnly && (
             <button
