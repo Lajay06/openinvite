@@ -10,11 +10,23 @@
  */
 
 import posthog from 'posthog-js';
+import { isGuestRoute } from './isGuestRoute';
 
 const key  = import.meta.env.VITE_POSTHOG_KEY;
 const host = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
 
-if (key) {
+// GUEST ROUTES GET NO ANALYTICS AT ALL.
+//
+// Not "no events" -- no init. Before this, a guest visiting a couple's
+// wedding site loaded PostHog's config plus surveys.js,
+// dead-clicks-autocapture.js and web-vitals.js, which meant their IP reached
+// PostHog and the machinery for behavioural capture was present and idle. No
+// events were being sent, but presence itself is the exposure: capture was a
+// configuration change away, and "we hold less about your guests by design"
+// has to be true of telemetry too.
+const analyticsEnabled = !!key && !isGuestRoute();
+
+if (analyticsEnabled) {
   posthog.init(key, {
     api_host: host,
     person_profiles: 'identified_only', // only create profiles for identified users
@@ -30,7 +42,7 @@ if (key) {
  * @param {Record<string, unknown>} [properties]
  */
 export function identify(userId, properties = {}) {
-  if (!key) return;
+  if (!analyticsEnabled) return;
   posthog.identify(userId, properties);
 }
 
@@ -40,7 +52,7 @@ export function identify(userId, properties = {}) {
  * @param {Record<string, unknown>} [properties]
  */
 export function track(event, properties = {}) {
-  if (!key) return;
+  if (!analyticsEnabled) return;
   posthog.capture(event, properties);
 }
 
@@ -48,6 +60,6 @@ export function track(event, properties = {}) {
  * Reset the PostHog identity — call on logout.
  */
 export function reset() {
-  if (!key) return;
+  if (!analyticsEnabled) return;
   posthog.reset();
 }
