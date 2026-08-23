@@ -756,3 +756,34 @@ conclusion from its surface, and did not follow it to the mechanism. Code
 reading correct over the system running; a green suite over its exit code; a
 probe's data shape over the call graph; and now a run's status over its
 duration. Each artefact was true in isolation and wrong about the system.
+
+---
+
+## Trial enforcement before hosted functions is deliberately PARTIAL (2026-08-24)
+
+Not a gap we discovered late — a boundary we chose, with the reason recorded.
+
+**Layer 1, real enforcement (TT-2).** `api/my-guests`, `api/my-wedding-details`
+and `api/my-guest-links` reject mutating methods from expired trials with
+`403 TRIAL_EXPIRED`. Expiry is computed server-side from the fetched User
+record via the same pure module the browser uses, never trusted from the
+request. Verified live: an expired account's PUT is refused, a paid account's
+passes the guard.
+
+**Layer 2, a UX boundary (TT-3).** The ~174 direct `base44.entities.*` writes
+go straight from the browser to Base44 and never touch our endpoints, so no
+server check can see them. They are gated at the SDK chokepoint instead: one
+guard where the client is constructed. It runs in the browser, so **a
+determined person with the console can step around it.**
+
+**Layer 3, later.** Full enforcement arrives with the hosted-functions rebuild,
+which moves those writes behind endpoints. The SDK guard is the seam that work
+will harden.
+
+**The accepted exposure:** at beta scale, someone bypassing the UX layer can
+edit their own wedding after their trial ends. They cannot reach anyone else's
+data — that is ownership-scoped and unaffected. Documented, not discovered.
+
+**Reads are never gated, at any layer.** Every export is a pure read, and
+"viewing and exporting stays free, forever" (#507) depends on that. Proven from
+an expired account: all five exports download at both widths.

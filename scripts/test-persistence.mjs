@@ -74,6 +74,7 @@ import { runGuestTelemetry } from '../tests/persistence/guest-telemetry.mjs';
 import { runStripImageGps } from '../tests/persistence/strip-image-gps.mjs';
 import { runTrialStatus } from '../tests/persistence/trial-status.mjs';
 import { runTrialServerGuard } from '../tests/persistence/trial-server-guard.mjs';
+import { runTrialClientLock } from '../tests/persistence/trial-client-lock.mjs';
 import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 import { runNotifications } from '../tests/persistence/notifications.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
@@ -189,6 +190,7 @@ async function run() {
   await runModule('runStripImageGps', () => runStripImageGps());
   await runModule('runTrialStatus', () => runTrialStatus());
   await runModule('runTrialServerGuard', () => runTrialServerGuard());
+  await runModule('runTrialClientLock', () => runTrialClientLock());
   } finally {
     // Always runs, even if something above threw uncaught (runWeddingDetails
     // itself, or a bug in runModule) — this is the actual safety net the

@@ -504,17 +504,25 @@ function LayoutShell({ children, currentPageName }) {
         />
       )}
 
-      {/* ── Trial banner (desktop only, below top bar) ───────── */}
+      {/* ── Trial banner: EVERY width, below the top bar ─────────
+          It was `hidden lg:flex` -- desktop only -- which was survivable
+          while the banner was merely informational. It is now the only
+          explanation an expired couple gets for why their edits stop
+          saving, and most couples plan on a phone. Caught by the
+          expired-state render pass at 390. */}
       {trialBanner && (
         <div
-          className="hidden lg:flex"
+          className="flex"
           style={{
             position: 'fixed',
             top: TOP_BAR_H,
             left: 0,
             right: 0,
-            height: 36,
+            minHeight: 36,
             zIndex: 49,
+            padding: '6px 12px',
+            flexWrap: 'wrap',
+            textAlign: 'center',
             background: trialBanner.expired ? '#E03553' : 'rgba(10,10,10,0.93)',
             backdropFilter: 'blur(8px)',
             alignItems: 'center',
@@ -525,7 +533,11 @@ function LayoutShell({ children, currentPageName }) {
         >
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontFamily: PJS }}>
             {trialBanner.expired
-              ? 'Your free trial has ended.'
+              // Canon: no data-hostage language. The couple's work is not
+              // withheld or ransomed -- it is theirs, readable and exportable.
+              // What ends is the ability to keep CHANGING it. "Unlock your
+              // data" would be both hostile and untrue.
+              ? 'Your free trial has ended. Your work is safe and yours — upgrade to keep planning.'
               : `14-day free trial — ${trialBanner.daysLeft} day${trialBanner.daysLeft !== 1 ? 's' : ''} remaining.`}
           </span>
           <a
