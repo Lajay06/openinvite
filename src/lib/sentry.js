@@ -32,8 +32,15 @@ if (dsn) {
         maskAllInputs: true,
       }),
     ],
-    // Performance: capture 20% of transactions
-    tracesSampleRate: 0.2,
+    // Performance tracing. ZERO on guest routes, same shape and same reason
+    // as replay below: a plain guest visit was emitting ~100 KB transaction
+    // envelopes -- telemetry about people who never signed up. With this and
+    // the replay line together, the honest guest sentence becomes
+    // "error reporting only, nothing else".
+    //
+    // Guest-page performance monitoring is a post-launch revisit, with
+    // disclosure, if we ever want it back.
+    tracesSampleRate: isGuestRoute() ? 0 : 0.2,
     // Session Replay: 10% of sessions, 100% when an error occurs
     // Session Replay. 10% of sessions on couple-facing pages; ZERO on guest
     // pages. Recording one in ten guests browsing a couple's wedding site --
