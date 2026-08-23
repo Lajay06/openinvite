@@ -24,12 +24,34 @@
  * Licence: all families here are OFL. Self-hosting is licence-clean.
  *
  * 44 families, 137 faces.
- * CJK families (Noto Sans KR/SC, Zen Kaku Gothic New) are deliberately absent
- * -- they are L1c, ruled separately because of their ~400-way range slicing.
+ * CJK families (Noto Sans KR/SC, Zen Kaku Gothic New) are included as of L1c.
+ * They are the reason the lazy map matters most: @fontsource ships Google's own
+ * ~100-124 unicode-range slices PER WEIGHT for them, so a Seoul guest site
+ * downloads the handful of ranges its text actually uses -- tens of KB -- not
+ * the ~15 MB the whole family weighs. Shipping them whole, or substituting a
+ * system stack, were both rejected: one is a real regression for exactly the
+ * couples those universes exist for, the other breaks same-faces.
  */
 
 /** family display name -> array of dynamic CSS imports */
 const FACE_LOADERS = {
+  "Noto Sans KR": [
+    () => import('@fontsource/noto-sans-kr/300.css'),
+    () => import('@fontsource/noto-sans-kr/400.css'),
+    () => import('@fontsource/noto-sans-kr/500.css'),
+    () => import('@fontsource/noto-sans-kr/700.css'),
+  ],
+  "Noto Sans SC": [
+    () => import('@fontsource/noto-sans-sc/300.css'),
+    () => import('@fontsource/noto-sans-sc/400.css'),
+    () => import('@fontsource/noto-sans-sc/500.css'),
+    () => import('@fontsource/noto-sans-sc/700.css'),
+  ],
+  "Zen Kaku Gothic New": [
+    () => import('@fontsource/zen-kaku-gothic-new/300.css'),
+    () => import('@fontsource/zen-kaku-gothic-new/400.css'),
+    () => import('@fontsource/zen-kaku-gothic-new/500.css'),
+  ],
   "Abril Fatface": [
     () => import('@fontsource/abril-fatface/400.css'),
   ],
