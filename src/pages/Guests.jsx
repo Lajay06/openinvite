@@ -504,7 +504,13 @@ export default function Guests() {
       // columns are APPENDED. Before this, a plus-one's meal choice and
       // dietary requirements never left the system at all: 27 meal choices
       // and 5 dietary notes sat in the data with no route to a caterer.
-      ['Name', 'Email', 'Phone', 'Category', 'RSVP Status', 'Meal Choice', 'Table Assignment', 'Plus One', 'Plus One Name', 'Dietary Restrictions', 'Plus One RSVP', 'Plus One Meal', 'Plus One Dietary'].join(','),
+      // Existing columns keep their names AND their order (a couple may have a
+      // sheet built on this file); the four below are APPENDED for the same
+      // reason the plus-one columns were. Mailing Address is the one that
+      // matters most after the day -- thank-you cards -- and until now it had
+      // no route out of the product at all, which made the launch claim of
+      // exporting "addresses" untrue.
+      ['Name', 'Email', 'Phone', 'Category', 'RSVP Status', 'Meal Choice', 'Table Assignment', 'Plus One', 'Plus One Name', 'Dietary Restrictions', 'Plus One RSVP', 'Plus One Meal', 'Plus One Dietary', 'Mailing Address', 'Notes', 'Special Requests', 'Plus One Email'].join(','),
       // Meal Choice: read through effectiveMealChoice, which ranks the
       // per-event overlay getMyGuestsWithRsvp attaches above the flat
       // Guest.meal_choice column. That column is NO LONGER DEAD — the guest
@@ -518,7 +524,16 @@ export default function Guests() {
         // 'pending' for someone who does not exist.
         hasPlusOne(g) ? plusOneRsvpStatus(g) : '',
         hasPlusOne(g) ? (mealOptionLabel(effectiveMealChoice(g.plus_one_event_responses, g.plus_one_meal_choice), mealOptions) || '') : '',
-        hasPlusOne(g) ? (g.plus_one_dietary_restrictions || '') : ''
+        hasPlusOne(g) ? (g.plus_one_dietary_restrictions || '') : '',
+        // These four are encrypted at rest and restored by mergeGuestPii on
+        // the server. `guests` here comes from getMyGuestsWithRsvp, which
+        // reads /api/my-guests -- the DECRYPTED path the guest table renders
+        // from. Exporting raw Guest rows instead would emit nulls, because
+        // the plaintext columns were nulled when the blob took over.
+        g.mailing_address || '',
+        g.notes || '',
+        g.special_requests || '',
+        hasPlusOne(g) ? (g.plus_one_email || '') : ''
       ].map(f => `"${f}"`).join(','))
     ].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
