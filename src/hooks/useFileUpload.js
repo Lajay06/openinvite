@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { validateUploadFile } from '@/lib/uploadValidation';
+import { stripGpsFromFile } from '@/lib/stripImageGps';
 
 /**
  * useFileUpload — one shared upload lifecycle for every upload site in the
@@ -48,7 +49,14 @@ export function useFileUpload(mode = 'image') {
 
     setStatus('uploading');
     try {
-      const result = await base44.integrations.Core.UploadFile({ file });
+      // Remove GPS before the bytes leave the device. Uploads are stored and
+      // served as-is -- guest pages render the ORIGINAL file and its URL is
+      // public and unsigned -- so a phone photo of the couple's home would
+      // otherwise publish its coordinates. Surgical: the GPS tag is dropped,
+      // orientation and pixel data untouched, nothing recompressed. Non-JPEG
+      // uploads pass through unchanged.
+      const safeFile = await stripGpsFromFile(file);
+      const result = await base44.integrations.Core.UploadFile({ file: safeFile });
       setStatus('success');
       return result;
     } catch (err) {

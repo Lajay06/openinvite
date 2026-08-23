@@ -48,6 +48,11 @@ export async function runGuestTelemetry() {
   check('  error-triggered replay still fires everywhere',
     /replaysOnErrorSampleRate: 1\.0/.test(SENTRY), '1.0');
 
+  // performance tracing follows replay's shape
+  check('performance tracing is ZERO on guest routes',
+    /tracesSampleRate: isGuestRoute\(\) \? 0 : 0\.2/.test(SENTRY), '0 on /w/, 0.2 elsewhere');
+  check('  dashboard tracing is unchanged at 0.2', /: 0\.2/.test(SENTRY), '0.2 retained');
+
   // masking, pinned not inherited
   for (const opt of ['maskAllText', 'blockAllMedia', 'maskAllInputs']) {
     check(`  ${opt} is pinned explicitly`, new RegExp(`${opt}: true`).test(SENTRY), 'true');
