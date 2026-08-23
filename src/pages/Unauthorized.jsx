@@ -20,7 +20,7 @@ export default function Unauthorized() {
       {/* Logo */}
       <Link to="/" style={{ textDecoration: 'none', marginBottom: 56 }}>
         <img
-          src="https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png"
+          src="/openinvite-logo.png"
           alt="Openinvite"
           style={{ height: 22, width: 'auto', filter: 'brightness(0)' }}
         />

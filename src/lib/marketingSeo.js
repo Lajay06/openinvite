@@ -21,7 +21,7 @@ export const SITE_URL = 'https://www.openinvite.com.au';
 // pre-cropped upload.
 export const DEFAULT_OG_IMAGE = 'https://res.cloudinary.com/dsr84xknv/image/upload/c_fill,w_1200,h_630,q_auto,f_auto/product-shots/flow-03-guest-rsvp-poster.jpg';
 
-export const ORGANIZATION_LOGO = 'https://static.wixstatic.com/media/d2df22_ed803ca7c6de491a90af0df6d06a8e54~mv2.png';
+export const ORGANIZATION_LOGO = `${SITE_URL}/openinvite-logo.png`;
 
 // route -> { title, description }. Title is used as-is (already sentence
 // case, no trailing site-name suffix needed since the brand name is
