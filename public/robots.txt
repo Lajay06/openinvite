@@ -4,20 +4,47 @@ Disallow: /api/
 Disallow: /rsvp/
 Disallow: /w/
 
-# AI assistants and answer engines — explicitly allowed (AEO/SEO batch).
+# AI assistants and answer engines — marketing pages explicitly allowed
+# (AEO/SEO batch). That intent is unchanged.
+#
+# Each group below repeats the Disallow lines. This is NOT redundancy: a
+# crawler that matches a specific User-agent group obeys ONLY that group and
+# ignores the "*" group entirely. Before this, every bot named here was
+# allowed to crawl /w/ — every couple's guest wedding site — because their
+# groups carried an Allow with no exclusions. Bingbot is a general search
+# engine, so guest sites were reachable by a real web index.
+#
+# If you add a bot group here, it must carry these three Disallow lines or it
+# inherits nothing from "*".
+
 User-agent: GPTBot
 Allow: /
+Disallow: /api/
+Disallow: /rsvp/
+Disallow: /w/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /api/
+Disallow: /rsvp/
+Disallow: /w/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /api/
+Disallow: /rsvp/
+Disallow: /w/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /api/
+Disallow: /rsvp/
+Disallow: /w/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /api/
+Disallow: /rsvp/
+Disallow: /w/
 
 Sitemap: https://www.openinvite.com.au/sitemap.xml
