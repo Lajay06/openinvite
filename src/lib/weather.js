@@ -57,7 +57,7 @@ async function geocode(name) {
   let result = null;
   let failed = false;
   try {
-    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=en&format=json`);
+    const res = await fetch(`/api/weather?mode=geocode&name=${encodeURIComponent(name)}`);
     const data = await res.json();
     const loc = data.results?.[0];
     if (loc) result = { latitude: loc.latitude, longitude: loc.longitude, timezone: loc.timezone };
@@ -239,7 +239,7 @@ export async function getWeddingWeather(weddingDetails) {
 
 async function fetchByMode(mode, loc, target, daysUntil) {
   if (mode === 'current') {
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current_weather=true&timezone=auto`);
+    const res = await fetch(`/api/weather?mode=current&latitude=${loc.latitude}&longitude=${loc.longitude}`);
     const data = await res.json();
     const cw = data.current_weather;
     if (!cw) return null;
@@ -248,7 +248,7 @@ async function fetchByMode(mode, loc, target, daysUntil) {
   }
 
   if (mode === 'forecast') {
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&daily=temperature_2m_max,temperature_2m_min,weathercode&forecast_days=${FORECAST_MAX_DAYS}&timezone=auto`);
+    const res = await fetch(`/api/weather?mode=forecast&latitude=${loc.latitude}&longitude=${loc.longitude}&forecast_days=${FORECAST_MAX_DAYS}`);
     const data = await res.json();
     const idx = data.daily?.time?.indexOf(target.toISOString().slice(0, 10));
     if (idx == null || idx < 0) return null;
@@ -267,7 +267,7 @@ async function fetchByMode(mode, loc, target, daysUntil) {
     const start = new Date(target); start.setFullYear(start.getFullYear() - yearsAgo); start.setDate(start.getDate() - 3);
     const end   = new Date(target); end.setFullYear(end.getFullYear() - yearsAgo); end.setDate(end.getDate() + 3);
     try {
-      const res = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${loc.latitude}&longitude=${loc.longitude}&start_date=${start.toISOString().slice(0, 10)}&end_date=${end.toISOString().slice(0, 10)}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
+      const res = await fetch(`/api/weather?mode=archive&latitude=${loc.latitude}&longitude=${loc.longitude}&start_date=${start.toISOString().slice(0, 10)}&end_date=${end.toISOString().slice(0, 10)}`);
       const data = await res.json();
       (data.daily?.temperature_2m_max || []).forEach(v => typeof v === 'number' && highs.push(v));
       (data.daily?.temperature_2m_min || []).forEach(v => typeof v === 'number' && lows.push(v));
