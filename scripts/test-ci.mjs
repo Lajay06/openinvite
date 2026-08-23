@@ -61,6 +61,7 @@ import { runNextUp } from '../tests/persistence/next-up.mjs';
 import { runBudgetClarity } from '../tests/persistence/budget-clarity.mjs';
 import { runSoundPreference } from '../tests/persistence/sound-preference.mjs';
 import { runWeddingSeason } from '../tests/persistence/wedding-season.mjs';
+import { runIndexingPosture } from '../tests/persistence/indexing-posture.mjs';
 import { runIcsExport } from '../tests/persistence/ics-export.mjs';
 import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
 import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
@@ -133,6 +134,7 @@ async function run() {
   await runModule('runBudgetClarity', () => runBudgetClarity());
   await runModule('runSoundPreference', () => runSoundPreference());
   await runModule('runWeddingSeason', () => runWeddingSeason());
+  await runModule('runIndexingPosture', () => runIndexingPosture());
   await runModule('runIcsExport', () => runIcsExport());
   await runModule('runGiftCheckout', () => runGiftCheckout());
   await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());
