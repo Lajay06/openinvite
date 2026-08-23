@@ -50,6 +50,7 @@
 
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
+import { rejectIfTrialExpired } from './_lib/trialGuard.js';
 import { decryptToken, tokenPatch } from './_lib/rsvpTokenCrypto.js';
 import { mergeGuestPii } from './_lib/guestPii.js';
 
@@ -123,6 +124,13 @@ export default async function handler(req, res) {
   if (!caller) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+
+  // Trial enforcement. GET is always allowed -- an expired couple keeps
+  // full read access, and every export is a pure read. Mutating methods
+  // are rejected with a distinct code the client maps to the upgrade
+  // prompt. Expiry is computed here from the User record, never trusted
+  // from the request. See api/_lib/trialGuard.js for the scope limits.
+  if (rejectIfTrialExpired(req, res, caller)) return;
 
   const callerToken = (req.headers.authorization || '').slice(7);
   const guestIds = Array.isArray(req.body?.guestIds) ? req.body.guestIds.filter(id => typeof id === 'string') : [];
