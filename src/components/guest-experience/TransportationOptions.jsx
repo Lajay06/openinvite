@@ -85,7 +85,7 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <Loader2 className="w-12 h-12 text-gray-900 animate-spin mb-4" />
-        <p className="text-gray-600">Finding transportation in {weddingCity}...</p>
+        <p className="text-[rgba(10,10,10,0.6)]">Finding transportation in {weddingCity}...</p>
       </div>
     );
   }
@@ -123,7 +123,7 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
                     <Badge variant="outline" className="text-xs flex-shrink-0">{option.type}</Badge>
                   </div>
 
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                  <p className="text-sm text-[rgba(10,10,10,0.6)] mb-2 line-clamp-2">
                     {option.description}
                   </p>
 
@@ -149,7 +149,7 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
                   {option.bookingUrl && (
                     <Button 
                       variant="link" 
-                      className="p-0 h-auto text-xs text-gray-700 hover:text-gray-900"
+                      className="p-0 h-auto text-xs text-[rgba(10,10,10,0.6)] hover:text-gray-900"
                       asChild
                     >
                       <a href={option.bookingUrl} target="_blank" rel="noopener noreferrer">

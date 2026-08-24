@@ -351,7 +351,7 @@ export default function PhotoGalleryPage() {
           <Card className="border-gray-200">
             <CardContent className="p-12 text-center">
               <Camera className="w-12 h-12 mx-auto mb-4 text-[rgba(10,10,10,0.3)]" />
-              <p className="text-gray-600 mb-4">No photos in this category yet</p>
+              <p className="text-[rgba(10,10,10,0.6)] mb-4">No photos in this category yet</p>
               <Button onClick={() => setShowUploadForm(true)} variant="outline">
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Photos

@@ -16,7 +16,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
         <div className="space-y-3">
           <h3 className="text-xl font-semibold text-gray-900">{content.title}</h3>
           {content.time && (
-            <div className="flex items-center gap-2 text-gray-600">
+            <div className="flex items-center gap-2 text-[rgba(10,10,10,0.6)]">
               <Clock className="w-4 h-4" />
               <span>{content.time}</span>
             </div>
@@ -25,7 +25,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
             <div className="space-y-1">
               <div className="font-medium text-gray-900">{content.venue}</div>
               {content.address && (
-                <div className="flex items-start gap-2 text-gray-600 text-sm">
+                <div className="flex items-start gap-2 text-[rgba(10,10,10,0.6)] text-sm">
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span>{content.address}</span>
                 </div>
@@ -61,7 +61,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
             </div>
             
             {content.address && (
-              <div className="flex items-center gap-2 text-gray-600 text-sm">
+              <div className="flex items-center gap-2 text-[rgba(10,10,10,0.6)] text-sm">
                 <MapPin className="w-4 h-4" />
                 <span>{content.address}</span>
               </div>
@@ -231,7 +231,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
         <a
           key={section.id}
           href={`#section-${index}`}
-          className="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+          className="block px-4 py-2 text-sm font-medium text-[rgba(10,10,10,0.6)] hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
           onClick={() => setMobileMenuOpen(false)}
         >
           {section.name}
@@ -259,7 +259,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
                 <a
                   key={section.id}
                   href={`#section-${index}`}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-sm font-medium text-[rgba(10,10,10,0.6)] hover:text-gray-900 transition-colors"
                 >
                   {section.name}
                 </a>

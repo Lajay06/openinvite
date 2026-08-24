@@ -68,7 +68,7 @@ export default function OurStoryTimeline({ milestones = [] }) {
                     </h3>
                     
                     {milestone.story && (
-                      <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                      <p className="text-[rgba(10,10,10,0.6)] leading-relaxed whitespace-pre-wrap">
                         {milestone.story}
                       </p>
                     )}

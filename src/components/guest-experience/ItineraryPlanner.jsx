@@ -108,7 +108,7 @@ export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
   const renderActivity = (activity, index) => (
     <div key={index} className="py-4 border-b border-gray-200 last:border-b-0">
       <div className="flex items-start gap-4">
-        <div className="flex items-center gap-2 text-xs text-gray-600 w-20 flex-shrink-0 pt-0.5">
+        <div className="flex items-center gap-2 text-xs text-[rgba(10,10,10,0.6)] w-20 flex-shrink-0 pt-0.5">
           {getTimeIcon(activity.time)}
           <span className="font-medium">{activity.time}</span>
         </div>
@@ -118,7 +118,7 @@ export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
             <h4 className="text-sm font-medium text-gray-900">{activity.name}</h4>
             <Badge variant="outline" className="text-xs">{activity.type}</Badge>
           </div>
-          <p className="text-xs text-gray-600 mb-2">{activity.description}</p>
+          <p className="text-xs text-[rgba(10,10,10,0.6)] mb-2">{activity.description}</p>
           
           <div className="flex items-center gap-3 text-xs" style={{ color: color.textMuted }}>
             <div className="flex items-center gap-1">

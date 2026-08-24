@@ -161,7 +161,7 @@ export default function InteractiveMap({
     return (
       <div className="bg-gray-50 rounded-lg p-8 text-center">
         <MapPin className="w-12 h-12 mx-auto mb-4 text-[rgba(10,10,10,0.3)]" />
-        <p className="text-gray-600">No location data available</p>
+        <p className="text-[rgba(10,10,10,0.6)]">No location data available</p>
       </div>
     );
   }
@@ -172,23 +172,23 @@ export default function InteractiveMap({
       <div className="flex flex-wrap gap-3 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-pink-500"></div>
-          <span className="text-gray-600">Ceremony</span>
+          <span className="text-[rgba(10,10,10,0.6)]">Ceremony</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-          <span className="text-gray-600">Reception</span>
+          <span className="text-[rgba(10,10,10,0.6)]">Reception</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-          <span className="text-gray-600">Hotels</span>
+          <span className="text-[rgba(10,10,10,0.6)]">Hotels</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          <span className="text-gray-600">Restaurants</span>
+          <span className="text-[rgba(10,10,10,0.6)]">Restaurants</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-          <span className="text-gray-600">Activities</span>
+          <span className="text-[rgba(10,10,10,0.6)]">Activities</span>
         </div>
       </div>
 
@@ -225,20 +225,20 @@ export default function InteractiveMap({
                     </div>
                     
                     {location.address && (
-                      <p className="text-xs text-gray-600 flex items-start gap-1 mb-2">
+                      <p className="text-xs text-[rgba(10,10,10,0.6)] flex items-start gap-1 mb-2">
                         <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
                         {location.address}
                       </p>
                     )}
 
                     {location.time && (
-                      <p className="text-xs text-gray-700 font-medium mb-2">
+                      <p className="text-xs text-[rgba(10,10,10,0.6)] font-medium mb-2">
                         Time: {location.time}
                       </p>
                     )}
 
                     {location.rating && (
-                      <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                      <div className="flex items-center gap-2 text-xs text-[rgba(10,10,10,0.6)] mb-2">
                         <div className="flex items-center gap-1">
                           <Star className="w-3 h-3 fill-current text-amber-400" />
                           <span>{location.rating}</span>
@@ -253,13 +253,13 @@ export default function InteractiveMap({
                     )}
 
                     {location.cuisine && (
-                      <p className="text-xs text-gray-600 mb-2">
+                      <p className="text-xs text-[rgba(10,10,10,0.6)] mb-2">
                         <Badge variant="outline" className="text-xs">{location.cuisine}</Badge>
                       </p>
                     )}
 
                     {location.activityType && (
-                      <p className="text-xs text-gray-600 mb-2">
+                      <p className="text-xs text-[rgba(10,10,10,0.6)] mb-2">
                         <Badge variant="outline" className="text-xs">{location.activityType}</Badge>
                       </p>
                     )}

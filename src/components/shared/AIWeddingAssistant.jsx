@@ -262,7 +262,7 @@ export default function AIWeddingAssistant() {
                         
                         {message.type === 'user' && (
                           <div className="w-8 h-8 bg-[rgba(10,10,10,0.3)] rounded-full flex items-center justify-center flex-shrink-0 order-1">
-                            <User className="w-4 h-4 text-gray-600" />
+                            <User className="w-4 h-4 text-[rgba(10,10,10,0.6)]" />
                           </div>
                         )}
                       </div>
@@ -289,7 +289,7 @@ export default function AIWeddingAssistant() {
                     <div className="p-4 border-t border-gray-100 bg-white">
                       <div className="flex items-center gap-2 mb-3">
                         <Lightbulb className="w-4 h-4" style={{ color: color.iconMuted }} />
-                        <span className="text-sm font-medium text-gray-700">I can help you with:</span>
+                        <span className="text-sm font-medium text-[rgba(10,10,10,0.6)]">I can help you with:</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         {assistantModes.map((mode) => (

@@ -360,7 +360,7 @@ export default function OurStoryPage() {
                                     })}
                                   </p>
                                   {milestone.story && (
-                                    <p className="text-sm text-gray-600 line-clamp-2">
+                                    <p className="text-sm text-[rgba(10,10,10,0.6)] line-clamp-2">
                                       {milestone.story}
                                     </p>
                                   )}

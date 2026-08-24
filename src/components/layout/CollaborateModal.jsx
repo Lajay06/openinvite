@@ -262,7 +262,7 @@ export default function CollaborateModal({ onClose }) {
                         <Button size="icon" variant="ghost" onClick={() => handleDelete(collab.id)} className="text-red-500 hover:text-red-600" title="Revoke access"><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     </div>
-                    <div className="mt-2 pt-2 border-t text-xs text-gray-600 space-y-1">
+                    <div className="mt-2 pt-2 border-t text-xs text-[rgba(10,10,10,0.6)] space-y-1">
                       <p className="font-medium">Permissions:</p>
                       <div className="flex flex-wrap gap-2">
                         {Object.entries(collab.permissions || {}).map(([page, perms]) => {
