@@ -90,3 +90,13 @@ the grey ramp (3b) were handled.
 
 Never `#888`, `gray-400`, or `gray-500`. In compiled CSS, `textMuted` appears as
 `#0a0a0a99`, not as an `rgba()` string.
+
+---
+
+## Accessibility note (feel-pass 5)
+
+`CountUp` never had a `prefers-reduced-motion` branch. It animated every stat
+on every dashboard page for 1200ms regardless of what the visitor had asked the
+OS for. Deleting the animation closed that gap — **the fix was removal, not an
+added branch.** Worth remembering when the next decorative animation is
+proposed: the accessible version of an animation nobody needs is no animation.
