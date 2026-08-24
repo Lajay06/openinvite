@@ -264,7 +264,7 @@ ${bannerHtml}
                the couple, not the platform; the couple's names are the focus) -->
           <tr>
             <td style="padding:${bannerImageUrl ? '36px' : '44px'} 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${accent};letter-spacing:0.14em;text-transform:uppercase;font-family:${fontBody};">${escapeHtml(cfg.kicker)}</p>
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${accent};letter-spacing:0.14em;font-family:${fontBody};">${escapeHtml(cfg.kicker)}</p>
               <h1 style="margin:0;font-family:${fontDisplay};font-weight:400;font-size:32px;color:${textColor};line-height:1.15;">${escapeHtml(coupleNames || 'The Wedding')}</h1>
             </td>
           </tr>

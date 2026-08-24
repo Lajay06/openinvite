@@ -169,7 +169,7 @@ export default function UniverseStudio() {
   if (!hasUltra) {
     return (
       <UltraGate
-        heading="Design Studio is an Ultra feature"
+        heading="Design studio is an Ultra feature"
         description="Choose from 20 fully designed style universes and apply that aesthetic across your entire wedding website, invitations, and every guest-facing asset."
         tabs={['Universes', 'Website', 'Assets', 'Share']}
       />

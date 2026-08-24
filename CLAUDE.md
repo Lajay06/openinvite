@@ -11,8 +11,28 @@ hashed-identifier pattern, the User-entity auth quirk, schema drift, env
 var sourcing). Update it when you learn something new the same way.
 
 ## Rules
-- Sentence case everywhere — no ALL CAPS, no Uppercase Every Word
-- No text-transform: uppercase anywhere in CSS or JSX
+- Sentence case in PRODUCT CHROME — no ALL CAPS, no Uppercase Every Word.
+  Genuine acronyms (FAQ, BYO, RSVP, OK) are not shouting and stay as they are.
+- No text-transform: uppercase in product chrome, CSS or JSX
+- THE ARTWORK EXEMPTION IS SURFACE-BASED, and permanent. Anything a guest sees
+  on the couple's PUBLISHED GUEST SITE, as part of its designed presentation,
+  is the couple's chosen design and is exempt. Product chrome means the
+  dashboard, the studio, emails and the marketing surfaces.
+  Ask "does a guest see this as part of the wedding site the couple designed?"
+  — not "what folder is it in". A folder rule got this wrong once:
+  GuestSuiteRegistry.jsx and GuestSuiteLiveStream.jsx read guest-facing from
+  their names but use DashboardPageHeader and are reached from the sidebar, so
+  they are chrome; GuestMusic.jsx serves /w/:slug/music, so it is exempt.
+  Error states shown on a guest surface are still chrome — a broken link is our
+  failure to report, not the couple's typography.
+  In practice that covers src/components/guest-website/**, the studio previews
+  of that site in src/components/universe-studio/** and
+  src/components/website-builder/**, and the /w/ route pages. Printed card
+  content like "ACCEPTS WITH PLEASURE" is typography; converting it would
+  damage the product. The rule used to read "everywhere", which is why 99
+  uppercase declarations lived here in open contradiction of it — 80 of them
+  legitimately. The exemption is encoded once as ARTWORK in
+  tests/persistence/sentence-case-chrome.mjs; move that, not this wording.
 - No box-shadow on cards
 - No rounded corners except buttons, pills (border-radius: 999px), and
   modals/popups — all dialogs inherit their 16px rounding from the one

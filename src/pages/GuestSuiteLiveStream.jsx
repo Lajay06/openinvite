@@ -98,7 +98,7 @@ export default function GuestSuiteLiveStream() {
             {stream.is_live && (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#E03553', color: '#FFFFFF', padding: '6px 14px', borderRadius: 999, fontFamily: PJS, fontSize: 12, fontWeight: 700, width: 'fit-content' }}>
                 <Radio size={11} />
-                LIVE NOW
+                Live now
               </div>
             )}
 

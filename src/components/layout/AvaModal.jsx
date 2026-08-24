@@ -95,7 +95,7 @@ function ActionCard({ action, onConfirm, onCancel }) {
 
   return (
     <div style={{ margin: '6px 0 4px 32px', padding: '10px 14px', border: '1px solid rgba(147,51,234,0.2)', background: 'rgba(147,51,234,0.04)', fontFamily: PJS }}>
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(147,51,234,0.6)', marginBottom: 5 }}>AVA WANTS TO</div>
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(147,51,234,0.6)', marginBottom: 5 }}>Ava wants to</div>
       <div style={{ fontSize: 13, color: '#0A0A0A', marginBottom: action.status === 'pending' ? 10 : 6 }}>{actionLabel(action.type, action.data)}</div>
 
       {action.status === 'pending' && (

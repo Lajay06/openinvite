@@ -80,7 +80,7 @@ function FlipCard({ src, index, target }) {
         }}>
           <div style={{ textAlign: "center" }}>
             <div style={{ width: "24px", height: "2px", background: "linear-gradient(135deg, #E03553, #803D81)", margin: "0 auto 8px" }} />
-            <p style={{ color: "#FFFFFF", fontSize: "10px", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, letterSpacing: "0.1em" }}>VIEW</p>
+            <p style={{ color: "#FFFFFF", fontSize: "10px", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, letterSpacing: "0.1em" }}>View</p>
           </div>
         </div>
       </motion.div>
@@ -208,9 +208,9 @@ function ScrollMorphHero() {
           initial={{ opacity: 0 }}
           animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 0.5 - morphValue } : { opacity: 0 }}
           transition={{ duration: 1, delay: 0.2 }}
-          style={{ marginTop: "16px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.2em", color: "#E03553", fontFamily: "'Plus Jakarta Sans', sans-serif", textTransform: "uppercase" }}
+          style={{ marginTop: "16px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.2em", color: "#E03553", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
-          SCROLL TO EXPLORE
+          Scroll to explore
         </motion.p>
       </div>
 
@@ -224,8 +224,8 @@ function ScrollMorphHero() {
           WebkitBackfaceVisibility: "hidden",
         }}
       >
-        <p style={{ color: "#DDF762", fontSize: "11px", fontWeight: 500, letterSpacing: "0.25em", textTransform: "uppercase", marginBottom: "12px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          OPENINVITE
+        <p style={{ color: "#DDF762", fontSize: "11px", fontWeight: 500, letterSpacing: "0.25em", marginBottom: "12px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          Openinvite
         </p>
         <h2 style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.02em", marginBottom: "12px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Your wedding, beautifully planned.

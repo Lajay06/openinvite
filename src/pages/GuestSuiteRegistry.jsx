@@ -247,7 +247,7 @@ export default function GuestSuiteRegistry() {
             {platforms.length > 0 && (
               <div>
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
-                  REGISTRY PLATFORMS
+                  Registry platforms
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {platforms.map(p => <PlatformCard key={p.id} item={p} />)}
@@ -285,7 +285,7 @@ export default function GuestSuiteRegistry() {
             {cashFunds.length > 0 && (
               <div>
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
-                  CASH FUNDS
+                  Cash funds
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {cashFunds.map(f => <CashFundCard key={f.id} fund={f} />)}
