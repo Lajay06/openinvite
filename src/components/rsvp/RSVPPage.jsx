@@ -804,7 +804,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
             only question the page exists to ask, and it COMMITS ON THE TAP: a
             guest who answers and then closes the tab is still counted, which is
             what the couple actually needs. Universe styling, because this is the
-            most-looked-at control in the product and grey chrome would waste it.
+            most-looked-at control in the product and gray chrome would waste it.
             60px tall and full width -- sized for a thumb at 390, not a cursor. */}
         {phase === 'ask' && (
           <div style={{ marginBottom: 8 }}>
