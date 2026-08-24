@@ -191,6 +191,19 @@ const AuthenticatedApp = () => {
         <Route path="/w/:weddingSlug/collect" element={<GuestCollect />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
         <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
+        {/* THIS ROUTE IS PERMANENT. It is a public URL contract: couples have
+            already emailed /rsvp/<token> links, and mail sent today may be
+            opened years from now. It must never 404, never be renamed, and
+            never be deleted "because nothing links to it any more" -- the
+            things that link to it are in other people's inboxes.
+
+            It keeps rendering the standalone form for now. Once
+            WeddingRSVPPage embeds the real form (PR 3), this becomes a
+            redirect into the site at /w/<slug>/rsvp?rsvp=<token>, resolving
+            the slug from the token via rsvp-lookup. Redirecting BEFORE that
+            embed would send every guest holding a link from a working RSVP
+            form to a page that only offers an email box -- a regression of the
+            core loop, for exactly the people most likely to be mid-reply. */}
         <Route path="/rsvp/:token" element={<RSVPPage />} />
         <Route path="/games/:token/:questionnaireId" element={<GamesPage />} />
         <Route path="/collaborate/accept/:token" element={<CollaboratorAccept />} />

@@ -7,6 +7,7 @@ import { resolveTypography, resolveColors } from '@/lib/universeStyling';
 import TextureOverlay from './TextureOverlay';
 import EntranceMoment from './EntranceMoment';
 import BackgroundMusicPlayer from './BackgroundMusicPlayer';
+import { consumeTokenFromUrl, getRecognisedToken, forgetRecognisedGuest } from '@/lib/guestRecognition';
 import GuestSiteSkeleton from './GuestSiteSkeleton';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 
@@ -111,6 +112,19 @@ export default function MultiPageWeddingWebsite() {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true';
+
+  // Consume ?rsvp=<token> BEFORE anything fetches. useState's initialiser runs
+  // during the first render, ahead of every effect in this tree, so the token is
+  // stored and stripped from the address bar before a single subresource
+  // request can carry it in a Referer header.
+  const [recognisedToken, setRecognisedToken] = useState(
+    () => consumeTokenFromUrl(weddingSlug) || getRecognisedToken(weddingSlug),
+  );
+
+  const forgetGuest = () => {
+    forgetRecognisedGuest(weddingSlug);
+    setRecognisedToken('');
+  };
 
   // Must be called before any early return — React rules of hooks
   const prefersReduced = useReducedMotion();
@@ -319,6 +333,8 @@ export default function MultiPageWeddingWebsite() {
             theme={theme}
             typography={typography}
             universeConfig={universeConfig}
+            recognisedToken={recognisedToken}
+            onForgetGuest={forgetGuest}
           />
         </motion.div>
       </AnimatePresence>
