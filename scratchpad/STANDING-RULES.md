@@ -632,3 +632,28 @@ earlier held a 20+ character value in a column asserted to be empty.
 not the summary in your head.** And when a data observation contradicts a code
 reading, the data wins: the code reading is a claim about now, the data is a
 record of what actually happened.
+## Hook the server write boundary, not the UI call sites
+
+When a rule must hold for **every row** of an entity, enforce it where the write
+happens on the server — not at the screens that trigger it. Call sites are a
+list that grows behind you.
+
+RSVP token minting was scoped as four UI triggers. There were **five** creation
+paths, and the two the UI list missed were the dangerous ones:
+
+- `Onboarding.jsx` calls `Guest.bulkCreate` straight through the SDK, bypassing
+  `api/my-guests.js` entirely — and those are **the first guests a couple ever
+  has**. Invisible from any list of "screens where you add a guest", because it
+  is not that screen.
+- `api/guest-contact-review.js` creates a Guest server-side on approval, with no
+  client involvement at all.
+
+Minting moved into `api/my-guests.js`'s create payload, which covers the add
+flow, CSV import and Ava's `create_guest` tool at one point that a call site
+added next month cannot miss — and costs no extra write, because the fields ride
+in the create body rather than a follow-up PUT. The two genuine bypasses got
+their own hooks.
+
+**The question to ask: if someone adds a sixth way to create this row next
+month, does my enforcement still hold?** If the answer depends on them
+remembering, it is at the wrong layer.

@@ -37,6 +37,39 @@ import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
+// One-shot backfill for guests that predate minting-at-creation.
+//
+// api/my-guests.js has minted an RSVP token into the create payload since #538,
+// so every guest added since already holds one. This closes the rows created
+// before that: without `rsvp_link_id_enc`, api/rsvp-link-request.js cannot
+// match them, and the guest receives the deliberately neutral "sent" response
+// with no email -- indistinguishable from not being on the list at all.
+//
+// THE FILTER IS THE GUARD. No guest missing a token means no request, so the
+// hot path is unchanged for every couple whose list is already healthy -- which,
+// measured on production, is all but three rows. It runs once per session and
+// says nothing to the couple: this is bookkeeping, not something they did.
+//
+// It reads has_rsvp_token, a derived boolean. The token ciphertext itself is
+// stripped from owner-side responses, so the browser learns WHETHER a token
+// exists and never what it is.
+let tokenBackfillDone = false;
+async function backfillMissingTokens(guests) {
+  if (tokenBackfillDone) return;
+  const missing = (guests || [])
+    .filter(g => g && g.has_rsvp_token === false)
+    .map(g => g.id)
+    .filter(Boolean);
+  if (missing.length === 0) return;
+  tokenBackfillDone = true;
+  try {
+    await fetchGuestLinks(missing);
+  } catch (err) {
+    console.error('[guests] token backfill failed:', err?.message);
+  }
+}
+
+
 
 function FilterPill({ label, active, onClick }) {
   return (
@@ -197,6 +230,7 @@ export default function Guests() {
         ]);
         setGuests(guestData);
         setTables(tableData.map(t => ({ ...t, assigned_guests: t.assigned_guests || [] })));
+        backfillMissingTokens(guestData);
       }
     } catch {
       toast.error("Failed to load guests");

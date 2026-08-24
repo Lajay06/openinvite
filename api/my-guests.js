@@ -86,6 +86,50 @@ function unwrapList(payload) {
   return [];
 }
 
+/**
+ * The RSVP token family. These are BEARER CAPABILITIES: whoever holds one can
+ * answer as that guest. They have no business in an owner-side list response.
+ *
+ * api/my-guest-links.js is the one deliberate path by which a token reaches a
+ * client -- rate limited, `Cache-Control: private, no-store`, and only for the
+ * ids the caller asked for. This endpoint used to ship the ciphertext and hash
+ * of every guest's token to the browser on every guest-list load, unread by any
+ * client code, with none of that handling.
+ *
+ * What replaces it is a derived boolean. The browser learns WHETHER a token
+ * exists, never what it is -- which is all the backfill sweep needs in order to
+ * know which guests to mint for.
+ *
+ * THE PLAINTEXT COLUMNS ARE STRIPPED TOO, and that is a correction. This list
+ * first held only the ciphertext and hash, on the reasoning that E3 had nulled
+ * the plaintext so "removing a null gains nothing". The column was not null:
+ * tokenPatch() was still WRITING the token there on every mint (fixed in #540),
+ * because E3 nulled the DATA and left the writer alone. Shipped as first
+ * drafted, this strip would have removed the encrypted form and kept sending
+ * the live one -- strictly worse than the leak it was opened to close.
+ *
+ * They stay on this list permanently even once the data is purged: a response
+ * that omits a column cannot leak it if a writer ever reappears.
+ *
+ * Two client fallbacks still NAME the plaintext column -- SendInvitesModal
+ * (`l.token || g.rsvp_link_id`) and EmailTemplates (`guests.find(g =>
+ * g.rsvp_link_id)`). Both are correct with the field absent: the first falls
+ * through to the minted token it already has, and the second takes its
+ * placeholder branch, which is exactly what it was written for -- a sample
+ * email must never carry a live RSVP capability.
+ */
+const TOKEN_COLUMNS = [
+  'rsvp_link_id', 'rsvp_link_id_enc', 'rsvp_link_id_hash',
+  'plus_one_rsvp_link_id', 'plus_one_rsvp_link_id_enc', 'plus_one_rsvp_link_id_hash',
+];
+
+function stripTokenColumns(guest) {
+  if (!guest) return guest;
+  const out = { ...guest, has_rsvp_token: !!guest.rsvp_link_id_enc };
+  for (const f of TOKEN_COLUMNS) delete out[f];
+  return out;
+}
+
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
 
@@ -156,7 +200,8 @@ export default async function handler(req, res) {
       // (Track A), so resolving PII here means no consumer knows encryption
       // happened — and it needs no change at Track D, when the fallback simply
       // stops having anything to fall back to.
-      .map(mergeGuestPii);
+      .map(mergeGuestPii)
+      .map(stripTokenColumns);
 
     return res.status(200).json({ guests });
   } catch (err) {
@@ -229,7 +274,7 @@ async function handleWrite(req, res, caller, callerToken) {
         const body = await created.text().catch(() => '');
         throw new Error(`Base44 Guest create failed (${created.status}): ${body.slice(0, 200)}`);
       }
-      return res.status(200).json({ guest: mergeGuestPii(await created.json()) });
+      return res.status(200).json({ guest: stripTokenColumns(mergeGuestPii(await created.json())) });
     }
 
     if (!guestId) return res.status(400).json({ error: 'id is required.' });
@@ -256,7 +301,7 @@ async function handleWrite(req, res, caller, callerToken) {
         const body = await updated.text().catch(() => '');
         throw new Error(`Base44 Guest update failed (${updated.status}): ${body.slice(0, 200)}`);
       }
-      return res.status(200).json({ guest: mergeGuestPii(await updated.json()) });
+      return res.status(200).json({ guest: stripTokenColumns(mergeGuestPii(await updated.json())) });
     }
 
     // DELETE

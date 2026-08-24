@@ -108,6 +108,47 @@ export async function runRsvpTokenMinting() {
   const tpl = strip(read('src/components/guests/EmailTemplates.jsx'));
   check('the email template preview falls back to a placeholder',
     /RSVP_BASE\}preview-token/.test(tpl), 'never a live token in a sample');
+  // ── MINT-BACKFILL: tokens must never reach a client except deliberately ──
+  //
+  // Owner-side responses used to ship every guest's token ciphertext and hash to
+  // the browser on every guest-list load, unread by any client code. Tokens are
+  // BEARER CAPABILITIES: whoever holds one can answer as that guest.
+  // api/my-guest-links.js is the ONE deliberate path by which a token reaches a
+  // client -- rate limited, private/no-store, only the ids asked for.
+  //
+  // This assertion is the durable half of that fix. The strip can be undone by
+  // an accident; the probe cannot be undone silently.
+  check('owner-side responses strip the whole token family',
+    /const TOKEN_COLUMNS = \[/.test(guests)
+      && (guests.match(/'(?:plus_one_)?rsvp_link_id(?:_enc|_hash)?'/g) || []).length === 6,
+    'all six columns');
+  // Assert the three RESPONSE SITES, not a call count: `.map(stripTokenColumns)`
+  // passes the function bare, so counting `stripTokenColumns(` misses the list
+  // path entirely and reports a number that means nothing.
+  check('  every owner-side response applies the strip',
+    /\.map\(stripTokenColumns\)/.test(guests)
+      && /json\(\{ guest: stripTokenColumns\(mergeGuestPii\(await created\.json\(\)\)\) \}\)/.test(guests)
+      && /json\(\{ guest: stripTokenColumns\(mergeGuestPii\(await updated\.json\(\)\)\) \}\)/.test(guests),
+    'list, create, update');
+  check('  presence is exposed as a derived boolean, never the value',
+    /has_rsvp_token: !!guest\.rsvp_link_id_enc/.test(guests), 'has_rsvp_token');
+  // FLIPPED, not deleted. This asserted the OPPOSITE -- that the plaintext
+  // columns were deliberately left in the response, on the belief that E3 had
+  // nulled them. tokenPatch was still writing them (fixed in #540), so the
+  // assertion was pinning a leak in place. The strip must cover all six.
+  check('  the plaintext columns are stripped TOO',
+    /'rsvp_link_id', 'rsvp_link_id_enc', 'rsvp_link_id_hash'/.test(guests)
+      && /'plus_one_rsvp_link_id', 'plus_one_rsvp_link_id_enc', 'plus_one_rsvp_link_id_hash'/.test(guests),
+    'all six columns, permanently');
+
+  const guestsPage = strip(read('src/pages/Guests.jsx'));
+  check('the backfill sweeps only guests that lack a token',
+    /has_rsvp_token === false/.test(guestsPage) && /fetchGuestLinks\(missing\)/.test(guestsPage),
+    'the filter is the guard');
+  check('  and runs at most once per session',
+    /tokenBackfillDone/.test(guestsPage), 'no repeated sweeps');
+  check('  no missing token means no request at all',
+    /if \(missing\.length === 0\) return;/.test(guestsPage), 'hot path unchanged');
 
   return results;
 }
