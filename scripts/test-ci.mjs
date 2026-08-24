@@ -70,6 +70,7 @@ import { runContactSendPath } from '../tests/persistence/contact-send-path.mjs';
 import { runMutedTextTokens } from '../tests/persistence/muted-text-tokens.mjs';
 import { runSentenceCaseChrome } from '../tests/persistence/sentence-case-chrome.mjs';
 import { runCountUpInstant } from '../tests/persistence/countup-instant.mjs';
+import { runRsvpTokenMinting } from '../tests/persistence/rsvp-token-minting.mjs';
 import { runGuestCsvExport } from '../tests/persistence/guest-csv-export.mjs';
 import { runBudgetPlanExport } from '../tests/persistence/budget-plan-export.mjs';
 import { runNotesExport } from '../tests/persistence/notes-export.mjs';
@@ -160,6 +161,7 @@ async function run() {
   await runModule('runMutedTextTokens', () => runMutedTextTokens());
   await runModule('runSentenceCaseChrome', () => runSentenceCaseChrome());
   await runModule('runCountUpInstant', () => runCountUpInstant());
+  await runModule('runRsvpTokenMinting', () => runRsvpTokenMinting());
   await runModule('runGuestCsvExport', () => runGuestCsvExport());
   await runModule('runBudgetPlanExport', () => runBudgetPlanExport());
   await runModule('runNotesExport', () => runNotesExport());

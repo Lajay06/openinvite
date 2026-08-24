@@ -63,6 +63,7 @@
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
+import { tokenPatch } from './_lib/rsvpTokenCrypto.js';
 import { rejectIfTrialExpired } from './_lib/trialGuard.js';
 import { stripDerivedFields } from './_lib/guestProtectedFields.js';
 import { mergeGuestPii, buildGuestWriteFields } from './_lib/guestPii.js';
@@ -196,10 +197,33 @@ async function handleWrite(req, res, caller, callerToken) {
       if (!raw) return res.status(400).json({ error: 'fields is required.' });
       // A new guest has no current PII, so the blob is built from the payload
       // alone.
+      // MINT THE RSVP TOKEN AT CREATION, not at invite-send.
+      //
+      // Tokens used to be minted lazily by api/my-guest-links.js, and only for
+      // the guest ids that endpoint was ASKED for -- every caller passes a
+      // narrow selection (a send list, checked rows, one guest), never the whole
+      // list. So a guest added and never invited had no token, and
+      // api/rsvp-link-request.js requires `rsvp_link_id_enc` to match: that
+      // guest received the neutral `{sent:true}` response and no email,
+      // indistinguishable from not being on the list. Opening the guest list did
+      // NOT backfill them.
+      //
+      // Minting HERE rather than in the UI covers every client path through this
+      // endpoint at once -- the add flow, CSV import, and Ava's create_guest
+      // tool -- and cannot be missed by a call site added later. It costs no
+      // extra write: the fields ride in the create payload rather than a
+      // follow-up PUT.
+      //
+      // Plus-one tokens stay lazy. my-guest-links only mints one when the guest
+      // actually has a plus_one_email, because a token nobody will be sent is
+      // just more capability to leak, and a new guest has no plus-one contact.
       const created = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/Guest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${callerToken}` },
-        body: JSON.stringify(buildGuestWriteFields({}, fields)),
+        body: JSON.stringify({
+          ...buildGuestWriteFields({}, fields),
+          ...tokenPatch(crypto.randomUUID(), false),
+        }),
       });
       if (!created.ok) {
         const body = await created.text().catch(() => '');

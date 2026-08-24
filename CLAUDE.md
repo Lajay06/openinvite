@@ -11,6 +11,33 @@ hashed-identifier pattern, the User-entity auth quirk, schema drift, env
 var sourcing). Update it when you learn something new the same way.
 
 ## Rules
+- Em dashes: NOT a product rule. In marketing copy we author for publication,
+  prefer sentence structure over em-dash parentheticals — an authoring-time
+  editorial preference enforced by the marketing lane, never by a sweep and
+  never over product strings. Product copy is untouched; the canon trial
+  sentence contains one.
+- NO LOANWORD FLOURISHES IN UNIVERSE COPY. A universe evokes its place through
+  typography, imagery, palette and motion — never through souvenir vocabulary.
+  The reductio is the test: if paris says "avec plaisir", kyoto says "hai" and
+  marrakech says "inshallah", and the system becomes costume. Binds the design
+  lane as well as copy.
+- US ENGLISH in user-facing strings, product-wide. The product sells to the US
+  in USD. No British/Australian spellings (honoured, colour, organised) and no
+  UK/AU idiom ("the bit", "pop in", "quick as anything", "in due course").
+  This is a RULING, not a discovered rule — it postdates the code, so existing
+  strings are drift to be swept, not violations anyone committed.
+- Exclamation marks are barred in product CHROME, not in voiced universe copy.
+  The couple's site has a register; capri's rsvpIntro ("This is the bit where
+  you say yes!") is a deliberate, owner-approved exemption. A later sweep must
+  not strip it. Chrome strings like "Photos coming soon!" are still drift.
+- No emoji on user-facing surfaces. The rule is about PRESENTATION, not the
+  Unicode block: a violation is any glyph that renders in the system emoji font
+  — colour, platform-drawn, outside our type control. **U+FE0F (the emoji
+  variation selector) is the tell**: `☀️` is a violation, a bare `☀` is not.
+  NOT violations: monochrome text-presentation marks that inherit our typeface
+  and currentColor — ✓ ✗ ▲ ▼ ▶ ★ ☆ △ ◆ ○ ↔ ↗ ♥ ❝ ✆ ✎. Sort carets and the RSVP
+  tick stay. ✦ (U+2726) is not an exception to this rule, it is an instance of
+  it. Sweep for presentation, never for a block range.
 - Sentence case in PRODUCT CHROME — no ALL CAPS, no Uppercase Every Word.
   Genuine acronyms (FAQ, BYO, RSVP, OK) are not shouting and stay as they are.
 - No text-transform: uppercase in product chrome, CSS or JSX

@@ -518,3 +518,85 @@ Two corollaries learned the same day:
 This is the render-side twin of the two instrument rules already here: a
 positive control validates the instrument, not the conclusion's coverage; and
 when a control refuses to fire, the check is the suspect.
+
+---
+
+## A guard must observe through the same channel as the traffic it guards
+
+`assertHarnessServesModules` was written to catch one specific bug: a route glob
+that answered the application's own JavaScript modules with JSON, blanking every
+page. It used Playwright's `ctx.request`, which is a **separate network stack
+that bypasses `ctx.route()` entirely**. So the guard watched a channel the bug
+could never travel on. A control broke the routes deliberately and the guard
+reported healthy.
+
+**A guard that observes a different channel from the traffic it guards is not a
+weak guard. It is not a guard.** It produces confident green over the exact
+failure it was built for.
+
+Ask of any guard: *is what I am measuring the same path the defect would take?*
+Same family as the sweep that could not see background-drawn dividers, and the
+production check that read a bundle for an `rgba()` string the compiler had
+already turned into a hex.
+
+**Corollary — a control whose healthy side returns null or empty is broken, not
+passing.** After routing the probe through a page, its healthy branch returned
+`contentType: null`, because a `fetch` from `about:blank` has no origin and is
+blocked. Null read as "not JavaScript", which is indistinguishable from the
+failure being tested. Navigate first, then probe. A control must be able to
+tell *healthy* from *unreachable*, or it is only testing that something went
+wrong somewhere.
+
+---
+
+## Emoji: the canon is about presentation, not the Unicode block
+
+A violation is any glyph that renders in the **system emoji font** — colour,
+platform-drawn, outside our type control. **U+FE0F, the emoji variation
+selector, is the tell**: `☀️` is a violation, a bare `☀` is not. A sweep must
+report the variation selector, not match a block range.
+
+Monochrome text-presentation marks that inherit our typeface and `currentColor`
+are not violations: ✓ ✗ ▲ ▼ ▶ ★ ☆ △ ◆ ○ ↔ ↗ ♥ ❝ ✆ ✎. `✦` was never an
+exception to the canon — it is an instance of it.
+
+---
+
+## A canon rule is presumed UNENFORCED until it has been swept product-wide
+
+The "no emoji" rule had never been aimed at the application. The only emoji
+check ever written ran against two files — `claude/homepage-copy.md` and
+`prerendered/index.html` — and its pattern was adequate: it would have caught
+`🗳️`. It was simply never pointed at `src/` or `api/`. On that basis "zero
+emojis" was reported, and it was true of the homepage while the product carried
+**67** rendered pictographic emoji, including on guest-facing pages and in
+message templates sent in the couple's name.
+
+**Checking one file and reporting the general case is the same failure as a
+guard watching the wrong channel.** In both, something real was measured and
+the result was generalised past what it covered.
+
+So: a documented rule is evidence of intent, never evidence of compliance.
+Before treating any canon rule as held, ask *has this been swept across every
+user-facing surface, or only where I happened to look?* If only the latter, the
+rule's status is unknown — not clean.
+
+### Corollary — and it does not create scope that was never claimed
+
+A documented rule is evidence of intent, never compliance. **It is also not
+evidence of reach.** Both failure directions have now happened, days apart:
+
+- **Under-aimed (emoji).** A real product canon that had never been swept past
+  two marketing files. Reported clean; 67 rendered emoji were live, including on
+  guest pages and in templates sent in the couple's name.
+- **Over-scoped (em dashes).** An authoring preference from one document
+  (`claude/homepage-copy.md:3`) carried in the ledger as a product-wide lane
+  rule. A sweep found 618 product sites. None were violations. The tell was that
+  the owner-ratified, production-verified canon sentence at `Layout.jsx:572`
+  contains an em dash — **a rule the canon sentence violates is not a rule.**
+
+Before sweeping for a rule, establish two things: *where is it written*, and
+*what did it claim to govern*. Then aim at exactly that. Mechanical rules
+(emoji presentation, uppercase) are sweepable; stylistic ones (prefer sentence
+structure over em-dash parentheticals) are authoring-time preferences and must
+not be enforced by grep.
