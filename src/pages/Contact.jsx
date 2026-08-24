@@ -29,6 +29,9 @@ export default function Contact() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  // `sending` blocks a double-submit; `sendError` drives the failure state.
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState(null);
   const [formPhase, setFormPhase] = useState(prefersReduced() ? 4 : 0);
 
   useEffect(() => {
@@ -38,13 +41,35 @@ export default function Contact() {
     return () => timeouts.forEach(clearTimeout);
   }, []);
 
-  const handleSubmit = (e) => {
+  // This used to set submitted = true and send NOTHING -- every visitor was
+  // shown a success state and had their message discarded. Success is now
+  // reported ONLY on a 2xx from /api/contact.
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
+    if (sending) return;
+    setSendError(null);
+    setSending(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        // The visitor's text is NEVER cleared on failure. Losing what someone
+        // typed is the one unforgivable outcome here.
+        setSendError(payload.error || "Message could not be sent. Please try again.");
+        return;
+      }
+      // Clearing happens only after a confirmed send.
+      setSubmitted(true);
       setFormData({ name: "", email: "", topic: "", message: "" });
-      setSubmitted(false);
-    }, 3000);
+    } catch {
+      setSendError("Message could not be sent. Please check your connection and try again.");
+    } finally {
+      setSending(false);
+    }
   };
 
   const topics = ["Guest management", "Budget tracking", "Universes", "Ava", "Pricing", "Something else"];
@@ -146,8 +171,25 @@ export default function Contact() {
                   />
                 </div>
 
+                {sendError && (
+                  <div
+                    role="alert"
+                    style={{
+                      marginTop: 4, padding: "12px 14px",
+                      border: "1px solid rgba(224,53,83,0.4)",
+                      background: "rgba(224,53,83,0.06)",
+                      fontSize: 14, color: "#0A0A0A", lineHeight: 1.55,
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    }}
+                  >
+                    {sendError} Your message is still here, so nothing you wrote is lost.
+                  </div>
+                )}
+
                 <div style={{ marginTop: 8 }}>
-                  <ApplePillButton light={false} onClick={handleSubmit}>Send message →</ApplePillButton>
+                  <ApplePillButton light={false} onClick={handleSubmit}>
+                    {sending ? "Sending…" : "Send message →"}
+                  </ApplePillButton>
                 </div>
             </form>
           ) : (
