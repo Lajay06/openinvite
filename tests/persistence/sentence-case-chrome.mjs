@@ -31,17 +31,39 @@ import { pass, fail } from './_shared.mjs';
 const __dir = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(__dir, '../../src');
 
-// The exemption. Mirrors tests/persistence/muted-text-tokens.mjs; if the
-// ruling moves, both lists move together.
-const ARTWORK = /^components\/(guest-website|universe-studio|website-builder)\//;
+// THE EXEMPTION IS SURFACE-BASED, NOT DIRECTORY-BASED.
+//
+// Exempt: anything rendered on the couple's PUBLISHED GUEST SITE as part of
+// its designed presentation. The whole guest site is the couple's chosen
+// design. Product chrome means the dashboard, the studio, emails and the
+// marketing surfaces.
+//
+// Stating it as a surface rather than a folder is what makes the next
+// boundary case answer itself. A directory rule got this wrong once already:
+// GuestSuiteRegistry.jsx and GuestSuiteLiveStream.jsx READ guest-facing from
+// their filenames, but both use DashboardPageHeader, are reached from the
+// dashboard sidebar, and have no guest-site markers at all -- they are studio
+// pages the couple uses, so they are chrome. GuestMusic.jsx is the opposite:
+// it serves /w/:slug/music, so it is the published site and is exempt.
+//
+// The test for a new file is "does a GUEST see this as part of the wedding
+// site the couple designed?", not "what folder is it in".
+const ARTWORK = new RegExp([
+  // The published site itself, and the studio previews OF that site.
+  '^components/(guest-website|universe-studio|website-builder)/',
+  // Pages served on /w/:weddingSlug/* -- the published site, outside those folders.
+  '^pages/(GuestMusic|GuestAccommodation|GuestCollect)\\.jsx$',
+].join('|'));
 
 // Genuine acronyms and initialisms, plus units. Not sentence-case violations.
 const ACRONYMS = new Set(['FAQ', 'BYO', 'OK', 'RSVP', 'AI', 'URL', 'CSV', 'PDF', 'ID', 'US', 'UK', 'AU', 'QR', 'DJ', 'VIP', 'Q', 'A']);
 
-// Guest-suite pages sit OUTSIDE the exempt directories but render on the
-// couple's guest-facing site, so whether they are chrome or artwork is an open
-// boundary question. Held for a ruling rather than decided here.
-const HELD = new Set(['pages/GuestMusic.jsx', 'pages/GuestSuiteLiveStream.jsx', 'pages/GuestSuiteRegistry.jsx']);
+// Nothing is held any more: the surface ruling resolved every boundary case.
+// components/rsvp/RSVPPage.jsx stays GUARDED even though a guest sees it,
+// because "Invitation not found" is an error state, not designed
+// presentation -- a broken link is our failure to report, not the couple's
+// typography.
+const HELD = new Set();
 
 function walk(dir, out = []) {
   for (const e of readdirSync(dir)) {
@@ -107,7 +129,9 @@ export async function runSentenceCaseChrome() {
   check('CLAUDE.md scopes the rule to product chrome',
     /^- Sentence case in PRODUCT CHROME/m.test(claude) && !/^- Sentence case everywhere/m.test(claude),
     'rule line amended');
-  check('  and records the artwork exemption', /ARTWORK IS EXEMPT/.test(claude), 'exemption stated');
+  check('  and states the exemption in SURFACE terms',
+    /THE ARTWORK EXEMPTION IS SURFACE-BASED/.test(claude)
+      && /PUBLISHED GUEST SITE/.test(claude), 'surface wording, not a folder list');
 
   return results;
 }
