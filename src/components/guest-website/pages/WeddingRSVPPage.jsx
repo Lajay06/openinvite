@@ -21,7 +21,10 @@ import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 const STATUS = { idle: 'idle', sending: 'sending', sent: 'sent', error: 'error' };
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
-export default function WeddingRSVPPage({ weddingDetails, theme, typography, universeConfig }) {
+export default function WeddingRSVPPage({
+  weddingDetails, theme, typography, universeConfig,
+  recognisedToken = '', onForgetGuest,
+}) {
   const content = weddingDetails.rsvpContent || {};
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState(STATUS.idle);
