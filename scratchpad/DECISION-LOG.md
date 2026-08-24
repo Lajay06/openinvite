@@ -845,3 +845,29 @@ generates a `?rsvp=` link, so there is one end-to-end proof, not two:
 In production, at both widths. Owner accept on visuals, and both copy variants
 in the render: the trimmed warmth-only invitation line above a recognised
 guest's form, and the full intro as the unrecognised fallback state.
+
+### Gotcha #21 — two different objects are both called "copy"
+
+`universeConfig.copy` holds the UNIVERSE'S DEFAULTS — the 19 voiced strings in
+`src/lib/websiteThemes.js` (`rsvpIntro`, `rsvpSent`, `rsvpWelcome`, kickers).
+`weddingDetails.rsvpContent` holds the COUPLE'S OVERRIDES — what one couple
+typed in the builder, and empty for almost everyone.
+
+Read the wrong one and nothing errors. The `||` fallback catches it, so the
+hardcoded English default renders under all 19 voices and the page looks fine.
+
+Live example: PR #542's recognised-state line read `weddingDetails.rsvpContent`,
+so every universe rendered the same shared sentence while 19 per-universe lines
+sat unused two files away. **The build passed, and 21 probes passed** — the
+string was present, the component rendered, nothing was undefined. It was found
+by a human reading the copy in a render and asking why london sounded like
+brooklyn.
+
+Same family as `UNIVERSE_CATALOG` vs `WEBSITE_THEMES`: two plausible sources for
+the same-sounding thing, where picking the wrong one degrades silently instead
+of failing.
+
+**Rule of thumb: defaults come from the universe, overrides from the wedding.**
+If a string should differ per universe, it is `universeConfig.copy`. If a string
+should differ per couple, it is the wedding record. A probe cannot tell these
+apart — only reading the rendered words can.

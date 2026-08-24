@@ -14,6 +14,12 @@ const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 // internal default (which falls back to the London palette) — a wedding that
 // never chose a universe should see OpenInvite's own brand look, not a
 // phantom London theme it never selected.
+const DIETARY_OTHER = 'Something else';
+const DIETARY_OPTIONS = [
+  'No restrictions', 'Vegetarian', 'Vegan', 'Gluten free',
+  'Dairy free', 'Nut allergy', 'Halal', 'Kosher', DIETARY_OTHER,
+];
+
 const FALLBACK_THEME = {
   darkBg: '#FAFAFA', lightBg: '#FAFAFA', darkText: '#0A0A0A', lightText: '#0A0A0A',
   accent: '#E03553', accentSecondary: '#E03553', navBg: '#FAFAFA',
@@ -272,6 +278,35 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   const [notFound, setNotFound] = useState(false);
   // steps: 'rsvp' | 'polls' | 'done'
   const [step, setStep] = useState('rsvp');
+
+  // TWO STEPS, and the primary answer WRITES IMMEDIATELY.
+  //
+  // 'ask'      — the only question that matters: can you come?
+  // 'details'  — refinement, after the answer is already recorded
+  // 'declined' — the short path; a decline is complete at the tap
+  //
+  // Committing on the primary tap rather than at the end of a form is the point:
+  // a guest who taps yes and then closes the tab is still counted, which is what
+  // the couple actually needs. RsvpResponse is append-only with latest-wins, so
+  // the details write refines the first without conflicting with it -- the model
+  // was built for exactly this.
+  // Dietary is PICKED, then serialised back to the single free string the
+  // schema already stores. `dietaryRestrictions` stays the source of truth on
+  // the wire; these two drive the pills only.
+  const [dietaryPicked, setDietaryPicked] = useState([]);
+  const [dietaryOther, setDietaryOther] = useState('');
+  const toggleDietary = (opt) => {
+    setDietaryPicked(prev => {
+      // "No restrictions" is exclusive: it cannot coexist with a restriction.
+      if (opt === 'No restrictions') return prev.includes(opt) ? [] : [opt];
+      const without = prev.filter(o => o !== 'No restrictions');
+      return without.includes(opt) ? without.filter(o => o !== opt) : [...without, opt];
+    });
+  };
+
+  const [phase, setPhase] = useState('ask');
+  const [primarySaving, setPrimarySaving] = useState(false);
+  const [primaryError, setPrimaryError] = useState('');
   const turnstileRef = useRef(null);
   const tsTokenRef = useRef('');
   const [submitting, setSubmitting] = useState(false);
@@ -406,6 +441,58 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   const allEventsAnswered = invitedEvents.length > 0 &&
     invitedEvents.every(ev => eventForm[ev.event_id]?.status);
 
+  /**
+   * Write a set of event responses. Shared by the primary tap and the details
+   * submit so the two cannot drift: same endpoint, same shape, same merge.
+   */
+  const writeResponses = async (responses, extra = {}) => {
+    const res = await fetch('/api/rsvp-submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, event_responses: responses, ...extra }),
+    });
+    if (!res.ok) throw new Error('RSVP submit failed');
+    return res;
+  };
+
+  /**
+   * THE PRIMARY ANSWER. One tap, applied across every invited event, written
+   * straight away.
+   *
+   * A guest invited to several events gets that answer as their DEFAULT for all
+   * of them, and refines per event on the next screen if they need to. A guest
+   * invited to one event is simply finished answering.
+   */
+  const answerPrimary = async (yes) => {
+    if (primarySaving) return;
+    setPrimaryError('');
+    setPrimarySaving(true);
+    const status = yes ? 'yes' : 'no';
+    const now = new Date().toISOString();
+    try {
+      await writeResponses(invitedEvents.map(ev => ({
+        event_id: ev.event_id,
+        status,
+        meal_choice: null,
+        plus_ones: 0,
+        plus_one_names: [],
+        responded_at: now,
+      })));
+      // Seed the details form from the primary answer so the per-event list
+      // opens already reflecting what was just recorded.
+      setEventForm(prev => {
+        const next = { ...prev };
+        for (const ev of invitedEvents) next[ev.event_id] = { ...(next[ev.event_id] || {}), status };
+        return next;
+      });
+      setPhase(yes ? 'details' : 'declined');
+    } catch {
+      setPrimaryError('That did not save. Please try again.');
+    } finally {
+      setPrimarySaving(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!allEventsAnswered) return;
@@ -439,7 +526,14 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
           event_responses: submittedResponses,
           song_request: songRequest,
           rsvp_note: rsvpNote,
-          dietary_restrictions: dietaryRestrictions,
+          // Pills serialise back into the one free string the schema stores.
+          // "Something else" contributes its typed text, not the label.
+          dietary_restrictions: dietaryPicked.length
+            ? dietaryPicked
+                .map(o => (o === DIETARY_OTHER ? dietaryOther.trim() : o))
+                .filter(Boolean)
+                .join(', ')
+            : dietaryRestrictions,
           email,
         }),
       });
@@ -698,10 +792,97 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
           <p style={{ fontSize: 16, color: theme.lightText, marginBottom: 8 }}>Hi {firstName},</p>
         )}
         <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.65)', lineHeight: 1.7, marginBottom: 28 }}>
-          {coupleName || 'We'} would love to know if you can join {coupleName ? 'them' : 'us'} to celebrate. Please respond for each event below.
+          {phase === 'ask'
+            ? `${coupleName || 'We'} would love to know if you can join ${coupleName ? 'them' : 'us'} to celebrate.`
+            : phase === 'declined'
+              ? 'Thank you for letting us know.'
+              : 'You are counted in. Everything below is refinement — nothing here is waiting to be submitted.'}
         </p>
 
-        {/* Form */}
+        {/* ── THE PRIMARY QUESTION ──────────────────────────────────────────
+            Two large buttons, first thing, above everything else. This is the
+            only question the page exists to ask, and it COMMITS ON THE TAP: a
+            guest who answers and then closes the tab is still counted, which is
+            what the couple actually needs. Universe styling, because this is the
+            most-looked-at control in the product and grey chrome would waste it.
+            60px tall and full width -- sized for a thumb at 390, not a cursor. */}
+        {phase === 'ask' && (
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                { yes: true, label: 'Yes, I will be there' },
+                { yes: false, label: "Sorry, I can't make it" },
+              ].map(opt => (
+                <button
+                  key={String(opt.yes)}
+                  type="button"
+                  disabled={primarySaving || invitedEvents.length === 0}
+                  onClick={() => answerPrimary(opt.yes)}
+                  style={{
+                    width: '100%', minHeight: 60, padding: '18px 24px',
+                    borderRadius: 999, cursor: primarySaving ? 'wait' : 'pointer',
+                    border: opt.yes ? 'none' : `1px solid ${theme.accent}`,
+                    background: opt.yes ? theme.accent : 'transparent',
+                    color: opt.yes ? theme.lightBg : theme.accent,
+                    fontFamily: typography.headingFont,
+                    fontWeight: typography.headingWeight || 600,
+                    fontSize: 19, letterSpacing: '-0.01em',
+                    opacity: primarySaving ? 0.6 : 1,
+                    transition: 'opacity 0.15s ease',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {primaryError && (
+              <p role="alert" style={{ fontSize: 13, color: '#E03553', marginTop: 12 }}>{primaryError}</p>
+            )}
+            {invitedEvents.length === 0 && (
+              <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginTop: 16 }}>
+                No events found for this invitation yet — please check back soon or contact the couple.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ── THE DECLINE PATH ──────────────────────────────────────────────
+            Short, deliberately. The reply is already recorded; a note is
+            optional and nothing else is asked. Marching someone who cannot come
+            through a dietary form is exactly what this avoids. */}
+        {phase === 'declined' && (
+          <form onSubmit={handleSubmit}>
+            <p style={{ fontSize: 15, color: theme.lightText, lineHeight: 1.7, marginBottom: 20 }}>
+              Your reply is saved. If you would like to leave a note for
+              {coupleName ? ` ${coupleName}` : ' the couple'}, you can do it here.
+            </p>
+            <textarea
+              value={rsvpNote}
+              onChange={e => setRsvpNote(e.target.value)}
+              placeholder="Optional — anything you would like to say"
+              rows={4}
+              style={{
+                width: '100%', padding: '12px 14px', border: '1px solid rgba(10,10,10,0.12)',
+                borderRadius: 0, fontSize: 15, fontFamily: typography.bodyFont,
+                color: theme.lightText, background: '#FFFFFF', boxSizing: 'border-box', marginBottom: 20,
+              }}
+            />
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                width: '100%', minHeight: 52, borderRadius: 999, border: 'none',
+                background: theme.accent, color: theme.lightBg, cursor: 'pointer',
+                fontFamily: typography.headingFont, fontWeight: typography.headingWeight || 600, fontSize: 16,
+              }}
+            >
+              {submitting ? 'Saving…' : 'Send my note'}
+            </button>
+          </form>
+        )}
+
+        {/* Details — reached only once the primary answer is recorded */}
+        {phase === 'details' && (
         <form onSubmit={handleSubmit}>
 
           {invitedEvents.length === 0 ? (
@@ -729,13 +910,41 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
               Dietary restrictions
               <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.6)', marginLeft: 6 }}>optional</span>
             </label>
-            <input
-              type="text"
-              value={dietaryRestrictions}
-              onChange={e => setDietaryRestrictions(e.target.value)}
-              placeholder="e.g. gluten free, nut allergy"
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
-            />
+            {/* PILLS, not a text box. A guest should be recognising their
+                  requirement, not composing it -- and a tapped option is a
+                  thumb-sized target where a text field is a keyboard. Storage
+                  stays a free STRING, as ruled: this is input, not schema, so
+                  anything already saved keeps working and nothing migrates. */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {DIETARY_OPTIONS.map(opt => {
+                const on = dietaryPicked.includes(opt);
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => toggleDietary(opt)}
+                    style={{
+                      minHeight: 40, padding: '9px 16px', borderRadius: 999, cursor: 'pointer',
+                      border: `1px solid ${on ? theme.accent : 'rgba(10,10,10,0.15)'}`,
+                      background: on ? `${theme.accent}1A` : '#FFFFFF',
+                      color: on ? theme.accent : theme.lightText,
+                      fontSize: 14, fontWeight: on ? 600 : 400, ...F,
+                    }}
+                  >
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+            {dietaryPicked.includes(DIETARY_OTHER) && (
+              <input
+                type="text"
+                value={dietaryOther}
+                onChange={e => setDietaryOther(e.target.value)}
+                placeholder="What should they know?"
+                style={{ width: '100%', marginTop: 10, padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', boxSizing: 'border-box', ...F }}
+              />
+            )}
           </div>
 
           <div style={{ marginBottom: 20 }}>
@@ -794,6 +1003,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
             {submitting ? 'Sending…' : 'Submit RSVP'}
           </button>
         </form>
+        )}
 
         {/* Footer */}
         <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 48 }}>

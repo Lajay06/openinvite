@@ -126,7 +126,14 @@ export const PUBLISHED_WEDDING = {
   locked: false,
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music',
                  'photos', 'styling', 'polls', 'faq', 'stay', 'transport', 'experience'],
-  mainCeremony: { venueName: 'The Old Observatory', address: '12 Greenwich Park, London', time: '15:00' },
+  // REAL EVENTS, PERMANENTLY. getWeddingEvents() derives Ceremony and Reception
+  // from these; without them a guest has no invited events, so RSVPPage renders
+  // ZERO EventCards and therefore ZERO attend controls. A render sheet built on
+  // that seed showed dietary, message and Submit -- every secondary field -- and
+  // not the question the page exists to ask, and it went to owner review that
+  // way. A reviewer cannot see what is absent. These stay.
+  mainCeremony: { venueName: 'The Old Observatory', address: '12 Greenwich Park, London', startTime: '15:00', time: '15:00' },
+  reception: { venueName: 'The Long Room', address: '12 Greenwich Park, London', startTime: '18:00', time: '18:00' },
   rsvpContent: { rsvpDeadline: iso(200) },
   musicContent: {},
   music: { playlists: [{ playlistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M', enabled: true }], guestRequestsEnabled: true },
