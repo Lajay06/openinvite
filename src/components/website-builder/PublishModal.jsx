@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { fetchGuestLinks } from '@/lib/guestLinks';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
 
@@ -43,6 +44,31 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     const next = { websiteEnabled: !details?.websiteEnabled };
     await base44.entities.WeddingDetails.update(details.id, next);
     onUpdate(next);
+
+    // PUBLISH-TIME SWEEP, over EVERY guest id -- not a selection.
+    //
+    // Guests created through api/my-guests.js already carry a token. This is
+    // the safety net for the rest: rows created before that shipped, and any
+    // path that reaches Guest without going through it. Publishing is the right
+    // moment because it is when the site becomes something a guest can arrive
+    // at and try to RSVP.
+    //
+    // Passing ALL ids is load-bearing. my-guest-links mints only for the ids it
+    // is ASKED for, and every other caller passes a narrow selection (a send
+    // list, checked rows, one guest). A selection here would inherit exactly the
+    // gap this sweep exists to close.
+    //
+    // Only on publish, never on unpublish, and non-fatal: a failed sweep must
+    // not make the couple think their site did not publish.
+    if (next.websiteEnabled) {
+      try {
+        const all = await base44.entities.Guest.list();
+        const ids = (all || []).map(g => g?.id).filter(Boolean);
+        if (ids.length > 0) await fetchGuestLinks(ids);
+      } catch (err) {
+        console.error('[publish] guest token sweep failed:', err?.message);
+      }
+    }
   };
 
   const saveSlug = async () => {

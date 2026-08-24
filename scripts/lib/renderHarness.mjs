@@ -102,6 +102,40 @@ export const SEED = {
   Budget: [],
 };
 
+
+/**
+ * A PUBLISHED wedding site, as /api/wedding-by-slug returns it.
+ *
+ * The guest site does not read entities directly -- MultiPageWeddingWebsite
+ * calls fetchWeddingBySlug(), which hits /api/wedding-by-slug and renders
+ * whatever that returns. Seeding entities alone leaves every /w/ route on its
+ * skeleton, so guest-page passes need this separately.
+ *
+ * `enabledPages` lists all twelve so a sweep can reach every sub-page; a real
+ * couple would enable a subset. No password, so the gate never intercepts.
+ */
+export const PUBLISHED_WEDDING = {
+  id: 'w1',
+  slug: 'ada-and-alan',
+  coupleNames: 'Ada & Alan',
+  couple1Name: 'Ada', couple2Name: 'Alan',
+  partner1Name: 'Ada', partner2Name: 'Alan',
+  weddingDate: iso(300),
+  activeUniverse: 'london',
+  passwordProtected: false,
+  locked: false,
+  enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music',
+                 'photos', 'styling', 'polls', 'faq', 'stay', 'transport', 'experience'],
+  mainCeremony: { venueName: 'The Old Observatory', address: '12 Greenwich Park, London', time: '15:00' },
+  rsvpContent: { rsvpDeadline: iso(200) },
+  musicContent: {},
+  music: { playlists: [{ playlistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M', enabled: true }], guestRequestsEnabled: true },
+  ourStory: { headline: 'How we met', body: 'On a wet Tuesday in a bookshop.' },
+  faq: [{ question: 'Is there parking?', answer: 'Yes, behind the observatory.' }],
+  accommodation: {}, transport: {}, experienceGuide: {},
+  created_by: 'fixture@example.com', created_by_id: 'u1',
+};
+
 /** The couple. Paid plan, onboarded, so no gate or banner intercepts the page. */
 export const FIXTURE_USER = {
   id: 'u1', email: 'fixture@example.com', full_name: 'Render Fixture',
@@ -130,6 +164,10 @@ export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEnt
     if (/\/api\/my-wedding-details/.test(url)) return json({ details: (seed.WeddingDetails ?? [])[0] ?? null });
     if (/\/api\/my-guest-links/.test(url))     return json({ links: [] });
     if (/\/api\/rates/.test(url))              return json({ result: 'success', rates: { USD: 1, AUD: 1.5 } });
+    // The guest site's single source: without this every /w/ route sits on its
+    // skeleton forever, which reads as "nothing rendered" rather than "not seeded".
+    if (/\/api\/wedding-by-slug/.test(url))   return json(PUBLISHED_WEDDING);
+    if (/\/api\/guest-/.test(url))            return json({ ok: true });
     return json([]);
   };
   // A URL PREDICATE, not a glob. `'**/api/**'` looks right and is a trap: it
@@ -176,6 +214,97 @@ export async function presenceThenProperties(page, expect, assertFn) {
   return { ok: true, missing: [], ...result };
 }
 
+
+/**
+ * ROUTE -> NAMED EXPECTED STRING.
+ *
+ * A character count is a PROXY for "did the page render", and every false
+ * signal this harness has produced came from trusting one:
+ *
+ *   - a 2500ms flat wait reported 34/34 surfaces MISSING on pages that render
+ *   - a >80-char threshold passed on 13 routes that were showing the entrance
+ *     overlay and nothing else
+ *   - a >400-char threshold invented three CRITICAL mobile blanks, which were
+ *     really the nav collapsing to a hamburger and taking 46 characters with it
+ *
+ * So presence is a named string that the page must contain. These are page
+ * headings that render whether or not the couple has added content, checked
+ * against the real rendered output rather than read off the source.
+ *
+ * Universe-dependent: PUBLISHED_WEDDING pins `london`, whose kickers are
+ * "AN INVITATION" / "OUR STORY" / "THE CELEBRATION". Change the universe and
+ * these change with it.
+ */
+export const GUEST_ROUTE_EXPECT = {
+  '':            'AN INVITATION',
+  'our-story':   'OUR STORY',
+  'celebration': 'THE CELEBRATION',
+  'rsvp':        'RSVP',
+  'registry':    'Registry',
+  'music':       'Song requests',
+  'photos':      'Photos',
+  'styling':     'What will you wear?',
+  'polls':       'Guest polls',
+  'faq':         'FAQ',
+  'stay':        'Where to stay',
+  'transport':   'Getting here',
+  'experience':  'Your guide to',
+};
+
+/**
+ * Sets the per-slug key that suppresses EntranceMoment, the guest site's
+ * full-screen intro.
+ *
+ * CORRECTION, recorded because it was reported as fact and was not: the intro
+ * was blamed for a sweep's uniformly thin character counts. Measured
+ * afterwards, the overlay does NOT gate content under this harness -- the nav
+ * and page text are present from 800ms with prefers-reduced-motion both on and
+ * off. The thin counts were the seed's empty states the whole time. This call
+ * is kept because suppressing a first-visit animation is correct for a
+ * deterministic pass, NOT because it fixed anything.
+ *
+ * Returns whether it was dismissed, so a pass can REPORT the dismissal rather
+ * than silently depend on it.
+ */
+export async function dismissEntrance(ctx, slug = PUBLISHED_WEDDING.slug) {
+  await ctx.addInitScript((s) => {
+    localStorage.setItem(`oi_entrance_${s}`, '1');
+  }, slug);
+  return { dismissed: true, key: `oi_entrance_${slug}` };
+}
+
+/**
+ * KNOWN BLIND SPOTS, as of the date this was written. Stated because an
+ * instrument whose limits are undocumented gets trusted past them.
+ *
+ *  1. SEED DEPTH. PUBLISHED_WEDDING carries the site shell but almost no
+ *     per-page content: no story blocks, no photo rows, no registry items, no
+ *     FAQ entries. Pages render their empty states. Any pass about LAYOUT
+ *     (cropping, alignment, overflow) is therefore measuring near-empty pages
+ *     and must not report a clean result as coverage.
+ *  2. ONE UNIVERSE. Everything is asserted against `london`. Motif, kicker and
+ *     typography behaviour differ per universe; 18 others are unmeasured.
+ *  3. STUBBED BACKEND. Responses are fixtures, so nothing here can catch a
+ *     server contract change, an RLS rule, or an encryption path. Endpoint
+ *     shape drift shows up as a rendering bug with a misleading cause.
+ *  4. NO REAL AUTH. Identity is a stubbed response behind a dummy token.
+ *     Admin-gated surfaces (pages/Admin.jsx) are out of reach by design.
+ *  5. DESKTOP + MOBILE ONLY. 1440 and 390. The 768-1023 band, where the `lg`
+ *     breakpoint has already produced one live defect (the trial banner),
+ *     is not swept by default.
+ *  6. NO NETWORK REALITY. No latency, no failures, no slow images. Timing
+ *     defects that only appear on a real connection cannot surface here.
+ */
+export const KNOWN_BLIND_SPOTS = [
+  'seed carries no per-page content — layout passes measure empty states',
+  'one universe (london) — 18 others unmeasured',
+  'stubbed backend — cannot catch server contract or encryption drift',
+  'no real auth — admin-gated surfaces unreachable',
+  'two widths only — the 768-1023 band is unswept',
+  'no network reality — latency and failure modes invisible',
+  'EntranceMoment does not gate content headlessly — dismissal is hygiene, not a fix',
+];
+
 /**
  * Harness self-check: prove the route predicate is not swallowing the app.
  *
@@ -191,10 +320,26 @@ export async function presenceThenProperties(page, expect, assertFn) {
  * JavaScript, never application/json.
  */
 export async function assertHarnessServesModules(ctx, base) {
-  const probe = `${base}/src/api/base44Client.js`;
-  const res = await ctx.request.get(probe).catch((e) => ({ error: e.message }));
-  if (res.error) return { ok: false, contentType: null, status: null, error: res.error };
-  const ct = res.headers()['content-type'] || '';
-  const ok = res.status() === 200 && /javascript|ecmascript/i.test(ct);
-  return { ok, contentType: ct, status: res.status() };
+  // MUST go through a PAGE. `ctx.request` is a separate network stack that
+  // BYPASSES ctx.route() entirely, so the first version of this guard could
+  // never have seen the very bug it was written to catch -- a control proved
+  // it by breaking the routes and watching the guard report healthy.
+  const page = await ctx.newPage();
+  try {
+    // Navigate first: a fetch from about:blank has no origin, so the request is
+    // blocked and the guard reports a null content-type -- indistinguishable
+    // from "served wrong". Caught by control 4's healthy branch.
+    await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
+    const probe = `${base}/src/api/base44Client.js`;
+    const r = await page.evaluate(async (u) => {
+      try {
+        const res = await fetch(u);
+        return { status: res.status, ct: res.headers.get('content-type') || '' };
+      } catch (e) { return { error: String(e).slice(0, 120) }; }
+    }, probe);
+    if (r.error) return { ok: false, contentType: null, status: null, error: r.error };
+    return { ok: r.status === 200 && /javascript|ecmascript/i.test(r.ct), contentType: r.ct, status: r.status };
+  } finally {
+    await page.close();
+  }
 }

@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // TASK 1: entity references via authenticated client (no @/entities/* imports)
 const WeddingDetails = base44.entities.WeddingDetails;
+import { fetchGuestLinks } from '@/lib/guestLinks';
+
 const Guest = base44.entities.Guest;
 const Budget = base44.entities.Budget;
 
@@ -437,7 +439,20 @@ export default function Onboarding() {
       completed.weddingDetails = true;
 
       if (onboardingData.guestList.length > 0) {
-        await Guest.bulkCreate(onboardingData.guestList);
+        // bulkCreate goes straight to the SDK, bypassing api/my-guests.js -- so
+        // these guests, the very first a couple ever has, are the one creation
+        // path that does not mint an RSVP token with the row. Sweeping them
+        // through my-guest-links immediately mints for every id passed, which is
+        // what makes a guest reachable by api/rsvp-link-request.js later.
+        // Non-fatal: onboarding must not fail over a token a later sweep can
+        // still mint.
+        const createdGuests = await Guest.bulkCreate(onboardingData.guestList);
+        const newIds = (Array.isArray(createdGuests) ? createdGuests : [])
+          .map(g => g?.id).filter(Boolean);
+        if (newIds.length > 0) {
+          try { await fetchGuestLinks(newIds); }
+          catch (err) { console.error('[onboarding] token mint sweep failed:', err?.message); }
+        }
       }
       completed.guests = true;
 

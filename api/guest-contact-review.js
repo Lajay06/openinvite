@@ -40,6 +40,7 @@
 
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
+import { tokenPatch } from './_lib/rsvpTokenCrypto.js';
 import { decryptPayload } from './_lib/questionnaireCrypto.js';
 
 const BASE44_API = 'https://base44.app/api';
@@ -160,11 +161,17 @@ async function handlePost(req, res, caller, callerToken) {
   const decrypted = safeDecrypt(submission.encrypted_contact_details) || {};
 
   if (action === 'approve') {
+    // Mint the RSVP token with the row, for the same reason api/my-guests.js
+    // does: a guest without `rsvp_link_id_enc` cannot be sent their link by
+    // api/rsvp-link-request.js and receives the neutral "sent" response with no
+    // email. This path creates a Guest directly, bypassing my-guests.js
+    // entirely, so it needs its own mint or approved guests arrive tokenless.
     await callerFetch('POST', `/apps/${BASE44_APP_ID}/entities/Guest`, callerToken, {
       name: decrypted.name || 'Guest',
       email: decrypted.email || undefined,
       phone: decrypted.phone || undefined,
       mailing_address: decrypted.mailing_address || undefined,
+      ...tokenPatch(crypto.randomUUID(), false),
     });
     await adminFetch('PUT', `/apps/${BASE44_APP_ID}/entities/GuestContactSubmission/${submissionId}`, { status: 'approved' });
     return res.status(200).json({ ok: true });
