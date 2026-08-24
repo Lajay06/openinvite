@@ -79,5 +79,35 @@ export async function runRsvpTokenMinting() {
       && /Nothing here inspects the token's SHAPE/.test(auth),
     'a 27-char legacy token must keep resolving');
 
+  // ── THE WRITE-STOP: plaintext tokens are never created ──────────────────
+  //
+  // tokenPatch used to emit `[prefix]: token` -- the token itself, in a plain
+  // column, beside its own ciphertext. That defeats RSVP_TOKEN_KEY for the row:
+  // a reader of the row does not need the key. It survived because its comment
+  // said "legacy plaintext -- E3 nulls this", which describes a ONE-TIME
+  // MIGRATION of existing data and says nothing about what the function does.
+  // #538 built on the helper without reading its write, so every guest created
+  // after it minted a fresh plaintext capability.
+  //
+  // This is the durable half. The write can be reintroduced by an accident; the
+  // probe cannot be undone silently.
+  const crypto_ = strip(read('api/_lib/rsvpTokenCrypto.js'));
+  check('tokenPatch NEVER emits the plaintext column',
+    !/\[prefix\]:\s*token/.test(crypto_), 'no bare-prefix write');
+  check('  it still writes hash and ciphertext together',
+    /\[`\$\{prefix\}_hash`\]: hashToken\(token\)/.test(crypto_)
+      && /\[`\$\{prefix\}_enc`\]: encryptToken\(token\)/.test(crypto_),
+    'both, or a token cannot be resolved');
+  check('  and the reason is recorded where the pen is',
+    /never written/i.test(crypto_) || /ONE-TIME MIGRATION/i.test(read('api/_lib/rsvpTokenCrypto.js')),
+    'so the comment cannot be misread again');
+
+  // The sample-email invariant EmailTemplates depends on: with plaintext no
+  // longer written, `guests.find(g => g.rsvp_link_id)` finds nothing and the
+  // placeholder branch is taken. A preview must never carry a live capability.
+  const tpl = strip(read('src/components/guests/EmailTemplates.jsx'));
+  check('the email template preview falls back to a placeholder',
+    /RSVP_BASE\}preview-token/.test(tpl), 'never a live token in a sample');
+
   return results;
 }

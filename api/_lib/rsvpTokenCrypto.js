@@ -116,21 +116,35 @@ export function decryptToken(blob) {
 }
 
 /**
- * The dual-write patch for a newly minted (or newly migrated) token.
+ * The write patch for a newly minted (or newly migrated) token.
  *
- * One helper so that "plaintext, hash and ciphertext are written together" is
- * a single fact in one place rather than an invariant three call sites have to
- * remember. A row carrying a token without its hash resolves only through the
- * plaintext fallback — and dies the moment E3 nulls that column.
+ * HASH AND CIPHERTEXT ONLY. The plaintext column is never written.
+ *
+ * It used to be. The line read `[prefix]: token` with the comment "legacy
+ * plaintext — E3 nulls this", and that comment was read by a later author as
+ * "plaintext is no longer written". It never said that.
+ * scripts/null-rsvp-plaintext.mjs was a ONE-TIME MIGRATION that nulled existing
+ * rows; it did not touch this writer. So E3 cleaned the data and left the pen
+ * on the desk, and every mint after it re-created a plaintext bearer
+ * capability beside its own ciphertext — which defeats RSVP_TOKEN_KEY for that
+ * row entirely, since a reader of the row does not need the key.
+ *
+ * A comment describing a past migration is a statement about data that once
+ * was. It is never a statement about what this function does now.
+ *
+ * Nothing needs the plaintext. Lookups resolve through `_hash`
+ * (api/_lib/rsvpAuth.js) and recovery through `_enc`; api/my-guest-links.js
+ * keeps `decryptToken(enc) || guest.rsvp_link_id` as a legacy recovery path,
+ * which is inert for every row E3 nulled and stays inert for every row minted
+ * from here.
  *
  * @param {string} token
  * @param {boolean} isPlusOne
- * @returns {object} field patch to merge into a Guest update
+ * @returns {object} field patch to merge into a Guest write
  */
 export function tokenPatch(token, isPlusOne = false) {
   const prefix = isPlusOne ? 'plus_one_rsvp_link_id' : 'rsvp_link_id';
   return {
-    [prefix]: token,                       // legacy plaintext — E3 nulls this
     [`${prefix}_hash`]: hashToken(token),
     [`${prefix}_enc`]: encryptToken(token),
   };
