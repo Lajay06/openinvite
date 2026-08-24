@@ -1,210 +1,69 @@
-import React, { useRef, useEffect, useState } from "react";
-import ApplePillButton from "@/components/motion/ApplePillButton";
+/**
+ * Home — the shopfront.
+ *
+ * Nine sections, built from claude/homepage-copy.md, which is the copy source
+ * of record. The copy in that document's blockquotes is the spec: it is built
+ * verbatim, and the annotations around it are part of the spec too.
+ *
+ * ORDER IS THE ARGUMENT: promise, proof, system, credibility, trust, price,
+ * bonus, objections, ask. Moving the invitation up breaks the positioning.
+ * Moving pricing down means the completeness claim arrives after the reader has
+ * already decided we are expensive. Do not reorder these without going back to
+ * the copy document.
+ *
+ * Standing prohibitions from the page-level notes: no logo wall, no testimonial
+ * section until there are real beta couples (it goes between 4 and 5 when there
+ * are), no countdown, no urgency mechanic, no percentage indicator anywhere,
+ * and nothing competing with the single CTA in section 9.
+ */
+import React from "react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
-import ScrollProgress from "@/components/motion/ScrollProgress";
-import HeroCollage from "@/components/home/HeroCollage";
-import ValuePropSection from "@/components/home/ValuePropSection";
-import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
-import UniverseMiniHero from "@/components/home/UniverseMiniHero";
-import UniverseTeaserSection from "@/components/home/UniverseTeaserSection";
-import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
-import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import { useOrganizationStructuredData } from "@/hooks/useOrganizationStructuredData";
-import { responsivePhoto } from "@/lib/marketingImage";
 
-// Web export (1600x1067): 0.42x of the device pixels the end-cap box needs at
-// dpr 2, and that is the asset's ceiling, not the URL's.
-const END_CAP = responsivePhoto("DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3", 1600);
+import HeroSection from "@/components/homepage/HeroSection";
+import DailyPageSection from "@/components/homepage/DailyPageSection";
+import WhatsInItSection from "@/components/homepage/WhatsInItSection";
+import AntiGenericSection from "@/components/homepage/AntiGenericSection";
+import CalmSection from "@/components/homepage/CalmSection";
+import PricingSection from "@/components/homepage/PricingSection";
+import InvitationSection from "@/components/homepage/InvitationSection";
+import QuestionsSection from "@/components/homepage/QuestionsSection";
+import FooterCtaSection from "@/components/homepage/FooterCtaSection";
+
+const DAILY_PAGE_ID = "the-daily-page";
 
 export default function Home() {
   useMarketingSeo();
   useOrganizationStructuredData();
 
-  const handleCTA = () => {
-    window.location.href = '/signup';
+  const start = () => { window.location.href = "/signup"; };
+
+  // The hero's secondary CTA scrolls to section 2 rather than opening
+  // anything, per its build note.
+  const seeHow = () => {
+    const el = document.getElementById(DAILY_PAGE_ID);
+    if (!el) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] font-sans" style={{ scrollBehavior: "smooth" }}>
+    <div className="min-h-screen font-sans" style={{ background: "#FFFFFF" }}>
       <PublicNav />
-      <ScrollProgress />
 
-      {/* 1. HERO */}
-      <div id="section-hero">
-        <HeroCollage onCTA={handleCTA} />
-      </div>
+      <HeroSection onStart={start} onSeeHow={seeHow} />
+      <DailyPageSection id={DAILY_PAGE_ID} />
+      <WhatsInItSection />
+      <AntiGenericSection />
+      <CalmSection />
+      <PricingSection />
+      <InvitationSection />
+      <QuestionsSection />
+      <FooterCtaSection onStart={start} />
 
-      {/* 2. RED SILHOUETTE — full-width natural-height image */}
-      <ValuePropSection />
-
-      {/* 4. HORIZONTAL SCROLL */}
-      <div id="section-features" style={{ background: "#0A0A0A" }}>
-        <HorizontalScrollSection />
-      </div>
-
-      {/* 4b. UNIVERSES MINI-HERO — a full-bleed photo moment (round-4-
-          followups: rebuilt from a plain typographic beat) that signals
-          universes are a big deal before expanding into the actual teaser
-          content right below it. */}
-      <UniverseMiniHero />
-
-      {/* 4c. UNIVERSES TEASER — universes had no presence on the homepage
-          at all after the carousel's Universes card and the old
-          Invitations/guest-suite section were both removed. High level
-          only (5 real photos, not the full 20-universe grid — that's the
-          Universes page's job), dark and minimal to match the rest of the
-          homepage, with a clear CTA through to /universes. */}
-      <UniverseTeaserSection />
-
-      {/* 5. AVA GRADIENT BANNER + SPOTLIGHT — the black carousel now runs
-          straight into the gradient banner. The "Invitations & guest suite"
-          moment and the "Three steps" how-it-works block that used to sit
-          here are both gone: invitations/guest-suite now lives exclusively
-          on the Universes page (which gets the full treatment), and
-          "Three steps" was generic filler with nothing distinctive to say.
-          Removing them also killed the actual root cause of the "random
-          black dead space" complaint — this page was stacking five
-          consecutive scroll-jacked/sticky sections back to back (this
-          video moment, the price-honesty reveal, the carousel, then two
-          more inside the now-deleted Invitations section), and each one's
-          release/re-engage handoff briefly showed a static, empty black
-          frame. Fewer sticky sections, no dead handoffs. */}
-      {/* Reverted to the original pre-AUDIT_2026-07.md-S16 gradient and
-          plain white text (no outline, no deepened stops) — the lower
-          contrast on this one decorative banner is an accepted tradeoff,
-          confirmed against git history (f2a0914^) rather than approximated. */}
-      <div className="min-h-[140px] md:min-h-[180px]" style={{
-        background: "linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "40px 24px",
-      }}>
-        <span style={{ fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif", textAlign: "center" }}>
-          AI meets I Do. Say hello to Ava.
-        </span>
-      </div>
-      <AvaSpotlightSection />
-
-      {/* 8. PRICING */}
-      <div id="section-pricing">
-        <PricingSection />
-      </div>
-
-      {/* 9. FULL BLEED PHOTO CTA */}
-      <MarketingEndCap
-        image={END_CAP.src}
-        srcSet={END_CAP.srcSet}
-        alt="A couple running together, laughing"
-        cta={{ label: "Get started", href: "/signup" }}
-      />
-
-      {/* 10. FOOTER */}
       <PublicFooter />
-    </div>);
-
-}
-
-// ── Pricing ───────────────────────────────────────────────────────
-
-const EASE = "cubic-bezier(0.16,1,0.3,1)";
-const prefersReduced = () =>
-  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-// A plain tier label, not a full pricing table or a clickable card — full
-// comparison and the actual CTAs live on /Pricing. Honest about there being
-// two tiers instead of implying $49 unlocks everything (Ultra's website
-// builder, invitations and guest suite are $99, per Pricing.jsx's own
-// PRO_FEATURES/ULTRA_EXTRAS split).
-function TierChip({ name, price, blurb, accent }) {
-  return (
-    <div
-      style={{
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        textAlign: "center",
-        gap: 4, padding: "24px 40px", borderRadius: 999,
-        border: "1px solid rgba(10,10,10,0.12)",
-        // Width comes from the grid column, height from row stretch, so both
-        // pills match and their labels/prices/blurbs share baselines.
-        width: "100%", height: "100%", boxSizing: "border-box",
-      }}
-    >
-      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", color: accent, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-        {name}
-      </span>
-      <span style={{ fontSize: "clamp(28px, 3vw, 36px)", fontWeight: 700, color: "#0A0A0A", letterSpacing: "-0.02em", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-        {price}
-      </span>
-      <span style={{ fontSize: 13, color: "rgba(10,10,10,0.6)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-        {blurb}
-      </span>
     </div>
-  );
-}
-
-function PricingSection() {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  const reduced = prefersReduced();
-
-  useEffect(() => {
-    if (reduced) { setVisible(true); return; }
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.2 }
-    );
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-
-  return (
-    <section ref={ref} style={{ background: "#FFFFFF", padding: "clamp(100px, 12vw, 180px) clamp(24px, 6vw, 80px)", textAlign: "center" }}>
-      <h2 style={{
-        fontSize: "clamp(40px, 6vw, 76px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05,
-        color: "#0A0A0A", margin: "0 0 20px", fontFamily: "'Plus Jakarta Sans', sans-serif",
-        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)",
-        transition: reduced ? "none" : `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
-      }}>
-        From <span style={{ color: "#E03553" }}>US$49</span>.
-      </h2>
-      <p style={{
-        maxWidth: 480, margin: "0 auto 48px", color: "rgba(10,10,10,0.6)", fontSize: 18, lineHeight: 1.6,
-        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
-        transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.1s, transform 0.7s ${EASE} 0.1s`,
-      }}>
-        Two plans, no subscriptions, ever. One payment covers 24 months of planning access.
-        Pick the one that fits.
-      </p>
-      <style>{`
-        /* Below 640px the two-up grid would force a max-content width wider
-           than the viewport, so stack instead. Single column keeps the pills
-           equal width to each other and inside the screen. */
-        @media (max-width: 639px) {
-          .tier-chip-row { grid-template-columns: 1fr !important; width: 100% !important; }
-        }
-      `}</style>
-      <div className="tier-chip-row" style={{
-        // Grid at width: max-content with 1fr columns makes BOTH columns take
-        // the widest pill's max-content width, so the pair is symmetrical
-        // without hardcoding a pixel value that would silently break if the
-        // blurb copy changed. The old flex row let each pill size to its own
-        // content: 263px vs 357px, because the Ultra blurb is 47 characters
-        // against Pro's 29.
-        display: "grid", gridTemplateColumns: "repeat(2, 1fr)", width: "max-content", maxWidth: "100%",
-        gap: 20, justifyContent: "center", margin: "0 auto 48px",
-        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
-        transition: reduced ? "none" : `opacity 0.7s ${EASE} 0.15s, transform 0.7s ${EASE} 0.15s`,
-      }}>
-        <TierChip name="Pro" price="US$49" blurb="Planning, guests, budget, Ava" accent="#E03553" />
-        <TierChip name="Ultra" price="US$99" blurb="Everything, plus universes & digital invitations" accent="#F59E0B" />
-      </div>
-      <div style={{
-        display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", justifyContent: "center",
-        opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
-        transition: reduced ? "none" : `opacity 0.6s ${EASE} 0.2s, transform 0.6s ${EASE} 0.2s`,
-      }}>
-        <ApplePillButton href="/pricing">Compare plans</ApplePillButton>
-      </div>
-    </section>
   );
 }
