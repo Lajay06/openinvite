@@ -85,7 +85,7 @@ export default function ThingsToDo({ weddingLocation, weddingCity }) {
   if (loading && !hasLoaded) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <Loader2 className="w-12 h-12 text-gray-900 animate-spin mb-4" />
+        <Loader2 className="w-12 h-12 text-[#0A0A0A] animate-spin mb-4" />
         <p className="text-[rgba(10,10,10,0.6)]">Finding activities in {weddingCity}...</p>
       </div>
     );
@@ -95,7 +95,7 @@ export default function ThingsToDo({ weddingLocation, weddingCity }) {
     <div className="space-y-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Things to Do</h2>
+          <h2 className="text-2xl font-bold text-[#0A0A0A]">Things to Do</h2>
           <p className="text-sm mt-1" style={{ color: color.textMuted }}>Must-see attractions in {weddingCity}</p>
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function ThingsToDo({ weddingLocation, weddingCity }) {
               <div className="flex-1 flex flex-col justify-between min-w-0">
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-1">
-                    <h3 className="text-base font-medium text-gray-900 leading-tight">
+                    <h3 className="text-base font-medium text-[#0A0A0A] leading-tight">
                       {activity.name}
                     </h3>
                     <Badge variant="outline" className="text-xs flex-shrink-0">{activity.type}</Badge>
@@ -134,7 +134,7 @@ export default function ThingsToDo({ weddingLocation, weddingCity }) {
                     {activity.cost && (
                       <>
                         <span className="text-[rgba(10,10,10,0.3)]">•</span>
-                        <span className="font-medium text-gray-900">{activity.cost}</span>
+                        <span className="font-medium text-[#0A0A0A]">{activity.cost}</span>
                       </>
                     )}
                   </div>
@@ -162,7 +162,7 @@ export default function ThingsToDo({ weddingLocation, weddingCity }) {
                   {activity.website && (
                     <Button 
                       variant="link" 
-                      className="p-0 h-auto text-xs text-[rgba(10,10,10,0.6)] hover:text-gray-900"
+                      className="p-0 h-auto text-xs text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A]"
                       asChild
                     >
                       <a href={activity.website} target="_blank" rel="noopener noreferrer">

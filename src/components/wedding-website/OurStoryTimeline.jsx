@@ -63,7 +63,7 @@ export default function OurStoryTimeline({ milestones = [] }) {
                       </span>
                     </div>
                     
-                    <h3 className="text-xl font-medium text-gray-900 mb-3">
+                    <h3 className="text-xl font-medium text-[#0A0A0A] mb-3">
                       {milestone.title}
                     </h3>
                     

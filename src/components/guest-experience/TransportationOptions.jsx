@@ -84,7 +84,7 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
   if (loading && !hasLoaded) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <Loader2 className="w-12 h-12 text-gray-900 animate-spin mb-4" />
+        <Loader2 className="w-12 h-12 text-[#0A0A0A] animate-spin mb-4" />
         <p className="text-[rgba(10,10,10,0.6)]">Finding transportation in {weddingCity}...</p>
       </div>
     );
@@ -94,7 +94,7 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
     <div className="space-y-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Transportation Options</h2>
+          <h2 className="text-2xl font-bold text-[#0A0A0A]">Transportation Options</h2>
           <p className="text-sm mt-1" style={{ color: color.textMuted }}>Getting around {weddingCity}</p>
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
               <div className="flex-1 flex flex-col justify-between min-w-0">
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-1">
-                    <h3 className="text-base font-medium text-gray-900 leading-tight">
+                    <h3 className="text-base font-medium text-[#0A0A0A] leading-tight">
                       {option.name}
                     </h3>
                     <Badge variant="outline" className="text-xs flex-shrink-0">{option.type}</Badge>
@@ -145,11 +145,11 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-lg font-bold text-gray-900">{option.cost}</span>
+                  <span className="text-lg font-bold text-[#0A0A0A]">{option.cost}</span>
                   {option.bookingUrl && (
                     <Button 
                       variant="link" 
-                      className="p-0 h-auto text-xs text-[rgba(10,10,10,0.6)] hover:text-gray-900"
+                      className="p-0 h-auto text-xs text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A]"
                       asChild
                     >
                       <a href={option.bookingUrl} target="_blank" rel="noopener noreferrer">

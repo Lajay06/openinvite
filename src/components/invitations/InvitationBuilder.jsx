@@ -76,7 +76,7 @@ export default function InvitationBuilder({ onInvitationSaved, onBack }) {
             <div className="flex items-center gap-4">
               <Sparkles className="w-8 h-8 text-pink-500" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Create Your Wedding Website</h1>
+                <h1 className="text-3xl font-bold text-[#0A0A0A]">Create Your Wedding Website</h1>
                 <p style={{ color: color.textMuted }}>Let's start with the basics. You can design everything else in the studio.</p>
               </div>
             </div>

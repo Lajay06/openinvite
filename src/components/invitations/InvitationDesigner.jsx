@@ -290,7 +290,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
     <div className="h-full bg-white">
       <div className="border-b border-gray-100 px-6 py-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-gray-900">Design Studio</h2>
+          <h2 className="text-lg font-medium text-[#0A0A0A]">Design Studio</h2>
           <Badge variant="outline" className="text-xs">
             {design.sections?.length || 0} sections
           </Badge>
@@ -315,7 +315,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                     <Wand2 className="w-6 h-6 text-blue-600" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    <h3 className="text-lg font-semibold text-[#0A0A0A] mb-1">
                       Ava website builder
                     </h3>
                     <p className="text-[rgba(10,10,10,0.6)] text-sm mb-4 leading-relaxed">
@@ -345,7 +345,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
 
             {design.sections && design.sections.length > 0 && (
               <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Your Sections</h3>
+                <h3 className="text-sm font-medium text-[#0A0A0A] mb-3">Your Sections</h3>
                 {design.sections.map((section, index) => (
                   <div
                     key={section.id}
@@ -356,7 +356,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                         {index + 1}
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">{section.name}</div>
+                        <div className="font-medium text-[#0A0A0A]">{section.name}</div>
                         <div className="text-sm" style={{ color: color.textMuted }}>
                           {section.components?.length || 0} elements
                         </div>
@@ -387,7 +387,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
           <TabsContent value="design" className="space-y-6 mt-0">
             <div className="space-y-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-4">Typography</h3>
+                <h3 className="text-sm font-medium text-[#0A0A0A] mb-4">Typography</h3>
                 <div>
                   <label className="block text-sm text-[rgba(10,10,10,0.6)] mb-2">Font Family</label>
                   <Select 
@@ -410,7 +410,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
               </div>
 
               <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-4">Colors</h3>
+                <h3 className="text-sm font-medium text-[#0A0A0A] mb-4">Colors</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm text-[rgba(10,10,10,0.6)] mb-2">Primary</label>
@@ -460,7 +460,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
           <TabsContent value="settings" className="space-y-6 mt-0">
             <div className="space-y-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-4">Basic Information</h3>
+                <h3 className="text-sm font-medium text-[#0A0A0A] mb-4">Basic Information</h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm text-[rgba(10,10,10,0.6)] mb-2">Couple Names</label>

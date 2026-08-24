@@ -223,7 +223,7 @@ export default function AIWeddingAssistant() {
                         <Sparkles className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg text-gray-900">Ask Ava</CardTitle>
+                        <CardTitle className="text-lg text-[#0A0A0A]">Ask Ava</CardTitle>
                         <p className="text-sm" style={{ color: color.textMuted }}>Your personal wedding planning expert</p>
                       </div>
                     </div>
@@ -251,7 +251,7 @@ export default function AIWeddingAssistant() {
                           <div className={`rounded-2xl px-4 py-3 ${
                             message.type === 'user' 
                               ? 'bg-pink-500 text-white' 
-                              : 'bg-white text-gray-900 border border-gray-200 shadow-sm'
+                              : 'bg-white text-[#0A0A0A] border border-gray-200 shadow-sm'
                           }`}>
                             <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                           </div>

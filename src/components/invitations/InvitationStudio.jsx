@@ -95,7 +95,7 @@ export default function InvitationStudio({ invitation, weddingDetails, onBack, o
           <div className="flex items-center gap-4">
             {/* The onBack button is removed as this is now the main view */}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-[#0A0A0A]">
                 {currentInvitation.couple_names || 'Wedding Invitation'}
               </h1>
               <p className="text-sm" style={{ color: color.textMuted }}>Guest Suite Studio</p>

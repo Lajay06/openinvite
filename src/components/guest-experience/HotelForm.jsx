@@ -75,7 +75,7 @@ export default function HotelForm({ hotel, onSubmit, onCancel }) {
       <Card className="bg-white border-gray-200 shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-bold text-gray-900">
+            <CardTitle className="text-xl font-bold text-[#0A0A0A]">
               {hotel ? 'Edit Hotel' : 'Add Hotel Recommendation'}
             </CardTitle>
             <Button variant="ghost" size="icon" onClick={onCancel}>
