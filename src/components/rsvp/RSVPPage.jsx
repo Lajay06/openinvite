@@ -1005,10 +1005,13 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         </form>
         )}
 
-        {/* Footer */}
-        <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 48 }}>
-          Powered by openinvite.com.au
-        </p>
+        {/* Footer — standalone only. The site has its own; a second one inside
+            the tab is the same duplication the header had. */}
+        {!embedded && (
+          <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 48 }}>
+            Powered by openinvite.com.au
+          </p>
+        )}
       </div>
     </div>
   );
