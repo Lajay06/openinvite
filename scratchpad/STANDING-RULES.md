@@ -482,3 +482,39 @@ origin/<branch>`, or read the changed line back with `git show
 origin/<branch>:<path>`.** Local exit status is not evidence that a push
 landed. (`push.autoSetupRemote true` is now set repo-locally, which removes
 the common cause but not the class.)
+
+---
+
+## Presence before properties
+
+A render pass first proves the expected content strings are **present**, and
+only then asserts anything about them. A property asserted over absent content
+is not evidence — it is an empty read wearing a pass.
+
+This was adopted after item 6's production verification reported "no shouting"
+on five pages. Every entity call was stubbed to `[]`, so those pages rendered
+their sidebar and nothing else: 738 characters on TodoList, all of it
+navigation. The bodies under test never appeared. The pass was structurally
+incapable of finding a defect and reported clean.
+
+It surfaced by asking the page for three strings the code says must be there —
+`Ideas`, `In progress`, `Done` — and getting NOT FOUND.
+
+**The check is: could this assertion have failed?** If the content it asserts
+about is absent, the answer is no, and the result means nothing. Encoded as
+`presenceThenProperties()` in `scripts/lib/renderHarness.mjs`, which refuses to
+run the property assertion at all when the presence check fails, and reports
+MISSING instead of passing.
+
+Two corollaries learned the same day:
+
+- **Wait for content, not for milliseconds.** A flat sleep is either too short
+  (everything reads as MISSING on pages that render fine — this pass first
+  reported 34/34 absent) or too long (past the window the test is meant to
+  observe, so the property passes vacuously). Poll for the expected string.
+- **An empty read and a clean read look identical in a summary line.** Report
+  what rendered, not only what was not found.
+
+This is the render-side twin of the two instrument rules already here: a
+positive control validates the instrument, not the conclusion's coverage; and
+when a control refuses to fire, the check is the suspect.

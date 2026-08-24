@@ -35,7 +35,8 @@
     "capture:upload": "node scripts/capture/upload.mjs",
     "verify": "node scripts/verify-all.mjs",
     "pr:green": "node scripts/pr-checks-green.mjs",
-    "generate:entity-fields": "node scripts/generate-entity-fields.mjs"
+    "generate:entity-fields": "node scripts/generate-entity-fields.mjs",
+    "test:stat-surfaces": "node scripts/test-stat-surfaces.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",
