@@ -115,7 +115,7 @@ export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-sm font-medium text-gray-900">{activity.name}</h4>
+            <h4 className="text-sm font-medium text-[#0A0A0A]">{activity.name}</h4>
             <Badge variant="outline" className="text-xs">{activity.type}</Badge>
           </div>
           <p className="text-xs text-[rgba(10,10,10,0.6)] mb-2">{activity.description}</p>
@@ -140,7 +140,7 @@ export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Itinerary Planner</h2>
+          <h2 className="text-2xl font-bold text-[#0A0A0A]">Itinerary Planner</h2>
           <p className="text-sm mt-1" style={{ color: color.textMuted }}>Day-by-day guides for your visit to {weddingCity}</p>
         </div>
       </div>
@@ -170,7 +170,7 @@ export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
         <TabsContent value="3-day" className="mt-6 space-y-6">
           {itineraries.threeDay.map((day, dayIndex) => (
             <div key={dayIndex}>
-              <h3 className="text-base font-semibold text-gray-900 mb-3">{day.day}</h3>
+              <h3 className="text-base font-semibold text-[#0A0A0A] mb-3">{day.day}</h3>
               <div className="border-t border-gray-200">
                 {day.activities.map((activity, actIndex) => renderActivity(activity, actIndex))}
               </div>
@@ -181,7 +181,7 @@ export default function ItineraryPlanner({ weddingLocation, weddingCity }) {
         <TabsContent value="5-day" className="mt-6 space-y-6">
           {itineraries.fiveDay.map((day, dayIndex) => (
             <div key={dayIndex}>
-              <h3 className="text-base font-semibold text-gray-900 mb-3">{day.day}</h3>
+              <h3 className="text-base font-semibold text-[#0A0A0A] mb-3">{day.day}</h3>
               <div className="border-t border-gray-200">
                 {day.activities.map((activity, actIndex) => renderActivity(activity, actIndex))}
               </div>

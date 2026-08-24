@@ -199,7 +199,7 @@ export default function PhotoGalleryPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="text-xs mb-1" style={{ color: color.textMuted }}>Total Photos</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.totalPhotos}</div>
+            <div className="text-2xl font-bold text-[#0A0A0A]">{stats.totalPhotos}</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="text-xs mb-1" style={{ color: color.textMuted }}>Visible to Guests</div>
@@ -207,11 +207,11 @@ export default function PhotoGalleryPage() {
           </div>
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="text-xs mb-1" style={{ color: color.textMuted }}>Engagement</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.byCategory.engagement || 0}</div>
+            <div className="text-2xl font-bold text-[#0A0A0A]">{stats.byCategory.engagement || 0}</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="text-xs mb-1" style={{ color: color.textMuted }}>Ceremony</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.byCategory.ceremony || 0}</div>
+            <div className="text-2xl font-bold text-[#0A0A0A]">{stats.byCategory.ceremony || 0}</div>
           </div>
         </div>
 
@@ -220,7 +220,7 @@ export default function PhotoGalleryPage() {
           <Card className="border-gray-200">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-[#0A0A0A]">
                   {editingPhoto ? 'Edit Photo' : 'Upload Photo'}
                 </h3>
                 <Button variant="ghost" size="icon" onClick={resetForm}>

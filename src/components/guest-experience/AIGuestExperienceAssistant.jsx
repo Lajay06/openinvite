@@ -162,7 +162,7 @@ Format as a friendly, helpful guide.`,
           ) : (
             <div className="space-y-6 py-4">
               <div className="prose max-w-none">
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg whitespace-pre-wrap text-gray-800">
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg whitespace-pre-wrap text-[#0A0A0A]">
                   {recommendations}
                 </div>
               </div>

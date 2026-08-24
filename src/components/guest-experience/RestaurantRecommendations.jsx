@@ -101,7 +101,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
         <div className="flex-1 flex flex-col justify-between min-w-0">
           <div>
             <div className="flex items-start justify-between gap-3 mb-1">
-              <h3 className="text-base font-medium text-gray-900 leading-tight">
+              <h3 className="text-base font-medium text-[#0A0A0A] leading-tight">
                 {restaurant.name}
               </h3>
               <Badge variant="outline" className="text-xs flex-shrink-0">{restaurant.cuisine}</Badge>
@@ -127,7 +127,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
               {restaurant.priceRange && (
                 <>
                   <span className="text-[rgba(10,10,10,0.3)]">•</span>
-                  <span className="font-medium text-gray-900">{restaurant.priceRange}</span>
+                  <span className="font-medium text-[#0A0A0A]">{restaurant.priceRange}</span>
                 </>
               )}
             </div>
@@ -159,7 +159,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
             {restaurant.website && (
               <Button 
                 variant="link" 
-                className="p-0 h-auto text-xs text-[rgba(10,10,10,0.6)] hover:text-gray-900"
+                className="p-0 h-auto text-xs text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A]"
                 asChild
               >
                 <a href={restaurant.website} target="_blank" rel="noopener noreferrer">
@@ -176,7 +176,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
   if (loading && !hasLoaded && customRestaurants.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <Loader2 className="w-12 h-12 text-gray-900 animate-spin mb-4" />
+        <Loader2 className="w-12 h-12 text-[#0A0A0A] animate-spin mb-4" />
         <p className="text-[rgba(10,10,10,0.6)]">Finding restaurants in {weddingCity}...</p>
       </div>
     );
@@ -186,7 +186,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
     <div className="space-y-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Restaurant Recommendations</h2>
+          <h2 className="text-2xl font-bold text-[#0A0A0A]">Restaurant Recommendations</h2>
           <p className="text-sm mt-1" style={{ color: color.textMuted }}>Best dining experiences in {weddingCity}</p>
         </div>
         {aiRestaurants.length === 0 && hasLoaded && (
@@ -205,7 +205,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
         <div className="space-y-0">
           <div className="flex items-center gap-2 mb-4">
             <Heart className="w-4 h-4 text-pink-500" />
-            <h3 className="text-base font-semibold text-gray-900">Our Favorites</h3>
+            <h3 className="text-base font-semibold text-[#0A0A0A]">Our Favorites</h3>
           </div>
           <div className="border-t border-gray-200">
             {customRestaurants.map((restaurant) => renderRestaurantRow(restaurant, true))}
@@ -215,7 +215,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
 
       {aiRestaurants.length > 0 && (
         <div className="space-y-0">
-          <h3 className="text-base font-semibold text-gray-900 mb-4">More Great Options</h3>
+          <h3 className="text-base font-semibold text-[#0A0A0A] mb-4">More Great Options</h3>
           <div className="border-t border-gray-200">
             {aiRestaurants.map((restaurant) => renderRestaurantRow(restaurant, false))}
           </div>
@@ -235,7 +235,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
       )}
 
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">💡 Dining Tips</h3>
+        <h3 className="text-sm font-semibold text-[#0A0A0A] mb-2">💡 Dining Tips</h3>
         <ul className="space-y-1 text-xs text-[rgba(10,10,10,0.6)]">
           <li>• Make reservations in advance for popular spots</li>
           <li>• Ask your hotel concierge for insider recommendations</li>

@@ -16,11 +16,20 @@
  * labels, link text -- so all 65 map to the one role that fits: textMuted,
  * rgba(10,10,10,0.6), which clears AA at ~5.25:1.
  *
- * STILL OPEN, deliberately not covered here: 53 `text-gray-900`, 1
- * `text-gray-800` and 6 `hover:text-gray-900`. gray-900 is #111827, a
- * blue-tinted near-black that is not the house #0A0A0A, so it is the same
- * class of drift -- but it is a 60-site change that was not in this item's
- * scope, and it is reported rather than absorbed.
+ * FEEL-PASS 3B closed the other end of the same ramp: 53 `text-gray-900`, 1
+ * `text-gray-800` and 6 `hover:text-gray-900`, 60 sites across 17 files.
+ * gray-900 is #111827, a blue-tinted near-black that is not the house #0A0A0A.
+ * Those were headings, titles and primary body text, so they take the house
+ * ink rather than a muted role.
+ *
+ * With both halves done the Tailwind grey ramp is retired from TEXT entirely.
+ * It survives on non-text utilities (`border-gray-200`, `bg-gray-100` and
+ * friends), which are a separate class and are not this item's business.
+ *
+ * NOTE ON COMPILED OUTPUT: Tailwind minifies `rgba(10,10,10,0.6)` to the
+ * 8-digit hex `#0a0a0a99`. Verifying this pass by grepping a built bundle for
+ * an `rgba(...)` string finds nothing and reads as "the classes never
+ * compiled". They do. Check for the hex.
  */
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { resolve, dirname, join } from 'path';
@@ -70,6 +79,16 @@ export async function runMutedTextTokens() {
   const hex888 = hits(/#888(?![0-9a-fA-F])/g);
   check('  #888 stays absent from product chrome', hex888.length === 0,
     `${hex888.length} found${hex888.length ? ': ' + [...new Set(hex888)].join(', ') : ''}`);
+
+  // ---- the ink end of the ramp (3b) ----
+  const g89 = hits(/\btext-gray-(800|900)\b/g);
+  check('no text-gray-800/900 remains', g89.length === 0,
+    `${g89.length} found${g89.length ? ': ' + [...new Set(g89)].slice(0,4).join(', ') : ''}`);
+  const anyTextGrey = hits(/\b(?:hover:)?text-gray-\d{3}\b/g);
+  check('  the Tailwind grey ramp is retired from text entirely', anyTextGrey.length === 0,
+    `${anyTextGrey.length} found`);
+  const ink = hits(/text-\[#0A0A0A\]/g);
+  check('  primary text uses the house ink', ink.length >= 100, `${ink.length} sites`);
 
   // The replacement is the token value, not another arbitrary grey.
   const muted = hits(/text-\[rgba\(10,10,10,0\.6\)\]/g);

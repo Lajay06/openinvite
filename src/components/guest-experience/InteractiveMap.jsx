@@ -215,7 +215,7 @@ export default function InteractiveMap({
                 <div className="p-2 space-y-3">
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h4 className="font-medium text-gray-900 text-sm">{location.name}</h4>
+                      <h4 className="font-medium text-[#0A0A0A] text-sm">{location.name}</h4>
                       <Badge 
                         variant="secondary" 
                         className={`text-xs bg-${location.color}-100 text-${location.color}-700`}

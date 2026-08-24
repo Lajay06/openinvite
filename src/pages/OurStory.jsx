@@ -298,7 +298,7 @@ export default function OurStoryPage() {
 
         {/* Milestones List */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-[#0A0A0A] mb-4">
             Your Timeline ({milestones.length})
           </h2>
           
@@ -349,7 +349,7 @@ export default function OurStoryPage() {
                                 )}
                                 
                                 <div className="flex-1">
-                                  <h3 className="font-medium text-gray-900 mb-1">
+                                  <h3 className="font-medium text-[#0A0A0A] mb-1">
                                     {milestone.title}
                                   </h3>
                                   <p className="text-sm mb-2" style={{ color: color.textMuted }}>

@@ -14,7 +14,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
     return (
       <div className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md transition-all duration-300">
         <div className="space-y-3">
-          <h3 className="text-xl font-semibold text-gray-900">{content.title}</h3>
+          <h3 className="text-xl font-semibold text-[#0A0A0A]">{content.title}</h3>
           {content.time && (
             <div className="flex items-center gap-2 text-[rgba(10,10,10,0.6)]">
               <Clock className="w-4 h-4" />
@@ -23,7 +23,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
           )}
           {content.venue && (
             <div className="space-y-1">
-              <div className="font-medium text-gray-900">{content.venue}</div>
+              <div className="font-medium text-[#0A0A0A]">{content.venue}</div>
               {content.address && (
                 <div className="flex items-start gap-2 text-[rgba(10,10,10,0.6)] text-sm">
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -55,7 +55,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
           <div className="flex-1 space-y-3">
             <div className="flex items-center gap-3">
               <Hotel className="w-5 h-5" style={{ color: color.iconMuted }} />
-              <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+              <h3 className="font-semibold text-[#0A0A0A] group-hover:text-blue-600 transition-colors">
                 {content.name}
               </h3>
             </div>
@@ -71,7 +71,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
               {content.rating && (
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                  <span className="text-sm font-medium text-gray-900">{content.rating}</span>
+                  <span className="text-sm font-medium text-[#0A0A0A]">{content.rating}</span>
                 </div>
               )}
               {content.priceRange && (
@@ -231,7 +231,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
         <a
           key={section.id}
           href={`#section-${index}`}
-          className="block px-4 py-2 text-sm font-medium text-[rgba(10,10,10,0.6)] hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+          className="block px-4 py-2 text-sm font-medium text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] hover:bg-gray-50 rounded-lg transition-colors"
           onClick={() => setMobileMenuOpen(false)}
         >
           {section.name}
@@ -248,7 +248,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
           <div className="flex items-center justify-between h-16">
             {/* Logo/Title */}
             <div className="flex-shrink-0">
-              <span className="text-lg font-semibold text-gray-900">
+              <span className="text-lg font-semibold text-[#0A0A0A]">
                 {invitation?.couple_names || 'Wedding Website'}
               </span>
             </div>
@@ -259,7 +259,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
                 <a
                   key={section.id}
                   href={`#section-${index}`}
-                  className="text-sm font-medium text-[rgba(10,10,10,0.6)] hover:text-gray-900 transition-colors"
+                  className="text-sm font-medium text-[rgba(10,10,10,0.6)] hover:text-[#0A0A0A] transition-colors"
                 >
                   {section.name}
                 </a>
