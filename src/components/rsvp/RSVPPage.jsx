@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { getWeddingEvents, getGuestEventResponse, DEFAULT_MEAL_OPTIONS } from '@/lib/weddingEvents';
 import { resolveColors, resolveTypography, resolveUniverseConfig, isMotionEnabled } from '@/lib/universeStyling';
@@ -25,8 +25,31 @@ const FALLBACK_TYPOGRAPHY = {
 };
 
 // ── Shared page shell ─────────────────────────────────────────────────────────
-function PageShell({ coupleName, dateStr, venue, theme, typography, universeConfig, wedding, children }) {
+/**
+ * The chrome around the form.
+ *
+ * `embedded` is the whole difference between the standalone /rsvp/:token page
+ * and the RSVP tab inside the couple's site. Standalone, this owns the viewport:
+ * full height, its own background, the Openinvite wordmark, the couple's names
+ * and date, and a "Powered by" footer — because it IS the page.
+ *
+ * Embedded, the site already provides every one of those. The nav is above, the
+ * universe background is behind, the couple's names are in the masthead, and the
+ * footer is the site's. Repeating them would render the wedding's name twice on
+ * one screen and stack two footers. So embedded mode contributes NOTHING but the
+ * form itself, and inherits the section rhythm around it.
+ *
+ * The form body below is identical in both. That is deliberate: a guest filling
+ * this in from an emailed link and a guest filling it in from the site tab are
+ * answering the same questions, and one implementation means they cannot drift.
+ */
+function PageShell({ coupleName, dateStr, venue, theme, typography, universeConfig, wedding, embedded, children }) {
   const F = { fontFamily: typography.bodyFont };
+
+  if (embedded) {
+    return <div style={{ ...F }}>{children}</div>;
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: theme.lightBg, ...F }}>
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' }}>
@@ -193,10 +216,58 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices, theme, typ
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
-export default function RSVPPage() {
-  const { token } = useParams();
+/**
+ * @param {object} props
+ * @param {string} [props.token]    the guest's RSVP token. Omitted on the
+ *   standalone route, where it comes from the URL instead.
+ * @param {boolean} [props.embedded] render as a section inside the guest site
+ *   rather than as a standalone page.
+ */
+export default function RSVPPage({ token: tokenProp, embedded = false }) {
+  // The standalone route supplies the token in the URL; the embedded tab passes
+  // it as a prop from the site's recognition state. useParams() is safe in both:
+  // outside a matching route it simply yields no token.
+  // Embedded mode collapses the page chrome. Four branches render their own
+  // container -- loading, not-found, the main form, and PageShell -- because the
+  // main form predates PageShell and duplicates its header inline rather than
+  // using it. That duplication is pre-existing drift, left alone here: this PR
+  // is about where the form RENDERS, and rewriting the header at the same time
+  // would put a layout change inside a routing change.
+  const shellOuter = (t) => (embedded ? {} : { minHeight: '100vh', background: t.lightBg });
+  const shellInner = (embedded
+    ? { maxWidth: 520, margin: '0 auto' }
+    : { maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' });
+  const navigate = useNavigate();
+  const { token: tokenFromUrl } = useParams();
+  const token = tokenProp || tokenFromUrl;
+
+
   const [guest, setGuest] = useState(null);
   const [wedding, setWedding] = useState(null);
+
+  // REDIRECT INTO THE SITE — enabled only now that the tab renders a real form.
+  //
+  // A guest arriving from an emailed /rsvp/<token> link belongs inside the
+  // couple's site, not on a standalone page outside it: the site IS the
+  // invitation, and replying should not eject them from it. The slug comes from
+  // the lookup this component already performs, so no extra request is made.
+  //
+  // ORDERING IS LOAD-BEARING. Until WeddingRSVPPage embedded the form, this
+  // redirect would have sent every guest holding a link from a working form to
+  // a page offering only an email box. That is why it lands here and not in the
+  // transport PR.
+  //
+  // `replace` rather than `push`: the token URL must not sit in history where a
+  // back button returns to it. The token travels once as ?rsvp= and is stripped
+  // by the site on arrival.
+  const [redirected, setRedirected] = useState(false);
+  useEffect(() => {
+    if (embedded || redirected) return;
+    const slug = wedding?.slug;
+    if (!slug || !token) return;
+    setRedirected(true);
+    navigate(`/w/${slug}/rsvp?rsvp=${encodeURIComponent(token)}`, { replace: true });
+  }, [embedded, redirected, wedding, token, navigate]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   // steps: 'rsvp' | 'polls' | 'done'
@@ -450,7 +521,7 @@ export default function RSVPPage() {
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.lightBg, ...F }}>
+      <div style={{ ...shellOuter(theme), minHeight: embedded ? 220 : '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', ...F }}>
         <div style={{ width: 28, height: 28, border: '2px solid #EEE', borderTopColor: theme.accent, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -460,7 +531,7 @@ export default function RSVPPage() {
   // ── Not found ──────────────────────────────────────────────────────────────
   if (notFound) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.lightBg, padding: '24px', ...F }}>
+      <div style={{ ...shellOuter(theme), minHeight: embedded ? 220 : '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', ...F }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em', marginBottom: 12 }}>Invitation not found</p>
           <h1 style={{ fontSize: 24, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, marginBottom: 12, letterSpacing: '-0.02em' }}>This link has expired or is invalid</h1>
@@ -473,7 +544,7 @@ export default function RSVPPage() {
   // ── Done / thank you ───────────────────────────────────────────────────────
   if (step === 'done') {
     return (
-      <PageShell coupleName={coupleName} dateStr={dateStr} venue={venue} theme={theme} typography={typography} universeConfig={universeConfig} wedding={wedding}>
+      <PageShell embedded={embedded} coupleName={coupleName} dateStr={dateStr} venue={venue} theme={theme} typography={typography} universeConfig={universeConfig} wedding={wedding}>
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ width: 56, height: 56, background: anyAttending ? '#F0FDF4' : '#F5F5F5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 22 }}>
@@ -525,7 +596,7 @@ export default function RSVPPage() {
   // ── Polls step ─────────────────────────────────────────────────────────────
   if (step === 'polls') {
     return (
-      <PageShell coupleName={coupleName} dateStr={dateStr} venue={venue} theme={theme} typography={typography} universeConfig={universeConfig} wedding={wedding}>
+      <PageShell embedded={embedded} coupleName={coupleName} dateStr={dateStr} venue={venue} theme={theme} typography={typography} universeConfig={universeConfig} wedding={wedding}>
         {/* Heading */}
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
           <div style={{ marginBottom: 28 }}>
@@ -592,8 +663,8 @@ export default function RSVPPage() {
 
   // ── RSVP form (step === 'rsvp') — one card per invited event ───────────────
   return (
-    <div style={{ minHeight: '100vh', background: theme.lightBg, ...F }}>
-      <div style={{ maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' }}>
+    <div style={{ ...shellOuter(theme), ...F }}>
+      <div style={shellInner}>
 
         {/* Logo */}
         <p style={{ fontSize: 13, fontWeight: 800, color: theme.lightText, letterSpacing: '-0.02em', marginBottom: 48 }}>openinvite</p>
