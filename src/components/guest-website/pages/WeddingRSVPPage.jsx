@@ -965,7 +965,12 @@ export default function WeddingRSVPPage({
  * hunting.
  */
 function RecognisedRsvp({ token, onForgetGuest, weddingDetails, theme, typography, universeConfig }) {
-  const copy = weddingDetails.rsvpContent || {};
+  // The universe's own copy, the same source the unrecognised intro reads
+  // (universeConfig.copy, NOT weddingDetails.rsvpContent -- that is the
+  // couple's overrides object and holds no universe defaults). Getting this
+  // wrong renders the shared fallback under every one of the 19 voices, which
+  // is exactly what the per-universe line exists to avoid.
+  const copy = universeConfig?.copy || {};
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>

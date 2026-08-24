@@ -666,6 +666,10 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
     <div style={{ ...shellOuter(theme), ...F }}>
       <div style={shellInner}>
 
+        {/* Logo and wedding header: the standalone page owns these, the site
+            already shows all three above the tab. Rendering them embedded put
+            the couple's name on screen twice. */}
+        {!embedded && (<>
         {/* Logo */}
         <p style={{ fontSize: 13, fontWeight: 800, color: theme.lightText, letterSpacing: '-0.02em', marginBottom: 48 }}>openinvite</p>
 
@@ -680,6 +684,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
             {venue && <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)' }}>{venue}</p>}
           </div>
         </SectionReveal>
+        </>)}
 
         {/* Divider */}
         {/* Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
