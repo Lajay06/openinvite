@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from "react-router-dom";
 import { X, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut, Loader2, User, Bell, CreditCard, HelpCircle } from "lucide-react";
@@ -20,7 +20,13 @@ import { getTrialStatus } from '@/lib/trialStatus';
 import TopBarSearch from './components/layout/TopBarSearch';
 
 const SIDEBAR_WIDTH = 200;
+// Two top bars, two heights: the desktop bar is 48, the `flex lg:hidden`
+// mobile bar below it is 64. Everything that positions itself "under the top
+// bar" used TOP_BAR_H for both. That was invisible while the trial banner was
+// `hidden lg:flex`, and became a 16px clip of its own first line the moment it
+// started rendering on a phone. index.css picks which applies at which width.
 const TOP_BAR_H = 48;
+const MOBILE_TOP_BAR_H = 64;
 
 // fix/dashboard-round6: the app used to have ONE top-level <Suspense> (in
 // App.jsx) wrapping the entire authenticated tree, sidebar and top bar
@@ -428,6 +434,23 @@ function LayoutShell({ children, currentPageName }) {
     return trialExpired ? { expired: true, daysLeft: 0 } : { expired: false, daysLeft };
   }, [user, isCollaborating]);
 
+  // The trial banner's height is NOT a constant. `36` was its minHeight, true
+  // only while the sentence fits one line -- at 390 it wraps to two and stands
+  // 86px tall, so the old arithmetic under-reserved by 50px and the banner
+  // painted over the page h1. Measure the element; never guess the height of
+  // something that wraps.
+  const trialBannerRef = useRef(null);
+  const [trialBannerH, setTrialBannerH] = useState(0);
+  useEffect(() => {
+    const el = trialBannerRef.current;
+    if (!trialBanner || !el) { setTrialBannerH(0); return; }
+    const measure = () => setTrialBannerH(Math.ceil(el.getBoundingClientRect().height));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [trialBanner]);
+
   // Resolving whether this is a real, accepted collaboration — brief, but
   // avoids a flash of the wrong sidebar/topbar before the real permission
   // check (server-side, collaborator-context.js) comes back.
@@ -466,7 +489,11 @@ function LayoutShell({ children, currentPageName }) {
 
   const collaboratorPermissions = collab.ok ? collab.permissions : null;
   const bannerH = collab.ok ? 32 : 0;
-  const contentTopOffset = TOP_BAR_H + (trialBanner ? 36 : 0) + bannerH;
+
+  // Two offsets because the two top bars differ. The collaborator banner is
+  // `hidden lg:flex`, so it contributes to the desktop figure only.
+  const contentTopOffset = TOP_BAR_H + trialBannerH + bannerH;
+  const contentTopOffsetMobile = MOBILE_TOP_BAR_H + trialBannerH;
   const currentPermissionKey = permissionKeyForPageName(currentPageName);
   const canViewCurrentPage = !isCollaborating || (
     !!currentPermissionKey &&
@@ -500,7 +527,10 @@ function LayoutShell({ children, currentPageName }) {
         <CollaboratorBanner
           coupleNames={collab.coupleNames}
           collaboratorEmail={collab.collaboratorEmail}
-          topOffset={TOP_BAR_H}
+          // Stacks BELOW the trial banner. contentTopOffset has always summed
+          // both, which only makes sense if they stack -- but both were pinned
+          // at 48, so they overlapped for a collaborator on an expired wedding.
+          topOffset={TOP_BAR_H + trialBannerH}
         />
       )}
 
@@ -512,10 +542,12 @@ function LayoutShell({ children, currentPageName }) {
           expired-state render pass at 390. */}
       {trialBanner && (
         <div
+          ref={trialBannerRef}
           className="flex"
           style={{
             position: 'fixed',
-            top: TOP_BAR_H,
+            // 48 on desktop, 64 on mobile -- resolved in index.css.
+            top: 'var(--oi-top-bar-h)',
             left: 0,
             right: 0,
             minHeight: 36,
@@ -575,7 +607,7 @@ function LayoutShell({ children, currentPageName }) {
           position: 'fixed',
           top: 0, left: 0, right: 0,
           zIndex: 50,
-          height: 64,
+          height: MOBILE_TOP_BAR_H,
           background: '#FFFFFF',
           borderBottom: '1px solid rgba(10,10,10,0.12)',
           alignItems: 'center',
@@ -665,7 +697,11 @@ function LayoutShell({ children, currentPageName }) {
       */}
       <div
         className="page-content"
-        style={{ '--content-top-desktop': `${contentTopOffset}px`, '--sidebar-width': `${SIDEBAR_WIDTH}px` }}
+        style={{
+          '--content-top-desktop': `${contentTopOffset}px`,
+          '--content-top-mobile': `${contentTopOffsetMobile}px`,
+          '--sidebar-width': `${SIDEBAR_WIDTH}px`,
+        }}
       >
         <Suspense fallback={<ContentAreaFallback />}>
           {canViewCurrentPage ? children : <CollaboratorAccessDenied />}
