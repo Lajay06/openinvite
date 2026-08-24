@@ -318,7 +318,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
                       Ava website builder
                     </h3>
-                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                    <p className="text-[rgba(10,10,10,0.6)] text-sm mb-4 leading-relaxed">
                       Generate a complete wedding website using your event details, including real hotel recommendations.
                     </p>
                     <Button
@@ -352,7 +352,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                     className="group flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-[rgba(10,10,10,0.18)] hover:shadow-sm transition-all duration-200"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm font-medium text-gray-600">
+                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm font-medium text-[rgba(10,10,10,0.6)]">
                         {index + 1}
                       </div>
                       <div>
@@ -389,7 +389,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-4">Typography</h3>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2">Font Family</label>
+                  <label className="block text-sm text-[rgba(10,10,10,0.6)] mb-2">Font Family</label>
                   <Select 
                     value={design.globalStyles?.fontFamily || 'system-ui'}
                     onValueChange={(value) => updateDesign({ 
@@ -413,7 +413,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                 <h3 className="text-sm font-medium text-gray-900 mb-4">Colors</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-700 mb-2">Primary</label>
+                    <label className="block text-sm text-[rgba(10,10,10,0.6)] mb-2">Primary</label>
                     <div className="flex items-center gap-3">
                       <Input 
                         type="color"
@@ -433,7 +433,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-700 mb-2">Accent</label>
+                    <label className="block text-sm text-[rgba(10,10,10,0.6)] mb-2">Accent</label>
                     <div className="flex items-center gap-3">
                       <Input 
                         type="color"
@@ -463,7 +463,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                 <h3 className="text-sm font-medium text-gray-900 mb-4">Basic Information</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm text-gray-700 mb-2">Couple Names</label>
+                    <label className="block text-sm text-[rgba(10,10,10,0.6)] mb-2">Couple Names</label>
                     <Input 
                       value={invitation?.couple_names || ''} 
                       readOnly
@@ -472,7 +472,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-700 mb-2">Wedding Date</label>
+                    <label className="block text-sm text-[rgba(10,10,10,0.6)] mb-2">Wedding Date</label>
                     <Input 
                       value={invitation?.wedding_date || ''} 
                       readOnly

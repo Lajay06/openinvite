@@ -114,14 +114,14 @@ export default function LocalTips({ weddingCity }) {
             >
               <AccordionTrigger className="hover:no-underline py-5 px-0">
                 <div className="flex items-center gap-3">
-                  <category.icon className="w-4 h-4 text-gray-600" />
+                  <category.icon className="w-4 h-4 text-[rgba(10,10,10,0.6)]" />
                   <span className="text-sm font-normal text-gray-900">{category.title}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-5 px-0">
                 <ul className="space-y-2 pl-7">
                   {category.tips.map((tip, tipIndex) => (
-                    <li key={tipIndex} className="text-sm text-gray-600 flex items-start gap-2">
+                    <li key={tipIndex} className="text-sm text-[rgba(10,10,10,0.6)] flex items-start gap-2">
                       <span className="mt-0.5 flex-shrink-0" style={{ color: color.textDisabled }}>•</span>
                       <span>{tip}</span>
                     </li>
@@ -135,10 +135,10 @@ export default function LocalTips({ weddingCity }) {
 
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-8">
         <div className="flex items-start gap-3">
-          <AlertCircle className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-4 h-4 text-[rgba(10,10,10,0.6)] flex-shrink-0 mt-0.5" />
           <div>
             <h3 className="text-sm font-semibold text-gray-900 mb-1">Questions or Need Help?</h3>
-            <p className="text-xs text-gray-600 mb-2">
+            <p className="text-xs text-[rgba(10,10,10,0.6)] mb-2">
               Don't hesitate to reach out if you need any assistance during your visit. We want to make sure you have an amazing time!
             </p>
             <p className="text-xs" style={{ color: color.textMuted }}>

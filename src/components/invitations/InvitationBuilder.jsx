@@ -85,7 +85,7 @@ export default function InvitationBuilder({ onInvitationSaved, onBack }) {
 
           <div className="space-y-6">
             <div>
-              <label className="font-medium text-gray-700">Couple's Names</label>
+              <label className="font-medium text-[rgba(10,10,10,0.6)]">Couple's Names</label>
               <Input
                 placeholder="e.g., Alex & Jordan"
                 value={coupleNames}
@@ -94,7 +94,7 @@ export default function InvitationBuilder({ onInvitationSaved, onBack }) {
               />
             </div>
             <div>
-              <label className="font-medium text-gray-700">Wedding Date</label>
+              <label className="font-medium text-[rgba(10,10,10,0.6)]">Wedding Date</label>
               <div className="mt-2 flex justify-center">
                  <Calendar
                     mode="single"

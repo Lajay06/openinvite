@@ -41,7 +41,7 @@ const OutfitRecommendations = ({ recommendations, theme, onRetake, derivedSeason
                     <Crown className={`w-6 h-6 ${theme.text}`} />
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Your Perfect Wedding Guest Look</h2>
-                <p className="text-gray-600 mb-4">
+                <p className="text-[rgba(10,10,10,0.6)] mb-4">
                     Curated specifically for a {themeVibes}{safeRecommendations.theme.season
               ? ` ${safeRecommendations.theme.season.toLowerCase()}` : ''} wedding
                 </p>
@@ -67,7 +67,7 @@ const OutfitRecommendations = ({ recommendations, theme, onRetake, derivedSeason
                         <div className="space-y-4">
                             <div className="p-4 bg-gray-50 rounded-lg">
                                 <h4 className="font-semibold mb-2">Your Style Profile</h4>
-                                <p className="text-gray-700">
+                                <p className="text-[rgba(10,10,10,0.6)]">
                                     {safeRecommendations.style.charAt(0).toUpperCase() + safeRecommendations.style.slice(1)} style with {safeRecommendations.budget} budget range
                                 </p>
                             </div>
@@ -112,11 +112,11 @@ const OutfitRecommendations = ({ recommendations, theme, onRetake, derivedSeason
                         <div className="space-y-3">
                             <div className="p-3 bg-white rounded border">
                                 <p className="font-medium">Block Heels (2-3 inches)</p>
-                                <p className="text-sm text-gray-600">Comfortable for dancing and walking</p>
+                                <p className="text-sm text-[rgba(10,10,10,0.6)]">Comfortable for dancing and walking</p>
                             </div>
                             <div className="p-3 bg-white rounded border">
                                 <p className="font-medium">Elegant Flats</p>
-                                <p className="text-sm text-gray-600">Stylish backup option</p>
+                                <p className="text-sm text-[rgba(10,10,10,0.6)]">Stylish backup option</p>
                             </div>
                         </div>
                     </AccordionContent>
@@ -133,11 +133,11 @@ const OutfitRecommendations = ({ recommendations, theme, onRetake, derivedSeason
                         <div className="space-y-3">
                             <div className="p-3 bg-white rounded border">
                                 <p className="font-medium">Delicate Jewelry</p>
-                                <p className="text-sm text-gray-600">Simple earrings and necklace</p>
+                                <p className="text-sm text-[rgba(10,10,10,0.6)]">Simple earrings and necklace</p>
                             </div>
                             <div className="p-3 bg-white rounded border">
                                 <p className="font-medium">Small Clutch</p>
-                                <p className="text-sm text-gray-600">For essentials during the ceremony</p>
+                                <p className="text-sm text-[rgba(10,10,10,0.6)]">For essentials during the ceremony</p>
                             </div>
                         </div>
                     </AccordionContent>
@@ -155,7 +155,7 @@ const OutfitRecommendations = ({ recommendations, theme, onRetake, derivedSeason
                             {safeRecommendations.tips.map((tip, index) => (
                                 <div key={index} className="flex items-start gap-2">
                                     <div className={`w-2 h-2 rounded-full ${theme.bg} mt-2 flex-shrink-0`}></div>
-                                    <p className="text-gray-700">{tip}</p>
+                                    <p className="text-[rgba(10,10,10,0.6)]">{tip}</p>
                                 </div>
                             ))}
                         </div>

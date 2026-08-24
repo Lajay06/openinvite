@@ -107,7 +107,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
               <Badge variant="outline" className="text-xs flex-shrink-0">{restaurant.cuisine}</Badge>
             </div>
             
-            <div className="flex items-center gap-3 mb-2 text-xs text-gray-600">
+            <div className="flex items-center gap-3 mb-2 text-xs text-[rgba(10,10,10,0.6)]">
               <div className="flex items-center gap-1">
                 <Star className="w-3 h-3 text-yellow-500 fill-current" />
                 <span className="font-medium">{restaurant.rating || 'N/A'}</span>
@@ -132,7 +132,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
               )}
             </div>
 
-            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+            <p className="text-sm text-[rgba(10,10,10,0.6)] mb-2 line-clamp-2">
               {restaurant.description}
             </p>
 
@@ -147,7 +147,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
             {restaurant.specialties && restaurant.specialties.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {restaurant.specialties.slice(0, 3).map((dish, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-700">
+                  <Badge key={idx} variant="outline" className="text-xs bg-gray-50 border-gray-200 text-[rgba(10,10,10,0.6)]">
                     {dish}
                   </Badge>
                 ))}
@@ -159,7 +159,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
             {restaurant.website && (
               <Button 
                 variant="link" 
-                className="p-0 h-auto text-xs text-gray-700 hover:text-gray-900"
+                className="p-0 h-auto text-xs text-[rgba(10,10,10,0.6)] hover:text-gray-900"
                 asChild
               >
                 <a href={restaurant.website} target="_blank" rel="noopener noreferrer">
@@ -177,7 +177,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <Loader2 className="w-12 h-12 text-gray-900 animate-spin mb-4" />
-        <p className="text-gray-600">Finding restaurants in {weddingCity}...</p>
+        <p className="text-[rgba(10,10,10,0.6)]">Finding restaurants in {weddingCity}...</p>
       </div>
     );
   }
@@ -225,7 +225,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
       {aiRestaurants.length === 0 && hasLoaded && customRestaurants.length === 0 && (
         <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
           <Utensils className="w-12 h-12 mx-auto mb-3" style={{ color: color.textDisabled }} />
-          <p className="text-gray-600 mb-2">Unable to load restaurant recommendations</p>
+          <p className="text-[rgba(10,10,10,0.6)] mb-2">Unable to load restaurant recommendations</p>
           <p className="text-sm mb-4" style={{ color: color.textMuted }}>Network error occurred. Please try again.</p>
           <Button onClick={loadAIRestaurants} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -236,7 +236,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
 
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <h3 className="text-sm font-semibold text-gray-900 mb-2">💡 Dining Tips</h3>
-        <ul className="space-y-1 text-xs text-gray-600">
+        <ul className="space-y-1 text-xs text-[rgba(10,10,10,0.6)]">
           <li>• Make reservations in advance for popular spots</li>
           <li>• Ask your hotel concierge for insider recommendations</li>
           <li>• Don't miss the local specialties and regional cuisine</li>
