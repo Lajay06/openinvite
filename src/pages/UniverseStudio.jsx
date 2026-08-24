@@ -38,6 +38,7 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import UltraGate from '@/components/shared/UltraGate';
+import { canAccessUltra } from '@/lib/trialStatus';
 
 // chore/consolidate-overview — the couple name + days-to-go countdown are
 // already global (Layout.jsx's top bar shows them on every page, per
@@ -58,14 +59,15 @@ export default function UniverseStudio() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const prefersReducedMotion = useReducedMotion();
-  const canAccessUltra = (user?.plan || 'free') === 'ultra';
-  // Page-level gate (Pro is excluded, trial gets full access, same as
-  // every other Ultra-gated page — StudioGuestSuite.jsx, sidebar nav)
-  // — deliberately a separate check from canAccessUltra above, which
-  // excludes trial too but is scoped to per-universe-tier logic
-  // (entrance-transition muting, the in-world upgrade CTA), not page access.
-  const plan = user?.plan || 'free';
-  const canAccess = plan === 'ultra' || plan === 'free';
+  // GATE-UNIFICATION: this page used to answer the Ultra question twice and
+  // disagree with itself. The page gate said `plan === 'ultra' || 'free'` (an
+  // active trial gets in, but so did an EXPIRED account, because expiry does
+  // not change `free`), while the per-universe logic said `plan === 'ultra'`
+  // alone — so a trial user was let through the door and then shown every
+  // Ultra universe muted behind an upgrade CTA. One question, one answer:
+  // canAccessUltra() grants an active trial full access with no upsell, and
+  // revokes it at expiry. It is the same expression the sidebar badge uses.
+  const hasUltra = canAccessUltra(user);
 
   const [weddingDetails, setWeddingDetails] = useState(null);
   const [guests, setGuests] = useState([]);
@@ -164,7 +166,7 @@ export default function UniverseStudio() {
     );
   }
 
-  if (!canAccess) {
+  if (!hasUltra) {
     return (
       <UltraGate
         heading="Design Studio is an Ultra feature"
@@ -184,7 +186,7 @@ export default function UniverseStudio() {
       <UniverseEntranceOverlay
         universe={opened}
         active={phase === 'entering'}
-        muted={opened?.isUltra && !canAccessUltra}
+        muted={opened?.isUltra && !hasUltra}
         prefersReducedMotion={prefersReducedMotion}
       />
 
@@ -315,7 +317,7 @@ export default function UniverseStudio() {
           weddingDetails={weddingDetails}
           guests={guests}
           isCurrent={activeId === opened.id}
-          canAccessUltra={canAccessUltra}
+          canAccessUltra={hasUltra}
           onBack={backToBrowsing}
           onSwitchUniverse={handleSwitchUniverse}
           onUpgrade={handleUpgrade}

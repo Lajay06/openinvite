@@ -13,6 +13,7 @@ import StudioWebsiteTab from '@/components/studio/guest-suite/StudioWebsiteTab';
 import StudioAssetsTab from '@/components/studio/guest-suite/StudioAssetsTab';
 import PoliciesTab from '@/components/studio/guest-suite/PoliciesTab';
 import StudioShareTab from '@/components/studio/guest-suite/StudioShareTab';
+import { canAccessUltra } from '@/lib/trialStatus';
 
 const TABS = [
   { id: 'website',  label: 'Website' },
@@ -32,8 +33,13 @@ export default function StudioGuestSuite() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const plan = user?.plan || 'free';
-  const canAccess = plan === 'ultra' || plan === 'free';
+  // GATE-UNIFICATION: was `plan === 'ultra' || plan === 'free'`. That used
+  // `free` as a proxy for "on trial", which is true on day one and false
+  // forever after: an EXPIRED account is still `free`/null, so it kept full
+  // Ultra page access. canAccessUltra() is the one expression that knows the
+  // difference (src/lib/trialStatus.js) — active trial yes, expired no, Pro
+  // never below free.
+  const canAccess = canAccessUltra(user);
   const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
 
   // Keep activeTab in sync when the URL changes externally (e.g. back button in Website Builder)

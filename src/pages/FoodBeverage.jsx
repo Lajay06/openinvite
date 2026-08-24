@@ -13,6 +13,7 @@ import VendorContactSection from '../components/vendors/VendorContactSection';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { useAuth } from '@/lib/AuthContext';
+import { canAccessUltra } from '@/lib/trialStatus';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -72,11 +73,13 @@ const TABS = [
 
 export default function FoodBeveragePage() {
   const { user } = useAuth();
-  // Menu Phase 1 — same Ultra-gate pattern as UniverseStudio.jsx/
-  // StudioGuestSuite.jsx (#287): only 'pro' is excluded, 'free' (trial)
-  // gets full access same as every other Ultra-gated feature.
-  const plan = user?.plan || 'free';
-  const canAccessUltra = plan === 'ultra' || plan === 'free';
+  // GATE-UNIFICATION: was `plan === 'ultra' || plan === 'free'`. That used
+  // `free` as a proxy for "on trial", which is true on day one and false
+  // forever after: an EXPIRED account is still `free`/null, so it kept full
+  // Ultra page access. canAccessUltra() is the one expression that knows the
+  // difference (src/lib/trialStatus.js) — active trial yes, expired no, Pro
+  // never below free.
+  const canAccessUltraHere = canAccessUltra(user);
 
   const [data, setData] = useState({});
   const [menuItems, setMenuItems] = useState([]);
@@ -262,7 +265,7 @@ export default function FoodBeveragePage() {
             </DetailsSection>
 
             <DetailsSection title="Guest meal options" icon={UtensilsCrossed}>
-              {canAccessUltra ? (
+              {canAccessUltraHere ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <label style={labelStyle}>Meal choices guests can pick on your RSVP form</label>
                   <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 4px' }}>
