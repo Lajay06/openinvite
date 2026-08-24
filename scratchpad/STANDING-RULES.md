@@ -600,3 +600,35 @@ Before sweeping for a rule, establish two things: *where is it written*, and
 (emoji presentation, uppercase) are sweepable; stylistic ones (prefer sentence
 structure over em-dash parentheticals) are authoring-time preferences and must
 not be enforced by grep.
+
+---
+
+## When you build on a shared helper, read what it writes
+
+A comment describing a past migration is a statement about **data that once
+was**. It is never a statement about **current behaviour**.
+
+`tokenPatch()` wrote three columns: hash, ciphertext, and the token itself in
+plaintext. The plaintext line carried the comment `// legacy plaintext — E3
+nulls this`. That was read as "plaintext is no longer written". It never said
+that: `scripts/null-rsvp-plaintext.mjs` was a one-time migration that nulled
+existing rows and did not touch the writer. E3 cleaned the data and left the pen
+on the desk.
+
+#538 then moved minting to the server write boundary by calling that helper —
+without reading its three-column write — so every guest created afterwards got a
+fresh plaintext bearer capability sitting beside its own ciphertext, which
+defeats the encryption key for that row entirely.
+
+#539 compounded it: it put the ciphertext on a strip list and **deliberately
+left the plaintext**, arguing "removing a null gains nothing". The column was
+not null. Shipped, it would have sent live tokens to the browser while removing
+the merely-encrypted form — strictly worse than the leak it was opened to close.
+
+Neither was caught by reasoning. It took production data: a row minted hours
+earlier held a 20+ character value in a column asserted to be empty.
+
+**Before building on a shared helper, read its body — not its docstring, and
+not the summary in your head.** And when a data observation contradicts a code
+reading, the data wins: the code reading is a claim about now, the data is a
+record of what actually happened.

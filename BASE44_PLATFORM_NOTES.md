@@ -993,3 +993,24 @@ write these rows where the runtime admin key cannot — used 2026-08-17 to clear
 a test request out of the fixture's pending queue. Another instance of the
 workspace MCP having reach the runtime key lacks.
 
+
+## `created_by` is stamped "anonymous" on ANY admin-key server write
+
+Base44 stamps `created_by_id: "anonymous"` on rows created with the admin key
+against an entity whose `create` RLS is null, and **it never honors a
+client-supplied `created_by_id`** (confirmed empirically — see
+`api/collect-guest-contact.js`'s header, which relies on this to explain why
+`update`/`delete` RLS must stay null there: an owner-scoped rule would lock out
+the real owner too).
+
+**The stamp means "no user session was attached to this write". It does NOT mean
+a browser made it.** A server route holding the admin key produces exactly the
+same stamp as an unauthenticated client would.
+
+This invalidated a live inference: a `Guest` row carrying
+`created_by: "anonymous"` was read as evidence that an anonymous *browser* had
+created it, and a deleted client-side `Guest.create()` on the published guest
+site was offered as the explanation. The stamp supports no such conclusion — an
+admin-key server write is at least as likely, and the row's date did not fit the
+browser story anyway. Use the stamp to rule out a user session, never to rule in
+a client.

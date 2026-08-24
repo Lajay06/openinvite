@@ -787,3 +787,35 @@ data — that is ownership-scoped and unaffected. Documented, not discovered.
 **Reads are never gated, at any layer.** Every export is a pure read, and
 "viewing and exporting stays free, forever" (#507) depends on that. Proven from
 an expired account: all five exports download at both widths.
+
+---
+
+## Post-launch undeclare batch: `rsvp_link_id`, `plus_one_rsvp_link_id`
+
+Following the Spotify-teardown pattern (#451/#452: writers removed, tokens
+purged, field undeclared), these two Guest columns are queued for undeclaring
+**after launch** — schema changes come through the advisor and this is not the
+moment.
+
+The three stages, in order, and why the order is not negotiable:
+
+1. **Writer stopped** — `tokenPatch()` no longer emits plaintext (this PR). Until
+   this is merged, any purge races a writer that recreates what it deletes.
+2. **Data purged** — re-run `scripts/null-rsvp-plaintext.mjs`, the tool built for
+   exactly this, dry-run first. Its own header notes it destroys the only
+   plaintext copy of bearer capabilities and cannot be undone. Own quoted line,
+   per-row verify-before-destroy.
+3. **Column undeclared** — only once nothing writes it and nothing holds a value.
+
+Why the columns cannot simply be dropped now: `api/my-guest-links.js` keeps
+`decryptToken(enc) || guest.rsvp_link_id` as a legacy recovery path. It is inert
+for every row E3 nulled and for every row minted since the writer stopped, but
+undeclaring the field while that expression exists turns a harmless `undefined`
+into a schema mismatch. Remove the reader, then the column.
+
+Two client fallbacks name the same column — `SendInvitesModal.jsx` (`l.token ||
+g.rsvp_link_id`) and `EmailTemplates.jsx` (`guests.find(g => g.rsvp_link_id)`).
+Both are correct as written and become permanently inert once the data is
+purged; `EmailTemplates` in particular depends on the column being empty so a
+sample email takes the placeholder branch and never carries a live capability.
+That invariant was FALSE between #538 and this PR.

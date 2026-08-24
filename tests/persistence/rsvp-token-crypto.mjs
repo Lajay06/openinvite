@@ -69,16 +69,24 @@ export async function runRsvpTokenCrypto() {
     ? pass('rsvp token — empty input is null-safe on all three transforms', 'null')
     : fail('rsvp token — empty input is null-safe on all three transforms', 'null', 'non-null'));
 
-  // THE DUAL-WRITE INVARIANT: a token is never written alone.
+  // THE WRITE INVARIANT, FLIPPED. This used to assert that tokenPatch wrote
+  // plaintext ALONGSIDE hash and ciphertext -- and it passed, correctly, for as
+  // long as that was true. The plaintext write was the defect: it placed a
+  // bearer capability in a column beside its own ciphertext, defeating
+  // RSVP_TOKEN_KEY for that row, and it kept happening on every mint because
+  // E3's migration nulled the DATA and left this WRITER alone.
+  //
+  // The assertion is flipped rather than deleted: hash and ciphertext are still
+  // written together, and plaintext must now be ABSENT.
   for (const [label, isPlusOne, prefix] of [['primary', false, 'rsvp_link_id'], ['plus-one', true, 'plus_one_rsvp_link_id']]) {
     const patch = tokenPatch(UUID, isPlusOne);
-    const complete = patch[prefix] === UUID
+    const complete = !(prefix in patch)
       && typeof patch[`${prefix}_hash`] === 'string'
       && typeof patch[`${prefix}_enc`] === 'string'
-      && Object.keys(patch).length === 3;
+      && Object.keys(patch).length === 2;
     results.push(complete
-      ? pass(`rsvp token — tokenPatch writes plaintext + hash + enc together (${label})`, Object.keys(patch).join(', '))
-      : fail(`rsvp token — tokenPatch writes plaintext + hash + enc together (${label})`, '3 fields', JSON.stringify(Object.keys(patch))));
+      ? pass(`rsvp token — tokenPatch writes hash + enc ONLY, never plaintext (${label})`, Object.keys(patch).join(', '))
+      : fail(`rsvp token — tokenPatch writes hash + enc ONLY, never plaintext (${label})`, '2 fields, no plaintext', JSON.stringify(Object.keys(patch))));
   }
 
   // The hash in a patch must be the same one a lookup will compute.
