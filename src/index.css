@@ -896,8 +896,18 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
 
    1024px matches Tailwind's `lg` (no override in tailwind.config.js) and the
    matchMedia check in main.jsx, so all three agree on one breakpoint. */
+/* --oi-top-bar-h is what anything fixed "under the top bar" positions against.
+   The two bars are different heights (desktop 48, mobile 64) and one constant
+   for both clipped the trial banner's own first line on a phone. */
+:root { --oi-top-bar-h: 64px; }
+@media (min-width: 1024px) { :root { --oi-top-bar-h: 48px; } }
+
+/* Both offsets come from JS and BOTH are banner-aware. The mobile rule used to
+   be a flat 64px that knew only about the top bar -- fine while the trial
+   banner was desktop-only, a 70px overlap over the page h1 once it started
+   rendering at every width. */
 .page-content {
-  padding-top: 64px;          /* mobile top bar */
+  padding-top: var(--content-top-mobile, 64px);
   margin-left: 0;
 }
 @media (min-width: 1024px) {
