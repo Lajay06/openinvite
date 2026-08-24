@@ -17,6 +17,7 @@ import MykonosSectionMark from '../layouts/MykonosSectionMark';
 import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
 import VineRule from '../layouts/VineRule';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
+import RsvpForm from '@/components/rsvp/RSVPPage';
 
 const STATUS = { idle: 'idle', sending: 'sending', sent: 'sent', error: 'error' };
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -26,11 +27,35 @@ export default function WeddingRSVPPage({
   recognisedToken = '', onForgetGuest,
 }) {
   const content = weddingDetails.rsvpContent || {};
+
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState(STATUS.idle);
 
   const turnstileRef = useRef(null);
   const tsTokenRef = useRef('');
+
+  // A RECOGNISED GUEST GETS THEIR OWN FORM, right here on the tab.
+  //
+  // This is the whole point of the work: the site is the invitation, one of its
+  // pages is the RSVP, and replying does not eject the guest from the site they
+  // were reading. No email box, no second step, no separate destination.
+  //
+  // The email bridge below is what an UNRECOGNISED visitor sees -- a fallback
+  // state on this tab, not the page itself. That is the inversion: it used to be
+  // the only thing here.
+  if (recognisedToken) {
+    return (
+      <RecognisedRsvp
+        token={recognisedToken}
+        onForgetGuest={onForgetGuest}
+        weddingDetails={weddingDetails}
+        theme={theme}
+        typography={typography}
+        universeConfig={universeConfig}
+      />
+    );
+  }
+
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
@@ -920,6 +945,58 @@ export default function WeddingRSVPPage({
             </>
           )}
         </SectionReveal>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The recognised guest's own RSVP, embedded in the site.
+ *
+ * Two things sit above the form: a short warmth-only line (the mechanism
+ * sentence is deleted — a guest who is already recognised does not need to be
+ * told how to receive a link they have already used), and the "not you?"
+ * control.
+ *
+ * That control is deliberately VISIBLE rather than tucked into a footer. It is
+ * the shared-phone and family-computer answer, and recognition now outlives the
+ * tab, so it is doing more work than it would with session-scoped storage. A
+ * guest who is shown someone else's name must be able to fix it without
+ * hunting.
+ */
+function RecognisedRsvp({ token, onForgetGuest, weddingDetails, theme, typography, universeConfig }) {
+  // The universe's own copy, the same source the unrecognised intro reads
+  // (universeConfig.copy, NOT weddingDetails.rsvpContent -- that is the
+  // couple's overrides object and holds no universe defaults). Getting this
+  // wrong renders the shared fallback under every one of the 19 voices, which
+  // is exactly what the per-universe line exists to avoid.
+  const copy = universeConfig?.copy || {};
+  return (
+    <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto' }}>
+        <p style={{
+          fontFamily: typography.bodyFont, fontSize: '0.9375rem', lineHeight: 1.75,
+          margin: '0 0 28px', textAlign: 'center',
+        }}>
+          {copy.rsvpWelcome || 'We are so glad you are here.'}
+        </p>
+
+        <RsvpForm token={token} embedded />
+
+        <div style={{ textAlign: 'center', marginTop: 40 }}>
+          <button
+            type="button"
+            onClick={onForgetGuest}
+            style={{
+              background: 'none', border: 'none', padding: '8px 4px', cursor: 'pointer',
+              fontFamily: typography.bodyFont, fontSize: '0.875rem',
+              color: theme.lightText, opacity: 0.7,
+              textDecoration: 'underline', textUnderlineOffset: '3px',
+            }}
+          >
+            Not you? Use a different invitation
+          </button>
+        </div>
       </div>
     </div>
   );

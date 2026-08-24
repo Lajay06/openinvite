@@ -73,9 +73,47 @@ export async function runGuestRecognition() {
   check('/rsvp/:token is documented as PERMANENT',
     /THIS ROUTE IS PERMANENT/.test(app) && /path="\/rsvp\/:token"/.test(app),
     'links already in inboxes');
-  check('  and still renders the working form until PR 3 embeds it',
+  // The route renders the COMPONENT, never a bare <Navigate>: the redirect
+  // needs the slug, and the slug comes from the lookup this component already
+  // performs. A route-level redirect could not resolve it without a second
+  // request, and would strand any token whose lookup fails.
+  check('  the route renders the component, not a bare redirect',
     /path="\/rsvp\/:token" element=\{<RSVPPage \/>\}/.test(app),
-    'redirecting first would regress the core loop');
+    'the slug comes from the lookup');
+
+  // ── PR 3: the form is the tab, and the redirect points into it ───────────
+  const form = strip(read('src/components/rsvp/RSVPPage.jsx'));
+  const tab = strip(read('src/components/guest-website/pages/WeddingRSVPPage.jsx'));
+
+  check('the RSVP form is embeddable', /embedded = false/.test(form) && /if \(embedded\)/.test(form),
+    'one prop collapses the page chrome');
+  check('  the token can come from a prop, not only the URL',
+    /const token = tokenProp \|\| tokenFromUrl/.test(form), 'same form, two entry points');
+  check('  every full-page container collapses when embedded',
+    !/minHeight: '100vh', display: 'flex'/.test(form) && /shellOuter/.test(form),
+    'loading, not-found and the form body');
+
+  check('a recognised guest gets the real form on the tab',
+    /if \(recognisedToken\)/.test(tab) && /<RsvpForm token=\{token\} embedded \/>/.test(tab),
+    'no email box, no second step');
+  check('  an unrecognised visitor still gets the email bridge',
+    /rsvpIntro/.test(tab) && /Send me my RSVP link/.test(tab), 'fallback state, not the page');
+  check('  the not-you control is present and not buried',
+    /Not you\? Use a different invitation/.test(tab) && /onClick=\{onForgetGuest\}/.test(tab),
+    'shared phones');
+
+  // THE SEQUENCING CONSTRAINT, pinned. The redirect may only exist alongside a
+  // working embedded form; enabling it earlier would send guests holding links
+  // from a form that records replies to one that cannot.
+  check('the redirect points into the site',
+    /navigate\(`\/w\/\$\{slug\}\/rsvp\?rsvp=\$\{encodeURIComponent\(token\)\}`/.test(form),
+    '/w/<slug>/rsvp?rsvp=<token>');
+  check('  it never fires in embedded mode (no redirect loop)',
+    /if \(embedded \|\| redirected\) return;/.test(form), 'guarded');
+  check('  it replaces rather than pushes',
+    /\{ replace: true \}/.test(form), 'back must not return to the token URL');
+  check('  and it only exists because the tab now renders a form',
+    /<RsvpForm token=\{token\} embedded \/>/.test(tab), 'the constraint holds');
 
   return results;
 }

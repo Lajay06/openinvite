@@ -819,3 +819,55 @@ Both are correct as written and become permanently inert once the data is
 purged; `EmailTemplates` in particular depends on the column being empty so a
 sample email takes the placeholder branch and never carries a live capability.
 That invariant was FALSE between #538 and this PR.
+
+---
+
+## PR 3 (RSVP form embed) — the sequencing constraint
+
+**The `/rsvp/:token` redirect may only be enabled once the embedded form in the
+site is functional.** Build the form first, the redirect last. If PR 3 is split
+for size, the redirect goes in the LATER half, never the earlier.
+
+Why, measured rather than assumed: `/rsvp/:token` renders `RSVPPage.jsx`, which
+has 18 RSVP-action references — a working form. `/w/:slug/rsvp` renders
+`WeddingRSVPPage.jsx`, which has 0 — an email box. Redirecting before the embed
+takes every guest holding a link already in the wild *away* from a form that
+records a reply and *into* one that cannot, hitting exactly the people most
+likely to be mid-RSVP.
+
+**PR 3 owns PR 2's verification as well.** Recognition is inert until something
+generates a `?rsvp=` link, so there is one end-to-end proof, not two:
+
+  emailed link → redirect → token consumed and stripped → guest recognised →
+  their own form rendered → reply recorded → "not you?" clears it →
+  return visit still recognised
+
+In production, at both widths. Owner accept on visuals, and both copy variants
+in the render: the trimmed warmth-only invitation line above a recognised
+guest's form, and the full intro as the unrecognised fallback state.
+
+### Gotcha #21 — two different objects are both called "copy"
+
+`universeConfig.copy` holds the UNIVERSE'S DEFAULTS — the 19 voiced strings in
+`src/lib/websiteThemes.js` (`rsvpIntro`, `rsvpSent`, `rsvpWelcome`, kickers).
+`weddingDetails.rsvpContent` holds the COUPLE'S OVERRIDES — what one couple
+typed in the builder, and empty for almost everyone.
+
+Read the wrong one and nothing errors. The `||` fallback catches it, so the
+hardcoded English default renders under all 19 voices and the page looks fine.
+
+Live example: PR #542's recognised-state line read `weddingDetails.rsvpContent`,
+so every universe rendered the same shared sentence while 19 per-universe lines
+sat unused two files away. **The build passed, and 21 probes passed** — the
+string was present, the component rendered, nothing was undefined. It was found
+by a human reading the copy in a render and asking why london sounded like
+brooklyn.
+
+Same family as `UNIVERSE_CATALOG` vs `WEBSITE_THEMES`: two plausible sources for
+the same-sounding thing, where picking the wrong one degrades silently instead
+of failing.
+
+**Rule of thumb: defaults come from the universe, overrides from the wedding.**
+If a string should differ per universe, it is `universeConfig.copy`. If a string
+should differ per couple, it is the wedding record. A probe cannot tell these
+apart — only reading the rendered words can.
