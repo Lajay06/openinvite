@@ -177,7 +177,7 @@ function SectionLabel({ section }) {
           color: "#FFFFFF", padding: "1px 4px", borderRadius: 3, flexShrink: 0,
           fontFamily: PJS,
         }}>
-          ULTRA
+          Ultra
         </span>
       </div>
     );
@@ -235,7 +235,7 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disable
           color: "#FFFFFF", padding: "2px 5px", borderRadius: 3, flexShrink: 0,
           fontFamily: PJS,
         }}>
-          ULTRA
+          Ultra
         </span>
       )}
     </div>
@@ -512,7 +512,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
                   color: "#FFFFFF", padding: "2px 6px", borderRadius: 3, flexShrink: 0,
                   fontFamily: PJS,
                 }}>
-                  ULTRA
+                  Ultra
                 </span>
               )}
             </div>
@@ -585,7 +585,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
                     color: "#FFFFFF", padding: "1px 4px", borderRadius: 3, flexShrink: 0,
                     fontFamily: PJS,
                   }}>
-                    ULTRA
+                    Ultra
                   </span>
                 </div>
               ) : (
@@ -622,7 +622,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
                         color: "#FFFFFF", padding: "2px 6px", borderRadius: 3, flexShrink: 0,
                         fontFamily: PJS,
                       }}>
-                        ULTRA
+                        Ultra
                       </span>
                     )}
                   </div>

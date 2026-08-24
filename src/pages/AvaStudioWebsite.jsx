@@ -12,7 +12,7 @@ const sans = "'Plus Jakarta Sans', sans-serif";
 // ── Shared primitives ─────────────────────────────────────────
 function Label({ children, mode }) {
   const dark = mode === 'dark';
-  return <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>{children}</p>;
+  return <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(10,10,10,0.6)', letterSpacing: '0.12em', margin: '0 0 8px' }}>{children}</p>;
 }
 
 function AvaInput({ label, value, onChange, placeholder, rows, mode }) {
@@ -81,7 +81,7 @@ function MasterRef({ label, value, mode }) {
   const dark = mode === 'dark';
   return (
     <div style={{ marginBottom: 16, padding: '12px 16px', background: dark ? 'rgba(255,255,255,0.04)' : '#F8F8F8', border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : '#EEEEEE'}` }}>
-      <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>{label}</p>
+      <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(10,10,10,0.6)', letterSpacing: '0.1em', margin: '0 0 4px' }}>{label}</p>
       <p style={{ fontSize: 14, color: value ? (dark ? '#FFFFFF' : '#0A0A0A') : (dark ? 'rgba(255,255,255,0.25)' : 'rgba(10,10,10,0.58)'), margin: 0 }}>{value || 'Not set in planner'}</p>
     </div>
   );
@@ -182,7 +182,7 @@ const makeSteps = (data, update, mode) => [
       return (
         <div>
           <AvaInput label="REGISTRY MESSAGE" value={rc.registryMessage} onChange={v => upd('registryMessage', v)} placeholder="Your presence is the greatest gift..." rows={2} mode={mode} />
-          <Label mode={mode}>REGISTRY LINKS</Label>
+          <Label mode={mode}>Registry links</Label>
           {links.map((link, i) => (
             <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
               <input value={link.label || ''} onChange={e => { const n = [...links]; n[i] = { ...link, label: e.target.value }; upd('registryLinks', n); }} placeholder="Store name"
@@ -424,7 +424,7 @@ export default function AvaStudioWebsite() {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 40 }}>
               <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #E03553, #803D81)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>✦</div>
               <div>
-                <p style={{ fontSize: 11, color: sub, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 8px' }}>Ava</p>
+                <p style={{ fontSize: 11, color: sub, letterSpacing: '0.1em', margin: '0 0 8px' }}>Ava</p>
                 <h2 style={{ fontSize: 'clamp(22px,3vw,34px)', fontWeight: 700, color: fg, lineHeight: 1.25, margin: '0 0 12px' }}>{step.avaPrompt}</h2>
                 <p style={{ fontSize: 14, color: sub, lineHeight: 1.65, margin: 0 }}>{step.avaHint}</p>
               </div>

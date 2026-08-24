@@ -462,7 +462,7 @@ export default function RSVPPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.lightBg, padding: '24px', ...F }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em', marginBottom: 12 }}>INVITATION NOT FOUND</p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em', marginBottom: 12 }}>Invitation not found</p>
           <h1 style={{ fontSize: 24, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, marginBottom: 12, letterSpacing: '-0.02em' }}>This link has expired or is invalid</h1>
           <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6 }}>Please contact the couple directly for a new invitation link.</p>
         </div>

@@ -464,7 +464,7 @@ export default function SendInvitesModal({
     }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 4px', ...F }}>
-          LIVE PREVIEW
+          Live preview
         </p>
         {channel !== 'whatsapp' && (
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>
@@ -698,7 +698,7 @@ export default function SendInvitesModal({
                 </div>
 
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>SUBJECT LINE</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>Subject line</label>
                   <input
                     type="text"
                     value={subject}
@@ -711,7 +711,7 @@ export default function SendInvitesModal({
                   />
                 </div>
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>MESSAGE BODY</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>Message body</label>
                   <textarea
                     value={messageBody}
                     onChange={e => { setMessageBody(e.target.value); setBodyEdited(true); }}
@@ -726,7 +726,7 @@ export default function SendInvitesModal({
 
                 {/* Banner image control */}
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>BANNER IMAGE</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>Banner image</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {[
                       { val: 'wedding', label: 'Wedding photo', disabled: !hasWeddingPhoto },
@@ -812,7 +812,7 @@ export default function SendInvitesModal({
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
                             <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: 0, ...F }}>{opt.label}</p>
                             {opt.recommended && (
-                              <span style={{ fontSize: 10, fontWeight: 700, color: '#E03553', background: '#FFF0F3', padding: '2px 8px', borderRadius: 999 }}>RECOMMENDED</span>
+                              <span style={{ fontSize: 10, fontWeight: 700, color: '#E03553', background: '#FFF0F3', padding: '2px 8px', borderRadius: 999 }}>Recommended</span>
                             )}
                           </div>
                           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 4px', ...F }}>{opt.desc}</p>
@@ -866,7 +866,7 @@ export default function SendInvitesModal({
 
                   {/* Guest list */}
                   <div style={{ padding: '12px 20px 16px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 8px', ...F }}>SENDING TO</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 8px', ...F }}>Sending to</p>
                     <div style={{ maxHeight: 220, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {selectedGuests.map(g => (
                         <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -883,7 +883,7 @@ export default function SendInvitesModal({
 
                 {/* What happens next */}
                 <div style={{ background: '#F7F7F7', borderRadius: 10, padding: '16px 20px' }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 12px', ...F }}>WHAT HAPPENS NEXT</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 12px', ...F }}>What happens next</p>
                   {[
                     'Each guest gets a unique personal RSVP link',
                     'RSVPs will appear in your guest list automatically',

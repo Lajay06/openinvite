@@ -15,7 +15,7 @@ function AvaInput({ label, value, onChange, placeholder, rows, mode }) {
   const shared = { width: '100%', background: 'transparent', fontFamily: sans, fontSize: 15, color: dark ? '#FFF' : '#0A0A0A', outline: 'none', boxSizing: 'border-box', border: 'none', borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'}`, padding: '8px 0' };
   return (
     <div style={{ marginBottom: 18 }}>
-      {label && <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>{label}</p>}
+      {label && <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(10,10,10,0.6)', letterSpacing: '0.12em', margin: '0 0 8px' }}>{label}</p>}
       {rows ? (
         <textarea value={value || ''} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows}
           style={{ ...shared, resize: 'vertical', lineHeight: 1.6 }}
@@ -37,7 +37,7 @@ function AvaMediaPicker({ label, value, onChange, mode }) {
   const ctx = React.useContext(MediaLibraryContext);
   return (
     <div style={{ marginBottom: 18 }}>
-      {label && <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 8px' }}>{label}</p>}
+      {label && <p style={{ fontSize: 11, fontWeight: 600, color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(10,10,10,0.6)', letterSpacing: '0.12em', margin: '0 0 8px' }}>{label}</p>}
       {value ? (
         <div style={{ position: 'relative', borderRadius: 4, overflow: 'hidden', aspectRatio: '16/9' }}>
           <img src={value} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} alt="" />
@@ -247,7 +247,7 @@ export default function AvaStudioAssets() {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 36 }}>
               <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #E03553, #803D81)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>✦</div>
               <div>
-                <p style={{ fontSize: 11, color: sub, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 6px' }}>Ava</p>
+                <p style={{ fontSize: 11, color: sub, letterSpacing: '0.1em', margin: '0 0 6px' }}>Ava</p>
                 <h2 style={{ fontSize: 'clamp(20px,2.5vw,30px)', fontWeight: 700, color: fg, lineHeight: 1.3, margin: '0 0 10px' }}>{step.avaPrompt}</h2>
                 <p style={{ fontSize: 13, color: sub, lineHeight: 1.65, margin: 0 }}>{step.avaHint}</p>
               </div>

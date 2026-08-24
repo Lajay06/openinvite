@@ -11,8 +11,18 @@ hashed-identifier pattern, the User-entity auth quirk, schema drift, env
 var sourcing). Update it when you learn something new the same way.
 
 ## Rules
-- Sentence case everywhere — no ALL CAPS, no Uppercase Every Word
-- No text-transform: uppercase anywhere in CSS or JSX
+- Sentence case in PRODUCT CHROME — no ALL CAPS, no Uppercase Every Word.
+  Genuine acronyms (FAQ, BYO, RSVP, OK) are not shouting and stay as they are.
+- No text-transform: uppercase in product chrome, CSS or JSX
+- ARTWORK IS EXEMPT, permanently. The couple's guest-facing design is their
+  choice, not our drift: src/components/guest-website/** (per-universe
+  mastheads, footers, section marks), src/components/universe-studio/** and
+  src/components/website-builder/** (invitation and asset previews). Printed
+  card content like "ACCEPTS WITH PLEASURE" is typography; converting it would
+  damage the product. The rule used to read "everywhere", which is why 99
+  uppercase declarations lived here in open contradiction of it — 80 of them
+  legitimately. The exemption is encoded once as ARTWORK in
+  tests/persistence/sentence-case-chrome.mjs; move that list, not this wording.
 - No box-shadow on cards
 - No rounded corners except buttons, pills (border-radius: 999px), and
   modals/popups — all dialogs inherit their 16px rounding from the one

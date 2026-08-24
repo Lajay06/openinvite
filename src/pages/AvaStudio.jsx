@@ -121,7 +121,7 @@ export default function AvaStudio() {
           </AnimatePresence>
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,10,10,0) 60%, rgba(10,10,10,0.75) 100%)' }} />
           <div style={{ position: 'absolute', left: 32, bottom: 28, right: 32 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.7)', margin: '0 0 4px', textTransform: 'uppercase' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.7)', margin: '0 0 4px' }}>
               Step {activeIndex + 1} of {primarySteps.length}
             </p>
             <p style={{ fontSize: 20, fontWeight: 700, color: '#FFFFFF', margin: 0, letterSpacing: '-0.01em' }}>
@@ -275,7 +275,7 @@ function UltraCluster({ steps, navigate }) {
     <div style={{ marginTop: 40, paddingTop: 32, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
         <Crown size={14} style={{ color: '#F59E0B' }} />
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', margin: 0 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: 0 }}>
           What Ultra adds
         </p>
       </div>
@@ -309,7 +309,7 @@ function UltraCluster({ steps, navigate }) {
 function CelebrationOverlay({ firstName, onDone }) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} style={{ paddingTop: 40 }}>
-      <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', color: '#E03553', textTransform: 'uppercase', margin: '0 0 12px' }}>
+      <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', color: '#E03553', margin: '0 0 12px' }}>
         Milestone
       </p>
       <h1 style={{ fontSize: 'clamp(30px, 4.4vw, 48px)', fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', letterSpacing: '-0.01em', lineHeight: 1.1 }}>

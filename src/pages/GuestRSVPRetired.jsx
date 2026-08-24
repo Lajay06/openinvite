@@ -11,7 +11,7 @@ export default function GuestRSVPRetired() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA', padding: '24px', ...F }}>
       <div style={{ textAlign: 'center', maxWidth: 420 }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: '#E03553', letterSpacing: '0.1em', marginBottom: 12 }}>
-          RSVP LINK UPDATED
+          RSVP link updated
         </p>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', marginBottom: 12, letterSpacing: '-0.02em' }}>
           This RSVP link has moved

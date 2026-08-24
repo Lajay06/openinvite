@@ -12,7 +12,7 @@ const Note = base44.entities.Note;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+  fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 

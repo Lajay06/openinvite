@@ -68,6 +68,7 @@ import { runUltraGateUnification } from '../tests/persistence/ultra-gate-unifica
 import { runBannerOffset } from '../tests/persistence/banner-offset.mjs';
 import { runContactSendPath } from '../tests/persistence/contact-send-path.mjs';
 import { runMutedTextTokens } from '../tests/persistence/muted-text-tokens.mjs';
+import { runSentenceCaseChrome } from '../tests/persistence/sentence-case-chrome.mjs';
 import { runGuestCsvExport } from '../tests/persistence/guest-csv-export.mjs';
 import { runBudgetPlanExport } from '../tests/persistence/budget-plan-export.mjs';
 import { runNotesExport } from '../tests/persistence/notes-export.mjs';
@@ -156,6 +157,7 @@ async function run() {
   await runModule('runBannerOffset', () => runBannerOffset());
   await runModule('runContactSendPath', () => runContactSendPath());
   await runModule('runMutedTextTokens', () => runMutedTextTokens());
+  await runModule('runSentenceCaseChrome', () => runSentenceCaseChrome());
   await runModule('runGuestCsvExport', () => runGuestCsvExport());
   await runModule('runBudgetPlanExport', () => runBudgetPlanExport());
   await runModule('runNotesExport', () => runNotesExport());
