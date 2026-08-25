@@ -224,11 +224,31 @@ Measured on production, same pass, declared vs computed:
 wrapper cannot render a font that was never fetched — but without the wrapper
 the loaded faces are never used. Both halves are required.
 
-**COROLLARY DEFECT, same read:** inside `.wb-guest-root`, the `*` rule forces
-`--wb-body-font` onto every non-heading tag, beating the component's own inline
-style. On `/stay`, `<p>Crown Towers Sydney</p>` declares Cormorant Garamond and
-**computes Jost** — a paragraph deliberately set in the heading face is
-silently overridden. Any component styling a `<p>` as a heading is losing.
+**COROLLARY DEFECT — SURVEYED 2026-08-25, 18 occurrences.** Inside
+`.wb-guest-root`, the `*` rule forces `--wb-body-font` onto every non-heading
+tag and beats the component's inline style. So a `<p>` deliberately styled with
+the heading face renders in the BODY face:
+
+| File | Occurrences |
+|---|---|
+| `UniverseBlocks.jsx` | 4 |
+| `WeddingStayPage.jsx` | 4 |
+| `WeddingRSVPPage.jsx` | 4 |
+| `WeddingRegistryPage.jsx` | 2 |
+| `WeddingExperiencePage.jsx` | 2 |
+| `WeddingTransportPage.jsx` | 1 |
+| `WeddingOurStoryPage.jsx` | 1 |
+
+Observed live on `/stay`: `<p>Crown Towers Sydney</p>` declares Cormorant
+Garamond and computes Jost. **The reference layout is itself partly not
+rendering what it declares** — which matters for L-1, since the pattern about
+to be written down and propagated contains four of these.
+
+**Bug or constraint?** Not decided. Either the CSS should stop overriding a
+component's explicit intent (then the `*` rule needs narrowing, which is Step
+2 territory), or card titles should be `<h3>` rather than styled `<p>`s (a
+component change, and arguably better markup anyway). Needs a ruling, not a
+guess.
 
 **AND IT INDICTS MY OWN GUARD.** `guest-typography-parity.mjs` checks that
 files DECLARE `typography.*` rather than literals. Declarations do not reach

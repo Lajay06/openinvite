@@ -528,6 +528,46 @@ nothing explains.** That is the shape to recognise, whatever the surface.
 
 ---
 
+## A guard must assert the EFFECT, not the intent
+
+`guest-typography-parity.mjs` asserted that guest files DECLARE
+`typography.headingFont` / `typography.bodyFont` instead of font literals. It
+passed, and reported parity, while **three routes rendered the wrong face** —
+because `src/index.css` locks every element with
+`* { font-family: … !important }`, which beats any inline `style`.
+
+**A declaration something else can override is INTENT. The computed value is
+EFFECT.** A guard that checks intent is a linter with an opinion: it can be
+fully green while the thing it exists to protect is broken on production.
+
+Where a guard cannot be run at the effect level, say so in its own header
+rather than letting a green tick imply more than it proves.
+
+The replacement here is `scripts/test-guest-font-effect.mjs`: it renders the
+guest routes against this build and reads `getComputedStyle`. Removing the
+wrapper from one page turns it red — `7× Plus Jakarta Sans (of 7)` — which is
+exactly what the static probe could not see.
+
+### RULE — when commissioning a guard, ask what would make it PASS while the defect exists
+
+This is a pre-mortem, in one line, and it belongs in the report that proposes
+the guard. Not "does it catch the bug I just fixed" — it does, that is why it
+was written — but **"what is the world in which this is green and the product
+is broken?"**
+
+For the typography guard the answer was available at the time and nobody asked:
+*a declaration that something else overrides.* Both the terminal and the
+advisor approved it without asking, so this one is shared.
+
+Every guard from here carries that line. `test-guest-font-effect.mjs` states
+its own three: a seed whose universe faces happen to BE the product face
+(guarded — the run aborts unless the expected faces differ from it), a page
+that renders nothing so there is nothing to be wrong (guarded — presence
+before properties), and a new route nobody adds to the list (NOT guarded, and
+said so).
+
+---
+
 ## Computed font-family measures loading; declared font-family measures intent
 
 A production font sweep read `getComputedStyle(el).fontFamily` across a guest

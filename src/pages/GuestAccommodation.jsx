@@ -107,8 +107,21 @@ export default function GuestAccommodation() {
 
   const PJS = typography.bodyFont;
 
+  // GUEST-FONT-SCOPE. src/index.css locks every element to the product face
+  // with `* { font-family: … !important }`, which beats any inline
+  // style={{ fontFamily }}. `.wb-guest-root` plus the two CSS variables is the
+  // only escape, and it is the mechanism MultiPageWeddingWebsite has always
+  // used. A standalone route without it declares its universe faces, loads
+  // them (#549), and never applies them.
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
+    <div
+      className="wb-guest-root"
+      style={{
+        minHeight: '100vh', background: '#FFFFFF',
+        '--wb-heading-font': typography.headingFont,
+        '--wb-body-font': typography.bodyFont,
+      }}
+    >
       {/* Nav bar */}
       <div style={{ position: 'sticky', top: 0, zIndex: 100, height: 56, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
         <Link to={`/w/${weddingSlug}`} style={{ color: '#0A0A0A', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 600 }}>

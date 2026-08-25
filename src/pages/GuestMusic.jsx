@@ -170,7 +170,14 @@ export default function GuestMusic() {
 
 
   return (
-    <div style={{ background: '#0A0A0A', minHeight: '100svh', paddingBottom: 80, fontFamily: typography.bodyFont }}>
+    <div
+      className="wb-guest-root"
+      style={{
+        background: '#0A0A0A', minHeight: '100svh', paddingBottom: 80,
+        '--wb-heading-font': typography.headingFont,
+        '--wb-body-font': typography.bodyFont,
+      }}
+    >
       {/* Nav */}
       <div style={{ position: 'sticky', top: 0, zIndex: 100, height: 56, background: 'rgba(10,10,10,0.95)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
         <Link to={`/w/${weddingSlug}`} style={{ color: '#FFFFFF', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 600 }}>
