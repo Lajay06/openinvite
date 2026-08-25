@@ -64,9 +64,15 @@ export function resolveTypography(weddingDetails) {
     return { headingWeight: 400, bodyWeight: 400, headingStyle: 'normal', ...universeConfig.typography };
   }
   const fallback = TYPOGRAPHY_PAIRINGS.find(t => t.id === weddingDetails?.activeTypography) || TYPOGRAPHY_PAIRINGS[0];
+  // A pairing carries the same two faces under TWO names: fontDisplay/fontBody
+  // and headingFont/bodyFont. All 15 currently define both, so this has zero
+  // exposure today — it is here so that a pairing added with only the
+  // fontDisplay/fontBody pair renders in its own faces instead of silently
+  // falling through to undefined and inheriting the product face.
+  // scripts/test-typography-pairings.mjs asserts every pairing resolves.
   return {
-    headingFont: fallback.headingFont,
-    bodyFont: fallback.bodyFont,
+    headingFont: fallback.headingFont || fallback.fontDisplay,
+    bodyFont: fallback.bodyFont || fallback.fontBody,
     googleFonts: fallback.googleFonts,
     headingWeight: fallback.headingWeight,
     bodyWeight: fallback.bodyWeight,
