@@ -501,6 +501,67 @@ is not.
 
 ---
 
+## A toggle that swaps behaviour must name what it replaces
+
+`weddingPolicies.stylingQuestionnaire.enabled` swaps the guest styling quiz
+between two genuinely different flows — an AI one asking gender, style,
+comfort, budget and notes, and a rules-based one asking events, style and
+budget then showing a read-only guide. The dashboard toggle says only:
+*"Show a quick 'what to wear' questionnaire on the Styling page… Guests pick
+the events they're attending, their style, and their budget."*
+
+Honest about what it ADDS. Silent about what it REMOVES.
+
+It reached the advisor as **"the update has changed the styling quiz… gender,
+budget and notes are missing or condensed"** — a regression report, escalated,
+investigated as a possible bad deploy. Nothing had shipped. Someone had flipped
+a switch that never told them what it cost.
+
+**The rule: a control that changes behaviour must state the behaviour it
+replaces, not only the one it introduces.** From the user's side, a control
+honest about its additions and silent about its removals is indistinguishable
+from an update taking something away.
+
+Same family as the silent Ultra guards, the silently dead clipboard button and
+the silently swallowed link fetch: **the user acts, something changes, and
+nothing explains.** That is the shape to recognise, whatever the surface.
+
+---
+
+## A scan is only as good as its definition of the thing it scans for
+
+The publish-parity sweep asked "which couple-facing promises have no guest-side
+reader?" and got two answers wrong on the first pass:
+
+- `mealOptions` reported as having **no guest reader**, because the scan's
+  definition of "guest-facing" was `src/components/guest-website/**` plus three
+  named pages — and `src/components/rsvp/` was not in it. `RSVPPage` reads
+  `mealOptions` correctly and is unambiguously guest-facing.
+- `showAttending` reported as **broken**, because nothing reads the field on the
+  client. It is enforced server-side in `api/wedding-attendees.js` and reaches
+  the guest through the API response. It works.
+
+Neither error was findable by running the scan again. Both came from asking
+what a "reader" actually is, and what "guest-facing" actually covers.
+
+**Before trusting a sweep, write down its definition and attack the
+definition** — not the results. A scan with a slightly wrong definition returns
+a clean, confident, wrong table, and a table is much more persuasive than it
+deserves to be.
+
+### Corollary — never a loose pattern on a field that matters
+
+The same investigation reported **"gender: present"** on a page with no gender
+field, because `/gender|woman|man|non-binary/i` matched **"Ro*man*tic &
+feminine"**. A substring test on a person's identity field, passing on a word
+with nothing to do with it.
+
+**Word boundaries, and exact labels, whenever the thing being matched matters.**
+A false positive here does not merely mislead — it would have closed an
+investigation into a real defect.
+
+---
+
 ## A fixed bug that returns is a fix in the wrong place
 
 `page.route('**/api/**')` also matches Vite's own `/src/api/base44Client.js`.
