@@ -1,6 +1,7 @@
 import React from 'react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
+import { accentText } from '@/lib/surfaceTint';
 import EditorialSectionKicker from '../layouts/EditorialSectionKicker';
 import ZelligeDivider from '../layouts/ZelligeDivider';
 import MinimalSectionMark from '../layouts/MinimalSectionMark';
@@ -103,7 +104,11 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
   const bFont = T.bodyFont;
   const hWt   = T.headingWeight || 400;
   const lt    = theme.lightText;
-  const acc   = theme.accent;
+  // P2c: `acc` is used as a TEXT colour for times and labels, and the raw
+  // accent fails 4.5:1 against lightBg on 15 of the 20 palettes (london 2.27,
+  // measured on screen, not inferred). accentText darkens it toward the
+  // palette's own ink only as far as needed, keeping the hue.
+  const acc   = accentText(theme);
 
   return (
     <div style={{ backgroundColor: theme.lightBg, color: lt, minHeight: '100vh' }}>

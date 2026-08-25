@@ -2,6 +2,7 @@ import React from 'react';
 import { Star, MapPin, ExternalLink, Heart, CalendarDays } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
+import { accentText, accentChip } from '@/lib/surfaceTint';
 
 const CATEGORIES = [
   { key: 'mustEat',        label: 'Must eat' },
@@ -63,7 +64,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
     fontSize: 11,
     fontWeight: 700,
     letterSpacing: '0.1em',
-    color: theme.accent,
+    color: accentText(theme),
     fontFamily: typography.bodyFont,
   };
 
@@ -113,7 +114,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                         </div>
                       )}
                       {place.category && (
-                        <span style={{ position: 'absolute', bottom: 8, left: 10, fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: theme.accent, color: '#FFF', fontFamily: typography.bodyFont, letterSpacing: '0.06em' }}>
+                        <span style={{ position: 'absolute', bottom: 8, left: 10, fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, ...accentChip(theme), fontFamily: typography.bodyFont, letterSpacing: '0.06em' }}>
                           {place.category}
                         </span>
                       )}
@@ -123,7 +124,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                         {place.name}
                       </h2>
                       {place.rating && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: theme.accent, fontFamily: typography.bodyFont }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: accentText(theme), fontFamily: typography.bodyFont }}>
                           <Star size={10} fill={theme.accent} color={theme.accent} /> {place.rating}
                         </span>
                       )}
@@ -134,7 +135,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                       )}
                       {place.maps_url && (
                         <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: theme.accent, fontFamily: typography.bodyFont, textDecoration: 'none' }}>
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: accentText(theme), fontFamily: typography.bodyFont, textDecoration: 'none' }}>
                           Maps <ExternalLink size={10} />
                         </a>
                       )}
@@ -177,7 +178,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                         </h2>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                           {place.rating && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: theme.accent, fontFamily: typography.bodyFont }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: accentText(theme), fontFamily: typography.bodyFont }}>
                               <Star size={10} fill={theme.accent} color={theme.accent} /> {place.rating}
                             </span>
                           )}
@@ -199,7 +200,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                         )}
                         {place.maps_url && (
                           <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: theme.accent, fontFamily: typography.bodyFont, textDecoration: 'none' }}>
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: accentText(theme), fontFamily: typography.bodyFont, textDecoration: 'none' }}>
                             View on maps <ExternalLink size={10} />
                           </a>
                         )}

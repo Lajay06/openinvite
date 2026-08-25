@@ -13,12 +13,16 @@ export default function DashboardPageHeader({ title, subtitle, actions }) {
         paddingBottom: 10,
       }}
     >
-      <div className="flex items-baseline gap-3 min-w-0">
+      {/* flex-wrap + a shrinkable subtitle: with flexShrink:0 a long subtitle
+           could not shrink and ran past the viewport at 390 (measured at 436px on
+           a 390 screen). Shared chrome, so every page with a long subtitle had
+           it. */}
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 min-w-0">
         <h1 style={{ fontSize: 18, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
           {title}
         </h1>
         {subtitle && (
-          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, flexShrink: 0 }}>
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, minWidth: 0 }}>
             {subtitle}
           </span>
         )}

@@ -81,7 +81,16 @@ export default function WeddingWebsiteNav({ weddingName, theme, typography, enab
     }))
     .filter(link => !!link.label);
 
-  const allLinks = [...pageLinks, ...subLinks];
+  // D-3: RSVP goes LAST. It is the one thing a guest is asked to do, and it
+  // read as just another page sitting fourth in a list of eight. Pulled out of
+  // enabledPages order and appended rather than reordered in the data, so a
+  // couple's own page order is untouched.
+  const rsvpLink = pageLinks.find(l => l.key === 'rsvp');
+  const allLinks = [
+    ...pageLinks.filter(l => l.key !== 'rsvp'),
+    ...subLinks,
+    ...(rsvpLink ? [rsvpLink] : []),
+  ];
   const visibleLinks = allLinks.slice(0, MAX_VISIBLE_LINKS);
   const overflowLinks = allLinks.slice(MAX_VISIBLE_LINKS);
 
@@ -169,7 +178,21 @@ export default function WeddingWebsiteNav({ weddingName, theme, typography, enab
           number of pages cleanly, no overflow menu needed here. */}
       {mobileOpen && (
         <div
+          // P2b: FIXED, not in flow. The nav is position:sticky, so it is
+          // visually pinned while its DOM position stays at the top of the
+          // document. This panel was a flow sibling, so opening it from the
+          // bottom of a long page rendered the menu thousands of pixels above
+          // the viewport — the guest tapped, nothing appeared, and it read as
+          // a dead control. Same family as the Copy links button that did
+          // nothing: the user acts and nothing explains.
+          // Fixed under the pinned nav means it opens where the guest is
+          // looking, wherever they have scrolled to.
           style={{
+            position: 'fixed',
+            top: 56,
+            left: 0,
+            right: 0,
+            zIndex: 49,
             backgroundColor: theme.navBg,
             borderBottom: `1px solid ${theme.accent}20`,
             padding: '16px 24px',

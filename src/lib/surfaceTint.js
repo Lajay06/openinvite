@@ -81,3 +81,58 @@ export function formSurfaces(theme = {}) {
     borderSelected: accent,
   };
 }
+
+/**
+ * The accent, darkened just enough to be readable as TEXT on the page ground.
+ *
+ * P2c. `theme.accent` is a decorative hue chosen for the universe, and on 15
+ * of the 20 palettes it fails 4.5:1 against that universe's own `lightBg` —
+ * london 2.27, shanghai 2.13, amalfi 2.15. It is used for section labels and
+ * small meta text throughout the guest pages, so those were failing on most
+ * weddings.
+ *
+ * This walks the accent toward the palette's own text colour in 5% steps until
+ * it clears the floor, and returns it UNCHANGED where it already passes (kyoto,
+ * paris, aspen, mykonos, edinburgh). The hue is preserved — it is the same
+ * accent, darkened — rather than substituting a neutral, so the label still
+ * reads as the universe's colour.
+ *
+ * Non-text accent use (icons, rules, fills) is unaffected: WCAG 1.4.11 asks
+ * 3:1 of those, and they are not this function's business.
+ */
+export function accentText(theme = {}) {
+  const accent = theme.accent, ground = theme.lightBg, ink = theme.lightText;
+  if (!toRgb(accent) || !toRgb(ground) || !toRgb(ink)) return accent;
+  let out = accent;
+  for (let t = 0; t <= 1.0001; t += 0.05) {
+    out = mixHex(accent, ink, t);
+    if (contrastRatio(out, ground) >= 4.5) return out;
+  }
+  return ink;                                   // last resort: the text colour
+}
+
+/**
+ * A filled chip in the accent hue, deep enough for the palette's light text to
+ * be readable on it — returns `{ background, color }`.
+ *
+ * Choosing a FOREGROUND is not sufficient: on 9 of the 20 palettes the accent
+ * is mid-tone and NEITHER of the palette's text colours clears 4.5:1 against
+ * it (amalfi bottoms out at 3.26). Hard-coded `#FFF` was worse still — 2.67:1
+ * on london.
+ *
+ * So the FILL moves instead. The accent is deepened toward black in 5% steps
+ * until the light text passes, which keeps the chip unmistakably the
+ * universe's colour rather than swapping it for a neutral. Accents that
+ * already pass are returned untouched.
+ */
+export function accentChip(theme = {}) {
+  const accent = theme.accent;
+  const light = theme.darkText || '#FFFFFF';
+  if (!toRgb(accent)) return { background: accent, color: light };
+  let bg = accent;
+  for (let t = 0; t <= 1.0001; t += 0.05) {
+    bg = mixHex(accent, '#000000', t);
+    if ((contrastRatio(light, bg) ?? 0) >= 4.5) break;
+  }
+  return { background: bg, color: light };
+}
