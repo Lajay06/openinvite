@@ -95,6 +95,50 @@ width-conditional route.
 
 ---
 
+## THE ORDER (advisor, 2026-08-25)
+
+**R-1 first — nothing new starts until it is established.** A styling-quiz
+regression on a couple-facing flow, possibly shipped 2026-08-25. **The symptom
+did not survive the context reset — re-request it.** Established so far:
+- Today's merges are #538–#546. The three I built (#544/#545/#546) touch only
+  SendInvitesModal, WhatsAppCompose, guestLinks, MultiPageWeddingWebsite's
+  tab-title effect, and vercel.json — **no path to a styling surface.**
+- The likelier candidates are the same-day #541 (recognition transport), #542
+  (RSVP embed, which reworked WeddingRSVPPage/RSVPPage) and #543.
+- `/w/john-suzanne/styling` **renders on production** at 390: "What will you
+  wear? … Ceremony — sdfsdfsdf Reception Welcome Recove…". `stylingQuestionnaire`
+  is `{enabled: true}` and `styling` is in `enabledPages`. So R-1 is NOT a blank
+  page; it is behavioural, and cannot be found without the symptom.
+
+**Then M-3 — RULED, FIX IT, own micro PR.** `ToastViewport`
+(`src/components/ui/toast.jsx:18`): `w-full` at a 16px offset gives
+`right: 406` on a 390 viewport, widening the scroll area on **every page below
+`md`, before any toast exists**. Global chrome, which makes it more worth
+fixing, not less. Constrain the viewport, verify toasts still render and stack
+at both widths, and add a probe pinning zero horizontal overflow at 390 on a
+representative page. The `sr-only` heading is correct and stays.
+
+**Then the api-glob guard** (see STANDING-RULES, "A fixed bug that returns is a
+fix in the wrong place") — fail any script under `scripts/`/`tests/` that calls
+`page.route` with a glob containing `api`.
+
+**Then, in order:** D-1 (experience guide and policies not rendering) · D-2
+(guide doubled) · D-3 (RSVP to the end of the nav) · L-1 (Stay as the named
+reference layout, **written down before propagating**) · L-2 (FAQ accordion) ·
+E1–E4 emoji · PREVIEW-NAV · F4/F5 · item 7 · MESSAGES-GUARDS ·
+EXPORT-OVERLAY-SILENT-FAIL · NULL-SCRIPT-VERIFY-FIX · INVENTED-CONTENT-SWEEP ·
+HARNESS-FIXTURE-TRUTH · Option B proposal · WEBKIT-PASS.
+
+**Note on D-1:** `/w/john-suzanne/experience` **renders** on production
+(2026-08-25) — "Your guide to 1 Barangaroo Ave … Our favorites Must Eat …" and
+`experienceGuide.published` is `true`. So either D-1 is on a different wedding
+or state, or its symptom is not "does not render". Establish before building.
+
+**Incidentals seen while checking, held not absorbed:** `/w/:slug/polls` still
+renders 🗳️ (E1 batch) · the report-only CSP refuses `blob:` URLs on every guest
+page, so `/api/csp-report` is being spammed by a policy that is not actually
+blocking anything — low-priority CSP tuning.
+
 ## QUEUED, in order
 
 **DONE 2026-08-25 — the Option A guest shell (#546, `0179667`).** Guest routes

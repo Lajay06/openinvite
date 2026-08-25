@@ -501,6 +501,34 @@ is not.
 
 ---
 
+## A fixed bug that returns is a fix in the wrong place
+
+`page.route('**/api/**')` also matches Vite's own `/src/api/base44Client.js`.
+The harness serves the app's JavaScript as JSON, React never mounts, and every
+page is blank — while a sweep happily reports measurements taken on nothing.
+
+This was found, diagnosed and fixed once, in `scripts/lib/renderHarness.mjs`,
+by replacing the glob with a URL predicate requiring
+`pathname.startsWith('/api/')`. **It came back on 2026-08-25** in a new
+one-off render script, because the fix lived in one file rather than in
+something new scripts inherit.
+
+**The rule:**
+
+- Any render or probe script that intercepts routes **must use the harness**.
+  Do not roll your own routing.
+- The harness's **URL predicate is the only sanctioned implementation**.
+- A guard must fail when anything under `scripts/` or `tests/` calls
+  `page.route` with a glob containing `api`.
+
+The general form, which is the part worth carrying: **when a bug can recur in
+new code, fixing the instance is not fixing the bug.** Ask where the fix has to
+live for the next author to inherit it — a shared helper, or a guard that
+fails. A fix that only cleans up the one site you were looking at is a fix in
+the wrong place.
+
+---
+
 ## A push is verified against the remote, never trusted from local exit status
 
 `git push` on a branch with no upstream fails with "no upstream branch" and a
