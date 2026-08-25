@@ -39,6 +39,8 @@
  * is available — e.g. a shallow/orphan local checkout), 1 if stale.
  */
 
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 
 const MARKETING_SOURCE_PATTERNS = [
@@ -58,10 +60,62 @@ const MARKETING_SOURCE_PATTERNS = [
   /^src\/lib\/planFeatures\.js$/,
   /^src\/lib\/marketingSeo\.js$/,
   /^src\/lib\/universeCatalog\.js$/,
-  /^src\/lib\/websiteThemes\.js$/,
+  // src/lib/websiteThemes.js WAS listed here and no marketing file imports it.
+  // Universes.jsx takes its data from src/lib/universeCatalog.js; across
+  // Universes/Home/Features/Ava/Pricing/About and all of components/marketing,
+  // components/home and components/public there is not one reference to
+  // websiteThemes. The entry cost two CI round-trips in one day, both for
+  // GUEST-SITE COPY that no marketing page renders.
+  //
+  // It is removed rather than loosened, and assertNoStaleMarketingDeps() below
+  // fails loudly if a marketing file ever does import it — so the guard now
+  // tracks the actual dependency instead of a remembered one.
   /^src\/hooks\/useMarketingSeo\.js$/,
   /^src\/hooks\/useOrganizationStructuredData\.js$/,
 ];
+
+/**
+ * The list above is a REMEMBERED dependency graph. A remembered graph rots:
+ * an entry stops being true and nobody notices until it costs a CI round-trip,
+ * or — far worse in the other direction — a real import appears and no entry
+ * covers it, and the guard silently stops protecting the route.
+ *
+ * This asserts the one edge we deliberately removed. It runs unconditionally,
+ * BEFORE the early exit for "nothing marketing-relevant changed", because a
+ * new import is exactly the case where nothing marketing-relevant appears to
+ * have changed.
+ */
+function assertNoStaleMarketingDeps() {
+  const TREES = [
+    'src/components/marketing', 'src/components/home', 'src/components/public',
+  ];
+  const PAGES = ['Home', 'Features', 'Ava', 'FAQ', 'Universes', 'Gifting', 'Pricing',
+                 'Contact', 'About', 'PrivacyPolicy', 'TermsOfService', 'Login',
+                 'Register', 'ForgotPassword'].map((n) => `src/pages/${n}.jsx`);
+
+  const files = [];
+  const walk = (dir) => {
+    if (!existsSync(dir)) return;
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (/\.jsx?$/.test(e.name)) files.push(full);
+    }
+  };
+  TREES.forEach(walk);
+  PAGES.filter((f) => existsSync(f)).forEach((f) => files.push(f));
+
+  const offenders = files.filter((f) => /from\s+['"][^'"]*websiteThemes/.test(readFileSync(f, 'utf8')));
+  if (offenders.length > 0) {
+    console.error('\n  ✗ A marketing-tree file now imports src/lib/websiteThemes.js:\n');
+    offenders.forEach((f) => console.error(`      ${f}`));
+    console.error('\n  That module was REMOVED from MARKETING_SOURCE_PATTERNS because nothing');
+    console.error('  in the marketing tree imported it. It does now, so the entry must be');
+    console.error('  restored — otherwise a copy change there ships stale prerendered HTML.\n');
+    process.exit(1);
+  }
+  console.log(`  ✓ No marketing-tree file imports websiteThemes (${files.length} files checked).`);
+}
 
 function git(cmd) {
   return execSync(`git ${cmd}`, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
@@ -118,6 +172,8 @@ const prerenderedChanged = changed.some((f) => f.startsWith('prerendered/'));
 console.log('\n═══════════════════════════════════════════════════════');
 console.log('  Prerendered freshness guard');
 console.log('═══════════════════════════════════════════════════════\n');
+
+assertNoStaleMarketingDeps();
 
 if (marketingSourceChanged.length === 0) {
   console.log('  ✓ No marketing-relevant source files changed in this diff — nothing to check.');
