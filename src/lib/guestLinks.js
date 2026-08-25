@@ -16,7 +16,7 @@
 
 /**
  * @param {object} [opts]
- * @param {boolean} [opts.strict] — throw instead of returning {} when the
+ * @param {boolean} [opts.throwOnFailure] — throw instead of returning {} when the
  *   request cannot be completed. The default ({}) cannot distinguish "the
  *   service failed" from "none of these guests have links", which is fine for
  *   a copy button that filters and reports a count, and NOT fine for a send:
@@ -44,13 +44,13 @@ export async function fetchGuestLinks(guestIds, opts = {}) {
     });
     if (!res.ok) {
       console.error(`[guestLinks] /api/my-guest-links failed (${res.status})`);
-      if (opts.strict) throw new Error(`Could not reach the invitation-link service (${res.status}).`);
+      if (opts.throwOnFailure) throw new Error(`Could not reach the invitation-link service (${res.status}).`);
       return {};
     }
     const data = await res.json();
     return data?.links || {};
   } catch (err) {
-    if (opts.strict) throw err;
+    if (opts.throwOnFailure) throw err;
     console.error('[guestLinks] fetch error:', err.message);
     return {};
   }

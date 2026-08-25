@@ -339,11 +339,11 @@ export default function SendInvitesModal({
   // then kept the guest's stripped, undefined rsvp_link_id (#539 removed the
   // token columns from /api/my-guests), and every recipient was emailed
   // ".../rsvp/undefined". An invitation cannot be unsent, so a partial or
-  // failed link fetch ABORTS the send: strict:true throws on transport
+  // failed link fetch ABORTS the send: throwOnFailure:true throws on transport
   // failure, and any guest still missing a link after a successful fetch is
   // counted and named in the error. Nothing downstream constructs an email.
   const ensureTokens = async (list) => {
-    const linkMap = await fetchGuestLinks(list.map(g => g.id), { includePlusOne: true, strict: true });
+    const linkMap = await fetchGuestLinks(list.map(g => g.id), { includePlusOne: true, throwOnFailure: true });
     const withTokens = list.map(g => {
       const l = linkMap[g.id];
       if (!l) return g;

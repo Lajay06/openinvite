@@ -64,7 +64,7 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
       // it points at actually exists.
       let rsvpLink = '';
       try {
-        const linkMap = guest?.id ? await fetchGuestLinks([guest.id], { strict: true }) : {};
+        const linkMap = guest?.id ? await fetchGuestLinks([guest.id], { throwOnFailure: true }) : {};
         rsvpLink = linkMap[guest?.id]?.rsvpUrl || '';
       } catch (linkErr) {
         console.error('[WhatsAppCompose] link fetch failed:', linkErr.message);

@@ -19,7 +19,7 @@
  *            naming how many links could not be created
  *   belt   — buildRsvpUrl refuses a falsy token outright
  *
- * The strict-mode assertions run the real function against a stubbed fetch
+ * The throw-on-failure assertions run the real function against a stubbed fetch
  * rather than grepping for it, so they fail if the behaviour regresses even
  * when the words survive.
  */
@@ -52,17 +52,17 @@ export async function runInviteLinkIntegrity() {
 
   const { fetchGuestLinks } = await import('../../src/lib/guestLinks.js');
 
-  // ── strict mode: real behaviour, stubbed transport ─────────────────────
+  // ── throw-on-failure mode: real behaviour, stubbed transport ─────────────────────
   const failing = async () => ({ ok: false, status: 500, json: async () => ({}) });
   const throwing = async () => { throw new Error('network down'); };
   const okEmpty = async () => ({ ok: true, status: 200, json: async () => ({ links: {} }) });
 
   for (const [label, impl] of [['a non-ok response', failing], ['a network error', throwing]]) {
     const threw = await withBrowserGlobals(impl, async () => {
-      try { await fetchGuestLinks(['g1'], { strict: true }); return false; }
+      try { await fetchGuestLinks(['g1'], { throwOnFailure: true }); return false; }
       catch { return true; }
     });
-    check(`strict: ${label} throws instead of returning {}`, threw, 'the send path cannot mistake failure for "no links"');
+    check(`throwOnFailure: ${label} throws instead of returning {}`, threw, 'the send path cannot mistake failure for "no links"');
 
     const swallowed = await withBrowserGlobals(impl, async () => {
       try { return await fetchGuestLinks(['g1']); } catch { return 'threw'; }
@@ -72,12 +72,12 @@ export async function runInviteLinkIntegrity() {
       swallowed !== 'threw' && typeof swallowed === 'object', JSON.stringify(swallowed));
   }
 
-  // A successful-but-empty response is NOT a transport failure; strict must
+  // A successful-but-empty response is NOT a transport failure; the throw must
   // not throw there. Completeness is ensureTokens' job, and it names guests.
   const emptyOk = await withBrowserGlobals(okEmpty, async () => {
-    try { return await fetchGuestLinks(['g1'], { strict: true }); } catch { return 'threw'; }
+    try { return await fetchGuestLinks(['g1'], { throwOnFailure: true }); } catch { return 'threw'; }
   });
-  check('strict: a successful empty response does not throw', emptyOk !== 'threw',
+  check('throwOnFailure: a successful empty response does not throw', emptyOk !== 'threw',
     'partial-link detection belongs to the caller, which can name the guests');
 
   // ── the send path ──────────────────────────────────────────────────────
@@ -87,8 +87,8 @@ export async function runInviteLinkIntegrity() {
     /function buildRsvpUrl\(token\)\s*\{[\s\S]{0,200}?if \(!token\) throw/.test(modal),
     'belt — the caller should never reach it');
 
-  check('the send asks for strict link fetching',
-    /fetchGuestLinks\([\s\S]{0,80}?strict: true/.test(modal), 'failure is not silence');
+  check('the send asks for throw-on-failure link fetching',
+    /fetchGuestLinks\([\s\S]{0,80}?throwOnFailure: true/.test(modal), 'failure is not silence');
 
   // Scoped to ensureTokens, not the file: a throw elsewhere must not satisfy this.
   const et = modal.slice(modal.indexOf('const ensureTokens'));
@@ -121,7 +121,7 @@ export async function runInviteLinkIntegrity() {
   // as unrecallable as an emailed /rsvp/undefined.
   const wa = strip(read('src/components/messages/WhatsAppCompose.jsx'));
 
-  check('WhatsApp: the link fetch is strict', /fetchGuestLinks\([\s\S]{0,80}?strict: true/.test(wa),
+  check('WhatsApp: the link fetch throws on failure', /fetchGuestLinks\([\s\S]{0,80}?throwOnFailure: true/.test(wa),
     'a failed fetch is not an empty link');
   check('WhatsApp: an empty link is never substituted away',
     /if \(key === 'rsvp_link' && !value\) return;/.test(wa),
