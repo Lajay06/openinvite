@@ -7,13 +7,13 @@
  * programme, etc.) found ~130 user-facing instances across 40+ files —
  * the same class of drift PR #277's marketing sweep found and fixed on the
  * marketing side. This is that same rule enforced in code for the
- * dashboard/universe-builder surface, so it doesn't quietly reaccumulate.
+ * product surface, so it doesn't quietly reaccumulate.
  *
  * What this checks: diffs the current branch against its merge-base with
  * the PR's base branch (pull_request events) or against the immediately
  * prior commit (push events) — same resolution as
  * scripts/test-prerendered-freshness.mjs. For every ADDED line in a
- * dashboard/universe-builder source file (src/pages/, src/components/
+ * in-scope product source file (src/pages/, src/components/
  * excluding marketing/home/public, src/lib/), flags any of the banned
  * British/Australian spellings below as a whole word.
  *
@@ -34,6 +34,17 @@
 
 import { execSync } from 'node:child_process';
 
+// THE SCOPE, STATED. Three of this file's messages used to say
+// "dashboard/universe-builder source", which described a NARROWER scope than
+// the patterns below have. On 2026-08-25 that wording led the advisor to
+// diagnose a coverage hole in guest-facing copy and the terminal to start
+// implementing a fix for it — before a test showed guest-website was in scope
+// the whole time. A tool that misdescribes itself produces wrong conclusions
+// in everyone who reads it, however carefully they read.
+//
+// In scope: src/pages, src/components, src/lib — INCLUDING
+// src/components/guest-website, which is guest-facing copy and precisely what
+// the US-English rule exists for.
 const SCOPE_PATTERNS = [
   /^src\/pages\//,
   /^src\/components\//,
@@ -170,7 +181,7 @@ console.log('  US-English spelling guard (dashboard + universe builder)');
 console.log('═══════════════════════════════════════════════════════\n');
 
 if (scopedFiles.length === 0) {
-  console.log('  ✓ No dashboard/universe-builder source files changed — nothing to check.');
+  console.log('  ✓ No in-scope product source changed — nothing to check.');
   console.log('───────────────────────────────────────────────────────\n');
   process.exit(0);
 }
@@ -207,12 +218,12 @@ for (const file of scopedFiles) {
 }
 
 if (findings.length === 0) {
-  console.log(`  ✓ ${scopedFiles.length} dashboard/universe-builder file(s) changed, no banned spellings introduced.`);
+  console.log(`  ✓ ${scopedFiles.length} in-scope file(s) changed, no banned spellings introduced.`);
   console.log('───────────────────────────────────────────────────────\n');
   process.exit(0);
 }
 
-console.error(`  ✗ Found ${findings.length} British/Australian spelling(s) in changed dashboard/universe-builder source:\n`);
+console.error(`  ✗ Found ${findings.length} British/Australian spelling(s) in changed product source:\n`);
 findings.forEach((f) => console.error(`      ${f.file}:${f.line}  "${f.word}"  →  ${f.text}`));
 console.error('');
 console.error('  Use US English in user-facing strings (color, favorite, organize,');
