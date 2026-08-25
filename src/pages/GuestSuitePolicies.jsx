@@ -75,6 +75,31 @@ const EMPTY = {
   stylingQuestionnaire: { enabled: false },
 };
 
+/**
+ * The two guest styling questionnaires, named and described by WHAT THEY ASK.
+ *
+ * `stylingQuestionnaire.enabled` picks between two genuinely different flows —
+ * see WeddingStylePage.jsx's dispatcher. `false` (the default) is the AI
+ * stylist; `true` is the deterministic quick guide. Neither is being removed:
+ * the owner ruled to keep both and make the choice explicit.
+ */
+const STYLING_MODES = [
+  {
+    key: 'ai',
+    enabled: false,
+    name: 'Personal stylist',
+    asks: 'who they are dressing, their style, how comfortable they want to be, their budget, and anything else they want to mention.',
+    result: 'Writes them a personal outfit suggestion, with colours and fabrics.',
+  },
+  {
+    key: 'quick',
+    enabled: true,
+    name: 'Quick guide',
+    asks: 'which of your events they are attending, their style, and their budget.',
+    result: 'Shows an instant what-to-wear guide built from your dress codes.',
+  },
+];
+
 const EMPTY_GUEST_EXPERIENCE = {
   backgroundMusic: { enabled: false, source: '', url: '', trackId: '', trackName: '' },
   showAttending: false,
@@ -203,7 +228,7 @@ export default function GuestSuitePolicies() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Good to know" subtitle="The practical things your guests will want to know" />
+      <DashboardPageHeader title="Good to know" subtitle="What your guests will want to know" />
 
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -373,13 +398,55 @@ export default function GuestSuitePolicies() {
           {/* Guest styling questionnaire */}
           {activeTab === 'styling' && (
           <DetailsSection title="Guest styling questionnaire" icon={ClipboardList} defaultOpen>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-              <Toggle value={policies.stylingQuestionnaire.enabled} onChange={v => set('stylingQuestionnaire', 'enabled', v)} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Show a quick "what to wear" questionnaire on the Styling page</span>
-            </div>
-            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, lineHeight: 1.6 }}>
-              Guests pick the events they're attending, their style, and their budget — we instantly suggest an outfit based on your dress codes. No account needed, nothing is saved.
+            {/* AN EXPLICIT NAMED CHOICE, NOT A SWITCH.
+                This was a toggle reading "Show a quick 'what to wear'
+                questionnaire", described only by what it ADDS and silent about
+                what it REPLACED — a second, richer flow that asks gender,
+                comfort and free-text notes. A couple who turned it on lost
+                those questions and had no way to know, so it reached the
+                advisor as a REGRESSION REPORT ("the update has changed the
+                styling quiz... gender, budget and notes are missing") and was
+                investigated as a bad deploy. Nothing had shipped.
+                See STANDING-RULES, "a toggle that swaps behaviour must name
+                what it replaces". */}
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS, lineHeight: 1.6 }}>
+              Guests answer a few questions on your Styling page and get an outfit suggestion.
+              Choose which set of questions they see. Either way, no account is needed and nothing is saved.
             </p>
+            {STYLING_MODES.map(mode => {
+              const selected = !!policies.stylingQuestionnaire.enabled === mode.enabled;
+              return (
+                <button
+                  key={mode.key}
+                  type="button"
+                  onClick={() => set('stylingQuestionnaire', 'enabled', mode.enabled)}
+                  aria-pressed={selected}
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
+                    background: selected ? 'rgba(224,53,83,0.06)' : '#FFFFFF',
+                    border: `1px solid ${selected ? '#E03553' : 'rgba(10,10,10,0.13)'}`,
+                    padding: '14px 16px', marginBottom: 10, fontFamily: PJS,
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{
+                      width: 14, height: 14, borderRadius: 999, flexShrink: 0,
+                      border: `1px solid ${selected ? '#E03553' : 'rgba(10,10,10,0.3)'}`,
+                      background: selected ? '#E03553' : 'transparent',
+                    }} />
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A' }}>{mode.name}</span>
+                  </span>
+                  <span style={{ display: 'block', fontSize: 12, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, paddingLeft: 22 }}>
+                    {/* The point of the whole control: each option states what
+                        it ASKS, so the trade is visible before it is made. */}
+                    Asks: {mode.asks}
+                  </span>
+                  <span style={{ display: 'block', fontSize: 12, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, paddingLeft: 22 }}>
+                    {mode.result}
+                  </span>
+                </button>
+              );
+            })}
           </DetailsSection>
           )}
 

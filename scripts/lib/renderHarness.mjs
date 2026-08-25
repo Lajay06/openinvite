@@ -210,6 +210,46 @@ export const PUBLISHED_WEDDING = {
   created_by: 'fixture@example.com', created_by_id: 'u1',
 };
 
+/**
+ * The rendered contents of #root, from an HTML string.
+ *
+ * WHY THIS IS A FUNCTION AND NOT A REGEX AT THE CALL SITE. The obvious pattern
+ * — /<div id="root">(.*?)<\/div>/s — is NON-GREEDY, so it stops at the FIRST
+ * closing tag, which for any real page is the first nested <div>. It reported
+ * "#root inner length: 0" on documents carrying 2,898 characters of markup,
+ * and it did it TWICE in one session: once concluding a guest shell was empty
+ * when it was not, and once "verifying" that a prerendered snapshot's #root was
+ * unchanged when the extraction had matched nothing at all on both sides.
+ *
+ * A regex cannot balance tags. This counts depth instead.
+ *
+ * @param {string} html
+ * @returns {string} the inner HTML of #root, or '' if there is no #root.
+ */
+export function extractRootHtml(html) {
+  if (typeof html !== 'string') return '';
+  const open = html.search(/<div[^>]*\bid=["']root["'][^>]*>/i);
+  if (open === -1) return '';
+  const tagEnd = html.indexOf('>', open) + 1;
+  let depth = 1;
+  const re = /<\/?div\b[^>]*>/gi;
+  re.lastIndex = tagEnd;
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    depth += m[0].startsWith('</') ? -1 : 1;
+    if (depth === 0) return html.slice(tagEnd, m.index);
+  }
+  return html.slice(tagEnd);           // unbalanced document: return the rest
+}
+
+/** Visible text of a document body, scripts and styles removed. */
+export function extractBodyText(html) {
+  if (typeof html !== 'string' || !html.includes('<body')) return '';
+  let b = html.split('<body', 1).length === 2 ? html.slice(html.indexOf('<body')) : html;
+  b = b.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ');
+  return b.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 /** The couple. Paid plan, onboarded, so no gate or banner intercepts the page. */
 export const FIXTURE_USER = {
   id: 'u1', email: 'fixture@example.com', full_name: 'Render Fixture',
