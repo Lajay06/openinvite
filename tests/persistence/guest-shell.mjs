@@ -22,6 +22,7 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { pass, fail } from './_shared.mjs';
 import { buildGuestShell, GUEST_SHELL_META } from '../../scripts/lib/guestShell.mjs';
+import { extractRootHtml } from '../../scripts/lib/renderHarness.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = (p) => resolve(__dir, '../../', p);
@@ -57,7 +58,16 @@ export async function runGuestShell() {
     !/Because planning your wedding|All the powerful tools|planning platform/i.test(shell),
     'nothing to paint, nothing to unfurl');
   check('  #root is empty, so nothing paints before React mounts',
-    /<div id="root">\s*<\/div>/.test(shell), 'kills the flash at its source');
+    extractRootHtml(shell).trim() === '', 'kills the flash at its source');
+
+  // CONTROL for the extractor itself. The naive non-greedy regex returns '' on
+  // a populated document — it stops at the first nested </div> — and reported
+  // exactly that twice in one session. A tag-depth counter must return the
+  // real contents, or every "#root is empty" assertion is vacuously true.
+  const POPULATED = '<div id="root"><div class="a"><p>hello</p></div><span>x</span></div><script src="/x.js"></script>';
+  check('  control: the extractor returns non-zero on a populated #root',
+    extractRootHtml(POPULATED).includes('<span>x</span>') && extractRootHtml(POPULATED).length > 20,
+    `${extractRootHtml(POPULATED).length} chars, nested div traversed`);
   check('  the title is the guest title',
     shell.includes(`<title>${GUEST_SHELL_META.title}</title>`), GUEST_SHELL_META.title);
   check('  og:url and og:image are absent, not wrong',

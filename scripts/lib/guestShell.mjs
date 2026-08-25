@@ -44,6 +44,8 @@
  */
 
 /** Meta the guest shell carries. Wedding-independent by construction. */
+import { extractRootHtml } from './renderHarness.mjs';
+
 export const GUEST_SHELL_META = {
   title: 'Wedding invitation',
   description: 'Open your invitation to see the details and reply.',
@@ -132,9 +134,12 @@ export function buildGuestShell(templateHtml, entryTags) {
   }
   // The body must be empty. If a snapshot's DOM ever leaks in here, the flash
   // comes straight back and nothing else in this file would notice.
-  const body = out.slice(out.indexOf('<body'));
-  const rootInner = body.match(/<div id="root">([\s\S]*?)<\/div>/i)?.[1] ?? '';
-  if (rootInner.trim() !== '') throw new Error('[guestShell] #root is not empty — the shell must paint nothing');
+  //
+  // Via the shared extractor, NOT a local regex: the non-greedy form used here
+  // stops at the first nested </div> and reported an empty #root on populated
+  // documents twice in one session. This guarantee is only as good as the
+  // extraction behind it.
+  if (extractRootHtml(out).trim() !== '') throw new Error('[guestShell] #root is not empty — the shell must paint nothing');
   if (/Because planning your wedding|All the powerful tools/i.test(out)) {
     throw new Error('[guestShell] marketing copy present in the guest shell');
   }
