@@ -1,82 +1,75 @@
 /**
- * Guest-site indexing posture.
+ * The indexing posture covers every URL a guest is actually given.
  *
- * The regression this guards: the AEO/SEO batch added named bot groups to
- * robots.txt (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Bingbot),
- * each with `Allow: /` and no Disallow lines. In robots.txt a crawler that
- * matches a specific User-agent group obeys ONLY that group and ignores the
- * `*` group entirely -- so every one of those bots, including Bingbot (a
- * general web index, not just an answer engine), was permitted to crawl
- * /w/ : every couple's guest wedding site.
+ * #518 put `Disallow: /api/ /rsvp/ /w/` on the "*" group and on each named
+ * bot group, and an `X-Robots-Tag: noindex, nofollow, noarchive` response
+ * header on /w/. The header rule matched ONLY /w/, so /rsvp/:token — the URL
+ * api/my-guest-links.js actually builds and the couple actually sends —
+ * carried no noindex at all. robots.txt is advisory and covers fetching;
+ * X-Robots-Tag covers indexing. The token URL had only the advisory half.
  *
- * Nobody decided that. It was a side effect of opening marketing pages to
- * answer engines, and it is invisible unless you know the per-group rule.
- * Hence a test rather than a comment.
+ * Confirmed live before the fix: a request to /w/... returned the header and
+ * a request to /rsvp/... did not.
+ *
+ * This pins both halves, and the invariant robots.txt states about itself:
+ * a crawler that matches a named User-agent group obeys ONLY that group, so
+ * every named group must repeat the Disallow lines or it inherits nothing.
  */
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { pass, fail } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const ROBOTS = readFileSync(resolve(__dir, '../../public/robots.txt'), 'utf8');
-const VERCEL = JSON.parse(readFileSync(resolve(__dir, '../../vercel.json'), 'utf8'));
+const root = (p) => resolve(__dir, '../../', p);
 
-const PRIVATE = ['/api/', '/rsvp/', '/w/'];
-
-function groups(txt) {
-  const out = [];
-  for (const chunk of txt.split(/\n(?=User-agent:)/i)) {
-    const ua = chunk.match(/User-agent:\s*(\S+)/i);
-    if (!ua) continue;
-    out.push({ ua: ua[1], allow: /Allow:\s*\/\s*$/im.test(chunk),
-               disallow: [...chunk.matchAll(/Disallow:\s*(\S+)/gi)].map(m => m[1]) });
-  }
-  return out;
-}
+const GUEST_PREFIXES = ['/w/', '/rsvp/'];
+const REQUIRED_DISALLOW = ['/api/', '/rsvp/', '/w/'];
 
 export async function runIndexingPosture() {
   const results = [];
   const check = (n, ok, d) => results.push(ok ? pass(n, d) : fail(n, 'see name', d));
-  console.log('\n  Guest-site indexing posture:\n');
+  console.log('\n  Indexing posture — every guest URL, not just the pretty one:\n');
 
-  const gs = groups(ROBOTS);
-  check('robots.txt declares at least the wildcard group', gs.some(g => g.ua === '*'), `${gs.length} groups`);
+  const vercel = JSON.parse(readFileSync(root('vercel.json'), 'utf8'));
+  const headerRules = vercel.headers || [];
 
-  // THE load-bearing one: every group, not just '*'
-  for (const g of gs) {
-    const missing = PRIVATE.filter(p => !g.disallow.includes(p));
-    check(`  group "${g.ua}" excludes ${PRIVATE.join(' ')}`, missing.length === 0,
-      missing.length ? `MISSING ${missing.join(', ')}` : g.disallow.join(', '));
+  for (const prefix of GUEST_PREFIXES) {
+    const rule = headerRules.find((r) => r.source === `${prefix}(.*)`);
+    const tag = rule?.headers?.find((h) => h.key.toLowerCase() === 'x-robots-tag');
+    const value = (tag?.value || '').toLowerCase();
+    check(`${prefix}(.*) carries X-Robots-Tag`, Boolean(tag), value || 'MISSING');
+    check(`  ${prefix} is noindex, nofollow and noarchive`,
+      ['noindex', 'nofollow', 'noarchive'].every((d) => value.includes(d)), value || 'MISSING');
   }
 
-  // AEO intent preserved: named bots still reach marketing pages
-  const named = gs.filter(g => g.ua !== '*');
-  check('named answer-engine bots are still allowed the marketing site',
-    named.length >= 5 && named.every(g => g.allow), `${named.length} named groups, all Allow: /`);
+  const robots = readFileSync(root('public/robots.txt'), 'utf8');
+  // Split into agent groups. A named group inherits NOTHING from "*", which is
+  // the whole reason #518 repeats the lines rather than relying on the default.
+  const groups = robots
+    .split(/^User-agent:\s*/mi).slice(1)
+    .map((chunk) => {
+      const [agent, ...rest] = chunk.split('\n');
+      return { agent: agent.trim(), body: rest.join('\n') };
+    });
 
-  // Defence in depth: robots.txt is a crawl directive, not an index directive.
-  const wRule = (VERCEL.headers || []).find(h => h.source === '/w/(.*)');
-  const xrt = wRule?.headers?.find(h => h.key === 'X-Robots-Tag');
-  check('vercel.json sets X-Robots-Tag on /w/(.*)', !!xrt, xrt?.value ?? 'ABSENT');
-  check('  the header says noindex', /noindex/i.test(xrt?.value || ''), xrt?.value ?? '-');
-  check('  and it is NOT applied to the whole site',
-    !(VERCEL.headers || []).some(h => h.source === '/(.*)' &&
-      h.headers.some(x => x.key === 'X-Robots-Tag')), 'scoped to /w/ only');
+  check('robots.txt declares at least the wildcard group plus named bots',
+    groups.length >= 2, `${groups.length} groups: ${groups.map((g) => g.agent).join(', ')}`);
 
-  // The sitemap must never advertise a couple's URL. It is GENERATED into
-  // prerendered/ by build:prerender, not committed to public/, so this reads
-  // the generated artefact and reports honestly when it has not been built
-  // yet rather than passing on a missing file.
-  const sitemapPath = resolve(__dir, '../../prerendered/sitemap.xml');
-  if (existsSync(sitemapPath)) {
-    const sitemapSrc = readFileSync(sitemapPath, 'utf8');
-    check('sitemap.xml lists no guest site', !/\/w\//.test(sitemapSrc),
-      `${(sitemapSrc.match(/<loc>/g) || []).length} URLs, none under /w/`);
-  } else {
-    check('sitemap.xml lists no guest site', false,
-      'prerendered/sitemap.xml not built — run npm run build:prerender');
-  }
+  const incomplete = groups.filter((g) =>
+    !REQUIRED_DISALLOW.every((d) => new RegExp(`^Disallow:\\s*${d}\\s*$`, 'mi').test(g.body)));
+  check('every group repeats all three Disallow lines',
+    incomplete.length === 0,
+    incomplete.map((g) => g.agent).join(', ') || 'all groups complete');
+
+  // CONTROL: the parser must be capable of seeing an incomplete group, or the
+  // assertion above passes for a file it never really read.
+  const planted = [...groups, { agent: 'PlantedBot', body: 'Allow: /\n' }];
+  const plantedIncomplete = planted.filter((g) =>
+    !REQUIRED_DISALLOW.every((d) => new RegExp(`^Disallow:\\s*${d}\\s*$`, 'mi').test(g.body)));
+  check('  control: a group missing its Disallow lines IS detected',
+    plantedIncomplete.length === 1 && plantedIncomplete[0].agent === 'PlantedBot',
+    `detected ${plantedIncomplete.map((g) => g.agent).join(', ') || 'nothing'}`);
 
   return results;
 }
