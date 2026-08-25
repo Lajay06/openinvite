@@ -1102,6 +1102,48 @@ Neither method alone was sufficient. The sweep proposes; the render disposes.
 
 ---
 
+## When the instrument returns the answer that requires no explanation, suspect the instrument
+
+A clean sweep, a perfect score, or twenty identical numbers where twenty
+different ones were expected are the same event: the measurement telling you it
+never touched the thing you meant.
+
+**Case 1 — the perfect score.** The display-face audit read 14/14 after the
+kicker was promoted to `h1`. Every page retaining the display face was not the
+happy result it looked like; promoting the kicker had pulled it into the
+`h1`-`h6` rule, so the audit was reporting the bug as a pass. The real figure
+after the fix was 12/14.
+
+**Case 2 — the uniform reading.** Asked whether an overlay default cleared the
+couple's names on all twenty hero arrangements, the probe returned text-top
+19px for every one of them. Twenty layouts that differ precisely in where their
+text starts cannot agree to the pixel. The selector had matched the nav's brand
+text, identical everywhere. Scoped to the hero container, the numbers separated
+at once: 254px to 552px.
+
+The tell is the ABSENCE OF VARIANCE where variance was the whole question. Ask
+what would have to be true for the result to be real, and check that instead of
+the result.
+
+---
+
+## When a default sits next to a control the user can turn, it must hold across that control's RANGE
+
+The overlay default was first validated at its own default size — 30% — where
+18% down cleared every layout by 11px. But the couple was also shipped a SIZE
+DIAL, and the mark grows from its centre: at roughly 49% width it would have
+reached the text on the tightest layout.
+
+**A default verified only at its starting value is not verified**, because the
+control is part of the system and the user will turn it. 14% was chosen not
+because 18% failed but because 14% has headroom: 45px of clearance, and the
+mark can be scaled to about 76% before it reaches anything.
+
+Eleven pixels of margin that survives no adjustment is a trap with a pass mark
+on it.
+
+---
+
 ## When measurement and reasoning disagree, BOTH are suspects
 
 This file has said *measure, do not assert* all session, and that was right five
