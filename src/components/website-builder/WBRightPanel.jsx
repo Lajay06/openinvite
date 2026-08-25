@@ -14,7 +14,7 @@ import {
 } from './SectionEditorFields';
 import { BlockFields } from './BlockFields';
 import { blockLabel } from '@/components/guest-website/blocks/blockTypes';
-import { TEXT_COLOR_OPTIONS, BACKGROUND_OPTIONS, SPACING_OPTIONS, JUSTIFY_CAPABLE_TYPES } from '@/components/guest-website/blocks/UniverseBlocks';
+import { TEXT_COLOR_OPTIONS, BACKGROUND_OPTIONS, SPACING_OPTIONS, JUSTIFY_CAPABLE_TYPES, FONT_STYLE_OPTIONS, FONT_STYLE_CAPABLE_TYPES } from '@/components/guest-website/blocks/UniverseBlocks';
 import { interactiveDivProps } from '@/lib/a11y';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 import { flattenOver, readableInkOn, contrastRatio } from '@/lib/surfaceTint';
@@ -689,6 +689,7 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
   const supportsJustify = JUSTIFY_CAPABLE_TYPES.includes(block.type);
   const supportsSize = SIZE_CAPABLE_TYPES.includes(block.type);
   const supportsTextColor = !NO_TEXT_COLOR_TYPES.includes(block.type);
+  const supportsFontStyle = FONT_STYLE_CAPABLE_TYPES.includes(block.type);
 
   // No fallback-to-first-option in any of these: when the block has no
   // style override for a property, NOTHING is shown selected — that
@@ -847,6 +848,16 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
             { value: 'right', label: 'Right' },
             ...(supportsJustify ? [{ value: 'justify', label: 'Justify' }] : []),
           ], style.align, 'align')}
+        </>
+      )}
+
+      {supportsFontStyle && (
+        <>
+          {/* Beside Alignment, as the same kind of typographic choice. Nothing
+              shows selected until the couple picks — the block's own default
+              (italic) is not a stored override. */}
+          <FLabel>Style</FLabel>
+          {pillRow(FONT_STYLE_OPTIONS, style.fontStyle, 'fontStyle')}
         </>
       )}
 

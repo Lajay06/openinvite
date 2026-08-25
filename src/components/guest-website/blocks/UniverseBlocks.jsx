@@ -233,6 +233,11 @@ function ParagraphBlock({ content, theme, typography, editable, style }) {
   return <p style={{ ...bodyStyle(typography, theme, { fontSize: SIZE_PRESETS.body[sizeStep(style)] }), maxWidth: 640, margin: align === 'center' ? '0 auto' : 0, textAlign: align, whiteSpace: 'pre-wrap' }}>{content.text}</p>;
 }
 
+// A quote has always been forced to italic. It is a choice now, and the DEFAULT
+// IS STILL ITALIC so every existing quote renders byte-identically. Shared by
+// QuoteBlock and QuoteBannerBlock — the near-duplicate pair, both converted.
+const quoteFontStyle = (style) => (style?.fontStyle === 'normal' ? 'normal' : 'italic');
+
 function QuoteBlock({ content, theme, typography, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Quote — click to add text" />;
@@ -240,7 +245,7 @@ function QuoteBlock({ content, theme, typography, editable, style }) {
   const align = style?.align || 'center';
   return (
     <div style={{ textAlign: align, maxWidth: 640, margin: align === 'center' ? '0 auto' : 0 }}>
-      <p style={headingStyle(typography, theme, { fontStyle: 'italic', fontSize: SIZE_PRESETS.quote[sizeStep(style)], lineHeight: 1.5, marginBottom: 12 })}>“{content.text}”</p>
+      <p style={headingStyle(typography, theme, { fontStyle: quoteFontStyle(style), fontSize: SIZE_PRESETS.quote[sizeStep(style)], lineHeight: 1.5, marginBottom: 12 })}>“{content.text}”</p>
       {content.attribution && <p style={{ fontFamily: typography.bodyFont, fontSize: 13, color: theme.accent, margin: 0 }}>— {content.attribution}</p>}
     </div>
   );
@@ -409,7 +414,7 @@ function ButtonBlock({ content, theme, typography, editable }) {
   );
 }
 
-function QuoteBannerBlock({ content, theme, typography, editable }) {
+function QuoteBannerBlock({ content, theme, typography, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Quote banner — click to add text" />;
   }
@@ -419,7 +424,7 @@ function QuoteBannerBlock({ content, theme, typography, editable }) {
     // The container no longer applies that inset, so the hack is retired rather
     // than left as a rival to the shared one.
     <div style={{ background: theme.darkBg, padding: '48px 24px', textAlign: 'center' }}>
-      <p style={headingStyle(typography, theme, { color: theme.darkText, fontStyle: 'italic', fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' })}>
+      <p style={headingStyle(typography, theme, { color: theme.darkText, fontStyle: quoteFontStyle(style), fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' })}>
         “{content.text}”
       </p>
       {content.attribution && <p style={{ fontFamily: typography.bodyFont, fontSize: 13, color: theme.accent, marginTop: 12 }}>— {content.attribution}</p>}
@@ -698,6 +703,16 @@ function BlockCanvasWrapper({ block, index, count, isSelected, onSelectBlock, on
 // 30=~19%, 18=~9%, 0d=~5%.
 // Exported (with labels) so WBRightPanel.jsx's swatch grid renders the
 // EXACT same colors these renderers use — one source of truth, no drift.
+/**
+ * A quote has always been forced to italic. It is now a choice, and the
+ * DEFAULT IS STILL ITALIC so every existing quote renders byte-identically —
+ * no couple's published site moves because this control appeared.
+ */
+export const FONT_STYLE_OPTIONS = [
+  { value: 'italic', label: 'Italic' },
+  { value: 'normal', label: 'Upright' },
+];
+export const FONT_STYLE_CAPABLE_TYPES = ['quote', 'quote-banner'];
 export const TEXT_COLOR_OPTIONS = [
   { value: 'text-100', label: 'Text', resolve: (t) => t.lightText },
   { value: 'text-70', label: 'Text · muted', resolve: (t) => `${t.lightText}B3` },
