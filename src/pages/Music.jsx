@@ -15,6 +15,7 @@ import AvaModal from '@/components/layout/AvaModal';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CountUp from "@/components/shared/CountUp";
+import { DEFAULT_MUSIC_REQUEST_MESSAGE } from '@/lib/musicCopy';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -88,7 +89,12 @@ function SettingsModal({ details, updateMusic, onClose }) {
           <ToggleRow label="One request per guest" value={details?.music?.limitOnePerGuest} onChange={v => updateMusic('limitOnePerGuest', v)} />
           <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
             <span style={labelStyle}>Message to guests</span>
-            <Textarea value={details?.music?.requestMessage || ''} onChange={e => updateMusic('requestMessage', e.target.value)} placeholder="Tell guests about your song request policy…" />
+            {/* PRE-FILLED AS A REAL VALUE, not a placeholder. This default publishes,
+                and a gray placeholder that publishes verbatim tells the couple the
+                opposite of what happens. They see the actual words, in the field,
+                and can edit or clear them. `??` distinguishes never-set (takes the
+                default) from deliberately-cleared (publishes nothing). */}
+            <Textarea value={details?.music?.requestMessage ?? DEFAULT_MUSIC_REQUEST_MESSAGE} onChange={e => updateMusic('requestMessage', e.target.value)} placeholder="What guests see above the song search" />
           </div>
         </div>
         <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'flex-end' }}>

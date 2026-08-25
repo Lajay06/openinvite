@@ -526,7 +526,12 @@ function ContentTab({ details, onChange }) {
         value={details?.homeContent?.tagline}
         onChange={v => updateNested('homeContent', 'tagline', v)}
         rows={2}
-        placeholder="We are overjoyed to celebrate with you."
+        // GUIDANCE, not a publishable sentence. This placeholder used to be the
+        // exact string the site published when the field was empty — grayed
+        // out, which reads as "example", while it actually went out to guests
+        // in the couple's first person. The page publishes nothing now, so the
+        // placeholder describes what to write instead of writing it for them.
+        placeholder="A line to welcome your guests"
       />
       <Divider />
 
