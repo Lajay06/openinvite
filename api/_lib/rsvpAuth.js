@@ -21,6 +21,7 @@
  */
 
 import { hashToken } from './rsvpTokenCrypto.js';
+import { mergeGuestPii } from './guestPii.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -88,7 +89,30 @@ export async function resolveGuestByToken(token) {
   // which it did, verified by independent re-read, before this line was cut.
 
   if (guests.length === 0) return null;
-  const guest = guests[0];
+
+  // THE READ BOUNDARY. A guest row's name/email/phone/dietary_restrictions live
+  // encrypted in a blob; the plaintext columns hold NAME_PLACEHOLDER ('—') and
+  // nulls. Only mergeGuestPii restores them.
+  //
+  // Three endpoints downstream of here read PII and did not call it —
+  // rsvp-lookup (name, email, dietary_restrictions), rsvp-submit (name, which
+  // is where "New RSVP from —" was built) and questionnaire-answer-submit
+  // (name, a notification nobody had reported). Restoring HERE fixes all seven
+  // callers at once; a fix at each site would have left the others silently
+  // wrong, and the next caller written would start wrong too.
+  //
+  // This is the write-boundary rule applied to a read boundary: resolve the
+  // row once, at the single place every caller must pass through.
+  //
+  // mergeGuestPii is idempotent — it re-reads the blob and copies the same
+  // values — so the two callers that already restore (wedding-attendees,
+  // my-guest-links) are unaffected.
+  //
+  // Consequence worth stating plainly: this never worked in production. Every
+  // recognised guest on every wedding has been greeted as "Hi —,". It is not
+  // a regression from the RSVP embed; the embed put it somewhere the owner
+  // finally looked.
+  const guest = mergeGuestPii(guests[0]);
 
   const weddingQuery = encodeURIComponent(JSON.stringify({ created_by_id: guest.created_by_id }));
   const weddings = unwrapList(await base44Fetch('GET', `/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`));

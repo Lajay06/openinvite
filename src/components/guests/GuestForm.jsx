@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DEFAULT_MEAL_OPTIONS } from "@/lib/weddingEvents";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -50,6 +51,21 @@ function dietaryToString(selected, other) {
 }
 
 /* ── Component ───────────────────────────────────────────────────────────── */
+
+/** Shown where a meal Select would be when the couple has no menu yet. A
+ *  control that vanishes with no explanation is the silent-guard defect: the
+ *  user looks for something and nothing tells them why it is missing. */
+function NoMenuPointer() {
+  return (
+    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, lineHeight: 1.5 }}>
+      Set up meal options in{' '}
+      <Link to={createPageUrl('FoodBeverage')} style={{ color: '#E03553', fontWeight: 600 }}>
+        Food &amp; beverage
+      </Link>{' '}
+      to record meal choices.
+    </p>
+  );
+}
 
 export default function GuestForm({ guest, onSubmit, onCancel, saving = false, mealOptions = [] }) {
   const [formData, setFormData] = useState(guest || {
@@ -146,7 +162,16 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
   // only ever pick a real option — which is a stronger guarantee than a fixed
   // enum could give, because the schema cannot know one wedding's menu from
   // another's.
-  const mealChoices = mealOptions.length ? mealOptions : DEFAULT_MEAL_OPTIONS;
+  // OPT-IN, same rule as the guest-facing RSVP: the couple's own menu is the
+  // switch. This used to fall back to DEFAULT_MEAL_OPTIONS, which let a couple
+  // record "chicken" against an id their menu does not contain, for a guest who
+  // was never asked — a worse state than either surface wrong alone.
+  //
+  // DEFAULT_MEAL_OPTIONS is no longer read here. It survives ONLY as a label
+  // resolver in mealOptionLabel(), for values already stored against
+  // historical answers, never as a source of options to offer.
+  const hasMealOptions = mealOptions.length > 0;
+  const mealChoices = hasMealOptions ? mealOptions : [];
 
   const noneActive = dietarySelected.length === 0;
   const poNoneActive = poDietarySelected.length === 0;
@@ -210,6 +235,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
                 (the guest&apos;s own answer replaces this)
               </span>
             </Label>
+            {hasMealOptions ? (
             <Select value={formData.meal_choice || 'none'} onValueChange={v => set('meal_choice', v === 'none' ? '' : v)}>
               <SelectTrigger><SelectValue placeholder="Not set" /></SelectTrigger>
               <SelectContent>
@@ -217,6 +243,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
                 {mealChoices.map(o => <SelectItem key={o.id} value={o.id}>{o.label || o.id}</SelectItem>)}
               </SelectContent>
             </Select>
+            ) : <NoMenuPointer />}
           </div>
 
           {/* Tags — full width */}
@@ -364,6 +391,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
                       (their own answer replaces this)
                     </span>
                   </Label>
+                  {hasMealOptions ? (
                   <Select value={formData.plus_one_meal_choice || 'none'} onValueChange={v => set('plus_one_meal_choice', v === 'none' ? '' : v)}>
                     <SelectTrigger><SelectValue placeholder="Not set" /></SelectTrigger>
                     <SelectContent>
@@ -371,6 +399,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
                       {mealChoices.map(o => <SelectItem key={o.id} value={o.id}>{o.label || o.id}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  ) : <NoMenuPointer />}
                 </div>
                 <div style={{ flex: 1 }} />
               </div>

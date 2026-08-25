@@ -6,6 +6,7 @@ import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft, Music } from 'lucide-react';
 import { interactiveDivProps } from '@/lib/a11y';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
+import { resolveTypography } from '@/lib/universeStyling';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
@@ -142,8 +143,17 @@ export default function GuestMusic() {
     }
   };
 
+  // GUEST-TYPOGRAPHY-PARITY. This page consumed no universe typography at all —
+  // it hard-coded Cormorant Garamond + Plus Jakarta Sans, which is LONDON's
+  // pairing frozen in place, so every other universe got london's faces here.
+  // The two early returns above are loading/error CHROME and keep the product
+  // face deliberately (CLAUDE.md: a broken link is our failure to report, not
+  // the couple's typography). Mapping preserves the hierarchy exactly:
+  // display face -> headingFont, Plus Jakarta Sans -> bodyFont.
+  const typography = resolveTypography(details);
+
   return (
-    <div style={{ background: '#0A0A0A', minHeight: '100svh', paddingBottom: 80, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ background: '#0A0A0A', minHeight: '100svh', paddingBottom: 80, fontFamily: typography.bodyFont }}>
       {/* Nav */}
       <div style={{ position: 'sticky', top: 0, zIndex: 100, height: 56, background: 'rgba(10,10,10,0.95)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
         <Link to={`/w/${weddingSlug}`} style={{ color: '#FFFFFF', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 600 }}>
@@ -159,7 +169,7 @@ export default function GuestMusic() {
         <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#1DB954', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
           <Music size={28} color="#000000" />
         </div>
-        <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#FFFFFF', margin: '0 0 16px', lineHeight: 1.1 }}>
+        <h1 style={{ fontFamily: typography.headingFont, fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#FFFFFF', margin: '0 0 16px', lineHeight: 1.1 }}>
           Request a song
         </h1>
         <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, maxWidth: 400, margin: '0 auto' }}>
@@ -205,7 +215,7 @@ export default function GuestMusic() {
           <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#1DB954', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 32, color: '#FFFFFF', marginBottom: 12 }}>Request submitted!</h2>
+          <h2 style={{ fontFamily: typography.headingFont, fontWeight: 300, fontSize: 32, color: '#FFFFFF', marginBottom: 12 }}>Request submitted!</h2>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 32 }}>
             "{selectedTrack?.title}" by {selectedTrack?.artist} has been sent to the couple.
           </p>

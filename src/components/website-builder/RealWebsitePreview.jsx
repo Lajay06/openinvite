@@ -90,6 +90,7 @@ export default function RealWebsitePreview({ details, currentPage = 'home', onNa
       <WeddingWebsiteNav
         weddingName={details?.coupleNames}
         theme={theme}
+        typography={typography}
         enabledPages={enabledPages}
         currentPage={currentPage}
         weddingSlug={details?.slug}

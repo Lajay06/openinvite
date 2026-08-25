@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { getWeddingEvents, getGuestEventResponse, DEFAULT_MEAL_OPTIONS } from '@/lib/weddingEvents';
+import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
 import { resolveColors, resolveTypography, resolveUniverseConfig, isMotionEnabled } from '@/lib/universeStyling';
+import { formSurfaces } from '@/lib/surfaceTint';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 import SectionReveal from '@/components/guest-website/SectionReveal';
 
@@ -57,7 +58,7 @@ function PageShell({ coupleName, dateStr, venue, theme, typography, universeConf
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: theme.lightBg, ...F }}>
+    <div style={{ minHeight: '100dvh', background: theme.lightBg, ...F }}>
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' }}>
         <p style={{ fontSize: 13, fontWeight: 800, color: theme.lightText, letterSpacing: '-0.02em', marginBottom: 48 }}>
           openinvite
@@ -95,9 +96,10 @@ function PageShell({ coupleName, dateStr, venue, theme, typography, universeConf
 
 // ── Poll voting card ──────────────────────────────────────────────────────────
 function PollCard({ poll, selectedOptionId, onSelect, theme, typography }) {
+  const S = formSurfaces(theme);
   const F = { fontFamily: typography.bodyFont };
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.09)', background: '#FFFFFF', padding: '20px 20px 16px', marginBottom: 16 }}>
+    <div style={{ border: `1px solid ${S.border}`, background: S.surface, padding: '20px 20px 16px', marginBottom: 16 }}>
       {poll.emoji && (
         <span style={{ fontSize: 22, display: 'block', marginBottom: 8 }}>{poll.emoji}</span>
       )}
@@ -134,23 +136,50 @@ function PollCard({ poll, selectedOptionId, onSelect, theme, typography }) {
 }
 
 // ── Per-event RSVP card ────────────────────────────────────────────────────────
-function EventCard({ event, value, onChange, hasPlusOne, mealChoices, theme, typography }) {
+function EventCard({ event, value, onChange, hasPlusOne, mealChoices, hasMealOptions, theme, typography, wedding }) {
   const F = { fontFamily: typography.bodyFont };
+  // F-D: solid fills mixed from the couple's palette. See src/lib/surfaceTint.js
+  // — an alpha fill composites over the universe's texture, so its final colour
+  // is unknowable and its contrast unprovable.
+  const S = formSurfaces(theme);
   const attending = value.status === 'yes';
-  const dateStr = event.date
-    ? new Date(event.date + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })
+  // F-F: main events carry no venue of their own — ceremony/reception venue
+  // lives on the wedding record — so look it back up rather than showing a
+  // card a guest cannot act on.
+  const { venue, address, mapsUrl, date: lookedUpDate } = getEventVenueAndDate(wedding, event);
+  const effectiveDate = event.date || lookedUpDate;
+  const dateStr = effectiveDate
+    ? new Date(effectiveDate + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })
     : '';
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.09)', background: '#FFFFFF', padding: '20px 20px 20px', marginBottom: 16 }}>
+    <div style={{ border: `1px solid ${S.border}`, background: S.surface, padding: '20px 20px 20px', marginBottom: 16 }}>
       <p style={{ fontSize: 16, fontWeight: 700, color: theme.lightText, margin: '0 0 4px', ...F }}>
         {event.name}
       </p>
       {(dateStr || event.startTime) && (
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', ...F }}>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 2px', ...F }}>
           {[dateStr, event.startTime].filter(Boolean).join(' · ')}
         </p>
       )}
+      {(venue || address) && (
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 2px', lineHeight: 1.5, ...F }}>
+          {venue && <span style={{ fontWeight: 600 }}>{venue}</span>}
+          {venue && address ? ' · ' : ''}
+          {address}
+        </p>
+      )}
+      {mapsUrl && (
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, fontSize: 13, color: theme.accent, textDecoration: 'underline', textUnderlineOffset: '3px', ...F }}
+        >
+          View on map
+        </a>
+      )}
+      <div style={{ height: 14 }} />
 
       <div style={{ display: 'flex', gap: 10, marginBottom: attending ? 20 : 0 }}>
         {[
@@ -163,8 +192,8 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices, theme, typ
             onClick={() => onChange({ ...value, status: opt.value })}
             style={{
               flex: 1, padding: '10px 14px', border: '1px solid',
-              borderColor: value.status === opt.value ? theme.accent : 'rgba(10,10,10,0.12)',
-              background: value.status === opt.value ? `${theme.accent}1A` : '#FFFFFF',
+              borderColor: value.status === opt.value ? S.borderSelected : S.border,
+              background: value.status === opt.value ? S.surfaceSelected : '#FFFFFF',
               color: value.status === opt.value ? theme.accent : theme.lightText,
               fontSize: 13, fontWeight: 600, cursor: 'pointer', borderRadius: 999,
               transition: 'all 0.15s ease', ...F,
@@ -177,6 +206,12 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices, theme, typ
 
       {attending && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Meal preference is OPT-IN: the couple's own menu is the switch.
+              This used to render unconditionally, populated from
+              DEFAULT_MEAL_OPTIONS, so a couple who had configured nothing had
+              their guests asked to choose from six options WE invented —
+              presented on the couple's wedding site as the couple's menu. */}
+          {hasMealOptions && (
           <div>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: theme.lightText, marginBottom: 8, ...F }}>
               Meal preference
@@ -184,12 +219,13 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices, theme, typ
             <select
               value={value.meal_choice || ''}
               onChange={e => onChange({ ...value, meal_choice: e.target.value })}
-              style={{ width: '100%', padding: '9px 10px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none' }}
+              style={{ width: '100%', padding: '9px 10px', border: `1px solid ${S.border}`, borderRadius: 0, fontSize: 14, color: theme.lightText, background: S.surface, ...F, outline: 'none' }}
             >
               <option value="">Select a meal</option>
               {mealChoices.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
             </select>
           </div>
+          )}
 
           {hasPlusOne && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -212,7 +248,7 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices, theme, typ
               value={value.plus_one_name || ''}
               onChange={e => onChange({ ...value, plus_one_name: e.target.value })}
               placeholder="Plus-one's name"
-              style={{ width: '100%', padding: '9px 10px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '9px 10px', border: `1px solid ${S.border}`, borderRadius: 0, fontSize: 14, color: theme.lightText, background: S.surface, ...F, outline: 'none', boxSizing: 'border-box' }}
             />
           )}
         </div>
@@ -239,7 +275,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   // using it. That duplication is pre-existing drift, left alone here: this PR
   // is about where the form RENDERS, and rewriting the header at the same time
   // would put a layout change inside a routing change.
-  const shellOuter = (t) => (embedded ? {} : { minHeight: '100vh', background: t.lightBg });
+  const shellOuter = (t) => (embedded ? {} : { minHeight: '100dvh', background: t.lightBg });
   const shellInner = (embedded
     ? { maxWidth: 520, margin: '0 auto' }
     : { maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' });
@@ -329,6 +365,15 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   const [rsvpNote, setRsvpNote] = useState('');
   const [dietaryRestrictions, setDietaryRestrictions] = useState('');
   const [email, setEmail] = useState('');
+  // F-C. The couple already holds an address for most guests — it is how the
+  // invitation reached them — so asking again is a field the guest does not
+  // need to fill and a chance to mistype what we already have. Shown ONLY when
+  // we hold nothing: guests added by name alone, and the never-emailed case.
+  //
+  // Depends on F-A: before mergeGuestPii ran at resolveGuestByToken, g.email
+  // was the nulled plaintext column for every guest, so this flag would have
+  // read "no email on file" universally and the field would always have shown.
+  const [hasEmailOnFile, setHasEmailOnFile] = useState(false);
 
   // Per-event form state: { [event_id]: { status, meal_choice, plus_one_attending, plus_one_name } }
   const [eventForm, setEventForm] = useState({});
@@ -340,6 +385,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   const universeConfig = wedding ? resolveUniverseConfig(wedding) : null;
   const theme = universeConfig ? resolveColors(wedding) : FALLBACK_THEME;
   const typography = universeConfig ? resolveTypography(wedding) : FALLBACK_TYPOGRAPHY;
+  const S = formSurfaces(theme);
 
   // This route is a standalone page (src/App.jsx), entirely outside
   // MultiPageWeddingWebsite.jsx's render tree, so it must inject its own
@@ -379,6 +425,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         setRsvpNote(g.rsvp_note || '');
         setDietaryRestrictions(g.dietary_restrictions || '');
         setEmail(g.email || '');
+        setHasEmailOnFile(!!g.email);
 
         // Seed per-event form state from existing event_responses (or sane defaults)
         const events = wd ? getWeddingEvents(wd) : [];
@@ -607,15 +654,19 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   const firstName = guest?.name ? guest.name.split(' ')[0] : '';
   // For the "done" screen icon/copy — attending overall if any invited event is a yes.
   const anyAttending = Object.values(eventForm).some(v => v.status === 'yes');
-  const hasMealOptions = wedding?.mealOptions && wedding.mealOptions.length > 0;
-  const mealChoices = hasMealOptions ? wedding.mealOptions : DEFAULT_MEAL_OPTIONS;
+  // The couple's menu is the ONLY source of choices. DEFAULT_MEAL_OPTIONS is
+  // no longer read here: it survives as a label resolver for values already
+  // stored against historical answers (mealOptionLabel), never as a source of
+  // options to offer. Our defaults must not impersonate the couple's choices.
+  const hasMealOptions = Array.isArray(wedding?.mealOptions) && wedding.mealOptions.length > 0;
+  const mealChoices = hasMealOptions ? wedding.mealOptions : [];
 
   const F = { fontFamily: typography.bodyFont };
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div style={{ ...shellOuter(theme), minHeight: embedded ? 220 : '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', ...F }}>
+      <div style={{ ...shellOuter(theme), minHeight: embedded ? 220 : '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', ...F }}>
         <div style={{ width: 28, height: 28, border: '2px solid #EEE', borderTopColor: theme.accent, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -625,7 +676,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   // ── Not found ──────────────────────────────────────────────────────────────
   if (notFound) {
     return (
-      <div style={{ ...shellOuter(theme), minHeight: embedded ? 220 : '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', ...F }}>
+      <div style={{ ...shellOuter(theme), minHeight: embedded ? 220 : '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', ...F }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em', marginBottom: 12 }}>Invitation not found</p>
           <h1 style={{ fontSize: 24, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, marginBottom: 12, letterSpacing: '-0.02em' }}>This link has expired or is invalid</h1>
@@ -641,9 +692,6 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
       <PageShell embedded={embedded} coupleName={coupleName} dateStr={dateStr} venue={venue} theme={theme} typography={typography} universeConfig={universeConfig} wedding={wedding}>
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ width: 56, height: 56, background: anyAttending ? '#F0FDF4' : '#F5F5F5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 22 }}>
-              {anyAttending ? '✓' : '♥'}
-            </div>
             <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em', marginBottom: 10, ...F }}>
               {anyAttending ? 'SEE YOU THERE' : 'RESPONSE RECEIVED'}
             </p>
@@ -864,7 +912,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
               style={{
                 width: '100%', padding: '12px 14px', border: '1px solid rgba(10,10,10,0.12)',
                 borderRadius: 0, fontSize: 15, fontFamily: typography.bodyFont,
-                color: theme.lightText, background: '#FFFFFF', boxSizing: 'border-box', marginBottom: 20,
+                color: theme.lightText, background: S.surface, boxSizing: 'border-box', marginBottom: 20,
               }}
             />
             <button
@@ -898,6 +946,8 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
                 onChange={(value) => updateEvent(ev.event_id, value)}
                 hasPlusOne={!!guest?.plus_one}
                 mealChoices={mealChoices}
+                hasMealOptions={hasMealOptions}
+                wedding={wedding}
                 theme={theme}
                 typography={typography}
               />
@@ -926,7 +976,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
                     style={{
                       minHeight: 40, padding: '9px 16px', borderRadius: 999, cursor: 'pointer',
                       border: `1px solid ${on ? theme.accent : 'rgba(10,10,10,0.15)'}`,
-                      background: on ? `${theme.accent}1A` : '#FFFFFF',
+                      background: on ? S.surfaceSelected : '#FFFFFF',
                       color: on ? theme.accent : theme.lightText,
                       fontSize: 14, fontWeight: on ? 600 : 400, ...F,
                     }}
@@ -942,7 +992,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
                 value={dietaryOther}
                 onChange={e => setDietaryOther(e.target.value)}
                 placeholder="What should they know?"
-                style={{ width: '100%', marginTop: 10, padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', boxSizing: 'border-box', ...F }}
+                style={{ width: '100%', marginTop: 10, padding: '10px 12px', border: `1px solid ${S.border}`, borderRadius: 0, fontSize: 14, color: theme.lightText, background: S.surface, boxSizing: 'border-box', ...F }}
               />
             )}
           </div>
@@ -957,7 +1007,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
               value={songRequest}
               onChange={e => setSongRequest(e.target.value)}
               placeholder="What song will get you on the dance floor?"
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 12px', border: `1px solid ${S.border}`, borderRadius: 0, fontSize: 14, color: theme.lightText, background: S.surface, ...F, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
 
@@ -971,10 +1021,11 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
               onChange={e => setRsvpNote(e.target.value)}
               placeholder="We're so excited to celebrate with you!"
               rows={3}
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 }}
+              style={{ width: '100%', padding: '10px 12px', border: `1px solid ${S.border}`, borderRadius: 0, fontSize: 14, color: theme.lightText, background: S.surface, ...F, outline: 'none', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 }}
             />
           </div>
 
+          {!hasEmailOnFile && (
           <div style={{ marginBottom: 32 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: theme.lightText, marginBottom: 8 }}>
               Your email
@@ -986,9 +1037,10 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
-              style={{ width: '100%', padding: '10px 12px', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 0, fontSize: 14, color: theme.lightText, background: '#FFFFFF', ...F, outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 12px', border: `1px solid ${S.border}`, borderRadius: 0, fontSize: 14, color: theme.lightText, background: S.surface, ...F, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
+          )}
 
           {/* Submit */}
           <button

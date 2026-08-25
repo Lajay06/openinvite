@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft } from 'lucide-react';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
+import { resolveTypography } from '@/lib/universeStyling';
 
 export default function GuestAccommodation() {
   const { weddingSlug } = useParams();
@@ -58,12 +59,16 @@ export default function GuestAccommodation() {
     );
   }
 
+  // Deliberately the product face, not the universe's: an error state on a
+  // guest surface is CHROME (a broken link is our failure to report, not the
+  // couple's typography — CLAUDE.md). It also sits above the resolveTypography
+  // call below, so a universe face is not in scope here at all.
   if (!details) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
         <div style={{ textAlign: 'center', padding: 40 }}>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0A0A0A', marginBottom: 12 }}>Wedding not found</h1>
-          <Link to="/" style={{ display: 'inline-block', marginTop: 24, padding: '12px 24px', background: '#0A0A0A', color: '#FFFFFF', textDecoration: 'none', fontSize: 13, fontWeight: 700, fontFamily: 'Plus Jakarta Sans' }}>← Back to Home</Link>
+          <Link to="/" style={{ display: 'inline-block', marginTop: 24, padding: '12px 24px', background: '#0A0A0A', color: '#FFFFFF', textDecoration: 'none', fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>← Back to Home</Link>
         </div>
       </div>
     );
@@ -72,7 +77,17 @@ export default function GuestAccommodation() {
   const manualProperties = details.accommodation?.manualProperties || [];
   const curatedPlaces   = details.guestSuiteAccommodation?.places || [];
   const city = details.mainCeremony?.address?.split(',').slice(-3, -1).join(',').trim() || 'the area';
-  const PJS = "'Plus Jakarta Sans', sans-serif";
+  // GUEST-TYPOGRAPHY-PARITY. This page had no typography plumbing at all: it
+  // hard-coded Cormorant Garamond + Plus Jakarta Sans, which is LONDON's
+  // pairing frozen in place. That is why the owner saw "some pages have the
+  // right blend, some are just one font" — london weddings looked right and
+  // every other universe got london's faces or none.
+  //
+  // The mapping preserves the existing hierarchy exactly: the display face
+  // becomes headingFont, Plus Jakarta Sans becomes bodyFont. Nothing about the
+  // layout changes; it just stops being one universe's typography for everyone.
+  const typography = resolveTypography(details);
+  const PJS = typography.bodyFont;
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
@@ -87,7 +102,7 @@ export default function GuestAccommodation() {
       </div>
 
       {/* Hero */}
-      <AccommodationHero details={details} city={city} />
+      <AccommodationHero details={details} city={city} typography={typography} />
 
       {/* Curated places from Guest Suite editor */}
       {curatedPlaces.length > 0 && (
@@ -96,7 +111,7 @@ export default function GuestAccommodation() {
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 4px', fontFamily: PJS }}>
               Our picks
             </p>
-            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 'clamp(20px, 4vw, 26px)', color: '#0A0A0A', margin: 0 }}>
+            <h2 style={{ fontFamily: typography.bodyFont, fontWeight: 700, fontSize: 'clamp(20px, 4vw, 26px)', color: '#0A0A0A', margin: 0 }}>
               Recommended places to stay
             </h2>
           </div>
@@ -149,21 +164,21 @@ export default function GuestAccommodation() {
       )}
 
       {/* Filters */}
-      <AccommodationFilters filter={filter} onChange={setFilter} />
+      <AccommodationFilters filter={filter} onChange={setFilter} typography={typography} />
 
       {/* Couple's Picks from planning page */}
       {manualProperties.length > 0 && (
-        <CouplePicksSection properties={manualProperties} details={details} />
+        <CouplePicksSection properties={manualProperties} details={details} typography={typography} />
       )}
 
       {/* Partner Results */}
       {details.accommodation?.partnerRecommendationsEnabled && (
         <div style={{ padding: '48px 24px 0' }}>
           <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: typography.bodyFont }}>
               Partner Hotels
             </p>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: 0 }}>
+            <h2 style={{ fontFamily: typography.headingFont, fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: 0 }}>
               More Places to Stay
             </h2>
           </div>
@@ -175,21 +190,21 @@ export default function GuestAccommodation() {
           ) : hotels.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {hotels.map(hotel => (
-                <AccommodationCard key={hotel.id} hotel={hotel} venue={details.mainCeremony?.address} />
+                <AccommodationCard key={hotel.id} hotel={hotel} venue={details.mainCeremony?.address} typography={typography} />
               ))}
             </div>
           ) : (
-            <AccommodationFallback details={details} />
+            <AccommodationFallback details={details} typography={typography} />
           )}
         </div>
       )}
 
       {/* Footer */}
       <div style={{ padding: '60px 24px', background: '#F8F7F5', textAlign: 'center', borderTop: '1px solid #EEEEEE' }}>
-        <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: '0 0 16px', letterSpacing: '0.08em', fontFamily: typography.bodyFont }}>
           {details.couple1Name} & {details.couple2Name}
         </p>
-        <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', padding: '12px 24px', border: '1px solid #DDD', color: '#555', textDecoration: 'none', fontSize: 12, fontWeight: 700, fontFamily: 'Plus Jakarta Sans', letterSpacing: '0.1em' }}>
+        <Link to={`/w/${weddingSlug}`} style={{ display: 'inline-block', padding: '12px 24px', border: '1px solid #DDD', color: '#555', textDecoration: 'none', fontSize: 12, fontWeight: 700, fontFamily: typography.bodyFont, letterSpacing: '0.1em' }}>
           Back to Wedding Site
         </Link>
       </div>
@@ -197,21 +212,21 @@ export default function GuestAccommodation() {
   );
 }
 
-function AccommodationHero({ details, city }) {
+function AccommodationHero({ details, city, typography }) {
   return (
     <div style={{ padding: '60px 24px 40px', background: '#F8F7F5' }}>
-      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 8px', fontFamily: typography.bodyFont }}>
         Where to Stay
       </p>
-      <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#0A0A0A', margin: '0 0 16px', lineHeight: 1.1 }}>
+      <h1 style={{ fontFamily: typography.headingFont, fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#0A0A0A', margin: '0 0 16px', lineHeight: 1.1 }}>
         Staying in {city}
       </h1>
       {details?.accommodation?.coupleNote ? (
-        <p style={{ fontSize: 15, color: '#555', lineHeight: 1.7, maxWidth: 560, margin: '0 0 32px', fontFamily: 'Plus Jakarta Sans' }}>
+        <p style={{ fontSize: 15, color: '#555', lineHeight: 1.7, maxWidth: 560, margin: '0 0 32px', fontFamily: typography.bodyFont }}>
           {details.accommodation.coupleNote}
         </p>
       ) : (
-        <p style={{ fontSize: 15, color: '#555', lineHeight: 1.7, maxWidth: 560, margin: '0 0 32px', fontFamily: 'Plus Jakarta Sans' }}>
+        <p style={{ fontSize: 15, color: '#555', lineHeight: 1.7, maxWidth: 560, margin: '0 0 32px', fontFamily: typography.bodyFont }}>
           We've gathered a few nearby places to stay so you can find something that works for your weekend.
         </p>
       )}
@@ -219,13 +234,13 @@ function AccommodationHero({ details, city }) {
       {details?.accommodation?.checkInDate && (
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '12px 20px', border: '1px solid #EEEEEE', background: '#FFFFFF' }}>
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: typography.bodyFont }}>
               {new Date(details.accommodation.checkInDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
             </p>
           </div>
           <div style={{ width: 1, height: 32, background: '#EEEEEE' }} />
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: typography.bodyFont }}>
               {new Date(details.accommodation.checkOutDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
             </p>
           </div>
@@ -235,7 +250,7 @@ function AccommodationHero({ details, city }) {
   );
 }
 
-function AccommodationFilters({ filter, onChange }) {
+function AccommodationFilters({ filter, onChange, typography }) {
   const filters = [
     { key: 'all', label: 'All' },
     { key: 'closest', label: 'Closest to Venue' },
@@ -255,7 +270,7 @@ function AccommodationFilters({ filter, onChange }) {
             padding: '12px 16px', background: 'transparent', border: 'none',
             borderBottom: `2px solid ${filter === f.key ? '#0A0A0A' : 'transparent'}`,
             fontSize: 12, fontWeight: 600, color: filter === f.key ? '#0A0A0A' : 'rgba(10,10,10,0.6)',
-            cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'Plus Jakarta Sans', minHeight: 48, flexShrink: 0,
+            cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: typography.bodyFont, minHeight: 48, flexShrink: 0,
           }}
         >
           {f.label}
@@ -265,7 +280,7 @@ function AccommodationFilters({ filter, onChange }) {
   );
 }
 
-function CouplePicksSection({ properties, details }) {
+function CouplePicksSection({ properties, details, typography }) {
   const pinned = properties.filter(p => p.isPinned || p.isMainGuestHotel);
   const rest = properties.filter(p => !p.isPinned && !p.isMainGuestHotel);
 
@@ -274,20 +289,20 @@ function CouplePicksSection({ properties, details }) {
       {pinned.length > 0 && (
         <>
           <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', margin: '0 0 6px', fontFamily: typography.bodyFont }}>
               {details?.couple1Name} & {details?.couple2Name} Recommend
             </p>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: 0 }}>
+            <h2 style={{ fontFamily: typography.headingFont, fontWeight: 300, fontSize: 'clamp(24px, 5vw, 36px)', color: '#0A0A0A', margin: 0 }}>
               Where to Stay
             </h2>
           </div>
 
           {properties.find(p => p.isMainGuestHotel) && (
-            <FeaturedPropertyCard property={properties.find(p => p.isMainGuestHotel)} />
+            <FeaturedPropertyCard property={properties.find(p => p.isMainGuestHotel)} typography={typography} />
           )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
-            {pinned.filter(p => !p.isMainGuestHotel).map(p => <ManualPropertyGuestCard key={p.id} property={p} />)}
+            {pinned.filter(p => !p.isMainGuestHotel).map(p => <ManualPropertyGuestCard key={p.id} property={p} typography={typography} />)}
           </div>
         </>
       )}
@@ -295,7 +310,7 @@ function CouplePicksSection({ properties, details }) {
       {rest.length > 0 && (
         <div style={{ marginTop: 32 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {rest.map(p => <ManualPropertyGuestCard key={p.id} property={p} />)}
+            {rest.map(p => <ManualPropertyGuestCard key={p.id} property={p} typography={typography} />)}
           </div>
         </div>
       )}
@@ -303,18 +318,18 @@ function CouplePicksSection({ properties, details }) {
   );
 }
 
-function FeaturedPropertyCard({ property }) {
+function FeaturedPropertyCard({ property, typography }) {
   return (
     <div style={{ border: '2px solid #E03553', overflow: 'hidden', marginBottom: 12 }}>
       {property.photoUrl && <img src={property.photoUrl} alt={property.name} style={{ width: '100%', height: 240, objectFit: 'cover' }} />}
       <div style={{ padding: '20px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
         </div>
-        <h3 style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', fontFamily: 'Plus Jakarta Sans' }}>{property.name}</h3>
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: 'Plus Jakarta Sans' }}>{property.address}</p>
+        <h3 style={{ fontSize: 20, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', fontFamily: typography.bodyFont }}>{property.name}</h3>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: typography.bodyFont }}>{property.address}</p>
         {property.coupleNote && (
           <div style={{ background: 'rgba(224,53,83,0.04)', borderLeft: '2px solid #E03553', padding: '10px 14px', marginBottom: 14 }}>
-            <p style={{ fontSize: 13, color: '#555', fontStyle: 'italic', margin: 0, lineHeight: 1.5, fontFamily: 'Plus Jakarta Sans' }}>"{property.coupleNote}"</p>
+            <p style={{ fontSize: 13, color: '#555', fontStyle: 'italic', margin: 0, lineHeight: 1.5, fontFamily: typography.bodyFont }}>"{property.coupleNote}"</p>
           </div>
         )}
         {property.bookingCode && (
@@ -324,7 +339,7 @@ function FeaturedPropertyCard({ property }) {
             </div>
           </div>
         )}
-        <a href={property.website || '#'} target="_blank" style={{ display: 'block', padding: '14px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', textAlign: 'center', fontSize: 13, fontWeight: 700, textDecoration: 'none', fontFamily: 'Plus Jakarta Sans' }}>
+        <a href={property.website || '#'} target="_blank" style={{ display: 'block', padding: '14px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', textAlign: 'center', fontSize: 13, fontWeight: 700, textDecoration: 'none', fontFamily: typography.bodyFont }}>
           Visit Website
         </a>
       </div>
@@ -332,27 +347,27 @@ function FeaturedPropertyCard({ property }) {
   );
 }
 
-function ManualPropertyGuestCard({ property }) {
+function ManualPropertyGuestCard({ property, typography }) {
   return (
     <div style={{ border: '1px solid #EEEEEE', overflow: 'hidden' }}>
       {property.photoUrl && <img src={property.photoUrl} alt={property.name} style={{ width: '100%', height: 180, objectFit: 'cover' }} />}
       <div style={{ padding: '16px 20px' }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: 'Plus Jakarta Sans' }}>{property.name}</h3>
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: 'Plus Jakarta Sans' }}>{property.address}</p>
+        <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: typography.bodyFont }}>{property.name}</h3>
+        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: typography.bodyFont }}>{property.address}</p>
         {property.tags?.length > 0 && (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
             {property.tags.map(tag => (
-              <span key={tag} style={{ padding: '3px 8px', background: '#F5F5F5', fontSize: 11, color: '#555', fontFamily: 'Plus Jakarta Sans' }}>{tag}</span>
+              <span key={tag} style={{ padding: '3px 8px', background: '#F5F5F5', fontSize: 11, color: '#555', fontFamily: typography.bodyFont }}>{tag}</span>
             ))}
           </div>
         )}
         {property.coupleNote && (
           <div style={{ background: 'rgba(224,53,83,0.04)', borderLeft: '2px solid #E03553', padding: '8px 12px', marginBottom: 12 }}>
-            <p style={{ fontSize: 12, color: '#555', fontStyle: 'italic', margin: 0, lineHeight: 1.5, fontFamily: 'Plus Jakarta Sans' }}>"{property.coupleNote}"</p>
+            <p style={{ fontSize: 12, color: '#555', fontStyle: 'italic', margin: 0, lineHeight: 1.5, fontFamily: typography.bodyFont }}>"{property.coupleNote}"</p>
           </div>
         )}
         {property.website && (
-          <a href={property.website} target="_blank" style={{ display: 'block', padding: '12px', border: '1px solid #0A0A0A', color: '#0A0A0A', textAlign: 'center', fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: 'Plus Jakarta Sans' }}>
+          <a href={property.website} target="_blank" style={{ display: 'block', padding: '12px', border: '1px solid #0A0A0A', color: '#0A0A0A', textAlign: 'center', fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: typography.bodyFont }}>
             Visit Website
           </a>
         )}
@@ -361,26 +376,26 @@ function ManualPropertyGuestCard({ property }) {
   );
 }
 
-function AccommodationCard({ hotel, venue }) {
+function AccommodationCard({ hotel, venue, typography }) {
   return (
     <div style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', overflow: 'hidden' }}>
       <div style={{ position: 'relative', height: 200, background: '#F0F0F0' }}>
         {hotel.image && <img src={hotel.image} alt={hotel.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />}
         <div style={{ position: 'absolute', bottom: 12, left: 12, background: 'rgba(0,0,0,0.65)', padding: '3px 8px' }}>
-          <p style={{ fontSize: 10, color: '#FFFFFF', fontWeight: 700, margin: 0, letterSpacing: '0.05em', fontFamily: 'Plus Jakarta Sans' }}>
+          <p style={{ fontSize: 10, color: '#FFFFFF', fontWeight: 700, margin: 0, letterSpacing: '0.05em', fontFamily: typography.bodyFont }}>
             {hotel.source === 'booking' ? 'Booking.com' : 'Expedia'}
           </p>
         </div>
         {hotel.badge && (
           <div style={{ position: 'absolute', top: 12, left: 12, background: '#DDF762', padding: '3px 10px' }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>{hotel.badge}</p>
+            <p style={{ fontSize: 10, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: typography.bodyFont }}>{hotel.badge}</p>
           </div>
         )}
       </div>
 
       <div style={{ padding: '16px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8, gap: 8 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: 'Plus Jakarta Sans', lineHeight: 1.3, flex: 1 }}>{hotel.name}</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: typography.bodyFont, lineHeight: 1.3, flex: 1 }}>{hotel.name}</h3>
           {hotel.guestRating && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
               <div style={{ background: '#0A0A0A', padding: '4px 8px' }}>
@@ -391,20 +406,20 @@ function AccommodationCard({ hotel, venue }) {
         </div>
 
         {hotel.aiSummary && (
-          <p style={{ fontSize: 13, color: '#555', fontStyle: 'italic', lineHeight: 1.6, margin: '0 0 12px', fontFamily: 'Plus Jakarta Sans' }}>{hotel.aiSummary}</p>
+          <p style={{ fontSize: 13, color: '#555', fontStyle: 'italic', lineHeight: 1.6, margin: '0 0 12px', fontFamily: typography.bodyFont }}>{hotel.aiSummary}</p>
         )}
 
         <div style={{ display: 'flex', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
           {hotel.distanceFromVenue && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(10,10,10,0.45)" strokeWidth="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-              <p style={{ fontSize: 12, color: '#666', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>{hotel.distanceFromVenue}</p>
+              <p style={{ fontSize: 12, color: '#666', margin: 0, fontFamily: typography.bodyFont }}>{hotel.distanceFromVenue}</p>
             </div>
           )}
           {hotel.uberTime && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(10,10,10,0.45)" strokeWidth="1.8"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-              <p style={{ fontSize: 12, color: '#666', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>{hotel.uberTime}</p>
+              <p style={{ fontSize: 12, color: '#666', margin: 0, fontFamily: typography.bodyFont }}>{hotel.uberTime}</p>
             </div>
           )}
         </div>
@@ -412,7 +427,7 @@ function AccommodationCard({ hotel, venue }) {
         {hotel.amenities?.length > 0 && (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
             {hotel.amenities.slice(0, 4).map(a => (
-              <span key={a} style={{ padding: '3px 8px', background: '#F5F5F5', fontSize: 11, color: '#555', fontFamily: 'Plus Jakarta Sans' }}>{a}</span>
+              <span key={a} style={{ padding: '3px 8px', background: '#F5F5F5', fontSize: 11, color: '#555', fontFamily: typography.bodyFont }}>{a}</span>
             ))}
           </div>
         )}
@@ -420,26 +435,26 @@ function AccommodationCard({ hotel, venue }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <div>
             {hotel.pricePerNight && (
-              <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: 'Plus Jakarta Sans' }}>
+              <p style={{ fontSize: 18, fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: typography.bodyFont }}>
                 {hotel.pricePerNight} <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}>/ night</span>
               </p>
             )}
             {hotel.freeCancellation && (
-              <p style={{ fontSize: 11, color: '#22C55E', fontWeight: 600, margin: '2px 0 0', fontFamily: 'Plus Jakarta Sans' }}>Free cancellation</p>
+              <p style={{ fontSize: 11, color: '#22C55E', fontWeight: 600, margin: '2px 0 0', fontFamily: typography.bodyFont }}>Free cancellation</p>
             )}
           </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <a href={hotel.bookingUrl} target="_blank" style={{ padding: '12px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', textAlign: 'center', fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: 'Plus Jakarta Sans', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <a href={hotel.bookingUrl} target="_blank" style={{ padding: '12px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFFFFF', textAlign: 'center', fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: typography.bodyFont, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             View Deal
           </a>
-          <a href={hotel.bookingUrl} target="_blank" style={{ padding: '12px', border: '1px solid #0A0A0A', color: '#0A0A0A', textAlign: 'center', fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: 'Plus Jakarta Sans', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <a href={hotel.bookingUrl} target="_blank" style={{ padding: '12px', border: '1px solid #0A0A0A', color: '#0A0A0A', textAlign: 'center', fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: typography.bodyFont, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             Book Stay
           </a>
         </div>
 
-        <p style={{ fontSize: 10, color: 'rgba(10,10,10,0.6)', marginTop: 8, lineHeight: 1.5, fontFamily: 'Plus Jakarta Sans' }}>
+        <p style={{ fontSize: 10, color: 'rgba(10,10,10,0.6)', marginTop: 8, lineHeight: 1.5, fontFamily: typography.bodyFont }}>
           Bookings are completed through our accommodation partners. Availability and pricing may change.
         </p>
       </div>
@@ -461,17 +476,17 @@ function SkeletonAccommodationCard() {
   );
 }
 
-function AccommodationFallback({ details }) {
+function AccommodationFallback({ details, typography }) {
   return (
     <div style={{ padding: '40px 24px', textAlign: 'center' }}>
-      <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 24px', fontFamily: 'Plus Jakarta Sans' }}>
+      <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 24px', fontFamily: typography.bodyFont }}>
         We couldn't load live accommodation results right now. Here are the places we've personally recommended:
       </p>
       {details?.accommodation?.manualProperties?.map(p => (
-        <ManualPropertyGuestCard key={p.id} property={p} />
+        <ManualPropertyGuestCard key={p.id} property={p} typography={typography} />
       ))}
       {!details?.accommodation?.manualProperties?.length && (
-        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: 'Plus Jakarta Sans' }}>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: typography.bodyFont }}>
           Accommodation recommendations coming soon.
         </p>
       )}

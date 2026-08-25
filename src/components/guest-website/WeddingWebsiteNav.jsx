@@ -12,7 +12,7 @@ import { WEDDING_PAGES } from '@/lib/websiteThemes';
 // many pages a couple enables.
 const MAX_VISIBLE_LINKS = 5;
 
-export default function WeddingWebsiteNav({ weddingName, theme, enabledPages, currentPage, weddingSlug, hasTransport, hasAccommodation, hasMusic, hasExperience, onNavigate }) {
+export default function WeddingWebsiteNav({ weddingName, theme, typography, enabledPages, currentPage, weddingSlug, hasTransport, hasAccommodation, hasMusic, hasExperience, onNavigate }) {
    const [scrolled, setScrolled] = useState(false);
    const [mobileOpen, setMobileOpen] = useState(false);
    const [moreOpen, setMoreOpen] = useState(false);
@@ -46,7 +46,7 @@ export default function WeddingWebsiteNav({ weddingName, theme, enabledPages, cu
     justifyContent: 'space-between',
     padding: '0 24px',
     height: '56px',
-    fontFamily: 'Plus Jakarta Sans, sans-serif'
+    fontFamily: typography?.bodyFont || 'inherit'
   };
 
   // Sentence case, no text-transform:uppercase (house rule) — labels are
@@ -148,7 +148,17 @@ export default function WeddingWebsiteNav({ weddingName, theme, enabledPages, cu
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className="md:hidden ml-auto"
-          style={{ color: theme.darkText }}
+          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileOpen}
+          // M-4: the glyph is 20px and the button was the glyph. This is the
+          // ONLY navigation a guest has on a phone — a guest who cannot
+          // reliably open it cannot reach the RSVP tab at all. The icon size
+          // is unchanged; the target around it is now 44.
+          style={{
+            color: theme.darkText, minWidth: 44, minHeight: 44,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            margin: '-10px -10px -10px 0',
+          }}
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>

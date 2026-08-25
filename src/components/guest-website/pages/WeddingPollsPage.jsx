@@ -44,15 +44,15 @@ function totalVotes(poll) {
   return (poll.options || []).reduce((s, o) => s + (o.votes || 0), 0);
 }
 
-function ResultsBar({ option, total, isWinner, theme }) {
+function ResultsBar({ option, total, isWinner, theme, typography }) {
   const pct = total > 0 ? Math.round(((option.votes || 0) / total) * 100) : 0;
   return (
     <div style={{ marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 13, color: theme.darkText, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: isWinner ? 700 : 400 }}>
+        <span style={{ fontSize: 13, color: theme.darkText, fontFamily: typography.bodyFont, fontWeight: isWinner ? 700 : 400 }}>
           {option.label}
         </span>
-        <span style={{ fontSize: 12, color: isWinner ? '#E03553' : `${theme.darkText}60`, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700 }}>
+        <span style={{ fontSize: 12, color: isWinner ? '#E03553' : `${theme.darkText}60`, fontFamily: typography.bodyFont, fontWeight: 700 }}>
           {pct}%
         </span>
       </div>
@@ -67,7 +67,7 @@ function ResultsBar({ option, total, isWinner, theme }) {
           }}
         />
       </div>
-      <div style={{ fontSize: 11, color: `${theme.darkText}40`, fontFamily: "'Plus Jakarta Sans', sans-serif", marginTop: 2 }}>
+      <div style={{ fontSize: 11, color: `${theme.darkText}40`, fontFamily: typography.bodyFont, marginTop: 2 }}>
         {option.votes || 0} {(option.votes || 0) === 1 ? 'vote' : 'votes'}
       </div>
     </div>
@@ -139,7 +139,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
               fontWeight: 700,
               letterSpacing: '0.08em',
               color: `${theme.darkText}40`,
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: typography.bodyFont,
             }}>
               {poll.category}
             </span>
@@ -161,7 +161,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
                 background: 'transparent',
                 border: `1px solid ${theme.darkText}25`,
                 color: theme.darkText,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: typography.bodyFont,
                 fontSize: 14,
                 fontWeight: 500,
                 cursor: 'pointer',
@@ -185,7 +185,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
       ) : (
         <div>
           {(poll.options || []).map(option => (
-            <ResultsBar
+            <ResultsBar typography={typography}
               key={option.id}
               option={option}
               total={total}
@@ -193,7 +193,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
               theme={theme}
             />
           ))}
-          <p style={{ fontSize: 11, color: `${theme.darkText}40`, fontFamily: "'Plus Jakarta Sans', sans-serif", marginTop: 8 }}>
+          <p style={{ fontSize: 11, color: `${theme.darkText}40`, fontFamily: typography.bodyFont, marginTop: 8 }}>
             {total} {total === 1 ? 'response' : 'responses'} · You voted for <strong style={{ color: theme.darkText }}>{(poll.options || []).find(o => o.id === myVote)?.label}</strong>
           </p>
         </div>
@@ -206,10 +206,10 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
           paddingLeft: 14,
           marginTop: 16,
         }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 4px' }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: '#E03553', fontFamily: typography.bodyFont, margin: '0 0 4px' }}>
             Ava insight
           </p>
-          <p style={{ fontSize: 13, color: `${theme.darkText}80`, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 13, color: `${theme.darkText}80`, fontFamily: typography.bodyFont, margin: 0, lineHeight: 1.5 }}>
             {poll.avaInsight}
           </p>
         </div>
@@ -223,7 +223,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               background: 'transparent', border: 'none', cursor: 'pointer',
-              color: `${theme.darkText}50`, fontFamily: "'Plus Jakarta Sans', sans-serif",
+              color: `${theme.darkText}50`, fontFamily: typography.bodyFont,
               fontSize: 12, fontWeight: 700, padding: 0,
             }}
           >
@@ -240,7 +240,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
                   padding: '8px 12px',
                   marginBottom: 6,
                 }}>
-                  <p style={{ fontSize: 13, color: `${theme.darkText}70`, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
+                  <p style={{ fontSize: 13, color: `${theme.darkText}70`, fontFamily: typography.bodyFont, margin: 0 }}>
                     {c.text}
                   </p>
                 </div>
@@ -259,7 +259,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
                     border: `1px solid ${theme.darkText}20`,
                     borderBottom: `2px solid ${theme.darkText}40`,
                     color: theme.darkText,
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: typography.bodyFont,
                     fontSize: 13,
                     outline: 'none',
                     borderRadius: 0,
@@ -273,7 +273,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
                     background: '#E03553',
                     border: 'none',
                     color: '#fff',
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: typography.bodyFont,
                     fontSize: 12,
                     fontWeight: 700,
                     cursor: commentText.trim() ? 'pointer' : 'not-allowed',
@@ -383,7 +383,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
             fontWeight: 700,
             letterSpacing: '0.12em',
             color: `${theme.darkText}40`,
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: typography.bodyFont,
             margin: '0 0 12px',
           }}>
             Guest polls
@@ -401,7 +401,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
           <p style={{
             fontSize: 15,
             color: `${theme.darkText}50`,
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: typography.bodyFont,
             margin: 0,
             lineHeight: 1.6,
           }}>
@@ -425,7 +425,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
             }}>
               Polls coming soon
             </h3>
-            <p style={{ fontSize: 14, color: `${theme.darkText}40`, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <p style={{ fontSize: 14, color: `${theme.darkText}40`, fontFamily: typography.bodyFont }}>
               The couple hasn't opened any polls yet — check back closer to the date.
             </p>
           </div>
