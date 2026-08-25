@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
 import { hasPlusOne, plusOneRsvpStatus } from "@/lib/plusOne";
@@ -30,7 +30,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import EmailTemplates from "../components/guests/EmailTemplates";
 import PageConsiderations from '../components/shared/PageConsiderations';
-import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
+import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, toggleEventInvite, effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
 import CountUp from "@/components/shared/CountUp";
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { copyFromPromise, copyText } from '@/lib/copyToClipboard';
@@ -145,6 +145,13 @@ export default function Guests() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [sendModalConfig, setSendModalConfig] = useState(null); // { initialSelectedIds } | { defaultFilter }
   const [setEventsGuests, setSetEventsGuests] = useState(null); // array of guests, or null
+  // P2a. EventDetails asks who a newly created event is for and sends the
+  // answer here, because THIS page already holds the guest list — which makes
+  // it the only place the count can be stated before the write runs, and the
+  // only place the outcome can be reported after it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [bulkInvite, setBulkInvite] = useState(null); // {event, count} | null
+  const [bulkBusy, setBulkBusy] = useState(false);
   const [autoSendAfterSetEvents, setAutoSendAfterSetEvents] = useState(null); // guestId
   const [editingEventsGuestId, setEditingEventsGuestId] = useState(null); // guestId, for the "edit events" (not auto-send) flow
   const [scrollToGuestId, setScrollToGuestId] = useState(null); // set right after a guest is added, so its row scrolls into view once it lands at the bottom
@@ -330,6 +337,54 @@ export default function Guests() {
     } catch (e) {
       toast.error(e?.message || 'Failed to delete guest', { id: tid });
     }
+  };
+
+  // Both entry points from EventDetails. `inviteAll` opens a confirmation
+  // STATING THE COUNT — a bulk write that neither announces its size nor
+  // confirms its outcome is the silent-action defect at the largest blast
+  // radius in the product. `setEvents` just opens the existing picker.
+  useEffect(() => {
+    if (guests.length === 0 || weddingEvents.length === 0) return;
+    const inviteAll = searchParams.get('inviteAll');
+    const setEvents = searchParams.get('setEvents');
+    if (!inviteAll && !setEvents) return;
+
+    const id = inviteAll || setEvents;
+    const event = weddingEvents.find(e => e.event_id === id);
+    // The parameter is a URL the couple could edit or a stale link from an
+    // event since deleted. Say so rather than silently doing nothing.
+    if (!event) {
+      toast.error('That event no longer exists.');
+      setSearchParams({}, { replace: true });
+      return;
+    }
+    if (inviteAll) {
+      const notYet = guests.filter(g => !getGuestEventResponse(g, event).invited);
+      setBulkInvite({ event, count: notYet.length, total: guests.length, guests: notYet });
+    } else {
+      setSetEventsGuests(guests);
+    }
+    setSearchParams({}, { replace: true });
+  }, [guests, weddingEvents, searchParams, setSearchParams]);
+
+  const runBulkInvite = async () => {
+    if (!bulkInvite || bulkBusy) return;
+    setBulkBusy(true);
+    const { event, guests: targets } = bulkInvite;
+    let done = 0, failed = 0;
+    for (const g of targets) {
+      try {
+        await updateGuest(g.id, { event_responses: toggleEventInvite(g, event, true) });
+        done++;
+      } catch { failed++; }
+    }
+    setBulkBusy(false);
+    setBulkInvite(null);
+    // REPORT THE OUTCOME, including a partial one. A bulk write that says
+    // nothing afterwards is indistinguishable from one that did nothing.
+    if (failed === 0) toast.success(`${done} guest${done === 1 ? '' : 's'} invited to ${event.name}`);
+    else toast.error(`${done} invited, ${failed} could not be updated. Try again for the rest.`);
+    loadGuests();
   };
 
   const handleInlineUpdate = async (guestId, updates) => {
@@ -1013,6 +1068,39 @@ export default function Guests() {
           onClose={() => setSendModalConfig(null)}
           onSent={handleSent}
         />
+      )}
+
+      {/* P2a: THE COUNT BEFORE THE WRITE. "Invite everyone" touches every
+          Guest record on the wedding — the largest blast radius any couple
+          action has. It states the number first and reports the result after,
+          including a partial failure. */}
+      {bulkInvite && (
+        <Dialog open onOpenChange={(o) => { if (!o && !bulkBusy) setBulkInvite(null); }}>
+          <DialogContent className="max-w-[420px]">
+            <div style={{ padding: 24 }}>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                {bulkInvite.count === 0
+                  ? `Everyone is already invited to ${bulkInvite.event.name}`
+                  : `Invite ${bulkInvite.count} guest${bulkInvite.count === 1 ? '' : 's'} to ${bulkInvite.event.name}?`}
+              </p>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', lineHeight: 1.6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                {bulkInvite.count === 0
+                  ? `All ${bulkInvite.total} guests on your list can already see it.`
+                  : `Your list has ${bulkInvite.total}. This updates the ${bulkInvite.count} who cannot see this event yet, and changes nothing else.`}
+              </p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button className="btn-editorial-secondary" disabled={bulkBusy} onClick={() => setBulkInvite(null)}>
+                  {bulkInvite.count === 0 ? 'Close' : 'Cancel'}
+                </button>
+                {bulkInvite.count > 0 && (
+                  <button className="btn-primary" disabled={bulkBusy} onClick={runBulkInvite}>
+                    {bulkBusy ? 'Inviting…' : `Invite ${bulkInvite.count}`}
+                  </button>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {setEventsGuests && (
